@@ -53,6 +53,11 @@ public final class IntegerType extends _NumericType._IntegerType {
     }
 
     @Override
+    public LengthType lengthType() {
+        return LengthType.DEFAULT;
+    }
+
+    @Override
     public SqlType map(final ServerMeta meta) {
         return mapToInteger(this, meta);
     }

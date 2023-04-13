@@ -140,7 +140,7 @@ public enum MySQLTypes implements SqlType, SQLWords {
     }
 
     @Override
-    public final String render() {
+    public final String spaceRender() {
         final String words;
         switch (this) {
             case TINYINT_UNSIGNED:

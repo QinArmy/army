@@ -252,7 +252,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final SQLWords option = this.option;
             if (option != null) {
                 context.sqlBuilder()
-                        .append(option.render());
+                        .append(option.spaceRender());
             }
             this.argument.appendSql(context);
         }
@@ -262,7 +262,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final SQLWords option = this.option;
             if (option != null) {
                 builder.append(_Constant.SPACE)
-                        .append(option.render());
+                        .append(option.spaceRender());
             }
             builder.append(this.argument);
         }
@@ -468,7 +468,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                     .append(" GROUP_CONCAT(");
 
             if (this.distinct != null) {
-                sqlBuidler.append(this.distinct.render());
+                sqlBuidler.append(this.distinct.spaceRender());
             }
             FunctionUtils.appendArguments(this.distinct, this.expList, context);
 
@@ -487,7 +487,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                     .append(" GROUP_CONCAT(");
 
             if (this.distinct != null) {
-                sqlBuidler.append(this.distinct.render());
+                sqlBuidler.append(this.distinct.spaceRender());
             }
             FunctionUtils.argumentsToString(this.distinct, this.expList, sqlBuidler);
 
@@ -936,11 +936,11 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 for (Object o : returningList) {
                     if (o instanceof MySQLCastType) {
                         sqlBuilder.append(_Constant.SPACE_RETURNING)
-                                .append(((MySQLCastType) o).render());
+                                .append(((MySQLCastType) o).spaceRender());
                     } else if (o == Functions.FuncWord.LEFT_PAREN) {
                         sqlBuilder.append(_Constant.LEFT_PAREN);
                     } else if (o instanceof SQLWords) {
-                        sqlBuilder.append(((SQLWords) o).render());
+                        sqlBuilder.append(((SQLWords) o).spaceRender());
                     } else if (o instanceof Expression) {
                         ((ArmyExpression) o).appendSql(context);
                     } else if (o instanceof SQLIdentifier) {
@@ -979,11 +979,11 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 for (Object o : returningList) {
                     if (o instanceof MySQLCastType) {
                         sqlBuilder.append(_Constant.SPACE_RETURNING)
-                                .append(((MySQLCastType) o).render());
+                                .append(((MySQLCastType) o).spaceRender());
                     } else if (o == Functions.FuncWord.LEFT_PAREN) {
                         sqlBuilder.append(_Constant.LEFT_PAREN);
                     } else if (o instanceof SQLWords) {
-                        sqlBuilder.append(((SQLWords) o).render());
+                        sqlBuilder.append(((SQLWords) o).spaceRender());
                     } else if (o instanceof Expression) {
                         sqlBuilder.append(o);
                     } else if (o instanceof SQLIdentifier) {
@@ -1030,7 +1030,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE);
             context.parser().identifier(this.name, sqlBuilder);
-            sqlBuilder.append(MySQLs.FOR_ORDINALITY.render());
+            sqlBuilder.append(MySQLs.FOR_ORDINALITY.spaceRender());
         }
 
         @Override
@@ -1160,7 +1160,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE);
             context.parser().identifier(this.name, sqlBuilder)
-                    .append(this.type.render());
+                    .append(this.type.spaceRender());
 
             if (this.n != null) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
@@ -1177,7 +1177,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (charset != null) {
                 sqlBuilder.append(" CHARACTER SET");
                 if (charset instanceof MySQLCharset) {
-                    sqlBuilder.append(((MySQLCharset) charset).render());
+                    sqlBuilder.append(((MySQLCharset) charset).spaceRender());
                 } else if (charset instanceof SQLIdentifier) {
                     parser = context.parser();
                     parser.identifier(((SQLIdentifier) charset).render(), sqlBuilder);
@@ -1195,7 +1195,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 parser.identifier(collate.render(), sqlBuilder);
             }
 
-            sqlBuilder.append(this.pathWord.render());
+            sqlBuilder.append(this.pathWord.spaceRender());
             this.path.appendSql(context);
 
             final JsonTableOnEmptyOrErrorAction actionClause = this.actionClause;
@@ -1216,7 +1216,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             sqlBuilder = new StringBuilder()
                     .append(_Constant.SPACE)
                     .append(this.name)
-                    .append(this.type.render());
+                    .append(this.type.spaceRender());
 
             if (this.n != null) {
                 sqlBuilder.append(_Constant.LEFT_PAREN)
@@ -1232,7 +1232,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (charset != null) {
                 sqlBuilder.append(" CHARACTER SET");
                 if (charset instanceof MySQLCharset) {
-                    sqlBuilder.append(((MySQLCharset) charset).render());
+                    sqlBuilder.append(((MySQLCharset) charset).spaceRender());
                 } else if (charset instanceof SQLIdentifier) {
                     sqlBuilder.append(_Constant.SPACE)
                             .append(((SQLIdentifier) charset).render());
@@ -1247,7 +1247,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                         .append(collate.render());
             }
 
-            sqlBuilder.append(this.pathWord.render())
+            sqlBuilder.append(this.pathWord.spaceRender())
                     .append(this.path);
 
             final JsonTableOnEmptyOrErrorAction actionClause = this.actionClause;

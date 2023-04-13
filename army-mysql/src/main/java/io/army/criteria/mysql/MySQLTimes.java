@@ -15,7 +15,7 @@ public enum MySQLTimes implements SQLWords {
     }
 
     @Override
-    public final String render() {
+    public final String spaceRender() {
         return this.words;
     }
 

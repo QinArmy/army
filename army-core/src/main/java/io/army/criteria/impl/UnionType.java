@@ -30,7 +30,7 @@ enum UnionType implements SQLWords, Query.UnionModifier {
 
 
     @Override
-    public final String render() {
+    public final String spaceRender() {
         return this.spaceWords;
     }
 

@@ -16,9 +16,16 @@ enum DualOperator {
     XOR(" ^"),
     LEFT_SHIFT(" <<"),
     RIGHT_SHIFT(" >>"),
+
+    CARET(" ^"), // postgre only
     CARET_AT(" ^@"), // postgre only
     DOUBLE_VERTICAL(" ||"), // postgre only
     AT_TIME_ZONE(" AT TIME ZONE"), // postgre only
+    DOUBLE_VERTICAL_SLASH(" ||/"),// postgre only
+    TILDE(" ~"),// postgre only
+    NOT_TILDE(" !~"),// postgre only
+    TILDE_STAR(" ~*"),// postgre only
+    NOT_TILDE_STAR(" !~*"),// postgre only
     /*################################## blow expression dual operator method ##################################*/
 
     EQUAL(" ="),
@@ -30,7 +37,9 @@ enum DualOperator {
     IN(" IN"),
     NOT_IN(" NOT IN"),
     LIKE(" LIKE"),
-    NOT_LIKE(" NOT LIKE");
+    NOT_LIKE(" NOT LIKE"),
+    SIMILAR_TO(" SIMILAR TO"), // currently,postgre only
+    NOT_SIMILAR_TO(" NOT SIMILAR TO"); // currently,postgre only
 
 
     final String spaceOperator;

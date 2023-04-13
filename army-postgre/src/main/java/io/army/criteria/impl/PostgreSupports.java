@@ -247,7 +247,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -1281,7 +1281,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 

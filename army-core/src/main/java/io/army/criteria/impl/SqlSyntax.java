@@ -30,6 +30,10 @@ abstract class SqlSyntax {
 
     }
 
+    public interface WordEscape extends SQLWords {
+
+    }
+
 
     public interface SymbolStar {
 

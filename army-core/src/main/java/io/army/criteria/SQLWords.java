@@ -3,7 +3,7 @@ package io.army.criteria;
 public interface SQLWords extends SQLElement {
 
 
-    String render();
+    String spaceRender();
 
     @Override
     String toString();

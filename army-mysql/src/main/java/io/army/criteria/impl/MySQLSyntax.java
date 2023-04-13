@@ -109,7 +109,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 
@@ -133,7 +133,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -158,7 +158,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -181,7 +181,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -204,7 +204,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -227,7 +227,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -252,7 +252,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -277,7 +277,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -302,7 +302,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -326,7 +326,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 

@@ -86,10 +86,6 @@ abstract class Functions extends SqlSyntax {
 
     }
 
-    public interface WordEscape {
-
-    }
-
     public interface TrimPosition {
 
     }
@@ -111,7 +107,7 @@ abstract class Functions extends SqlSyntax {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 
@@ -135,7 +131,7 @@ abstract class Functions extends SqlSyntax {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -158,7 +154,7 @@ abstract class Functions extends SqlSyntax {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -169,29 +165,6 @@ abstract class Functions extends SqlSyntax {
         }
 
     }//KeyWordSimilar
-
-    private enum KeyWordEscape implements WordEscape, ArmyKeyWord {
-
-        ESCAPE(" ESCAPE");
-
-        private final String spaceWord;
-
-        KeyWordEscape(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String render() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return functionsKeyWordToString(this);
-        }
-
-    }//KeyWordEscape
 
     private enum KeyWordFrom implements WordFrom, ArmyKeyWord {
 
@@ -204,7 +177,7 @@ abstract class Functions extends SqlSyntax {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 
@@ -227,7 +200,7 @@ abstract class Functions extends SqlSyntax {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 
@@ -253,7 +226,7 @@ abstract class Functions extends SqlSyntax {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 
@@ -275,7 +248,6 @@ abstract class Functions extends SqlSyntax {
     public static final WordFor FOR = KeyWordFor.FOR;
 
     public static final WordFrom FROM = KeyWordFrom.FROM;
-    public static final WordEscape ESCAPE = KeyWordEscape.ESCAPE;
     public static final WordSimilar SIMILAR = KeyWordSimilar.SIMILAR;
 
 
@@ -817,32 +789,34 @@ abstract class Functions extends SqlSyntax {
     /*-------------------below package method -------------------*/
 
 
-    static TypeMeta _returnType(final ArmyExpression keyExpr, final ArmyExpression valueExpr
-            , BiFunction<MappingType, MappingType, MappingType> function) {
-        final TypeMeta keyType, valueType;
-        keyType = keyExpr.typeMeta();
-        valueType = valueExpr.typeMeta();
+    static TypeMeta _returnType(final Expression left, final Expression right,
+                                BiFunction<MappingType, MappingType, MappingType> function) {
+        final TypeMeta leftType, rightType;
+        leftType = left.typeMeta();
+        rightType = right.typeMeta();
         final TypeMeta returnType;
-        if (keyType instanceof TypeMeta.Delay || valueType instanceof TypeMeta.Delay) {
-            returnType = CriteriaSupports.biDelayWrapper(keyType, valueType, function);
+        if ((leftType instanceof TypeMeta.Delay && !((TypeMeta.Delay) leftType).isPrepared())
+                || (rightType instanceof TypeMeta.Delay && !((TypeMeta.Delay) rightType).isPrepared())) {
+            returnType = CriteriaSupports.biDelayWrapper(leftType, rightType, function);
         } else {
-            returnType = function.apply(keyType.mappingType(), valueType.mappingType());
+            returnType = function.apply(leftType.mappingType(), rightType.mappingType());
         }
         return returnType;
     }
 
-    static TypeMeta _returnType(ArmyExpression expression, Function<MappingType, MappingType> function) {
-        final TypeMeta exprType, returnType;
-        exprType = expression.typeMeta();
-        if (exprType instanceof TypeMeta.Delay && !((TypeMeta.Delay) exprType).isPrepared()) {
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) exprType, function);
-        } else if (exprType instanceof MappingType) {
-            returnType = function.apply((MappingType) exprType);
+    static TypeMeta _returnType(final Expression exp, Function<MappingType, MappingType> function) {
+        final TypeMeta typeMeta;
+        typeMeta = exp.typeMeta();
+
+        final TypeMeta returnType;
+        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isPrepared()) {
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) typeMeta, function);
         } else {
-            returnType = function.apply(exprType.mappingType());
+            returnType = function.apply(typeMeta.mappingType());
         }
         return returnType;
     }
+
 
     static List<Object> _createSimpleMultiArgList(final List<Expression> expList) {
         final int expSize = expList.size();
@@ -1013,18 +987,7 @@ abstract class Functions extends SqlSyntax {
         return returnType;
     }
 
-    static TypeMeta _returnType(final Expression exp, Function<MappingType, MappingType> function) {
-        final TypeMeta typeMeta;
-        typeMeta = exp.typeMeta();
 
-        final TypeMeta returnType;
-        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isPrepared()) {
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) typeMeta, function);
-        } else {
-            returnType = function.apply(typeMeta.mappingType());
-        }
-        return returnType;
-    }
 
 
     /**
@@ -1032,7 +995,7 @@ abstract class Functions extends SqlSyntax {
      */
     static MappingType _doubleOrNumberType(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof _NumericType._FloatNumeric) {
+        if (type instanceof MappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
         } else if (type instanceof _NumericType) {
             returnType = type;
@@ -1057,7 +1020,7 @@ abstract class Functions extends SqlSyntax {
 
     static MappingType _doubleOrDecimal(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof _NumericType._FloatNumeric) {
+        if (type instanceof MappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
         } else {
             returnType = BigDecimalType.INSTANCE;
@@ -1067,7 +1030,7 @@ abstract class Functions extends SqlSyntax {
 
     static MappingType _sqlStringType(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof _SQLStringType) {
+        if (type instanceof MappingType.SqlStringType) {
             returnType = type;
         } else {
             returnType = StringType.INSTANCE;

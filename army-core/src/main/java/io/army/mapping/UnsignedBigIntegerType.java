@@ -36,6 +36,11 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
     }
 
     @Override
+    public LengthType lengthType() {
+        return LengthType.BIG_LONG;
+    }
+
+    @Override
     public SqlType map(final ServerMeta meta) {
         return UnsignedBigDecimalType.mapToSqlType(this, meta);
     }

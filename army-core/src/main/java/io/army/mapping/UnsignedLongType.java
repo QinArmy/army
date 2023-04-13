@@ -41,6 +41,11 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
+    public LengthType lengthType() {
+        return LengthType.BIG_LONG;
+    }
+
+    @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.database()) {

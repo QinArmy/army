@@ -23,7 +23,7 @@ public enum MySQLWords implements SQLWords {
     }
 
     @Override
-    public final String render() {
+    public final String spaceRender() {
         return this.words;
     }
 

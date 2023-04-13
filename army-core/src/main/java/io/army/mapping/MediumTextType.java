@@ -42,7 +42,7 @@ import java.time.*;
  * @see TextType
  * @since 1.0
  */
-public final class MediumTextType extends _SQLStringType._ArmyTextType {
+public final class MediumTextType extends _ArmyInnerMapping implements MappingType.SqlTextType {
 
     public static final MediumTextType INSTANCE = new MediumTextType();
 
@@ -62,6 +62,11 @@ public final class MediumTextType extends _SQLStringType._ArmyTextType {
         return String.class;
     }
 
+
+    @Override
+    public LengthType lengthType() {
+        return LengthType.MEDIUM;
+    }
 
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {

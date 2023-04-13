@@ -46,6 +46,11 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
+    public LengthType lengthType() {
+        return LengthType.MEDIUM;
+    }
+
+    @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.database()) {

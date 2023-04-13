@@ -53,7 +53,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
     public static Expression jsonArray(final List<Expression> expList) {
         final TypeMeta returnType;
         if (expList.size() == 0) {
-            returnType = _NullType.INSTANCE;
+            returnType = SQLs.NULL.typeMeta();
         } else {
             returnType = _returnType((ArmyExpression) expList.get(0), JsonListType::from);
         }
@@ -74,7 +74,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         final String name = "JSON_OBJECT";
         final Expression func;
         if (expMap.size() == 0) {
-            func = FunctionUtils.zeroArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
+            func = FunctionUtils.zeroArgFunc(name, JsonMapType.from(SQLs._NullType.INSTANCE, SQLs._NullType.INSTANCE));
         } else {
             TypeMeta valueType = null;
             for (Expression value : expMap.values()) {
@@ -108,7 +108,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         final int expSize = expList.size();
         final Expression func;
         if (expSize == 0) {
-            func = FunctionUtils.zeroArgFunc(name, JsonMapType.from(_NullType.INSTANCE, _NullType.INSTANCE));
+            func = FunctionUtils.zeroArgFunc(name, JsonMapType.from(SQLs._NullType.INSTANCE, SQLs._NullType.INSTANCE));
         } else if ((expSize & 1) != 0) {
             throw CriteriaUtils.funcArgError(name, expList);
         } else {
@@ -1098,7 +1098,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
             o = pathValuePair[i];
             if ((i & 1) == 0) { //even
                 if (o == null) {
-                    argList.add((ArmyExpression) SQLs.param(_NullType.INSTANCE, null));
+                    argList.add((ArmyExpression) SQLs.param(SQLs._NullType.INSTANCE, null));
                 } else {
                     argList.add((ArmyExpression) SQLs.paramFrom(o));
                 }

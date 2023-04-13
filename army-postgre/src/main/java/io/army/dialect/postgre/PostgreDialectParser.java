@@ -175,7 +175,7 @@ final class PostgreDialectParser extends PostgreParser {
         onlyModifier = stmt.modifier();
         if (onlyModifier != null) {
             assert onlyModifier == SQLs.ONLY;
-            sqlBuilder.append(onlyModifier.render());
+            sqlBuilder.append(onlyModifier.spaceRender());
         }
         // 4. table name
         sqlBuilder.append(_Constant.SPACE);
@@ -238,7 +238,7 @@ final class PostgreDialectParser extends PostgreParser {
         onlyModifier = stmt.modifier();
         if (onlyModifier != null) {
             assert onlyModifier == SQLs.ONLY;
-            sqlBuilder.append(onlyModifier.render());
+            sqlBuilder.append(onlyModifier.spaceRender());
         }
         // 4. table name
         final TableMeta<?> deleteTable = context.targetTable();
@@ -323,7 +323,7 @@ final class PostgreDialectParser extends PostgreParser {
             joinType = block.jointType();
             if (i > 0) {
                 assert joinType != _JoinType.NONE;
-                sqlBuilder.append(joinType.render());
+                sqlBuilder.append(joinType.spaceRender());
             } else {
                 assert joinType == _JoinType.NONE;
             }
@@ -336,7 +336,7 @@ final class PostgreDialectParser extends PostgreParser {
                 if (block instanceof _ModifierTabularBlock
                         && (modifier = ((_ModifierTabularBlock) block).modifier()) != null) {
                     assert modifier == SQLs.ONLY;
-                    sqlBuilder.append(modifier.render());
+                    sqlBuilder.append(modifier.spaceRender());
                 }
                 sqlBuilder.append(_Constant.SPACE);
                 this.safeObjectName(table, sqlBuilder);
@@ -350,7 +350,7 @@ final class PostgreDialectParser extends PostgreParser {
                 if (block instanceof _ModifierTabularBlock
                         && (modifier = ((_ModifierTabularBlock) block).modifier()) != null) {
                     assert modifier == SQLs.LATERAL;
-                    sqlBuilder.append(modifier.render());
+                    sqlBuilder.append(modifier.spaceRender());
                 }
                 if (tabularItem instanceof SubQuery) {
                     this.handleSubQuery((SubQuery) tabularItem, context);
@@ -457,7 +457,7 @@ final class PostgreDialectParser extends PostgreParser {
         // 5. OVERRIDING { SYSTEM | USER } VALUE clause
         final SQLWords overridingModifier;
         if ((overridingModifier = stmt.overridingValueWords()) != null) {
-            context.sqlBuilder().append(overridingModifier.render());
+            context.sqlBuilder().append(overridingModifier.spaceRender());
         }
         // due to army manage createTime(updateTime) field,so army don't support DEFAULT VALUES
 
@@ -626,7 +626,7 @@ final class PostgreDialectParser extends PostgreParser {
         SQLWords waitOption;
         for (_Query._LockBlock block : blockList) {
 
-            sqlBuilder.append(block.lockStrength().render());
+            sqlBuilder.append(block.lockStrength().spaceRender());
 
             tableAliasList = block.lockTableAliasList();
             tableAliasSize = tableAliasList.size();
@@ -644,7 +644,7 @@ final class PostgreDialectParser extends PostgreParser {
 
             waitOption = block.lockWaitOption();
             if (waitOption != null) {
-                sqlBuilder.append(waitOption.render());
+                sqlBuilder.append(waitOption.spaceRender());
             }
 
 
@@ -742,7 +742,7 @@ final class PostgreDialectParser extends PostgreParser {
                 if (offsetRow != SQLs.ROW && offsetRow != SQLs.ROWS) {
                     throw _Exceptions.castCriteriaApi();
                 }
-                sqlBuilder.append(offsetRow.render());
+                sqlBuilder.append(offsetRow.spaceRender());
             }
         }
 
@@ -765,12 +765,12 @@ final class PostgreDialectParser extends PostgreParser {
             }
 
             sqlBuilder.append(_Constant.SPACE_FETCH)
-                    .append(fetchFirstNext.render());
+                    .append(fetchFirstNext.spaceRender());
 
             rowCountExp.appendSql(context);
 
-            sqlBuilder.append(fetchRowRows.render())
-                    .append(fetchOnlyWithTies.render());
+            sqlBuilder.append(fetchRowRows.spaceRender())
+                    .append(fetchOnlyWithTies.spaceRender());
 
         }
 

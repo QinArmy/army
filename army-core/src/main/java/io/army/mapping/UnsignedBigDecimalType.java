@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  * @see BigDecimal
  */
 public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericType
-        implements _NumericType._DecimalNumeric {
+        implements MappingType.SqlDecimalType {
 
     public static final UnsignedBigDecimalType INSTANCE = new UnsignedBigDecimalType();
 

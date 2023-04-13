@@ -760,7 +760,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     protected final void standardLockClause(SQLWords lockMode, _SqlContext context) {
-        if (!_Constant.SPACE_FOR_UPDATE.equals(lockMode.render())) {
+        if (!_Constant.SPACE_FOR_UPDATE.equals(lockMode.spaceRender())) {
             throw _Exceptions.castCriteriaApi();
         }
         context.sqlBuilder().append(_Constant.SPACE_FOR_UPDATE);

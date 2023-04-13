@@ -613,7 +613,12 @@ abstract class CriteriaUtils {
 
     static CriteriaException operandError(final Enum<?> operator, final @Nullable Expression operand) {
         String m = String.format("%s don't support %s .", operator, _ClassUtils.safeClassName(operand));
-        throw ContextStack.clearStackAndCriteriaError(m);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
+    static CriteriaException dualOperandError(DualOperator operator, MappingType left, MappingType right) {
+        String m = String.format("%s don't left operand[%s] and right operand[%s]", operator, left, right);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 
@@ -678,6 +683,11 @@ abstract class CriteriaUtils {
     static CriteriaException errorModifier(CriteriaContext context, @Nullable Object modifier) {
         String m = String.format("error modifier[%s]", modifier);
         return ContextStack.criteriaError(context, m);
+    }
+
+    static CriteriaException errorModifier(@Nullable SQLWords modifier) {
+        String m = String.format("error modifier[%s]", modifier);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 

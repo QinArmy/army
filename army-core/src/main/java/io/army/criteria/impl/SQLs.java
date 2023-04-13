@@ -12,9 +12,13 @@ import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping._NullType;
+import io.army.mapping.MappingEnv;
+import io.army.mapping._ArmyInnerMapping;
+import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
+import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -54,6 +58,8 @@ public abstract class SQLs extends SQLsSyntax {
     public static final WordDefault DEFAULT = new DefaultWord();
 
     public static final WordNull NULL = new NullWord();
+
+    public static final WordEscape ESCAPE = KeyWordEscape.ESCAPE;
     /**
      * package field
      */
@@ -240,6 +246,8 @@ public abstract class SQLs extends SQLsSyntax {
     static <T extends Item> Function<T, T> _getIdentity() {
         return (Function<T, T>) _IDENTITY;
     }
+
+
 
 
 
@@ -449,7 +457,6 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
 
-
         @Override
         public List<String> columnAliasList() {
             return this.columnNameList;
@@ -561,7 +568,7 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public String render() {
+        public String spaceRender() {
             return _Constant.SPACE_NULL;
         }
 
@@ -625,7 +632,7 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public String render() {
+        public String spaceRender() {
             return this.spaceWord;
         }
 
@@ -654,7 +661,7 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -698,7 +705,7 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceStar;
         }
 
@@ -708,6 +715,77 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
     }//SQLSymbolStar
+
+    private enum KeyWordEscape implements WordEscape, ArmyKeyWord {
+
+        ESCAPE(" ESCAPE");
+
+        private final String spaceWord;
+
+        KeyWordEscape(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return sqlKeyWordsToString(this);
+        }
+
+    }//KeyWordEscape
+
+
+    static final class _NullType extends _ArmyInnerMapping {
+
+        public static final _NullType INSTANCE = new _NullType();
+
+
+        private _NullType() {
+        }
+
+        @Override
+        public Class<?> javaType() {
+            return Object.class;
+        }
+
+        @Override
+        public SqlType map(final ServerMeta meta) {
+            final SqlType sqlType;
+            switch (meta.database()) {
+                case MySQL:
+                    sqlType = MySQLTypes.NULL;
+                    break;
+                case PostgreSQL:
+                case Oracle:
+                case H2:
+                default:
+                    throw MAP_ERROR_HANDLER.apply(this, meta);
+            }
+            return sqlType;
+        }
+
+        @Override
+        public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object afterGet(SqlType type, MappingEnv env, Object nonNull) {
+            throw new UnsupportedOperationException();
+        }
+
+
+    }// _NullType
 
 
 }

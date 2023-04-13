@@ -51,6 +51,11 @@ public final class LongType extends _NumericType._IntegerType {
     }
 
     @Override
+    public LengthType lengthType() {
+        return LengthType.LONG;
+    }
+
+    @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.database()) {

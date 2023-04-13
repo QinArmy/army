@@ -45,6 +45,11 @@ public final class ByteType extends _NumericType._IntegerType {
     }
 
     @Override
+    public LengthType lengthType() {
+        return LengthType.TINY;
+    }
+
+    @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.database()) {

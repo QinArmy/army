@@ -654,7 +654,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 

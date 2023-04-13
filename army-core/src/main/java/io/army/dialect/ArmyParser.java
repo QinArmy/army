@@ -676,7 +676,7 @@ abstract class ArmyParser implements DialectParser {
         } else if (values instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) values;
             this.handleValuesQuery((ValuesQuery) union.leftRowSet(), original);
-            ((StatementContext) original).sqlBuilder.append(union.unionType().render());
+            ((StatementContext) original).sqlBuilder.append(union.unionType().spaceRender());
             this.handleRowSet(union.rightRowSet(), original);
         } else {
             assert values instanceof _ParensRowSet;
@@ -852,7 +852,7 @@ abstract class ArmyParser implements DialectParser {
             _SQLConsultant.assertUnionRowSet(query);
             final _UnionRowSet unionRowSet = (_UnionRowSet) query;
             this.handleQuery((Query) unionRowSet.leftRowSet(), original);
-            original.sqlBuilder().append(unionRowSet.unionType().render());
+            original.sqlBuilder().append(unionRowSet.unionType().spaceRender());
             this.handleRowSet(unionRowSet.rightRowSet(), original);
         } else if (query instanceof _ParensRowSet) {
             if (query instanceof StandardQuery) {
@@ -1017,7 +1017,7 @@ abstract class ArmyParser implements DialectParser {
                 throw new CriteriaException(m);
             }
             lastLevel = level;
-            sqlBuilder.append(modifier.render());
+            sqlBuilder.append(modifier.spaceRender());
         }
 
     }
@@ -1060,7 +1060,7 @@ abstract class ArmyParser implements DialectParser {
             block = tableBlockList.get(i);
             joinType = block.jointType();
             if (i > 0) {
-                sqlBuilder.append(joinType.render());
+                sqlBuilder.append(joinType.spaceRender());
             } else if (joinType != _JoinType.NONE) {
                 throw _Exceptions.unexpectedEnum(joinType);
             }
@@ -1788,7 +1788,7 @@ abstract class ArmyParser implements DialectParser {
             context = ParensSelectContext.create(outerContext, stmt, this, visible);
             final _UnionRowSet union = (_UnionRowSet) stmt;
             this.handleQuery((Query) union.leftRowSet(), context);
-            context.sqlBuilder().append(union.unionType().render());
+            context.sqlBuilder().append(union.unionType().spaceRender());
             this.handleRowSet(union.rightRowSet(), context);
         } else if (stmt instanceof _ParensRowSet) {
             if (stmt instanceof StandardQuery) {
@@ -1851,7 +1851,7 @@ abstract class ArmyParser implements DialectParser {
         } else if (stmt instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) stmt;
             this.handleValuesQuery((Values) union.leftRowSet(), context);
-            context.sqlBuilder().append(union.unionType().render());
+            context.sqlBuilder().append(union.unionType().spaceRender());
             this.handleRowSet(union.rightRowSet(), context);
         } else {
             assert stmt instanceof _ParensRowSet;
@@ -2288,7 +2288,7 @@ abstract class ArmyParser implements DialectParser {
                     String m = String.format("Standard query api support only %s or %s", SQLs.DISTINCT, SQLs.ALL);
                     throw new CriteriaException(m);
                 }
-                sqlBuilder.append(modifier.render());
+                sqlBuilder.append(modifier.spaceRender());
             }
             break;
             default:

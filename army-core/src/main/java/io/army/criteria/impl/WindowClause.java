@@ -640,7 +640,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -671,7 +671,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.keyWords;
         }
 

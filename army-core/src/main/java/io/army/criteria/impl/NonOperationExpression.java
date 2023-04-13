@@ -2,8 +2,10 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
+import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
@@ -312,7 +314,22 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> OperationPredicate like(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate like(BiFunction<MappingType, T, Expression> operator, T operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate like(Expression pattern, SQLs.WordEscape escape, char escapeChar) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate like(Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <T> IPredicate like(BiFunction<MappingType, T, Expression> operator, T operand, SqlSyntax.WordEscape escape, char escapeChar) {
         throw unsupportedOperation();
     }
 
@@ -322,7 +339,22 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> OperationPredicate notLike(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate notLike(BiFunction<MappingType, T, Expression> operator, T operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate notLike(Expression pattern, SQLs.WordEscape escape, char escapeChar) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate notLike(Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <T> IPredicate notLike(BiFunction<MappingType, T, Expression> operator, T operand, SqlSyntax.WordEscape escape, char escapeChar) {
         throw unsupportedOperation();
     }
 
@@ -397,12 +429,12 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final OperationExpression xor(Expression operand) {
+    public final OperationExpression bitwiseXor(Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <T> OperationExpression xor(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression bitwiseXor(BiFunction<Expression, T, Expression> operator, T operand) {
         throw unsupportedOperation();
     }
 
@@ -427,12 +459,62 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <E extends Expression> E apply(BiFunction<Expression, Expression, E> operator, Expression operand) {
+    public final Expression apply(BiFunction<Expression, Expression, Expression> operator, Expression operand) {
         throw unsupportedOperation();
     }
 
     @Override
-    public final <E extends Expression, T> E apply(BiFunction<Expression, Expression, E> operator, BiFunction<Expression, T, Expression> valueOperator, T operand) {
+    public final <T> Expression apply(BiFunction<Expression, Expression, Expression> operator, BiFunction<Expression, T, Expression> valueOperator, T value) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <M extends SQLWords> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, Expression right, M modifier, Expression optionalExp) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <M extends SQLWords> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, Expression right, M modifier, char escapeChar) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <M extends SQLWords, T> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, BiFunction<Expression, T, Expression> valueOperator, T value, M modifier, Expression optionalExp) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <M extends SQLWords, T> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, BiFunction<Expression, T, Expression> valueOperator, T value, M modifier, char escapeChar) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final IPredicate test(BiFunction<Expression, Expression, IPredicate> operator, Expression operand) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <T> IPredicate test(BiFunction<Expression, Expression, IPredicate> operator, BiFunction<Expression, T, Expression> valueOperator, T value) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <M extends SQLWords> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, Expression optionalExp) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <M extends SQLWords> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, char escapeChar) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <M extends SQLWords, T> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, BiFunction<MappingType, T, Expression> valueOperator, T value, M modifier, Expression optionalExp) {
+        throw unsupportedOperation();
+    }
+
+    @Override
+    public final <M extends SQLWords, T> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, BiFunction<MappingType, T, Expression> valueOperator, T value, M modifier, char escapeChar) {
         throw unsupportedOperation();
     }
 
@@ -484,8 +566,9 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     }//NonSelectionExpression
 
-    static UnsupportedOperationException unsupportedOperation() {
-        return new UnsupportedOperationException("Non Expression not support this method.");
+    static CriteriaException unsupportedOperation() {
+        String m = String.format("%s don't support any operation.", NonOperationExpression.class.getName());
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 }

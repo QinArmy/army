@@ -299,7 +299,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 

@@ -3,13 +3,13 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
-import io.army.mapping.postgre.StringArrayType;
 import io.army.mapping.postgre.TextArrayType;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -35,22 +35,22 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
     }
 
 
-   private enum KeyWordNormalizeForm implements WordNormalizeForm, ArmyKeyWord, SQLWords {
+    private enum KeyWordNormalizeForm implements WordNormalizeForm, ArmyKeyWord, SQLWords {
 
-       NFC(" NFC"),
-       NFD(" NFD"),
-       NFKC(" NFKC"),
-       NFKD(" NFKD");
+        NFC(" NFC"),
+        NFD(" NFD"),
+        NFKC(" NFKC"),
+        NFKD(" NFKD");
 
-       private final String spaceWords;
+        private final String spaceWords;
 
-       KeyWordNormalizeForm(String spaceWords) {
-           this.spaceWords = spaceWords;
+        KeyWordNormalizeForm(String spaceWords) {
+            this.spaceWords = spaceWords;
         }
 
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 
@@ -72,7 +72,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -282,7 +282,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @param wordFor {@link Functions#FOR}
      * @see #substring(Expression, WordFrom, Expression)
      * @see #substring(Expression, WordFor, Expression)
-     * @see #substring(Expression, WordSimilar, Expression, WordEscape, Expression)
+     * @see #substring(Expression, WordSimilar, Expression, SQLs.WordEscape, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text [ FROM start integer ] [ FOR count integer ] ) → text ; substring ( string text FROM pattern text FOR escape text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">substring ( bits bit [ FROM start integer ] [ FOR count integer ] ) → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substring ( bytes bytea [ FROM start integer ] [ FOR count integer ] ) → bytea</a>
@@ -300,12 +300,12 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * </p>
      *
      * @param similar    {@link Functions#SIMILAR}
-     * @param wordEscape {@link Functions#ESCAPE}
+     * @param wordEscape {@link SQLs#ESCAPE}
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text SIMILAR pattern text ESCAPE escape text ) → text</a>
      */
     public static Expression substring(Expression string, WordSimilar similar, Expression pattern,
-                                       WordEscape wordEscape, Expression escape) {
+                                       SQLs.WordEscape wordEscape, Expression escape) {
 
         final String name = "SUBSTRING";
         final Expression func;
@@ -317,7 +317,7 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
             throw CriteriaUtils.funcArgError(name, escape);
         } else if (similar != Functions.SIMILAR) {
             throw CriteriaUtils.funcArgError(name, similar);
-        } else if (wordEscape != Functions.ESCAPE) {
+        } else if (wordEscape != SQLs.ESCAPE) {
             throw CriteriaUtils.funcArgError(name, wordEscape);
         } else {
             func = FunctionUtils.complexArgFunc(name, string.typeMeta(),
@@ -858,11 +858,73 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * The {@link MappingType} of function return type: {@link io.army.mapping.BooleanType}
      * </p>
      *
+     * @param valueFunc valid function are :
+     *                  <ul>
+     *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#param(TypeInfer, Object)} </li>
+     *                      <li>{@link SQLs#namedLiteral(TypeInfer, String)}</li>
+     *                      <li>{@link SQLs#namedParam(TypeInfer, String)}</li>
+     *                  </ul>
+     * @see #regexpLike(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
+     */
+    public static IPredicate regexpLike(Expression string, BiFunction<MappingType, String, Expression> valueFunc,
+                                        String pattern) {
+        return regexpLike(string, valueFunc.apply(StringType.INSTANCE, pattern));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link io.army.mapping.BooleanType}
+     * </p>
+     *
      * @see #regexpLike(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
      */
     public static IPredicate regexpLike(Expression string, Expression pattern) {
         return FunctionUtils.twoArgPredicateFunc("REGEXP_LIKE", string, pattern);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link io.army.mapping.BooleanType}
+     * </p>
+     *
+     * @param valueFunc valid function are :
+     *                  <ul>
+     *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#param(TypeInfer, Object)} </li>
+     *                      <li>{@link SQLs#namedLiteral(TypeInfer, String)}</li>
+     *                      <li>{@link SQLs#namedParam(TypeInfer, String)}</li>
+     *                  </ul>
+     * @see #regexpLike(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
+     */
+    public static IPredicate regexpLike(Expression string, BiFunction<MappingType, String, Expression> valueFunc,
+                                        String pattern, String flags) {
+        return regexpLike(
+                string, valueFunc.apply(StringType.INSTANCE, pattern), SQLs.literal(StringType.INSTANCE, flags)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link io.army.mapping.BooleanType}
+     * </p>
+     *
+     * @param valueFunc valid function are :
+     *                  <ul>
+     *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#param(TypeInfer, Object)} </li>
+     *                      <li>{@link SQLs#namedLiteral(TypeInfer, String)}</li>
+     *                      <li>{@link SQLs#namedParam(TypeInfer, String)}</li>
+     *                  </ul>
+     * @see #regexpLike(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
+     */
+    public static IPredicate regexpLike(Expression string, BiFunction<MappingType, String, Expression> valueFunc,
+                                        String pattern, Expression flags) {
+        return regexpLike(string, valueFunc.apply(StringType.INSTANCE, pattern), flags);
     }
 
     /**
@@ -1582,16 +1644,6 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
         }
         return func;
 
-    }
-
-    private static MappingType oneDimensionStringArrayType(final MappingType type) {
-        final MappingType returnType;
-        if (type instanceof _SQLStringType._ArmyTextType) {
-            returnType = TextArrayType.from(String[].class);
-        } else {
-            returnType = StringArrayType.from(String[].class);
-        }
-        return returnType;
     }
 
 

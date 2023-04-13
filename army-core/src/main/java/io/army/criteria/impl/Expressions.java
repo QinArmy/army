@@ -10,9 +10,6 @@ import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
-import io.army.mapping._SQLStringType;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -148,7 +145,6 @@ abstract class Expressions extends OperationExpression {
             case LESS_EQUAL:
             case GREAT:
             case GREAT_EQUAL:
-            case LIKE:
             case NOT_LIKE:
             case IN:
             case NOT_IN: {
@@ -165,6 +161,29 @@ abstract class Expressions extends OperationExpression {
 
         }
         return new DualPredicate(left, operator, right);
+    }
+
+    static OperationPredicate likePredicate(final Expression left, final DualOperator operator,
+                                            final @Nullable Expression right, SqlSyntax.WordEscape escape,
+                                            @Nullable final Expression escapeChar) {
+        switch (operator) {
+            case LIKE:
+            case NOT_LIKE:
+            case SIMILAR_TO: // currently,postgre only
+            case NOT_SIMILAR_TO: // currently,postgre only
+                break;
+            default:
+                // no bug,never here
+                throw _Exceptions.unexpectedEnum(operator);
+        }
+        if (!(left instanceof OperationExpression)) {
+            throw NonOperationExpression.unsupportedOperation();
+        } else if (escape != SQLs.ESCAPE) {
+            throw CriteriaUtils.errorModifier(escape);
+        } else if (right == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return new LikePredicate((OperationExpression) left, operator, right, escapeChar);
     }
 
 
@@ -240,8 +259,8 @@ abstract class Expressions extends OperationExpression {
         return new SubQueryPredicate(left, operator, queryOperator, subQuery);
     }
 
-    static OperationPredicate inOperator(final OperationExpression left
-            , final DualOperator operator, final SubQuery subQuery) {
+    static OperationPredicate inOperator(final OperationExpression left, final DualOperator operator,
+                                         final SubQuery subQuery) {
         switch (operator) {
             case IN:
             case NOT_IN:
@@ -253,6 +272,7 @@ abstract class Expressions extends OperationExpression {
         return new SubQueryPredicate(left, operator, null, subQuery);
 
     }
+
 
     /**
      * @see #compareQueryPredicate(OperationExpression, DualOperator, QueryOperator, SubQuery)
@@ -501,7 +521,7 @@ abstract class Expressions extends OperationExpression {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }
             builder.append(_Constant.SPACE)
-                    .append(this.operator.render());
+                    .append(this.operator.spaceRender());
 
             final _Expression expression = this.expression;
             final boolean innerBracket = !(expression instanceof SqlValueParam.SingleValue
@@ -639,7 +659,7 @@ abstract class Expressions extends OperationExpression {
                 case EXISTS:
                 case NOT_EXISTS: {
                     context.sqlBuilder()
-                            .append(this.operator.render());
+                            .append(this.operator.spaceRender());
                     context.parser().subQuery(this.subQuery, context);
                 }
                 break;
@@ -665,7 +685,7 @@ abstract class Expressions extends OperationExpression {
             switch (this.operator) {
                 case EXISTS:
                 case NOT_EXISTS: {
-                    builder.append(this.operator.render())
+                    builder.append(this.operator.spaceRender())
                             .append(this.subQuery);
                 }
                 break;
@@ -752,6 +772,107 @@ abstract class Expressions extends OperationExpression {
 
 
     }//DualPredicate
+
+
+    private static final class LikePredicate extends OperationPredicate {
+
+        private final ArmyExpression left;
+
+        private final DualOperator operator;
+
+        private final ArmyExpression right;
+
+        private final ArmyExpression escapeChar;
+
+        /**
+         * @see #likePredicate(Expression, DualOperator, Expression, SqlSyntax.WordEscape, Expression)
+         */
+        private LikePredicate(OperationExpression left, DualOperator operator, Expression right,
+                              @Nullable Expression escapeChar) {
+            this.left = left;
+            this.operator = operator;
+            this.right = (ArmyExpression) right;
+            this.escapeChar = (ArmyExpression) escapeChar;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            // 1. append left
+            this.left.appendSql(context);
+
+            // 2. append operator
+            switch (this.operator) {
+                case LIKE:
+                case NOT_LIKE:
+                    break;
+                case SIMILAR_TO:
+                case NOT_SIMILAR_TO: {
+                    final Database database;
+                    database = context.parser().dialect().database();
+                    if (database != Database.PostgreSQL) {
+                        String m = String.format("%s don't support %s.", database, this.operator);
+                        throw new CriteriaException(m);
+                    }
+                }
+                break;
+                default:
+                    //no bug,never here
+                    throw _Exceptions.unexpectedEnum(this.operator);
+            }
+
+            sqlBuilder.append(this.operator.spaceOperator);
+
+            // 3. append right
+            this.right.appendSql(context);
+
+            // 4. append ESCAPES clause
+            if (this.escapeChar != null) {
+                sqlBuilder.append(SQLs.ESCAPE.spaceRender());
+                this.escapeChar.appendSql(context);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.left, this.operator, this.right, this.escapeChar);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof LikePredicate) {
+                final LikePredicate o = (LikePredicate) obj;
+                match = o.left.equals(this.left)
+                        && o.operator == this.operator
+                        && o.right.equals(this.right)
+                        && Objects.equals(o.escapeChar, this.escapeChar);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(this.left)
+                    .append(this.operator.spaceOperator)
+                    .append(this.right);
+
+            if (this.escapeChar != null) {
+                builder.append(SQLs.ESCAPE.spaceRender())
+                        .append(this.escapeChar);
+            }
+            return builder.toString();
+        }
+
+
+    }//LikePredicate
 
 
     private static final class BracketPredicate extends OperationPredicate {
@@ -939,7 +1060,7 @@ abstract class Expressions extends OperationExpression {
             builder.append(" BETWEEN");
             if (this.modifier != null) {
                 //TODO validate database support
-                builder.append(this.modifier.render());
+                builder.append(this.modifier.spaceRender());
             }
             this.center.appendSql(context);
             builder.append(_Constant.SPACE_AND);
@@ -979,7 +1100,7 @@ abstract class Expressions extends OperationExpression {
             }
             builder.append(" BETWEEN");
             if (this.modifier != null) {
-                builder.append(this.modifier.render());
+                builder.append(this.modifier.spaceRender());
             }
             return builder.append(this.center)
                     .append(_Constant.SPACE_AND)
@@ -1175,7 +1296,7 @@ abstract class Expressions extends OperationExpression {
             } else {
                 sqlBuilder.append(" IS");
             }
-            sqlBuilder.append(this.operand.render());
+            sqlBuilder.append(this.operand.spaceRender());
         }
 
 
@@ -1211,7 +1332,7 @@ abstract class Expressions extends OperationExpression {
                 sqlBuilder.append(" IS");
             }
 
-            return sqlBuilder.append(this.operand.render())
+            return sqlBuilder.append(this.operand.spaceRender())
                     .toString();
         }
 
@@ -1251,7 +1372,7 @@ abstract class Expressions extends OperationExpression {
             if (this.not) {
                 sqlBuilder.append(" NOT");
             }
-            sqlBuilder.append(this.operator.render());
+            sqlBuilder.append(this.operator.spaceRender());
             this.right.appendSql(context);
         }
 
@@ -1285,128 +1406,13 @@ abstract class Expressions extends OperationExpression {
             if (this.not) {
                 builder.append(" NOT");
             }
-            return builder.append(this.operator.render())
+            return builder.append(this.operator.spaceRender())
                     .append(this.right)
                     .toString();
         }
 
 
     }//IsComparisonPredicates
-
-
-    private static final class ConcatStringExpression extends Expressions {
-
-        private final ArmyExpression left;
-
-        private final ArmyExpression right;
-
-        private final TypeMeta returnType;
-
-        /**
-         * @see #concatStringExp(OperationExpression, Expression)
-         */
-        private ConcatStringExpression(final OperationExpression left, final ArmyExpression right) {
-            this.left = left;
-            this.right = right;
-
-            final TypeMeta leftType, rightType;
-            leftType = left.typeMeta();
-            rightType = right.typeMeta();
-            if (leftType instanceof TypeMeta.Delay || rightType instanceof TypeMeta.Delay) {
-                this.returnType = CriteriaSupports.biDelayWrapper(leftType, rightType, ConcatStringExpression::resultType);
-            } else {
-                this.returnType = resultType(leftType.mappingType(), rightType.mappingType());
-            }
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.returnType;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
-            final Database database;
-            database = context.parser().dialect().database();
-            switch (database) {
-                case MySQL: {
-                    sqlBuilder.append(" CONCAT(");
-                    this.left.appendSql(context);
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
-                    this.right.appendSql(context);
-                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-                }
-                break;
-                case PostgreSQL: {
-                    this.left.appendSql(context);
-                    sqlBuilder.append(" ||");
-                    this.right.appendSql(context);
-                }
-                break;
-                default://TODO add database
-                    throw _Exceptions.unexpectedEnum(database);
-            }
-
-
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.left, this.right);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof ConcatStringExpression) {
-                final ConcatStringExpression o = (ConcatStringExpression) obj;
-                match = o.left.equals(this.left)
-                        && o.right.equals(this.right);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        public String toString() {
-            return _StringUtils.builder()
-                    .append(" CONCAT(")
-                    .append(this.left)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.right)
-                    .append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
-        }
-
-
-        private static MappingType resultType(final MappingType leftType, final MappingType rightType) {
-            final MappingType type;
-            final boolean leftIsString, rightIsString;
-            leftIsString = leftType instanceof _SQLStringType;
-            rightIsString = rightType instanceof _SQLStringType;
-
-            if (!leftIsString && !rightIsString) {
-                // here,maybe user custom string type
-                type = StringType.INSTANCE;
-            } else if (leftIsString && !rightIsString) {
-                type = leftType;
-            } else if (!leftIsString) {
-                type = rightType;
-            } else if (((_SQLStringType) leftType)._length() >= ((_SQLStringType) rightType)._length()) {
-                type = leftType;
-            } else {
-                type = rightType;
-            }
-            return type;
-        }
-
-
-    }//ConcatStringExpression
 
 
 }

@@ -4,13 +4,24 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
 import io.army.mapping.*;
+import io.army.mapping.postgre.StringArrayType;
 import io.army.type.Interval;
 
 import java.util.Locale;
 import java.util.function.Function;
 
-abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
+/**
+ * <p>
+ * package class.
+ * </p>
+ *
+ * @since 1.0
+ */
+abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
 
+    /**
+     * package constructor
+     */
     PostgreMiscellaneousFunctions() {
     }
 
@@ -1117,6 +1128,73 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
         return FunctionUtils.oneArgFunc("PG_SLEEP", seconds, StringType.INSTANCE);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep_for ( interval )</a>
+     */
+    public static Expression pgSleepFor(Expression interval) {
+        return FunctionUtils.oneArgFunc("PG_SLEEP_FOR", interval, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep_until ( timestamp with time zone )</a>
+     */
+    public static Expression pgSleepUntil(Expression timestampTz) {
+        return FunctionUtils.oneArgFunc("PG_SLEEP_UNTIL", timestampTz, StringType.INSTANCE);
+    }
+
+    /*-------------------below Enum Support Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_first ( anyenum ) → anyenum</a>
+     */
+    public static Expression enumFirst(Expression anyEnum) {
+        return FunctionUtils.oneArgFunc("ENUM_FIRST", anyEnum, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_last ( anyenum ) → anyenum</a>
+     */
+    public static Expression enumLast(Expression anyEnum) {
+        return FunctionUtils.oneArgFunc("ENUM_LAST", anyEnum, StringType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringArrayType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_range ( anyenum ) → anyarray</a>
+     */
+    public static Expression enumRange(Expression anyEnum) {
+        return FunctionUtils.oneArgFunc("ENUM_RANGE", anyEnum, StringArrayType.from(String[].class));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link StringArrayType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_range ( anyenum, anyenum ) → anyarray</a>
+     */
+    public static Expression enumRange(Expression leftEnum, Expression rightEnum) {
+        return FunctionUtils.twoArgFunc("ENUM_RANGE", leftEnum, rightEnum, StringArrayType.from(String[].class));
+    }
 
 
 
@@ -1237,7 +1315,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreStringFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 

@@ -521,7 +521,7 @@ abstract class FunctionUtils {
         sqlBuilder = context.sqlBuilder();
 
         if (option != null) {
-            sqlBuilder.append(option.render());
+            sqlBuilder.append(option.spaceRender());
         }
 
         final int argSize = argList.size();
@@ -543,7 +543,7 @@ abstract class FunctionUtils {
 
         if (option != null) {
             builder.append(_Constant.SPACE)
-                    .append(option.render());
+                    .append(option.spaceRender());
         }
 
         final int argSize = argList.size();
@@ -570,7 +570,7 @@ abstract class FunctionUtils {
             } else if (o == Functions.FuncWord.LEFT_PAREN) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
             } else if (o instanceof SQLWords) {
-                sqlBuilder.append(((SQLWords) o).render());
+                sqlBuilder.append(((SQLWords) o).spaceRender());
             } else if (o instanceof SQLIdentifier) { // sql identifier
                 sqlBuilder.append(_Constant.SPACE);
                 if (parser == null) {
@@ -591,10 +591,10 @@ abstract class FunctionUtils {
             if (o instanceof Expression || o instanceof Clause) {
                 builder.append(o);
             } else if (o == Functions.FuncWord.LEFT_PAREN) {
-                builder.append(((SQLWords) o).render());
+                builder.append(((SQLWords) o).spaceRender());
             } else if (o instanceof SQLWords) {
                 builder.append(_Constant.SPACE)
-                        .append(((SQLWords) o).render());
+                        .append(((SQLWords) o).spaceRender());
             } else if (o instanceof SQLIdentifier) { // sql identifier
                 builder.append(((SQLIdentifier) o).render());
             } else {
@@ -816,7 +816,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 
@@ -840,7 +840,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 

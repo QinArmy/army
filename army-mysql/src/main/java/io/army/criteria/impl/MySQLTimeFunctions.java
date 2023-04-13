@@ -219,7 +219,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      *      <ul>
-     *          <li>If date or expr is NULL, {@link _NullType}</li>
+     *          <li>If date or expr is NULL, {@link SQLs._NullType}</li>
      *          <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
      *          <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
      *          <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
@@ -241,7 +241,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      *      <ul>
-     *          <li>If date or expr is NULL, {@link _NullType}</li>
+     *          <li>If date or expr is NULL, {@link SQLs._NullType}</li>
      *          <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
      *          <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
      *          <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
@@ -1093,7 +1093,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      *      <ul>
-     *          <li>If date or expr is NULL, {@link _NullType}</li>
+     *          <li>If date or expr is NULL, {@link SQLs._NullType}</li>
      *          <li>If date {@link MappingType} is {@link LocalDateType} and unit no time parts then {@link LocalDateType},otherwise {@link LocalDateTimeType}</li>
      *          <li>If date {@link MappingType} is {@link LocalTimeType} and unit no date parts then {@link LocalTimeType},otherwise {@link LocalDateTimeType}</li>
      *          <li>If date {@link MappingType} is {@link LocalDateTimeType} or {@link OffsetDateTimeType} or {@link ZonedDateTimeType} then {@link LocalDateTimeType}</li>
@@ -1127,7 +1127,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      */
     private static MappingType _dateAddSubReturnType(final MappingType type, final MySQLTimeUnit unit) {
         final MappingType returnType;
-        if (type instanceof _NullType) {
+        if (type instanceof SQLs._NullType) {
             returnType = type;
         } else if (type instanceof LocalDateType) {
             switch (unit) {

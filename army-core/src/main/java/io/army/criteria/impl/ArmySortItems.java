@@ -45,7 +45,7 @@ class ArmySortItems implements ArmySortItem {
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder()
-                .append(this.ascDesc.render());
+                .append(this.ascDesc.spaceRender());
 
         if (this instanceof SortItemWithNullsOption) {
             sqlBuilder.append(((SortItemWithNullsOption) this).nullOption);
@@ -57,10 +57,10 @@ class ArmySortItems implements ArmySortItem {
         final StringBuilder builder;
         builder = new StringBuilder()
                 .append(this.sortItem)
-                .append(this.ascDesc.render());
+                .append(this.ascDesc.spaceRender());
 
         if (this instanceof SortItemWithNullsOption) {
-            builder.append(((SortItemWithNullsOption) this).nullOption.render());
+            builder.append(((SortItemWithNullsOption) this).nullOption.spaceRender());
         }
         return builder.toString();
     }

@@ -48,7 +48,7 @@ import java.util.function.BiFunction;
  * @see MediumTextType
  * @since 1.0
  */
-public final class StringType extends _SQLStringType {
+public final class StringType extends _ArmyInnerMapping implements MappingType.SqlStringType {
 
 
     public static final StringType INSTANCE = new StringType();
@@ -68,6 +68,10 @@ public final class StringType extends _SQLStringType {
         return String.class;
     }
 
+    @Override
+    public LengthType lengthType() {
+        return LengthType.TINY;
+    }
 
     @Override
     public SqlType map(final ServerMeta meta) {
@@ -135,6 +139,8 @@ public final class StringType extends _SQLStringType {
             } else {
                 value = ((Enum<?>) nonNull).name();
             }
+        } else if (nonNull instanceof Character) {
+            value = nonNull.toString();
         } else if (nonNull instanceof TemporalAmount) {
 //            if (nonNull instanceof Period) {
 //

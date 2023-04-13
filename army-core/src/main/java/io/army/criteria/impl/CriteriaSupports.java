@@ -469,10 +469,14 @@ abstract class CriteriaSupports {
 
         @Override
         public MappingType mappingType() {
-            final MappingType actualType = this.actualType;
+            MappingType actualType = this.actualType;
             if (actualType == null) {
-                String m = String.format("%s %s isn't prepared.", TypeMeta.Delay.class.getName(), this.delayType);
-                throw new IllegalStateException(m);
+                if (!this.delayType.isPrepared()) {
+                    String m = String.format("%s %s isn't prepared.", TypeMeta.Delay.class.getName(), this.delayType);
+                    throw new IllegalStateException(m);
+                }
+                actualType = this.function.apply(this.delayType.mappingType());
+                this.actualType = actualType;
             }
             return actualType;
         }
@@ -483,8 +487,9 @@ abstract class CriteriaSupports {
         }
 
         private void contextEnd() {
-            assert this.actualType == null;
-            this.actualType = this.function.apply(this.delayType.mappingType());
+            if (this.actualType == null) {
+                this.actualType = this.function.apply(this.delayType.mappingType());
+            }
         }
 
 
@@ -513,10 +518,14 @@ abstract class CriteriaSupports {
 
         @Override
         public MappingType mappingType() {
-            final MappingType actualType = this.actualType;
+            MappingType actualType = this.actualType;
             if (actualType == null) {
-                String m = String.format("%s isn't prepared.", TypeMeta.Delay.class.getName());
-                throw new IllegalStateException(m);
+                if (!this.isPrepared()) {
+                    String m = String.format("%s isn't prepared.", TypeMeta.Delay.class.getName());
+                    throw new IllegalStateException(m);
+                }
+                actualType = this.function.apply(this.type1.mappingType(), this.type2.mappingType());
+                this.actualType = actualType;
             }
             return actualType;
         }
@@ -533,8 +542,9 @@ abstract class CriteriaSupports {
         }
 
         private void contextEnd() {
-            assert this.actualType == null;
-            this.actualType = this.function.apply(this.type1.mappingType(), this.type2.mappingType());
+            if (this.actualType == null) {
+                this.actualType = this.function.apply(this.type1.mappingType(), this.type2.mappingType());
+            }
         }
 
 

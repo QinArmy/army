@@ -108,7 +108,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -132,7 +132,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -156,7 +156,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -178,7 +178,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -200,7 +200,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -223,7 +223,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -245,7 +245,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -267,7 +267,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -289,7 +289,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -313,7 +313,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 
@@ -336,7 +336,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -358,7 +358,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -380,7 +380,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 
@@ -402,7 +402,7 @@ abstract class SQLsSyntax extends Functions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 

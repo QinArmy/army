@@ -49,6 +49,10 @@ public final class BigIntegerType extends _NumericType._IntegerType {
         return BigInteger.class;
     }
 
+    @Override
+    public LengthType lengthType() {
+        return LengthType.BIG_LONG;
+    }
 
     @Override
     public SqlType map(ServerMeta meta) {

@@ -52,7 +52,7 @@ abstract class PostgreExpressions {
 
     /**
      * @see Postgres#atTimeZone(Expression, Expression)
-     * @see Postgres#verticals(Expression, Expression)
+     * @see Postgres#doubleVertical(Expression, Expression)
      */
     static Expression dualExp(final @Nullable Expression left, final DualOperator operator,
                               @Nullable final Expression right, final TypeMeta returnType) {
@@ -89,9 +89,16 @@ abstract class PostgreExpressions {
      */
     static IPredicate dualPredicate(final @Nullable Expression left, final DualOperator operator,
                                     @Nullable final Expression right) {
-        if (operator != DualOperator.CARET_AT) {
-            // no bug,never here
-            throw _Exceptions.unexpectedEnum(operator);
+        switch (operator) {
+            case CARET_AT:
+            case TILDE:
+            case NOT_TILDE:
+            case TILDE_STAR:
+            case NOT_TILDE_STAR:
+                break;
+            default:
+                // no bug,never here
+                throw _Exceptions.unexpectedEnum(operator);
         }
 
         if (left == null || right == null) {

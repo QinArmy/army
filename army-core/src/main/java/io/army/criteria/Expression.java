@@ -2,8 +2,10 @@ package io.army.criteria;
 
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
+import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
@@ -213,11 +215,23 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
     IPredicate like(Expression pattern);
 
-    <T> IPredicate like(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> IPredicate like(BiFunction<MappingType, T, Expression> operator, T operand);
+
+    IPredicate like(Expression pattern, SQLs.WordEscape escape, char escapeChar);
+
+    IPredicate like(Expression pattern, SQLs.WordEscape escape, Expression escapeChar);
+
+    <T> IPredicate like(BiFunction<MappingType, T, Expression> operator, T operand, SQLs.WordEscape escape, char escapeChar);
 
     IPredicate notLike(Expression pattern);
 
-    <T> IPredicate notLike(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> IPredicate notLike(BiFunction<MappingType, T, Expression> operator, T operand);
+
+    IPredicate notLike(Expression pattern, SQLs.WordEscape escape, char escapeChar);
+
+    IPredicate notLike(Expression pattern, SQLs.WordEscape escape, Expression escapeChar);
+
+    <T> IPredicate notLike(BiFunction<MappingType, T, Expression> operator, T operand, SQLs.WordEscape escape, char escapeChar);
 
     Expression mod(Expression operand);
 
@@ -265,9 +279,9 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      *
      * @return {@link BigInteger} expression
      */
-    Expression xor(Expression operand);
+    Expression bitwiseXor(Expression operand);
 
-    <T> Expression xor(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> Expression bitwiseXor(BiFunction<Expression, T, Expression> operator, T operand);
 
 
     /**
@@ -287,10 +301,6 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     Expression leftShift(Expression bitNumber);
 
     <T> Expression leftShift(BiFunction<Expression, T, Expression> operator, T operand);
-
-    <E extends Expression> E apply(BiFunction<Expression, Expression, E> operator, Expression operand);
-
-    <E extends Expression, T> E apply(BiFunction<Expression, Expression, E> operator, BiFunction<Expression, T, Expression> valueOperator, T operand);
 
 
     @Override
@@ -314,6 +324,35 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
 
     SortItem descSpace(@Nullable Statement.NullsFirstLast firstLast);
+
+    /*-------------------below dialect operator method -------------------*/
+
+
+    Expression apply(BiFunction<Expression, Expression, Expression> operator, Expression operand);
+
+    <T> Expression apply(BiFunction<Expression, Expression, Expression> operator, BiFunction<Expression, T, Expression> valueOperator, T value);
+
+
+    <M extends SQLWords> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, Expression right, M modifier, Expression optionalExp);
+
+    <M extends SQLWords> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, Expression right, M modifier, char escapeChar);
+
+    <M extends SQLWords, T> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, BiFunction<Expression, T, Expression> valueOperator, T value, M modifier, Expression optionalExp);
+
+    <M extends SQLWords, T> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, BiFunction<Expression, T, Expression> valueOperator, T value, M modifier, char escapeChar);
+
+    IPredicate test(BiFunction<Expression, Expression, IPredicate> operator, Expression operand);
+
+    <T> IPredicate test(BiFunction<Expression, Expression, IPredicate> operator, BiFunction<Expression, T, Expression> valueOperator, T value);
+
+
+    <M extends SQLWords> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, Expression optionalExp);
+
+    <M extends SQLWords> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, char escapeChar);
+
+    <M extends SQLWords, T> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, BiFunction<MappingType, T, Expression> valueOperator, T value, M modifier, Expression optionalExp);
+
+    <M extends SQLWords, T> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, BiFunction<MappingType, T, Expression> valueOperator, T value, M modifier, char escapeChar);
 
 
 }

@@ -35,6 +35,11 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
+    public LengthType lengthType() {
+        return LengthType.SMALL;
+    }
+
+    @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.database()) {

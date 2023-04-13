@@ -3,8 +3,12 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
+import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
+import io.army.mapping.StringType;
+import io.army.mapping.TextType;
 import io.army.meta.TypeMeta;
 
 import java.util.Collection;
@@ -319,23 +323,65 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final OperationPredicate like(Expression operand) {
-        return Expressions.dualPredicate(this, DualOperator.LIKE, operand);
+    public final OperationPredicate like(Expression pattern) {
+        return Expressions.likePredicate(this, DualOperator.LIKE, pattern, SQLs.ESCAPE, null);
     }
 
     @Override
-    public final <T> OperationPredicate like(BiFunction<Expression, T, Expression> operator, T operand) {
-        return Expressions.dualPredicate(this, DualOperator.LIKE, operator.apply(this, operand));
+    public final <T> OperationPredicate like(BiFunction<MappingType, T, Expression> operator, T operand) {
+        return Expressions.likePredicate(this, DualOperator.LIKE, operator.apply(TextType.INSTANCE, operand),
+                SQLs.ESCAPE, null);
     }
 
     @Override
-    public final OperationPredicate notLike(Expression operand) {
-        return Expressions.dualPredicate(this, DualOperator.NOT_LIKE, operand);
+    public final IPredicate like(Expression pattern, SQLs.WordEscape escape, char escapeChar) {
+        return Expressions.likePredicate(this, DualOperator.LIKE, pattern,
+                escape, SQLs.literal(StringType.INSTANCE, escapeChar)
+        );
     }
 
     @Override
-    public final <T> OperationPredicate notLike(BiFunction<Expression, T, Expression> operator, T operand) {
-        return Expressions.dualPredicate(this, DualOperator.NOT_LIKE, operator.apply(this, operand));
+    public final IPredicate like(Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
+        return Expressions.likePredicate(this, DualOperator.LIKE, pattern, escape, escapeChar);
+    }
+
+    @Override
+    public final <T> IPredicate like(BiFunction<MappingType, T, Expression> operator, T operand,
+                                     SqlSyntax.WordEscape escape, char escapeChar) {
+        return Expressions.likePredicate(this, DualOperator.LIKE, operator.apply(TextType.INSTANCE, operand),
+                escape, SQLs.literal(StringType.INSTANCE, escapeChar)
+        );
+    }
+
+    @Override
+    public final OperationPredicate notLike(Expression pattern) {
+        return Expressions.likePredicate(this, DualOperator.NOT_LIKE, pattern, SQLs.ESCAPE, null);
+    }
+
+    @Override
+    public final <T> OperationPredicate notLike(BiFunction<MappingType, T, Expression> operator, T operand) {
+        return Expressions.likePredicate(this, DualOperator.NOT_LIKE, operator.apply(TextType.INSTANCE, operand),
+                SQLs.ESCAPE, null);
+    }
+
+    @Override
+    public final IPredicate notLike(Expression pattern, SQLs.WordEscape escape, char escapeChar) {
+        return Expressions.likePredicate(this, DualOperator.NOT_LIKE, pattern,
+                escape, SQLs.literal(StringType.INSTANCE, escapeChar)
+        );
+    }
+
+    @Override
+    public final IPredicate notLike(Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
+        return Expressions.likePredicate(this, DualOperator.NOT_LIKE, pattern, escape, escapeChar);
+    }
+
+    @Override
+    public final <T> IPredicate notLike(BiFunction<MappingType, T, Expression> operator, T operand,
+                                        SqlSyntax.WordEscape escape, char escapeChar) {
+        return Expressions.likePredicate(this, DualOperator.NOT_LIKE, operator.apply(TextType.INSTANCE, operand),
+                escape, SQLs.literal(StringType.INSTANCE, escapeChar)
+        );
     }
 
     @Override
@@ -413,13 +459,13 @@ abstract class OperationExpression implements ArmyExpression {
 
 
     @Override
-    public final OperationExpression xor(Expression operand) {
+    public final OperationExpression bitwiseXor(Expression operand) {
         return Expressions.dualExp(this, DualOperator.XOR, operand);
     }
 
 
     @Override
-    public final <T> OperationExpression xor(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationExpression bitwiseXor(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.XOR, operator.apply(this, operand));
     }
 
@@ -444,9 +490,10 @@ abstract class OperationExpression implements ArmyExpression {
     public final <T> OperationExpression leftShift(BiFunction<Expression, T, Expression> operator, T operand) {
         return Expressions.dualExp(this, DualOperator.LEFT_SHIFT, operator.apply(this, operand));
     }
+
     @Override
-    public final <E extends Expression> E apply(BiFunction<Expression, Expression, E> operator, Expression operand) {
-        final E result;
+    public final Expression apply(BiFunction<Expression, Expression, Expression> operator, Expression operand) {
+        final Expression result;
         result = operator.apply(this, operand);
         if (result == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -455,10 +502,125 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <E extends Expression, T> E apply(BiFunction<Expression, Expression, E> operator,
-                                                   BiFunction<Expression, T, Expression> valueOperator, T operand) {
-        final E result;
-        result = operator.apply(this, valueOperator.apply(this, operand));
+    public final <T> Expression apply(BiFunction<Expression, Expression, Expression> operator,
+                                      BiFunction<Expression, T, Expression> valueOperator, T value) {
+        final Expression result;
+        result = operator.apply(this, valueOperator.apply(this, value));
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final <M extends SQLWords> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator,
+                                                       Expression right, M modifier, Expression optionalExp) {
+        final Expression result;
+        result = operator.apply(this, right, modifier, optionalExp);
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final <M extends SQLWords> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator,
+                                                       Expression right, M modifier, char escapeChar) {
+        final Expression result;
+        result = operator.apply(this, right, modifier, SQLs.literal(StringType.INSTANCE, escapeChar));
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final <M extends SQLWords, T> Expression apply(
+            OptionalClauseOperator<M, Expression, Expression> operator, BiFunction<Expression, T, Expression> valueOperator,
+            T value, M modifier, Expression optionalExp) {
+        final Expression result;
+        result = operator.apply(this, valueOperator.apply(this, value), modifier, optionalExp);
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final <M extends SQLWords, T> Expression apply(
+            OptionalClauseOperator<M, Expression, Expression> operator, BiFunction<Expression, T, Expression> valueOperator,
+            T value, M modifier, char escapeChar) {
+        final Expression result;
+        result = operator.apply(this, valueOperator.apply(this, value), modifier, SQLs.literal(StringType.INSTANCE, escapeChar));
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final IPredicate test(BiFunction<Expression, Expression, IPredicate> operator, Expression operand) {
+        final IPredicate result;
+        result = operator.apply(this, operand);
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final <T> IPredicate test(BiFunction<Expression, Expression, IPredicate> operator,
+                                     BiFunction<Expression, T, Expression> valueOperator, T value) {
+        final IPredicate result;
+        result = operator.apply(this, valueOperator.apply(this, value));
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final <M extends SQLWords> IPredicate test(
+            OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier,
+            Expression optionalExp) {
+        final IPredicate result;
+        result = operator.apply(this, right, modifier, optionalExp);
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final <M extends SQLWords> IPredicate test(
+            OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, char escapeChar) {
+        final IPredicate result;
+        result = operator.apply(this, right, modifier, SQLs.literal(StringType.INSTANCE, escapeChar));
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final <M extends SQLWords, T> IPredicate test(
+            OptionalClauseOperator<M, Expression, IPredicate> operator,
+            BiFunction<MappingType, T, Expression> valueOperator, T value, M modifier, Expression optionalExp) {
+        final IPredicate result;
+        result = operator.apply(this, valueOperator.apply(StringType.INSTANCE, value), modifier, optionalExp);
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final <M extends SQLWords, T> IPredicate test(
+            OptionalClauseOperator<M, Expression, IPredicate> operator,
+            BiFunction<MappingType, T, Expression> valueOperator, T value, M modifier, char escapeChar) {
+        final IPredicate result;
+        result = operator.apply(this, valueOperator.apply(StringType.INSTANCE, value),
+                modifier, SQLs.literal(StringType.INSTANCE, escapeChar));
         if (result == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -468,7 +630,7 @@ abstract class OperationExpression implements ArmyExpression {
     @Override
     public final OperationExpression mapTo(final @Nullable TypeMeta typeMeta) {
         if (typeMeta == null) {
-            throw ContextStack.nullPointer(ContextStack.peek());
+            throw ContextStack.clearStackAndNullPointer();
         }
         return Expressions.castExp(this, typeMeta);
     }

@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 
-import io.army.criteria.impl.Functions;
 
 /**
  * <p>
@@ -9,7 +8,7 @@ import io.army.criteria.impl.Functions;
  * This interface is base interface of below:
  *     <ul>
  *         <li>{@link Expression}</li>
- *         <li>{@link Functions.DerivedTableFunction}</li>
+ *         <li>{@link io.army.criteria.impl.Functions._TabularFunction}</li>
  *     </ul>
  * </p>
  *

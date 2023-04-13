@@ -64,7 +64,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -89,7 +89,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -112,7 +112,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWord;
         }
 
@@ -136,7 +136,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.spaceWords;
         }
 
@@ -207,7 +207,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of operator return type: the {@link  MappingType} of leftText.
+     * The {@link MappingType} of operator return type: {@link  BooleanType} .
      * </p>
      *
      * @param left not {@link SQLs#DEFAULT} etc.
@@ -220,13 +220,31 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
         return PostgreExpressions.dualPredicate(left, DualOperator.CARET_AT, right);
     }
 
+    public static Expression plus(Expression left, Expression right) {
+        return PostgreExpressions.dualExp(left, DualOperator.PLUS, right, _returnType(left, right, PostgreSyntax::plusType));
+    }
+
+
     /**
      * <p>
-     * The {@link MappingType} of operator return type:
-     * <ol>
-     *     <li>If the {@link MappingType} of left is text type(eg: {@link StringType}) or {@link BitSetType},then the {@link MappingType} of left</li>
-     *     <li>Else {@link StringType}</li>
-     * </ol>
+     * The {@link MappingType} of operator return type: follow  <code><pre><br/>
+     *    private static MappingType doubleVerticalType(final MappingType left, final MappingType right) {
+     *        final MappingType returnType;
+     *        if (left instanceof MappingType.SqlStringType || right instanceof MappingType.SqlStringType) {
+     *            returnType = TextType.INSTANCE;
+     *        } else if (left instanceof MappingType.SqlBinaryType || right instanceof MappingType.SqlBinaryType) {
+     *            if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
+     *                throw CriteriaUtils.dualOperandError(DualOperator.DOUBLE_VERTICAL, left, right);
+     *            }
+     *            returnType = PrimitiveByteArrayType.INSTANCE;
+     *        } else if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
+     *            returnType = BitSetType.INSTANCE;
+     *        } else {
+     *            throw CriteriaUtils.dualOperandError(DualOperator.DOUBLE_VERTICAL, left, right);
+     *        }
+     *        return returnType;
+     *    }
+     * </pre></code>
      * </p>
      *
      * @param left  not {@link SQLs#DEFAULT} etc.
@@ -240,10 +258,107 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
      */
-    public static Expression verticals(final Expression left, final Expression right) {
+    public static Expression doubleVertical(final Expression left, final Expression right) {
         return PostgreExpressions.dualExp(left, DualOperator.DOUBLE_VERTICAL, right,
-                _returnType(left, PostgreSyntax::doubleVerticalType)
+                _returnType(left, right, PostgreSyntax::doubleVerticalType)
         );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: follow <code><pre><br>
+     *    private static MappingType caretResultType(final MappingType left, final MappingType right) {
+     *        final MappingType returnType;
+     *        if (left instanceof MappingType.IntegerOrDecimalType
+     *                && right instanceof MappingType.IntegerOrDecimalType) {
+     *            returnType = BigDecimalType.INSTANCE;
+     *        } else {
+     *            returnType = DoubleType.INSTANCE;
+     *        }
+     *        return returnType;
+     *    }
+     * </pre></code>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric ,double precision ^ double precision → double precision</a>
+     */
+    public static Expression caret(final Expression left, final Expression right) {
+        return PostgreExpressions.dualExp(left, DualOperator.CARET, right,
+                _returnType(left, right, PostgreSyntax::caretResultType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">|/ double precision → double precision</a>
+     */
+    public static Expression verticalSlash(final Expression exp) {
+        return PostgreExpressions.unaryExp(UnaryOperator.VERTICAL_SLASH, exp, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">||/ double precision → double precision</a>
+     */
+    public static Expression doubleVerticalSlash(final Expression left, final Expression right) {
+        return PostgreExpressions.dualExp(left, DualOperator.DOUBLE_VERTICAL_SLASH, right, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @see Postgres#regexpLike(Expression, Expression)
+     * @see Postgres#regexpLike(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text ~ text → boolean<br/>
+     * String matches regular expression, case sensitively</a>
+     */
+    public static IPredicate tilde(final Expression left, final Expression right) {
+        return PostgreExpressions.dualPredicate(left, DualOperator.TILDE, right);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @see Postgres#regexpLike(Expression, Expression)
+     * @see Postgres#regexpLike(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text !~ text → boolean<br/>
+     * String does not match regular expression, case sensitively</a>
+     */
+    public static IPredicate notTilde(final Expression left, final Expression right) {
+        return PostgreExpressions.dualPredicate(left, DualOperator.NOT_TILDE, right);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text ~* text → boolean<br/>
+     * String matches regular expression, case insensitively</a>
+     */
+    public static IPredicate tildeStar(final Expression left, final Expression right) {
+        return PostgreExpressions.dualPredicate(left, DualOperator.TILDE_STAR, right);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link BooleanType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text !~* text → boolean<br/>
+     * String does not match regular expression, case insensitively</a>
+     */
+    public static IPredicate notTildeStar(final Expression left, final Expression right) {
+        return PostgreExpressions.dualPredicate(left, DualOperator.NOT_TILDE_STAR, right);
     }
 
 
@@ -320,6 +435,34 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
         );
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
+     */
+    public static IPredicate similarTo(Expression exp, Expression pattern) {
+        return Expressions.likePredicate(exp, DualOperator.SIMILAR_TO, pattern, SQLs.ESCAPE, null);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
+     */
+    public static IPredicate similarTo(Expression exp, Expression pattern, WordEscape escape, Expression escapeChar) {
+        return Expressions.likePredicate(exp, DualOperator.SIMILAR_TO, pattern, escape, escapeChar);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
+     */
+    public static IPredicate notSimilarTo(Expression exp, Expression pattern) {
+        return Expressions.likePredicate(exp, DualOperator.NOT_SIMILAR_TO, pattern, SQLs.ESCAPE, null);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
+     */
+    public static IPredicate notSimilarTo(Expression exp, Expression pattern, WordEscape escape, Expression escapeChar) {
+        return Expressions.likePredicate(exp, DualOperator.NOT_SIMILAR_TO, pattern, escape, escapeChar);
+    }
+
 
 
 
@@ -358,16 +501,54 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
     }
 
     /**
-     * @see #verticals(Expression, Expression)
+     * @see #doubleVertical(Expression, Expression)
      */
-    private static MappingType doubleVerticalType(final MappingType type) {
+    private static MappingType doubleVerticalType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (type instanceof _SQLStringType || type instanceof BitSetType) {
-            returnType = type;
+        if (left instanceof MappingType.SqlStringType || right instanceof MappingType.SqlStringType) {
+            returnType = TextType.INSTANCE;
+        } else if (left instanceof MappingType.SqlBinaryType || right instanceof MappingType.SqlBinaryType) {
+            if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
+                throw CriteriaUtils.dualOperandError(DualOperator.DOUBLE_VERTICAL, left, right);
+            }
+            returnType = PrimitiveByteArrayType.INSTANCE;
+        } else if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
+            returnType = BitSetType.INSTANCE;
         } else {
-            returnType = StringType.INSTANCE;
+            throw CriteriaUtils.dualOperandError(DualOperator.DOUBLE_VERTICAL, left, right);
         }
         return returnType;
+    }
+
+    /**
+     * @see #caret(Expression, Expression)
+     */
+    private static MappingType caretResultType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left instanceof MappingType.SqlIntegerOrDecimalType
+                && right instanceof MappingType.SqlIntegerOrDecimalType) {
+            returnType = BigDecimalType.INSTANCE;
+        } else {
+            returnType = DoubleType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see #plus(Expression, Expression)
+     */
+    private static MappingType plusType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left instanceof MappingType.SqlNumberType || right instanceof MappingType.SqlNumberType) {
+            returnType = ExpTypes.numberExpType(left, right);
+        } else if (left instanceof MappingType.SqlTimeValueType || right instanceof MappingType.SqlTimeValueType) {
+
+        } else if (left instanceof MappingType.SqlGeometryType || right instanceof MappingType.SqlGeometryType) {
+
+        } else {
+
+        }
+        return null;
     }
 
 

@@ -19,7 +19,7 @@ enum BooleanTestWord implements SQLsSyntax.BooleanTestWord, Functions.ArmyKeyWor
 
 
     @Override
-    public final String render() {
+    public final String spaceRender() {
         return this.spaceOperator;
     }
 

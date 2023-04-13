@@ -562,7 +562,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.words;
         }
 
@@ -587,7 +587,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         }
 
         @Override
-        public final String render() {
+        public final String spaceRender() {
             return this.words;
         }
 

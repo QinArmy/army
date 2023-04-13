@@ -28,7 +28,7 @@ public enum _JoinType implements SQLWords {
 
 
     @Override
-    public final String render() {
+    public final String spaceRender() {
         return this.spaceWords;
     }
 

@@ -14,7 +14,8 @@ enum UnaryOperator implements SQLWords {
     NEGATE(" -"),
     POSITIVE(" +"),
     BITWISE_NOT(" ~"),
-    AT(" @");   // postgre only
+    AT(" @"),   // postgre only
+    VERTICAL_SLASH(" |/"); // postgre only
 
     final String spaceOperator;
 
@@ -23,7 +24,7 @@ enum UnaryOperator implements SQLWords {
     }
 
     @Override
-    public final String render() {
+    public final String spaceRender() {
         return this.spaceOperator;
     }
 

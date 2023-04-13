@@ -39,7 +39,7 @@ public enum MySQLCastType implements SQLWords {
 
 
     @Override
-    public final String render() {
+    public final String spaceRender() {
         final String words;
         switch (this) {
             case SIGNED_INTEGER:
