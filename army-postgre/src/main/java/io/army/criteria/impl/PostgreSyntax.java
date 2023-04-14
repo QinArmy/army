@@ -201,7 +201,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">Absolute value operator</a>
      */
     public static Expression at(Expression operand) {
-        return PostgreExpressions.unaryExp(UnaryOperator.AT, operand, operand.typeMeta());
+        return Expressions.dialectUnaryExp(UnaryOperator.AT, operand, operand.typeMeta());
     }
 
 
@@ -217,11 +217,11 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
      */
     public static IPredicate caretAt(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, DualOperator.CARET_AT, right);
+        return Expressions.dualPredicate(left, DualOperator.CARET_AT, right);
     }
 
     public static Expression plus(Expression left, Expression right) {
-        return PostgreExpressions.dualExp(left, DualOperator.PLUS, right, _returnType(left, right, PostgreSyntax::plusType));
+        return Expressions.dialectDualExp(left, DualOperator.PLUS, right, _returnType(left, right, PostgreSyntax::plusType));
     }
 
 
@@ -259,7 +259,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
      */
     public static Expression doubleVertical(final Expression left, final Expression right) {
-        return PostgreExpressions.dualExp(left, DualOperator.DOUBLE_VERTICAL, right,
+        return Expressions.dialectDualExp(left, DualOperator.DOUBLE_VERTICAL, right,
                 _returnType(left, right, PostgreSyntax::doubleVerticalType)
         );
     }
@@ -280,10 +280,12 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </pre></code>
      * </p>
      *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric ,double precision ^ double precision → double precision</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
+     * double precision ^ double precision → double precision <br/>
+     * Exponentiation</a>
      */
     public static Expression caret(final Expression left, final Expression right) {
-        return PostgreExpressions.dualExp(left, DualOperator.CARET, right,
+        return Expressions.dialectDualExp(left, DualOperator.CARET, right,
                 _returnType(left, right, PostgreSyntax::caretResultType));
     }
 
@@ -292,10 +294,12 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * The {@link MappingType} of function return type:{@link DoubleType}
      * </p>
      *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">|/ double precision → double precision</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">|/ double precision → double precision<br/>
+     * Square root
+     * </a>
      */
     public static Expression verticalSlash(final Expression exp) {
-        return PostgreExpressions.unaryExp(UnaryOperator.VERTICAL_SLASH, exp, DoubleType.INSTANCE);
+        return Expressions.dialectUnaryExp(UnaryOperator.VERTICAL_SLASH, exp, DoubleType.INSTANCE);
     }
 
     /**
@@ -303,10 +307,12 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * The {@link MappingType} of function return type:{@link DoubleType}
      * </p>
      *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">||/ double precision → double precision</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">||/ double precision → double precision<br/>
+     * Cube root
+     * </a>
      */
-    public static Expression doubleVerticalSlash(final Expression left, final Expression right) {
-        return PostgreExpressions.dualExp(left, DualOperator.DOUBLE_VERTICAL_SLASH, right, DoubleType.INSTANCE);
+    public static Expression doubleVerticalSlash(final Expression expression) {
+        return Expressions.dialectUnaryExp(UnaryOperator.DOUBLE_VERTICAL_SLASH, expression, DoubleType.INSTANCE);
     }
 
     /**
@@ -320,7 +326,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String matches regular expression, case sensitively</a>
      */
     public static IPredicate tilde(final Expression left, final Expression right) {
-        return PostgreExpressions.dualPredicate(left, DualOperator.TILDE, right);
+        return Expressions.dualPredicate(left, DualOperator.TILDE, right);
     }
 
     /**
@@ -334,7 +340,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String does not match regular expression, case sensitively</a>
      */
     public static IPredicate notTilde(final Expression left, final Expression right) {
-        return PostgreExpressions.dualPredicate(left, DualOperator.NOT_TILDE, right);
+        return Expressions.dualPredicate(left, DualOperator.NOT_TILDE, right);
     }
 
     /**
@@ -346,7 +352,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String matches regular expression, case insensitively</a>
      */
     public static IPredicate tildeStar(final Expression left, final Expression right) {
-        return PostgreExpressions.dualPredicate(left, DualOperator.TILDE_STAR, right);
+        return Expressions.dualPredicate(left, DualOperator.TILDE_STAR, right);
     }
 
     /**
@@ -358,7 +364,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String does not match regular expression, case insensitively</a>
      */
     public static IPredicate notTildeStar(final Expression left, final Expression right) {
-        return PostgreExpressions.dualPredicate(left, DualOperator.NOT_TILDE_STAR, right);
+        return Expressions.dualPredicate(left, DualOperator.NOT_TILDE_STAR, right);
     }
 
 
@@ -540,7 +546,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
     private static MappingType plusType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (left instanceof MappingType.SqlNumberType || right instanceof MappingType.SqlNumberType) {
-            returnType = ExpTypes.numberExpType(left, right);
+            returnType = ExpTypes.mathExpType(left, right);
         } else if (left instanceof MappingType.SqlTimeValueType || right instanceof MappingType.SqlTimeValueType) {
 
         } else if (left instanceof MappingType.SqlGeometryType || right instanceof MappingType.SqlGeometryType) {

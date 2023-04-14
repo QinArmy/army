@@ -17,16 +17,24 @@ enum DualOperator {
     LEFT_SHIFT(" <<"),
     RIGHT_SHIFT(" >>"),
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
+     * double precision ^ double precision → double precision <br/>
+     * Exponentiation</a>
+     */
     CARET(" ^"), // postgre only
-    CARET_AT(" ^@"), // postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
+     */
     DOUBLE_VERTICAL(" ||"), // postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"> AT TIME ZONE Variants</a>
+     */
     AT_TIME_ZONE(" AT TIME ZONE"), // postgre only
-    DOUBLE_VERTICAL_SLASH(" ||/"),// postgre only
-    TILDE(" ~"),// postgre only
-    NOT_TILDE(" !~"),// postgre only
-    TILDE_STAR(" ~*"),// postgre only
-    NOT_TILDE_STAR(" !~*"),// postgre only
-    /*################################## blow expression dual operator method ##################################*/
+
+    /*################################## blow boolean operator ##################################*/
 
     EQUAL(" ="),
     NOT_EQUAL(" !="),
@@ -34,13 +42,45 @@ enum DualOperator {
     LESS_EQUAL(" <="),
     GREAT_EQUAL(" >="),
     GREAT(" >"),
+
+
     IN(" IN"),
     NOT_IN(" NOT IN"),
+
+
     LIKE(" LIKE"),
     NOT_LIKE(" NOT LIKE"),
     SIMILAR_TO(" SIMILAR TO"), // currently,postgre only
-    NOT_SIMILAR_TO(" NOT SIMILAR TO"); // currently,postgre only
+    NOT_SIMILAR_TO(" NOT SIMILAR TO"), // currently,postgre only
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
+     */
+    CARET_AT(" ^@"), // postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text ~ text → boolean<br/>
+     * String matches regular expression, case sensitively</a>
+     */
+    TILDE(" ~"),// postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text !~ text → boolean<br/>
+     * String does not match regular expression, case sensitively</a>
+     */
+    NOT_TILDE(" !~"),// postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text ~* text → boolean<br/>
+     * String matches regular expression, case insensitively</a>
+     */
+    TILDE_STAR(" ~*"),// postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text !~* text → boolean<br/>
+     * String does not match regular expression, case insensitively</a>
+     */
+    NOT_TILDE_STAR(" !~*");// postgre only
 
     final String spaceOperator;
 

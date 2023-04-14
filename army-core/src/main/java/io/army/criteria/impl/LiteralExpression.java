@@ -21,7 +21,7 @@ import java.util.Objects;
  *
  * @since 1.0
  */
-abstract class LiteralExpression extends Expressions {
+abstract class LiteralExpression extends OperationExpression.SimpleExpression {
 
     static LiteralExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object constant) {
         if (paramMeta == null) {
@@ -114,8 +114,7 @@ abstract class LiteralExpression extends Expressions {
 
 
     static final class SingleLiteral extends LiteralExpression
-            implements SqlValueParam.SingleNonNamedValue,
-            NoParensExpression {
+            implements SqlValueParam.SingleNonNamedValue {
 
         private final Object value;
 
@@ -153,7 +152,8 @@ abstract class LiteralExpression extends Expressions {
                 match = true;
             } else if (obj instanceof SingleLiteral) {
                 final SingleLiteral o = (SingleLiteral) obj;
-                match = o.paramType == this.paramType && Objects.equals(o.value, this.value);
+                match = o.paramType.equals(this.paramType)
+                        && Objects.equals(o.value, this.value);
             } else {
                 match = false;
             }
@@ -246,8 +246,7 @@ abstract class LiteralExpression extends Expressions {
 
     static class NamedSingleLiteral extends LiteralExpression
             implements NamedLiteral,
-            SqlValueParam.SingleValue,
-            NoParensExpression {
+            SqlValueParam.SingleValue {
 
         private final String name;
 
@@ -354,7 +353,7 @@ abstract class LiteralExpression extends Expressions {
                 match = true;
             } else if (obj instanceof NamedMultiLiteral) {
                 final NamedMultiLiteral o = (NamedMultiLiteral) obj;
-                match = o.paramType == this.paramType
+                match = o.paramType.equals(this.paramType)
                         && o.name.equals(this.name)
                         && o.valueSize == this.valueSize;
             } else {

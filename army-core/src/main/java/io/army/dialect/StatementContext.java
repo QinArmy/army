@@ -82,6 +82,11 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
 
 
     @Override
+    public final Database database() {
+        return this.parser.database;
+    }
+
+    @Override
     public final boolean isLowerFunctionName() {
         //TODO
         return false;

@@ -4,8 +4,10 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.function.*;
 import io.army.lang.Nullable;
-import io.army.mapping.BooleanType;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.FieldMeta;
+import io.army.meta.PrimaryFieldMeta;
+import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 
 import java.util.ArrayList;
@@ -16,17 +18,12 @@ import java.util.function.*;
 /**
  * This class is base class of all {@link IPredicate} implementation .
  */
-abstract class OperationPredicate extends OperationExpression implements _Predicate {
+abstract class OperationPredicate extends OperationExpression.PredicateExpression {
 
-
-    @Override
-    public final TypeMeta typeMeta() {
-        return BooleanType.INSTANCE;
-    }
-
-    @Override
-    public final IPredicate bracket() {
-        return Expressions.bracketPredicate(this);
+    /**
+     * package constructor
+     */
+    OperationPredicate() {
     }
 
     @Override

@@ -9,6 +9,7 @@ import io.army.dialect._SqlContext;
  * Package interface
  * </p>
  */
+@Deprecated
 interface MultiValueExpression extends SqlValueParam.MultiValue {
 
     void appendSqlWithParens(_SqlContext context);

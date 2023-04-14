@@ -14,8 +14,26 @@ enum UnaryOperator implements SQLWords {
     NEGATE(" -"),
     POSITIVE(" +"),
     BITWISE_NOT(" ~"),
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">Absolute value operator</a>
+     */
     AT(" @"),   // postgre only
-    VERTICAL_SLASH(" |/"); // postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">|/ double precision → double precision<br/>
+     * Square root
+     * </a>
+     */
+    VERTICAL_SLASH(" |/"), // postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">||/ double precision → double precision<br/>
+     * Cube root
+     * </a>
+     */
+    DOUBLE_VERTICAL_SLASH(" ||/");// postgre only
+
 
     final String spaceOperator;
 

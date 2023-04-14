@@ -3,9 +3,12 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.standard.SQLFunction;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
+import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping.TextType;
@@ -21,6 +24,19 @@ import java.util.function.BiFunction;
  */
 abstract class OperationExpression implements ArmyExpression {
 
+
+    /**
+     * <p>
+     * Private constructor
+     * </p>
+     *
+     * @see SimpleExpression#SimpleExpression()
+     * @see CompoundExpression#CompoundExpression()
+     * @see PredicateExpression#PredicateExpression()
+     * @see FunctionExpression#FunctionExpression()
+     */
+    private OperationExpression() {
+    }
 
     @Override
     public final boolean isNullValue() {
@@ -636,11 +652,6 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public Expression bracket() {
-        return Expressions.bracketExp(this);
-    }
-
-    @Override
     public final Selection as(String selectionAlas) {
         return ArmySelections.forExp(this, selectionAlas);
     }
@@ -671,6 +682,75 @@ abstract class OperationExpression implements ArmyExpression {
     public final SortItem descSpace(@Nullable Statement.NullsFirstLast firstLast) {
         return ArmySortItems.create(this, SQLs.DESC, firstLast);
     }
+
+
+    static abstract class SimpleExpression extends OperationExpression {
+
+        /**
+         * package constructor
+         */
+        SimpleExpression() {
+        }
+
+        @Override
+        public final Expression bracket() {
+            // always return this
+            return this;
+        }
+
+
+    }//SimpleExpression
+
+    static abstract class FunctionExpression extends SimpleExpression implements SQLFunction {
+
+        /**
+         * package constructor
+         */
+        FunctionExpression() {
+        }
+
+    }//FunctionExpression
+
+
+    static abstract class CompoundExpression extends OperationExpression {
+
+        /**
+         * package constructor
+         */
+        CompoundExpression() {
+            assert !(this instanceof IPredicate);
+        }
+
+        @Override
+        public final Expression bracket() {
+            return Expressions.bracketExp(this);
+        }
+
+
+    }//CompoundExpression
+
+
+    static abstract class PredicateExpression extends OperationExpression implements _Predicate {
+
+        /**
+         * package constructor
+         */
+        PredicateExpression() {
+        }
+
+
+        @Override
+        public final IPredicate bracket() {
+            return Expressions.bracketPredicate(this);
+        }
+
+        @Override
+        public final TypeMeta typeMeta() {
+            return BooleanType.INSTANCE;
+        }
+
+
+    }//PredicateExpression
 
 
 }

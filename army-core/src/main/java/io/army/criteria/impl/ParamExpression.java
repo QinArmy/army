@@ -20,7 +20,7 @@ import java.util.*;
  *
  * @since 1.0
  */
-abstract class ParamExpression extends Expressions implements SQLParam {
+abstract class ParamExpression extends OperationExpression.SimpleExpression implements SQLParam {
 
 
     static ParamExpression single(final @Nullable TypeMeta paramMeta, final @Nullable Object value) {
@@ -77,8 +77,7 @@ abstract class ParamExpression extends Expressions implements SQLParam {
 
     static final class SingleParamExpression extends ParamExpression
             implements SingleParam,
-            SqlValueParam.SingleNonNamedValue,
-            NoParensExpression {
+            SqlValueParam.SingleNonNamedValue {
 
         private final Object value;
 
@@ -109,7 +108,8 @@ abstract class ParamExpression extends Expressions implements SQLParam {
                 match = true;
             } else if (obj instanceof SingleParamExpression) {
                 final SingleParamExpression o = (SingleParamExpression) obj;
-                match = o.paramType == this.paramType && Objects.equals(o.value, this.value);
+                match = o.paramType.equals(this.paramType)
+                        && Objects.equals(o.value, this.value);
             } else {
                 match = false;
             }
@@ -171,7 +171,7 @@ abstract class ParamExpression extends Expressions implements SQLParam {
                 match = true;
             } else if (obj instanceof MultiParamExpression) {
                 final MultiParamExpression o = (MultiParamExpression) obj;
-                match = o.paramType == this.paramType
+                match = o.paramType.equals(this.paramType)
                         && o.valueList.equals(this.valueList);
             } else {
                 match = false;
@@ -197,8 +197,7 @@ abstract class ParamExpression extends Expressions implements SQLParam {
 
 
     static class NamedSingleParam extends ParamExpression
-            implements NamedParam.NamedSingle,
-            NoParensExpression {
+            implements NamedParam.NamedSingle {
 
         private final String name;
 

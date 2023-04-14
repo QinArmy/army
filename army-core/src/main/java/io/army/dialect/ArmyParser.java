@@ -90,6 +90,8 @@ abstract class ArmyParser implements DialectParser {
 
     final boolean supportUpdateDerivedField;
 
+    final Database database;
+
     final _ChildUpdateMode childUpdateMode;
     final FieldValueGenerator generator;
 
@@ -120,6 +122,7 @@ abstract class ArmyParser implements DialectParser {
 
         this.supportRowAlias = this.isSupportRowAlias();
 
+        this.database = this.dialect.database();
         this.keyWordSet = Collections.unmodifiableSet(this.createKeyWordSet());
         if (this.mockEnv) {
             this.generator = FieldValuesGenerators.mock(this.mappingEnv::databaseZoneOffset);

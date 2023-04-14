@@ -571,4 +571,17 @@ abstract class NonOperationExpression implements ArmyExpression {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
+    static RuntimeException nonOperationExpression(final @Nullable Expression expression) {
+        final RuntimeException e;
+        if (expression == null) {
+            e = ContextStack.clearStackAndNullPointer();
+        } else if (expression instanceof NonOperationExpression) {
+            e = unsupportedOperation();
+        } else {
+            String m = String.format("%s isn't army expression", expression.getClass().getName());
+            e = ContextStack.clearStackAndCriteriaError(m);
+        }
+        return e;
+    }
+
 }

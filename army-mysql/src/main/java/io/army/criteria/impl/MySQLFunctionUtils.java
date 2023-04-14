@@ -434,7 +434,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     /**
      * @see #groupConcatFunc(SQLs.ArgDistinct, List, GroupConcatInnerClause)
      */
-    private static final class GroupConcatFunction extends OperationExpression {
+    private static final class GroupConcatFunction extends FunctionUtils.FunctionExpression {
 
         private final SqlSyntax.ArgDistinct distinct;
 
@@ -444,6 +444,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private GroupConcatFunction(@Nullable SqlSyntax.ArgDistinct distinct, List<ArmyExpression> expList
                 , @Nullable GroupConcatInnerClause clause) {
+            super("GROUP_CONCAT", StringType.INSTANCE);
             assert expList.size() > 0;
             this.distinct = distinct;
             this.expList = expList;
@@ -451,52 +452,52 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public TypeMeta typeMeta() {
-            return StringType.INSTANCE;
+        public int hashCode() {
+            return Objects.hash(this.name, this.distinct, this.expList, this.clause, this.returnType);
         }
 
         @Override
-        public Expression bracket() {
-            //return this ,don't create new instance
-            return this;
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof GroupConcatFunction) {
+                final GroupConcatFunction o = (GroupConcatFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.distinct == this.distinct
+                        && o.expList.equals(this.expList)
+                        && Objects.equals(o.clause, this.clause)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
         }
 
+
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuidler;
-            sqlBuidler = context.sqlBuilder()
-                    .append(" GROUP_CONCAT(");
+        void appendArg(final _SqlContext context) {
 
             if (this.distinct != null) {
-                sqlBuidler.append(this.distinct.spaceRender());
+                context.sqlBuilder().append(this.distinct.spaceRender());
             }
             FunctionUtils.appendArguments(this.distinct, this.expList, context);
 
             if (this.clause != null) {
                 this.clause.appendSql(context);
             }
-            sqlBuidler.append(_Constant.SPACE_RIGHT_PAREN);
-
         }
 
-
         @Override
-        public String toString() {
-            final StringBuilder sqlBuidler;
-            sqlBuidler = new StringBuilder()
-                    .append(" GROUP_CONCAT(");
-
+        void argToString(final StringBuilder builder) {
             if (this.distinct != null) {
-                sqlBuidler.append(this.distinct.spaceRender());
+                builder.append(this.distinct.spaceRender());
             }
-            FunctionUtils.argumentsToString(this.distinct, this.expList, sqlBuidler);
+            FunctionUtils.argumentsToString(this.distinct, this.expList, builder);
 
             if (this.clause != null) {
-                sqlBuidler.append(this.clause);
+                builder.append(this.clause);
             }
-
-            return sqlBuidler.append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
         }
 
 
@@ -568,9 +569,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
     }//GroupConcatClause
 
-    private static final class StatementDigestFunc extends Expressions {
+    private static final class StatementDigestFunc extends FunctionUtils.FunctionExpression {
 
-        private final String name;
 
         private final PrimaryStatement statement;
 
@@ -578,24 +578,18 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private final boolean literal;
 
-        private final TypeMeta returnType;
 
         private StatementDigestFunc(String name, final PrimaryStatement statement, final Visible visible,
                                     final boolean literal, TypeMeta returnType) {
-            this.name = name;
+            super(name, returnType);
             this.statement = statement;
             this.visible = visible;
             this.literal = literal;
-            this.returnType = returnType;
         }
 
-        @Override
-        public TypeMeta typeMeta() {
-            return this.returnType;
-        }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        void appendArg(final _SqlContext context) {
             final PrimaryStatement statement = this.statement;
 
             final Stmt stmt;
@@ -628,7 +622,11 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             } else {
                 context.appendParam(SingleParam.build(StringType.INSTANCE, ((SimpleStmt) stmt).sql()));
             }
+        }
 
+        @Override
+        void argToString(final StringBuilder builder) {
+            //TODO
         }
 
 
@@ -896,7 +894,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//JsonValueClause
 
 
-    private static final class JsonValueFunction extends Expressions implements MySQLFunction {
+    private static final class JsonValueFunction extends FunctionUtils.FunctionExpression implements MySQLFunction {
 
         private final ArmyExpression jsonDoc;
 
@@ -908,6 +906,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         private JsonValueFunction(ArmyExpression jsonDoc, ArmyExpression path, JsonValueClause clause) {
+            super("JSON_VALUE", StringType.INSTANCE);
             this.jsonDoc = jsonDoc;
             this.path = path;
             this.returningList = clause.returningList;
@@ -916,15 +915,34 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public TypeMeta typeMeta() {
-            return StringType.INSTANCE;
+        public int hashCode() {
+            return Objects.hash(this.name, this.jsonDoc, this.path, this.returningList, this.eventHandlerList,
+                    this.returnType);
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof JsonValueFunction) {
+                final JsonValueFunction o = (JsonValueFunction) obj;
+                match = o.name.equals(this.name)
+                        && o.jsonDoc.equals(this.jsonDoc)
+                        && Objects.equals(o.path, this.path)
+                        && Objects.equals(o.returningList, this.returningList)
+                        && Objects.equals(o.eventHandlerList, this.eventHandlerList)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
             final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(" JSON_VALUE(");
+            sqlBuilder = context.sqlBuilder();
 
             this.jsonDoc.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -959,17 +977,11 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 appendOnEmptyOrErrorClause(eventHandlerList, context);
             }//if
 
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
-
         @Override
-        public String toString() {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = new StringBuilder()
-                    .append(" JSON_VALUE(");
-
-            sqlBuilder.append(this.jsonDoc)
+        void argToString(final StringBuilder builder) {
+            builder.append(this.jsonDoc)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.path);
 
@@ -978,17 +990,17 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 assert returningList.get(0) instanceof MySQLCastType;
                 for (Object o : returningList) {
                     if (o instanceof MySQLCastType) {
-                        sqlBuilder.append(_Constant.SPACE_RETURNING)
+                        builder.append(_Constant.SPACE_RETURNING)
                                 .append(((MySQLCastType) o).spaceRender());
                     } else if (o == Functions.FuncWord.LEFT_PAREN) {
-                        sqlBuilder.append(_Constant.LEFT_PAREN);
+                        builder.append(_Constant.LEFT_PAREN);
                     } else if (o instanceof SQLWords) {
-                        sqlBuilder.append(((SQLWords) o).spaceRender());
+                        builder.append(((SQLWords) o).spaceRender());
                     } else if (o instanceof Expression) {
-                        sqlBuilder.append(o);
+                        builder.append(o);
                     } else if (o instanceof SQLIdentifier) {
-                        sqlBuilder.append(_Constant.SPACE);
-                        sqlBuilder.append(o);
+                        builder.append(_Constant.SPACE);
+                        builder.append(o);
                     } else {
                         //no bug,never here
                         throw new IllegalStateException();
@@ -999,11 +1011,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
             final List<_Pair<Object, JsonValueWord>> eventHandlerList = this.eventHandlerList;
             if (eventHandlerList != null) {
-                onEmptyOrErrorClauseToString(eventHandlerList, sqlBuilder);
+                onEmptyOrErrorClauseToString(eventHandlerList, builder);
             }//if
-
-            return sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
         }
 
 
@@ -2168,7 +2177,6 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             }
             return selectionMap.get(derivedAlias);
         }
-
 
 
         @Override

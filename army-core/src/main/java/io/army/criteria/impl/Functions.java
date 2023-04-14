@@ -997,7 +997,7 @@ abstract class Functions extends SqlSyntax {
         final MappingType returnType;
         if (type instanceof MappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
-        } else if (type instanceof _NumericType) {
+        } else if (type instanceof MappingType.SqlNumberType) {
             returnType = type;
         } else {
             returnType = BigDecimalType.INSTANCE;
@@ -1010,7 +1010,7 @@ abstract class Functions extends SqlSyntax {
      */
     static MappingType _numberOrDecimal(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof _NumericType) {
+        if (type instanceof MappingType.SqlNumberType) {
             returnType = type;
         } else {
             returnType = BigDecimalType.INSTANCE;
@@ -1057,17 +1057,11 @@ abstract class Functions extends SqlSyntax {
      * @see #countStar()
      * @since 1.0
      */
-    private static final class CountStartFunction extends OperationExpression implements SQLFunction {
+    private static final class CountStartFunction extends OperationExpression.FunctionExpression {
 
         private static final CountStartFunction INSTANCE = new CountStartFunction();
 
         private CountStartFunction() {
-        }
-
-        @Override
-        public CountStartFunction bracket() {
-            //return this,don't create new instance
-            return this;
         }
 
         @Override

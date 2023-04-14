@@ -238,7 +238,7 @@ abstract class PostgreExpressions {
     }//PeriodOverlapsPredicate
 
 
-    private static final class PostgreUnaryExpression extends OperationExpression {
+    private static final class PostgreUnaryExpression extends OperationExpression.CompoundExpression {
 
         private final UnaryOperator operator;
 
@@ -309,7 +309,7 @@ abstract class PostgreExpressions {
 
     }//PostgreUnaryExpression
 
-    private static final class PostgreDualExpression extends OperationExpression {
+    private static final class PostgreDualExpression extends OperationExpression.CompoundExpression {
 
         private final ArmyExpression left;
 

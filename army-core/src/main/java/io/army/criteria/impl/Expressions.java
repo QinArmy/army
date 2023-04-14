@@ -19,53 +19,85 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-abstract class Expressions extends OperationExpression {
+abstract class Expressions {
 
     Expressions() {
+        throw new UnsupportedOperationException();
     }
 
-    @Override
-    public final Expression bracket() {
-        return bracketExp(this);
-    }
-
-
-    static OperationExpression dualExp(final OperationExpression left, final DualOperator operator,
-                                       final Expression right) {
+    static OperationExpression dualExp(final Expression left, final DualOperator operator, final Expression right) {
+        if (!(left instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(left);
+        } else if (!(right instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(right);
+        }
         final ArmyExpression rightExp = (ArmyExpression) right;
+        final TypeMeta returnType;
         switch (operator) {
             case PLUS:
             case MINUS:
             case TIMES:
             case DIVIDE:
             case MOD:
+                returnType = Functions._returnType(left, right, ExpTypes::mathExpType);
+                break;
             case BITWISE_AND:
             case BITWISE_OR:
             case XOR:
             case RIGHT_SHIFT:
             case LEFT_SHIFT:
+                returnType = Functions._returnType(left, right, ExpTypes::bitwiseType);
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new DualExpression(left, operator, rightExp);
+        return new DualExpression(left, operator, rightExp, returnType);
+    }
+
+    static OperationExpression dialectDualExp(final Expression left, final DualOperator operator, final Expression right,
+                                              final TypeMeta returnType) {
+        if (!(left instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(left);
+        } else if (!(right instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(right);
+        }
+        return new DualExpression(left, operator, right, returnType);
     }
 
 
-    static OperationExpression unaryExp(final @Nullable Expression expression, final UnaryOperator operator) {
-        if (expression == null) {
-            throw ContextStack.clearStackAndNullPointer();
+    static OperationExpression unaryExp(final Expression expression, final UnaryOperator operator) {
+        if (!(expression instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(expression);
+        } else if (expression instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.operandError(operator, expression);
         }
         switch (operator) {
             case BITWISE_NOT:
             case NEGATE:
-            case AT:
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(operator);
-
         }
-        return new UnaryExpression((OperationExpression) expression, operator);
+        return new UnaryExpression(expression, operator, expression.typeMeta());
+    }
+
+    static OperationExpression dialectUnaryExp(final UnaryOperator operator, final Expression expression,
+                                               final TypeMeta returnType) {
+        if (!(expression instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(expression);
+        } else if (expression instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.operandError(operator, expression);
+        }
+        switch (operator) {
+            case BITWISE_NOT:
+            case NEGATE:
+            case VERTICAL_SLASH:
+            case DOUBLE_VERTICAL_SLASH:
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(operator);
+        }
+        return new UnaryExpression(expression, operator, returnType);
     }
 
     static OperationExpression castExp(OperationExpression expression, TypeMeta typeMeta) {
@@ -136,8 +168,14 @@ abstract class Expressions extends OperationExpression {
     }
 
 
-    static OperationPredicate dualPredicate(final OperationExpression left, final DualOperator operator,
-                                            final Expression right) {
+    static OperationPredicate dualPredicate(final Expression left, final DualOperator operator, final Expression right) {
+        if (!(left instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(left);
+        } else if (!(right instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(right);
+        } else if (left instanceof SqlValueParam.MultiValue) {
+            throw CriteriaUtils.operandError(operator, left);
+        }
         switch (operator) {
             case EQUAL:
             case NOT_EQUAL:
@@ -145,17 +183,20 @@ abstract class Expressions extends OperationExpression {
             case LESS_EQUAL:
             case GREAT:
             case GREAT_EQUAL:
-            case NOT_LIKE:
-            case IN:
-            case NOT_IN: {
-                if (right instanceof SqlValueParam.MultiValue
-                        && operator != DualOperator.IN
-                        && operator != DualOperator.NOT_IN) {
-                    String m = String.format("operator[%s] don't support multi  parameter(literal)", operator);
-                    throw ContextStack.criteriaError(ContextStack.peek(), m);
+
+            case CARET_AT:
+            case TILDE:
+            case NOT_TILDE:
+            case TILDE_STAR:
+            case NOT_TILDE_STAR: {
+                if (right instanceof SqlValueParam.MultiValue) {
+                    throw CriteriaUtils.operandError(operator, right);
                 }
             }
             break;
+            case IN:
+            case NOT_IN:
+                break;
             default:
                 throw _Exceptions.unexpectedEnum(operator);
 
@@ -294,6 +335,11 @@ abstract class Expressions extends OperationExpression {
 
     }
 
+    private static CriteriaException unsupportedOperator(Enum<?> operator, Database database) {
+        String m = String.format("%s isn't supported by %s", operator, database);
+        return new CriteriaException(m);
+    }
+
 
     /**
      * This class is a implementation of {@link Expression}.
@@ -301,7 +347,7 @@ abstract class Expressions extends OperationExpression {
      *
      * @since 1.0
      */
-    private static final class DualExpression extends Expressions {
+    private static final class DualExpression extends OperationExpression.CompoundExpression {
 
 
         private final ArmyExpression left;
@@ -310,90 +356,113 @@ abstract class Expressions extends OperationExpression {
 
         private final ArmyExpression right;
 
+        private final TypeMeta returnType;
+
         /**
-         * @see #dualExp(OperationExpression, DualOperator, Expression)
+         * @see #dualExp(Expression, DualOperator, Expression)
+         * @see #dialectDualExp(Expression, DualOperator, Expression, TypeMeta)
          */
-        private DualExpression(OperationExpression left, DualOperator operator, ArmyExpression right) {
-            this.left = left;
-            this.operator = operator;
-            this.right = right;
-        }
-
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.left.typeMeta();
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-
-            final _Expression left = this.left, right = this.right;
-            final boolean outerBracket, leftInnerBracket, rightInnerBracket;
-            final DualOperator operator = this.operator;
+        private DualExpression(final Expression left, final DualOperator operator, final Expression right,
+                               final TypeMeta returnType) {
+            if (left instanceof SqlValueParam.MultiValue) {
+                throw CriteriaUtils.operandError(operator, left);
+            } else if (right instanceof SqlValueParam.MultiValue) {
+                throw CriteriaUtils.operandError(operator, right);
+            }
             switch (operator) {
                 case PLUS:
                 case MINUS:
                 case TIMES:
                 case DIVIDE:
                 case MOD:
-                    outerBracket = leftInnerBracket = rightInnerBracket = false;
-                    break;
-                case LEFT_SHIFT:
-                case RIGHT_SHIFT:
+
                 case BITWISE_AND:
                 case BITWISE_OR:
-                case XOR: {
-                    outerBracket = true;
-                    leftInnerBracket = !(left instanceof NoParensExpression);
-                    rightInnerBracket = !(right instanceof NoParensExpression);
+                case XOR:
+                case RIGHT_SHIFT:
+                case LEFT_SHIFT:
+
+                case CARET:
+                case DOUBLE_VERTICAL:
+                case AT_TIME_ZONE:
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(operator);
+            }
+
+            this.left = (ArmyExpression) left;
+            this.operator = operator;
+            this.right = (ArmyExpression) right;
+            this.returnType = returnType;
+        }
+
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.returnType;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+
+            final DualOperator operator = this.operator;
+            switch (operator) {
+                case CARET:
+                case DOUBLE_VERTICAL:
+                case AT_TIME_ZONE: {
+                    final Database database;
+                    database = context.parser().dialect().database();
+                    if (database != Database.PostgreSQL) {
+                        throw unsupportedOperator(operator, database);
+                    }
                 }
                 break;
                 default:
-                    throw _Exceptions.unexpectedEnum(this.operator);
+                    // no-op
             }
 
-            final StringBuilder builder = context.sqlBuilder();
+            final ArmyExpression left = this.left, right = this.right;
+            final boolean leftInnerParens, rightInnerParens;
+            leftInnerParens = !(left instanceof OperationExpression.SimpleExpression);
+            rightInnerParens = !(right instanceof OperationExpression.SimpleExpression);
 
-            if (outerBracket) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
-            }
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
 
-            if (leftInnerBracket) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
+            if (leftInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
             //1. append left expression
             left.appendSql(context);
 
-            if (leftInnerBracket) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
+            if (leftInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
             //2. append operator
             if (operator == DualOperator.XOR
                     && context.parser().dialect().database() == Database.PostgreSQL) {
-                builder.append(" #");
+                sqlBuilder.append(" #");
             } else {
-                builder.append(operator.spaceOperator);
+                sqlBuilder.append(operator.spaceOperator);
+            }
+
+            if (rightInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
 
             //3. append right expression
             right.appendSql(context);
 
-            if (rightInnerBracket) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
+            if (rightInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
-
-            if (outerBracket) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
-            }
-
 
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.left, this.operator, this.right);
+            return Objects.hash(this.left, this.operator, this.right, this.returnType);
         }
 
         @Override
@@ -405,7 +474,8 @@ abstract class Expressions extends OperationExpression {
                 final DualExpression o = (DualExpression) obj;
                 match = o.left.equals(this.left)
                         && o.operator == this.operator
-                        && o.right.equals(this.right);
+                        && o.right.equals(this.right)
+                        && o.returnType.equals(this.returnType);
             } else {
                 match = false;
             }
@@ -414,11 +484,39 @@ abstract class Expressions extends OperationExpression {
 
         @Override
         public String toString() {
-            return _StringUtils.builder()
-                    .append(this.left)
-                    .append(this.operator.spaceOperator)
-                    .append(this.right)
-                    .toString();
+            final ArmyExpression left = this.left, right = this.right;
+            final boolean leftInnerParens, rightInnerParens;
+            leftInnerParens = !(left instanceof OperationExpression.SimpleExpression);
+            rightInnerParens = !(right instanceof OperationExpression.SimpleExpression);
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder();
+
+            if (leftInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            //1. append left expression
+            sqlBuilder.append(this.left);
+
+            if (leftInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
+            //2. append operator
+            sqlBuilder.append(this.operator.spaceOperator);
+
+            if (rightInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+
+            //3. append right expression
+            sqlBuilder.append(this.right);
+
+            if (rightInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
+            return sqlBuilder.toString();
         }
 
 
@@ -431,23 +529,26 @@ abstract class Expressions extends OperationExpression {
      * This class is a implementation of {@link Expression}.
      * The expression consist of a  {@link Expression} and a {@link UnaryOperator}.
      */
-    private static final class UnaryExpression extends Expressions {
+    private static final class UnaryExpression extends OperationExpression.CompoundExpression {
 
         final ArmyExpression expression;
 
         private final UnaryOperator operator;
 
+        private final TypeMeta returnType;
+
         /**
          * @see #unaryExp(Expression, UnaryOperator)
          */
-        private UnaryExpression(OperationExpression expression, UnaryOperator operator) {
-            this.expression = expression;
+        private UnaryExpression(Expression expression, UnaryOperator operator, TypeMeta returnType) {
+            this.expression = (ArmyExpression) expression;
             this.operator = operator;
+            this.returnType = returnType;
         }
 
         @Override
         public TypeMeta typeMeta() {
-            return this.expression.typeMeta();
+            return this.returnType;
         }
 
 
@@ -462,28 +563,12 @@ abstract class Expressions extends OperationExpression {
                 m = String.format("%s don't support %s", context.parser().dialect().database(), this.operator);
                 throw new CriteriaException(m);
             }
-            final boolean outerBracket;
-            switch (operator) {
-                case NEGATE:
-                    outerBracket = false;
-                    break;
-                case BITWISE_NOT:
-                case AT:
-                    outerBracket = true;
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(this.operator);
-            }
-            final StringBuilder builder = context.sqlBuilder();
-
-            if (outerBracket) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
-            }
-
-            builder.append(operator.spaceOperator);
+            final StringBuilder builder;
+            builder = context.sqlBuilder()
+                    .append(operator.spaceOperator);
 
             final _Expression expression = this.expression;
-            final boolean innerBracket = !(expression instanceof NoParensExpression);
+            final boolean innerBracket = !(expression instanceof SimpleExpression);
 
             if (innerBracket) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
@@ -495,38 +580,37 @@ abstract class Expressions extends OperationExpression {
                 builder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
-            if (outerBracket) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
-            }
+        }
 
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.operator, this.expression, this.returnType);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof UnaryExpression) {
+                final UnaryExpression o = (UnaryExpression) obj;
+                match = o.operator == this.operator
+                        && o.expression.equals(this.expression)
+                        && o.returnType.equals(this.returnType);
+            } else {
+                match = false;
+            }
+            return match;
         }
 
         @Override
         public String toString() {
-            final boolean outerBracket;
-            switch (this.operator) {
-                case NEGATE:
-                    outerBracket = false;
-                    break;
-                case BITWISE_NOT:
-                    outerBracket = true;
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(this.operator);
-            }
 
             final StringBuilder builder = new StringBuilder();
-
-            if (outerBracket) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
-            }
-            builder.append(_Constant.SPACE)
-                    .append(this.operator.spaceRender());
+            builder.append(this.operator.spaceOperator);
 
             final _Expression expression = this.expression;
-            final boolean innerBracket = !(expression instanceof SqlValueParam.SingleValue
-                    || expression instanceof TableField
-                    || expression instanceof BracketsExpression);
+            final boolean innerBracket = !(expression instanceof SimpleExpression);
 
             if (innerBracket) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
@@ -537,10 +621,6 @@ abstract class Expressions extends OperationExpression {
             if (innerBracket) {
                 builder.append(_Constant.SPACE_RIGHT_PAREN);
             }
-
-            if (outerBracket) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
-            }
             return builder.toString();
         }
 
@@ -548,7 +628,7 @@ abstract class Expressions extends OperationExpression {
     }//UnaryExpression
 
 
-    private static final class BracketsExpression extends Expressions {
+    private static final class BracketsExpression extends OperationExpression.SimpleExpression {
 
         private final ArmyExpression expression;
 
@@ -604,7 +684,7 @@ abstract class Expressions extends OperationExpression {
 
     }//BracketsExpression
 
-    private static final class ScalarExpression extends Expressions {
+    private static final class ScalarExpression extends OperationExpression.CompoundExpression {
 
         private final SubQuery subQuery;
 
@@ -708,34 +788,60 @@ abstract class Expressions extends OperationExpression {
 
         final ArmyExpression right;
 
-        private DualPredicate(OperationExpression left, DualOperator operator, Expression right) {
-            this.left = left;
+        /**
+         * @see #dualPredicate(Expression, DualOperator, Expression)
+         */
+        private DualPredicate(Expression left, DualOperator operator, Expression right) {
+            this.left = (ArmyExpression) left;
             this.operator = operator;
             this.right = (ArmyExpression) right;
         }
 
         @Override
         public void appendSql(final _SqlContext context) {
-            this.left.appendSql(context);
-
             final DualOperator operator = this.operator;
-            context.sqlBuilder().append(operator.spaceOperator);
-
-            final ArmyExpression right = this.right;
             switch (operator) {
-                case IN:
-                case NOT_IN: {
-                    if (right instanceof MultiValueExpression) {
-                        ((MultiValueExpression) right).appendSqlWithParens(context);
-                    } else {
-                        right.appendSql(context);
+                case CARET_AT:
+                case TILDE:
+                case NOT_TILDE:
+                case TILDE_STAR:
+                case NOT_TILDE_STAR: {
+                    if (context.database() != Database.PostgreSQL) {
+                        throw unsupportedOperator(operator, context.database());
                     }
                 }
                 break;
                 default:
-                    right.appendSql(context);
+                    //no-op
 
-            }//switch
+            }
+            final ArmyExpression left = this.left, right = this.right;
+            final boolean leftInnerParens, rightInnerParens;
+            leftInnerParens = !(left instanceof SimpleExpression);
+            rightInnerParens = right instanceof SqlValueParam.MultiValue || !(right instanceof SimpleExpression);
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            if (leftInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            left.appendSql(context);
+
+            if (leftInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
+            sqlBuilder.append(operator.spaceOperator);
+
+            if (rightInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            right.appendSql(context);
+
+            if (rightInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
 
         }
 
@@ -762,12 +868,35 @@ abstract class Expressions extends OperationExpression {
 
         @Override
         public String toString() {
-            return _StringUtils.builder()
-                    .append(_Constant.SPACE)
-                    .append(this.left)
-                    .append(this.operator)
-                    .append(this.right)
-                    .toString();
+            final ArmyExpression left = this.left, right = this.right;
+            final boolean leftInnerParens, rightInnerParens;
+            leftInnerParens = !(left instanceof SimpleExpression);
+            rightInnerParens = right instanceof SqlValueParam.MultiValue || !(right instanceof SimpleExpression);
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder();
+
+            if (leftInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            sqlBuilder.append(left);
+
+            if (leftInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
+            sqlBuilder.append(operator.spaceOperator);
+
+            if (rightInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            sqlBuilder.append(right);
+
+            if (rightInnerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
+            return sqlBuilder.toString();
         }
 
 
@@ -1112,7 +1241,7 @@ abstract class Expressions extends OperationExpression {
     }//BetweenPredicate
 
 
-    private static class CastExpression extends Expressions {
+    private static class CastExpression extends OperationExpression.CompoundExpression {
 
         private final ArmyExpression expression;
 

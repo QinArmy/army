@@ -5,6 +5,7 @@ import io.army.criteria.Expression;
 /**
  * package interface
  */
+@Deprecated
 interface NoParensExpression extends Expression {
 
 }

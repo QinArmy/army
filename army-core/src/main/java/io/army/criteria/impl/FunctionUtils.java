@@ -852,9 +852,9 @@ abstract class FunctionUtils {
     }//FromFirstLast
 
 
-    static abstract class WindowFunction extends Expressions implements Window._OverWindowClause,
-            CriteriaContextSpec,
-            SQLFunction {
+    static abstract class WindowFunction extends OperationExpression.FunctionExpression
+            implements Window._OverWindowClause,
+            CriteriaContextSpec {
 
         final CriteriaContext context;
 
@@ -1095,7 +1095,7 @@ abstract class FunctionUtils {
 
     }//NamedNotation
 
-    private static final class NoParensFunction extends Expressions implements SQLFunction, NoParensExpression {
+    private static final class NoParensFunction extends OperationExpression.FunctionExpression {
 
         private final String name;
 
@@ -1154,8 +1154,7 @@ abstract class FunctionUtils {
     }//NoParensFunction
 
 
-    private static final class ZeroArgFunction extends Expressions
-            implements FunctionSpec, NoArgFunction, SQLFunction {
+    private static final class ZeroArgFunction extends OperationExpression.FunctionExpression {
 
         private final String name;
 
@@ -1215,9 +1214,7 @@ abstract class FunctionUtils {
     }//NoArgFuncExpression
 
 
-    private static abstract class FunctionExpression extends Expressions
-            implements SQLFunction,
-            NoParensExpression {
+    static abstract class FunctionExpression extends OperationExpression.FunctionExpression {
 
         final String name;
 
@@ -2003,7 +2000,7 @@ abstract class FunctionUtils {
     }//MultiArgFuncPredicate
 
 
-    private static final class MultiArgVoidFunction extends NonOperationExpression implements FunctionSpec {
+    private static final class MultiArgVoidFunction extends NonOperationExpression implements SQLFunction {
 
         private final String name;
 
@@ -2099,7 +2096,7 @@ abstract class FunctionUtils {
     /**
      * @see ComplexArgFuncPredicate
      */
-    private static class ComplexArgFuncExpression extends Expressions implements SQLFunction {
+    private static class ComplexArgFuncExpression extends OperationExpression.FunctionExpression {
 
         private final String name;
         private final List<?> argList;
@@ -2548,7 +2545,7 @@ abstract class FunctionUtils {
 
     }//FourArgDerivedFunction
 
-    private static final class JsonObjectFunc extends Expressions implements SQLFunction {
+    private static final class JsonObjectFunc extends OperationExpression.FunctionExpression {
 
         private final String name;
 
@@ -2638,15 +2635,14 @@ abstract class FunctionUtils {
     }//NamedComplexArgFunc
 
 
-    private static final class CaseFunction extends Expressions
+    private static final class CaseFunction extends OperationExpression.FunctionExpression
             implements SQLFunction._CaseWhenSpec,
             SQLFunction._CaseFuncWhenClause,
             SQLFunction._StaticCaseThenClause,
             SQLFunction._CaseElseClause,
             CriteriaContextSpec,
             CaseWhens,
-            SQLFunction._DynamicCaseThenClause,
-            SQLFunction {
+            SQLFunction._DynamicCaseThenClause {
 
         private final ArmyExpression caseValue;
 

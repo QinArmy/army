@@ -558,7 +558,7 @@ public abstract class SQLs extends SQLsSyntax {
      *
      * @see #NULL
      */
-    private static final class NullWord extends OperationExpression
+    private static final class NullWord extends OperationExpression.SimpleExpression
             implements SqlValueParam.SingleNonNamedValue,
             WordNull,
             ArmyKeyWord {

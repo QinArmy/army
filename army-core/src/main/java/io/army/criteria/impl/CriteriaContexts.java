@@ -3070,7 +3070,7 @@ abstract class CriteriaContexts {
     }//DelaySelection
 
 
-    private static abstract class RefSelection extends OperationExpression {
+    private static abstract class RefSelection extends OperationExpression.SimpleExpression {
 
         private final Selection selection;
 
@@ -3083,11 +3083,6 @@ abstract class CriteriaContexts {
             return this.selection.typeMeta();
         }
 
-        @Override
-        public final Expression bracket() {
-            //return this ,don't create new instance
-            return this;
-        }
 
     }//RefSelection
 
@@ -3135,7 +3130,7 @@ abstract class CriteriaContexts {
     }//IndexRefSelection
 
 
-    private static abstract class DelayRefSelection extends OperationExpression {
+    private static abstract class DelayRefSelection extends OperationExpression.SimpleExpression {
 
         private final DelaySelection delaySelection;
 
@@ -3146,12 +3141,6 @@ abstract class CriteriaContexts {
         @Override
         public final TypeMeta typeMeta() {
             return this.delaySelection;
-        }
-
-        @Override
-        public final Expression bracket() {
-            //return this ,don't create new instance
-            return this;
         }
 
 

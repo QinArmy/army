@@ -80,8 +80,34 @@ public interface MappingType extends TypeMeta, TypeInfer {
 
     }//LengthType
 
+    /**
+     * <p>
+     * This interface is base interface of below:
+     *     <ul>
+     *         <li>{@link SqlNumberType}</li>
+     *         <li>{@link SqlStringType}</li>
+     *     </ul>
+     * </p>
+     */
+    interface SqlNumberOrStringType extends MappingType {
 
-    interface SqlNumberType extends MappingType {
+    }
+
+    /**
+     * <p>
+     * This interface is base interface of below:
+     *     <ul>
+     *         <li>{@link SqlNumberType}</li>
+     *         <li>{@link SqlBitType}</li>
+     *     </ul>
+     * </p>
+     */
+    interface SqlNumberOrBitType extends MappingType {
+
+    }
+
+
+    interface SqlNumberType extends SqlNumberOrStringType, SqlNumberOrBitType {
 
     }
 
@@ -143,7 +169,7 @@ public interface MappingType extends TypeMeta, TypeInfer {
     }
 
 
-    interface SqlStringType extends SqlStringOrBinaryType {
+    interface SqlStringType extends SqlStringOrBinaryType, SqlNumberOrStringType {
 
 
     }
@@ -158,7 +184,7 @@ public interface MappingType extends TypeMeta, TypeInfer {
 
     }
 
-    interface SqlBitType extends SqlSqlStringOrBinaryOrBitType {
+    interface SqlBitType extends SqlSqlStringOrBinaryOrBitType, SqlNumberOrBitType {
 
     }
 
