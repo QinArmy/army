@@ -684,21 +684,21 @@ abstract class Expressions {
 
     }//BracketsExpression
 
-    private static final class ScalarExpression extends OperationExpression.CompoundExpression {
+    private static final class ScalarExpression extends OperationExpression.SimpleExpression {
 
         private final SubQuery subQuery;
 
-        private final TypeMeta typeMeta;
+        private final TypeMeta type;
 
 
         private ScalarExpression(TypeMeta expType, SubQuery subQuery) {
             this.subQuery = subQuery;
-            this.typeMeta = expType;
+            this.type = expType;
         }
 
         @Override
         public TypeMeta typeMeta() {
-            return this.typeMeta;
+            return this.type;
         }
 
         @Override
@@ -706,14 +706,15 @@ abstract class Expressions {
             context.parser().subQuery(this.subQuery, context);
         }
 
-        @Override
-        public int hashCode() {
-            return super.hashCode();
-        }
 
         @Override
-        public boolean equals(Object obj) {
-            return obj == this;
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE_LEFT_PAREN)
+                    .append(" scalar sub query: ")
+                    .append(this.subQuery.getClass().getName())
+                    .append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
         }
 
 
@@ -818,7 +819,7 @@ abstract class Expressions {
             final ArmyExpression left = this.left, right = this.right;
             final boolean leftInnerParens, rightInnerParens;
             leftInnerParens = !(left instanceof SimpleExpression);
-            rightInnerParens = right instanceof SqlValueParam.MultiValue || !(right instanceof SimpleExpression);
+            rightInnerParens = !(right instanceof SimpleExpression);
 
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder();
@@ -871,7 +872,7 @@ abstract class Expressions {
             final ArmyExpression left = this.left, right = this.right;
             final boolean leftInnerParens, rightInnerParens;
             leftInnerParens = !(left instanceof SimpleExpression);
-            rightInnerParens = right instanceof SqlValueParam.MultiValue || !(right instanceof SimpleExpression);
+            rightInnerParens = !(right instanceof SimpleExpression);
 
             final StringBuilder sqlBuilder;
             sqlBuilder = new StringBuilder();

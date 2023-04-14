@@ -167,6 +167,12 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
 
     @Override
+    protected final void bindLiteralNull(final SqlType type, final StringBuilder sqlBuilder) {
+        //TODO convert
+        sqlBuilder.append(_Constant.SPACE_NULL);
+    }
+
+    @Override
     protected final void bindLiteral(final TypeMeta typeMeta, final SqlType type, final Object value,
                                      final StringBuilder sqlBuilder) {
 

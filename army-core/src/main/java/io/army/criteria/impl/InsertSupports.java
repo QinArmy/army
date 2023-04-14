@@ -2316,7 +2316,7 @@ abstract class InsertSupports {
         final Expression discriminatorExp;
         discriminatorExp = ((_Selection) discriminatorSelection).underlyingExp();
 
-        if (!(discriminatorExp instanceof LiteralExpression.SingleLiteral)) {
+        if (!(discriminatorExp instanceof SingleLiteralExpression.NonNamedSingleLiteral)) {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be literal."
                     , Selection.class.getSimpleName(), discriminatorSelection.selectionName()
                     , discriminatorField);
@@ -2324,7 +2324,7 @@ abstract class InsertSupports {
         }
 
         final Object value;
-        value = ((LiteralExpression.SingleLiteral) discriminatorExp).value();
+        value = ((SingleLiteralExpression.NonNamedSingleLiteral) discriminatorExp).value();
         final Class<?> discriminatorJavaType;
         discriminatorJavaType = discriminatorField.javaType();
 

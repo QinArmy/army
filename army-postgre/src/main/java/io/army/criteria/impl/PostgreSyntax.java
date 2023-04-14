@@ -169,7 +169,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
 
     /**
-     * @param expression couldn't be multi-value parameter/literal, for example {@link SQLs#multiParams(TypeInfer, Collection)}
+     * @param expression couldn't be multi-value parameter/literal, for example {@link SQLs#multiParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-POSITIONAL">Using Positional Notation</a>
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
@@ -179,7 +179,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
     }
 
     /**
-     * @param valueOperator couldn't return multi-value parameter/literal, for example {@link SQLs#multiParams(TypeInfer, Collection)}
+     * @param valueOperator couldn't return multi-value parameter/literal, for example {@link SQLs#multiParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-POSITIONAL">Using Positional Notation</a>
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>

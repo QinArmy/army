@@ -144,10 +144,9 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
     }
 
     @Override
-    public final void appendLiteral(final TypeMeta paramMeta, final Object nonNull) {
-        final StringBuilder sqlBuilder;
-        sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
-        this.parser.literal(paramMeta, nonNull, sqlBuilder);
+    public final void appendLiteral(final TypeMeta typeMeta, final @Nullable Object value) {
+        this.parser.literal(typeMeta, value, this.sqlBuilder.append(_Constant.SPACE));
+
     }
 
     @Override

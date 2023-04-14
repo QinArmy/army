@@ -690,6 +690,7 @@ abstract class OperationExpression implements ArmyExpression {
          * package constructor
          */
         SimpleExpression() {
+
         }
 
         @Override

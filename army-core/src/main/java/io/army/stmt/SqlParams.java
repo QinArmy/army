@@ -60,7 +60,7 @@ abstract class SqlParams implements SQLParam {
 
 
     private static final class SqlMultiParam extends SqlParams
-            implements MultiParam, SqlValueParam.MultiValue {
+            implements MultiParam {
 
         private final List<?> valueList;
 

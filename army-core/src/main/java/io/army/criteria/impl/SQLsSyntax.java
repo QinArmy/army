@@ -6,7 +6,6 @@ import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
-import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
@@ -490,8 +489,8 @@ abstract class SQLsSyntax extends Functions {
      * @return parameter expression
      * @see #literalFrom(Object)
      */
-    public static <T> Expression paramFrom(final T value) {
-        return ParamExpression.single(_MappingFactory.getDefault(value.getClass()), value);
+    public static Expression paramFrom(final Object value) {
+        return SingleParamExpression.from(value);
     }
 
 
@@ -506,16 +505,10 @@ abstract class SQLsSyntax extends Functions {
      */
     public static Expression param(final TypeInfer type, final @Nullable Object value) {
         final Expression result;
-        if (type instanceof TypeMeta) {  //for field codec
-            if (value instanceof Supplier) {
-                result = ParamExpression.single((TypeMeta) type, ((Supplier<?>) value).get());
-            } else {
-                result = ParamExpression.single((TypeMeta) type, value);
-            }
-        } else if (value instanceof Supplier) {
-            result = ParamExpression.single(type.typeMeta(), ((Supplier<?>) value).get());
+        if (value instanceof Supplier) {
+            result = SingleParamExpression.single(type, ((Supplier<?>) value).get());
         } else {
-            result = ParamExpression.single(type.typeMeta(), value);
+            result = SingleParamExpression.single(type, value);
         }
         return result;
     }
@@ -530,17 +523,11 @@ abstract class SQLsSyntax extends Functions {
      *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty
-     * @see #multiParams(TypeInfer, Collection)
-     * @see #multiLiterals(TypeInfer, Collection)
+     * @see #multiParam(TypeInfer, Collection)
+     * @see #multiLiteral(TypeInfer, Collection)
      */
-    public static Expression multiParams(final TypeInfer type, final Collection<?> values) {
-        final Expression result;
-        if (type instanceof TypeMeta) {  //for field codec
-            result = ParamExpression.multi((TypeMeta) type, values);
-        } else {
-            result = ParamExpression.multi(type.typeMeta(), values);
-        }
-        return result;
+    public static Expression multiParam(final TypeInfer type, final Collection<?> values) {
+        return MultiParamExpression.multi(type, values);
     }
 
 
@@ -555,13 +542,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #namedNullableLiteral(TypeInfer, String)
      */
     public static Expression namedParam(final TypeInfer type, final String name) {
-        final Expression result;
-        if (type instanceof TypeMeta) {
-            result = ParamExpression.namedSingle((TypeMeta) type, name);
-        } else {
-            result = ParamExpression.namedSingle(type.typeMeta(), name);
-        }
-        return result;
+        return SingleParamExpression.named(type, name);
     }
 
     /**
@@ -575,13 +556,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #namedNullableLiteral(TypeInfer, String)
      */
     public static Expression namedNullableParam(final TypeInfer type, final String name) {
-        final Expression result;
-        if (type instanceof TypeMeta) {
-            result = ParamExpression.namedNullableSingle((TypeMeta) type, name);
-        } else {
-            result = ParamExpression.namedNullableSingle(type.typeMeta(), name);
-        }
-        return result;
+        return SingleParamExpression.namedNullable(type, name);
     }
 
 
@@ -599,18 +574,11 @@ abstract class SQLsSyntax extends Functions {
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
      * @param size positive,the size of {@link Collection}
      * @return named non-null multi parameter expression
-     * @see #namedMultiParams(TypeInfer, String, int)
-     * @see #namedMultiLiterals(TypeInfer, String, int)
+     * @see #namedMultiParam(TypeInfer, String, int)
+     * @see #namedMultiLiteral(TypeInfer, String, int)
      */
-    public static Expression namedMultiParams(final TypeInfer type, final String name, final int size) {
-        final Expression result;
-        if (type instanceof TypeMeta) {
-            //for field codec
-            result = ParamExpression.namedMulti((TypeMeta) type, name, size);
-        } else {
-            result = ParamExpression.namedMulti(type.typeMeta(), name, size);
-        }
-        return result;
+    public static Expression namedMultiParam(final TypeInfer type, final String name, final int size) {
+        return MultiParamExpression.named(type, name, size);
     }
 
 
@@ -651,8 +619,8 @@ abstract class SQLsSyntax extends Functions {
      * @return literal expression
      * @see #paramFrom(Object)
      */
-    public static <T> Expression literalFrom(final T value) {
-        return LiteralExpression.single(_MappingFactory.getDefault(value.getClass()), value);
+    public static Expression literalFrom(final Object value) {
+        return SingleLiteralExpression.from(value);
     }
 
 
@@ -666,19 +634,12 @@ abstract class SQLsSyntax extends Functions {
      * @see #param(TypeInfer, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static <T> Expression literal(final TypeInfer type, final @Nullable T value) {
+    public static Expression literal(final TypeInfer type, final @Nullable Object value) {
         final Expression result;
-
-        if (type instanceof TypeMeta) {
-            if (value instanceof Supplier) {
-                result = LiteralExpression.single((TypeMeta) type, ((Supplier<?>) value).get());
-            } else {
-                result = LiteralExpression.single((TypeMeta) type, value);
-            }
-        } else if (value instanceof Supplier) {
-            result = LiteralExpression.single(type.typeMeta(), ((Supplier<?>) value).get());
+        if (value instanceof Supplier) {
+            result = SingleLiteralExpression.single(type, ((Supplier<?>) value).get());
         } else {
-            result = LiteralExpression.single(type.typeMeta(), value);
+            result = SingleLiteralExpression.single(type, value);
         }
         return result;
     }
@@ -693,17 +654,11 @@ abstract class SQLsSyntax extends Functions {
      *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty
-     * @see #multiParams(TypeInfer, Collection)
-     * @see #multiLiterals(TypeInfer, Collection)
+     * @see #multiParam(TypeInfer, Collection)
+     * @see #multiLiteral(TypeInfer, Collection)
      */
-    public static Expression multiLiterals(final TypeInfer type, final Collection<?> values) {
-        final Expression result;
-        if (type instanceof TypeMeta) {
-            result = LiteralExpression.multi((TypeMeta) type, values);
-        } else {
-            result = LiteralExpression.multi(type.typeMeta(), values);
-        }
-        return result;
+    public static Expression multiLiteral(final TypeInfer type, final Collection<?> values) {
+        return MultiLiteralExpression.multi(type, values);
     }
 
 
@@ -716,7 +671,7 @@ abstract class SQLsSyntax extends Functions {
      * </p>
      *
      * @param type non-null
-     * @param name non-null
+     * @param name non-null and non-empty
      * @return non-null named literal expression
      * @see #namedParam(TypeInfer, String)
      * @see #namedNullableParam(TypeInfer, String)
@@ -724,13 +679,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #namedNullableLiteral(TypeInfer, String)
      */
     public static Expression namedLiteral(final TypeInfer type, final String name) {
-        final Expression result;
-        if (type instanceof TypeMeta) {
-            result = LiteralExpression.namedSingle((TypeMeta) type, name);
-        } else {
-            result = LiteralExpression.namedSingle(type.typeMeta(), name);
-        }
-        return result;
+        return SingleLiteralExpression.named(type, name);
     }
 
     /**
@@ -742,7 +691,7 @@ abstract class SQLsSyntax extends Functions {
      * </p>
      *
      * @param type non-null
-     * @param name non-null
+     * @param name non-null and non-empty
      * @return non-null named literal expression
      * @see #namedParam(TypeInfer, String)
      * @see #namedNullableParam(TypeInfer, String)
@@ -750,13 +699,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #namedNullableLiteral(TypeInfer, String)
      */
     public static Expression namedNullableLiteral(final TypeInfer type, final String name) {
-        final Expression result;
-        if (type instanceof TypeMeta) {
-            result = LiteralExpression.namedNullableSingle((TypeMeta) type, name);
-        } else {
-            result = LiteralExpression.namedNullableSingle(type.typeMeta(), name);
-        }
-        return result;
+        return SingleLiteralExpression.namedNullable(type, name);
     }
 
 
@@ -774,18 +717,11 @@ abstract class SQLsSyntax extends Functions {
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
      * @param size positive,the size of {@link Collection}
      * @return named non-null multi literal expression
-     * @see #namedMultiParams(TypeInfer, String, int)
-     * @see #namedMultiLiterals(TypeInfer, String, int)
+     * @see #namedMultiParam(TypeInfer, String, int)
+     * @see #namedMultiLiteral(TypeInfer, String, int)
      */
-    public static Expression namedMultiLiterals(final TypeInfer type, final String name, final int size) {
-        final Expression result;
-        if (type instanceof TypeMeta) {
-            //for field codec
-            result = LiteralExpression.namedMulti((TypeMeta) type, name, size);
-        } else {
-            result = LiteralExpression.namedMulti(type.typeMeta(), name, size);
-        }
-        return result;
+    public static Expression namedMultiLiteral(final TypeInfer type, final String name, final int size) {
+        return MultiLiteralExpression.named(type, name, size);
     }
 
 

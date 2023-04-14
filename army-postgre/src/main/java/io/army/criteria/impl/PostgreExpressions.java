@@ -32,22 +32,6 @@ abstract class PostgreExpressions {
         return new PeriodOverlapsPredicate(start, endOrLength);
     }
 
-    /**
-     * @see Postgres#at(Expression)
-     */
-    static Expression unaryExp(final UnaryOperator operator, final @Nullable Expression operand,
-                               final TypeMeta returnType) {
-        if (operator != UnaryOperator.AT) {
-            // no bug,never here
-            throw _Exceptions.unexpectedEnum(operator);
-        }
-        if (operand == null) {
-            throw ContextStack.clearStackAndNullPointer();
-        } else if (operand instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.operandError(operator, operand);
-        }
-        return new PostgreUnaryExpression(operator, operand, returnType);
-    }
 
 
     /**

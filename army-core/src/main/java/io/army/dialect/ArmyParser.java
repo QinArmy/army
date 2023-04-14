@@ -347,6 +347,8 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract boolean isNeedConvert(SqlType type, Object nonNull);
 
+    protected abstract void bindLiteralNull(SqlType type, StringBuilder sqlBuilder);
+
     protected abstract void bindLiteral(TypeMeta typeMeta, SqlType type, Object value, StringBuilder sqlBuilder);
 
     protected abstract DdlDialect createDdlDialect();
@@ -511,25 +513,28 @@ abstract class ArmyParser implements DialectParser {
      * Append  literal
      * </p>
      */
-    protected final void literal(final TypeMeta typeMeta, final Object nonNull, final StringBuilder sqlBuilder) {
-        final MappingType mappingType;
+    protected final void literal(final TypeMeta typeMeta, final @Nullable Object value, final StringBuilder sqlBuilder) {
+        final MappingType type;
         if (typeMeta instanceof MappingType) {
-            mappingType = (MappingType) typeMeta;
+            type = (MappingType) typeMeta;
         } else {
-            mappingType = typeMeta.mappingType();
+            type = typeMeta.mappingType();
         }
         final SqlType sqlType;
-        sqlType = mappingType.map(this.serverMeta);
+        sqlType = type.map(this.serverMeta);
 
-        final Object value;
-        if (this.isNeedConvert(sqlType, nonNull)) {
-            value = mappingType.beforeBind(sqlType, this.mappingEnv, nonNull);
+        if (value == null) {
+            this.bindLiteralNull(sqlType, sqlBuilder);
+            return;
+        }
+        final Object convertedValue;
+        if (this.isNeedConvert(sqlType, value)) {
+            convertedValue = type.beforeBind(sqlType, this.mappingEnv, value);
         } else {
-            value = nonNull;
+            convertedValue = value;
         }
         //TODO validate non-field codec
-        this.bindLiteral(typeMeta, sqlType, value, sqlBuilder);
-
+        this.bindLiteral(typeMeta, sqlType, convertedValue, sqlBuilder);
     }
 
     protected final _SingleUpdateContext createSingleUpdateContext(final @Nullable _SqlContext outerContext

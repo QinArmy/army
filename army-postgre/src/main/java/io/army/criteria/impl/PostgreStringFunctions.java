@@ -596,17 +596,17 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @param sep  non-multi param value
      * @param exp1 expression ,possibly be multi param value:
      *             <ul>
-     *                 <li>{@link SQLs#multiParams(TypeInfer, Collection)} </li>
-     *                 <li>{@link SQLs#multiLiterals(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParams(TypeInfer, String, int)} </li>
-     *                 <li>{@link SQLs#namedMultiLiterals(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)} </li>
+     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)} </li>
+     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *             </ul>
      * @param rest element possibly be multi param value:
      *             <ul>
-     *                 <li>{@link SQLs#multiParams(TypeInfer, Collection)} </li>
-     *                 <li>{@link SQLs#multiLiterals(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParams(TypeInfer, String, int)} </li>
-     *                 <li>{@link SQLs#namedMultiLiterals(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)} </li>
+     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)} </li>
+     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *             </ul>
      * @see #concatWs(Expression, List)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">concat_ws ( sep text, val1 "any" [, val2 "any" [, ...] ] ) → text</a>
@@ -626,10 +626,10 @@ abstract class PostgreStringFunctions extends PostgreFuncSyntax {
      * @param sep     non-multi param value
      * @param expList non-null and non-empty,element possibly be multi param value:
      *                <ul>
-     *                    <li>{@link SQLs#multiParams(TypeInfer, Collection)} </li>
-     *                    <li>{@link SQLs#multiLiterals(TypeInfer, Collection)}</li>
-     *                    <li>{@link SQLs#namedMultiParams(TypeInfer, String, int)} </li>
-     *                    <li>{@link SQLs#namedMultiLiterals(TypeInfer, String, int)}</li>
+     *                    <li>{@link SQLs#multiParam(TypeInfer, Collection)} </li>
+     *                    <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                    <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)} </li>
+     *                    <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                </ul>
      * @see #concatWs(Expression, Expression, Expression...)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">concat_ws ( sep text, val1 "any" [, val2 "any" [, ...] ] ) → text</a>
