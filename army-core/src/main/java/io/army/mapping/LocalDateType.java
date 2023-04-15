@@ -30,7 +30,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-public final class LocalDateType extends _ArmyNoInjectionMapping {
+public final class LocalDateType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {
 
 
     public static final LocalDateType INSTANCE = new LocalDateType();

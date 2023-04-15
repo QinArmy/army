@@ -28,7 +28,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-public final class LocalDateTimeType extends _ArmyNoInjectionMapping {
+public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateTimeType {
 
 
     public static final LocalDateTimeType INSTANCE = new LocalDateTimeType();

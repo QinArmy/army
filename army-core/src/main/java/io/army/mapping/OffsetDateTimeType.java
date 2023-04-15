@@ -30,7 +30,7 @@ import java.time.temporal.Temporal;
  *
  * @since 1.0
  */
-public final class OffsetDateTimeType extends _ArmyNoInjectionMapping {
+public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlOffsetDateTimeType {
 
     public static final OffsetDateTimeType INSTANCE = new OffsetDateTimeType();
 

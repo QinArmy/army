@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.meta.FieldMeta;
+import io.army.type.Interval;
 import io.army.util._StringUtils;
 
 import java.util.Collection;
@@ -220,8 +221,70 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
         return Expressions.dualPredicate(left, DualOperator.CARET_AT, right);
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type + numeric_type → numeric_type</a>
+     */
     public static Expression plus(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.PLUS, right, _returnType(left, right, PostgreSyntax::plusType));
+        return Expressions.dialectDualExp(left, DualOperator.PLUS, right,
+                _returnType(left, right, PostgreSyntax::plusType)
+        );
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type - numeric_type → numeric_type<br/>
+     * Subtraction</a>
+     */
+    public static Expression minus(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, DualOperator.MINUS, right, _returnType(left, right, PostgreSyntax::plusType));
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type * numeric_type → numeric_type<br/>
+     * Multiplication</a>
+     */
+    public static Expression times(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, DualOperator.TIMES, right, _returnType(left, right, PostgreSyntax::plusType));
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type / numeric_type → numeric_type<br/>
+     * Division (for integral types, division truncates the result towards zero)</a>
+     */
+    public static Expression divide(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, DualOperator.DIVIDE, right, _returnType(left, right, PostgreSyntax::plusType));
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type % numeric_type → numeric_type<br/>
+     * Modulo (remainder); available for smallint, integer, bigint, and numeric</a>
+     */
+    public static Expression mode(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, DualOperator.MOD, right, _returnType(left, right, PostgreSyntax::plusType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: follow <code><pre><br>
+     *    private static MappingType caretResultType(final MappingType left, final MappingType right) {
+     *        final MappingType returnType;
+     *        if (left instanceof MappingType.IntegerOrDecimalType
+     *                && right instanceof MappingType.IntegerOrDecimalType) {
+     *            returnType = BigDecimalType.INSTANCE;
+     *        } else {
+     *            returnType = DoubleType.INSTANCE;
+     *        }
+     *        return returnType;
+     *    }
+     * </pre></code>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
+     * double precision ^ double precision → double precision <br/>
+     * Exponentiation</a>
+     */
+    public static Expression caret(final Expression left, final Expression right) {
+        return Expressions.dialectDualExp(left, DualOperator.CARET, right,
+                _returnType(left, right, PostgreSyntax::caretResultType));
     }
 
 
@@ -264,30 +327,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
         );
     }
 
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: follow <code><pre><br>
-     *    private static MappingType caretResultType(final MappingType left, final MappingType right) {
-     *        final MappingType returnType;
-     *        if (left instanceof MappingType.IntegerOrDecimalType
-     *                && right instanceof MappingType.IntegerOrDecimalType) {
-     *            returnType = BigDecimalType.INSTANCE;
-     *        } else {
-     *            returnType = DoubleType.INSTANCE;
-     *        }
-     *        return returnType;
-     *    }
-     * </pre></code>
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
-     * double precision ^ double precision → double precision <br/>
-     * Exponentiation</a>
-     */
-    public static Expression caret(final Expression left, final Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.CARET, right,
-                _returnType(left, right, PostgreSyntax::caretResultType));
-    }
+
 
     /**
      * <p>
@@ -418,10 +458,10 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * <p>
      * AT TIME ZONE operator,The {@link MappingType} of operator return type:
      *     <ol>
-     *         <li>If The {@link MappingType} of source is {@link LocalDateTimeType},then {@link OffsetDateTimeType}</li>
-     *         <li>If The {@link MappingType} of source is {@link OffsetDateTimeType} or {@link ZonedDateTimeType},then {@link LocalDateTimeType}</li>
-     *         <li>If The {@link MappingType} of source is {@link LocalTimeType},then {@link OffsetTimeType}</li>
-     *         <li>If The {@link MappingType} of source is {@link OffsetTimeType},then {@link LocalTimeType}</li>
+     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlLocalDateTimeType},then {@link OffsetDateTimeType}</li>
+     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlOffsetDateTimeType},then {@link LocalDateTimeType}</li>
+     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlLocalTimeType},then {@link OffsetTimeType}</li>
+     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlOffsetTimeType},then {@link LocalTimeType}</li>
      *         <li>Else raise {@link CriteriaException}</li>
      *     </ol>
      * </p>
@@ -436,7 +476,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"> AT TIME ZONE Variants</a>
      */
     public static Expression atTimeZone(final Expression source, final Expression zone) {
-        return PostgreExpressions.dualExp(source, DualOperator.AT_TIME_ZONE, zone,
+        return Expressions.dialectDualExp(source, DualOperator.AT_TIME_ZONE, zone,
                 _returnType(source, PostgreSyntax::atTimeZoneType)
         );
     }
@@ -491,13 +531,13 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      */
     private static MappingType atTimeZoneType(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof LocalDateTimeType) {
+        if (type instanceof MappingType.SqlLocalDateTimeType) {
             returnType = OffsetDateTimeType.INSTANCE;
-        } else if (type instanceof OffsetDateTimeType || type instanceof ZonedDateTimeType) {
+        } else if (type instanceof MappingType.SqlOffsetDateTimeType) {
             returnType = LocalDateTimeType.INSTANCE;
-        } else if (type instanceof LocalTimeType) {
+        } else if (type instanceof MappingType.SqlLocalTimeType) {
             returnType = OffsetTimeType.INSTANCE;
-        } else if (type instanceof OffsetTimeType) {
+        } else if (type instanceof MappingType.SqlOffsetTimeType) {
             returnType = LocalTimeType.INSTANCE;
         } else {
             String m = String.format("AT TIME ZONE operator don't support %s", type);
@@ -545,8 +585,10 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      */
     private static MappingType plusType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (left instanceof MappingType.SqlNumberType || right instanceof MappingType.SqlNumberType) {
-            returnType = ExpTypes.mathExpType(left, right);
+        if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) {
+            returnType = Expressions.mathExpType(left, right);
+        } else if (left instanceof MappingType.SqlTemporalAmountType && right instanceof MappingType.SqlTemporalAmountType) {
+            returnType = IntervalType.from(Interval.class);
         } else if (left instanceof MappingType.SqlTimeValueType || right instanceof MappingType.SqlTimeValueType) {
 
         } else if (left instanceof MappingType.SqlGeometryType || right instanceof MappingType.SqlGeometryType) {

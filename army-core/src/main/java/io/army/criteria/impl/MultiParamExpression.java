@@ -22,7 +22,7 @@ import java.util.*;
  * @see SingleParamExpression
  * @since 1.0
  */
-abstract class MultiParamExpression extends OperationExpression.CompoundExpression
+abstract class MultiParamExpression extends OperationExpression.MultiValueExpression
         implements SQLParam, SqlValueParam.MultiValue {
 
     /**

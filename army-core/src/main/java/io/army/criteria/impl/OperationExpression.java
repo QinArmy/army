@@ -209,49 +209,49 @@ abstract class OperationExpression implements ArmyExpression {
 
     @Override
     public final OperationPredicate between(Expression first, SQLs.WordAnd and, Expression second) {
-        return Expressions.betweenPredicate(false, null, this, first, second);
+        return Expressions.betweenPredicate(this, false, null, first, second);
     }
 
     @Override
     public final <T> OperationPredicate between(BiFunction<Expression, T, Expression> operator, T first,
                                                 SQLs.WordAnd and, T second) {
-        return Expressions.betweenPredicate(false, null, this, operator.apply(this, first), operator.apply(this, second));
+        return Expressions.betweenPredicate(this, false, null, operator.apply(this, first), operator.apply(this, second));
     }
 
     @Override
     public final OperationPredicate notBetween(Expression first, SQLs.WordAnd and, Expression second) {
-        return Expressions.betweenPredicate(true, null, this, first, second);
+        return Expressions.betweenPredicate(this, true, null, first, second);
     }
 
     @Override
     public final <T> OperationPredicate notBetween(BiFunction<Expression, T, Expression> operator, T first,
                                                    SQLs.WordAnd and, T second) {
-        return Expressions.betweenPredicate(true, null, this, operator.apply(this, first), operator.apply(this, second));
+        return Expressions.betweenPredicate(this, true, null, operator.apply(this, first), operator.apply(this, second));
     }
 
 
     @Override
     public final IPredicate between(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second) {
-        return Expressions.betweenPredicate(false, modifier, this, first, second);
+        return Expressions.betweenPredicate(this, false, modifier, first, second);
     }
 
     @Override
     public final <T> IPredicate between(@Nullable SQLsSyntax.BetweenModifier modifier,
                                         BiFunction<Expression, T, Expression> operator, T first,
                                         SQLsSyntax.WordAnd and, T second) {
-        return Expressions.betweenPredicate(false, modifier, this, operator.apply(this, first), operator.apply(this, second));
+        return Expressions.betweenPredicate(this, false, modifier, operator.apply(this, first), operator.apply(this, second));
     }
 
     @Override
     public final IPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second) {
-        return Expressions.betweenPredicate(true, modifier, this, first, second);
+        return Expressions.betweenPredicate(this, true, modifier, first, second);
     }
 
     @Override
     public final <T> IPredicate notBetween(@Nullable SQLsSyntax.BetweenModifier modifier,
                                            BiFunction<Expression, T, Expression> operator, T first,
                                            SQLsSyntax.WordAnd and, T second) {
-        return Expressions.betweenPredicate(true, modifier, this, operator.apply(this, first), operator.apply(this, second));
+        return Expressions.betweenPredicate(this, true, modifier, operator.apply(this, first), operator.apply(this, second));
     }
 
     @Override
@@ -729,6 +729,29 @@ abstract class OperationExpression implements ArmyExpression {
 
 
     }//CompoundExpression
+
+
+    /**
+     * <p>
+     * This class is base class only of below:
+     *     <ul>
+     *         <li>{@link MultiParamExpression}</li>
+     *         <li>{@link MultiLiteralExpression}</li>
+     *     </ul>
+     * </p>
+     *
+     * @since 1.0
+     */
+    static abstract class MultiValueExpression extends CompoundExpression implements SqlValueParam.MultiValue {
+
+        /**
+         * package constructor
+         */
+        MultiValueExpression() {
+        }
+
+
+    }//MultiValueExpression
 
 
     static abstract class PredicateExpression extends OperationExpression implements _Predicate {

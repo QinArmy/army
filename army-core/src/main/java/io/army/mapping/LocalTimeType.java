@@ -29,7 +29,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-public final class LocalTimeType extends _ArmyNoInjectionMapping {
+public final class LocalTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalTimeType {
 
 
     public static final LocalTimeType INSTANCE = new LocalTimeType();

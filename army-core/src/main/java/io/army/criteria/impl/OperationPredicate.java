@@ -20,11 +20,9 @@ import java.util.function.*;
  */
 abstract class OperationPredicate extends OperationExpression.PredicateExpression {
 
-    /**
-     * package constructor
-     */
-    OperationPredicate() {
-    }
+     OperationPredicate() {
+     }
+
 
     @Override
     public final IPredicate or(final @Nullable IPredicate predicate) {
@@ -514,9 +512,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
                     && (dualPredicate.right instanceof SingleParamExpression
                     || dualPredicate.right instanceof SingleLiteralExpression);
         } else if (dualPredicate.operator == DualOperator.IN) {
-            match = dualPredicate.right instanceof MultiValueExpression
-                    && (dualPredicate.right instanceof SingleParamExpression
-                    || dualPredicate.right instanceof SingleLiteralExpression);
+            match = dualPredicate.right instanceof OperationExpression.MultiValueExpression;
         } else {
             match = false;
         }

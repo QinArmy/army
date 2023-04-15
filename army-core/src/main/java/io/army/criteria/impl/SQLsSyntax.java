@@ -796,11 +796,11 @@ abstract class SQLsSyntax extends Functions {
     }
 
     public static Expression bitwiseNot(Expression exp) {
-        return Expressions.unaryExp(exp, UnaryOperator.BITWISE_NOT);
+        return Expressions.unaryExp(UnaryOperator.BITWISE_NOT, exp);
     }
 
     public static Expression negate(Expression exp) {
-        return Expressions.unaryExp(exp, UnaryOperator.NEGATE);
+        return Expressions.unaryExp(UnaryOperator.NEGATE, exp);
     }
 
     public static IPredicate not(IPredicate predicate) {

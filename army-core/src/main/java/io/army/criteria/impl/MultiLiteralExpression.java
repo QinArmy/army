@@ -20,7 +20,7 @@ import java.util.*;
  * @since 1.0
  */
 
-abstract class MultiLiteralExpression extends OperationExpression.CompoundExpression
+abstract class MultiLiteralExpression extends OperationExpression.MultiValueExpression
         implements SqlValueParam.MultiValue {
 
     /**

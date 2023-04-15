@@ -29,7 +29,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-public final class MonthType extends _ArmyNoInjectionMapping {
+public final class MonthType extends _ArmyNoInjectionMapping implements MappingType.SqlTemporalFieldType {
 
     public static final MonthType INSTANCE = new MonthType();
 

@@ -27,7 +27,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-public final class YearMonthType extends _ArmyNoInjectionMapping {
+public final class YearMonthType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {
 
     public static final YearMonthType INSTANCE = new YearMonthType();
 
