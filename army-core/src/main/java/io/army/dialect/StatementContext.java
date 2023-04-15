@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
-import io.army.mapping.StringType;
 import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
@@ -147,13 +146,6 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
     public final void appendLiteral(final TypeMeta typeMeta, final @Nullable Object value) {
         this.parser.literal(typeMeta, value, this.sqlBuilder.append(_Constant.SPACE));
 
-    }
-
-    @Override
-    public final void appendPattern(final String pattern) {
-        final StringBuilder sqlBuilder;
-        sqlBuilder = this.sqlBuilder.append(_Constant.SPACE);
-        this.parser.literal(StringType.INSTANCE, pattern, sqlBuilder);
     }
 
     @Override

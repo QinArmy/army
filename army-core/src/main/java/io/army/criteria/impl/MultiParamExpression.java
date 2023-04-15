@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.NamedParam;
-import io.army.criteria.SQLParam;
-import io.army.criteria.SqlValueParam;
-import io.army.criteria.TypeInfer;
+import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -20,49 +17,107 @@ import java.util.*;
  * </p>
  *
  * @see SingleParamExpression
+ * @see SingleLiteralExpression
+ * @see MultiLiteralExpression
  * @since 1.0
  */
-abstract class MultiParamExpression extends OperationExpression.MultiValueExpression
-        implements SQLParam, SqlValueParam.MultiValue {
+abstract class MultiParamExpression extends OperationExpression.MultiValueExpression implements SQLParam {
 
     /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>values is empty</li>
+     *                           <li>infer return codec {@link TableField}</li>
+     *                           </ul>
      * @see SQLs#multiParam(TypeInfer, Collection)
      */
     static MultiParamExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+        final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (values == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (values.size() == 0) {
-            throw ContextStack.clearStackAndCriteriaError("values must non-empty");
-        }
-        final TypeMeta type;
-        if (infer instanceof TypeMeta) {
-            type = (TypeMeta) infer;
-        } else {
-            type = infer.typeMeta();
+            throw valuesIsEmpty();
+        } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
+            throw SingleParamExpression.typeInferReturnCodecField("encodingMultiParam");
         }
         return new NonNameMultiParam(type, values);
     }
 
     /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>name have no text</li>
+     *                           <li>size less than 1</li>
+     *                           <li>infer return codec {@link TableField}</li>
+     *                           </ul>
      * @see SQLs#namedMultiParam(TypeInfer, String, int)
      */
     static MultiParamExpression named(@Nullable TypeInfer infer, @Nullable String name, final int size) {
+        final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
-            throw ContextStack.clearStackAndCriteriaError("named multi-parameter must have text.");
+            throw nameHaveNoText();
         } else if (size < 1) {
-            throw ContextStack.clearStackAndCriteriaError("size must great than zero.");
-        }
-        final TypeMeta type;
-        if (infer instanceof TypeMeta) {
-            type = (TypeMeta) infer;
-        } else {
-            type = infer.typeMeta();
+            throw sizeLessThanOne(size);
+        } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
+            throw SingleParamExpression.typeInferReturnCodecField("encodingNamedMultiParam");
         }
         return new NamedMultiParamExpression(type, name, size);
+    }
+
+    /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>values is empty</li>
+     *                           <li>infer isn't codec {@link TableField}</li>
+     *                           </ul>
+     * @see SQLs#encodingMultiParam(TypeInfer, Collection)
+     */
+    static MultiParamExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+        if (infer == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (values == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (values.size() == 0) {
+            throw valuesIsEmpty();
+        } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
+            throw SingleParamExpression.typeInferIsNotCodecField("multiParam");
+        }
+        return new NonNameMultiParam((TableField) infer, values);
+    }
+
+    /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>name have no text</li>
+     *                           <li>size less than 1</li>
+     *                           <li>infer isn't codec {@link TableField}</li>
+     *                           </ul>
+     * @see SQLs#encodingNamedMultiParam(TypeInfer, String, int)
+     */
+    static MultiParamExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
+        if (infer == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!_StringUtils.hasText(name)) {
+            throw nameHaveNoText();
+        } else if (size < 1) {
+            throw sizeLessThanOne(size);
+        } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
+            throw SingleParamExpression.typeInferIsNotCodecField("namedMultiParam");
+        }
+        return new NamedMultiParamExpression((TableField) infer, name, size);
+    }
+
+    private static CriteriaException valuesIsEmpty() {
+        return ContextStack.clearStackAndCriteriaError("values must non-empty for multi-value parameter.");
+    }
+
+    private static CriteriaException nameHaveNoText() {
+        return ContextStack.clearStackAndCriteriaError("name must have text for multi-value named parameter.");
+    }
+
+    private static CriteriaException sizeLessThanOne(final int size) {
+        final String m = String.format("size[%s] must greater than 0 for multi-value named parameter.", size);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 
@@ -70,7 +125,11 @@ abstract class MultiParamExpression extends OperationExpression.MultiValueExpres
 
 
     private MultiParamExpression(TypeMeta type) {
-        this.type = type;
+        if (type instanceof QualifiedField) {
+            this.type = ((QualifiedField<?>) type).fieldMeta();
+        } else {
+            this.type = type;
+        }
     }
 
 

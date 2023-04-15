@@ -71,8 +71,8 @@ abstract class OperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> OperationPredicate less(BiFunction<Expression, T, Expression> operator, T operand) {
-        return Expressions.dualPredicate(this, DualOperator.LESS, operator.apply(this, operand));
+    public final <T> OperationPredicate less(BiFunction<Expression, T, Expression> valueFunc, T operand) {
+        return Expressions.dualPredicate(this, DualOperator.LESS, valueFunc.apply(this, operand));
     }
 
 

@@ -25,53 +25,104 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
 
     /**
-     * relational operate with {@code =}
      * <p>
-     * Operand will be wrapped with optimizing param
+     * <strong>=</strong> operator
      * </p>
      *
-     * @param operand right operand of {@code =},operand is weak weakly instance, because sql is weakly typed.
+     * @param operand non-null
+     * @throws CriteriaException throw when <ul>
+     *                           <li>Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT}</li>
+     *                           <li>Operand is multi-value {@link Expression},for example {@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                           </ul>
      */
     IPredicate equal(Expression operand);
 
     /**
      * <p>
-     * operator detail:
-     *     <ul>
-     *         <li>the first argument of operator is this</li>
-     *         li>the second argument of operator is operand</li>
-     *     </ul>
+     * <strong>=</strong> operator. This method is similar to {@link #equal(Expression)},except that the operand
+     * {@link Expression} is returned by valueFunc.
      * </p>
      * <p>
-     *     operator possibly is the reference of below method:
-     *     <ul>
-     *         <li>{@link SQLs#param(TypeInfer, Object)}</li>
-     *         <li>{@link SQLs#literal(TypeInfer, Object)}</li>
-     *         <li>{@link SQLs#namedParam(TypeInfer, String)}</li>
-     *         <li>{@link SQLs#namedLiteral(TypeInfer, String)},only used in insert syntax</li>
-     *         <li>custom method</li>
-     *     </ul>
+     * <strong>Node</strong>: The left operand of valueFunc always is this for <strong>=</strong> operator.
      * </p>
      *
-     * @param operator the reference of method,Note: it's the reference of method,not lambda.
-     * @param operand  non-null,it will pass to operator as the second argument of operator
+     * @param valueFunc the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                  <ul>
+     *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                      <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                      <li>{@link SQLs#encodingParam(TypeInfer, Object)},just for codec {@link TableField}</li>
+     *                      <li>{@link SQLs#encodingLiteral(TypeInfer, Object)},just for codec {@link TableField}</li>
+     *                      <li>{@link SQLs#encodingNamedParam(TypeInfer, String)} ,just for codec {@link TableField},used only in INSERT( or batch update/delete ) syntax</li>
+     *                      <li>{@link SQLs#encodingNamedLiteral(TypeInfer, String)} ,just for codec {@link TableField},used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                      <li>developer custom method</li>
+     *                  </ul>.
+     *                  The left operand of valueFunc always is this for <strong>=</strong> operator.
+     * @param operand   non-null,it will pass to valueFunc as the right operator of valueFunc
+     * @throws CriteriaException throw when <ul>
+     *                           <li>The {@link Expression} returned by valueFunc isn't operable {@link Expression},for example {@link SQLs#DEFAULT}</li>
+     *                           <li>The {@link Expression} returned by valueFunc is multi-value {@link Expression},for example {@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                           </ul>
      */
-    <T> IPredicate equal(BiFunction<Expression, T, Expression> operator, T operand);
+    <T> IPredicate equal(BiFunction<Expression, T, Expression> valueFunc, T operand);
 
     /**
-     * relational operate with {@code = ANY}
+     * <p>
+     * <strong>= ANY</strong> operator
+     * </p>
      */
     IPredicate equalAny(SubQuery subQuery);
 
     /**
-     * relational operate with {@code = SOME}
+     * <p>
+     * <strong>= SOME</strong> operator
+     * </p>
      */
     IPredicate equalSome(SubQuery subQuery);
 
-
+    /**
+     * <p>
+     * <strong>&lt;</strong> operator
+     * </p>
+     *
+     * @param operand non-null
+     * @throws CriteriaException throw when <ul>
+     *                           <li>Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT}</li>
+     *                           <li>Operand is multi-value {@link Expression},for example {@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                           </ul>
+     */
     IPredicate less(Expression operand);
 
-    <T> IPredicate less(BiFunction<Expression, T, Expression> operator, T operand);
+    /**
+     * <p>
+     * <strong>&lt;</strong> . This method is similar to {@link #less(Expression)},except that the operand
+     * {@link Expression} is returned by valueFunc.
+     * </p>
+     * <p>
+     * <strong>Node</strong>: The left operand of valueFunc always is this for <strong>=</strong> valueFunc.
+     * </p>
+     *
+     * @param valueFunc the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                  <ul>
+     *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                      <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                      <li>{@link SQLs#encodingParam(TypeInfer, Object)},just for codec {@link TableField}</li>
+     *                      <li>{@link SQLs#encodingLiteral(TypeInfer, Object)},just for codec {@link TableField}</li>
+     *                      <li>{@link SQLs#encodingNamedParam(TypeInfer, String)} ,just for codec {@link TableField},used only in INSERT( or batch update/delete ) syntax</li>
+     *                      <li>{@link SQLs#encodingNamedLiteral(TypeInfer, String)} ,just for codec {@link TableField},used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                      <li>developer custom method</li>
+     *                  </ul>.
+     *                  The left operand of valueFunc always is this for <strong>=</strong> valueFunc.
+     * @param operand   non-null,it will pass to valueFunc as the right valueFunc of valueFunc
+     * @throws CriteriaException throw when <ul>
+     *                           <li>The {@link Expression} returned by valueFunc isn't operable {@link Expression},for example {@link SQLs#DEFAULT}</li>
+     *                           <li>The {@link Expression} returned by valueFunc is multi-value {@link Expression},for example {@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                           </ul>
+     */
+    <T> IPredicate less(BiFunction<Expression, T, Expression> valueFunc, T operand);
 
     IPredicate lessAny(SubQuery subQuery);
 

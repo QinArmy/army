@@ -450,11 +450,22 @@ abstract class Expressions {
                     // no-op
             }
 
-            //1. append left expression
-            this.left.appendSql(context);
-
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder();
+            final ArmyExpression left = this.left, right = this.right;
+            final boolean leftOuterParens, rightOuterParens;
+            leftOuterParens = left instanceof IPredicate; // if predicate must append outer parens
+
+            //1. append left expression
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+
+            left.appendSql(context);
+
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
 
             //2. append operator
             if (operator == DualOperator.XOR
@@ -464,17 +475,14 @@ abstract class Expressions {
                 sqlBuilder.append(operator.spaceOperator);
             }
 
-            final ArmyExpression right = this.right;
-            final boolean rightInnerParens;
-            rightInnerParens = !(right instanceof OperationExpression.SimpleExpression);
-            if (rightInnerParens) {
+            rightOuterParens = !(right instanceof OperationExpression.SimpleExpression);
+            if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-
             //3. append right expression
             right.appendSql(context);
 
-            if (rightInnerParens) {
+            if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
@@ -925,8 +933,17 @@ abstract class Expressions {
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder();
 
+            final ArmyExpression left = this.left, right = this.right, escapeChar = this.escapeChar;
+            final boolean leftOuterParens, rightOuterParens, escapeCharOuterParens;
+            leftOuterParens = left instanceof IPredicate;// if predicate must append outer parens
             // 1. append left
-            this.left.appendSql(context);
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            left.appendSql(context);
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
 
             // 2. append operator
             switch (this.operator) {
@@ -947,8 +964,6 @@ abstract class Expressions {
 
             sqlBuilder.append(this.operator.spaceOperator);
 
-            final ArmyExpression right = this.right, escapeChar = this.escapeChar;
-            final boolean rightOuterParens, escapeCharOuterParens;
             rightOuterParens = !(right instanceof OperationExpression.SimpleExpression);
             // 3. append right
             if (rightOuterParens) {
@@ -1212,47 +1227,56 @@ abstract class Expressions {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            // 1. append left operand
-            this.left.appendSql(context);
 
-            final StringBuilder builder;
-            builder = context.sqlBuilder();
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            final ArmyExpression left = this.left, center = this.center, right = this.right;
+            final boolean leftOuterParens, centerOuterParens, rightOuterParens;
+            leftOuterParens = left instanceof IPredicate;// if predicate must append outer parens
+            // 1. append left
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            left.appendSql(context);
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
             // 2. append NOT operator(or not)
             if (this.not) {
-                builder.append(" NOT");
+                sqlBuilder.append(" NOT");
             }
             // 3. append BETWEEN operator
-            builder.append(" BETWEEN");
+            sqlBuilder.append(" BETWEEN");
 
             // 4. append modifier (or not)
             if (this.modifier != null) {
                 //TODO validate database support
-                builder.append(this.modifier.spaceRender());
+                sqlBuilder.append(this.modifier.spaceRender());
             }
-            final ArmyExpression center = this.center, right = this.right;
 
-            final boolean centerOuterParens, rightOuterParens;
             centerOuterParens = !(center instanceof OperationExpression.SimpleExpression);
             rightOuterParens = !(right instanceof OperationExpression.SimpleExpression);
 
             // 5. append center operand
             if (centerOuterParens) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
             center.appendSql(context);
             if (centerOuterParens) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
             // 6. append AND operator
-            builder.append(_Constant.SPACE_AND);
+            sqlBuilder.append(_Constant.SPACE_AND);
 
             // 7. append right operand
             if (rightOuterParens) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
             right.appendSql(context);
             if (rightOuterParens) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
         }

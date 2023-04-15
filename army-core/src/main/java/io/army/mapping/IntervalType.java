@@ -6,7 +6,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 
-public final class IntervalType extends _ArmyNoInjectionMapping {
+public final class IntervalType extends _ArmyNoInjectionMapping implements MappingType.SqlIntervalType {
 
 
     public static IntervalType from(Class<?> javaType) {

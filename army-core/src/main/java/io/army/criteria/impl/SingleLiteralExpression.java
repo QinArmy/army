@@ -1,12 +1,11 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.NamedLiteral;
-import io.army.criteria.SqlValueParam;
-import io.army.criteria.TypeInfer;
+import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping._MappingFactory;
+import io.army.meta.MetaException;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
@@ -15,10 +14,11 @@ import java.util.Objects;
 
 /**
  * <p>
- * This class representing literal expression,{@link  SingleParamExpression} and {@link SingleLiteralExpression}
- * must extends {@link OperationExpression } not {@link Expressions}.
- * </p>
+ * This class representing single-literal expression.
  *
+ * @see SingleParamExpression
+ * @see MultiLiteralExpression
+ * @see MultiParamExpression
  * @since 1.0
  */
 abstract class SingleLiteralExpression extends OperationExpression.SimpleExpression {
@@ -30,68 +30,130 @@ abstract class SingleLiteralExpression extends OperationExpression.SimpleExpress
         if (value == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
-        return new NonNamedSingleLiteral(_MappingFactory.getDefault(value.getClass()), value);
+        try {
+            return new NonNamedSingleLiteral(_MappingFactory.getDefault(value.getClass()), value);
+        } catch (MetaException e) {
+            throw ContextStack.clearStackAndCriteriaError(e.getMessage());
+        }
     }
 
 
     /**
+     * @throws CriteriaException throw when infer return codec {@link TableField}.
      * @see SQLs#literal(TypeInfer, Object)
-     * @see SQLs#literalFrom(Object)
      */
     static SingleLiteralExpression single(final @Nullable TypeInfer infer, final @Nullable Object value) {
+        final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
-        }
-        final TypeMeta type;
-        if (infer instanceof TypeMeta) {
-            type = (TypeMeta) infer;
-        } else {
-            type = infer.typeMeta();
+        } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
+            throw SingleParamExpression.typeInferReturnCodecField("encodingLiteral");
         }
         return new NonNamedSingleLiteral(type, value);
     }
 
     /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>infer return codec {@link TableField}.</li>
+     *                           <li>name have no text</li>
+     *                           </ul>
      * @see SQLs#namedLiteral(TypeInfer, String)
      */
     static SingleLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name) {
+        final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
-            throw ContextStack.clearStackAndCriteriaError("named single-literal must have text.");
-        }
-        final TypeMeta type;
-        if (infer instanceof TypeMeta) {
-            type = (TypeMeta) infer;
-        } else {
-            type = infer.typeMeta();
+            throw nameHaveNoText();
+        } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
+            throw SingleParamExpression.typeInferReturnCodecField("encodingNamedLiteral");
         }
         return new NamedNonNullSingleLiteral(type, name);
     }
 
     /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>infer return codec {@link TableField}.</li>
+     *                           <li>name have no text</li>
+     *                           </ul>
      * @see SQLs#namedNullableLiteral(TypeInfer, String)
      */
     static SingleLiteralExpression namedNullable(final @Nullable TypeInfer infer, final @Nullable String name) {
+        final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
-            throw ContextStack.clearStackAndCriteriaError("named single-literal must have text.");
-        }
-        final TypeMeta type;
-        if (infer instanceof TypeMeta) {
-            type = (TypeMeta) infer;
-        } else {
-            type = infer.typeMeta();
+            throw nameHaveNoText();
+        } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
+            throw SingleParamExpression.typeInferReturnCodecField("encodingNamedNullableLiteral");
         }
         return new NamedSingleLiteral(type, name);
     }
 
 
+    /**
+     * @throws CriteriaException throw when infer isn't codec {@link TableField}.
+     * @see SQLs#encodingLiteral(TypeInfer, Object)
+     */
+    static SingleLiteralExpression encodingSingle(final @Nullable TypeInfer infer, final @Nullable Object value) {
+        if (infer == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
+            throw SingleParamExpression.typeInferIsNotCodecField("literal");
+        }
+        return new NonNamedSingleLiteral((TableField) infer, value);
+    }
+
+    /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>infer isn't codec {@link TableField}.</li>
+     *                           <li>name have no text</li>
+     *                           </ul>
+     * @see SQLs#encodingNamedLiteral(TypeInfer, String)
+     */
+    static SingleLiteralExpression encodingNamed(final @Nullable TypeInfer infer, final @Nullable String name) {
+        if (infer == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!_StringUtils.hasText(name)) {
+            throw nameHaveNoText();
+        } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
+            throw SingleParamExpression.typeInferIsNotCodecField("namedLiteral");
+        }
+        return new NamedNonNullSingleLiteral((TableField) infer, name);
+    }
+
+    /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>infer isn't codec {@link TableField}.</li>
+     *                           <li>name have no text</li>
+     *                           </ul>
+     * @see SQLs#encodingNamedNullableLiteral(TypeInfer, String)
+     */
+    static SingleLiteralExpression encodingNamedNullable(final @Nullable TypeInfer infer, final @Nullable String name) {
+        if (infer == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!_StringUtils.hasText(name)) {
+            throw nameHaveNoText();
+        } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
+            throw SingleParamExpression.typeInferIsNotCodecField("namedNullableLiteral");
+        }
+        return new NamedSingleLiteral((TableField) infer, name);
+    }
+
+    private static CriteriaException nameHaveNoText() {
+        return ContextStack.clearStackAndCriteriaError("name must have text for single-literal.");
+    }
+
+
     final TypeMeta type;
 
-    private SingleLiteralExpression(TypeMeta type) {
-        this.type = type;
+    private SingleLiteralExpression(final TypeMeta type) {
+        if (type instanceof QualifiedField) {
+            this.type = ((QualifiedField<?>) type).fieldMeta();
+        } else {
+            this.type = type;
+        }
+
     }
 
     @Override

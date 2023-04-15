@@ -72,8 +72,6 @@ public interface _SqlContext {
 
     void appendLiteral(TypeMeta typeMeta, @Nullable Object value);
 
-    void appendPattern(String pattern);
-
     void appendLiteral(NamedLiteral namedLiteral);
 
     Visible visible();

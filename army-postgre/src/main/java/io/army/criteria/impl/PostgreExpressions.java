@@ -4,6 +4,8 @@ import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
+import io.army.mapping.*;
+import io.army.type.Interval;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -31,6 +33,126 @@ abstract class PostgreExpressions {
     }
 
 
+    /**
+     * @see Postgres#plus(Expression, Expression)
+     */
+    static MappingType plusType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type + numeric_type → numeric_type
+            returnType = Expressions.mathExpType(left, right);
+        } else if (left instanceof MappingType.SqlLocalDateType || right instanceof MappingType.SqlLocalDateType) {
+            if ((right instanceof MappingType.SqlIntegerType
+                    && ((MappingType.SqlIntegerType) right).lengthType().compareWith(MappingType.LengthType.DEFAULT) <= 0)
+                    || (left instanceof MappingType.SqlIntegerType
+                    && ((MappingType.SqlIntegerType) left).lengthType().compareWith(MappingType.LengthType.DEFAULT) <= 0)) {  // date + integer → date
+                returnType = left instanceof MappingType.SqlLocalDateType ? left : right;
+            } else if (right instanceof MappingType.SqlIntervalType || right instanceof MappingType.SqlLocalTimeType
+                    || left instanceof MappingType.SqlIntervalType || left instanceof MappingType.SqlLocalTimeType) { // date + interval → timestamp or date + time → timestamp
+                returnType = LocalDateTimeType.INSTANCE;
+            } else {
+                returnType = StringType.INSTANCE;
+            }
+        } else if (left instanceof MappingType.SqlLocalDateTimeType || right instanceof MappingType.SqlLocalDateTimeType) { // timestamp + interval → timestamp
+            if (right instanceof MappingType.SqlIntervalType || left instanceof MappingType.SqlIntervalType) {
+                returnType = IntervalType.from(Interval.class);
+            } else {
+                returnType = StringType.INSTANCE;
+            }
+        } else if ((left instanceof MappingType.SqlLocalTimeType && right instanceof MappingType.SqlIntervalType)
+                || (left instanceof MappingType.SqlIntervalType && right instanceof MappingType.SqlLocalTimeType)) { // time + interval → time
+            returnType = LocalTimeType.INSTANCE;
+        } else if (left instanceof MappingType.SqlTemporalAmountType && right instanceof MappingType.SqlTemporalAmountType) { // interval + interval → interval
+            returnType = IntervalType.from(Interval.class);
+        } else if ((left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType)
+                || (right instanceof MappingType.SqlGeometryType && left instanceof MappingType.SqlPointType)) { // geometric_type + point → geometric_type
+            returnType = right instanceof MappingType.SqlPointType ? left : right;
+        } else if (left instanceof MappingType.SqlLineStringType && right instanceof MappingType.SqlLineStringType) { // path + path → path
+            returnType = left;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see Postgres#minus(Expression, Expression)
+     */
+    static MappingType minusType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type - numeric_type → numeric_type
+            returnType = Expressions.mathExpType(left, right);
+        } else if (left instanceof MappingType.SqlLocalDateType) {
+            if (right instanceof MappingType.SqlLocalDateType) { // date - date → integer
+                returnType = IntegerType.INSTANCE;
+            } else if (right instanceof MappingType.SqlIntegerType) { // date - integer → date
+                returnType = left;
+            } else if (right instanceof MappingType.SqlIntervalType) { // date - interval → timestamp
+                returnType = LocalDateTimeType.INSTANCE;
+            } else { // error or unknown
+                returnType = StringType.INSTANCE;
+            }
+        } else if (left instanceof MappingType.SqlLocalTimeType || left instanceof MappingType.SqlOffsetTimeType) {
+            if (right instanceof MappingType.SqlLocalTimeType || right instanceof MappingType.SqlOffsetTimeType) {  // time - time → interval
+                returnType = IntervalType.from(Interval.class);
+            } else if (right instanceof MappingType.SqlTemporalAmountType) { // time - interval → time
+                returnType = left;
+            } else { // error or unknown
+                returnType = StringType.INSTANCE;
+            }
+        } else if (left instanceof MappingType.SqlLocalDateTimeType || left instanceof MappingType.SqlOffsetDateTimeType) {
+            if (right instanceof MappingType.SqlLocalDateTimeType || right instanceof MappingType.SqlOffsetDateTimeType) {  // timestamp - timestamp → interval
+                returnType = IntervalType.from(Interval.class);
+            } else if (right instanceof MappingType.SqlTemporalAmountType) { // timestamp - interval → timestamp
+                returnType = left;
+            } else { // error or unknown
+                returnType = StringType.INSTANCE;
+            }
+        } else if (left instanceof MappingType.SqlTemporalAmountType && right instanceof MappingType.SqlTemporalAmountType) { // interval - interval → interval
+            returnType = IntervalType.from(Interval.class);
+        } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType) { // geometric_type - point → geometric_type
+            returnType = left;
+        } else { // error or unknown
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see Postgres#times(Expression, Expression)
+     */
+    static MappingType timesType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type * numeric_type → numeric_type
+            returnType = Expressions.mathExpType(left, right);
+        } else if ((left instanceof MappingType.SqlTemporalAmountType || right instanceof MappingType.SqlTemporalAmountType)
+                && (right instanceof MappingType.SqlNumberType || left instanceof MappingType.SqlNumberType)) {  // interval * double precision → interval
+            returnType = IntervalType.from(Interval.class);
+        } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType) { // geometric_type * point → geometric_type
+            returnType = left;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see Postgres#divide(Expression, Expression)
+     */
+    static MappingType divideType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type / numeric_type → numeric_type
+            returnType = Expressions.mathExpType(left, right);
+        } else if (left instanceof MappingType.SqlTemporalAmountType && right instanceof MappingType.SqlNumberType) {  // interval / double precision → interval
+            returnType = IntervalType.from(Interval.class);
+        } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType) { // geometric_type / point → geometric_type
+            returnType = left;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+
 
     /*-------------------below private -------------------*/
 
@@ -38,6 +160,7 @@ abstract class PostgreExpressions {
         String m = "Postgre OVERLAPS operator don't support multi-value parameter/literal";
         return ContextStack.clearStackAndCriteriaError(m);
     }
+
 
     private static final class PeriodOverlapsPredicate extends OperationPredicate
             implements PostgreSyntax._PeriodOverlapsClause {

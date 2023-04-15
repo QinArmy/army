@@ -5,7 +5,6 @@ import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.meta.FieldMeta;
-import io.army.type.Interval;
 import io.army.util._StringUtils;
 
 import java.util.Collection;
@@ -226,7 +225,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      */
     public static Expression plus(Expression left, Expression right) {
         return Expressions.dialectDualExp(left, DualOperator.PLUS, right,
-                _returnType(left, right, PostgreSyntax::plusType)
+                _returnType(left, right, PostgreExpressions::plusType)
         );
     }
 
@@ -235,7 +234,9 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Subtraction</a>
      */
     public static Expression minus(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.MINUS, right, _returnType(left, right, PostgreSyntax::plusType));
+        return Expressions.dialectDualExp(left, DualOperator.MINUS, right,
+                _returnType(left, right, PostgreExpressions::minusType)
+        );
     }
 
     /**
@@ -243,7 +244,9 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Multiplication</a>
      */
     public static Expression times(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.TIMES, right, _returnType(left, right, PostgreSyntax::plusType));
+        return Expressions.dialectDualExp(left, DualOperator.TIMES, right,
+                _returnType(left, right, PostgreExpressions::timesType)
+        );
     }
 
     /**
@@ -251,7 +254,9 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Division (for integral types, division truncates the result towards zero)</a>
      */
     public static Expression divide(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.DIVIDE, right, _returnType(left, right, PostgreSyntax::plusType));
+        return Expressions.dialectDualExp(left, DualOperator.DIVIDE, right,
+                _returnType(left, right, PostgreExpressions::divideType)
+        );
     }
 
     /**
@@ -259,7 +264,9 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Modulo (remainder); available for smallint, integer, bigint, and numeric</a>
      */
     public static Expression mode(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.MOD, right, _returnType(left, right, PostgreSyntax::plusType));
+        return Expressions.dialectDualExp(left, DualOperator.MOD, right,
+                _returnType(left, right, PostgreExpressions::plusType)
+        );
     }
 
     /**
@@ -326,7 +333,6 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
                 _returnType(left, right, PostgreSyntax::doubleVerticalType)
         );
     }
-
 
 
     /**
@@ -578,25 +584,6 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
             returnType = DoubleType.INSTANCE;
         }
         return returnType;
-    }
-
-    /**
-     * @see #plus(Expression, Expression)
-     */
-    private static MappingType plusType(final MappingType left, final MappingType right) {
-        final MappingType returnType;
-        if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) {
-            returnType = Expressions.mathExpType(left, right);
-        } else if (left instanceof MappingType.SqlTemporalAmountType && right instanceof MappingType.SqlTemporalAmountType) {
-            returnType = IntervalType.from(Interval.class);
-        } else if (left instanceof MappingType.SqlTimeValueType || right instanceof MappingType.SqlTimeValueType) {
-
-        } else if (left instanceof MappingType.SqlGeometryType || right instanceof MappingType.SqlGeometryType) {
-
-        } else {
-
-        }
-        return null;
     }
 
 

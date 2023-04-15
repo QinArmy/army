@@ -61,7 +61,7 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T> OperationPredicate less(BiFunction<Expression, T, Expression> operator, T operand) {
+    public final <T> OperationPredicate less(BiFunction<Expression, T, Expression> valueFunc, T operand) {
         throw unsupportedOperation();
     }
 

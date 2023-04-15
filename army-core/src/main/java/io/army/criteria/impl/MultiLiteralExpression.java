@@ -1,8 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.NamedLiteral;
-import io.army.criteria.SqlValueParam;
-import io.army.criteria.TypeInfer;
+import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -16,29 +14,31 @@ import java.util.*;
  * This class representing multi-value literal expression.
  * </p>
  *
+ * @see SingleParamExpression
  * @see SingleLiteralExpression
+ * @see MultiParamExpression
  * @since 1.0
  */
 
-abstract class MultiLiteralExpression extends OperationExpression.MultiValueExpression
-        implements SqlValueParam.MultiValue {
+abstract class MultiLiteralExpression extends OperationExpression.MultiValueExpression {
 
     /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>values is empty</li>
+     *                           <li>infer return codec {@link TableField}</li>
+     *                           </ul>
      * @see SQLs#multiLiteral(TypeInfer, Collection)
      */
     static MultiLiteralExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+        final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (values == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (values.size() == 0) {
-            throw ContextStack.clearStackAndCriteriaError("values must non-empty");
-        }
-        final TypeMeta type;
-        if (infer instanceof TypeMeta) {
-            type = (TypeMeta) infer;
-        } else {
-            type = infer.typeMeta();
+            throw valuesIsEmpty();
+        } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
+            throw SingleParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
         }
         return new NonNamedMultiLiteral(type, values);
     }
@@ -50,31 +50,91 @@ abstract class MultiLiteralExpression extends OperationExpression.MultiValueExpr
     }
 
     /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>name have no text</li>
+     *                           <li>size less than 1</li>
+     *                           <li>infer return codec {@link TableField}</li>
+     *                           </ul>
      * @see SQLs#namedMultiLiteral(TypeInfer, String, int)
      */
 
     static MultiLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name, int size) {
+        final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
-            throw ContextStack.clearStackAndCriteriaError("named multi-literal must have text.");
+            throw nameHaveNoText();
         } else if (size < 1) {
-            throw ContextStack.clearStackAndCriteriaError("size must great than zero.");
-        }
-        final TypeMeta type;
-        if (infer instanceof TypeMeta) {
-            type = (TypeMeta) infer;
-        } else {
-            type = infer.typeMeta();
+            throw sizeLessThanOne(size);
+        } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
+            throw SingleParamExpression.typeInferReturnCodecField("encodingNamedMultiLiteral");
         }
         return new NamedMultiLiteral(type, name, size);
+    }
+
+    /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>values is empty</li>
+     *                           <li>infer isn't codec {@link TableField}</li>
+     *                           </ul>
+     * @see SQLs#encodingMultiLiteral(TypeInfer, Collection)
+     */
+    static MultiLiteralExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+        if (infer == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (values == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (values.size() == 0) {
+            throw valuesIsEmpty();
+        } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
+            throw SingleParamExpression.typeInferIsNotCodecField("multiLiteral");
+        }
+        return new NonNamedMultiLiteral((TableField) infer, values);
+    }
+
+    /**
+     * @throws CriteriaException throw when <ul>
+     *                           <li>name have no text</li>
+     *                           <li>size less than 1</li>
+     *                           <li>infer isn't codec {@link TableField}</li>
+     *                           </ul>
+     * @see SQLs#encodingNamedMultiLiteral(TypeInfer, String, int)
+     */
+    static MultiLiteralExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
+        if (infer == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!_StringUtils.hasText(name)) {
+            throw nameHaveNoText();
+        } else if (size < 1) {
+            throw sizeLessThanOne(size);
+        } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
+            throw SingleParamExpression.typeInferIsNotCodecField("namedMultiLiteral");
+        }
+        return new NamedMultiLiteral((TableField) infer, name, size);
+    }
+
+    private static CriteriaException valuesIsEmpty() {
+        return ContextStack.clearStackAndCriteriaError("values must non-empty for multi-value literal.");
+    }
+
+    private static CriteriaException nameHaveNoText() {
+        return ContextStack.clearStackAndCriteriaError("name must have text for multi-value named literal.");
+    }
+
+    private static CriteriaException sizeLessThanOne(final int size) {
+        final String m = String.format("size[%s] must greater than 0 for multi-value named literal.", size);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 
     final TypeMeta type;
 
     private MultiLiteralExpression(TypeMeta type) {
-        this.type = type;
+        if (type instanceof QualifiedField) {
+            this.type = ((QualifiedField<?>) type).fieldMeta();
+        } else {
+            this.type = type;
+        }
     }
 
     @Override
