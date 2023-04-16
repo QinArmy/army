@@ -73,17 +73,17 @@ public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerTy
 
     @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return IntegerType._convertToInt(this, nonNull, 0, MAX_VALUE, PARAM_ERROR_HANDLER);
+        return IntegerType._convertToInt(this, nonNull, 0, MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Integer beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return IntegerType._convertToInt(this, nonNull, 0, MAX_VALUE, PARAM_ERROR_HANDLER);
+        return IntegerType._convertToInt(this, nonNull, 0, MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Integer afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return IntegerType._convertToInt(this, nonNull, 0, MAX_VALUE, DATA_ACCESS_ERROR_HANDLER);
+        return IntegerType._convertToInt(this, nonNull, 0, MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

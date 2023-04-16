@@ -5,6 +5,8 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.standard.SQLFunction;
+import io.army.dialect._Constant;
+import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
@@ -13,6 +15,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping.TextType;
 import io.army.meta.TypeMeta;
+import io.army.util._StringUtils;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
@@ -452,8 +455,28 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
         return ArmySortItems.create(this, SQLs.DESC, firstLast);
     }
 
+    static OperationExpression bracketExp(final @Nullable Expression expression) {
+        final OperationExpression bracket;
+        if (!(expression instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(expression);
+        } else if (expression instanceof OperationSimpleExpression) {
+            bracket = (OperationSimpleExpression) expression;
+        } else {
+            bracket = new BracketsExpression((ArmyExpression) expression);
+        }
+        return bracket;
+    }
 
-    static abstract class OperationSimpleExpression extends OperationExpression implements SimpleExpression {
+    /**
+     * @see SQLs#NULL
+     */
+    static SqlSyntax.WordNull nullWord() {
+        return NullWord.INSTANCE;
+    }
+
+
+    static abstract class OperationSimpleExpression extends OperationExpression
+            implements SimpleExpression, ArmySimpleExpression {
 
         /**
          * package constructor
@@ -734,38 +757,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
     }//CompoundExpression
 
 
-    /**
-     * <p>
-     * This class is base class only of below:
-     *     <ul>
-     *         <li>{@link SingleParamExpression}</li>
-     *         <li>{@link SingleLiteralExpression}</li>
-     *     </ul>
-     * </p>
-     *
-     * @since 1.0
-     */
-    static abstract class SingleValueExpression extends OperationSimpleExpression
-            implements SqlValueParam.SingleValue {
-
-        final TypeMeta type;
-
-        /**
-         * package constructor
-         */
-        SingleValueExpression(final TypeMeta type) {
-            if (type instanceof QualifiedField) {
-                this.type = ((QualifiedField<?>) type).fieldMeta();
-            } else {
-                this.type = type;
-            }
-        }
-
-
-    }//SingleValueExpression
-
-
-    static abstract class PredicateExpression extends OperationExpression implements _Predicate {
+    static abstract class PredicateExpression extends OperationExpression implements _Predicate, FixedType {
 
         /**
          * package constructor
@@ -781,6 +773,115 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
 
 
     }//PredicateExpression
+
+
+    private static final class BracketsExpression extends OperationExpression implements ArmySimpleExpression {
+
+        private final ArmyExpression expression;
+
+        /**
+         * @see #bracketExp(Expression)
+         */
+        private BracketsExpression(ArmyExpression expression) {
+            this.expression = expression;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.expression.typeMeta();
+        }
+
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder builder = context.sqlBuilder()
+                    .append(_Constant.SPACE_LEFT_PAREN);
+
+            this.expression.appendSql(context);
+
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+
+        @Override
+        public int hashCode() {
+            return this.expression.hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof BracketsExpression) {
+                match = ((BracketsExpression) obj).expression.equals(this.expression);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE_LEFT_PAREN)
+                    .append(this.expression)
+                    .append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+
+    }//BracketsExpression
+
+
+    /**
+     * <p>
+     * This class representing sql {@code NULL} key word.
+     * </p>
+     *
+     * @see SQLs#NULL
+     */
+    private static final class NullWord extends OperationExpression
+            implements SqlValueParam.SingleNonNamedValue,
+            ArmySimpleExpression,
+            SqlSyntax.WordNull,
+            SqlSyntax.ArmyKeyWord,
+            FixedType {
+
+        private static final NullWord INSTANCE = new NullWord();
+
+
+        private NullWord() {
+        }
+
+        @Override
+        public String spaceRender() {
+            return _Constant.SPACE_NULL;
+        }
+
+        @Override
+        public void appendSql(_SqlContext context) {
+            context.sqlBuilder().append(_Constant.SPACE_NULL);
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return StringType.INSTANCE;
+        }
+
+        @Override
+        public Object value() {
+            //always null
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return _Constant.SPACE_NULL;
+        }
+
+
+    }// NullWord
 
 
 }

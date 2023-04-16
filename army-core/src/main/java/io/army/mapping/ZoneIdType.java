@@ -41,13 +41,13 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
 
     @Override
     public ZoneId convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToZoneId(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToZoneId(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         ZoneId zoneId;
-        zoneId = convertToZoneId(this, nonNull, PARAM_ERROR_HANDLER);
+        zoneId = convertToZoneId(this, nonNull, PARAM_ERROR_HANDLER_0);
         if (!(zoneId instanceof ZoneOffset)) {
             zoneId = zoneId.getRules().getOffset(Instant.EPOCH);
         }
@@ -56,7 +56,7 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
 
     @Override
     public ZoneId afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
-        return convertToZoneId(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToZoneId(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

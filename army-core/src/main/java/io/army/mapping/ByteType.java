@@ -70,13 +70,13 @@ public final class ByteType extends _NumericType._IntegerType {
 
     @Override
     public Byte convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return (byte) IntegerType._convertToInt(this, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, PARAM_ERROR_HANDLER);
+        return (byte) IntegerType._convertToInt(this, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Number beforeBind(final SqlType type, MappingEnv env, final Object nonNull) {
         final int intValue;
-        intValue = IntegerType._convertToInt(this, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, PARAM_ERROR_HANDLER);
+        intValue = IntegerType._convertToInt(this, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, PARAM_ERROR_HANDLER_0);
         final Number value;
         switch (type.database()) {
             case MySQL:
@@ -86,7 +86,7 @@ public final class ByteType extends _NumericType._IntegerType {
                 value = (short) intValue;
                 break;
             default:
-                throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+                throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return value;
     }
@@ -94,7 +94,7 @@ public final class ByteType extends _NumericType._IntegerType {
 
     @Override
     public Byte afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return (byte) IntegerType._convertToInt(this, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER);
+        return (byte) IntegerType._convertToInt(this, nonNull, Byte.MIN_VALUE, Byte.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

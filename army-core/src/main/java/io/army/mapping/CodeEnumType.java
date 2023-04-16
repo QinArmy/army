@@ -62,7 +62,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     @Override
     public CodeEnum convert(MappingEnv env, final Object nonNull) throws CriteriaException {
         if (!this.enumClass.isInstance(nonNull)) {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return (CodeEnum) nonNull;
     }
@@ -70,7 +70,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     @Override
     public Integer beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         if (!this.enumClass.isInstance(nonNull)) {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return ((CodeEnum) nonNull).code();
     }
@@ -83,7 +83,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof Long) {
             final long v = (Long) nonNull;
             if (v < Integer.MIN_VALUE || v > Integer.MAX_VALUE) {
-                throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
             }
             code = (int) v;
         } else if (nonNull instanceof Short || nonNull instanceof Byte) {
@@ -92,16 +92,16 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
             try {
                 code = ((BigInteger) nonNull).intValueExact();
             } catch (ArithmeticException e) {
-                throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
             }
         } else if (nonNull instanceof String) {
             try {
                 code = Integer.parseInt((String) nonNull);
             } catch (NumberFormatException e) {
-                throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
             }
         } else {
-            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }
         final CodeEnum codeEnum;
         codeEnum = this.codeMap.get(code);

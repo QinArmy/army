@@ -18,7 +18,6 @@ import static io.army.dialect.Database.PostgreSQL;
  *     <ul>
  *         <li>{@link DataField}</li>
  *         <li>single-value parameter/literal,for example {@link SQLs#param(TypeInfer, Object)}</li>
- *         <li>parentheses expression,for example (1+ 2)</li>
  *         <li>sql function,for example {@link SQLs#countAsterisk()}</li>
  *         <li>sql variable</li>
  *     </ul>

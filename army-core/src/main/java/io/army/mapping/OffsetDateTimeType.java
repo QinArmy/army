@@ -91,10 +91,10 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
             try {
                 value = parseAfterGet(type, env, nonNull);
             } catch (DateTimeParseException e) {
-                throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+                throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
             }
         } else {
-            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return value;
     }
@@ -112,10 +112,10 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
             try {
                 dateTime = parseBeforeBind(sqlType, nonNull);
             } catch (DateTimeParseException e) {
-                throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+                throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
             }
         } else {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
 
         return dateTime;

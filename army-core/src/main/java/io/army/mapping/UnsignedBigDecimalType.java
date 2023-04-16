@@ -45,9 +45,9 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     @Override
     public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {
         final BigDecimal value;
-        value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER);
+        value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0);
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return value;
     }
@@ -55,9 +55,9 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     @Override
     public BigDecimal beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         final BigDecimal value;
-        value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER);
+        value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0);
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return value;
     }
@@ -65,9 +65,9 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     @Override
     public BigDecimal afterGet(SqlType type, MappingEnv env, Object nonNull) {
         final BigDecimal value;
-        value = BigDecimalType._convertToBigDecimal(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        value = BigDecimalType._convertToBigDecimal(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
         if (value.compareTo(BigDecimal.ZERO) < 0) {
-            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return value;
     }

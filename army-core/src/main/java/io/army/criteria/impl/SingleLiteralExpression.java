@@ -21,7 +21,8 @@ import java.util.Objects;
  * @see MultiParamExpression
  * @since 1.0
  */
-abstract class SingleLiteralExpression extends OperationExpression.SingleValueExpression {
+abstract class SingleLiteralExpression extends OperationExpression.OperationSimpleExpression
+        implements FixedType, SqlValueParam.SingleValue, ArmyExpression {
 
     /**
      * @see SQLs#literalValue(Object)
@@ -145,9 +146,14 @@ abstract class SingleLiteralExpression extends OperationExpression.SingleValueEx
     }
 
 
-    private SingleLiteralExpression(final TypeMeta type) {
-        super(type);
+    final TypeMeta type;
 
+    private SingleLiteralExpression(final TypeMeta type) {
+        if (type instanceof QualifiedField) {
+            this.type = ((QualifiedField<?>) type).fieldMeta();
+        } else {
+            this.type = type;
+        }
     }
 
     @Override

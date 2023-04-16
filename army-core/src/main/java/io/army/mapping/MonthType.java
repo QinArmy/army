@@ -55,18 +55,18 @@ public final class MonthType extends _ArmyNoInjectionMapping implements MappingT
 
     @Override
     public Month convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToMoth(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToMoth(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return convertToMoth(this, nonNull, PARAM_ERROR_HANDLER)
+        return convertToMoth(this, nonNull, PARAM_ERROR_HANDLER_0)
                 .name();
     }
 
     @Override
     public Month afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return convertToMoth(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToMoth(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

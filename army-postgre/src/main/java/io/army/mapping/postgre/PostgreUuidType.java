@@ -54,7 +54,7 @@ public final class PostgreUuidType extends _ArmyNoInjectionMapping {
         } else if (nonNull instanceof String) {
 
         } else {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         //TODO
         throw new UnsupportedOperationException();

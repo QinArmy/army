@@ -81,17 +81,17 @@ public final class StringType extends _ArmyInnerMapping implements MappingType.S
 
     @Override
     public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+        return _convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return _convertToString(this, type, nonNull, PARAM_ERROR_HANDLER);
+        return _convertToString(this, type, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public String afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
-        return _convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return _convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
     @Deprecated

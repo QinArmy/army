@@ -59,17 +59,17 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
 
     @Override
     public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER);
+        return _convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public BigDecimal beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return _convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER);
+        return _convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public BigDecimal afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        return _convertToBigDecimal(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return _convertToBigDecimal(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

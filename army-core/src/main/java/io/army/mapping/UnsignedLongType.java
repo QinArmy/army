@@ -65,13 +65,13 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
 
     @Override
     public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER);
+        return _convertToUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Number beforeBind(final SqlType type, MappingEnv env, final Object nonNull) {
         final BigInteger integerValue;
-        integerValue = _convertToUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER);
+        integerValue = _convertToUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
         final Number value;
         switch (type.database()) {
             case MySQL:
@@ -81,14 +81,14 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
                 value = new BigDecimal(integerValue);
                 break;
             default:
-                throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+                throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return value;
     }
 
     @Override
     public BigInteger afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        return _convertToUnsignedBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return _convertToUnsignedBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @since 1.0
  */
-abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta<T>, _Selection {
+abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta<T>, _Selection, FixedType {
 
     private static final String ID = _MetaBridge.ID;
 

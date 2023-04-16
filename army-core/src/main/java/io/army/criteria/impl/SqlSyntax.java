@@ -39,7 +39,7 @@ abstract class SqlSyntax {
 
     }
 
-    public interface WordNull extends SQLsSyntax.BooleanTestWord, Expression {
+    public interface WordNull extends SQLsSyntax.BooleanTestWord, Expression { // extends Expression not SimpleExpression
 
     }
 

@@ -60,7 +60,7 @@ public final class BlobType extends _ArmyInnerMapping {
     @Override
     public byte[] convert(MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return (byte[]) nonNull;
     }
@@ -68,7 +68,7 @@ public final class BlobType extends _ArmyInnerMapping {
     @Override
     public byte[] beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return (byte[]) nonNull;
     }
@@ -76,7 +76,7 @@ public final class BlobType extends _ArmyInnerMapping {
     @Override
     public byte[] afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
-            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return (byte[]) nonNull;
     }

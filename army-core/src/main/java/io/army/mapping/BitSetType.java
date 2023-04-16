@@ -70,7 +70,7 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
 
     @Override
     public BitSet convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToBitSet(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToBitSet(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
@@ -78,10 +78,10 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
         final Object value;
         switch (type.database()) {
             case MySQL:
-                value = _MappingUtils.bitwiseToLong(this, nonNull, PARAM_ERROR_HANDLER);
+                value = _MappingUtils.bitwiseToLong(this, nonNull, PARAM_ERROR_HANDLER_0);
                 break;
             case PostgreSQL:
-                value = _MappingUtils.bitwiseToString(this, nonNull, PARAM_ERROR_HANDLER);
+                value = _MappingUtils.bitwiseToString(this, nonNull, PARAM_ERROR_HANDLER_0);
                 break;
             default:
                 throw outRangeOfSqlType(type, nonNull);
@@ -91,7 +91,7 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
 
     @Override
     public BitSet afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
-        return convertToBitSet(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToBitSet(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

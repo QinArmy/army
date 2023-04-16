@@ -587,9 +587,30 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         return new NotPredicate((OperationPredicate) predicate);
     }
 
-    static abstract class OperationSimplePredicate extends OperationPredicate implements SimplePredicate {
+    /**
+     * @see SQLs#TRUE
+     * @see SQLs#FALSE
+     */
+    static SqlSyntax.WordBooleans booleanWord(final boolean value) {
+        return value ? BooleanWord.TRUE : BooleanWord.FALSE;
+    }
 
-        OperationSimplePredicate() {
+    /**
+     * <p>
+     * Private class.This class is base class of below:
+     * <li>{@link BooleanWord}</li>
+     * <li>{@link BracketPredicate}</li>
+     * <li>{@link SqlFunctionPredicate}</li>
+     * <li>{@link OrPredicate},because OR/XOR operator always have outer parentheses。</li>
+     * </p>
+     */
+    private static abstract class OperationSimplePredicate extends OperationPredicate
+            implements SimplePredicate, ArmySimpleExpression {
+
+        /**
+         * private constructor
+         */
+        private OperationSimplePredicate() {
         }
 
 
@@ -617,7 +638,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }// CompoundPredicate
 
 
-    static final class BracketPredicate extends OperationSimplePredicate {
+    private static final class BracketPredicate extends OperationSimplePredicate {
 
         private final OperationPredicate predicate;
 
@@ -857,6 +878,42 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
 
     }//NotPredicate
+
+
+    /**
+     * @see SQLs#TRUE
+     * @see SQLs#FALSE
+     */
+    private static final class BooleanWord extends OperationSimplePredicate
+            implements SqlSyntax.WordBooleans, SqlSyntax.ArmyKeyWord {
+
+        private static final BooleanWord TRUE = new BooleanWord(" TRUE");
+
+        private static final BooleanWord FALSE = new BooleanWord(" FALSE");
+
+        private final String spaceWord;
+
+        private BooleanWord(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public String spaceRender() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(this.spaceWord);
+        }
+
+        @Override
+        public String toString() {
+            return this.spaceWord;
+        }
+
+
+    }//BooleanWord
 
 
 }

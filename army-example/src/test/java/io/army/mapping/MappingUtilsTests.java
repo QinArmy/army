@@ -22,7 +22,7 @@ public class MappingUtilsTests {
     public void bitwiseToString() {
         BitSet bitSet = BitSet.valueOf(new long[]{0xffff_ffffL, 2});
         String bitStr;
-        bitStr = _MappingUtils.bitwiseToString(BitSetType.INSTANCE, bitSet, MappingType.PARAM_ERROR_HANDLER);
+        bitStr = _MappingUtils.bitwiseToString(BitSetType.INSTANCE, bitSet, MappingType.PARAM_ERROR_HANDLER_0);
         Assert.assertEquals(bitStr, "100000000000000000000000000000000011111111111111111111111111111111");
     }
 
@@ -35,7 +35,7 @@ public class MappingUtilsTests {
         long paramValue;
         for (long word : words) {
             bitSet = BitSet.valueOf(new long[]{word});
-            paramValue = _MappingUtils.bitwiseToLong(BitSetType.INSTANCE, bitSet.toByteArray(), MappingType.PARAM_ERROR_HANDLER);
+            paramValue = _MappingUtils.bitwiseToLong(BitSetType.INSTANCE, bitSet.toByteArray(), MappingType.PARAM_ERROR_HANDLER_0);
             Assert.assertEquals(paramValue, word);
         }
 

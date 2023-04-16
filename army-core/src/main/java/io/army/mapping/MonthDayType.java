@@ -66,7 +66,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
 
     @Override
     public MonthDay convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToMonthDay(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToMonthDay(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
@@ -82,7 +82,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
             value = ((ZonedDateTime) nonNull).toLocalDate();
         } else {
             final MonthDay monthDay;
-            monthDay = convertToMonthDay(this, nonNull, PARAM_ERROR_HANDLER);
+            monthDay = convertToMonthDay(this, nonNull, PARAM_ERROR_HANDLER_0);
             value = LocalDate.of(1970, monthDay.getMonth(), monthDay.getDayOfMonth());
         }
         return value;
@@ -90,7 +90,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
 
     @Override
     public MonthDay afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToMonthDay(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToMonthDay(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
 
     }
 

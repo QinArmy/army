@@ -69,7 +69,7 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
 
     @Override
     public Year convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER);
+        return _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
@@ -77,7 +77,7 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
         final Temporal value;
         switch (type.database()) {
             case MySQL:
-                value = _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER);
+                value = _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER_0);
                 break;
             case PostgreSQL: {
                 if (nonNull instanceof LocalDate) {
@@ -86,20 +86,20 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
                     value = ((LocalDateTime) nonNull).toLocalDate();
                 } else {
                     final Year year;
-                    year = _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER);
+                    year = _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER_0);
                     value = LocalDate.of(year.getValue(), Month.JANUARY, 1);
                 }
             }
             break;
             default:
-                throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+                throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return value;
     }
 
     @Override
     public Year afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToYear(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return _convertToYear(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
     private static Year _convertToYear(final MappingType type, final MappingEnv env, final Object nonNull,

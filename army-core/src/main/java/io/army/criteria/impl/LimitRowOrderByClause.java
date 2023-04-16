@@ -3,12 +3,10 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Statement;
-import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.BigDecimalType;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
-import io.army.meta.TypeMeta;
 
 import java.util.function.*;
 
@@ -198,13 +196,13 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
 
     @Override
     public final LR limitAll() {
-        return this.limit(AllWord.INSTANCE);
+        return this.limit(NonOperationExpression.allWord());
     }
 
     @Override
     public final LR ifLimitAll(BooleanSupplier supplier) {
         if (supplier.getAsBoolean()) {
-            this.limit(AllWord.INSTANCE);
+            this.limit(NonOperationExpression.allWord());
         } else {
             this.rowCountOrPercent = null;
         }
@@ -475,23 +473,6 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
     private static CriteriaException limitAndFetch(CriteriaContext context) {
         return ContextStack.criteriaError(context, "Can't use LIMIT clause with FETCH clause");
     }
-
-
-    private static final class AllWord extends NonOperationExpression {
-
-        private static final AllWord INSTANCE = new AllWord();
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation(this);
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" ALL");
-        }
-
-    }//AllWord
 
 
 }

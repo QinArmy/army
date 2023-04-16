@@ -1032,7 +1032,7 @@ abstract class FunctionUtils {
     }//AggregateOverClause
 
 
-    static final class NamedNotation extends NonOperationExpression.NonSelectionExpression {
+    static final class NamedNotation extends NonOperationExpression.NonOperationFunction {
 
         final String name;
 
@@ -2017,7 +2017,7 @@ abstract class FunctionUtils {
     }//MultiArgFuncPredicate
 
 
-    private static final class MultiArgVoidFunction extends NonOperationExpression implements SQLFunction {
+    private static final class MultiArgVoidFunction extends NonOperationExpression.NonOperationFunction {
 
         private final String name;
 

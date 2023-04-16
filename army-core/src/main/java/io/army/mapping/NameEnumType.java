@@ -73,12 +73,12 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     @Override
     public Enum<?> afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }
         try {
             return valueOf(this.enumClass, (String) nonNull);
         } catch (IllegalArgumentException e) {
-            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }
     }
 
@@ -90,7 +90,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
         } else if (this.enumClass.isInstance(nonNull)) {
             value = (Enum<?>) nonNull;
         } else {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return value;
     }

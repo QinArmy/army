@@ -72,17 +72,17 @@ public final class UnsignedIntegerType extends _NumericType._UnsignedIntegerType
 
     @Override
     public Long convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return LongType._convertToLong(this, nonNull, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
+        return LongType._convertToLong(this, nonNull, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Long beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return LongType._convertToLong(this, nonNull, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER);
+        return LongType._convertToLong(this, nonNull, 0L, 0xFFFF_FFFFL, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return LongType._convertToLong(this, nonNull, 0L, 0xFFFF_FFFFL, DATA_ACCESS_ERROR_HANDLER);
+        return LongType._convertToLong(this, nonNull, 0L, 0xFFFF_FFFFL, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

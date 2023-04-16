@@ -20,7 +20,8 @@ import java.util.Objects;
  * @see MultiParamExpression
  * @since 1.0
  */
-abstract class SingleParamExpression extends OperationExpression.SingleValueExpression implements SQLParam {
+abstract class SingleParamExpression extends OperationExpression.OperationSimpleExpression
+        implements SqlValueParam.SingleValue, SQLParam, FixedType, ArmyExpression {
 
     /**
      * @see SQLs#paramValue(Object)
@@ -161,8 +162,15 @@ abstract class SingleParamExpression extends OperationExpression.SingleValueExpr
     }
 
 
-    private SingleParamExpression(TypeMeta type) {
-        super(type);
+    final TypeMeta type;
+
+
+    private SingleParamExpression(final TypeMeta type) {
+        if (type instanceof QualifiedField) {
+            this.type = ((QualifiedField<?>) type).fieldMeta();
+        } else {
+            this.type = type;
+        }
     }
 
     @Override

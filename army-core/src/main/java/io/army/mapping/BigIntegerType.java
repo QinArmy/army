@@ -62,23 +62,23 @@ public final class BigIntegerType extends _NumericType._IntegerType {
 
     @Override
     public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToBigInteger(this, nonNull, PARAM_ERROR_HANDLER);
+        return _convertToBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public BigDecimal beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final BigDecimal value;
-        value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER)
+        value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0)
                 .stripTrailingZeros();
         if (value.scale() != 0) {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return value;
     }
 
     @Override
     public BigInteger afterGet(final SqlType type, MappingEnv env, final Object nonNull) {
-        return _convertToBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return _convertToBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
      static BigInteger _convertToBigInteger(final MappingType type, final Object nonNull,

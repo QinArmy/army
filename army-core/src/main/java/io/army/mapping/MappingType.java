@@ -24,12 +24,15 @@ import java.util.function.BiFunction;
 
 public abstract class MappingType implements TypeMeta, TypeInfer {
 
-    protected static final BiFunction<MappingType, Object, ArmyException> PARAM_ERROR_HANDLER = MappingType::paramError;
+    protected static final BiFunction<MappingType, Object, ArmyException> PARAM_ERROR_HANDLER_0 = MappingType::paramError0;
 
-    protected static final BiFunction<MappingType, Object, ArmyException> DATA_ACCESS_ERROR_HANDLER = MappingType::dataAccessError;
+    protected static final BiFunction<MappingType, Object, ArmyException> DATA_ACCESS_ERROR_HANDLER_0 = MappingType::dataAccessError0;
 
     protected static final BiFunction<MappingType, ServerMeta, NotSupportDialectException> MAP_ERROR_HANDLER = MappingType::mapError;
 
+    protected static final ErrorHandler PARAM_ERROR_HANDLER = MappingType::paramError;
+
+    protected static final ErrorHandler DATA_ACCESS_ERROR_HANDLER = MappingType::dataAccessError;
 
     protected MappingType() {
     }
@@ -188,11 +191,19 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
     }
 
 
-    private static CriteriaException paramError(final MappingType type, final Object nonNull) {
+    private static CriteriaException paramError0(final MappingType type, final Object nonNull) {
         return new CriteriaException(createConvertErrorMessage(type, nonNull));
     }
 
-    private static DataAccessException dataAccessError(final MappingType type, final Object nonNull) {
+    private static CriteriaException paramError(final MappingType type, SqlType sqlType, final @Nullable Object nonNull) {
+        return new CriteriaException(createConvertErrorMessage(type, nonNull));
+    }
+
+    private static DataAccessException dataAccessError(final MappingType type, SqlType sqlType, final @Nullable Object nonNull) {
+        return new DataAccessException(createConvertErrorMessage(type, nonNull));
+    }
+
+    private static DataAccessException dataAccessError0(final MappingType type, final Object nonNull) {
         return new DataAccessException(createConvertErrorMessage(type, nonNull));
     }
 
@@ -471,4 +482,17 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
     public interface SqlMultiPolygonType extends SqlMultiSurfaceType {
 
     }
+
+
+
+    /*-------------------below protected interfaces -------------------*/
+
+
+    protected interface ErrorHandler {
+
+        ArmyException apply(MappingType type, SqlType sqlType, @Nullable Object value);
+
+    }
+
+
 }

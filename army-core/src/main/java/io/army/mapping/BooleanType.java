@@ -73,17 +73,17 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
 
     @Override
     public Boolean convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToBoolean(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToBoolean(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Boolean beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToBoolean(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToBoolean(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Boolean afterGet(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToBoolean(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToBoolean(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

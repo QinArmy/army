@@ -75,17 +75,17 @@ public final class LongType extends _NumericType._IntegerType {
 
     @Override
     public Long convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER);
+        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Long beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER);
+        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER);
+        return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

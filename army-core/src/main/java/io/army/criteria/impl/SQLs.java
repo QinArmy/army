@@ -10,12 +10,10 @@ import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
-import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyInnerMapping;
 import io.army.meta.ServerMeta;
-import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
@@ -60,19 +58,19 @@ public abstract class SQLs extends SQLsSyntax {
 
     public static final SymbolPeriod PERIOD = SQLSymbolPeriod.PERIOD;
 
-    public static final WordBooleans TRUE = new BooleanWord(true);
+    public static final WordBooleans TRUE = OperationPredicate.booleanWord(true);
 
-    public static final WordBooleans FALSE = new BooleanWord(false);
+    public static final WordBooleans FALSE = OperationPredicate.booleanWord(false);
 
-    public static final WordDefault DEFAULT = new DefaultWord();
+    public static final WordDefault DEFAULT = NonOperationExpression.defaultWord();
 
-    public static final WordNull NULL = new NullWord();
+    public static final WordNull NULL = OperationExpression.nullWord();
 
     public static final WordEscape ESCAPE = KeyWordEscape.ESCAPE;
     /**
      * package field
      */
-    static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
+    static final Expression _ASTERISK_EXP = NonOperationExpression.symbolAsterisk();
 
     private static final Function<? extends Item, ? extends Item> _IDENTITY = SQLs::_identity;
 
@@ -531,136 +529,6 @@ public abstract class SQLs extends SQLsSyntax {
     }//SQLIdentifierImpl
 
 
-    /**
-     * <p>
-     * This class representing sql {@code DEFAULT} key word.
-     * </p>
-     */
-    private static final class DefaultWord extends NonOperationExpression.NonSelectionExpression
-            implements WordDefault, FunctionArg.SingleFunctionArg {
-
-        private DefaultWord() {
-        }
-
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation(this);
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(_Constant.SPACE_DEFAULT);
-        }
-
-        @Override
-        public String toString() {
-            return _Constant.SPACE_DEFAULT;
-        }
-
-    }// DefaultWord
-
-    /**
-     * <p>
-     * This class representing sql {@code NULL} key word.
-     * </p>
-     *
-     * @see #NULL
-     */
-    private static final class NullWord extends OperationExpression.OperationSimpleExpression
-            implements SqlValueParam.SingleNonNamedValue,
-            WordNull,
-            ArmyKeyWord {
-
-
-        private NullWord() {
-        }
-
-        @Override
-        public String spaceRender() {
-            return _Constant.SPACE_NULL;
-        }
-
-        @Override
-        public void appendSql(_SqlContext context) {
-            context.sqlBuilder().append(_Constant.SPACE_NULL);
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return _NullType.INSTANCE;
-        }
-
-        @Override
-        public Object value() {
-            //always null
-            return null;
-        }
-
-        @Override
-        public String toString() {
-            return _Constant.SPACE_NULL;
-        }
-
-
-    }// NullWord
-
-    private static final class LiteralSymbolAsterisk extends NonOperationExpression.NonSelectionExpression
-            implements FunctionArg.SingleFunctionArg {
-
-        private LiteralSymbolAsterisk() {
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation(this);
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" *");
-        }
-
-        @Override
-        public String toString() {
-            return " *";
-        }
-
-
-    }//LiteralSymbolAsterisk
-
-    /**
-     * @see #TRUE
-     * @see #FALSE
-     */
-    private static final class BooleanWord extends OperationPredicate.OperationSimplePredicate
-            implements WordBooleans, ArmyKeyWord {
-
-        private final String spaceWord;
-
-        private BooleanWord(boolean value) {
-            this.spaceWord = value ? " TRUE" : " FALSE";
-        }
-
-        @Override
-        public String spaceRender() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(this.spaceWord);
-        }
-
-        @Override
-        public String toString() {
-            return this.spaceWord;
-        }
-
-
-    }//BooleanWord
-
-
     private enum KeyWordAs implements WordAs {
 
         AS(" AS");
@@ -775,6 +643,7 @@ public abstract class SQLs extends SQLsSyntax {
     }//KeyWordEscape
 
 
+    @Deprecated
     static final class _NullType extends _ArmyInnerMapping {
 
         public static final _NullType INSTANCE = new _NullType();

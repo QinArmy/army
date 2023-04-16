@@ -87,17 +87,17 @@ public final class TextType extends _ArmyInnerMapping implements MappingType.Sql
 
     @Override
     public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return StringType._convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER);
+        return StringType._convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        return StringType._convertToString(this, type, nonNull, PARAM_ERROR_HANDLER);
+        return StringType._convertToString(this, type, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public String afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
-        return StringType._convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return StringType._convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

@@ -1043,8 +1043,8 @@ abstract class SQLsSyntax extends Functions {
         return ContextStack.root().createVar(varName, paramMeta);
     }
 
-    public static SimpleExpression parens(Expression expression) {
-        return Expressions.bracketExp(expression);
+    public static Expression parens(Expression expression) {
+        return OperationExpression.bracketExp(expression);
     }
 
     public static SimplePredicate bracket(IPredicate predicate) {

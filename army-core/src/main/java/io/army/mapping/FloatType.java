@@ -64,17 +64,17 @@ public final class FloatType extends _NumericType._FloatNumericType {
 
     @Override
     public Float convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToFloat(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToFloat(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Float beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToFloat(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToFloat(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Float afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return convertToFloat(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToFloat(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
     private static float convertToFloat(final MappingType type, final Object nonNull,

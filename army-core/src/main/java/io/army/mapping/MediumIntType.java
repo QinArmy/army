@@ -71,17 +71,17 @@ public final class MediumIntType extends _NumericType {
 
     @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return IntegerType._convertToInt(this, nonNull, MIN_VALUE, MAX_VALUE, PARAM_ERROR_HANDLER);
+        return IntegerType._convertToInt(this, nonNull, MIN_VALUE, MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Integer beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return IntegerType._convertToInt(this, nonNull, MIN_VALUE, MAX_VALUE, PARAM_ERROR_HANDLER);
+        return IntegerType._convertToInt(this, nonNull, MIN_VALUE, MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public Integer afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return IntegerType._convertToInt(this, nonNull, MIN_VALUE, MAX_VALUE, DATA_ACCESS_ERROR_HANDLER);
+        return IntegerType._convertToInt(this, nonNull, MIN_VALUE, MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

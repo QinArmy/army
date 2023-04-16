@@ -71,17 +71,17 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public LocalTime convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return convertToLocalTime(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToLocalTime(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public LocalTime beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToLocalTime(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToLocalTime(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public LocalTime afterGet(final SqlType type, MappingEnv env, final Object nonNull) {
-        return convertToLocalTime(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToLocalTime(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
     private static LocalTime convertToLocalTime(final MappingType type, final Object nonNull,

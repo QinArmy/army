@@ -60,21 +60,21 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
     @Override
     public Short convert(MappingEnv env, Object nonNull) throws CriteriaException {
         final int value;
-        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, PARAM_ERROR_HANDLER);
+        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, PARAM_ERROR_HANDLER_0);
         return (short) value;
     }
 
     @Override
     public Short beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         final int value;
-        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, PARAM_ERROR_HANDLER);
+        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, PARAM_ERROR_HANDLER_0);
         return (short) value;
     }
 
     @Override
     public Short afterGet(SqlType type, MappingEnv env, Object nonNull) {
         final int value;
-        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, DATA_ACCESS_ERROR_HANDLER);
+        value = IntegerType._convertToInt(this, nonNull, 0, 0xFF, DATA_ACCESS_ERROR_HANDLER_0);
         return (short) value;
     }
 

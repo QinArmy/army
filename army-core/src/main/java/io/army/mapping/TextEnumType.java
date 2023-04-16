@@ -59,7 +59,7 @@ public final class TextEnumType extends MappingType {
     @Override
     public TextEnum convert(MappingEnv env, Object nonNull) throws CriteriaException {
         if (!this.javaType.isInstance(nonNull)) {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return (TextEnum) nonNull;
     }
@@ -67,7 +67,7 @@ public final class TextEnumType extends MappingType {
     @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         if (!this.javaType.isInstance(nonNull)) {
-            throw PARAM_ERROR_HANDLER.apply(this, nonNull);
+            throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
         return ((TextEnum) nonNull).text();
     }
@@ -75,7 +75,7 @@ public final class TextEnumType extends MappingType {
     @Override
     public TextEnum afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
-            throw DATA_ACCESS_ERROR_HANDLER.apply(this, nonNull);
+            throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }
         final TextEnum value;
         value = this.textMap.get(nonNull);

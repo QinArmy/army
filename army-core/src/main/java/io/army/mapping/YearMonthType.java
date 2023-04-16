@@ -55,7 +55,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public YearMonth convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return _convertToYearMonth(this, nonNull, PARAM_ERROR_HANDLER);
+        return _convertToYearMonth(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
@@ -67,7 +67,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
             value = ((LocalDateTime) nonNull).toLocalDate();
         } else {
             final YearMonth v;
-            v = _convertToYearMonth(this, nonNull, PARAM_ERROR_HANDLER);
+            v = _convertToYearMonth(this, nonNull, PARAM_ERROR_HANDLER_0);
             value = LocalDate.of(v.getYear(), v.getMonth(), 1);
         }
         return value;
@@ -75,7 +75,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
 
     @Override
     public YearMonth afterGet(SqlType type, MappingEnv env, Object nonNull) {
-        return _convertToYearMonth(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return _convertToYearMonth(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 

@@ -97,18 +97,6 @@ abstract class Expressions {
         return new CastExpression(expression, typeMeta);
     }
 
-    static SimpleExpression bracketExp(final @Nullable Expression expression) {
-        final SimpleExpression bracket;
-        if (!(expression instanceof OperationExpression)) {
-            throw NonOperationExpression.nonOperationExpression(expression);
-        } else if (expression instanceof OperationExpression.OperationSimpleExpression) {
-            bracket = (SimpleExpression) expression;
-        } else {
-            bracket = new BracketsExpression((ArmyExpression) expression);
-        }
-        return bracket;
-    }
-
     static Expression scalarExpression(final SubQuery subQuery) {
         final List<? extends Selection> selectionList;
         selectionList = ((_DerivedTable) subQuery).refAllSelection();
@@ -398,7 +386,7 @@ abstract class Expressions {
                 sqlBuilder.append(operator.spaceOperator);
             }
 
-            rightOuterParens = !(right instanceof OperationSimpleExpression);
+            rightOuterParens = !(right instanceof ArmySimpleExpression);
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
@@ -447,7 +435,7 @@ abstract class Expressions {
             sqlBuilder.append(this.operator.spaceOperator);
 
             final boolean rightInnerParens;
-            rightInnerParens = !(right instanceof OperationSimpleExpression);
+            rightInnerParens = !(right instanceof ArmySimpleExpression);
             if (rightInnerParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
@@ -509,7 +497,7 @@ abstract class Expressions {
                     .append(operator.spaceOperator);
 
             final ArmyExpression operand = this.operand;
-            final boolean operandOuterParens = !(operand instanceof OperationSimpleExpression);
+            final boolean operandOuterParens = !(operand instanceof ArmySimpleExpression);
 
             if (operandOuterParens) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
@@ -551,7 +539,7 @@ abstract class Expressions {
             builder.append(this.operator.spaceOperator);
 
             final _Expression expression = this.operand;
-            final boolean innerBracket = !(expression instanceof OperationSimpleExpression);
+            final boolean innerBracket = !(expression instanceof ArmySimpleExpression);
 
             if (innerBracket) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
@@ -568,62 +556,6 @@ abstract class Expressions {
 
     }//UnaryExpression
 
-
-    private static final class BracketsExpression extends OperationExpression.OperationSimpleExpression {
-
-        private final ArmyExpression expression;
-
-
-        private BracketsExpression(ArmyExpression expression) {
-            this.expression = expression;
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.expression.typeMeta();
-        }
-
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder builder = context.sqlBuilder()
-                    .append(_Constant.SPACE_LEFT_PAREN);
-
-            this.expression.appendSql(context);
-
-            builder.append(_Constant.SPACE_RIGHT_PAREN);
-        }
-
-
-        @Override
-        public int hashCode() {
-            return this.expression.hashCode();
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof BracketsExpression) {
-                match = ((BracketsExpression) obj).expression.equals(this.expression);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        public String toString() {
-            return _StringUtils.builder()
-                    .append(_Constant.SPACE_LEFT_PAREN)
-                    .append(this.expression)
-                    .append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
-        }
-
-
-    }//BracketsExpression
 
     private static final class ScalarExpression extends OperationExpression.OperationSimpleExpression {
 
@@ -766,7 +698,7 @@ abstract class Expressions {
 
             final ArmyExpression right = this.right;
             final boolean rightOuterParens;
-            rightOuterParens = !(right instanceof OperationSimpleExpression);
+            rightOuterParens = !(right instanceof ArmySimpleExpression);
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
@@ -812,7 +744,7 @@ abstract class Expressions {
 
             final ArmyExpression right = this.right;
             final boolean rightOuterParens;
-            rightOuterParens = !(right instanceof OperationSimpleExpression);
+            rightOuterParens = !(right instanceof ArmySimpleExpression);
 
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
@@ -887,7 +819,7 @@ abstract class Expressions {
 
             sqlBuilder.append(this.operator.spaceOperator);
 
-            rightOuterParens = !(right instanceof OperationSimpleExpression);
+            rightOuterParens = !(right instanceof ArmySimpleExpression);
             // 3. append right
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
@@ -899,7 +831,7 @@ abstract class Expressions {
             // 4. append ESCAPES clause
             if (escapeChar != null) {
                 sqlBuilder.append(SQLs.ESCAPE.spaceRender());
-                escapeCharOuterParens = !(escapeChar instanceof OperationSimpleExpression);
+                escapeCharOuterParens = !(escapeChar instanceof ArmySimpleExpression);
                 if (escapeCharOuterParens) {
                     sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
                 }
@@ -965,7 +897,7 @@ abstract class Expressions {
         private final ArmyExpression right;
 
         /**
-         * @see #betweenPredicate(Expression, boolean, SQLsSyntax.BetweenModifier, Expression, Expression)
+         * @see #betweenPredicate(OperationExpression, boolean, SQLsSyntax.BetweenModifier, Expression, Expression)
          */
         private BetweenPredicate(Expression left, boolean not, @Nullable SQLsSyntax.BetweenModifier modifier,
                                  Expression center, Expression right) {
@@ -984,7 +916,7 @@ abstract class Expressions {
 
             final ArmyExpression left = this.left, center = this.center, right = this.right;
             final boolean leftOuterParens, centerOuterParens, rightOuterParens;
-            leftOuterParens = left instanceof IPredicate;// if predicate must append outer parens
+            leftOuterParens = left instanceof OperationPredicate.CompoundPredicate; // if predicate must append outer parens
             // 1. append left
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
@@ -1007,8 +939,8 @@ abstract class Expressions {
                 sqlBuilder.append(this.modifier.spaceRender());
             }
 
-            centerOuterParens = !(center instanceof OperationSimpleExpression);
-            rightOuterParens = !(right instanceof OperationSimpleExpression);
+            centerOuterParens = !(center instanceof ArmySimpleExpression);
+            rightOuterParens = !(right instanceof ArmySimpleExpression);
 
             // 5. append center operand
             if (centerOuterParens) {
@@ -1076,8 +1008,8 @@ abstract class Expressions {
             final ArmyExpression center = this.center, right = this.right;
 
             final boolean centerOuterParens, rightOuterParens;
-            centerOuterParens = !(center instanceof OperationSimpleExpression);
-            rightOuterParens = !(right instanceof OperationSimpleExpression);
+            centerOuterParens = !(center instanceof ArmySimpleExpression);
+            rightOuterParens = !(right instanceof ArmySimpleExpression);
 
             // 5. append center operand
             if (centerOuterParens) {
@@ -1318,7 +1250,7 @@ abstract class Expressions {
             sqlBuilder.append(this.operator.spaceRender());
 
             final ArmyExpression right = this.right;
-            final boolean rightOuterParens = !(right instanceof OperationSimpleExpression);
+            final boolean rightOuterParens = !(right instanceof ArmySimpleExpression);
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
@@ -1362,7 +1294,7 @@ abstract class Expressions {
             builder.append(this.operator.spaceRender());
 
             final ArmyExpression right = this.right;
-            final boolean rightOuterParens = !(right instanceof OperationSimpleExpression);
+            final boolean rightOuterParens = !(right instanceof ArmySimpleExpression);
             if (rightOuterParens) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }

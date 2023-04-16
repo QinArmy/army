@@ -56,18 +56,18 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
 
     @Override
     public DayOfWeek convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER);
+        return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
-        return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER)
+        return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER_0)
                 .name();
     }
 
     @Override
     public DayOfWeek afterGet(SqlType type, MappingEnv env, final Object nonNull) throws DataAccessException {
-        return convertToDayOfWeek(this, nonNull, DATA_ACCESS_ERROR_HANDLER);
+        return convertToDayOfWeek(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
     private static DayOfWeek convertToDayOfWeek(final MappingType type, final Object nonNull,
