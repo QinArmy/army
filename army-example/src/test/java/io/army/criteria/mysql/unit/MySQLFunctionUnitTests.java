@@ -26,16 +26,16 @@ public class MySQLFunctionUnitTests {
         final Select stmt;
         stmt = MySQLs.query()
                 .select(MySQLs.cases(PillUser_.userType)
-                        .when(SQLs.literalFrom(PillUserType.NONE))
-                        .then(SQLs.literalFrom(1))
+                        .when(SQLs.literalValue(PillUserType.NONE))
+                        .then(SQLs.literalValue(1))
 
-                        .when(SQLs.literalFrom(PillUserType.PARTNER))
-                        .then(SQLs.literalFrom(2))
+                        .when(SQLs.literalValue(PillUserType.PARTNER))
+                        .then(SQLs.literalValue(2))
 
-                        .when(SQLs.literalFrom(PillUserType.ENTERPRISE))
-                        .then(SQLs.literalFrom(3))
+                        .when(SQLs.literalValue(PillUserType.ENTERPRISE))
+                        .then(SQLs.literalValue(3))
 
-                        .elseValue(SQLs.literalFrom(0))
+                        .elseValue(SQLs.literalValue(0))
 
                         .end()
                         .plus(SQLs::literal, 1).as("userType"))

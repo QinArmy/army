@@ -263,7 +263,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_abs">ABS(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ABS(numeric_type)</a>
      */
-    public static Expression abs(final Expression expr) {
+    public static SimpleExpression abs(final Expression expr) {
         return FunctionUtils.oneArgFunc("ABS", expr, expr.typeMeta());
     }
 
@@ -275,7 +275,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_acos">ACOS(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">acos ( double precision ) → double precision</a>
      */
-    public static Expression acos(final Expression expr) {
+    public static SimpleExpression acos(final Expression expr) {
         return FunctionUtils.oneArgFunc("ACOS", expr, DoubleType.INSTANCE);
     }
 
@@ -288,7 +288,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_asin">ASIN(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">asin ( double precision ) → double precision</a>
      */
-    public static Expression asin(final Expression expr) {
+    public static SimpleExpression asin(final Expression expr) {
         return FunctionUtils.oneArgFunc("ASIN", expr, DoubleType.INSTANCE);
     }
 
@@ -300,7 +300,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan">ATAN(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">atan ( double precision ) → double precision</a>
      */
-    public static Expression atan(final Expression expr) {
+    public static SimpleExpression atan(final Expression expr) {
         return FunctionUtils.oneArgFunc("ATAN", expr, DoubleType.INSTANCE);
     }
 
@@ -311,7 +311,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_atan2">ATAN(X,y)</a>
      */
-    public static Expression atan(final Expression x, final Expression y) {
+    public static SimpleExpression atan(final Expression x, final Expression y) {
         return FunctionUtils.twoArgFunc("ATAN", x, y, DoubleType.INSTANCE);
     }
 
@@ -327,7 +327,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ceil">CEIL(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ceil ( numeric ) → numeric,ceil ( double precision ) → double precision</a>
      */
-    public static Expression ceil(final Expression exp) {
+    public static SimpleExpression ceil(final Expression exp) {
         return FunctionUtils.oneArgFunc("CEIL", exp, _returnType(exp, Functions::_numberOrDecimal));
     }
 
@@ -339,7 +339,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_conv">CONV(X)</a>
      */
-    public static Expression conv(final Expression expr, final Expression fromBase, final Expression toBase) {
+    public static SimpleExpression conv(final Expression expr, final Expression fromBase, final Expression toBase) {
         return FunctionUtils.threeArgFunc("CONV", expr, fromBase, toBase, expr.typeMeta());
     }
 
@@ -351,7 +351,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cos">COS(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cos ( double precision ) → double precision</a>
      */
-    public static Expression cos(final Expression expr) {
+    public static SimpleExpression cos(final Expression expr) {
         return FunctionUtils.oneArgFunc("COS", expr, DoubleType.INSTANCE);
     }
 
@@ -363,7 +363,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_cot">COT(X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cot ( double precision ) → double precision</a>
      */
-    public static Expression cot(final Expression expr) {
+    public static SimpleExpression cot(final Expression expr) {
         return FunctionUtils.oneArgFunc("COT", expr, DoubleType.INSTANCE);
     }
 
@@ -374,7 +374,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_crc32">CRC32(expr)</a>
      */
-    public static Expression crc32(final Expression expr) {
+    public static SimpleExpression crc32(final Expression expr) {
         return FunctionUtils.oneArgFunc("CRC32", expr, IntegerType.INSTANCE);
     }
 
@@ -386,7 +386,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_degrees">DEGREES(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">degrees ( double precision )</a>
      */
-    public static Expression degrees(final Expression expr) {
+    public static SimpleExpression degrees(final Expression expr) {
         return FunctionUtils.oneArgFunc("DEGREES", expr, DoubleType.INSTANCE);
     }
 
@@ -402,7 +402,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_exp">EXP(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">exp ( numeric )</a>
      */
-    public static Expression exp(final Expression exp) {
+    public static SimpleExpression exp(final Expression exp) {
         return FunctionUtils.oneArgFunc("EXP", exp, _returnType(exp, Functions::_doubleOrDecimal));
     }
 
@@ -413,7 +413,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_floor">FLOOR(x)</a>
      */
-    public static Expression floor(final Expression expr) {
+    public static SimpleExpression floor(final Expression expr) {
         return FunctionUtils.oneArgFunc("FLOOR", expr, LongType.INSTANCE);
     }
 
@@ -424,7 +424,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_format">FORMAT(x,d)</a>
      */
-    public static Expression format(final Expression x, final Expression d) {
+    public static SimpleExpression format(final Expression x, final Expression d) {
         return FunctionUtils.twoArgFunc("FORMAT", x, d, StringType.INSTANCE);
     }
 
@@ -435,7 +435,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_hex">HEX(n_or_s)</a>
      */
-    public static Expression hex(final Expression numOrStr) {
+    public static SimpleExpression hex(final Expression numOrStr) {
         return FunctionUtils.oneArgFunc("HEX", numOrStr, StringType.INSTANCE);
     }
 
@@ -451,7 +451,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_ln">LN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">ln ( numeric ) → numeric,ln ( double precision ) → double precision</a>
      */
-    public static Expression ln(final Expression x) {
+    public static SimpleExpression ln(final Expression x) {
         return FunctionUtils.oneArgFunc("LN", x, _returnType(x, Functions::_doubleOrDecimal));
     }
 
@@ -467,7 +467,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log ( numeric ) → numeric,log ( double precision ) → double precision</a>
      */
-    public static Expression log(final Expression x) {
+    public static SimpleExpression log(final Expression x) {
         return FunctionUtils.oneArgFunc("LOG", x, _returnType(x, Functions::_doubleOrDecimal));
     }
 
@@ -479,7 +479,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log">LOG(B,X)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log ( b numeric, x numeric ) → numeric</a>
      */
-    public static Expression log(final Expression b, final Expression x) {
+    public static SimpleExpression log(final Expression b, final Expression x) {
         return FunctionUtils.twoArgFunc("LOG", b, x, BigDecimalType.INSTANCE);
     }
 
@@ -496,7 +496,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_log10">LOG10(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">log10 ( numeric ) → numeric,log10 ( double precision ) → double precision</a>
      */
-    public static Expression log10(final Expression x) {
+    public static SimpleExpression log10(final Expression x) {
         return FunctionUtils.oneArgFunc("LOG10", x, _returnType(x, Functions::_doubleOrDecimal));
     }
 
@@ -508,7 +508,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_mod">MOD(N,M), N % M, N MOD M</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">mod ( y numeric_type, x numeric_type ) → numeric_type</a>
      */
-    public static Expression mod(final Expression n, final Expression m) {
+    public static SimpleExpression mod(final Expression n, final Expression m) {
         return FunctionUtils.twoArgFunc("MOD", n, m, n.typeMeta());
     }
 
@@ -520,7 +520,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pi">PI()</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">pi ( ) → double precision</a>
      */
-    public static Expression pi() {
+    public static SimpleExpression pi() {
         return FunctionUtils.zeroArgFunc("PI", DoubleType.INSTANCE);
     }
 
@@ -531,7 +531,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_pow">POW(x,y)</a>
      */
-    public static Expression pow(final Expression x, final Expression y) {
+    public static SimpleExpression pow(final Expression x, final Expression y) {
         return FunctionUtils.twoArgFunc("POW", x, y, x.typeMeta());
     }
 
@@ -543,7 +543,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_radians">RADIANS(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">radians ( double precision ) → double precision</a>
      */
-    public static Expression radians(final Expression x) {
+    public static SimpleExpression radians(final Expression x) {
         return FunctionUtils.oneArgFunc("RADIANS", x, DoubleType.INSTANCE);
     }
 
@@ -554,7 +554,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_rand">RAND([N])</a>
      */
-    public static Expression rand() {
+    public static SimpleExpression rand() {
         return FunctionUtils.zeroArgFunc("RAND", DoubleType.INSTANCE);
     }
 
@@ -565,7 +565,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_rand">RAND([N])</a>
      */
-    public static Expression rand(final Expression n) {
+    public static SimpleExpression rand(final Expression n) {
         return FunctionUtils.oneArgFunc("RAND", n, DoubleType.INSTANCE);
     }
 
@@ -581,7 +581,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">round ( numeric ) → numeric</a>
      */
-    public static Expression round(final Expression x) {
+    public static SimpleExpression round(final Expression x) {
         return FunctionUtils.oneArgFunc("ROUND", x, _returnType(x, Functions::_numberOrDecimal));
     }
 
@@ -593,7 +593,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_round">ROUND(x,d)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">round ( v numeric, s integer ) → numeric</a>
      */
-    public static Expression round(final Expression x, final Expression d) {
+    public static SimpleExpression round(final Expression x, final Expression d) {
         return FunctionUtils.twoArgFunc("ROUND", x, d, BigDecimalType.INSTANCE);
     }
 
@@ -605,7 +605,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sign">SIGN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sign ( numeric ) → numeric</a>
      */
-    public static Expression sign(final Expression x) {
+    public static SimpleExpression sign(final Expression x) {
         return FunctionUtils.oneArgFunc("SIGN", x, IntegerType.INSTANCE);
     }
 
@@ -617,7 +617,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sin">SIN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sin ( numeric ) → numeric</a>
      */
-    public static Expression sin(final Expression x) {
+    public static SimpleExpression sin(final Expression x) {
         return FunctionUtils.oneArgFunc("SIN", x, DoubleType.INSTANCE);
     }
 
@@ -632,7 +632,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_sqrt">SQRT(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sqrt ( numeric ) → numeric,sqrt ( double precision ) → double precision</a>
      */
-    public static Expression sqrt(final Expression x) {
+    public static SimpleExpression sqrt(final Expression x) {
         return FunctionUtils.oneArgFunc("SQRT", x, _returnType(x, Functions::_doubleOrDecimal));
     }
 
@@ -644,7 +644,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_tan">TAN(x)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">tan ( numeric ) → numeric</a>
      */
-    public static Expression tan(final Expression x) {
+    public static SimpleExpression tan(final Expression x) {
         return FunctionUtils.oneArgFunc("TAN", x, DoubleType.INSTANCE);
     }
 
@@ -655,7 +655,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_truncate">TRUNCATE(x,d)</a>
      */
-    public static Expression truncate(final Expression x, final Expression d) {
+    public static SimpleExpression truncate(final Expression x, final Expression d) {
         return FunctionUtils.twoArgFunc("TRUNCATE", x, d, DoubleType.INSTANCE);
     }
 
@@ -670,7 +670,7 @@ abstract class Functions extends SqlSyntax {
      * @throws CriteriaException throw when any arg is multi-value expression
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_ifnull">IFNULL(expr1,expr2)</a>
      */
-    public static Expression nullIf(final Expression expr1, final Expression expr2) {
+    public static SimpleExpression nullIf(final Expression expr1, final Expression expr2) {
         return FunctionUtils.twoArgFunc("NULLIF", expr1, expr2, expr1.typeMeta());
     }
 
@@ -682,7 +682,7 @@ abstract class Functions extends SqlSyntax {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">length ( text ) → integer</a>
      */
-    public static Expression length(Expression exp) {
+    public static SimpleExpression length(Expression exp) {
         return FunctionUtils.oneArgFunc("LENGTH", exp, IntegerType.INSTANCE);
     }
 
@@ -694,7 +694,7 @@ abstract class Functions extends SqlSyntax {
 
     /*-------------------below Aggregate Function-------------------*/
 
-    public static Expression countStar() {
+    public static SimpleExpression countStar() {
         return CountStartFunction.INSTANCE;
     }
 
@@ -706,7 +706,7 @@ abstract class Functions extends SqlSyntax {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static Expression count(Expression expr) {
+    public static SimpleExpression count(Expression expr) {
         return FunctionUtils.oneArgFunc("COUNT", expr, LongType.INSTANCE);
     }
 
@@ -720,7 +720,7 @@ abstract class Functions extends SqlSyntax {
 
     static final Pattern FUN_NAME_PATTER = Pattern.compile("^[_a-zA-Z][_\\w]*$");
 
-    public static Expression customFunc(String name, TypeMeta returnType) {
+    public static SimpleExpression customFunc(String name, TypeMeta returnType) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
             throw _customFuncNameError(name);
         }
@@ -734,7 +734,7 @@ abstract class Functions extends SqlSyntax {
         return FunctionUtils.noArgFuncPredicate(name);
     }
 
-    public static Expression customFunc(String name, Expression expr, TypeMeta returnType) {
+    public static SimpleExpression customFunc(String name, Expression expr, TypeMeta returnType) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
             throw _customFuncNameError(name);
         }
@@ -748,7 +748,7 @@ abstract class Functions extends SqlSyntax {
         return FunctionUtils.oneArgFuncPredicate(name, expr);
     }
 
-    public static Expression customFunc(String name, Expression expr1, Expression expr2, TypeMeta returnType) {
+    public static SimpleExpression customFunc(String name, Expression expr1, Expression expr2, TypeMeta returnType) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
             throw _customFuncNameError(name);
         }
@@ -762,7 +762,7 @@ abstract class Functions extends SqlSyntax {
         return FunctionUtils.twoArgPredicateFunc(name, expr1, expr2);
     }
 
-    public static Expression customFunc(String name, List<Expression> expList, TypeMeta returnType) {
+    public static SimpleExpression customFunc(String name, List<Expression> expList, TypeMeta returnType) {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
             throw _customFuncNameError(name);
         }
@@ -838,8 +838,8 @@ abstract class Functions extends SqlSyntax {
     }
 
 
-    static Expression _simpleTowArgFunc(final String name, final Expression g1,
-                                        final Expression g2, final TypeMeta returnType) {
+    static SimpleExpression _simpleTowArgFunc(final String name, final Expression g1,
+                                              final Expression g2, final TypeMeta returnType) {
         if (g1 instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, g1);
         }

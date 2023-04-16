@@ -681,7 +681,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         @Override
         public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
+            return CriteriaUtils.enumToString(this);
         }
 
     }//MySQLLockStrength
@@ -722,7 +722,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         @Override
         public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
+            return CriteriaUtils.enumToString(this);
         }
 
 

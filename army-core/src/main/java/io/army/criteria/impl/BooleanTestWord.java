@@ -26,7 +26,7 @@ enum BooleanTestWord implements SQLsSyntax.BooleanTestWord, Functions.ArmyKeyWor
 
     @Override
     public final String toString() {
-        return CriteriaUtils.sqlWordsToString(this);
+        return CriteriaUtils.enumToString(this);
     }
 
 

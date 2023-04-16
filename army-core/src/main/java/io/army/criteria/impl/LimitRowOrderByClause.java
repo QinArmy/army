@@ -483,7 +483,7 @@ abstract class LimitRowOrderByClause<OR, LR, LO, LF> extends OrderByClause<OR>
 
         @Override
         public TypeMeta typeMeta() {
-            throw unsupportedOperation();
+            throw unsupportedOperation(this);
         }
 
         @Override

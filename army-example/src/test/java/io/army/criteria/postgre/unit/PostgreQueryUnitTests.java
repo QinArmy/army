@@ -18,7 +18,7 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .selectDistinctOn(SQLs.ref("one"), SQLs.ref(2))
-                .space(SQLs.literalFrom(1)::as, "one", PillUser_.id)
+                .space(SQLs.literalValue(1)::as, "one", PillUser_.id)
                 .from(PillUser_.T, SQLs.AS, "u")
                 .orderBy(PillUser_.id)
                 .asQuery();
@@ -30,7 +30,7 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
     public void dynamicWindow() {
         final Select stmt;
         stmt = Postgres.query()
-                .select(SQLs.literalFrom(1)::as, "r")
+                .select(SQLs.literalValue(1)::as, "r")
                 .from(PillUser_.T, SQLs.AS, "u")
                 .windows(w -> {
                     w.window("w1").as(s -> s.partitionBy(PillUser_.userType).orderBy(PillUser_.id));

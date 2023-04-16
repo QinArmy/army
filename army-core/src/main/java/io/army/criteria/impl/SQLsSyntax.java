@@ -487,9 +487,9 @@ abstract class SQLsSyntax extends Functions {
      *
      * @param value non null
      * @return parameter expression
-     * @see #literalFrom(Object)
+     * @see #literalValue(Object)
      */
-    public static Expression paramFrom(final Object value) {
+    public static SimpleExpression paramValue(final Object value) {
         return SingleParamExpression.from(value);
     }
 
@@ -504,8 +504,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #param(TypeInfer, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static Expression param(final TypeInfer type, final @Nullable Object value) {
-        final Expression result;
+    public static SimpleExpression param(final TypeInfer type, final @Nullable Object value) {
+        final SimpleExpression result;
         if (value instanceof Supplier) {
             result = SingleParamExpression.single(type, ((Supplier<?>) value).get());
         } else {
@@ -523,55 +523,14 @@ abstract class SQLsSyntax extends Functions {
      * @see #param(TypeInfer, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static Expression encodingParam(final TypeInfer type, final @Nullable Object value) {
-        final Expression result;
+    public static SimpleExpression encodingParam(final TypeInfer type, final @Nullable Object value) {
+        final SimpleExpression result;
         if (value instanceof Supplier) {
             result = SingleParamExpression.encodingSingle(type, ((Supplier<?>) value).get());
         } else {
             result = SingleParamExpression.encodingSingle(type, value);
         }
         return result;
-    }
-
-
-    /**
-     * <p>
-     * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
-     * ? , ? , ? ...
-     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
-     * </p>
-     *
-     * @param type   non-null,the type of element of values.
-     * @param values non-null and non-empty
-     * @throws CriteriaException throw when <ul>
-     *                           <li>values is empty</li>
-     *                           <li>infer return codec {@link TableField}</li>
-     *                           </ul>
-     * @see #multiParam(TypeInfer, Collection)
-     * @see #multiLiteral(TypeInfer, Collection)
-     */
-    public static Expression multiParam(final TypeInfer type, final Collection<?> values) {
-        return MultiParamExpression.multi(type, values);
-    }
-
-    /**
-     * <p>
-     * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
-     * ? , ? , ? ...
-     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
-     * </p>
-     *
-     * @param type   non-null,the type of element of values.
-     * @param values non-null and non-empty
-     * @throws CriteriaException throw when <ul>
-     *                           <li>values is empty</li>
-     *                           <li>infer isn't codec {@link TableField}</li>
-     *                           </ul>
-     * @see #multiParam(TypeInfer, Collection)
-     * @see #multiLiteral(TypeInfer, Collection)
-     */
-    public static Expression encodingMultiParam(final TypeInfer type, final Collection<?> values) {
-        return MultiParamExpression.encodingMulti(type, values);
     }
 
 
@@ -592,7 +551,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static Expression namedParam(final TypeInfer type, final String name) {
+    public static SimpleExpression namedParam(final TypeInfer type, final String name) {
         return SingleParamExpression.named(type, name);
     }
 
@@ -613,7 +572,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static Expression encodingNamedParam(final TypeInfer type, final String name) {
+    public static SimpleExpression encodingNamedParam(final TypeInfer type, final String name) {
         return SingleParamExpression.encodingNamed(type, name);
     }
 
@@ -634,7 +593,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static Expression namedNullableParam(final TypeInfer type, final String name) {
+    public static SimpleExpression namedNullableParam(final TypeInfer type, final String name) {
         return SingleParamExpression.namedNullable(type, name);
     }
 
@@ -655,61 +614,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static Expression encodingNamedNullableParam(final TypeInfer type, final String name) {
+    public static SimpleExpression encodingNamedNullableParam(final TypeInfer type, final String name) {
         return SingleParamExpression.encodingNamedNullable(type, name);
-    }
-
-
-    /**
-     * <p>
-     * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
-     * ? , ? , ? ...
-     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
-     * </p>
-     * <p>
-     * Named multi parameter expression is used in batch update(or delete) and values insert.
-     * </p>
-     *
-     * @param type non-null,the type of element of {@link Collection}
-     * @param name non-null,the key name of {@link Map} or the field name of java bean.
-     * @param size positive,the size of {@link Collection}
-     * @return named non-null multi parameter expression
-     * @throws CriteriaException throw when <ul>
-     *                           <li>name have no text</li>
-     *                           <li>size less than 1</li>
-     *                           <li>infer return codec {@link TableField}</li>
-     *                           </ul>
-     * @see #namedMultiParam(TypeInfer, String, int)
-     * @see #namedMultiLiteral(TypeInfer, String, int)
-     */
-    public static Expression namedMultiParam(final TypeInfer type, final String name, final int size) {
-        return MultiParamExpression.named(type, name, size);
-    }
-
-    /**
-     * <p>
-     * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
-     * ? , ? , ? ...
-     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
-     * </p>
-     * <p>
-     * Named multi parameter expression is used in batch update(or delete) and values insert.
-     * </p>
-     *
-     * @param type non-null,the type of element of {@link Collection}
-     * @param name non-null,the key name of {@link Map} or the field name of java bean.
-     * @param size positive,the size of {@link Collection}
-     * @return named non-null multi parameter expression
-     * @throws CriteriaException throw when <ul>
-     *                           <li>name have no text</li>
-     *                           <li>size less than 1</li>
-     *                           <li>infer isn't codec {@link TableField}</li>
-     *                           </ul>
-     * @see #namedMultiParam(TypeInfer, String, int)
-     * @see #namedMultiLiteral(TypeInfer, String, int)
-     */
-    public static Expression encodingNamedMultiParam(final TypeInfer type, final String name, final int size) {
-        return MultiParamExpression.encodingNamed(type, name, size);
     }
 
 
@@ -748,9 +654,9 @@ abstract class SQLsSyntax extends Functions {
      *
      * @param value non null
      * @return literal expression
-     * @see #paramFrom(Object)
+     * @see #paramValue(Object)
      */
-    public static Expression literalFrom(final Object value) {
+    public static SimpleExpression literalValue(final Object value) {
         return SingleLiteralExpression.from(value);
     }
 
@@ -765,8 +671,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #param(TypeInfer, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static Expression literal(final TypeInfer type, final @Nullable Object value) {
-        final Expression result;
+    public static SimpleExpression literal(final TypeInfer type, final @Nullable Object value) {
+        final SimpleExpression result;
         if (value instanceof Supplier) {
             result = SingleLiteralExpression.single(type, ((Supplier<?>) value).get());
         } else {
@@ -785,8 +691,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #param(TypeInfer, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static Expression encodingLiteral(final TypeInfer type, final @Nullable Object value) {
-        final Expression result;
+    public static SimpleExpression encodingLiteral(final TypeInfer type, final @Nullable Object value) {
+        final SimpleExpression result;
         if (value instanceof Supplier) {
             result = SingleLiteralExpression.encodingSingle(type, ((Supplier<?>) value).get());
         } else {
@@ -795,42 +701,6 @@ abstract class SQLsSyntax extends Functions {
         return result;
     }
 
-
-    /**
-     * <p>
-     * Create multi literal expression, multi literal expression will output multi LITERAL like below:
-     * LITERAL , LITERAL , LITERAL ...
-     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
-     * </p>
-     *
-     * @param type   non-null,the type of element of values.
-     * @param values non-null and non-empty
-     * @see #multiParam(TypeInfer, Collection)
-     * @see #multiLiteral(TypeInfer, Collection)
-     */
-    public static Expression multiLiteral(final TypeInfer type, final Collection<?> values) {
-        return MultiLiteralExpression.multi(type, values);
-    }
-
-    /**
-     * <p>
-     * Create multi literal expression, multi literal expression will output multi LITERAL like below:
-     * LITERAL , LITERAL , LITERAL ...
-     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
-     * </p>
-     *
-     * @param type   non-null,the type of element of values.
-     * @param values non-null and non-empty
-     * @throws CriteriaException throw when <ul>
-     *                           <li>values is empty</li>
-     *                           <li>infer isn't codec {@link TableField}</li>
-     *                           </ul>
-     * @see #multiParam(TypeInfer, Collection)
-     * @see #multiLiteral(TypeInfer, Collection)
-     */
-    public static Expression encodingMultiLiteral(final TypeInfer type, final Collection<?> values) {
-        return MultiLiteralExpression.encodingMulti(type, values);
-    }
 
 
     /**
@@ -856,7 +726,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static Expression namedLiteral(final TypeInfer type, final String name) {
+    public static SimpleExpression namedLiteral(final TypeInfer type, final String name) {
         return SingleLiteralExpression.named(type, name);
     }
 
@@ -883,7 +753,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableParam(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static Expression encodingNamedLiteral(final TypeInfer type, final String name) {
+    public static SimpleExpression encodingNamedLiteral(final TypeInfer type, final String name) {
         return SingleLiteralExpression.encodingNamed(type, name);
     }
 
@@ -910,7 +780,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static Expression namedNullableLiteral(final TypeInfer type, final String name) {
+    public static SimpleExpression namedNullableLiteral(final TypeInfer type, final String name) {
         return SingleLiteralExpression.namedNullable(type, name);
     }
 
@@ -937,10 +807,69 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableParam(TypeInfer, String)
      * @see #encodingNamedLiteral(TypeInfer, String)
      */
-    public static Expression encodingNamedNullableLiteral(final TypeInfer type, final String name) {
+    public static SimpleExpression encodingNamedNullableLiteral(final TypeInfer type, final String name) {
         return SingleLiteralExpression.encodingNamedNullable(type, name);
     }
 
+    /**
+     * <p>
+     * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * ? , ? , ? ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
+     * </p>
+     *
+     * @param type   non-null,the type of element of values.
+     * @param values non-null and non-empty
+     * @throws CriteriaException throw when <ul>
+     *                           <li>values is empty</li>
+     *                           <li>infer return codec {@link TableField}</li>
+     *                           </ul>
+     * @see #multiParam(TypeInfer, Collection)
+     * @see #multiLiteral(TypeInfer, Collection)
+     */
+    public static Expression multiParam(final TypeInfer type, final Collection<?> values) {
+        return MultiParamExpression.multi(type, values);
+    }
+
+    /**
+     * <p>
+     * Create multi literal expression, multi literal expression will output multi LITERAL like below:
+     * LITERAL , LITERAL , LITERAL ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
+     * </p>
+     *
+     * @param type   non-null,the type of element of values.
+     * @param values non-null and non-empty
+     * @see #multiParam(TypeInfer, Collection)
+     */
+    public static Expression multiLiteral(final TypeInfer type, final Collection<?> values) {
+        return MultiLiteralExpression.multi(type, values);
+    }
+
+    /**
+     * <p>
+     * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * ? , ? , ? ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
+     * </p>
+     * <p>
+     * Named multi parameter expression is used in batch update(or delete) and values insert.
+     * </p>
+     *
+     * @param type non-null,the type of element of {@link Collection}
+     * @param name non-null,the key name of {@link Map} or the field name of java bean.
+     * @param size positive,the size of {@link Collection}
+     * @return named non-null multi parameter expression
+     * @throws CriteriaException throw when <ul>
+     *                           <li>name have no text</li>
+     *                           <li>size less than 1</li>
+     *                           <li>infer return codec {@link TableField}</li>
+     *                           </ul>
+     * @see #namedMultiLiteral(TypeInfer, String, int)
+     */
+    public static Expression namedMultiParam(final TypeInfer type, final String name, final int size) {
+        return MultiParamExpression.named(type, name, size);
+    }
 
     /**
      * <p>
@@ -957,11 +886,74 @@ abstract class SQLsSyntax extends Functions {
      * @param size positive,the size of {@link Collection}
      * @return named non-null multi literal expression
      * @see #namedMultiParam(TypeInfer, String, int)
-     * @see #namedMultiLiteral(TypeInfer, String, int)
      */
     public static Expression namedMultiLiteral(final TypeInfer type, final String name, final int size) {
         return MultiLiteralExpression.named(type, name, size);
     }
+
+    /**
+     * <p>
+     * Create multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * ? , ? , ? ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
+     * </p>
+     *
+     * @param type   non-null,the type of element of values.
+     * @param values non-null and non-empty
+     * @throws CriteriaException throw when <ul>
+     *                           <li>values is empty</li>
+     *                           <li>infer isn't codec {@link TableField}</li>
+     *                           </ul>
+     * @see #encodingMultiLiteral(TypeInfer, Collection)
+     */
+    public static Expression encodingMultiParam(final TypeInfer type, final Collection<?> values) {
+        return MultiParamExpression.encodingMulti(type, values);
+    }
+
+    /**
+     * <p>
+     * Create multi literal expression, multi literal expression will output multi LITERAL like below:
+     * LITERAL , LITERAL , LITERAL ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
+     * </p>
+     *
+     * @param type   non-null,the type of element of values.
+     * @param values non-null and non-empty
+     * @throws CriteriaException throw when <ul>
+     *                           <li>values is empty</li>
+     *                           <li>infer isn't codec {@link TableField}</li>
+     *                           </ul>
+     * @see #encodingMultiParam(TypeInfer, Collection)
+     */
+    public static Expression encodingMultiLiteral(final TypeInfer type, final Collection<?> values) {
+        return MultiLiteralExpression.encodingMulti(type, values);
+    }
+
+    /**
+     * <p>
+     * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
+     * ? , ? , ? ...
+     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
+     * </p>
+     * <p>
+     * Named multi parameter expression is used in batch update(or delete) and values insert.
+     * </p>
+     *
+     * @param type non-null,the type of element of {@link Collection}
+     * @param name non-null,the key name of {@link Map} or the field name of java bean.
+     * @param size positive,the size of {@link Collection}
+     * @return named non-null multi parameter expression
+     * @throws CriteriaException throw when <ul>
+     *                           <li>name have no text</li>
+     *                           <li>size less than 1</li>
+     *                           <li>infer isn't codec {@link TableField}</li>
+     *                           </ul>
+     * @see #encodingNamedMultiLiteral(TypeInfer, String, int)
+     */
+    public static Expression encodingNamedMultiParam(final TypeInfer type, final String name, final int size) {
+        return MultiParamExpression.encodingNamed(type, name, size);
+    }
+
 
     /**
      * <p>
@@ -982,8 +974,7 @@ abstract class SQLsSyntax extends Functions {
      *                           <li>size less than 1</li>
      *                           <li>infer isn't codec {@link TableField}</li>
      *                           </ul>
-     * @see #namedMultiParam(TypeInfer, String, int)
-     * @see #namedMultiLiteral(TypeInfer, String, int)
+     * @see #encodingNamedMultiParam(TypeInfer, String, int)
      */
     public static Expression encodingNamedMultiLiteral(final TypeInfer type, final String name, final int size) {
         return MultiLiteralExpression.encodingNamed(type, name, size);
@@ -1013,7 +1004,7 @@ abstract class SQLsSyntax extends Functions {
      * Reference a {@link  Selection} of current statement after selection list end,eg: ORDER BY clause.
      * </p>
      */
-    public static Expression ref(String selectionAlias) {
+    public static SimpleExpression ref(String selectionAlias) {
         return ContextStack.peek().refSelection(selectionAlias);
     }
 
@@ -1024,7 +1015,7 @@ abstract class SQLsSyntax extends Functions {
      *
      * @param selectionOrdinal based 1 .
      */
-    public static Expression ref(int selectionOrdinal) {
+    public static SimpleExpression ref(int selectionOrdinal) {
         return ContextStack.peek().refSelection(selectionOrdinal);
     }
 
@@ -1052,24 +1043,24 @@ abstract class SQLsSyntax extends Functions {
         return ContextStack.root().createVar(varName, paramMeta);
     }
 
-    public static Expression parens(Expression expression) {
+    public static SimpleExpression parens(Expression expression) {
         return Expressions.bracketExp(expression);
     }
 
-    public static IPredicate bracket(IPredicate predicate) {
-        return Expressions.bracketPredicate(predicate);
+    public static SimplePredicate bracket(IPredicate predicate) {
+        return OperationPredicate.bracketPredicate(predicate);
     }
 
-    public static Expression bitwiseNot(Expression exp) {
+    public static SimpleExpression bitwiseNot(Expression exp) {
         return Expressions.unaryExp(UnaryOperator.BITWISE_NOT, exp);
     }
 
-    public static Expression negate(Expression exp) {
+    public static SimpleExpression negate(Expression exp) {
         return Expressions.unaryExp(UnaryOperator.NEGATE, exp);
     }
 
     public static IPredicate not(IPredicate predicate) {
-        return Expressions.notPredicate(predicate);
+        return OperationPredicate.notPredicate(predicate);
     }
 
 

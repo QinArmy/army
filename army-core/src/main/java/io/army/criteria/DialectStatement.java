@@ -36,7 +36,7 @@ public interface DialectStatement extends Statement {
 
     interface _StaticDmlReturningCommaClause<R extends Item> extends _StaticReturningCommaClause<R> {
 
-        R comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+        R comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
 
         R comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
@@ -73,7 +73,7 @@ public interface DialectStatement extends Statement {
 
     interface _StaticDmlReturningClause<R extends Item> extends _StaticReturningClause<R> {
 
-        R returning(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+        R returning(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
 
         R returning(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 

@@ -885,13 +885,13 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public Expression refSelection(String selectionAlias) {
+        public SimpleExpression refSelection(String selectionAlias) {
             String m = "current context don't support refSelection(selectionAlias)";
             throw ContextStack.criteriaError(this, m);
         }
 
         @Override
-        public Expression refSelection(int selectionOrdinal) {
+        public SimpleExpression refSelection(int selectionOrdinal) {
             String m = "current context don't support refSelection(int selectionOrdinal)";
             throw ContextStack.criteriaError(this, m);
         }
@@ -2045,7 +2045,7 @@ abstract class CriteriaContexts {
         /**
          * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketContext#refSelection(String)}
          */
-        private Map<Object, Expression> refSelectionMap;
+        private Map<Object, SimpleExpression> refSelectionMap;
 
         private Map<String, Boolean> windowNameMap;
 
@@ -2127,7 +2127,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final Expression refSelection(final @Nullable String selectionAlias) {
+        public final SimpleExpression refSelection(final @Nullable String selectionAlias) {
             if (selectionAlias == null) {
                 throw ContextStack.nullPointer(this);
             }
@@ -2135,8 +2135,8 @@ abstract class CriteriaContexts {
             if (leftContext != null) {
                 return leftContext.refSelection(selectionAlias);
             }
-            Expression refSelection;
-            Map<Object, Expression> refSelectionMap = this.refSelectionMap;
+            SimpleExpression refSelection;
+            Map<Object, SimpleExpression> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
                 refSelectionMap = new HashMap<>();
                 this.refSelectionMap = refSelectionMap;
@@ -2160,7 +2160,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final Expression refSelection(final int selectionOrdinal) {
+        public final SimpleExpression refSelection(final int selectionOrdinal) {
             if (selectionOrdinal < 1) {
                 throw CriteriaUtils.unknownSelection(this, selectionOrdinal);
             }
@@ -2168,8 +2168,8 @@ abstract class CriteriaContexts {
             if (leftContext != null) {
                 return leftContext.refSelection(selectionOrdinal);
             }
-            Expression refSelection;
-            Map<Object, Expression> refSelectionMap = this.refSelectionMap;
+            SimpleExpression refSelection;
+            Map<Object, SimpleExpression> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
                 refSelectionMap = new HashMap<>();
                 this.refSelectionMap = refSelectionMap;
@@ -2354,7 +2354,7 @@ abstract class CriteriaContexts {
          * @see #endSelectClauseIfNeed()
          */
         private void validateDelayRefSelection() {
-            final Map<Object, Expression> refSelectionMap = this.refSelectionMap;
+            final Map<Object, SimpleExpression> refSelectionMap = this.refSelectionMap;
             assert refSelectionMap != null;
             Map<String, Selection> selectionMap = null;
             List<Selection> selectionList = null;
@@ -2505,9 +2505,9 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final Expression refSelection(final String selectionAlias) {
+        public final SimpleExpression refSelection(final String selectionAlias) {
             final CriteriaContext leftContext = this.leftContext, innerContext = this.innerContext;
-            final Expression selection;
+            final SimpleExpression selection;
             if (innerContext == null) {
                 throw ContextStack.castCriteriaApi(this);
             } else if (leftContext == null) {
@@ -2599,7 +2599,7 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public Expression refSelection(final String selectionAlias) {
+        public SimpleExpression refSelection(final String selectionAlias) {
             Map<String, NameRefSelection> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
                 this.refSelectionMap = refSelectionMap = new HashMap<>();
@@ -2678,7 +2678,7 @@ abstract class CriteriaContexts {
         /**
          * @see #migrateToQueryContext(SimpleQueryContext, DispatcherContext)
          */
-        private Map<Object, Expression> refSelectionMap;
+        private Map<Object, SimpleExpression> refSelectionMap;
 
         private boolean refOuter;
 
@@ -2774,18 +2774,18 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final Expression refSelection(final @Nullable String selectionAlias) {
+        public final SimpleExpression refSelection(final @Nullable String selectionAlias) {
             if (this.migrated) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (selectionAlias == null) {
                 throw ContextStack.nullPointer(this);
             }
-            Map<Object, Expression> refSelectionMap = this.refSelectionMap;
+            Map<Object, SimpleExpression> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
                 refSelectionMap = new HashMap<>();
                 this.refSelectionMap = refSelectionMap;
             }
-            Expression refSelection;
+            SimpleExpression refSelection;
             refSelection = refSelectionMap.get(selectionAlias);
             if (refSelection == null) {
                 refSelection = new DelayNameRefSelection(selectionAlias);
@@ -2798,19 +2798,19 @@ abstract class CriteriaContexts {
          * @param selectionOrdinal based 1 .
          */
         @Override
-        public final Expression refSelection(final int selectionOrdinal) {
+        public final SimpleExpression refSelection(final int selectionOrdinal) {
             if (this.migrated) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (selectionOrdinal < 1) {
                 throw CriteriaUtils.unknownSelection(this, selectionOrdinal);
             }
-            Map<Object, Expression> refSelectionMap = this.refSelectionMap;
+            Map<Object, SimpleExpression> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
                 refSelectionMap = new HashMap<>();
                 this.refSelectionMap = refSelectionMap;
             }
             final int selectionIndex = selectionOrdinal - 1;
-            Expression refSelection;
+            SimpleExpression refSelection;
             refSelection = refSelectionMap.get(selectionIndex);
             if (refSelection == null) {
                 refSelection = new DelayIndexRefSelection(selectionIndex);
@@ -3070,7 +3070,7 @@ abstract class CriteriaContexts {
     }//DelaySelection
 
 
-    private static abstract class RefSelection extends OperationExpression.SimpleExpression {
+    private static abstract class RefSelection extends OperationExpression.OperationSimpleExpression {
 
         private final Selection selection;
 
@@ -3130,7 +3130,7 @@ abstract class CriteriaContexts {
     }//IndexRefSelection
 
 
-    private static abstract class DelayRefSelection extends OperationExpression.SimpleExpression {
+    private static abstract class DelayRefSelection extends OperationExpression.OperationSimpleExpression {
 
         private final DelaySelection delaySelection;
 

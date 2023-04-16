@@ -119,9 +119,9 @@ public interface PostgreUpdate extends PostgreStatement {
         <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as,
                                              String tableAlias);
 
-        <T> _SingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
+        <T> _SingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias);
 
-        <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
+        <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias);
 
     }
 
@@ -249,9 +249,9 @@ public interface PostgreUpdate extends PostgreStatement {
         <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as,
                                                   String tableAlias);
 
-        <T> _BatchSingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
+        <T> _BatchSingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias);
 
-        <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolStar star, SQLs.WordAs as, String tableAlias);
+        <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias);
 
     }
 

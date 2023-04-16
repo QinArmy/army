@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
+import io.army.criteria.SimpleExpression;
 import io.army.criteria.SqlValueParam;
 import io.army.criteria.mysql.MySQLTimeFormat;
 import io.army.criteria.mysql.MySQLTimeUnit;
@@ -44,7 +45,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #addDate(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,INTERVAL expr unit)</a>
      */
-    public static Expression addDate(final Expression date, final SQLs.WordInterval interval, final Expression expr
+    public static SimpleExpression addDate(final Expression date, final SQLs.WordInterval interval, final Expression expr
             , final MySQLTimeUnit unit) {
         return _dateIntervalFunc("ADDDATE", date, interval, expr, unit);
     }
@@ -60,7 +61,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #addDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_adddate">ADDDATE(date,days)</a>
      */
-    public static Expression addDate(final Expression date, final Expression days) {
+    public static SimpleExpression addDate(final Expression date, final Expression days) {
         return FunctionUtils.twoArgFunc("ADDDATE", date, days, LocalDateType.INSTANCE);
     }
 
@@ -79,7 +80,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *             @see #subDate(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subdate">SUBDATE(date,INTERVAL expr unit)</a>
      */
-    public static Expression subDate(final Expression date, SQLs.WordInterval interval, final Expression expr
+    public static SimpleExpression subDate(final Expression date, SQLs.WordInterval interval, final Expression expr
             , final MySQLTimeUnit unit) {
         return _dateIntervalFunc("SUBDATE", date, interval, expr, unit);
     }
@@ -94,7 +95,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #subDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subdate">SUBDATE(expr,days)</a>
      */
-    public static Expression subDate(final Expression date, final Expression days) {
+    public static SimpleExpression subDate(final Expression date, final Expression days) {
         return FunctionUtils.twoArgFunc("SUBDATE", date, days, LocalDateType.INSTANCE);
     }
 
@@ -105,7 +106,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_addtime">ADDTIME(expr1,expr2)</a>
      */
-    public static Expression addTime(final Expression expr1, final Expression expr2) {
+    public static SimpleExpression addTime(final Expression expr1, final Expression expr2) {
         return FunctionUtils.twoArgFunc("ADDTIME", expr1, expr2, expr1.typeMeta());
     }
 
@@ -116,7 +117,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_subtime">SUBTIME(expr1,expr2)</a>
      */
-    public static Expression subTime(final Expression expr1, final Expression expr2) {
+    public static SimpleExpression subTime(final Expression expr1, final Expression expr2) {
         return FunctionUtils.twoArgFunc("SUBTIME", expr1, expr2, expr1.typeMeta());
     }
 
@@ -127,7 +128,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_convert-tz">CONVERT_TZ(dt,from_tz,to_tz)</a>
      */
-    public static Expression convertTz(Expression dt, Expression fromTz, Expression toTz) {
+    public static SimpleExpression convertTz(Expression dt, Expression fromTz, Expression toTz) {
         return FunctionUtils.threeArgFunc("CONVERT_TZ", dt, fromTz, toTz, LocalDateTimeType.INSTANCE);
     }
 
@@ -138,7 +139,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_curdate">CURRENT_DATE()</a>
      */
-    public static Expression currentDate() {
+    public static SimpleExpression currentDate() {
         return FunctionUtils.zeroArgFunc("CURRENT_DATE", LocalDateType.INSTANCE);
     }
 
@@ -149,7 +150,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME()</a>
      */
-    public static Expression currentTime() {
+    public static SimpleExpression currentTime() {
         return FunctionUtils.zeroArgFunc("CURRENT_TIME", LocalTimeType.INSTANCE);
     }
 
@@ -160,7 +161,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIME(fsp)</a>
      */
-    public static Expression currentTime(final Expression fsp) {
+    public static SimpleExpression currentTime(final Expression fsp) {
         return FunctionUtils.oneArgFunc("CURRENT_TIME", fsp, LocalTimeType.INSTANCE);
     }
 
@@ -172,7 +173,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #currentTimestamp(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-timestamp">CURRENT_TIMESTAMP()</a>
      */
-    public static Expression currentTimestamp() {
+    public static SimpleExpression currentTimestamp() {
         return FunctionUtils.zeroArgFunc("CURRENT_TIMESTAMP", LocalDateTimeType.INSTANCE);
     }
 
@@ -185,7 +186,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #currentTimestamp()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_current-time">CURRENT_TIMESTAMP(fsp)</a>
      */
-    public static Expression currentTimestamp(final Expression fsp) {
+    public static SimpleExpression currentTimestamp(final Expression fsp) {
         return FunctionUtils.oneArgFunc("CURRENT_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
     }
 
@@ -198,7 +199,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param expr nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date">DATE(expr)</a>
      */
-    public static Expression date(final Expression expr) {
+    public static SimpleExpression date(final Expression expr) {
         return FunctionUtils.oneArgFunc("DATE", expr, LocalDateType.INSTANCE);
     }
 
@@ -211,7 +212,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param expr2 nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_datediff">DATEDIFF(expr1,expr2)</a>
      */
-    public static Expression dateDiff(final Expression expr1, final Expression expr2) {
+    public static SimpleExpression dateDiff(final Expression expr1, final Expression expr2) {
         return FunctionUtils.twoArgFunc("DATEDIFF", expr1, expr2, IntegerType.INSTANCE);
     }
 
@@ -232,7 +233,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param unit non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add">DATE_ADD(date,INTERVAL expr unit)</a>
      */
-    public static Expression dateAdd(final Expression date, final SQLs.WordInterval interval, final Expression expr
+    public static SimpleExpression dateAdd(final Expression date, final SQLs.WordInterval interval, final Expression expr
             , final MySQLTimeUnit unit) {
         return _dateAddOrSub("DATE_ADD", date, interval, expr, unit);
     }
@@ -254,7 +255,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param unit non-null
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add">DATE_SUB(date,INTERVAL expr unit)</a>
      */
-    public static Expression dateSub(final Expression date, final SQLs.WordInterval interval, final Expression expr
+    public static SimpleExpression dateSub(final Expression date, final SQLs.WordInterval interval, final Expression expr
             , final MySQLTimeUnit unit) {
         return _dateAddOrSub("DATE_SUB", date, interval, expr, unit);
     }
@@ -268,7 +269,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param format nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-format">DATE_FORMAT(date,format)</a>
      */
-    public static Expression dateFormat(final Expression date, final Expression format) {
+    public static SimpleExpression dateFormat(final Expression date, final Expression format) {
         return FunctionUtils.twoArgFunc("DATE_FORMAT", date, format, StringType.INSTANCE);
     }
 
@@ -280,7 +281,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofmonth">DAYOFMONTH(date)</a>
      */
-    public static Expression dayOfMonth(final Expression date) {
+    public static SimpleExpression dayOfMonth(final Expression date) {
         return FunctionUtils.oneArgFunc("DAYOFMONTH", date, IntegerType.INSTANCE);
     }
 
@@ -292,7 +293,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayname">DAYNAME(date)</a>
      */
-    public static Expression dayName(final Expression date) {
+    public static SimpleExpression dayName(final Expression date) {
         return FunctionUtils.oneArgFunc("DAYNAME", date, DayOfWeekType.INSTANCE);
     }
 
@@ -304,7 +305,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofweek">DAYOFYEAR(date)</a>
      */
-    public static Expression dayOfWeek(final Expression date) {
+    public static SimpleExpression dayOfWeek(final Expression date) {
         return FunctionUtils.oneArgFunc("DAYOFWEEK", date, DayOfWeekType.INSTANCE);
     }
 
@@ -316,7 +317,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_dayofyear">DAYOFYEAR(date)</a>
      */
-    public static Expression dayOfYear(final Expression date) {
+    public static SimpleExpression dayOfYear(final Expression date) {
         return FunctionUtils.oneArgFunc("DAYOFYEAR", date, IntegerType.INSTANCE);
     }
 
@@ -336,7 +337,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_extract">EXTRACT(date)</a>
      */
-    public static Expression extract(final MySQLTimeUnit unit, final WordFrom from, final Expression date) {
+    public static SimpleExpression extract(final MySQLTimeUnit unit, final WordFrom from, final Expression date) {
         final String name = "EXTRACT";
         if (from != Functions.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
@@ -390,7 +391,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param n nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-days">FROM_DAYS(date)</a>
      */
-    public static Expression fromDays(final Expression n) {
+    public static SimpleExpression fromDays(final Expression n) {
         return FunctionUtils.oneArgFunc("FROM_DAYS", n, LocalDateType.INSTANCE);
     }
 
@@ -403,7 +404,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #fromUnixTime(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-unixtime">FROM_UNIXTIME(unix_timestamp[,format])</a>
      */
-    public static Expression fromUnixTime(final Expression unixTimestamp) {
+    public static SimpleExpression fromUnixTime(final Expression unixTimestamp) {
         return FunctionUtils.oneArgFunc("FROM_UNIXTIME", unixTimestamp, LocalDateTimeType.INSTANCE);
     }
 
@@ -418,7 +419,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #fromUnixTime(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_from-unixtime">FROM_UNIXTIME(unix_timestamp[,format])</a>
      */
-    public static Expression fromUnixTime(final Expression unixTimestamp, final Expression format) {
+    public static SimpleExpression fromUnixTime(final Expression unixTimestamp, final Expression format) {
         return FunctionUtils.twoArgFunc("FROM_UNIXTIME", unixTimestamp, format, StringType.INSTANCE);
     }
 
@@ -437,7 +438,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when 1.type error;2.invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_get-format">GET_FORMAT({DATE|TIME|DATETIME}, {'EUR'|'USA'|'JIS'|'ISO'|'INTERNAL'})</a>
      */
-    public static Expression getFormat(final MySQLTypes type, final MySQLTimeFormat format) {
+    public static SimpleExpression getFormat(final MySQLTypes type, final MySQLTimeFormat format) {
         final String name = "GET_FORMAT";
         switch (type) {
             case TIME:
@@ -459,7 +460,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param time nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_hour">HOUR(time)</a>
      */
-    public static Expression hour(final Expression time) {
+    public static SimpleExpression hour(final Expression time) {
         return FunctionUtils.oneArgFunc("HOUR", time, IntegerType.INSTANCE);
     }
 
@@ -471,7 +472,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_last-day">LAST_DAY(date)</a>
      */
-    public static Expression lastDay(final Expression date) {
+    public static SimpleExpression lastDay(final Expression date) {
         return FunctionUtils.oneArgFunc("LAST_DAY", date, IntegerType.INSTANCE);
     }
 
@@ -483,7 +484,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #now(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_now">NOW([fsp])</a>
      */
-    public static Expression now() {
+    public static SimpleExpression now() {
         return FunctionUtils.zeroArgFunc("NOW", LocalDateTimeType.INSTANCE);
     }
 
@@ -496,7 +497,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #now()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_now">NOW([fsp])</a>
      */
-    public static Expression now(final Expression fsp) {
+    public static SimpleExpression now(final Expression fsp) {
         return FunctionUtils.oneArgFunc("NOW", fsp, LocalDateTimeType.INSTANCE);
     }
 
@@ -508,7 +509,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #sysDate(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sysdate">SYSDATE([fsp])</a>
      */
-    public static Expression sysDate() {
+    public static SimpleExpression sysDate() {
         return FunctionUtils.zeroArgFunc("SYSDATE", LocalDateTimeType.INSTANCE);
     }
 
@@ -520,7 +521,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #sysDate()
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sysdate">SYSDATE([fsp])</a>
      */
-    public static Expression sysDate(final Expression fsp) {
+    public static SimpleExpression sysDate(final Expression fsp) {
         return FunctionUtils.oneArgFunc("SYSDATE", fsp, LocalDateTimeType.INSTANCE);
     }
 
@@ -532,7 +533,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #timestamp(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestamp">TIMESTAMP(expr)</a>
      */
-    public static Expression timestamp(final Expression expr) {
+    public static SimpleExpression timestamp(final Expression expr) {
         return FunctionUtils.oneArgFunc("TIMESTAMP", expr, LocalDateTimeType.INSTANCE);
     }
 
@@ -544,7 +545,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #timestamp(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestamp">TIMESTAMP(expr1,expr2)</a>
      */
-    public static Expression timestamp(final Expression expr1, final Expression expr2) {
+    public static SimpleExpression timestamp(final Expression expr1, final Expression expr2) {
         return FunctionUtils.twoArgFunc("TIMESTAMP", expr1, expr2, LocalDateTimeType.INSTANCE);
     }
 
@@ -578,7 +579,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @throws CriteriaException throw when unit error or invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestampadd">TIMESTAMPADD(unit,interval,datetime_expr)</a>
      */
-    public static Expression timestampAdd(final MySQLTimeUnit unit, final Expression interval
+    public static SimpleExpression timestampAdd(final MySQLTimeUnit unit, final Expression interval
             , final Expression datetimeExpr) {
 
         final String name = "TIMESTAMPADD";
@@ -630,7 +631,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param datetimeExpr2 nullable parameter or {@link  Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timestampdiff">TIMESTAMPDIFF(unit,datetime_expr1,datetime_expr2)</a>
      */
-    public static Expression timestampDiff(final MySQLTimeUnit unit, final Expression datetimeExpr1
+    public static SimpleExpression timestampDiff(final MySQLTimeUnit unit, final Expression datetimeExpr1
             , final Expression datetimeExpr2) {
         final String name = "TIMESTAMPADD";
         if (!(datetimeExpr1 instanceof ArmyExpression)) {
@@ -682,7 +683,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param format nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_time-format">TIME_FORMAT(time,format)</a>
      */
-    public static Expression timeFormat(final Expression time, Expression format) {
+    public static SimpleExpression timeFormat(final Expression time, Expression format) {
         return FunctionUtils.twoArgFunc("TIME_FORMAT", time, format, StringType.INSTANCE);
     }
 
@@ -694,7 +695,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-days">TO_DAYS(date)</a>
      */
-    public static Expression toDays(final Expression date) {
+    public static SimpleExpression toDays(final Expression date) {
         return FunctionUtils.oneArgFunc("TO_DAYS", date, IntegerType.INSTANCE);
     }
 
@@ -706,7 +707,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param expr nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_to-seconds">TO_SECONDS(expr)</a>
      */
-    public static Expression toSeconds(final Expression expr) {
+    public static SimpleExpression toSeconds(final Expression expr) {
         return FunctionUtils.oneArgFunc("TO_SECONDS", expr, LongType.INSTANCE);
     }
 
@@ -717,7 +718,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP()</a>
      */
-    public static Expression unixTimestamp() {
+    public static SimpleExpression unixTimestamp() {
         return FunctionUtils.zeroArgFunc("UNIX_TIMESTAMP", LongType.INSTANCE);
     }
 
@@ -728,7 +729,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_unix-timestamp">UNIX_TIMESTAMP(date)</a>
      */
-    public static Expression unixTimestamp(final Expression date) {
+    public static SimpleExpression unixTimestamp(final Expression date) {
         return FunctionUtils.oneArgFunc("UNIX_TIMESTAMP", date, LongType.INSTANCE);
     }
 
@@ -739,7 +740,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-date">UTC_DATE()</a>
      */
-    public static Expression utcDate() {
+    public static SimpleExpression utcDate() {
         return FunctionUtils.zeroArgFunc("UTC_DATE", LocalDateType.INSTANCE);
     }
 
@@ -750,7 +751,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME()</a>
      */
-    public static Expression utcTime() {
+    public static SimpleExpression utcTime() {
         return FunctionUtils.zeroArgFunc("UTC_DATE", LocalTimeType.INSTANCE);
     }
 
@@ -762,7 +763,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param fsp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-time">UTC_TIME(fsp)</a>
      */
-    public static Expression utcTime(final Expression fsp) {
+    public static SimpleExpression utcTime(final Expression fsp) {
         return FunctionUtils.oneArgFunc("UTC_TIME", fsp, LocalTimeType.INSTANCE);
     }
 
@@ -773,7 +774,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP()</a>
      */
-    public static Expression utcTimestamp() {
+    public static SimpleExpression utcTimestamp() {
         return FunctionUtils.zeroArgFunc("UTC_TIMESTAMP", LocalDateTimeType.INSTANCE);
     }
 
@@ -785,7 +786,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param fsp non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_utc-timestamp">UTC_TIMESTAMP(fsp)</a>
      */
-    public static Expression utcTimestamp(final Expression fsp) {
+    public static SimpleExpression utcTimestamp(final Expression fsp) {
         return FunctionUtils.oneArgFunc("UTC_TIMESTAMP", fsp, LocalDateTimeType.INSTANCE);
     }
 
@@ -797,7 +798,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
      */
-    public static Expression week(final Expression date) {
+    public static SimpleExpression week(final Expression date) {
         return FunctionUtils.oneArgFunc("WEEK", date, IntegerType.INSTANCE);
     }
 
@@ -810,7 +811,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param mode non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_week">WEEK(date)</a>
      */
-    public static Expression week(final Expression date, final Expression mode) {
+    public static SimpleExpression week(final Expression date, final Expression mode) {
         return FunctionUtils.twoArgFunc("WEEK", date, mode, IntegerType.INSTANCE);
     }
 
@@ -822,7 +823,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekday">WEEKDAY(date)</a>
      */
-    public static Expression weekDay(final Expression date) {
+    public static SimpleExpression weekDay(final Expression date) {
         return FunctionUtils.oneArgFunc("WEEKDAY", date, DayOfWeekType.INSTANCE);
     }
 
@@ -834,7 +835,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_weekofyear">WEEKOFYEAR(date)</a>
      */
-    public static Expression weekOfYear(final Expression date) {
+    public static SimpleExpression weekOfYear(final Expression date) {
         return FunctionUtils.oneArgFunc("WEEKOFYEAR", date, IntegerType.INSTANCE);
     }
 
@@ -846,7 +847,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_year">YEAR(date)</a>
      */
-    public static Expression year(final Expression date) {
+    public static SimpleExpression year(final Expression date) {
         return FunctionUtils.oneArgFunc("YEAR", date, YearType.INSTANCE);
     }
 
@@ -858,7 +859,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date)</a>
      */
-    public static Expression yearWeek(final Expression date) {
+    public static SimpleExpression yearWeek(final Expression date) {
         return FunctionUtils.oneArgFunc("YEARWEEK", date, IntegerType.INSTANCE);
     }
 
@@ -870,7 +871,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_yearweek">YEARWEEK(date,mode)</a>
      */
-    public static Expression yearWeek(final Expression date, final Expression mode) {
+    public static SimpleExpression yearWeek(final Expression date, final Expression mode) {
         return FunctionUtils.twoArgFunc("YEARWEEK", date, mode, IntegerType.INSTANCE);
     }
 
@@ -884,7 +885,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param dayOfYear nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_makedate">MAKEDATE(year,dayofyear)</a>
      */
-    public static Expression makeDate(final Expression year, final Expression dayOfYear) {
+    public static SimpleExpression makeDate(final Expression year, final Expression dayOfYear) {
         return FunctionUtils.twoArgFunc("MAKEDATE", year, dayOfYear, LocalDateType.INSTANCE);
     }
 
@@ -898,7 +899,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param second nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_maketime">MAKETIME(hour,minute,second)</a>
      */
-    public static Expression makeTime(Expression hour, Expression minute, Expression second) {
+    public static SimpleExpression makeTime(Expression hour, Expression minute, Expression second) {
         return FunctionUtils.threeArgFunc("MAKETIME", hour, minute, second, LocalTimeType.INSTANCE);
     }
 
@@ -910,7 +911,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param expr non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_microsecond">MICROSECOND(expr)</a>
      */
-    public static Expression microSecond(final Expression expr) {
+    public static SimpleExpression microSecond(final Expression expr) {
         return FunctionUtils.oneArgFunc("MICROSECOND", expr, IntegerType.INSTANCE);
     }
 
@@ -922,7 +923,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param time non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_minute">MINUTE(expr)</a>
      */
-    public static Expression minute(final Expression time) {
+    public static SimpleExpression minute(final Expression time) {
         return FunctionUtils.oneArgFunc("MINUTE", time, IntegerType.INSTANCE);
     }
 
@@ -934,7 +935,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_month">MONTH(date)</a>
      */
-    public static Expression month(final Expression date) {
+    public static SimpleExpression month(final Expression date) {
         return FunctionUtils.oneArgFunc("MONTH", date, MonthType.INSTANCE);
     }
 
@@ -946,7 +947,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_monthname">MONTHNAME(date)</a>
      */
-    public static Expression monthName(final Expression date) {
+    public static SimpleExpression monthName(final Expression date) {
         return FunctionUtils.oneArgFunc("MONTHNAME", date, MonthType.INSTANCE);
     }
 
@@ -959,7 +960,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param n non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-add">PERIOD_ADD(p,n)</a>
      */
-    public static Expression periodAdd(final Expression p, final Expression n) {
+    public static SimpleExpression periodAdd(final Expression p, final Expression n) {
         return FunctionUtils.twoArgFunc("PERIOD_ADD", p, n, YearMonthType.INSTANCE);
     }
 
@@ -972,7 +973,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param p2 non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_period-diff">PERIOD_DIFF(P1,P2)</a>
      */
-    public static Expression periodDiff(final Expression p1, final Expression p2) {
+    public static SimpleExpression periodDiff(final Expression p1, final Expression p2) {
         return FunctionUtils.twoArgFunc("PERIOD_DIFF", p1, p2, IntegerType.INSTANCE);
     }
 
@@ -984,7 +985,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_quarter">QUARTER(date)</a>
      */
-    public static Expression quarter(final Expression date) {
+    public static SimpleExpression quarter(final Expression date) {
         return FunctionUtils.oneArgFunc("QUARTER", date, IntegerType.INSTANCE);
     }
 
@@ -996,7 +997,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param expr nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_time">TIME(expr)</a>
      */
-    public static Expression time(final Expression expr) {
+    public static SimpleExpression time(final Expression expr) {
         return FunctionUtils.oneArgFunc("TIME", expr, LocalTimeType.INSTANCE);
     }
 
@@ -1009,7 +1010,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param expr2 nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_timediff">TIMEDIFF(expr1,expr2)</a>
      */
-    public static Expression timeDiff(final Expression expr1, final Expression expr2) {
+    public static SimpleExpression timeDiff(final Expression expr1, final Expression expr2) {
         return FunctionUtils.twoArgFunc("TIMEDIFF", expr1, expr2, expr1.typeMeta());
     }
 
@@ -1022,7 +1023,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param time non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_second">SECOND(time)</a>
      */
-    public static Expression second(final Expression time) {
+    public static SimpleExpression second(final Expression time) {
         return FunctionUtils.oneArgFunc("SECOND", time, IntegerType.INSTANCE);
     }
 
@@ -1034,7 +1035,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param seconds non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_sec-to-time">SEC_TO_TIME(seconds)</a>
      */
-    public static Expression secToTime(final Expression seconds) {
+    public static SimpleExpression secToTime(final Expression seconds) {
         return FunctionUtils.oneArgFunc("SEC_TO_TIME", seconds, LocalTimeType.INSTANCE);
     }
 
@@ -1047,7 +1048,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param format non-null parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_str-to-date">STR_TO_DATE(str,format)</a>
      */
-    public static Expression strToDate(final Expression str, final Expression format) {
+    public static SimpleExpression strToDate(final Expression str, final Expression format) {
         final TypeMeta formatType;
         formatType = format.typeMeta();
         final TypeMeta returnType;
@@ -1068,7 +1069,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #addDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
      * @see #subDate(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
      */
-    private static Expression _dateIntervalFunc(final String name, final Expression date
+    private static SimpleExpression _dateIntervalFunc(final String name, final Expression date
             , final SQLs.WordInterval interval, final Expression expr, final MySQLTimeUnit unit) {
         final TypeMeta returnType;
         if (unit.isTimePart()) {
@@ -1109,7 +1110,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @see #dateSub(Expression, SQLs.WordInterval, Expression, MySQLTimeUnit)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-add">DATE_ADD(date,INTERVAL expr unit), DATE_SUB(date,INTERVAL expr unit)</a>
      */
-    private static Expression _dateAddOrSub(final String name, final Expression date
+    private static SimpleExpression _dateAddOrSub(final String name, final Expression date
             , final SQLs.WordInterval interval, final Expression expr, final MySQLTimeUnit unit) {
         final TypeMeta type, returnType;
         type = date.typeMeta();

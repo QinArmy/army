@@ -35,7 +35,7 @@ abstract class SqlSyntax {
     }
 
 
-    public interface SymbolStar {
+    public interface SymbolAsterisk {
 
     }
 

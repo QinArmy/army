@@ -313,7 +313,7 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
         if (expression == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        return this.and(expOperator2.apply(expression, SQLs.literalFrom(numberOperand)));
+        return this.and(expOperator2.apply(expression, SQLs.literalValue(numberOperand)));
     }
 
 
@@ -413,7 +413,7 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
             if (expression == null) {
                 throw ContextStack.nullPointer(this.context);
             }
-            this.and(expOperator2.apply(expression, SQLs.literalFrom(numberOperand)));
+            this.and(expOperator2.apply(expression, SQLs.literalValue(numberOperand)));
         }
         return (WA) this;
     }

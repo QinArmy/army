@@ -4,37 +4,7 @@ package io.army.criteria.impl;
 /**
  * Interface representing sql dual operator.
  */
-enum DualOperator {
-
-    PLUS(" +"),
-    MINUS(" -"),
-    MOD(" %"),
-    TIMES(" *"),
-    DIVIDE(" /"),
-    BITWISE_AND(" &"),
-    BITWISE_OR(" |"),
-    XOR(" ^"),
-    LEFT_SHIFT(" <<"),
-    RIGHT_SHIFT(" >>"),
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
-     * double precision ^ double precision → double precision <br/>
-     * Exponentiation</a>
-     */
-    CARET(" ^"), // postgre only
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
-     */
-    DOUBLE_VERTICAL(" ||"), // postgre only
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"> AT TIME ZONE Variants</a>
-     */
-    AT_TIME_ZONE(" AT TIME ZONE"), // postgre only
-
-    /*################################## blow boolean operator ##################################*/
+enum BooleanDualOperator implements Operator.DualOperator {
 
     EQUAL(" ="),
     NOT_EQUAL(" !="),
@@ -87,14 +57,20 @@ enum DualOperator {
     /**
      * @param spaceOperator space and sign
      */
-    DualOperator(String spaceOperator) {
+    BooleanDualOperator(String spaceOperator) {
         this.spaceOperator = spaceOperator;
     }
 
 
     @Override
+    public final int precedence() {
+        return 0;
+    }
+
+
+    @Override
     public final String toString() {
-        return CriteriaUtils.sqlWordsToString(this);
+        return CriteriaUtils.enumToString(this);
     }
 
 

@@ -144,7 +144,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .space()
                 .select(HistoryChinaRegion_.id, HistoryChinaRegion_.createTime, HistoryChinaRegion_.updateTime, HistoryChinaRegion_.version)
                 .comma(HistoryChinaRegion_.visible, HistoryChinaRegion_.name, HistoryChinaRegion_.regionGdp)
-                .comma(SQLs.literalFrom(RegionType.NONE)::as, HistoryChinaRegion_.REGION_TYPE)
+                .comma(SQLs.literalValue(RegionType.NONE)::as, HistoryChinaRegion_.REGION_TYPE)
                 .from(HistoryChinaRegion_.T, AS, "r")
                 .asQuery()
                 .asInsert();
@@ -166,7 +166,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .space()
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .comma(SQLs.literalFrom(RegionType.PROVINCE)::as, ChinaRegion_.REGION_TYPE)
+                .comma(SQLs.literalValue(RegionType.PROVINCE)::as, ChinaRegion_.REGION_TYPE)
                 .from(ChinaRegion_.T, AS, "r")
                 .asQuery()
                 .asInsert()

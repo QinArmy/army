@@ -141,7 +141,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR select(String derivedAlias, SQLsSyntax.SymbolPeriod period, SQLsSyntax.SymbolStar star) {
+    public final SR select(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
         this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
         return (SR) this;
     }
@@ -271,7 +271,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR space(String derivedAlias, SQLsSyntax.SymbolPeriod period, SQLsSyntax.SymbolStar star) {
+    public final SR space(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
         this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
         return (SR) this;
     }
@@ -354,7 +354,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR comma(String derivedAlias, SQLsSyntax.SymbolPeriod period, SQLsSyntax.SymbolStar star) {
+    public final SR comma(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
         this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
         return (SR) this;
     }
@@ -1025,7 +1025,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         @Override
         public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
+            return CriteriaUtils.enumToString(this);
         }
 
     }//LockWaitOption
@@ -1304,7 +1304,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public final SR select(String derivedAlias, SQLsSyntax.SymbolPeriod period, SQLsSyntax.SymbolStar star) {
+        public final SR select(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
             return this.createSelectClause()
                     .select(derivedAlias, period, star);
         }
@@ -1645,7 +1645,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public Selections selection(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star) {
+        public Selections selection(String derivedAlias, SQLs.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
             this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }

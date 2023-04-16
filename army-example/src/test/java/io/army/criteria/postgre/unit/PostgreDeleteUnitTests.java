@@ -42,7 +42,7 @@ public class PostgreDeleteUnitTests extends PostgreUnitTests {
     public void returningDeleteParent() {
         final ReturningDelete stmt;
         stmt = Postgres.singleDelete()
-                .deleteFrom(ONLY, ChinaRegion_.T, STAR, AS, "c")
+                .deleteFrom(ONLY, ChinaRegion_.T, ASTERISK, AS, "c")
                 .using(HistoryChinaRegion_.T, AS, "hc")
                 .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
                 .and(ChinaRegion_.id::equal, SQLs::literal, 1)

@@ -1,8 +1,8 @@
 package io.army.criteria.dialect;
 
-import io.army.criteria.Expression;
+import io.army.criteria.SimpleExpression;
 
-public interface VarExpression extends Expression {
+public interface VarExpression extends SimpleExpression {
 
     /**
      * @return session variable name

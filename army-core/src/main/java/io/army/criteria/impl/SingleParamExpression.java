@@ -20,10 +20,10 @@ import java.util.Objects;
  * @see MultiParamExpression
  * @since 1.0
  */
-abstract class SingleParamExpression extends OperationExpression.SimpleExpression implements SQLParam {
+abstract class SingleParamExpression extends OperationExpression.OperationSimpleExpression implements SQLParam {
 
     /**
-     * @see SQLs#paramFrom(Object)
+     * @see SQLs#paramValue(Object)
      */
     static SingleParamExpression from(final @Nullable Object value) {
         if (value == null) {

@@ -162,7 +162,7 @@ abstract class PostgreExpressions {
     }
 
 
-    private static final class PeriodOverlapsPredicate extends OperationPredicate
+    private static final class PeriodOverlapsPredicate extends OperationPredicate.CompoundPredicate
             implements PostgreSyntax._PeriodOverlapsClause {
 
         private final ArmyExpression start1;

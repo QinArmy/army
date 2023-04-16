@@ -28,11 +28,11 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         Select stmt;
         stmt = SQLs.query()
                 .select(SQLs.cases()
-                        .when(SQLs.literalFrom(1).is(TRUE))
-                        .then(SQLs::literalFrom, PillUserType.PARTNER)
-                        .elseValue(SQLs.literalFrom(PillUserType.NONE))
+                        .when(SQLs.literalValue(1).is(TRUE))
+                        .then(SQLs::literalValue, PillUserType.PARTNER)
+                        .elseValue(SQLs.literalValue(PillUserType.NONE))
                         .end()
-                        .plus(SQLs.literalFrom(1)).times(SQLs::literal, 5).as("a")
+                        .plus(SQLs.literalValue(1)).times(SQLs.literalValue(5)).as("a")
                 )
                 .asQuery();
         printStmt(LOG, stmt);
@@ -235,9 +235,9 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         final Select stmt;
         stmt = SQLs.query()
                 .select(SQLs.refThis("us", "one"))
-                .comma("us", PERIOD, STAR)
+                .comma("us", PERIOD, ASTERISK)
                 .from(() -> SQLs.subQuery()
-                        .select(SQLs.literalFrom(1)::as, "one")
+                        .select(SQLs.literalValue(1)::as, "one")
                         .comma("u", PERIOD, PillUser_.T)
                         .from(PillUser_.T, AS, "u")
                         .where(PillUser_.createTime::equal, SQLs::literal, LocalDateTime::now)

@@ -151,6 +151,13 @@
     * 由于右操作数是通过方法参数传入的,在理念上是一个整体,所以若不是简单表达式则要为右操作数追加外部括号.
     * SQL style 要与编程语言特性相结合.
 
+33. 为什么要设计 io.army.criteria.SimpleExpression ?
+    * 因为 由于操作符的优先级等原因难以确定 funcRef 的 左操作数.
+    * 将 所有支持 funcRef 的方法迁移到 io.army.criteria.SimpleExpression 可以避免问题
+    * 这是典型的以结构避免问题
+
+34. 为什么设计 io.army.criteria.SimplePredicate ?
+    * 仅强调 io.army.criteria.IPredicate 有外部 括号 或者是个 return boolean 的 sql function.
 
     
 

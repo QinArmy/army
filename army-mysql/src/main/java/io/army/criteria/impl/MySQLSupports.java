@@ -568,7 +568,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
+            return CriteriaUtils.enumToString(this);
         }
 
 
@@ -594,7 +594,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
+            return CriteriaUtils.enumToString(this);
         }
 
     }// IndexHintPurpose

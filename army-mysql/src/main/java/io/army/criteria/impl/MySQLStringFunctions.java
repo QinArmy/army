@@ -4,6 +4,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLElement;
+import io.army.criteria.SimpleExpression;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLocale;
@@ -41,7 +42,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @param str nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ascii">ASCII(str)</a>
      */
-    public static Expression ascii(final Expression str) {
+    public static SimpleExpression ascii(final Expression str) {
         return FunctionUtils.oneArgFunc("ASCII", str, IntegerType.INSTANCE);
     }
 
@@ -53,7 +54,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @param n nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bin">BIN(n)</a>
      */
-    public static Expression bin(final Expression n) {
+    public static SimpleExpression bin(final Expression n) {
         return FunctionUtils.oneArgFunc("BIN", n, StringType.INSTANCE);
     }
 
@@ -65,7 +66,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @param str nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_bit-length">BIT_LENGTH(str)</a>
      */
-    public static Expression binLength(final Expression str) {
+    public static SimpleExpression binLength(final Expression str) {
         return FunctionUtils.oneArgFunc("BIT_LENGTH", str, IntegerType.INSTANCE);
     }
 
@@ -78,7 +79,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static Expression Char(final Expression n) {
+    public static SimpleExpression Char(final Expression n) {
         return FunctionUtils.oneOrMultiArgFunc("CHAR", n, StringType.INSTANCE);
     }
 
@@ -91,7 +92,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static Expression charFunc(final List<Expression> list) {
+    public static SimpleExpression charFunc(final List<Expression> list) {
         return FunctionUtils.multiArgFunc("CHAR", list, StringType.INSTANCE);
     }
 
@@ -107,7 +108,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static Expression charFunc(final Expression n, final MySQLs.WordUsing using, final SQLElement charsetName) {
+    public static SimpleExpression charFunc(final Expression n, final MySQLs.WordUsing using, final SQLElement charsetName) {
         assert using == MySQLs.USING;
         final String funcName = "CHAR";
         if (!(charsetName instanceof MySQLCharset || charsetName instanceof SQLs.SQLIdentifierImpl)) {
@@ -132,7 +133,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR(N,... [USING charset_name])</a>
      */
-    public static Expression charFunc(final List<Expression> list, final MySQLs.WordUsing using
+    public static SimpleExpression charFunc(final List<Expression> list, final MySQLs.WordUsing using
             , final SQLElement charsetName) {//TODO 优化方法定义
         assert using == MySQLs.USING;
         final String name = "CHAR";
@@ -159,7 +160,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_char">CHAR_LENGTH(str)</a>
      */
-    public static Expression charLength(final Expression str) {
+    public static SimpleExpression charLength(final Expression str) {
         return FunctionUtils.oneArgFunc("CHAR_LENGTH", str, IntegerType.INSTANCE);
     }
 
@@ -172,7 +173,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat">CONCAT(str1,str2,...)</a>
      */
-    public static Expression concat(final Expression str) {
+    public static SimpleExpression concat(final Expression str) {
         return FunctionUtils.oneArgFunc("CONCAT", str, StringType.INSTANCE);
     }
 
@@ -186,7 +187,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat-ws">CONCAT_WS(separator,str1,str2,...)</a>
      */
-    public static Expression concatWs(final Expression separator, final Expression str) {
+    public static SimpleExpression concatWs(final Expression separator, final Expression str) {
         return FunctionUtils.twoOrMultiArgFunc("CONCAT_WS", separator, str, StringType.INSTANCE);
     }
 
@@ -199,7 +200,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_concat-ws">CONCAT_WS(separator,str1,str2,...)</a>
      */
-    public static Expression concatWs(List<Expression> list) {
+    public static SimpleExpression concatWs(List<Expression> list) {
         return FunctionUtils.multiArgFunc("CONCAT_WS", list, StringType.INSTANCE);
     }
 
@@ -213,7 +214,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_elt">ELT(N,str1,str2,str3,...)</a>
      */
-    public static Expression elt(final Expression n, final Expression str) {
+    public static SimpleExpression elt(final Expression n, final Expression str) {
         return FunctionUtils.twoOrMultiArgFunc("ELT", n, str, StringType.INSTANCE);
     }
 
@@ -227,7 +228,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_elt">ELT(N,str1,str2,str3,...)</a>
      */
-    public static Expression elt(final Expression n, List<Expression> list) {
+    public static SimpleExpression elt(final Expression n, List<Expression> list) {
         return FunctionUtils.oneAndMultiArgFunc("ELT", n, list, StringType.INSTANCE);
     }
 
@@ -245,7 +246,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #exportSet(Expression, Expression, Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
      */
-    public static Expression exportSet(final Expression bits, final Expression on, Expression off) {
+    public static SimpleExpression exportSet(final Expression bits, final Expression on, Expression off) {
         return exportSet(bits, on, off, null, null);
     }
 
@@ -262,7 +263,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #exportSet(Expression, Expression, Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
      */
-    public static Expression exportSet(final Expression bits, final Expression on, Expression off
+    public static SimpleExpression exportSet(final Expression bits, final Expression on, Expression off
             , final @Nullable Expression separator) {
         return exportSet(bits, on, off, separator, null);
     }
@@ -280,7 +281,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #exportSet(Expression, Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_export-set">EXPORT_SET(bits,on,off[,separator[,number_of_bits]])</a>
      */
-    public static Expression exportSet(final Expression bits, final Expression on, Expression off
+    public static SimpleExpression exportSet(final Expression bits, final Expression on, Expression off
             , @Nullable final Expression separator, @Nullable final Expression numberOfBits) {
         return FunctionUtils.multiArgFunc("EXPORT_SET", StringType.INSTANCE, bits, on, off, separator, numberOfBits);
     }
@@ -296,7 +297,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_field">FIELD(str,str1,str2,str3,...)</a>
      */
-    public static Expression field(final Expression str, final Expression strList) {
+    public static SimpleExpression field(final Expression str, final Expression strList) {
         return FunctionUtils.twoOrMultiArgFunc("FIELD", str, strList, IntegerType.INSTANCE);
     }
 
@@ -310,7 +311,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_field">FIELD(str,str1,str2,str3,...)</a>
      */
-    public static Expression field(final Expression str, final List<Expression> strList) {
+    public static SimpleExpression field(final Expression str, final List<Expression> strList) {
         return FunctionUtils.oneAndMultiArgFunc("FIELD", str, strList, IntegerType.INSTANCE);
     }
 
@@ -324,7 +325,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_find-in-set">FIND_IN_SET(str,strlist)</a>
      */
-    public static Expression fieldInSet(final Expression str, final Expression strList) {
+    public static SimpleExpression fieldInSet(final Expression str, final Expression strList) {
         return FunctionUtils.twoOrMultiArgFunc("FIND_IN_SET", str, strList, IntegerType.INSTANCE);
     }
 
@@ -339,7 +340,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_find-in-set">FIND_IN_SET(str,strlist)</a>
      */
-    public static Expression fieldInSet(final Expression str, final List<Expression> strList) {
+    public static SimpleExpression fieldInSet(final Expression str, final List<Expression> strList) {
         return FunctionUtils.oneAndMultiArgFunc("FIND_IN_SET", str, strList, IntegerType.INSTANCE);
     }
 
@@ -354,7 +355,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #format(Expression, Expression, MySQLLocale)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_format">FORMAT(X,D[,locale])</a>
      */
-    public static Expression format(final Expression x, final Expression d) {
+    public static SimpleExpression format(final Expression x, final Expression d) {
         return FunctionUtils.twoArgFunc("FORMAT", x, d, StringType.INSTANCE);
     }
 
@@ -371,7 +372,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #format(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_format">FORMAT(X,D[,locale])</a>
      */
-    public static Expression format(final Expression x, final Expression d, final @Nullable MySQLLocale locale) {
+    public static SimpleExpression format(final Expression x, final Expression d, final @Nullable MySQLLocale locale) {
         return FunctionUtils.complexArgFunc("FORMAT", StringType.INSTANCE, x, d, locale);
     }
 
@@ -385,7 +386,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #toBase64(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_from-base64">FROM_BASE64(str)</a>
      */
-    public static Expression fromBase64(final Expression str) {
+    public static SimpleExpression fromBase64(final Expression str) {
         return FunctionUtils.oneArgFunc("FROM_BASE64", str, StringType.INSTANCE);
     }
 
@@ -399,7 +400,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #fromBase64(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_to-base64">TO_BASE64(str)</a>
      */
-    public static Expression toBase64(final Expression str) {
+    public static SimpleExpression toBase64(final Expression str) {
         return FunctionUtils.oneArgFunc("TO_BASE64", str, StringType.INSTANCE);
     }
 
@@ -413,7 +414,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #unhex(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_hex">HEX(str), HEX(N)</a>
      */
-    public static Expression hex(final Expression strOrNum) {
+    public static SimpleExpression hex(final Expression strOrNum) {
         return FunctionUtils.oneArgFunc("HEX", strOrNum, StringType.INSTANCE);
     }
 
@@ -427,7 +428,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #hex(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_unhex">UNHEX(str)</a>
      */
-    public static Expression unhex(final Expression str) {
+    public static SimpleExpression unhex(final Expression str) {
         return FunctionUtils.oneArgFunc("UNHEX", str, StringType.INSTANCE);
     }
 
@@ -443,7 +444,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_insert">INSERT(str,pos,len,newstr)</a>
      */
-    public static Expression insert(final Expression str, final Expression pos
+    public static SimpleExpression insert(final Expression str, final Expression pos
             , final Expression len, final Expression newStr) {
         return FunctionUtils.multiArgFunc("INSERT", StringType.INSTANCE, str, pos, len, newStr);
     }
@@ -458,7 +459,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_instr">INSTR(str,substr)</a>
      */
-    public static Expression instr(final Expression str, final Expression substr) {
+    public static SimpleExpression instr(final Expression str, final Expression substr) {
         return FunctionUtils.twoArgFunc("INSTR", str, substr, IntegerType.INSTANCE);
     }
 
@@ -471,7 +472,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lower">LOWER(str)</a>
      */
-    public static Expression lower(final Expression str) {
+    public static SimpleExpression lower(final Expression str) {
         return FunctionUtils.oneArgFunc("LOWER", str, StringType.INSTANCE);
     }
 
@@ -485,7 +486,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #lower(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_upper">UPPER(str)</a>
      */
-    public static Expression upper(final Expression str) {
+    public static SimpleExpression upper(final Expression str) {
         return FunctionUtils.oneArgFunc("UPPER", str, StringType.INSTANCE);
     }
 
@@ -499,7 +500,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_left">LEFT(str,len)</a>
      */
-    public static Expression left(final Expression str, final Expression len) {
+    public static SimpleExpression left(final Expression str, final Expression len) {
         return FunctionUtils.twoArgFunc("LEFT", str, len, StringType.INSTANCE);
     }
 
@@ -512,7 +513,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_length">LENGTH(str)</a>
      */
-    public static Expression length(final Expression str) {
+    public static SimpleExpression length(final Expression str) {
         return FunctionUtils.oneArgFunc("LENGTH", str, IntegerType.INSTANCE);
     }
 
@@ -525,7 +526,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_load-file">LOAD_FILE(fileName)</a>
      */
-    public static Expression loadFile(final Expression fileName) {
+    public static SimpleExpression loadFile(final Expression fileName) {
         return FunctionUtils.oneArgFunc("LOAD_FILE", fileName, StringType.INSTANCE);
     }
 
@@ -541,7 +542,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #position(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str)</a>
      */
-    public static Expression locate(final Expression substr, final Expression str) {
+    public static SimpleExpression locate(final Expression substr, final Expression str) {
         return FunctionUtils.twoArgFunc("LOCATE", substr, str, IntegerType.INSTANCE);
     }
 
@@ -557,7 +558,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #locate(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_locate">LOCATE(substr,str,pos)</a>
      */
-    public static Expression locate(final Expression substr, final Expression str, final Expression pos) {
+    public static SimpleExpression locate(final Expression substr, final Expression str, final Expression pos) {
         return FunctionUtils.threeArgFunc("LOCATE", substr, str, pos, IntegerType.INSTANCE);
     }
 
@@ -573,7 +574,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #rpad(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_lpad">LPAD(str,len,padstr)</a>
      */
-    public static Expression lpad(final Expression str, final Expression len, final Expression padstr) {
+    public static SimpleExpression lpad(final Expression str, final Expression len, final Expression padstr) {
         return FunctionUtils.threeArgFunc("LPAD", str, len, padstr, StringType.INSTANCE);
     }
 
@@ -589,7 +590,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #lpad(Expression, Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_rpad">RPAD(str,len,padstr)</a>
      */
-    public static Expression rpad(final Expression str, final Expression len, final Expression padstr) {
+    public static SimpleExpression rpad(final Expression str, final Expression len, final Expression padstr) {
         return FunctionUtils.threeArgFunc("RPAD", str, len, padstr, StringType.INSTANCE);
     }
 
@@ -604,7 +605,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #rtrim(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ltrim">LTRIM(str)</a>
      */
-    public static Expression ltrim(final Expression str) {
+    public static SimpleExpression ltrim(final Expression str) {
         return FunctionUtils.oneArgFunc("LTRIM", str, StringType.INSTANCE);
     }
 
@@ -618,7 +619,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #ltrim(Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_rtrim">RTRIM(str)</a>
      */
-    public static Expression rtrim(final Expression str) {
+    public static SimpleExpression rtrim(final Expression str) {
         return FunctionUtils.oneArgFunc("RTRIM", str, StringType.INSTANCE);
     }
 
@@ -632,7 +633,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_make-set">MAKE_SET(bits,str1,str2,...)</a>
      */
-    public static Expression makeSet(final Expression bits, final Expression strList) {
+    public static SimpleExpression makeSet(final Expression bits, final Expression strList) {
         return FunctionUtils.twoOrMultiArgFunc("MAKE_SET", bits, strList, StringType.INSTANCE);
     }
 
@@ -646,7 +647,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_make-set">MAKE_SET(bits,str1,str2,...)</a>
      */
-    public static Expression makeSet(final Expression bits, final List<Expression> strList) {
+    public static SimpleExpression makeSet(final Expression bits, final List<Expression> strList) {
         return FunctionUtils.oneAndMultiArgFunc("MAKE_SET", bits, strList, StringType.INSTANCE);
     }
 
@@ -660,7 +661,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">SUBSTRING(str,pos)</a>
      */
-    public static Expression subString(final Expression str, final Expression pos) {
+    public static SimpleExpression subString(final Expression str, final Expression pos) {
         return FunctionUtils.twoArgFunc("SUBSTRING", str, pos, StringType.INSTANCE);
     }
 
@@ -675,7 +676,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring">SUBSTRING(str,pos,len)</a>
      */
-    public static Expression subString(final Expression str, final Expression pos, final Expression len) {
+    public static SimpleExpression subString(final Expression str, final Expression pos, final Expression len) {
         return FunctionUtils.threeArgFunc("SUBSTRING", str, pos, len, StringType.INSTANCE);
     }
 
@@ -688,7 +689,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_oct">OCT(N)</a>
      */
-    public static Expression oct(final Expression n) {
+    public static SimpleExpression oct(final Expression n) {
         return FunctionUtils.oneArgFunc("OCT", n, StringType.INSTANCE);
     }
 
@@ -701,7 +702,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_ord">ORD(str)</a>
      */
-    public static Expression ord(final Expression str) {
+    public static SimpleExpression ord(final Expression str) {
         return FunctionUtils.oneArgFunc("ORD", str, IntegerType.INSTANCE);
     }
 
@@ -716,7 +717,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see #locate(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_position">POSITION(substr IN str)</a>
      */
-    public static Expression position(final Expression substr, final Expression str) {
+    public static SimpleExpression position(final Expression substr, final Expression str) {
         return FunctionUtils.twoArgFunc("POSITION", substr, str, IntegerType.INSTANCE);
     }
 
@@ -730,7 +731,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_quote">QUOTE(str)</a>
      */
-    public static Expression quote(final Expression str) {
+    public static SimpleExpression quote(final Expression str) {
         return FunctionUtils.oneArgFunc("QUOTE", str, StringType.INSTANCE);
     }
 
@@ -744,7 +745,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_repeat">REPEAT(str,count)</a>
      */
-    public static Expression repeat(final Expression str, final Expression count) {
+    public static SimpleExpression repeat(final Expression str, final Expression count) {
         return FunctionUtils.twoArgFunc("REPEAT", str, count, StringType.INSTANCE);
     }
 
@@ -759,7 +760,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_replace">REPLACE(str,from_str,to_str)</a>
      */
-    public static Expression replace(final Expression str, final Expression fromStr, final Expression toStr) {
+    public static SimpleExpression replace(final Expression str, final Expression fromStr, final Expression toStr) {
         return FunctionUtils.threeArgFunc("REPLACE", str, fromStr, toStr, StringType.INSTANCE);
     }
 
@@ -772,7 +773,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_reverse">REVERSE(str)</a>
      */
-    public static Expression reverse(final Expression str) {
+    public static SimpleExpression reverse(final Expression str) {
         return FunctionUtils.oneArgFunc("REVERSE", str, StringType.INSTANCE);
     }
 
@@ -786,7 +787,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_right">RIGHT(str,len)</a>
      */
-    public static Expression right(final Expression str, final Expression len) {
+    public static SimpleExpression right(final Expression str, final Expression len) {
         return FunctionUtils.twoArgFunc("RIGHT", str, len, StringType.INSTANCE);
     }
 
@@ -799,7 +800,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_soundex">SOUNDEX(str)</a>
      */
-    public static Expression soundex(final Expression str) {
+    public static SimpleExpression soundex(final Expression str) {
         return FunctionUtils.oneArgFunc("SOUNDEX", str, StringType.INSTANCE);
     }
 
@@ -813,7 +814,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_space">SPACE(n)</a>
      */
-    public static Expression space(final Expression n) {
+    public static SimpleExpression space(final Expression n) {
         return FunctionUtils.oneArgFunc("SPACE", n, StringType.INSTANCE);
     }
 
@@ -828,7 +829,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_substring-index">SUBSTRING_INDEX(str,delim,count)</a>
      */
-    public static Expression substringIndex(final Expression str, final Expression delim, final Expression count) {
+    public static SimpleExpression substringIndex(final Expression str, final Expression delim, final Expression count) {
         return FunctionUtils.threeArgFunc("SUBSTRING_INDEX", str, delim, count, StringType.INSTANCE);
     }
 
@@ -841,7 +842,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(str)</a>
      */
-    public static Expression trim(final Expression str) {
+    public static SimpleExpression trim(final Expression str) {
         return FunctionUtils.oneArgFunc("TRIM", str, StringType.INSTANCE);
     }
 
@@ -855,7 +856,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(remstr FROM str)</a>
      */
-    public static Expression trim(final Expression remstr, WordFrom from, final Expression str) {
+    public static SimpleExpression trim(final Expression remstr, WordFrom from, final Expression str) {
         assert from == Functions.FROM;
         return FunctionUtils.complexArgFunc("TRIM", StringType.INSTANCE, remstr, from, str);
     }
@@ -876,7 +877,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
      */
-    public static Expression trim(final @Nullable MySQLs.TrimPosition position, final @Nullable Expression remstr
+    public static SimpleExpression trim(final @Nullable MySQLs.TrimPosition position, final @Nullable Expression remstr
             , final @Nullable WordFrom from, final Expression str) {//TODO 优化方法定义
         final String name = "TRIM";
         if (!(str instanceof ArmyExpression)) {
@@ -901,7 +902,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str)</a>
      */
-    public static Expression weightString(final Expression str) {
+    public static SimpleExpression weightString(final Expression str) {
         return FunctionUtils.oneArgFunc("WEIGHT_STRING", str, StringType.INSTANCE);
     }
 
@@ -916,7 +917,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_weight-string">WEIGHT_STRING(str [AS {CHAR|BINARY}(N)]</a>
      */
-    public static Expression weightString(final Expression str, final SQLs.WordAs as
+    public static SimpleExpression weightString(final Expression str, final SQLs.WordAs as
             , final MySQLCastType type, final Expression n) {
         assert as == SQLs.AS;
         final String name = "WEIGHT_STRING";

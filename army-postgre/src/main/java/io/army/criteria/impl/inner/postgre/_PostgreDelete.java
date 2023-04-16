@@ -17,7 +17,7 @@ public interface _PostgreDelete extends _SingleDelete,
     SQLs.WordOnly modifier();
 
     @Nullable
-    SQLs.SymbolStar symbolStar();
+    SQLs.SymbolAsterisk symbolAsterisk();
 
 
 }

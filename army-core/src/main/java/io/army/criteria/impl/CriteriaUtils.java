@@ -466,7 +466,7 @@ abstract class CriteriaUtils {
     }
 
 
-    static String sqlWordsToString(Enum<?> type) {
+    static String enumToString(Enum<?> type) {
         return _StringUtils.builder()
                 .append(type.getClass().getSimpleName())
                 .append(_Constant.POINT)
@@ -616,7 +616,7 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException dualOperandError(DualOperator operator, MappingType left, MappingType right) {
+    static CriteriaException dualOperandError(Operator.DualOperator operator, MappingType left, MappingType right) {
         String m = String.format("%s don't left operand[%s] and right operand[%s]", operator, left, right);
         return ContextStack.clearStackAndCriteriaError(m);
     }

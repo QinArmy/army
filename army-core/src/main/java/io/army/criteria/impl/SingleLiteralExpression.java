@@ -21,10 +21,10 @@ import java.util.Objects;
  * @see MultiParamExpression
  * @since 1.0
  */
-abstract class SingleLiteralExpression extends OperationExpression.SimpleExpression {
+abstract class SingleLiteralExpression extends OperationExpression.OperationSimpleExpression {
 
     /**
-     * @see SQLs#literalFrom(Object)
+     * @see SQLs#literalValue(Object)
      */
     static SingleLiteralExpression from(final @Nullable Object value) {
         if (value == null) {

@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.dialect._SqlContext;
 import io.army.util._StringUtils;
 
-final class PostgreCursorPredicate extends OperationPredicate {
+final class PostgreCursorPredicate extends OperationPredicate.CompoundPredicate {
 
 
     private final String cursorName;

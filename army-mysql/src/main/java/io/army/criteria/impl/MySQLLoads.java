@@ -56,7 +56,7 @@ abstract class MySQLLoads {
 
         @Override
         public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
+            return CriteriaUtils.enumToString(this);
         }
 
     }//StrategyOption

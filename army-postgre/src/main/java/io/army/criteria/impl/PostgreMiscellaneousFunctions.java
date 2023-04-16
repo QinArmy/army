@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
+import io.army.criteria.SimpleExpression;
 import io.army.mapping.*;
 import io.army.mapping.postgre.StringArrayType;
 import io.army.type.Interval;
@@ -114,7 +115,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparison.html#FUNCTIONS-COMPARISON-FUNC-TABLE">Comparison Functions</a>
      */
-    public static Expression numNonNulls(Expression first, Expression... rest) {
+    public static SimpleExpression numNonNulls(Expression first, Expression... rest) {
         return FunctionUtils.multiArgFunc("NUM_NONNULLS", IntegerType.INSTANCE, first, rest);
     }
 
@@ -125,7 +126,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparison.html#FUNCTIONS-COMPARISON-FUNC-TABLE">Comparison Functions</a>
      */
-    public static Expression numNulls(Expression first, Expression... rest) {
+    public static SimpleExpression numNulls(Expression first, Expression... rest) {
         return FunctionUtils.multiArgFunc("NUM_NULLS", IntegerType.INSTANCE, first, rest);
     }
 
@@ -139,7 +140,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">cbrt(double precision)</a>
      */
-    public static Expression cbrt(Expression exp) {
+    public static SimpleExpression cbrt(Expression exp) {
         return FunctionUtils.oneArgFunc("CBRT", exp, DoubleType.INSTANCE);
     }
 
@@ -150,7 +151,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">div ( y numeric, x numeric )</a>
      */
-    public static Expression div(Expression y, Expression x) {
+    public static SimpleExpression div(Expression y, Expression x) {
         return FunctionUtils.twoArgFunc("DIV", y, x, y.typeMeta());
     }
 
@@ -162,7 +163,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">factorial ( bigint ) → numeric</a>
      */
-    public static Expression factorial(Expression exp) {
+    public static SimpleExpression factorial(Expression exp) {
         return FunctionUtils.oneArgFunc("FACTORIAL", exp, BigDecimalType.INSTANCE);
     }
 
@@ -173,7 +174,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">floor ( numeric ) → numeric,floor ( double precision ) → double precision</a>
      */
-    public static Expression floor(final Expression exp) {
+    public static SimpleExpression floor(final Expression exp) {
         return FunctionUtils.oneArgFunc("FLOOR", exp, exp.typeMeta());
     }
 
@@ -184,7 +185,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">gcd ( numeric_type, numeric_type ) → numeric_type</a>
      */
-    public static Expression gcd(Expression exp1, Expression exp2) {
+    public static SimpleExpression gcd(Expression exp1, Expression exp2) {
         return FunctionUtils.twoArgFunc("GCD", exp1, exp2, exp1.typeMeta());
     }
 
@@ -195,7 +196,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">lcm ( numeric_type, numeric_type ) → numeric_type</a>
      */
-    public static Expression lcm(Expression exp1, Expression exp2) {
+    public static SimpleExpression lcm(Expression exp1, Expression exp2) {
         return FunctionUtils.twoArgFunc("LCM", exp1, exp2, exp1.typeMeta());
     }
 
@@ -207,7 +208,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">min_scale ( numeric ) → integer</a>
      */
-    public static Expression minScale(final Expression exp) {
+    public static SimpleExpression minScale(final Expression exp) {
         return FunctionUtils.oneArgFunc("MIN_SCALE", exp, IntegerType.INSTANCE);
     }
 
@@ -222,7 +223,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">power ( a numeric, b numeric ) → numeric,power ( a double precision, b double precision ) → double precision</a>
      */
-    public static Expression power(final Expression x, final Expression y) {
+    public static SimpleExpression power(final Expression x, final Expression y) {
         return FunctionUtils.twoArgFunc("POWER", x, y, _returnType(x, Functions::_numberOrDecimal));
     }
 
@@ -233,7 +234,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">scale ( numeric ) → integer</a>
      */
-    public static Expression scale(final Expression x, final Expression y) {
+    public static SimpleExpression scale(final Expression x, final Expression y) {
         return FunctionUtils.twoArgFunc("SCALE", x, y, IntegerType.INSTANCE);
     }
 
@@ -245,7 +246,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">trim_scale ( numeric ) → numeric</a>
      */
-    public static Expression trimScale(final Expression exp) {
+    public static SimpleExpression trimScale(final Expression exp) {
         return FunctionUtils.oneArgFunc("TRIM_SCALE", exp, BigDecimalType.INSTANCE);
     }
 
@@ -259,7 +260,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">trunc ( numeric ) → numeric,trunc ( double precision ) → double precision</a>
      */
-    public static Expression trunc(final Expression exp) {
+    public static SimpleExpression trunc(final Expression exp) {
         return FunctionUtils.oneArgFunc("TRUNC", exp, _returnType(exp, Functions::_doubleOrDecimal));
     }
 
@@ -270,7 +271,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">trunc ( v numeric, s integer ) → numeric</a>
      */
-    public static Expression trunc(final Expression v, final Expression s) {
+    public static SimpleExpression trunc(final Expression v, final Expression s) {
         return FunctionUtils.twoArgFunc("TRUNC", v, s, BigDecimalType.INSTANCE);
     }
 
@@ -281,7 +282,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">width_bucket ( operand numeric, low numeric, high numeric, count integer ) → integer,width_bucket ( operand double precision, low double precision, high double precision, count integer ) → integer</a>
      */
-    public static Expression widthBucket(final Expression operand, final Expression low, Expression high, Expression count) {
+    public static SimpleExpression widthBucket(final Expression operand, final Expression low, Expression high, Expression count) {
         return FunctionUtils.fourArgFunc("WIDTH_BUCKET", operand, low, high, count, IntegerType.INSTANCE);
     }
 
@@ -292,7 +293,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">width_bucket ( operand anycompatible, thresholds anycompatiblearray ) → integer</a>
      */
-    public static Expression widthBucket(final Expression operand, final Expression thresholds) {
+    public static SimpleExpression widthBucket(final Expression operand, final Expression thresholds) {
         return FunctionUtils.twoArgFunc("WIDTH_BUCKET", operand, thresholds, IntegerType.INSTANCE);
     }
 
@@ -306,7 +307,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-RANDOM-TABLE">random ( ) → double precision</a>
      */
-    public static Expression random() {
+    public static SimpleExpression random() {
         return FunctionUtils.zeroArgFunc("RANDOM", DoubleType.INSTANCE);
     }
 
@@ -317,7 +318,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-RANDOM-TABLE">setseed ( double precision ) → void</a>
      */
-    public static Expression setSeed(Expression exp) {
+    public static SimpleExpression setSeed(Expression exp) {
         return FunctionUtils.oneArgFunc("SETSEED", exp, VoidType.INSTANCE);
     }
 
@@ -331,7 +332,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">acosd ( double precision ) → double precision</a>
      */
-    public static Expression acosd(final Expression expr) {
+    public static SimpleExpression acosd(final Expression expr) {
         return FunctionUtils.oneArgFunc("ACOSD", expr, DoubleType.INSTANCE);
     }
 
@@ -342,7 +343,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">asind ( double precision ) → double precision</a>
      */
-    public static Expression asind(final Expression expr) {
+    public static SimpleExpression asind(final Expression expr) {
         return FunctionUtils.oneArgFunc("ASIND", expr, DoubleType.INSTANCE);
     }
 
@@ -353,7 +354,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">atand ( double precision ) → double precision</a>
      */
-    public static Expression atand(final Expression expr) {
+    public static SimpleExpression atand(final Expression expr) {
         return FunctionUtils.oneArgFunc("ATAND", expr, DoubleType.INSTANCE);
     }
 
@@ -364,7 +365,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">atan2 ( y double precision, x double precision ) → double precision</a>
      */
-    public static Expression atan2(Expression y, Expression x) {
+    public static SimpleExpression atan2(Expression y, Expression x) {
         return FunctionUtils.twoArgFunc("ATAN2", y, x, DoubleType.INSTANCE);
     }
 
@@ -375,7 +376,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">atan2d ( y double precision, x double precision ) → double precision</a>
      */
-    public static Expression atan2d(Expression y, Expression x) {
+    public static SimpleExpression atan2d(Expression y, Expression x) {
         return FunctionUtils.twoArgFunc("ATAN2D", y, x, DoubleType.INSTANCE);
     }
 
@@ -386,7 +387,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cosd ( double precision ) → double precision</a>
      */
-    public static Expression cosd(final Expression expr) {
+    public static SimpleExpression cosd(final Expression expr) {
         return FunctionUtils.oneArgFunc("COSD", expr, DoubleType.INSTANCE);
     }
 
@@ -397,7 +398,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">cotd ( double precision ) → double precision</a>
      */
-    public static Expression cotd(final Expression expr) {
+    public static SimpleExpression cotd(final Expression expr) {
         return FunctionUtils.oneArgFunc("COTD", expr, DoubleType.INSTANCE);
     }
 
@@ -408,7 +409,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">sind ( double precision ) → double precision</a>
      */
-    public static Expression sind(final Expression expr) {
+    public static SimpleExpression sind(final Expression expr) {
         return FunctionUtils.oneArgFunc("SIND", expr, DoubleType.INSTANCE);
     }
 
@@ -419,7 +420,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-TRIG-TABLE">tand ( double precision ) → double precision</a>
      */
-    public static Expression tand(final Expression expr) {
+    public static SimpleExpression tand(final Expression expr) {
         return FunctionUtils.oneArgFunc("TAND", expr, DoubleType.INSTANCE);
     }
 
@@ -432,7 +433,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">sinh ( double precision ) → double precision</a>
      */
-    public static Expression sinh(final Expression expr) {
+    public static SimpleExpression sinh(final Expression expr) {
         return FunctionUtils.oneArgFunc("SINH", expr, DoubleType.INSTANCE);
     }
 
@@ -443,7 +444,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">cosh ( double precision ) → double precision</a>
      */
-    public static Expression cosh(final Expression expr) {
+    public static SimpleExpression cosh(final Expression expr) {
         return FunctionUtils.oneArgFunc("COSH", expr, DoubleType.INSTANCE);
     }
 
@@ -455,7 +456,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">tanh ( double precision ) → double precision</a>
      */
-    public static Expression tanh(final Expression expr) {
+    public static SimpleExpression tanh(final Expression expr) {
         return FunctionUtils.oneArgFunc("TANH", expr, DoubleType.INSTANCE);
     }
 
@@ -466,7 +467,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">asinh ( double precision ) → double precision</a>
      */
-    public static Expression asinh(final Expression expr) {
+    public static SimpleExpression asinh(final Expression expr) {
         return FunctionUtils.oneArgFunc("ASINH", expr, DoubleType.INSTANCE);
     }
 
@@ -478,7 +479,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">acosh ( double precision ) → double precision</a>
      */
-    public static Expression acosh(final Expression expr) {
+    public static SimpleExpression acosh(final Expression expr) {
         return FunctionUtils.oneArgFunc("ACOSH", expr, DoubleType.INSTANCE);
     }
 
@@ -489,7 +490,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-HYP-TABLE">atanh ( double precision ) → double precision</a>
      */
-    public static Expression atanh(final Expression expr) {
+    public static SimpleExpression atanh(final Expression expr) {
         return FunctionUtils.oneArgFunc("ATANH", expr, DoubleType.INSTANCE);
     }
 
@@ -506,7 +507,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * to_char ( numeric_type, text ) → text
      * </a>
      */
-    public static Expression toChar(Expression exp, Expression format) {
+    public static SimpleExpression toChar(Expression exp, Expression format) {
         return FunctionUtils.twoArgFunc("TO_CHAR", exp, format, StringType.INSTANCE);
     }
 
@@ -517,7 +518,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-formatting.html#FUNCTIONS-FORMATTING-TABLE">to_date ( text, text ) → date</a>
      */
-    public static Expression toDate(Expression exp, Expression format) {
+    public static SimpleExpression toDate(Expression exp, Expression format) {
         return FunctionUtils.twoArgFunc("TO_DATE", exp, format, LocalDateType.INSTANCE);
     }
 
@@ -528,7 +529,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-formatting.html#FUNCTIONS-FORMATTING-TABLE">to_number ( text, text ) → numeric</a>
      */
-    public static Expression toNumber(Expression exp, Expression format) {
+    public static SimpleExpression toNumber(Expression exp, Expression format) {
         return FunctionUtils.twoArgFunc("TO_NUMBER", exp, format, BigDecimalType.INSTANCE);
     }
 
@@ -539,7 +540,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-formatting.html#FUNCTIONS-FORMATTING-TABLE">to_timestamp ( text, text ) → timestamp with time zone</a>
      */
-    public static Expression toTimestamp(Expression exp, Expression format) {
+    public static SimpleExpression toTimestamp(Expression exp, Expression format) {
         return FunctionUtils.twoArgFunc("TO_TIMESTAMP", exp, format, OffsetDateTimeType.INSTANCE);
     }
 
@@ -552,7 +553,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">age ( timestamp ) → interval</a>
      */
-    public static Expression age(Expression timestamp) {
+    public static SimpleExpression age(Expression timestamp) {
         return FunctionUtils.oneArgFunc("AGE", timestamp, StringType.INSTANCE);
     }
 
@@ -563,7 +564,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">age ( timestamp, timestamp ) → interval</a>
      */
-    public static Expression age(Expression timestamp1, Expression timestamp2) {
+    public static SimpleExpression age(Expression timestamp1, Expression timestamp2) {
         return FunctionUtils.twoArgFunc("AGE", timestamp1, timestamp2, StringType.INSTANCE);
     }
 
@@ -575,7 +576,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">clock_timestamp ( ) → timestamp with time zone</a>
      */
-    public static Expression clockTimestamp() {
+    public static SimpleExpression clockTimestamp() {
         return FunctionUtils.zeroArgFunc("CLOCK_TIMESTAMP", OffsetDateTimeType.INSTANCE);
     }
 
@@ -586,7 +587,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_time ( integer ) → time with time zone</a>
      */
-    public static Expression currentTime(Expression integer) {
+    public static SimpleExpression currentTime(Expression integer) {
         return FunctionUtils.oneArgFunc("CURRENT_TIME", integer, OffsetTimeType.INSTANCE);
     }
 
@@ -597,7 +598,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_timestamp ( integer ) → timestamp with time zone</a>
      */
-    public static Expression currentTimestamp(Expression integer) {
+    public static SimpleExpression currentTimestamp(Expression integer) {
         return FunctionUtils.oneArgFunc("CURRENT_TIMESTAMP", integer, OffsetDateTimeType.INSTANCE);
     }
 
@@ -608,7 +609,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_bin ( interval, timestamp, timestamp ) → timestamp</a>
      */
-    public static Expression dateBin(Expression interval, Expression timestamp1, Expression timestamp2) {
+    public static SimpleExpression dateBin(Expression interval, Expression timestamp1, Expression timestamp2) {
         return FunctionUtils.threeArgFunc("DATE_BIN", interval, timestamp1, timestamp2, LocalDateTimeType.INSTANCE);
     }
 
@@ -624,7 +625,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * date_part ( text, interval ) → double precision
      * </a>
      */
-    public static Expression datePart(final String field, final Expression source) {
+    public static SimpleExpression datePart(final String field, final Expression source) {
         final String name = "DATE_PART";
         try {
             WordExtractTimeField.valueOf(field.toUpperCase(Locale.ROOT));
@@ -646,7 +647,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * date_part ( text, interval ) → double precision
      * </a>
      */
-    public static Expression datePart(Expression field, Expression source) {
+    public static SimpleExpression datePart(Expression field, Expression source) {
         return FunctionUtils.twoArgFunc("DATE_PART", field, source, DoubleType.INSTANCE);
     }
 
@@ -681,7 +682,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * date_trunc ( text, interval ) → interval
      * </a>
      */
-    public static Expression dateTrunc(String field, Expression source) {
+    public static SimpleExpression dateTrunc(String field, Expression source) {
         if (isErrorDateTruncField(field)) {
             throw errorDateTruncField(field);
         }
@@ -713,7 +714,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see #dateTrunc(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp with time zone, text ) → timestamp with time zone</a>
      */
-    public static Expression dateTrunc(String field, Expression source, String timeZone) {
+    public static SimpleExpression dateTrunc(String field, Expression source, String timeZone) {
         if (isErrorDateTruncField(field)) {
             throw errorDateTruncField(field);
         }
@@ -735,7 +736,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * date_trunc ( text, interval ) → interval
      * </a>
      */
-    public static Expression dateTrunc(Expression field, Expression source) {
+    public static SimpleExpression dateTrunc(Expression field, Expression source) {
         return FunctionUtils.twoArgFunc("DATE_TRUNC", field, source,
                 _returnType(source, PostgreMiscellaneousFunctions::intervalOrDateTime)
         );
@@ -748,7 +749,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">date_trunc ( text, timestamp with time zone, text ) → timestamp with time zone</a>
      */
-    public static Expression dateTrunc(Expression field, Expression source, Expression timeZone) {
+    public static SimpleExpression dateTrunc(Expression field, Expression source, Expression timeZone) {
         return FunctionUtils.threeArgFunc("DATE_TRUNC", field, source, timeZone, OffsetDateTimeType.INSTANCE);
     }
 
@@ -762,7 +763,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * extract ( field from interval ) → numeric
      * </a>
      */
-    public static Expression extract(ExtractTimeField field, WordFrom from, Expression timestampOrInterval) {
+    public static SimpleExpression extract(ExtractTimeField field, WordFrom from, Expression timestampOrInterval) {
         final String name = "EXTRACT";
         if (!(field instanceof WordExtractTimeField)) {
             throw CriteriaUtils.funcArgError(name, from);
@@ -794,7 +795,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">justify_days ( interval ) → interval</a>
      */
-    public static Expression justifyDays(Expression exp) {
+    public static SimpleExpression justifyDays(Expression exp) {
         return FunctionUtils.oneArgFunc("JUSTIFY_DAYS", exp, IntervalType.from(Interval.class));
     }
 
@@ -805,7 +806,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">justify_hours ( interval ) → interval</a>
      */
-    public static Expression justifyHours(Expression exp) {
+    public static SimpleExpression justifyHours(Expression exp) {
         return FunctionUtils.oneArgFunc("JUSTIFY_HOURS", exp, IntervalType.from(Interval.class));
     }
 
@@ -816,7 +817,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">justify_interval ( interval ) → interval</a>
      */
-    public static Expression justifyInterval(Expression exp) {
+    public static SimpleExpression justifyInterval(Expression exp) {
         return FunctionUtils.oneArgFunc("JUSTIFY_INTERVAL", exp, IntervalType.from(Interval.class));
     }
 
@@ -828,7 +829,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see #LOCALTIME
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtime ( integer ) → time</a>
      */
-    public static Expression localtime(Expression integer) {
+    public static SimpleExpression localtime(Expression integer) {
         return FunctionUtils.oneArgFunc("LOCALTIME", integer, LocalTimeType.INSTANCE);
     }
 
@@ -840,7 +841,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see #LOCALTIMESTAMP
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtimestamp ( integer ) → timestamp</a>
      */
-    public static Expression localtimestamp(Expression integer) {
+    public static SimpleExpression localtimestamp(Expression integer) {
         return FunctionUtils.oneArgFunc("LOCALTIMESTAMP", integer, LocalDateTimeType.INSTANCE);
     }
 
@@ -851,7 +852,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_date ( year int, month int, day int ) → date</a>
      */
-    public static Expression makeDate(Expression year, Expression month, Expression day) {
+    public static SimpleExpression makeDate(Expression year, Expression month, Expression day) {
         return FunctionUtils.threeArgFunc("MAKE_DATE", year, month, day, LocalDateType.INSTANCE);
     }
 
@@ -867,7 +868,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years) {
+    public static SimpleExpression makeInterval(Expression years) {
         return FunctionUtils.oneNotationFunc("MAKE_INTERVAL",
                 PostgreMiscellaneousFunctions::isErrorMakeIntervalNotation,
                 years, IntervalType.from(Interval.class));
@@ -886,7 +887,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months) {
+    public static SimpleExpression makeInterval(Expression years, Expression months) {
         return FunctionUtils.twoNotationFunc("MAKE_INTERVAL",
                 PostgreMiscellaneousFunctions::isErrorMakeIntervalNotation,
                 years, months, IntervalType.from(Interval.class));
@@ -906,7 +907,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months, Expression weeks) {
+    public static SimpleExpression makeInterval(Expression years, Expression months, Expression weeks) {
         return FunctionUtils.threeNotationFunc("MAKE_INTERVAL",
                 PostgreMiscellaneousFunctions::isErrorMakeIntervalNotation,
                 years, months, weeks, IntervalType.from(Interval.class));
@@ -927,7 +928,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months, Expression weeks, Expression days) {
+    public static SimpleExpression makeInterval(Expression years, Expression months, Expression weeks, Expression days) {
         return FunctionUtils.fourNotationFunc("MAKE_INTERVAL",
                 PostgreMiscellaneousFunctions::isErrorMakeIntervalNotation,
                 years, months, weeks, days, IntervalType.from(Interval.class));
@@ -949,8 +950,8 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
-                                          Expression hours) {
+    public static SimpleExpression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
+                                                Expression hours) {
         return FunctionUtils.fiveNotationFunc("MAKE_INTERVAL",
                 PostgreMiscellaneousFunctions::isErrorMakeIntervalNotation,
                 years, months, weeks, days, hours, IntervalType.from(Interval.class));
@@ -974,8 +975,8 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
-                                          Expression hours, Expression mins) {
+    public static SimpleExpression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
+                                                Expression hours, Expression mins) {
         return FunctionUtils.sixNotationFunc("MAKE_INTERVAL",
                 PostgreMiscellaneousFunctions::isErrorMakeIntervalNotation,
                 years, months, weeks, days, hours, mins, IntervalType.from(Interval.class));
@@ -999,8 +1000,8 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-calling-funcs.html#SQL-SYNTAX-CALLING-FUNCS-NAMED">Using Named Notation</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_interval ( [ years int [, months int [, weeks int [, days int [, hours int [, mins int [, secs double precision ]]]]]]] ) → interval</a>
      */
-    public static Expression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
-                                          Expression hours, Expression mins, Expression secs) {
+    public static SimpleExpression makeInterval(Expression years, Expression months, Expression weeks, Expression days,
+                                                Expression hours, Expression mins, Expression secs) {
 
         return FunctionUtils.sevenNotationFunc("MAKE_INTERVAL",
                 PostgreMiscellaneousFunctions::isErrorMakeIntervalNotation,
@@ -1016,7 +1017,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_time ( hour int, min int, sec double precision ) → time</a>
      */
-    public static Expression makeTime(Expression hour, Expression min, Expression sec) {
+    public static SimpleExpression makeTime(Expression hour, Expression min, Expression sec) {
         return FunctionUtils.threeArgFunc("MAKE_TIME", hour, min, sec, LocalTimeType.INSTANCE);
     }
 
@@ -1027,8 +1028,8 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_timestamp ( year int, month int, day int, hour int, min int, sec double precision ) → timestamp</a>
      */
-    public static Expression makeTimestamp(Expression year, Expression month, Expression day, Expression hour,
-                                           Expression min, Expression sec) {
+    public static SimpleExpression makeTimestamp(Expression year, Expression month, Expression day, Expression hour,
+                                                 Expression min, Expression sec) {
         return FunctionUtils.sixArgFunc("MAKE_TIMESTAMP", year, month, day, hour, min, sec, LocalDateTimeType.INSTANCE);
     }
 
@@ -1039,8 +1040,8 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_timestamptz ( year int, month int, day int, hour int, min int, sec double precision [, timezone text ] ) → timestamp with time zone</a>
      */
-    public static Expression makeTimestampTz(Expression year, Expression month, Expression day, Expression hour,
-                                             Expression min, Expression sec) {
+    public static SimpleExpression makeTimestampTz(Expression year, Expression month, Expression day, Expression hour,
+                                                   Expression min, Expression sec) {
         return FunctionUtils.sixArgFunc("MAKE_TIMESTAMPTZ", year, month, day, hour, min, sec,
                 OffsetDateTimeType.INSTANCE);
     }
@@ -1053,8 +1054,8 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">make_timestamptz ( year int, month int, day int, hour int, min int, sec double precision [, timezone text ] ) → timestamp with time zone</a>
      */
-    public static Expression makeTimestampTz(Expression year, Expression month, Expression day, Expression hour,
-                                             Expression min, Expression sec, Expression timeZone) {
+    public static SimpleExpression makeTimestampTz(Expression year, Expression month, Expression day, Expression hour,
+                                                   Expression min, Expression sec, Expression timeZone) {
         return FunctionUtils.sevenArgFunc("MAKE_TIMESTAMPTZ",
                 year, month, day, hour, min, sec, timeZone,
                 OffsetDateTimeType.INSTANCE);
@@ -1067,7 +1068,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">now ( ) → timestamp with time zone</a>
      */
-    public static Expression now() {
+    public static SimpleExpression now() {
         return FunctionUtils.zeroArgFunc("NOW", OffsetDateTimeType.INSTANCE);
     }
 
@@ -1078,7 +1079,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">statement_timestamp ( ) → timestamp with time zone</a>
      */
-    public static Expression statementTimestamp() {
+    public static SimpleExpression statementTimestamp() {
         return FunctionUtils.zeroArgFunc("STATEMENT_TIMESTAMP", OffsetDateTimeType.INSTANCE);
     }
 
@@ -1089,7 +1090,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">timeofday ( ) → text</a>
      */
-    public static Expression timeOfDay() {
+    public static SimpleExpression timeOfDay() {
         return FunctionUtils.zeroArgFunc("TIMEOFDAY", StringType.INSTANCE);
     }
 
@@ -1100,7 +1101,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">transaction_timestamp ( ) → timestamp with time zone</a>
      */
-    public static Expression transactionTimestamp() {
+    public static SimpleExpression transactionTimestamp() {
         return FunctionUtils.zeroArgFunc("TRANSACTION_TIMESTAMP", OffsetDateTimeType.INSTANCE);
     }
 
@@ -1111,7 +1112,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">to_timestamp ( double precision ) → timestamp with time zone</a>
      */
-    public static Expression toTimestamp(Expression exp) {
+    public static SimpleExpression toTimestamp(Expression exp) {
         return FunctionUtils.oneArgFunc("TO_TIMESTAMP", exp, OffsetDateTimeType.INSTANCE);
     }
 
@@ -1124,7 +1125,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep ( double precision )</a>
      */
-    public static Expression pgSleep(Expression seconds) {
+    public static SimpleExpression pgSleep(Expression seconds) {
         return FunctionUtils.oneArgFunc("PG_SLEEP", seconds, StringType.INSTANCE);
     }
 
@@ -1135,7 +1136,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep_for ( interval )</a>
      */
-    public static Expression pgSleepFor(Expression interval) {
+    public static SimpleExpression pgSleepFor(Expression interval) {
         return FunctionUtils.oneArgFunc("PG_SLEEP_FOR", interval, StringType.INSTANCE);
     }
 
@@ -1146,7 +1147,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-DELAY">pg_sleep_until ( timestamp with time zone )</a>
      */
-    public static Expression pgSleepUntil(Expression timestampTz) {
+    public static SimpleExpression pgSleepUntil(Expression timestampTz) {
         return FunctionUtils.oneArgFunc("PG_SLEEP_UNTIL", timestampTz, StringType.INSTANCE);
     }
 
@@ -1159,7 +1160,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_first ( anyenum ) → anyenum</a>
      */
-    public static Expression enumFirst(Expression anyEnum) {
+    public static SimpleExpression enumFirst(Expression anyEnum) {
         return FunctionUtils.oneArgFunc("ENUM_FIRST", anyEnum, StringType.INSTANCE);
     }
 
@@ -1170,7 +1171,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_last ( anyenum ) → anyenum</a>
      */
-    public static Expression enumLast(Expression anyEnum) {
+    public static SimpleExpression enumLast(Expression anyEnum) {
         return FunctionUtils.oneArgFunc("ENUM_LAST", anyEnum, StringType.INSTANCE);
     }
 
@@ -1181,7 +1182,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_range ( anyenum ) → anyarray</a>
      */
-    public static Expression enumRange(Expression anyEnum) {
+    public static SimpleExpression enumRange(Expression anyEnum) {
         return FunctionUtils.oneArgFunc("ENUM_RANGE", anyEnum, StringArrayType.from(String[].class));
     }
 
@@ -1192,7 +1193,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-enum.html">enum_range ( anyenum, anyenum ) → anyarray</a>
      */
-    public static Expression enumRange(Expression leftEnum, Expression rightEnum) {
+    public static SimpleExpression enumRange(Expression leftEnum, Expression rightEnum) {
         return FunctionUtils.twoArgFunc("ENUM_RANGE", leftEnum, rightEnum, StringArrayType.from(String[].class));
     }
 

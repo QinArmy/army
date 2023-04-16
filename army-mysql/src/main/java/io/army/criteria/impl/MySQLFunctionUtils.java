@@ -95,7 +95,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         return new JsonValueClause();
     }
 
-    static Expression jsonValueFunc(Expression jsonDoc, Expression path, JsonValueClause clause) {
+    static SimpleExpression jsonValueFunc(Expression jsonDoc, Expression path, JsonValueClause clause) {
         final String name = "JSON_VALUE";
         if (jsonDoc instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, jsonDoc);
@@ -127,13 +127,13 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }
 
 
-    static Expression statementDigest(final PrimaryStatement statement, final Visible visible, final boolean literal) {
+    static SimpleExpression statementDigest(final PrimaryStatement statement, final Visible visible, final boolean literal) {
         final String name = "STATEMENT_DIGEST";
         assertPrimaryStatement(statement, name);
         return new StatementDigestFunc(name, statement, visible, literal, StringType.INSTANCE);
     }
 
-    static Expression statementDigestText(final PrimaryStatement statement, final Visible visible, final boolean literal) {
+    static SimpleExpression statementDigestText(final PrimaryStatement statement, final Visible visible, final boolean literal) {
         final String name = "STATEMENT_DIGEST_TEXT";
         assertPrimaryStatement(statement, name);
         return new StatementDigestFunc(name, statement, visible, literal, StringType.INSTANCE);

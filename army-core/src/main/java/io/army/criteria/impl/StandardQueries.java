@@ -305,7 +305,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         @Override
         public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
+            return CriteriaUtils.enumToString(this);
         }
 
 

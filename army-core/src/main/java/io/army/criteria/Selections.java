@@ -30,7 +30,7 @@ public interface Selections extends Item {
     <P> Selections selection(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
                              String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
-    Selections selection(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+    Selections selection(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
 
 
 }

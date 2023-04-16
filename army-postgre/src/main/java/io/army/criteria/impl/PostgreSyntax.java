@@ -217,14 +217,14 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
      */
     public static IPredicate caretAt(Expression left, Expression right) {
-        return Expressions.dualPredicate(left, DualOperator.CARET_AT, right);
+        return Expressions.dualPredicate(left, BooleanDualOperator.CARET_AT, right);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type + numeric_type → numeric_type</a>
      */
     public static Expression plus(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.PLUS, right,
+        return Expressions.dialectDualExp(left, ExpDualOperator.PLUS, right,
                 _returnType(left, right, PostgreExpressions::plusType)
         );
     }
@@ -234,7 +234,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Subtraction</a>
      */
     public static Expression minus(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.MINUS, right,
+        return Expressions.dialectDualExp(left, ExpDualOperator.MINUS, right,
                 _returnType(left, right, PostgreExpressions::minusType)
         );
     }
@@ -244,7 +244,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Multiplication</a>
      */
     public static Expression times(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.TIMES, right,
+        return Expressions.dialectDualExp(left, ExpDualOperator.TIMES, right,
                 _returnType(left, right, PostgreExpressions::timesType)
         );
     }
@@ -254,7 +254,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Division (for integral types, division truncates the result towards zero)</a>
      */
     public static Expression divide(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.DIVIDE, right,
+        return Expressions.dialectDualExp(left, ExpDualOperator.DIVIDE, right,
                 _returnType(left, right, PostgreExpressions::divideType)
         );
     }
@@ -264,7 +264,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Modulo (remainder); available for smallint, integer, bigint, and numeric</a>
      */
     public static Expression mode(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.MOD, right,
+        return Expressions.dialectDualExp(left, ExpDualOperator.MOD, right,
                 _returnType(left, right, PostgreExpressions::plusType)
         );
     }
@@ -290,7 +290,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Exponentiation</a>
      */
     public static Expression caret(final Expression left, final Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.CARET, right,
+        return Expressions.dialectDualExp(left, ExpDualOperator.CARET, right,
                 _returnType(left, right, PostgreSyntax::caretResultType));
     }
 
@@ -329,7 +329,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
      */
     public static Expression doubleVertical(final Expression left, final Expression right) {
-        return Expressions.dialectDualExp(left, DualOperator.DOUBLE_VERTICAL, right,
+        return Expressions.dialectDualExp(left, ExpDualOperator.DOUBLE_VERTICAL, right,
                 _returnType(left, right, PostgreSyntax::doubleVerticalType)
         );
     }
@@ -372,7 +372,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String matches regular expression, case sensitively</a>
      */
     public static IPredicate tilde(final Expression left, final Expression right) {
-        return Expressions.dualPredicate(left, DualOperator.TILDE, right);
+        return Expressions.dualPredicate(left, BooleanDualOperator.TILDE, right);
     }
 
     /**
@@ -386,7 +386,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String does not match regular expression, case sensitively</a>
      */
     public static IPredicate notTilde(final Expression left, final Expression right) {
-        return Expressions.dualPredicate(left, DualOperator.NOT_TILDE, right);
+        return Expressions.dualPredicate(left, BooleanDualOperator.NOT_TILDE, right);
     }
 
     /**
@@ -398,7 +398,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String matches regular expression, case insensitively</a>
      */
     public static IPredicate tildeStar(final Expression left, final Expression right) {
-        return Expressions.dualPredicate(left, DualOperator.TILDE_STAR, right);
+        return Expressions.dualPredicate(left, BooleanDualOperator.TILDE_STAR, right);
     }
 
     /**
@@ -410,7 +410,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String does not match regular expression, case insensitively</a>
      */
     public static IPredicate notTildeStar(final Expression left, final Expression right) {
-        return Expressions.dualPredicate(left, DualOperator.NOT_TILDE_STAR, right);
+        return Expressions.dualPredicate(left, BooleanDualOperator.NOT_TILDE_STAR, right);
     }
 
 
@@ -482,7 +482,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"> AT TIME ZONE Variants</a>
      */
     public static Expression atTimeZone(final Expression source, final Expression zone) {
-        return Expressions.dialectDualExp(source, DualOperator.AT_TIME_ZONE, zone,
+        return Expressions.dialectDualExp(source, ExpDualOperator.AT_TIME_ZONE, zone,
                 _returnType(source, PostgreSyntax::atTimeZoneType)
         );
     }
@@ -491,28 +491,28 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
      */
     public static IPredicate similarTo(Expression exp, Expression pattern) {
-        return Expressions.likePredicate(exp, DualOperator.SIMILAR_TO, pattern, SQLs.ESCAPE, null);
+        return Expressions.likePredicate(exp, BooleanDualOperator.SIMILAR_TO, pattern, SQLs.ESCAPE, null);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
      */
     public static IPredicate similarTo(Expression exp, Expression pattern, WordEscape escape, Expression escapeChar) {
-        return Expressions.likePredicate(exp, DualOperator.SIMILAR_TO, pattern, escape, escapeChar);
+        return Expressions.likePredicate(exp, BooleanDualOperator.SIMILAR_TO, pattern, escape, escapeChar);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
      */
     public static IPredicate notSimilarTo(Expression exp, Expression pattern) {
-        return Expressions.likePredicate(exp, DualOperator.NOT_SIMILAR_TO, pattern, SQLs.ESCAPE, null);
+        return Expressions.likePredicate(exp, BooleanDualOperator.NOT_SIMILAR_TO, pattern, SQLs.ESCAPE, null);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
      */
     public static IPredicate notSimilarTo(Expression exp, Expression pattern, WordEscape escape, Expression escapeChar) {
-        return Expressions.likePredicate(exp, DualOperator.NOT_SIMILAR_TO, pattern, escape, escapeChar);
+        return Expressions.likePredicate(exp, BooleanDualOperator.NOT_SIMILAR_TO, pattern, escape, escapeChar);
     }
 
 
@@ -561,13 +561,13 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
             returnType = TextType.INSTANCE;
         } else if (left instanceof MappingType.SqlBinaryType || right instanceof MappingType.SqlBinaryType) {
             if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
-                throw CriteriaUtils.dualOperandError(DualOperator.DOUBLE_VERTICAL, left, right);
+                throw CriteriaUtils.dualOperandError(ExpDualOperator.DOUBLE_VERTICAL, left, right);
             }
             returnType = PrimitiveByteArrayType.INSTANCE;
         } else if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
             returnType = BitSetType.INSTANCE;
         } else {
-            throw CriteriaUtils.dualOperandError(DualOperator.DOUBLE_VERTICAL, left, right);
+            throw CriteriaUtils.dualOperandError(ExpDualOperator.DOUBLE_VERTICAL, left, right);
         }
         return returnType;
     }

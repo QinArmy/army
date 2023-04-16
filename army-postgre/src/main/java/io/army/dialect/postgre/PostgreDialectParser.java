@@ -247,9 +247,9 @@ final class PostgreDialectParser extends PostgreParser {
         this.safeObjectName(deleteTable, sqlBuilder);
 
         // 5. symbol star
-        final SQLs.SymbolStar symbolStar;
-        if ((symbolStar = stmt.symbolStar()) != null) {
-            assert symbolStar == SQLs.STAR;
+        final SQLs.SymbolAsterisk symbolStar;
+        if ((symbolStar = stmt.symbolAsterisk()) != null) {
+            assert symbolStar == SQLs.ASTERISK;
             sqlBuilder.append(_Constant.SPACE)
                     .append(_Constant.STAR_CHAR);
         }

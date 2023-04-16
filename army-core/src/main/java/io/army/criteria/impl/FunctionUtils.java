@@ -35,7 +35,7 @@ abstract class FunctionUtils {
     }
 
 
-    static Expression oneArgFunc(String name, Expression expr, TypeMeta returnType) {
+    static SimpleExpression oneArgFunc(String name, Expression expr, TypeMeta returnType) {
         if (expr instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, expr);
         }
@@ -43,7 +43,7 @@ abstract class FunctionUtils {
     }
 
 
-    static Expression twoArgFunc(final String name, final Expression one, final Expression two, TypeMeta returnType) {
+    static SimpleExpression twoArgFunc(final String name, final Expression one, final Expression two, TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -52,8 +52,8 @@ abstract class FunctionUtils {
         return new TwoArgFunction(name, one, two, returnType);
     }
 
-    static Expression threeArgFunc(final String name, final Expression one, final Expression two,
-                                   final Expression three, TypeMeta returnType) {
+    static SimpleExpression threeArgFunc(final String name, final Expression one, final Expression two,
+                                         final Expression three, TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -64,8 +64,8 @@ abstract class FunctionUtils {
         return new ThreeArgFunction(name, one, two, three, returnType);
     }
 
-    static Expression fourArgFunc(final String name, final Expression one, final Expression two,
-                                  final Expression three, final Expression four, final TypeMeta returnType) {
+    static SimpleExpression fourArgFunc(final String name, final Expression one, final Expression two,
+                                        final Expression three, final Expression four, final TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -78,9 +78,9 @@ abstract class FunctionUtils {
         return new FourArgFunction(name, one, two, three, four, returnType);
     }
 
-    static Expression fiveArgFunc(final String name, final Expression one, final Expression two,
-                                  final Expression three, final Expression four, final Expression five,
-                                  final TypeMeta returnType) {
+    static SimpleExpression fiveArgFunc(final String name, final Expression one, final Expression two,
+                                        final Expression three, final Expression four, final Expression five,
+                                        final TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -95,9 +95,9 @@ abstract class FunctionUtils {
         return new FiveArgFunction(name, one, two, three, four, five, returnType);
     }
 
-    static Expression sixArgFunc(final String name, final Expression one, final Expression two,
-                                 final Expression three, final Expression four, final Expression five,
-                                 final Expression six, final TypeMeta returnType) {
+    static SimpleExpression sixArgFunc(final String name, final Expression one, final Expression two,
+                                       final Expression three, final Expression four, final Expression five,
+                                       final Expression six, final TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -114,9 +114,9 @@ abstract class FunctionUtils {
         return new SixArgFunction(name, one, two, three, four, five, six, returnType);
     }
 
-    static Expression sevenArgFunc(final String name, final Expression one, final Expression two,
-                                   final Expression three, final Expression four, final Expression five,
-                                   final Expression six, final Expression seven, final TypeMeta returnType) {
+    static SimpleExpression sevenArgFunc(final String name, final Expression one, final Expression two,
+                                         final Expression three, final Expression four, final Expression five,
+                                         final Expression six, final Expression seven, final TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (two instanceof SqlValueParam.MultiValue) {
@@ -135,14 +135,14 @@ abstract class FunctionUtils {
         return new SevenArgFunction(name, one, two, three, four, five, six, seven, returnType);
     }
 
-    static Expression oneNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                      final TypeMeta returnType) {
+    static SimpleExpression oneNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                            final TypeMeta returnType) {
         assertNotation(name, null, validator, one);
         return oneArgFunc(name, one, returnType);
     }
 
-    static Expression twoNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                      final Expression two, final TypeMeta returnType) {
+    static SimpleExpression twoNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                            final Expression two, final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -151,8 +151,8 @@ abstract class FunctionUtils {
         return twoArgFunc(name, one, two, returnType);
     }
 
-    static Expression threeNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                        final Expression two, final Expression three, final TypeMeta returnType) {
+    static SimpleExpression threeNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                              final Expression two, final Expression three, final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -162,9 +162,9 @@ abstract class FunctionUtils {
         return threeArgFunc(name, one, two, three, returnType);
     }
 
-    static Expression fourNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                       final Expression two, final Expression three, final Expression four,
-                                       final TypeMeta returnType) {
+    static SimpleExpression fourNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                             final Expression two, final Expression three, final Expression four,
+                                             final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -175,9 +175,9 @@ abstract class FunctionUtils {
         return fourArgFunc(name, one, two, three, four, returnType);
     }
 
-    static Expression fiveNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                       final Expression two, final Expression three, final Expression four,
-                                       final Expression five, final TypeMeta returnType) {
+    static SimpleExpression fiveNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                             final Expression two, final Expression three, final Expression four,
+                                             final Expression five, final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -190,9 +190,9 @@ abstract class FunctionUtils {
         return fiveArgFunc(name, one, two, three, four, five, returnType);
     }
 
-    static Expression sixNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                      final Expression two, final Expression three, final Expression four,
-                                      final Expression five, final Expression six, final TypeMeta returnType) {
+    static SimpleExpression sixNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                            final Expression two, final Expression three, final Expression four,
+                                            final Expression five, final Expression six, final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -206,10 +206,10 @@ abstract class FunctionUtils {
         return sixArgFunc(name, one, two, three, four, five, six, returnType);
     }
 
-    static Expression sevenNotationFunc(final String name, final Predicate<String> validator, final Expression one,
-                                        final Expression two, final Expression three, final Expression four,
-                                        final Expression five, final Expression six, final Expression seven,
-                                        final TypeMeta returnType) {
+    static SimpleExpression sevenNotationFunc(final String name, final Predicate<String> validator, final Expression one,
+                                              final Expression two, final Expression three, final Expression four,
+                                              final Expression five, final Expression six, final Expression seven,
+                                              final TypeMeta returnType) {
         String notation;
 
         notation = assertNotation(name, null, validator, one);
@@ -286,30 +286,30 @@ abstract class FunctionUtils {
     }
 
 
-    static IPredicate twoArgPredicateFunc(final String name, final Expression one, final Expression two) {
+    static SimplePredicate twoArgPredicateFunc(final String name, final Expression one, final Expression two) {
         return new MultiArgFuncPredicate(name, null, twoExpList(name, one, two));
     }
 
-    static IPredicate threeArgPredicateFunc(final String name, final Expression one, final Expression two
+    static SimplePredicate threeArgPredicateFunc(final String name, final Expression one, final Expression two
             , final Expression three) {
         return new MultiArgFuncPredicate(name, null, threeExpList(name, one, two, three));
     }
 
 
-    static Expression zeroArgFunc(String name, TypeMeta returnType) {
+    static SimpleExpression zeroArgFunc(String name, TypeMeta returnType) {
         return new ZeroArgFunction(name, returnType);
     }
 
-    static Expression noParensFunc(String name, TypeMeta returnType) {
+    static SimpleExpression noParensFunc(String name, TypeMeta returnType) {
         return new NoParensFunction(name, returnType);
     }
 
-    static Expression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
+    static SimpleExpression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
         return new OneArgFunction(name, (ArmyExpression) exp, returnType);
     }
 
-    static Expression twoOrMultiArgFunc(final String name, final Expression one, final Expression two,
-                                        TypeMeta returnType) {
+    static SimpleExpression twoOrMultiArgFunc(final String name, final Expression one, final Expression two,
+                                              TypeMeta returnType) {
         if (one instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, one);
         }
@@ -318,8 +318,8 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, null, argList, returnType);
     }
 
-    static Expression oneAndMultiArgFunc(final String name, final Expression exp, final List<Expression> expList,
-                                         final TypeMeta returnType) {
+    static SimpleExpression oneAndMultiArgFunc(final String name, final Expression exp, final List<Expression> expList,
+                                               final TypeMeta returnType) {
         if (exp instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, exp);
         }
@@ -335,20 +335,20 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, null, argList, returnType);
     }
 
-    static Expression twoAndMultiArgFunc(final String name, final Expression exp1, Expression exp2,
-                                         final List<Expression> expList, final TypeMeta returnType) {
+    static SimpleExpression twoAndMultiArgFunc(final String name, final Expression exp1, Expression exp2,
+                                               final List<Expression> expList, final TypeMeta returnType) {
         return new MultiArgFunctionExpression(name, null, twoAndMultiExpList(name, exp1, exp2, expList), returnType);
     }
 
-    static Expression multiArgFunc(String name, List<Expression> argList, TypeMeta returnType) {
+    static SimpleExpression multiArgFunc(String name, List<Expression> argList, TypeMeta returnType) {
         return new MultiArgFunctionExpression(name, null, expList(name, argList), returnType);
     }
 
-    static Expression oneAndRestFunc(String name, TypeMeta returnType, Expression first, Expression... rest) {
+    static SimpleExpression oneAndRestFunc(String name, TypeMeta returnType, Expression first, Expression... rest) {
         if (first instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, first);
         }
-        final Expression func;
+        final SimpleExpression func;
         if (rest.length == 0) {
             func = new OneArgFunction(name, (ArmyExpression) first, returnType);
         } else {
@@ -361,7 +361,7 @@ abstract class FunctionUtils {
     }
 
 
-    static Expression twoAndMaxRestForSingleExpFunc(String name, TypeMeta returnType
+    static SimpleExpression twoAndMaxRestForSingleExpFunc(String name, TypeMeta returnType
             , Expression one, Expression two, final int maxRest, Expression... rest) {
         assert maxRest > 0;
         if (rest.length > maxRest) {
@@ -381,8 +381,8 @@ abstract class FunctionUtils {
     }
 
 
-    static Expression multiArgFunc(final String name, final TypeMeta returnType, final Expression firstArg,
-                                   final Expression... exps) {
+    static SimpleExpression multiArgFunc(final String name, final TypeMeta returnType, final Expression firstArg,
+                                         final Expression... exps) {
         final List<ArmyExpression> argList = new ArrayList<>(1 + exps.length);
         argList.add((ArmyExpression) firstArg);
         for (Expression exp : exps) {
@@ -394,8 +394,8 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, null, argList, returnType);
     }
 
-    static Expression multiNotationFunc(final String name, final TypeMeta returnType, final Predicate<String> validator,
-                                        final Expression firstArg, final Expression... restExp) {
+    static SimpleExpression multiNotationFunc(final String name, final TypeMeta returnType, final Predicate<String> validator,
+                                              final Expression firstArg, final Expression... restExp) {
         String notation = null;
         if (firstArg instanceof NamedNotation) {
             notation = ((NamedNotation) firstArg).name;
@@ -417,25 +417,25 @@ abstract class FunctionUtils {
     }
 
 
-    static Expression safeMultiArgFunc(String name, List<ArmyExpression> argList, TypeMeta returnType) {
+    static SimpleExpression safeMultiArgFunc(String name, List<ArmyExpression> argList, TypeMeta returnType) {
         return new MultiArgFunctionExpression(name, null, argList, returnType);
     }
 
 
-    static IPredicate noArgFuncPredicate(final String name) {
+    static SimplePredicate noArgFuncPredicate(final String name) {
         return new NoArgFuncPredicate(name);
     }
 
-    static IPredicate oneArgFuncPredicate(final String name, final Expression argument) {
+    static SimplePredicate oneArgFuncPredicate(final String name, final Expression argument) {
         if (argument instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, argument);
         }
         return new OneArgFuncPredicate(name, (ArmyExpression) argument);
     }
 
-    static IPredicate multiArgFuncPredicate(String name, List<Expression> expList) {
+    static SimplePredicate multiArgFuncPredicate(String name, List<Expression> expList) {
         final int size = expList.size();
-        final IPredicate function;
+        final SimplePredicate function;
         switch (size) {
             case 0:
                 throw CriteriaUtils.funcArgError(name, expList);
@@ -452,21 +452,21 @@ abstract class FunctionUtils {
     }
 
 
-    static IPredicate twoAndMultiArgFuncPredicate(final String name, final Expression exp1, Expression exp2
+    static SimplePredicate twoAndMultiArgFuncPredicate(final String name, final Expression exp1, Expression exp2
             , final List<Expression> expList) {
         return new MultiArgFuncPredicate(name, null, twoAndMultiExpList(name, exp1, exp2, expList));
     }
 
 
-    static IPredicate complexArgPredicate(final String name, List<?> argList) {
+    static SimplePredicate complexArgPredicate(final String name, List<?> argList) {
         return new ComplexArgFuncPredicate(name, argList);
     }
 
-    static IPredicate oneAndRestFuncPredicate(String name, Expression first, Expression... rest) {
+    static SimplePredicate oneAndRestFuncPredicate(String name, Expression first, Expression... rest) {
         if (first instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, first);
         }
-        final IPredicate func;
+        final SimplePredicate func;
         if (rest.length == 0) {
             func = new OneArgFuncPredicate(name, (ArmyExpression) first);
         } else {
@@ -478,7 +478,7 @@ abstract class FunctionUtils {
         return func;
     }
 
-    static IPredicate complexArgPredicateFrom(final String name, Object firstArg, @Nullable Object... args) {
+    static SimplePredicate complexArgPredicateFrom(final String name, Object firstArg, @Nullable Object... args) {
         final List<Object> argList;
         if (args == null) {
             argList = Collections.singletonList(firstArg);
@@ -495,11 +495,11 @@ abstract class FunctionUtils {
     }
 
 
-    static Expression complexArgFunc(String name, List<?> argList, TypeMeta returnType) {
+    static SimpleExpression complexArgFunc(String name, List<?> argList, TypeMeta returnType) {
         return new ComplexArgFuncExpression(name, argList, returnType);
     }
 
-    static Expression complexArgFunc(String name, TypeMeta returnType, Object... args) {
+    static SimpleExpression complexArgFunc(String name, TypeMeta returnType, Object... args) {
         final List<Object> argList = new ArrayList<>(args.length);
         Collections.addAll(argList, args);
         return new ComplexArgFuncExpression(name, argList, returnType);
@@ -509,7 +509,7 @@ abstract class FunctionUtils {
         return new NamedComplexArgFunc(name, argList, returnType, expAlias);
     }
 
-    static Expression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
+    static SimpleExpression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
         return new JsonObjectFunc(name, expMap, returnType);
     }
 
@@ -822,7 +822,7 @@ abstract class FunctionUtils {
 
         @Override
         public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
+            return CriteriaUtils.enumToString(this);
         }
 
 
@@ -846,7 +846,7 @@ abstract class FunctionUtils {
 
         @Override
         public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
+            return CriteriaUtils.enumToString(this);
         }
 
     }//FromFirstLast
@@ -1845,7 +1845,8 @@ abstract class FunctionUtils {
      *     </ul>
      * </p>
      */
-    private static abstract class FunctionPredicate extends OperationPredicate implements SQLFunction {
+    private static abstract class FunctionPredicate extends OperationPredicate.OperationSimplePredicate
+            implements SQLFunction {
 
         final String name;
 
@@ -2029,7 +2030,8 @@ abstract class FunctionUtils {
     /**
      * @see ComplexArgFuncExpression
      */
-    private static final class ComplexArgFuncPredicate extends OperationPredicate implements SQLFunction {
+    private static final class ComplexArgFuncPredicate extends OperationPredicate.OperationSimplePredicate
+            implements SQLFunction {
 
         private final String name;
 
@@ -3166,14 +3168,14 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public Expression end() {
+        public SimpleExpression end() {
             this.endCaseFunction();
             return this;
         }
 
 
         @Override
-        public Expression end(final @Nullable TypeInfer type) {
+        public SimpleExpression end(final @Nullable TypeInfer type) {
 
             this.endCaseFunction();
 

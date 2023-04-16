@@ -661,7 +661,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public final String toString() {
-            return CriteriaUtils.sqlWordsToString(this);
+            return CriteriaUtils.enumToString(this);
         }
 
     }//PostgreLockMode
@@ -1432,7 +1432,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(
-                TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as, String tableAlias) {
+                TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star, SQLsSyntax.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreUpdates.subSimpleUpdate(this.context.getNonNullOuterContext(), this.function)
@@ -1441,7 +1441,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(
-                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star,
+                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star,
                 SQLsSyntax.WordAs as, String tableAlias) {
             this.endDispatcher();
 
@@ -1469,7 +1469,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
-                TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as, String tableAlias) {
+                TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star, SQLsSyntax.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
@@ -1478,7 +1478,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
-                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star,
+                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star,
                 SQLsSyntax.WordAs as, String tableAlias) {
             this.endDispatcher();
 

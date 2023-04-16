@@ -73,7 +73,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
     private TableMeta<?> targetTable;
 
-    private SQLsSyntax.SymbolStar starModifier;
+    private SqlSyntax.SymbolAsterisk starModifier;
 
     private String targetTableAlias;
 
@@ -94,19 +94,19 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
     }
 
     @Override
-    public final DR deleteFrom(TableMeta<?> table, @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as, String tableAlias) {
+    public final DR deleteFrom(TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star, SQLsSyntax.WordAs as, String tableAlias) {
         return this.deleteFrom(null, table, star, as, tableAlias);
     }
 
     @Override
     public final DR deleteFrom(final @Nullable SQLsSyntax.WordOnly only, final @Nullable TableMeta<?> table,
-                               final @Nullable SQLsSyntax.SymbolStar star, SQLsSyntax.WordAs as,
+                               final @Nullable SqlSyntax.SymbolAsterisk star, SQLsSyntax.WordAs as,
                                final @Nullable String tableAlias) {
         if (this.targetTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
         } else if (only != null && only != SQLs.ONLY) {
             throw CriteriaUtils.errorModifier(this.context, only);
-        } else if (star != null && star != SQLs.STAR) {
+        } else if (star != null && star != SQLs.ASTERISK) {
             throw CriteriaUtils.errorModifier(this.context, only);
         } else if (table == null) {
             throw ContextStack.nullPointer(this.context);
@@ -329,7 +329,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
     }
 
     @Override
-    public final SQLs.SymbolStar symbolStar() {
+    public final SqlSyntax.SymbolAsterisk symbolAsterisk() {
         return this.starModifier;
     }
 
@@ -531,7 +531,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
         @Override
         public final _StaticReturningCommaSpec<Q> returning(String derivedAlias, SQLsSyntax.SymbolPeriod period,
-                                                            SQLsSyntax.SymbolStar star) {
+                                                            SqlSyntax.SymbolAsterisk star) {
             this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }
@@ -618,7 +618,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
         @Override
         public final _StaticReturningCommaSpec<Q> comma(String derivedAlias, SQLsSyntax.SymbolPeriod period,
-                                                        SQLsSyntax.SymbolStar star) {
+                                                        SqlSyntax.SymbolAsterisk star) {
             this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }
@@ -983,7 +983,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(String derivedAlias, SQLsSyntax.SymbolPeriod period, SQLsSyntax.SymbolStar star) {
+        public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
             this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return new BatchParamClause(this);
         }
@@ -1223,7 +1223,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
 
         @Override
-        public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(String derivedAlias, SQLsSyntax.SymbolPeriod period, SQLsSyntax.SymbolStar star) {
+        public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
             this.statement.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }
@@ -1312,7 +1312,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
         private final TableMeta<?> targetTable;
 
-        private final SQLs.SymbolStar starModifier;
+        private final SqlSyntax.SymbolAsterisk starModifier;
 
         private final String tableAlias;
 
@@ -1373,7 +1373,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
 
         @Override
-        public final SQLs.SymbolStar symbolStar() {
+        public final SqlSyntax.SymbolAsterisk symbolAsterisk() {
             return this.starModifier;
         }
 

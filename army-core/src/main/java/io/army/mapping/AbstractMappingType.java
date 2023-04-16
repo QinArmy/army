@@ -13,6 +13,10 @@ import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamException;
 import java.time.temporal.Temporal;
 import java.util.function.BiFunction;
 
@@ -23,7 +27,6 @@ public abstract class AbstractMappingType implements MappingType {
     protected static final BiFunction<MappingType, Object, ArmyException> DATA_ACCESS_ERROR_HANDLER = AbstractMappingType::dataAccessError;
 
     protected static final BiFunction<MappingType, ServerMeta, NotSupportDialectException> MAP_ERROR_HANDLER = AbstractMappingType::mapError;
-    ;
 
 
     protected AbstractMappingType() {
@@ -41,7 +44,7 @@ public abstract class AbstractMappingType implements MappingType {
 
     @Override
     public final int hashCode() {
-        return super.hashCode();
+        return System.identityHashCode(this);
     }
 
     @Override
@@ -49,6 +52,22 @@ public abstract class AbstractMappingType implements MappingType {
         return this == obj;
     }
 
+    /**
+     * MappingType cannot have finalize methods.
+     */
+    @Override
+    protected final void finalize() {
+    }
+
+    /**
+     * Throws CloneNotSupportedException.  This guarantees that MappingType
+     * are never cloned
+     *
+     * @return (never returns)
+     */
+    protected final Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
 
     @Override
     public final String toString() {
@@ -63,12 +82,24 @@ public abstract class AbstractMappingType implements MappingType {
     }
 
 
+    /**
+     * prevent default deserialization
+     */
+    private void readObject(ObjectInputStream in) throws IOException,
+            ClassNotFoundException {
+        throw new InvalidObjectException(String.format("can't deserialize %s", MappingType.class.getName()));
+    }
+
+    private void readObjectNoData() throws ObjectStreamException {
+        throw new InvalidObjectException(String.format("can't deserialize %s", MappingType.class.getName()));
+    }
+
+
     @Deprecated
     protected final ParamException notSupportConvertAfterGet(final Object nonNull) {
         String m = String.format("Not support convert from %s to %s.", nonNull, javaType().getName());
         return new ParamException(m);
     }
-
 
 
     @Deprecated

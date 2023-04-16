@@ -109,7 +109,7 @@ public interface Query extends RowSet {
         <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
                       String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
-        SR select(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+        SR select(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
 
     }
 
@@ -137,7 +137,7 @@ public interface Query extends RowSet {
         <P> SR space(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
                      String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
-        SR space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+        SR space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
     }
 
 
@@ -212,7 +212,7 @@ public interface Query extends RowSet {
         <P> SR comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
                      String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
-        SR comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolStar star);
+        SR comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
 
     }
 

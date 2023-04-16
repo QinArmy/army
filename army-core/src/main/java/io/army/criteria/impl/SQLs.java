@@ -47,7 +47,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     public static final WordAnd AND = KeyWordAnd.AND;
 
-    public static final SymbolStar STAR = SQLSymbolStar.STAR;
+    public static final SymbolAsterisk ASTERISK = SQLSymbolAsterisk.ASTERISK;
 
     public static final SymbolPeriod PERIOD = SQLSymbolPeriod.PERIOD;
 
@@ -63,7 +63,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * package field
      */
-    static final Expression _START_EXP = new LiteralSymbolStar();
+    static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
 
     private static final Function<? extends Item, ? extends Item> _IDENTITY = SQLs::_identity;
 
@@ -536,7 +536,7 @@ public abstract class SQLs extends SQLsSyntax {
 
         @Override
         public TypeMeta typeMeta() {
-            throw unsupportedOperation();
+            throw unsupportedOperation(this);
         }
 
         @Override
@@ -558,7 +558,7 @@ public abstract class SQLs extends SQLsSyntax {
      *
      * @see #NULL
      */
-    private static final class NullWord extends OperationExpression.SimpleExpression
+    private static final class NullWord extends OperationExpression.OperationSimpleExpression
             implements SqlValueParam.SingleNonNamedValue,
             WordNull,
             ArmyKeyWord {
@@ -596,14 +596,14 @@ public abstract class SQLs extends SQLsSyntax {
 
     }// NullWord
 
-    static final class LiteralSymbolStar extends NonOperationExpression.NonSelectionExpression {
+    static final class LiteralSymbolAsterisk extends NonOperationExpression.NonSelectionExpression {
 
-        private LiteralSymbolStar() {
+        private LiteralSymbolAsterisk() {
         }
 
         @Override
         public TypeMeta typeMeta() {
-            throw unsupportedOperation();
+            throw unsupportedOperation(this);
         }
 
         @Override
@@ -623,7 +623,8 @@ public abstract class SQLs extends SQLsSyntax {
      * @see #TRUE
      * @see #FALSE
      */
-    private static final class BooleanWord extends OperationPredicate implements WordBooleans, ArmyKeyWord {
+    private static final class BooleanWord extends OperationPredicate.OperationSimplePredicate
+            implements WordBooleans, ArmyKeyWord {
 
         private final String spaceWord;
 
@@ -694,13 +695,13 @@ public abstract class SQLs extends SQLsSyntax {
 
     }//SQLSymbolPoint
 
-    private enum SQLSymbolStar implements SymbolStar, SQLWords {
+    private enum SQLSymbolAsterisk implements SymbolAsterisk, SQLWords {
 
-        STAR(" *");
+        ASTERISK(" *");
 
         private final String spaceStar;
 
-        SQLSymbolStar(String spaceStar) {
+        SQLSymbolAsterisk(String spaceStar) {
             this.spaceStar = spaceStar;
         }
 

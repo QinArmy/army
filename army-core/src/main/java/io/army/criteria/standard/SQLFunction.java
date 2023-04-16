@@ -22,9 +22,9 @@ public interface SQLFunction {
 
     interface _CaseEndClause {
 
-        Expression end();
+        SimpleExpression end();
 
-        Expression end(TypeInfer type);
+        SimpleExpression end(TypeInfer type);
 
     }
 

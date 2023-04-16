@@ -28,12 +28,12 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
         final Select stmt;
         stmt = MySQLs.query()
                 .select(MySQLs.cases(ChinaRegion_.regionType)
-                        .when(SQLs::literalFrom, RegionType.NONE)
-                        .then(SQLs::literalFrom, RegionType.NONE.name())
-                        .when(SQLs::literalFrom, RegionType.PROVINCE)
-                        .then(SQLs::literalFrom, RegionType.PROVINCE.name())
-                        .when(SQLs::literalFrom, RegionType.CITY)
-                        .then(SQLs::literalFrom, RegionType.CITY.name())
+                        .when(SQLs::literalValue, RegionType.NONE)
+                        .then(SQLs::literalValue, RegionType.NONE.name())
+                        .when(SQLs::literalValue, RegionType.PROVINCE)
+                        .then(SQLs::literalValue, RegionType.PROVINCE.name())
+                        .when(SQLs::literalValue, RegionType.CITY)
+                        .then(SQLs::literalValue, RegionType.CITY.name())
                         .elseValue(NULL).end()::as, ChinaRegion_.REGION_TYPE
                 )
                 .comma(MySQLs.rowNumber().over()::as, "rowNumber")
@@ -41,7 +41,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                 .comma(MySQLs.sum(DISTINCT, ChinaRegion_.regionGdp)
                         .over(s -> s.partitionBy(ChinaRegion_.regionType)).as("distinctGdpSum")
                 )
-                .comma(MySQLs.lag(ChinaRegion_.population, SQLs.literalFrom(1))
+                .comma(MySQLs.lag(ChinaRegion_.population, SQLs.literalValue(1))
                         .over("w", s -> s.orderBy(ChinaRegion_.id)
                                 .rows().between().unboundedPreceding()
                                 .and().currentRow())::as, "log2"
@@ -135,7 +135,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
     public void withClauseMigration() {
         final Select stmt;
         stmt = MySQLs.query()
-                .withRecursive("cte").as(s -> s.select(SQLs.literalFrom(1)::as, "n")
+                .withRecursive("cte").as(s -> s.select(SQLs.literalValue(1)::as, "n")
                         .union()
                         .select(SQLs.refThis("cte", "n").plus(SQLs::literal, 1)::as, "n")
                         .from("cte")

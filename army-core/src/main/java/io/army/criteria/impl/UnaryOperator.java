@@ -48,7 +48,7 @@ enum UnaryOperator implements SQLWords {
 
     @Override
     public final String toString() {
-        return CriteriaUtils.sqlWordsToString(this);
+        return CriteriaUtils.enumToString(this);
     }
 
 
