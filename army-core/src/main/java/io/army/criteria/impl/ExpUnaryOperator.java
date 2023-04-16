@@ -1,24 +1,18 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.SQLWords;
-import io.army.dialect._Constant;
-
 /**
  * representing Unary SQL Operator
+ *
+ * @see BooleanUnaryOperator
  */
-enum UnaryOperator implements SQLWords {
+enum ExpUnaryOperator implements Operator.UnaryOperator {
 
-    EXISTS(_Constant.SPACE_EXISTS),
-    NOT_EXISTS(" NOT EXISTS"),
     NEGATE(" -"),
     POSITIVE(" +"),
     BITWISE_NOT(" ~"),
 
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">Absolute value operator</a>
-     */
-    AT(" @"),   // postgre only
+    // postgre only
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">|/ double precision → double precision<br/>
@@ -32,19 +26,19 @@ enum UnaryOperator implements SQLWords {
      * Cube root
      * </a>
      */
-    DOUBLE_VERTICAL_SLASH(" ||/");// postgre only
+    DOUBLE_VERTICAL_SLASH(" ||/"),
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">Absolute value operator</a>
+     */
+    AT(" @");// postgre only
 
 
     final String spaceOperator;
 
-    UnaryOperator(String spaceOperator) {
+    ExpUnaryOperator(String spaceOperator) {
         this.spaceOperator = spaceOperator;
     }
 
-    @Override
-    public final String spaceRender() {
-        return this.spaceOperator;
-    }
 
     @Override
     public final String toString() {

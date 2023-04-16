@@ -20,7 +20,6 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.*;
-import java.util.function.UnaryOperator;
 import java.util.function.*;
 
 abstract class FunctionUtils {
@@ -31,12 +30,15 @@ abstract class FunctionUtils {
 
 
     static SQLFunction._CaseFuncWhenClause caseFunction(final @Nullable Expression caseValue) {
+        if (!(caseValue == null || caseValue instanceof OperationExpression)) {
+            throw CriteriaUtils.funcArgError("CASE", caseValue);
+        }
         return new CaseFunction((ArmyExpression) caseValue);
     }
 
 
     static SimpleExpression oneArgFunc(String name, Expression expr, TypeMeta returnType) {
-        if (expr instanceof SqlValueParam.MultiValue) {
+        if (!(expr instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, expr);
         }
         return new OneArgFunction(name, (ArmyExpression) expr, returnType);
@@ -44,9 +46,9 @@ abstract class FunctionUtils {
 
 
     static SimpleExpression twoArgFunc(final String name, final Expression one, final Expression two, TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
         }
         return new TwoArgFunction(name, one, two, returnType);
@@ -54,11 +56,11 @@ abstract class FunctionUtils {
 
     static SimpleExpression threeArgFunc(final String name, final Expression one, final Expression two,
                                          final Expression three, TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
-        } else if (three instanceof SqlValueParam.MultiValue) {
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, three);
         }
         return new ThreeArgFunction(name, one, two, three, returnType);
@@ -66,13 +68,13 @@ abstract class FunctionUtils {
 
     static SimpleExpression fourArgFunc(final String name, final Expression one, final Expression two,
                                         final Expression three, final Expression four, final TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
-        } else if (three instanceof SqlValueParam.MultiValue) {
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, three);
-        } else if (four instanceof SqlValueParam.MultiValue) {
+        } else if (!(four instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, four);
         }
         return new FourArgFunction(name, one, two, three, four, returnType);
@@ -81,15 +83,15 @@ abstract class FunctionUtils {
     static SimpleExpression fiveArgFunc(final String name, final Expression one, final Expression two,
                                         final Expression three, final Expression four, final Expression five,
                                         final TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
-        } else if (three instanceof SqlValueParam.MultiValue) {
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, three);
-        } else if (four instanceof SqlValueParam.MultiValue) {
+        } else if (!(four instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, four);
-        } else if (five instanceof SqlValueParam.MultiValue) {
+        } else if (!(five instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, five);
         }
         return new FiveArgFunction(name, one, two, three, four, five, returnType);
@@ -98,17 +100,17 @@ abstract class FunctionUtils {
     static SimpleExpression sixArgFunc(final String name, final Expression one, final Expression two,
                                        final Expression three, final Expression four, final Expression five,
                                        final Expression six, final TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
-        } else if (three instanceof SqlValueParam.MultiValue) {
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, three);
-        } else if (four instanceof SqlValueParam.MultiValue) {
+        } else if (!(four instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, four);
-        } else if (five instanceof SqlValueParam.MultiValue) {
+        } else if (!(five instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, five);
-        } else if (six instanceof SqlValueParam.MultiValue) {
+        } else if (!(six instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, six);
         }
         return new SixArgFunction(name, one, two, three, four, five, six, returnType);
@@ -117,19 +119,19 @@ abstract class FunctionUtils {
     static SimpleExpression sevenArgFunc(final String name, final Expression one, final Expression two,
                                          final Expression three, final Expression four, final Expression five,
                                          final Expression six, final Expression seven, final TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
-        } else if (three instanceof SqlValueParam.MultiValue) {
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, three);
-        } else if (four instanceof SqlValueParam.MultiValue) {
+        } else if (!(four instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, four);
-        } else if (five instanceof SqlValueParam.MultiValue) {
+        } else if (!(five instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, five);
-        } else if (six instanceof SqlValueParam.MultiValue) {
+        } else if (!(six instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, six);
-        } else if (seven instanceof SqlValueParam.MultiValue) {
+        } else if (!(seven instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, seven);
         }
         return new SevenArgFunction(name, one, two, three, four, five, six, seven, returnType);
@@ -249,9 +251,9 @@ abstract class FunctionUtils {
 
     static Functions._TabularFunction twoArgDerivedFunction(final String name, final Expression one, final Expression two,
                                                             final TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
         }
         return new TwoArgDerivedFunction(name, one, two, returnType);
@@ -260,11 +262,11 @@ abstract class FunctionUtils {
     static Functions._TabularFunction threeArgDerivedFunction(final String name, final Expression one, final Expression two,
                                                               final Expression three,
                                                               final TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
-        } else if (three instanceof SqlValueParam.MultiValue) {
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, three);
         }
         return new ThreeArgDerivedFunction(name, one, two, three, returnType);
@@ -273,13 +275,13 @@ abstract class FunctionUtils {
     static Functions._TabularFunction fourArgDerivedFunction(final String name, final Expression one, final Expression two,
                                                              final Expression three, final Expression four,
                                                              final TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
-        } else if (three instanceof SqlValueParam.MultiValue) {
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, three);
-        } else if (four instanceof SqlValueParam.MultiValue) {
+        } else if (!(four instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, four);
         }
         return new FourArgDerivedFunction(name, one, two, three, four, returnType);
@@ -287,11 +289,23 @@ abstract class FunctionUtils {
 
 
     static SimplePredicate twoArgPredicateFunc(final String name, final Expression one, final Expression two) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
         return new MultiArgFuncPredicate(name, null, twoExpList(name, one, two));
     }
 
     static SimplePredicate threeArgPredicateFunc(final String name, final Expression one, final Expression two
             , final Expression three) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
         return new MultiArgFuncPredicate(name, null, threeExpList(name, one, two, three));
     }
 
@@ -305,6 +319,9 @@ abstract class FunctionUtils {
     }
 
     static SimpleExpression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
+        if (!(exp instanceof FunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, exp);
+        }
         return new OneArgFunction(name, (ArmyExpression) exp, returnType);
     }
 
@@ -852,7 +869,7 @@ abstract class FunctionUtils {
     }//FromFirstLast
 
 
-    static abstract class WindowFunction extends OperationExpression.FunctionExpression
+    static abstract class WindowFunction extends OperationExpression.SqlFunctionExpression
             implements Window._OverWindowClause,
             CriteriaContextSpec {
 
@@ -1095,7 +1112,7 @@ abstract class FunctionUtils {
 
     }//NamedNotation
 
-    private static final class NoParensFunction extends OperationExpression.FunctionExpression {
+    private static final class NoParensFunction extends OperationExpression.SqlFunctionExpression {
 
         private final String name;
 
@@ -1154,7 +1171,7 @@ abstract class FunctionUtils {
     }//NoParensFunction
 
 
-    private static final class ZeroArgFunction extends OperationExpression.FunctionExpression {
+    private static final class ZeroArgFunction extends OperationExpression.SqlFunctionExpression {
 
         private final String name;
 
@@ -1214,7 +1231,7 @@ abstract class FunctionUtils {
     }//NoArgFuncExpression
 
 
-    static abstract class FunctionExpression extends OperationExpression.FunctionExpression {
+    static abstract class FunctionExpression extends OperationExpression.SqlFunctionExpression {
 
         final String name;
 
@@ -1845,13 +1862,12 @@ abstract class FunctionUtils {
      *     </ul>
      * </p>
      */
-    private static abstract class FunctionPredicate extends OperationPredicate.OperationSimplePredicate
+    private static abstract class FunctionPredicate extends OperationPredicate.SqlFunctionPredicate
             implements SQLFunction {
 
-        final String name;
 
         FunctionPredicate(String name) {
-            this.name = name;
+            super(name);
         }
 
 
@@ -2030,10 +2046,8 @@ abstract class FunctionUtils {
     /**
      * @see ComplexArgFuncExpression
      */
-    private static final class ComplexArgFuncPredicate extends OperationPredicate.OperationSimplePredicate
-            implements SQLFunction {
+    private static final class ComplexArgFuncPredicate extends OperationPredicate.SqlFunctionPredicate {
 
-        private final String name;
 
         private final List<?> argumentList;
 
@@ -2041,7 +2055,7 @@ abstract class FunctionUtils {
          * @see #complexArgPredicate(String, List)
          */
         private ComplexArgFuncPredicate(String name, List<?> argumentList) {
-            this.name = name;
+            super(name);
             this.argumentList = argumentList;
         }
 
@@ -2098,7 +2112,7 @@ abstract class FunctionUtils {
     /**
      * @see ComplexArgFuncPredicate
      */
-    private static class ComplexArgFuncExpression extends OperationExpression.FunctionExpression {
+    private static class ComplexArgFuncExpression extends OperationExpression.SqlFunctionExpression {
 
         private final String name;
         private final List<?> argList;
@@ -2547,7 +2561,7 @@ abstract class FunctionUtils {
 
     }//FourArgDerivedFunction
 
-    private static final class JsonObjectFunc extends OperationExpression.FunctionExpression {
+    private static final class JsonObjectFunc extends OperationExpression.SqlFunctionExpression {
 
         private final String name;
 
@@ -2637,7 +2651,7 @@ abstract class FunctionUtils {
     }//NamedComplexArgFunc
 
 
-    private static final class CaseFunction extends OperationExpression.FunctionExpression
+    private static final class CaseFunction extends OperationExpression.SqlFunctionExpression
             implements SQLFunction._CaseWhenSpec,
             SQLFunction._CaseFuncWhenClause,
             SQLFunction._StaticCaseThenClause,

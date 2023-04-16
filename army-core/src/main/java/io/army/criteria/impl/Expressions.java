@@ -51,42 +51,20 @@ abstract class Expressions {
         return new DualExpression(left, operator, rightExp, returnType);
     }
 
-    static OperationExpression dialectDualExp(final Expression left, final ExpDualOperator operator, final Expression right,
-                                              final TypeMeta returnType) {
+    static OperationExpression dialectDualExp(final Expression left, final ExpDualOperator operator,
+                                              final Expression right, final TypeMeta returnType) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
         } else if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
         }
-        switch (operator) {
-            case PLUS:
-            case MINUS:
-            case TIMES:
-            case DIVIDE:
-            case MOD:
-
-            case BITWISE_AND:
-            case BITWISE_OR:
-            case BITWISE_XOR:
-            case RIGHT_SHIFT:
-            case LEFT_SHIFT:
-
-            case CARET:
-            case DOUBLE_VERTICAL:
-            case AT_TIME_ZONE:
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(operator);
-        }
         return new DualExpression(left, operator, right, returnType);
     }
 
 
-    static SimpleExpression unaryExp(final UnaryOperator operator, final Expression operand) {
+    static SimpleExpression unaryExp(final ExpUnaryOperator operator, final Expression operand) {
         if (!(operand instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(operand);
-        } else if (operand instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.operandError(operator, operand);
         }
         switch (operator) {
             case BITWISE_NOT:
@@ -98,12 +76,10 @@ abstract class Expressions {
         return new UnaryExpression(operator, operand, operand.typeMeta());
     }
 
-    static OperationExpression dialectUnaryExp(final UnaryOperator operator, final Expression expression,
+    static OperationExpression dialectUnaryExp(final ExpUnaryOperator operator, final Expression expression,
                                                final TypeMeta returnType) {
         if (!(expression instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(expression);
-        } else if (expression instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.operandError(operator, expression);
         }
         switch (operator) {
             case BITWISE_NOT:
@@ -123,8 +99,8 @@ abstract class Expressions {
 
     static SimpleExpression bracketExp(final @Nullable Expression expression) {
         final SimpleExpression bracket;
-        if (expression == null) {
-            throw ContextStack.clearStackAndNullPointer();
+        if (!(expression instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(expression);
         } else if (expression instanceof OperationExpression.OperationSimpleExpression) {
             bracket = (SimpleExpression) expression;
         } else {
@@ -143,7 +119,7 @@ abstract class Expressions {
     }
 
 
-    static OperationPredicate existsPredicate(UnaryOperator operator, @Nullable SubQuery subQuery) {
+    static OperationPredicate existsPredicate(BooleanUnaryOperator operator, @Nullable SubQuery subQuery) {
         if (subQuery == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -172,9 +148,9 @@ abstract class Expressions {
     }
 
     static OperationPredicate isComparisonPredicate(final OperationExpression left, boolean not,
-                                                    SQLsSyntax.IsComparisonWord operator, @Nullable Expression right) {
-        if (right == null) {
-            throw ContextStack.clearStackAndNullPointer();
+                                                    SQLsSyntax.IsComparisonWord operator, Expression right) {
+        if (!(right instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(right);
         }
         //TODO validate operator
         return new IsComparisonPredicate(left, not, operator, (ArmyExpression) right);
@@ -184,34 +160,21 @@ abstract class Expressions {
     static OperationPredicate dualPredicate(final Expression left, final BooleanDualOperator operator, final Expression right) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
-        } else if (!(right instanceof OperationExpression)) {
-            throw NonOperationExpression.nonOperationExpression(right);
-        } else if (left instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.operandError(operator, left);
         }
         switch (operator) {
-            case EQUAL:
-            case NOT_EQUAL:
-            case LESS:
-            case LESS_EQUAL:
-            case GREAT:
-            case GREAT_EQUAL:
-
-            case CARET_AT:
-            case TILDE:
-            case NOT_TILDE:
-            case TILDE_STAR:
-            case NOT_TILDE_STAR: {
-                if (right instanceof SqlValueParam.MultiValue) {
-                    throw CriteriaUtils.operandError(operator, right);
+            case IN:
+            case NOT_IN: {
+                if (!(right instanceof OperationExpression
+                        || right instanceof NonOperationExpression.MultiValueExpression)) {
+                    throw NonOperationExpression.nonOperationExpression(right);
                 }
             }
             break;
-            case IN:
-            case NOT_IN:
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(operator);
+            default: {
+                if (!(right instanceof OperationExpression)) {
+                    throw NonOperationExpression.nonOperationExpression(right);
+                }
+            }
 
         }
         return new DualPredicate(left, operator, right);
@@ -234,8 +197,8 @@ abstract class Expressions {
             throw NonOperationExpression.nonOperationExpression(left);
         } else if (escape != SQLs.ESCAPE) {
             throw CriteriaUtils.errorModifier(escape);
-        } else if (right == null) {
-            throw ContextStack.clearStackAndNullPointer();
+        } else if (!(right instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(right);
         }
         return new LikePredicate((OperationExpression) left, operator, right, escapeChar);
     }
@@ -244,7 +207,11 @@ abstract class Expressions {
     static OperationPredicate betweenPredicate(OperationExpression left, boolean not,
                                                @Nullable SQLsSyntax.BetweenModifier modifier,
                                                Expression center, Expression right) {
-
+        if (!(center instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(center);
+        } else if (!(right instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(right);
+        }
         //TODO validate modifier
         return new BetweenPredicate(left, not, modifier, center, right);
     }
@@ -375,11 +342,6 @@ abstract class Expressions {
          */
         private DualExpression(final Expression left, final ExpDualOperator operator, final Expression right,
                                final TypeMeta returnType) {
-            if (left instanceof SqlValueParam.MultiValue) {
-                throw CriteriaUtils.operandError(operator, left);
-            } else if (right instanceof SqlValueParam.MultiValue) {
-                throw CriteriaUtils.operandError(operator, right);
-            }
 
             this.left = (ArmyExpression) left;
             this.operator = operator;
@@ -508,20 +470,20 @@ abstract class Expressions {
      * This class representing unary expression,unary expression always out outer bracket.
      * </p>
      * This class is a implementation of {@link Expression}.
-     * The expression consist of a  {@link Expression} and a {@link UnaryOperator}.
+     * The expression consist of a  {@link Expression} and a {@link ExpUnaryOperator}.
      */
     private static final class UnaryExpression extends OperationExpression.OperationSimpleExpression {
 
-        private final UnaryOperator operator;
+        private final ExpUnaryOperator operator;
 
         final ArmyExpression operand;
 
         private final TypeMeta returnType;
 
         /**
-         * @see #unaryExp(UnaryOperator, Expression)
+         * @see #unaryExp(ExpUnaryOperator, Expression)
          */
-        private UnaryExpression(UnaryOperator operator, Expression operand, TypeMeta returnType) {
+        private UnaryExpression(ExpUnaryOperator operator, Expression operand, TypeMeta returnType) {
             this.operator = operator;
             this.operand = (ArmyExpression) operand;
             this.returnType = returnType;
@@ -536,9 +498,9 @@ abstract class Expressions {
         @Override
         public void appendSql(final _SqlContext context) {
 
-            final UnaryOperator operator = this.operator;
+            final ExpUnaryOperator operator = this.operator;
 
-            if (operator == UnaryOperator.AT
+            if (operator == ExpUnaryOperator.AT
                     && context.database() != Database.PostgreSQL) {
                 throw unsupportedOperator(operator, context.database());
             }
@@ -703,12 +665,12 @@ abstract class Expressions {
 
     private static final class ExistsPredicate extends OperationPredicate.CompoundPredicate {
 
-        private final UnaryOperator operator;
+        private final BooleanUnaryOperator operator;
 
         private final SubQuery subQuery;
 
 
-        private ExistsPredicate(SubQuery query, UnaryOperator operator) {
+        private ExistsPredicate(SubQuery query, BooleanUnaryOperator operator) {
             this.operator = operator;
             this.subQuery = query;
         }
@@ -719,7 +681,7 @@ abstract class Expressions {
                 case EXISTS:
                 case NOT_EXISTS: {
                     context.sqlBuilder()
-                            .append(this.operator.spaceRender());
+                            .append(this.operator.spaceOperator);
                     context.parser().subQuery(this.subQuery, context);
                 }
                 break;
@@ -745,7 +707,7 @@ abstract class Expressions {
             switch (this.operator) {
                 case EXISTS:
                 case NOT_EXISTS:
-                    builder.append(this.operator.spaceRender())
+                    builder.append(this.operator.spaceOperator)
                             .append(this.subQuery);
                     break;
                 default:
@@ -1003,13 +965,13 @@ abstract class Expressions {
         private final ArmyExpression right;
 
         /**
-         * @see #betweenPredicate(OperationExpression, boolean, SQLsSyntax.BetweenModifier, Expression, Expression)
+         * @see #betweenPredicate(Expression, boolean, SQLsSyntax.BetweenModifier, Expression, Expression)
          */
-        private BetweenPredicate(OperationExpression left, boolean not, @Nullable SQLsSyntax.BetweenModifier modifier,
+        private BetweenPredicate(Expression left, boolean not, @Nullable SQLsSyntax.BetweenModifier modifier,
                                  Expression center, Expression right) {
             this.not = not;
             this.modifier = modifier;
-            this.left = left;
+            this.left = (ArmyExpression) left;
             this.center = (ArmyExpression) center;
             this.right = (ArmyExpression) right;
         }

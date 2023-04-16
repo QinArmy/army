@@ -201,7 +201,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">Absolute value operator</a>
      */
     public static Expression at(Expression operand) {
-        return Expressions.dialectUnaryExp(UnaryOperator.AT, operand, operand.typeMeta());
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.AT, operand, operand.typeMeta());
     }
 
 
@@ -212,7 +212,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      *
      * @param left not {@link SQLs#DEFAULT} etc.
      * @see Expression#apply(BiFunction, Expression)
-     * @see Expression#apply(BiFunction, BiFunction, Object)
+     * @see SimpleExpression#apply(BiFunction, BiFunction, Object)
      * @see Postgres#startsWith(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
      */
@@ -320,7 +320,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @param left  not {@link SQLs#DEFAULT} etc.
      * @param right not {@link SQLs#DEFAULT} etc.
      * @see Expression#apply(BiFunction, Expression)
-     * @see Expression#apply(BiFunction, BiFunction, Object)
+     * @see SimpleExpression#apply(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-OP-TABLE">bit || bit → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">text || text → text <br/>
      * text || anynonarray → text <br/>
@@ -345,7 +345,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression verticalSlash(final Expression exp) {
-        return Expressions.dialectUnaryExp(UnaryOperator.VERTICAL_SLASH, exp, DoubleType.INSTANCE);
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.VERTICAL_SLASH, exp, DoubleType.INSTANCE);
     }
 
     /**
@@ -358,7 +358,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression doubleVerticalSlash(final Expression expression) {
-        return Expressions.dialectUnaryExp(UnaryOperator.DOUBLE_VERTICAL_SLASH, expression, DoubleType.INSTANCE);
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.DOUBLE_VERTICAL_SLASH, expression, DoubleType.INSTANCE);
     }
 
     /**

@@ -157,7 +157,8 @@
     * 这是典型的以结构避免问题
 
 34. 为什么设计 io.army.criteria.SimplePredicate ?
-    * 仅强调 io.army.criteria.IPredicate 有外部 括号 或者是个 return boolean 的 sql function.
+    * 仅强调 OR 和 XOR 操作符产生的 IPredicate 一定有 外部括号
+    * 这个设计是对 第 6 条的完善和补充
 
     
 

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
+import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.function.*;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 import java.util.function.*;
 
 /**
@@ -510,7 +510,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
                     && (dualPredicate.right instanceof SingleParamExpression
                     || dualPredicate.right instanceof SingleLiteralExpression);
         } else if (dualPredicate.operator == BooleanDualOperator.IN) {
-            match = dualPredicate.right instanceof OperationExpression.MultiValueExpression;
+            match = dualPredicate.right instanceof NonOperationExpression.MultiValueExpression;
         } else {
             match = false;
         }
@@ -594,6 +594,18 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
 
     }//OperationSimplePredicate
+
+
+    static abstract class SqlFunctionPredicate extends OperationSimplePredicate implements SQLFunction {
+
+        final String name;
+
+        SqlFunctionPredicate(String name) {
+            this.name = name;
+        }
+
+
+    }//SqlFunctionPredicate
 
 
     static abstract class CompoundPredicate extends OperationPredicate {

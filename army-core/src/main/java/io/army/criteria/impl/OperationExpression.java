@@ -22,7 +22,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-abstract class OperationExpression implements ArmyExpression {
+abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
 
 
     /**
@@ -33,7 +33,7 @@ abstract class OperationExpression implements ArmyExpression {
      * @see OperationSimpleExpression#OperationSimpleExpression()
      * @see CompoundExpression#CompoundExpression()
      * @see PredicateExpression#PredicateExpression()
-     * @see FunctionExpression#FunctionExpression()
+     * @see SqlFunctionExpression#SqlFunctionExpression()
      */
     private OperationExpression() {
     }
@@ -475,12 +475,6 @@ abstract class OperationExpression implements ArmyExpression {
         }
 
         @Override
-        public final Expression bracket() {
-            // always return this
-            return this;
-        }
-
-        @Override
         public final <T> OperationPredicate equal(BiFunction<Expression, T, Expression> funcRef, T operand) {
             return Expressions.dualPredicate(this, BooleanDualOperator.EQUAL, funcRef.apply(this, operand));
         }
@@ -717,12 +711,13 @@ abstract class OperationExpression implements ArmyExpression {
 
     }//OperationSimpleExpression
 
-    static abstract class FunctionExpression extends OperationSimpleExpression implements SQLFunction {
+
+    static abstract class SqlFunctionExpression extends OperationSimpleExpression implements SQLFunction {
 
         /**
          * package constructor
          */
-        FunctionExpression() {
+        SqlFunctionExpression() {
         }
 
     }//FunctionExpression
@@ -737,11 +732,6 @@ abstract class OperationExpression implements ArmyExpression {
             assert !(this instanceof IPredicate);
         }
 
-        @Override
-        public final Expression bracket() {
-            return Expressions.bracketExp(this);
-        }
-
 
     }//CompoundExpression
 
@@ -750,23 +740,31 @@ abstract class OperationExpression implements ArmyExpression {
      * <p>
      * This class is base class only of below:
      *     <ul>
-     *         <li>{@link MultiParamExpression}</li>
-     *         <li>{@link MultiLiteralExpression}</li>
+     *         <li>{@link SingleParamExpression}</li>
+     *         <li>{@link SingleLiteralExpression}</li>
      *     </ul>
      * </p>
      *
      * @since 1.0
      */
-    static abstract class MultiValueExpression extends CompoundExpression implements SqlValueParam.MultiValue {
+    static abstract class SingleValueExpression extends OperationSimpleExpression
+            implements SqlValueParam.SingleValue {
+
+        final TypeMeta type;
 
         /**
          * package constructor
          */
-        MultiValueExpression() {
+        SingleValueExpression(final TypeMeta type) {
+            if (type instanceof QualifiedField) {
+                this.type = ((QualifiedField<?>) type).fieldMeta();
+            } else {
+                this.type = type;
+            }
         }
 
 
-    }//MultiValueExpression
+    }//SingleValueExpression
 
 
     static abstract class PredicateExpression extends OperationExpression implements _Predicate {
@@ -777,11 +775,6 @@ abstract class OperationExpression implements ArmyExpression {
         PredicateExpression() {
         }
 
-
-        @Override
-        public final IPredicate bracket() {
-            return OperationPredicate.bracketPredicate(this);
-        }
 
         @Override
         public final TypeMeta typeMeta() {

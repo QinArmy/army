@@ -528,7 +528,7 @@ public abstract class SQLs extends SQLsSyntax {
      * </p>
      */
     private static final class DefaultWord extends NonOperationExpression.NonSelectionExpression
-            implements WordDefault {
+            implements WordDefault, FunctionArg.SingleFunctionArg {
 
         private DefaultWord() {
         }
@@ -596,7 +596,8 @@ public abstract class SQLs extends SQLsSyntax {
 
     }// NullWord
 
-    static final class LiteralSymbolAsterisk extends NonOperationExpression.NonSelectionExpression {
+    private static final class LiteralSymbolAsterisk extends NonOperationExpression.NonSelectionExpression
+            implements FunctionArg.SingleFunctionArg {
 
         private LiteralSymbolAsterisk() {
         }
@@ -617,7 +618,7 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
 
-    }//LiteralSymbolStar
+    }//LiteralSymbolAsterisk
 
     /**
      * @see #TRUE

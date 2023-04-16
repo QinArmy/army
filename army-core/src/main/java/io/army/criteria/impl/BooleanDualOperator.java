@@ -62,11 +62,6 @@ enum BooleanDualOperator implements Operator.DualOperator {
     }
 
 
-    @Override
-    public final int precedence() {
-        return 0;
-    }
-
 
     @Override
     public final String toString() {

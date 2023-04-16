@@ -10,11 +10,14 @@ interface Operator {
     @Override
     String toString();
 
-    int precedence();
+    interface UnaryOperator extends Operator {
+
+    }
 
 
     interface DualOperator extends Operator {
 
     }
+
 
 }

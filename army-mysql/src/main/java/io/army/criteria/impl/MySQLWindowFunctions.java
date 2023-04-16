@@ -116,7 +116,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      *
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
-    public static _AggregateWindowFunc countStar() {
+    public static _AggregateWindowFunc countAsterisk() {
         return count(SQLs._ASTERISK_EXP);
     }
 

@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
-import io.army.criteria.IPredicate;
 import io.army.criteria.SQLWords;
+import io.army.criteria.SimplePredicate;
 
 /**
  * package class,this class is base class of below
@@ -55,7 +55,7 @@ abstract class SqlSyntax {
 
     }
 
-    public interface WordBooleans extends SQLsSyntax.BooleanTestWord, IPredicate {
+    public interface WordBooleans extends SQLsSyntax.BooleanTestWord, SimplePredicate {
 
     }
 

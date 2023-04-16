@@ -21,7 +21,7 @@ import java.util.*;
  * @see MultiLiteralExpression
  * @since 1.0
  */
-abstract class MultiParamExpression extends OperationExpression.MultiValueExpression implements SQLParam {
+abstract class MultiParamExpression extends NonOperationExpression.MultiValueExpression implements SQLParam {
 
     /**
      * @throws CriteriaException throw when <ul>
@@ -121,15 +121,8 @@ abstract class MultiParamExpression extends OperationExpression.MultiValueExpres
     }
 
 
-    final TypeMeta type;
-
-
     private MultiParamExpression(TypeMeta type) {
-        if (type instanceof QualifiedField) {
-            this.type = ((QualifiedField<?>) type).fieldMeta();
-        } else {
-            this.type = type;
-        }
+        super(type);
     }
 
 

@@ -694,8 +694,8 @@ abstract class Functions extends SqlSyntax {
 
     /*-------------------below Aggregate Function-------------------*/
 
-    public static SimpleExpression countStar() {
-        return CountStartFunction.INSTANCE;
+    public static SimpleExpression countAsterisk() {
+        return CountAsteriskFunction.INSTANCE;
     }
 
 
@@ -1054,14 +1054,14 @@ abstract class Functions extends SqlSyntax {
     /**
      * private class, standard count(*) function expression
      *
-     * @see #countStar()
+     * @see #countAsterisk()
      * @since 1.0
      */
-    private static final class CountStartFunction extends OperationExpression.FunctionExpression {
+    private static final class CountAsteriskFunction extends OperationExpression.SqlFunctionExpression {
 
-        private static final CountStartFunction INSTANCE = new CountStartFunction();
+        private static final CountAsteriskFunction INSTANCE = new CountAsteriskFunction();
 
-        private CountStartFunction() {
+        private CountAsteriskFunction() {
         }
 
         @Override

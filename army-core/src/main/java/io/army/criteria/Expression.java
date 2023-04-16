@@ -234,9 +234,6 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     @Override
     Expression mapTo(TypeMeta typeMeta);
 
-    @Deprecated
-    Expression bracket();
-
 
     /**
      * @return this

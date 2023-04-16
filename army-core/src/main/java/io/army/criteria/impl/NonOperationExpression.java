@@ -359,11 +359,6 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation(this);
     }
 
-    @Override
-    public final OperationExpression bracket() {
-        throw unsupportedOperation(this);
-    }
-
 
     @Override
     public final Selection as(String selectionAlas) {
@@ -402,8 +397,44 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     }//NonSelectionExpression
 
+
+    /**
+     * <p>
+     * This class is base class only of below:
+     *     <ul>
+     *         <li>{@link MultiParamExpression}</li>
+     *         <li>{@link MultiLiteralExpression}</li>
+     *     </ul>
+     * </p>
+     *
+     * @since 1.0
+     */
+    static abstract class MultiValueExpression extends NonSelectionExpression
+            implements SqlValueParam.MultiValue, FunctionArg {
+
+        final TypeMeta type;
+
+        /**
+         * package constructor
+         */
+        MultiValueExpression(final TypeMeta type) {
+            if (type instanceof QualifiedField) {
+                this.type = ((QualifiedField<?>) type).fieldMeta();
+            } else {
+                this.type = type;
+            }
+        }
+
+
+    }//MultiValueExpression
+
     static CriteriaException unsupportedOperation(NonOperationExpression expression) {
-        String m = String.format("%s don't support any operation.", expression.getClass().getName());
+        String m;
+        if (expression instanceof MultiValueExpression) {
+            m = String.format("%s support only IN(NOT IN) operator.", expression.getClass().getName());
+        } else {
+            m = String.format("%s don't support any operation.", expression.getClass().getName());
+        }
         return ContextStack.clearStackAndCriteriaError(m);
     }
 

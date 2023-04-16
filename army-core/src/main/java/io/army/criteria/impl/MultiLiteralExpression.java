@@ -20,7 +20,7 @@ import java.util.*;
  * @since 1.0
  */
 
-abstract class MultiLiteralExpression extends OperationExpression.MultiValueExpression {
+abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueExpression {
 
     /**
      * @throws CriteriaException throw when <ul>
@@ -127,14 +127,8 @@ abstract class MultiLiteralExpression extends OperationExpression.MultiValueExpr
     }
 
 
-    final TypeMeta type;
-
     private MultiLiteralExpression(TypeMeta type) {
-        if (type instanceof QualifiedField) {
-            this.type = ((QualifiedField<?>) type).fieldMeta();
-        } else {
-            this.type = type;
-        }
+        super(type);
     }
 
     @Override

@@ -2,47 +2,38 @@ package io.army.criteria.impl;
 
 enum ExpDualOperator implements Operator.DualOperator {
 
-    PLUS(" +", 31),
-    MINUS(" -", 31),
-    MOD(" %", 32),
-    TIMES(" *", 32),
-    DIVIDE(" /", 32),
+    PLUS(" +"),
+    MINUS(" -"),
+    MOD(" %"),
+    TIMES(" *"),
+    DIVIDE(" /"),
 
-    BITWISE_OR(" |", 36),
-    BITWISE_AND(" &", 37),
-    BITWISE_XOR(" ^", 38),
-    LEFT_SHIFT(" <<", 1),
-    RIGHT_SHIFT(" >>", 1),
+    BITWISE_OR(" |"),
+    BITWISE_AND(" &"),
+    BITWISE_XOR(" ^"),
+    LEFT_SHIFT(" <<"),
+    RIGHT_SHIFT(" >>"),
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
      * double precision ^ double precision → double precision <br/>
      * Exponentiation</a>
      */
-    CARET(" ^", 1),
+    CARET(" ^"),
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
      */
-    DOUBLE_VERTICAL(" ||", 1),
+    DOUBLE_VERTICAL(" ||"),
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"> AT TIME ZONE Variants</a>
      */
-    AT_TIME_ZONE(" AT TIME ZONE", 1);
+    AT_TIME_ZONE(" AT TIME ZONE");
 
 
     final String spaceOperator;
 
-    final byte precedence;
 
-    ExpDualOperator(String spaceOperator, int precedence) {
-        assert precedence <= Byte.MAX_VALUE;
+    ExpDualOperator(String spaceOperator) {
         this.spaceOperator = spaceOperator;
-        this.precedence = (byte) precedence;
-    }
-
-
-    @Override
-    public final int precedence() {
-        return this.precedence;
     }
 
 
