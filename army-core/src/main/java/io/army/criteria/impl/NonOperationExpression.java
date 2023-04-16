@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.function.OptionalClauseOperator;
-import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 
@@ -216,11 +215,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final OperationPredicate in(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
     public final OperationPredicate notIn(Expression operand) {
         throw unsupportedOperation(this);
     }
@@ -230,11 +224,6 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation(this);
     }
 
-
-    @Override
-    public final OperationPredicate notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size) {
-        throw unsupportedOperation(this);
-    }
 
     @Override
     public final OperationPredicate like(Expression pattern) {

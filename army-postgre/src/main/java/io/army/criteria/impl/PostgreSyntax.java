@@ -464,10 +464,10 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * <p>
      * AT TIME ZONE operator,The {@link MappingType} of operator return type:
      *     <ol>
-     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlLocalDateTimeType},then {@link OffsetDateTimeType}</li>
-     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlOffsetDateTimeType},then {@link LocalDateTimeType}</li>
-     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlLocalTimeType},then {@link OffsetTimeType}</li>
-     *         <li>If The {@link MappingType} of source is {@link MappingType.SqlOffsetTimeType},then {@link LocalTimeType}</li>
+     *         <li>If The {@link MappingType} of source is {@link AbstractMappingType.SqlLocalDateTimeType},then {@link OffsetDateTimeType}</li>
+     *         <li>If The {@link MappingType} of source is {@link AbstractMappingType.SqlOffsetDateTimeType},then {@link LocalDateTimeType}</li>
+     *         <li>If The {@link MappingType} of source is {@link AbstractMappingType.SqlLocalTimeType},then {@link OffsetTimeType}</li>
+     *         <li>If The {@link MappingType} of source is {@link AbstractMappingType.SqlOffsetTimeType},then {@link LocalTimeType}</li>
      *         <li>Else raise {@link CriteriaException}</li>
      *     </ol>
      * </p>
@@ -537,13 +537,13 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      */
     private static MappingType atTimeZoneType(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof MappingType.SqlLocalDateTimeType) {
+        if (type instanceof AbstractMappingType.SqlLocalDateTimeType) {
             returnType = OffsetDateTimeType.INSTANCE;
-        } else if (type instanceof MappingType.SqlOffsetDateTimeType) {
+        } else if (type instanceof AbstractMappingType.SqlOffsetDateTimeType) {
             returnType = LocalDateTimeType.INSTANCE;
-        } else if (type instanceof MappingType.SqlLocalTimeType) {
+        } else if (type instanceof AbstractMappingType.SqlLocalTimeType) {
             returnType = OffsetTimeType.INSTANCE;
-        } else if (type instanceof MappingType.SqlOffsetTimeType) {
+        } else if (type instanceof AbstractMappingType.SqlOffsetTimeType) {
             returnType = LocalTimeType.INSTANCE;
         } else {
             String m = String.format("AT TIME ZONE operator don't support %s", type);
@@ -557,14 +557,14 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      */
     private static MappingType doubleVerticalType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (left instanceof MappingType.SqlStringType || right instanceof MappingType.SqlStringType) {
+        if (left instanceof AbstractMappingType.SqlStringType || right instanceof AbstractMappingType.SqlStringType) {
             returnType = TextType.INSTANCE;
-        } else if (left instanceof MappingType.SqlBinaryType || right instanceof MappingType.SqlBinaryType) {
-            if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
+        } else if (left instanceof AbstractMappingType.SqlBinaryType || right instanceof AbstractMappingType.SqlBinaryType) {
+            if (left instanceof AbstractMappingType.SqlBitType || right instanceof AbstractMappingType.SqlBitType) {
                 throw CriteriaUtils.dualOperandError(ExpDualOperator.DOUBLE_VERTICAL, left, right);
             }
             returnType = PrimitiveByteArrayType.INSTANCE;
-        } else if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
+        } else if (left instanceof AbstractMappingType.SqlBitType || right instanceof AbstractMappingType.SqlBitType) {
             returnType = BitSetType.INSTANCE;
         } else {
             throw CriteriaUtils.dualOperandError(ExpDualOperator.DOUBLE_VERTICAL, left, right);
@@ -577,8 +577,8 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      */
     private static MappingType caretResultType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (left instanceof MappingType.SqlIntegerOrDecimalType
-                && right instanceof MappingType.SqlIntegerOrDecimalType) {
+        if (left instanceof AbstractMappingType.SqlIntegerOrDecimalType
+                && right instanceof AbstractMappingType.SqlIntegerOrDecimalType) {
             returnType = BigDecimalType.INSTANCE;
         } else {
             returnType = DoubleType.INSTANCE;

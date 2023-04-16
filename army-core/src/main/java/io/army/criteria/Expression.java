@@ -3,7 +3,6 @@ package io.army.criteria;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.function.OptionalClauseOperator;
-import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
@@ -11,6 +10,9 @@ import io.army.meta.TypeMeta;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.function.BiFunction;
+
+import static io.army.dialect.Database.H2;
+import static io.army.dialect.Database.PostgreSQL;
 
 /**
  * Interface representing the sql expression, eg: column,function.
@@ -29,10 +31,8 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      * </p>
      *
      * @param operand non-null
-     * @throws CriteriaException throw when <ul>
-     *                           <li>Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT}</li>
-     *                           <li>Operand is multi-value {@link Expression},for example {@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                           </ul>
+     * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
     IPredicate equal(Expression operand);
 
@@ -57,10 +57,8 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
      * </p>
      *
      * @param operand non-null
-     * @throws CriteriaException throw when <ul>
-     *                           <li>Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT}</li>
-     *                           <li>Operand is multi-value {@link Expression},for example {@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                           </ul>
+     * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
     IPredicate less(Expression operand);
 
@@ -120,11 +118,13 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     /**
      * @param and {@link SQLs#AND}
      */
+    @Support({PostgreSQL, H2})
     IPredicate between(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second);
 
     /**
      * @param and {@link SQLs#AND}
      */
+    @Support({PostgreSQL, H2})
     IPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second);
 
     /**
@@ -161,13 +161,10 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
     IPredicate in(SubQuery operand);
 
-    IPredicate in(TeNamedOperator<Expression> namedOperator, String paramName, int size);
-
     IPredicate notIn(Expression operand);
 
     IPredicate notIn(SubQuery subQuery);
 
-    IPredicate notIn(TeNamedOperator<Expression> namedOperator, String paramName, int size);
 
     IPredicate like(Expression pattern);
 
@@ -266,7 +263,6 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
     <M extends SQLWords> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, Expression optionalExp);
 
     <M extends SQLWords> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, char escapeChar);
-
 
 
 }

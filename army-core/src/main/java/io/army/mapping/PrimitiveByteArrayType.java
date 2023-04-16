@@ -11,7 +11,7 @@ import io.army.sqltype.*;
  *
  * @since 1.0
  */
-public final class PrimitiveByteArrayType extends _ArmyInnerMapping implements MappingType.SqlBinaryType {
+public final class PrimitiveByteArrayType extends _ArmyInnerMapping implements AbstractMappingType.SqlBinaryType {
 
     public static final PrimitiveByteArrayType INSTANCE = new PrimitiveByteArrayType();
 

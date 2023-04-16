@@ -32,7 +32,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-public final class BitSetType extends _ArmyNoInjectionMapping implements MappingType.SqlBitType {
+public final class BitSetType extends _ArmyNoInjectionMapping implements AbstractMappingType.SqlBitType {
 
     public static final BitSetType INSTANCE = new BitSetType();
 

@@ -165,10 +165,6 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException ofTableListIsEmpty(CriteriaContext context) {
-        return ContextStack.criteriaError(context, "of table list must non-empty.");
-    }
-
     /**
      * invoke after {@code asSelect()}
      *
@@ -664,9 +660,12 @@ abstract class CriteriaUtils {
         throw ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException funcArgError(String funcName, @Nullable Object errorArg) {
+    static RuntimeException funcArgError(String funcName, @Nullable Object errorArg) {
+        if (errorArg == null) {
+            return ContextStack.clearStackAndNullPointer();
+        }
         String m = String.format("SQL function %s don't support %s", funcName, _ClassUtils.safeClassName(errorArg));
-        throw ContextStack.clearStackAndCriteriaError(m);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException funcArgListIsEmpty(String name) {

@@ -48,7 +48,7 @@ import java.util.function.BiFunction;
  * @see MediumTextType
  * @since 1.0
  */
-public final class StringType extends _ArmyInnerMapping implements MappingType.SqlStringType {
+public final class StringType extends _ArmyInnerMapping implements AbstractMappingType.SqlStringType {
 
 
     public static final StringType INSTANCE = new StringType();

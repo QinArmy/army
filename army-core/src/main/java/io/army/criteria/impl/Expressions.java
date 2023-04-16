@@ -284,16 +284,16 @@ abstract class Expressions {
 
     static MappingType mathExpType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (!(left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType)) {
+        if (!(left instanceof AbstractMappingType.SqlNumberOrStringType && right instanceof AbstractMappingType.SqlNumberOrStringType)) {
             returnType = StringType.INSTANCE;
-        } else if (left instanceof MappingType.SqlFloatType || right instanceof MappingType.SqlFloatType) {
+        } else if (left instanceof AbstractMappingType.SqlFloatType || right instanceof AbstractMappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
-        } else if (left instanceof MappingType.SqlDecimalType || right instanceof MappingType.SqlDecimalType) {
+        } else if (left instanceof AbstractMappingType.SqlDecimalType || right instanceof AbstractMappingType.SqlDecimalType) {
             returnType = BigDecimalType.INSTANCE;
-        } else if (!(left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType)) {
+        } else if (!(left instanceof AbstractMappingType.SqlIntegerType && right instanceof AbstractMappingType.SqlIntegerType)) {
             returnType = left;
-        } else if (((MappingType.SqlIntegerType) left).lengthType()
-                .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
+        } else if (((AbstractMappingType.SqlIntegerType) left).lengthType()
+                .compareWith(((AbstractMappingType.SqlIntegerType) right).lengthType()) >= 0) {
             returnType = left;
         } else {
             returnType = right;
@@ -303,14 +303,14 @@ abstract class Expressions {
 
     static MappingType bitwiseType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
-            returnType = left instanceof MappingType.SqlBitType ? left : right;
-        } else if (!(left instanceof MappingType.SqlIntegerType || right instanceof MappingType.SqlIntegerType)) {
+        if (left instanceof AbstractMappingType.SqlBitType || right instanceof AbstractMappingType.SqlBitType) {
+            returnType = left instanceof AbstractMappingType.SqlBitType ? left : right;
+        } else if (!(left instanceof AbstractMappingType.SqlIntegerType || right instanceof AbstractMappingType.SqlIntegerType)) {
             returnType = StringType.INSTANCE;
-        } else if (!(left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType)) {
+        } else if (!(left instanceof AbstractMappingType.SqlIntegerType && right instanceof AbstractMappingType.SqlIntegerType)) {
             returnType = LongType.INSTANCE;
-        } else if (((MappingType.SqlIntegerType) left).lengthType()
-                .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
+        } else if (((AbstractMappingType.SqlIntegerType) left).lengthType()
+                .compareWith(((AbstractMappingType.SqlIntegerType) right).lengthType()) >= 0) {
             returnType = left;
         } else {
             returnType = right;

@@ -2,7 +2,9 @@ package io.army.mapping;
 
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
+import io.army.criteria.TypeInfer;
 import io.army.dialect.NotSupportDialectException;
+import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
@@ -20,7 +22,7 @@ import java.io.ObjectStreamException;
 import java.time.temporal.Temporal;
 import java.util.function.BiFunction;
 
-public abstract class AbstractMappingType implements MappingType {
+public abstract class AbstractMappingType implements MappingType, TypeMeta, TypeInfer {
 
     protected static final BiFunction<MappingType, Object, ArmyException> PARAM_ERROR_HANDLER = AbstractMappingType::paramError;
 
@@ -41,6 +43,29 @@ public abstract class AbstractMappingType implements MappingType {
     public final TypeMeta typeMeta() {
         return this;
     }
+
+    public abstract Class<?> javaType();
+
+
+    public abstract SqlType map(ServerMeta meta) throws NotSupportDialectException;
+
+    /**
+     * @return the instance of {@link #javaType()}.
+     */
+    public abstract Object convert(MappingEnv env, Object nonNull) throws CriteriaException;
+
+
+    /**
+     * @param type from {@link #map(ServerMeta)}
+     * @return the instance of the type that {@link SqlType} allow.
+     */
+    public abstract Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException;
+
+    /**
+     * @param type from {@code io.army.sync.executor.StmtExecutor} or {@code io.army.reactive.executor.StmtExecutor}
+     * @return the instance of {@link #javaType()}.
+     */
+    public abstract Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException;
 
     @Override
     public final int hashCode() {
@@ -194,4 +219,256 @@ public abstract class AbstractMappingType implements MappingType {
     }
 
 
+    public enum LengthType {
+
+        TINY(1),
+        SMALL(2),
+        DEFAULT(3),
+        MEDIUM(4),
+        LONG(5),
+        BIG_LONG(6);
+
+        private final byte value;
+
+        LengthType(int value) {
+            this.value = (byte) value;
+        }
+
+        public final int compareWith(final LengthType o) {
+            return this.value - o.value;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(LengthType.class.getSimpleName())
+                    .append(_Constant.POINT)
+                    .append(this.name())
+                    .toString();
+        }
+
+
+    }//LengthType
+
+    /**
+     * <p>
+     * This interface is base interface of below:
+     *     <ul>
+     *         <li>{@link SqlNumberType}</li>
+     *         <li>{@link SqlStringType}</li>
+     *     </ul>
+     * </p>
+     */
+    public interface SqlNumberOrStringType extends MappingType {
+
+    }
+
+    /**
+     * <p>
+     * This interface is base interface of below:
+     *     <ul>
+     *         <li>{@link SqlNumberType}</li>
+     *         <li>{@link SqlBitType}</li>
+     *     </ul>
+     * </p>
+     */
+    public interface SqlNumberOrBitType extends MappingType {
+
+    }
+
+    public interface SqlNumberType extends SqlNumberOrStringType, SqlNumberOrBitType {
+
+    }
+
+    public interface SqlFloatType extends SqlNumberType {
+
+    }
+
+    public interface SqlUnsignedNumberType extends SqlNumberType {
+
+    }
+
+    public interface SqlIntegerOrDecimalType extends SqlNumberType {
+
+    }
+
+    public interface SqlIntegerType extends SqlIntegerOrDecimalType {
+
+        LengthType lengthType();
+
+    }
+
+    public interface SqlDecimalType extends SqlIntegerOrDecimalType {
+
+    }
+
+    /**
+     * <p>
+     * This interface is base interface of below:
+     *     <ul>
+     *         <li>{@link SqlStringOrBinaryType }</li>
+     *         <li>{@link SqlBitType }</li>
+     *     </ul>
+     * </p>
+     */
+    public interface SqlSqlStringOrBinaryOrBitType {
+
+    }
+
+    /**
+     * <p>
+     * This interface is base interface of below:
+     *     <ul>
+     *         <li>{@link SqlStringType }</li>
+     *         <li>{@link SqlBinaryType }</li>
+     *     </ul>
+     * </p>
+     */
+    public interface SqlStringOrBinaryType extends SqlSqlStringOrBinaryOrBitType {
+
+        LengthType lengthType();
+    }
+
+    public interface SqlBinaryType extends SqlStringOrBinaryType {
+
+
+    }
+
+    public interface SqlStringType extends SqlStringOrBinaryType, SqlNumberOrStringType {
+
+
+    }
+
+    public interface SqlTextType extends SqlStringType {
+
+
+    }
+
+    public interface SqlBlobType extends SqlBinaryType {
+
+    }
+
+    public interface SqlBitType extends SqlSqlStringOrBinaryOrBitType, SqlNumberOrBitType {
+
+    }
+
+    public interface SqlJsonType extends MappingType {
+
+    }
+
+    public interface SqlJsonbType extends MappingType {
+
+    }
+
+    public interface SqlTimeValueType extends MappingType {
+
+    }
+
+    public interface SqlTemporalType extends SqlTimeValueType {
+
+    }
+
+    public interface SqlLocalTemporalType extends SqlTemporalType {
+
+    }
+
+    public interface SqlOffsetTemporalType extends SqlTemporalType {
+
+    }
+
+    public interface SqlTemporalFieldType extends SqlTimeValueType {
+
+    }
+
+    public interface SqlTemporalAmountType extends SqlTemporalType {
+
+    }
+
+    public interface SqlDurationType extends SqlTemporalAmountType {
+
+    }
+
+    public interface SqlPeriodType extends SqlTemporalAmountType {
+
+    }
+
+    public interface SqlIntervalType extends SqlTemporalAmountType {
+
+    }
+
+    public interface SqlLocalTimeType extends SqlLocalTemporalType {
+
+    }
+
+    public interface SqlLocalDateType extends SqlLocalTemporalType {
+
+    }
+
+    public interface SqlLocalDateTimeType extends SqlLocalTemporalType {
+
+    }
+
+    public interface SqlOffsetTimeType extends SqlOffsetTemporalType {
+
+    }
+
+    public interface SqlOffsetDateTimeType extends SqlOffsetTemporalType {
+
+    }
+
+    public interface SqlGeometryType extends MappingType {
+
+    }
+
+    public interface SqlPointType extends SqlGeometryType {
+
+    }
+
+    public interface SqlCurveType extends SqlGeometryType {
+
+    }
+
+    public interface SqlLineStringType extends SqlCurveType {
+
+    }
+
+    public interface SqlLineType extends SqlLineStringType {
+
+    }
+
+    public interface SqlLinearRingType extends SqlLineStringType {
+
+    }
+
+    public interface SqlSurfaceType extends SqlGeometryType {
+
+    }
+
+    public interface SqlPolygonType extends SqlSurfaceType {
+
+    }
+
+    public interface SqlGeometryCollectionType extends SqlGeometryType {
+
+    }
+
+    public interface SqlMultiPointType extends SqlGeometryCollectionType {
+
+    }
+
+    public interface SqlMultiCurveType extends SqlGeometryCollectionType {
+
+    }
+
+    public interface SqlMultiLineStringType extends SqlMultiCurveType {
+
+    }
+
+    public interface SqlMultiSurfaceType extends SqlGeometryCollectionType {
+
+    }
+
+    public interface SqlMultiPolygonType extends SqlMultiSurfaceType {
+
+    }
 }

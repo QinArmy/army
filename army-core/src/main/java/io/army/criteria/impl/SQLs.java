@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static io.army.dialect.Database.H2;
+import static io.army.dialect.Database.PostgreSQL;
+
 /**
  * <p>
  * This class is util class used to create standard sql statement.
@@ -46,6 +49,12 @@ public abstract class SQLs extends SQLsSyntax {
     public static final WordAs AS = KeyWordAs.AS;
 
     public static final WordAnd AND = KeyWordAnd.AND;
+
+    @Support({PostgreSQL, H2})
+    public static final BetweenModifier SYMMETRIC = KeyWordSymmetric.SYMMETRIC;
+
+    @Support({H2})
+    public static final BetweenModifier ASYMMETRIC = KeyWordSymmetric.ASYMMETRIC;
 
     public static final SymbolAsterisk ASTERISK = SQLSymbolAsterisk.ASTERISK;
 
@@ -684,6 +693,30 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
     }//KeyWordAnd
+
+
+    private enum KeyWordSymmetric implements BetweenModifier, ArmyKeyWord {
+
+        SYMMETRIC(" SYMMETRIC"),
+        ASYMMETRIC(" ASYMMETRIC");
+
+        private final String spaceWord;
+
+        KeyWordSymmetric(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return sqlKeyWordsToString(this);
+        }
+
+    }//KeyWordSymmetric
 
     private enum SQLSymbolPeriod implements SymbolPeriod {
 

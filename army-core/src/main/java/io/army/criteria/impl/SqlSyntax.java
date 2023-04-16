@@ -51,6 +51,7 @@ abstract class SqlSyntax {
 
     }
 
+
     public interface WordDefault extends Expression {
 
     }

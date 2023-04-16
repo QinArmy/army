@@ -995,9 +995,9 @@ abstract class Functions extends SqlSyntax {
      */
     static MappingType _doubleOrNumberType(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof MappingType.SqlFloatType) {
+        if (type instanceof AbstractMappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
-        } else if (type instanceof MappingType.SqlNumberType) {
+        } else if (type instanceof AbstractMappingType.SqlNumberType) {
             returnType = type;
         } else {
             returnType = BigDecimalType.INSTANCE;
@@ -1010,7 +1010,7 @@ abstract class Functions extends SqlSyntax {
      */
     static MappingType _numberOrDecimal(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof MappingType.SqlNumberType) {
+        if (type instanceof AbstractMappingType.SqlNumberType) {
             returnType = type;
         } else {
             returnType = BigDecimalType.INSTANCE;
@@ -1020,7 +1020,7 @@ abstract class Functions extends SqlSyntax {
 
     static MappingType _doubleOrDecimal(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof MappingType.SqlFloatType) {
+        if (type instanceof AbstractMappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
         } else {
             returnType = BigDecimalType.INSTANCE;
@@ -1030,7 +1030,7 @@ abstract class Functions extends SqlSyntax {
 
     static MappingType _sqlStringType(final MappingType type) {
         final MappingType returnType;
-        if (type instanceof MappingType.SqlStringType) {
+        if (type instanceof AbstractMappingType.SqlStringType) {
             returnType = type;
         } else {
             returnType = StringType.INSTANCE;

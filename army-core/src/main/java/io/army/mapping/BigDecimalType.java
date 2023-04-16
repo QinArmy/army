@@ -29,7 +29,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-public final class BigDecimalType extends _NumericType implements MappingType.SqlDecimalType {
+public final class BigDecimalType extends _NumericType implements AbstractMappingType.SqlDecimalType {
 
     public static final BigDecimalType INSTANCE = new BigDecimalType();
 
