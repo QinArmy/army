@@ -2,13 +2,13 @@ package io.army.mapping.spatial;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
-import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 
-public final class PointType extends ArmyGeometryType implements AbstractMappingType.SqlPointType {
+public final class PointType extends ArmyGeometryType implements MappingType.SqlPointType {
 
     public static final PointType TEXT_INSTANCE = new PointType(String.class);
 

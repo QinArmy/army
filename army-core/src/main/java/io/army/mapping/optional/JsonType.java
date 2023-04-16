@@ -1,8 +1,8 @@
 package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
-import io.army.mapping.AbstractMappingType;
 import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
@@ -10,7 +10,7 @@ import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
 @Deprecated
-public final class JsonType extends AbstractMappingType {
+public final class JsonType extends MappingType {
 
 
     public static final JsonType INSTANCE = new JsonType();

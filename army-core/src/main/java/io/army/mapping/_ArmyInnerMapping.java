@@ -1,6 +1,6 @@
 package io.army.mapping;
 
-public abstract class _ArmyInnerMapping extends AbstractMappingType {
+public abstract class _ArmyInnerMapping extends MappingType {
 
     protected _ArmyInnerMapping() {
         final Class<?> thisClass = this.getClass();

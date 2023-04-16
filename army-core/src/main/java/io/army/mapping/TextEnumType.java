@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentMap;
  * @see NameEnumType
  * @see CodeEnumType
  */
-public final class TextEnumType extends AbstractMappingType {
+public final class TextEnumType extends MappingType {
 
     private static final ConcurrentMap<Class<?>, TextEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
 

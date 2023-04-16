@@ -7,7 +7,7 @@ import io.army.sqltype.SqlType;
 
 import java.util.List;
 
-public final class JsonListType extends AbstractMappingType {
+public final class JsonListType extends MappingType {
 
     public static JsonListType from(MappingType elementType) {
         throw new UnsupportedOperationException();

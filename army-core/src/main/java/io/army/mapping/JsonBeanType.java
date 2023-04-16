@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.SqlType;
 
-public final class JsonBeanType extends AbstractMappingType {
+public final class JsonBeanType extends MappingType {
 
     public static JsonBeanType from(Class<?> javaType) {
         throw new UnsupportedOperationException();

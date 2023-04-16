@@ -29,7 +29,7 @@ import java.time.temporal.Temporal;
  *
  * @since 1.0
  */
-public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements AbstractMappingType.SqlOffsetDateTimeType {
+public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements MappingType.SqlOffsetDateTimeType {
 
     public static final ZonedDateTimeType INSTANCE = new ZonedDateTimeType();
 

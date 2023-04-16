@@ -32,7 +32,7 @@ import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
  *
  * @since 1.0
  */
-public final class MonthDayType extends _ArmyNoInjectionMapping implements AbstractMappingType.SqlLocalDateType {
+public final class MonthDayType extends _ArmyNoInjectionMapping implements MappingType.SqlLocalDateType {
 
     public static final MonthDayType INSTANCE = new MonthDayType();
 

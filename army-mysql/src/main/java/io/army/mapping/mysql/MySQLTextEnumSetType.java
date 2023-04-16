@@ -3,9 +3,9 @@ package io.army.mapping.mysql;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
-import io.army.mapping.AbstractMappingType;
 import io.army.mapping.ElementMappingType;
 import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
 import io.army.mapping.TextEnumType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class MySQLTextEnumSetType extends AbstractMappingType implements ElementMappingType {
+public final class MySQLTextEnumSetType extends MappingType implements ElementMappingType {
 
     private static final ConcurrentMap<Class<?>, MySQLTextEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 

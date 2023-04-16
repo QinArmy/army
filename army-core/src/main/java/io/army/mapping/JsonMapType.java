@@ -6,7 +6,7 @@ import io.army.sqltype.SqlType;
 
 import java.util.Map;
 
-public final class JsonMapType extends AbstractMappingType {
+public final class JsonMapType extends MappingType {
 
 
     public static JsonMapType from(MappingType keyType, MappingType valueType) {

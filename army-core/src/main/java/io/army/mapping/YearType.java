@@ -30,8 +30,8 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-public final class YearType extends _ArmyNoInjectionMapping implements AbstractMappingType.SqlTemporalType,
-        AbstractMappingType.SqlTemporalFieldType {
+public final class YearType extends _ArmyNoInjectionMapping implements MappingType.SqlTemporalType,
+        MappingType.SqlTemporalFieldType {
 
     public static final YearType INSTANCE = new YearType();
 

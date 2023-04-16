@@ -7,7 +7,7 @@ import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
-public final class SQLCharType extends AbstractMappingType {
+public final class SQLCharType extends MappingType {
 
     public static final SQLCharType INSTANCE = new SQLCharType();
 
