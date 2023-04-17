@@ -461,7 +461,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
         Collections.addAll(stringList, paths);
 
         final Expression multiLiteral;
-        multiLiteral = MultiLiteralExpression.safeMulti(StringType.INSTANCE, stringList);
+        multiLiteral = MultiLiteralExpression.unsafeMulti(StringType.INSTANCE, stringList);
         return FunctionUtils.threeArgFunc("JSON_SEARCH", jsonDoc, oneOrAll, multiLiteral, StringType.INSTANCE);
     }
 

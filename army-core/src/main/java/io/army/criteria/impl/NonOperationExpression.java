@@ -420,18 +420,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     static abstract class MultiValueExpression extends NonOperationExpression
             implements SqlValueParam.MultiValue, FunctionArg {
 
-        final TypeMeta type;
-
-        /**
-         * package constructor
-         */
-        MultiValueExpression(final TypeMeta type) {
-            if (type instanceof QualifiedField) {
-                this.type = ((QualifiedField<?>) type).fieldMeta();
-            } else {
-                this.type = type;
-            }
-        }
 
 
     }//MultiValueExpression

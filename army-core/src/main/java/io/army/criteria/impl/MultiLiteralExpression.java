@@ -4,6 +4,8 @@ import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
+import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
@@ -30,6 +32,7 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
      * @see SQLs#multiLiteral(TypeInfer, Collection)
      */
     static MultiLiteralExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+        final AnonymousMultiLiteral expression;
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -37,16 +40,35 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
             throw ContextStack.clearStackAndNullPointer();
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
+        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
+            expression = new DelayAnonymousMultiLiteral((DelayTypeInfer) infer, values);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw SingleParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
+        } else {
+            expression = new ImmutableAnonymousMultiLiteral(type, values);
         }
-        return new NonNamedMultiLiteral(type, values);
+        return expression;
     }
 
 
-    static MultiLiteralExpression safeMulti(final TypeMeta type, final List<?> values) {
-        assert values.size() > 0;
-        return new NonNamedMultiLiteral(values, type);
+    @Deprecated
+    static MultiLiteralExpression unsafeMulti(final @Nullable TypeInfer infer, final @Nullable List<?> values) {
+        final AnonymousMultiLiteral expression;
+        final TypeMeta type;
+        if (infer == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (values == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (values.size() == 0) {
+            throw valuesIsEmpty();
+        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
+            expression = new DelayAnonymousMultiLiteral(values, (DelayTypeInfer) infer);
+        } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
+            throw SingleParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
+        } else {
+            expression = new ImmutableAnonymousMultiLiteral(values, type);
+        }
+        return expression;
     }
 
     /**
@@ -58,7 +80,8 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
      * @see SQLs#namedMultiLiteral(TypeInfer, String, int)
      */
 
-    static MultiLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name, int size) {
+    static MultiLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
+        final NamedMultiLiteral expression;
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -66,10 +89,14 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
             throw nameHaveNoText();
         } else if (size < 1) {
             throw sizeLessThanOne(size);
+        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
+            expression = new DelayNamedMultiLiteral((DelayTypeInfer) infer, name, size);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw SingleParamExpression.typeInferReturnCodecField("encodingNamedMultiLiteral");
+        } else {
+            expression = new ImmutableNamedMultiLiteral(type, name, size);
         }
-        return new NamedMultiLiteral(type, name, size);
+        return expression;
     }
 
     /**
@@ -89,7 +116,7 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw SingleParamExpression.typeInferIsNotCodecField("multiLiteral");
         }
-        return new NonNamedMultiLiteral((TableField) infer, values);
+        return new ImmutableAnonymousMultiLiteral((TableField) infer, values);
     }
 
     /**
@@ -110,7 +137,7 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw SingleParamExpression.typeInferIsNotCodecField("namedMultiLiteral");
         }
-        return new NamedMultiLiteral((TableField) infer, name, size);
+        return new ImmutableNamedMultiLiteral((TableField) infer, name, size);
     }
 
     private static CriteriaException valuesIsEmpty() {
@@ -127,45 +154,33 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
     }
 
 
-    private MultiLiteralExpression(TypeMeta type) {
-        super(type);
+    /**
+     * private constructor
+     */
+    private MultiLiteralExpression() {
     }
 
-    @Override
-    public final TypeMeta typeMeta() {
-        return this.type;
-    }
 
-    static final class NonNamedMultiLiteral extends MultiLiteralExpression
-            implements SqlValueParam.MultiValue {
+    static abstract class AnonymousMultiLiteral extends MultiLiteralExpression {
 
-        private final List<?> valueList;
+        final List<?> valueList;
 
-        private NonNamedMultiLiteral(TypeMeta type, Collection<?> values) {
-            super(type);
-            this.valueList = Collections.unmodifiableList(new ArrayList<>(values));
+        private AnonymousMultiLiteral(List<?> unmodifiedList) {
+            assert unmodifiedList.size() > 0;
+            this.valueList = unmodifiedList;
         }
 
-        /**
-         * for {@link #safeMulti(TypeMeta, List)}
-         *
-         * @see #safeMulti(TypeMeta, List)
-         */
-        private NonNamedMultiLiteral(List<?> values, TypeMeta paramMeta) {
-            super(paramMeta);
-            this.valueList = Collections.unmodifiableList(values);
-            assert this.valueList.size() > 0;
-        }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public final void appendSql(final _SqlContext context) {
             final List<?> valueList = this.valueList;
             final int valueSize = valueList.size();
             assert valueSize > 0;
 
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder();
-            final TypeMeta type = this.type;
+            final TypeMeta type;
+            type = this.typeMeta();
             for (int i = 0; i < valueSize; i++) {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -178,32 +193,12 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
 
 
         @Override
-        public int valueSize() {
+        public final int valueSize() {
             return this.valueList.size();
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(this.type, this.valueList);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof NonNamedMultiLiteral) {
-                final NonNamedMultiLiteral o = (NonNamedMultiLiteral) obj;
-                match = o.type.equals(this.type)
-                        && o.valueList.equals(this.valueList);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        public String toString() {
+        public final String toString() {
             final List<?> valueList = this.valueList;
             final int valueSize = valueList.size();
             assert valueSize > 0;
@@ -220,42 +215,46 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
         }
 
 
-    }//NonNamedMultiLiteral
+    }//AnonymousMultiLiteral
 
+    private static final class ImmutableAnonymousMultiLiteral extends AnonymousMultiLiteral {
 
-    static final class NamedMultiLiteral extends MultiLiteralExpression implements NamedLiteral,
-            SqlValueParam.NamedMultiValue {
+        private final TypeMeta type;
 
-        private final String name;
+        /**
+         * @see #multi(TypeInfer, Collection)
+         */
+        private ImmutableAnonymousMultiLiteral(TypeMeta type, Collection<?> values) {
+            super(Collections.unmodifiableList(new ArrayList<>(values)));
+            if (type instanceof QualifiedField) {
+                this.type = ((QualifiedField<?>) type).fieldMeta();
+            } else {
+                assert type instanceof FieldMeta || type instanceof MappingType;
+                this.type = type;
+            }
+        }
 
-        private final int valueSize;
-
-        private NamedMultiLiteral(TypeMeta type, String name, int valueSize) {
-            super(type);
-            assert valueSize > 0;
-            this.name = name;
-            this.valueSize = valueSize;
+        /**
+         * @see #unsafeMulti(TypeInfer, List)
+         */
+        private ImmutableAnonymousMultiLiteral(List<?> unsafeList, TypeMeta type) {
+            super(Collections.unmodifiableList(unsafeList));
+            if (type instanceof QualifiedField) {
+                this.type = ((QualifiedField<?>) type).fieldMeta();
+            } else {
+                assert type instanceof FieldMeta || type instanceof MappingType;
+                this.type = type;
+            }
         }
 
         @Override
-        public int valueSize() {
-            return this.valueSize;
+        public TypeMeta typeMeta() {
+            return this.type;
         }
-
-        @Override
-        public String name() {
-            return this.name;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.appendLiteral(this);
-        }
-
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.type, this.name, this.valueSize);
+            return Objects.hash(this.type, this.valueList);
         }
 
         @Override
@@ -263,19 +262,113 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof NamedMultiLiteral) {
-                final NamedMultiLiteral o = (NamedMultiLiteral) obj;
+            } else if (obj instanceof ImmutableAnonymousMultiLiteral) {
+                final ImmutableAnonymousMultiLiteral o = (ImmutableAnonymousMultiLiteral) obj;
                 match = o.type.equals(this.type)
-                        && o.name.equals(this.name)
-                        && o.valueSize == this.valueSize;
+                        && o.valueList.equals(this.valueList);
             } else {
                 match = false;
             }
             return match;
         }
 
+
+    }//ImmutableAnonymousMultiLiteral
+
+    private static final class DelayAnonymousMultiLiteral extends AnonymousMultiLiteral
+            implements TypeInfer.DelayTypeInfer {
+
+        private final TypeInfer.DelayTypeInfer infer;
+
+        private TypeMeta type;
+
+        /**
+         * @see #multi(TypeInfer, Collection)
+         */
+        private DelayAnonymousMultiLiteral(TypeInfer.DelayTypeInfer infer, Collection<?> values) {
+            super(Collections.unmodifiableList(new ArrayList<>(values)));
+            this.infer = infer;
+            ContextStack.peek().addEndEventListener(this::typeMeta);
+        }
+
+        /**
+         * @see #unsafeMulti(TypeInfer, List)
+         */
+        private DelayAnonymousMultiLiteral(List<?> unsafeList, TypeInfer.DelayTypeInfer infer) {
+            super(Collections.unmodifiableList(unsafeList));
+            this.infer = infer;
+            ContextStack.peek().addEndEventListener(this::typeMeta);
+        }
+
         @Override
-        public String toString() {
+        public boolean isDelay() {
+            return this.type == null && this.infer.isDelay();
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            TypeMeta type = this.type;
+            if (type == null) {
+                type = SingleParamExpression.inferDelayType(this.infer, "encodingMultiLiteral");
+                this.type = type;
+            }
+            return type;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.infer, this.valueList);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof DelayAnonymousMultiLiteral) {
+                final DelayAnonymousMultiLiteral o = (DelayAnonymousMultiLiteral) obj;
+                match = o.infer.equals(this.infer)
+                        && o.valueList.equals(this.valueList);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+
+    }//DelayAnonymousMultiLiteral
+
+
+    private static abstract class NamedMultiLiteral extends MultiLiteralExpression implements NamedLiteral,
+            SqlValueParam.NamedMultiValue {
+
+        final String name;
+
+        final int valueSize;
+
+        private NamedMultiLiteral(String name, int valueSize) {
+            assert valueSize > 0;
+            this.name = name;
+            this.valueSize = valueSize;
+        }
+
+        @Override
+        public final int valueSize() {
+            return this.valueSize;
+        }
+
+        @Override
+        public final String name() {
+            return this.name;
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            context.appendLiteral(this);
+        }
+
+        @Override
+        public final String toString() {
             final int valueSize = this.valueSize;
             final String name = this.name;
             final StringBuilder builder = new StringBuilder();
@@ -297,6 +390,109 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
 
 
     }//NamedMultiLiteral
+
+    private static final class ImmutableNamedMultiLiteral extends NamedMultiLiteral {
+
+        private final TypeMeta type;
+
+        /**
+         * @see #named(TypeInfer, String, int)
+         * @see #encodingNamed(TypeInfer, String, int)
+         */
+        private ImmutableNamedMultiLiteral(TypeMeta type, String name, int valueSize) {
+            super(name, valueSize);
+            if (type instanceof QualifiedField) {
+                this.type = ((QualifiedField<?>) type).fieldMeta();
+            } else {
+                assert type instanceof FieldMeta || type instanceof MappingType;
+                this.type = type;
+            }
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.type;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.type, this.name, this.valueSize);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof ImmutableNamedMultiLiteral) {
+                final ImmutableNamedMultiLiteral o = (ImmutableNamedMultiLiteral) obj;
+                match = o.type.equals(this.type)
+                        && o.name.equals(this.name)
+                        && o.valueSize == this.valueSize;
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+
+    }//ImmutableNamedMultiLiteral
+
+
+    private static final class DelayNamedMultiLiteral extends NamedMultiLiteral implements TypeInfer.DelayTypeInfer {
+
+        private final TypeInfer.DelayTypeInfer infer;
+
+        private TypeMeta type;
+
+        /**
+         * @see #named(TypeInfer, String, int)
+         */
+        private DelayNamedMultiLiteral(DelayTypeInfer infer, String name, int valueSize) {
+            super(name, valueSize);
+            this.infer = infer;
+            ContextStack.peek().addEndEventListener(this::typeMeta);
+        }
+
+        @Override
+        public boolean isDelay() {
+            return this.type == null && this.infer.isDelay();
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            TypeMeta type = this.type;
+            if (type == null) {
+                type = SingleParamExpression.inferDelayType(this.infer, "encodingNamedMultiLiteral");
+                this.type = type;
+            }
+            return type;
+        }
+
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.infer, this.name, this.valueSize);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof DelayNamedMultiLiteral) {
+                final DelayNamedMultiLiteral o = (DelayNamedMultiLiteral) obj;
+                match = o.infer.equals(this.infer)
+                        && o.name.equals(this.name)
+                        && o.valueSize == this.valueSize;
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+
+    }//DelayNamedMultiLiteral
 
 
 }

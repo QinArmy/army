@@ -4,6 +4,8 @@ import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
+import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
 import io.army.util._StringUtils;
@@ -14,6 +16,10 @@ import java.util.*;
 /**
  * <p>
  * This class representing multi-value parameter expression.
+ * </p>
+ * <p>
+ * Below is chinese signature:<br/>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  *
  * @see SingleParamExpression
@@ -31,6 +37,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
      * @see SQLs#multiParam(TypeInfer, Collection)
      */
     static MultiParamExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+        final AnonymousMultiParam expression;
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -38,10 +45,14 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
             throw ContextStack.clearStackAndNullPointer();
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
+        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
+            expression = new DelayAnonymousMultiParam((DelayTypeInfer) infer, values);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw SingleParamExpression.typeInferReturnCodecField("encodingMultiParam");
+        } else {
+            expression = new ImmutableAnonymousMultiParam(type, values);
         }
-        return new NonNameMultiParam(type, values);
+        return expression;
     }
 
     /**
@@ -52,7 +63,8 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
      *                           </ul>
      * @see SQLs#namedMultiParam(TypeInfer, String, int)
      */
-    static MultiParamExpression named(@Nullable TypeInfer infer, @Nullable String name, final int size) {
+    static MultiParamExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
+        final NamedMultiParam expression;
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -60,10 +72,14 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
             throw nameHaveNoText();
         } else if (size < 1) {
             throw sizeLessThanOne(size);
+        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
+            expression = new DelayNamedMultiParam((DelayTypeInfer) infer, name, size);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw SingleParamExpression.typeInferReturnCodecField("encodingNamedMultiParam");
+        } else {
+            expression = new ImmutableNamedMultiParam(type, name, size);
         }
-        return new NamedMultiParamExpression(type, name, size);
+        return expression;
     }
 
     /**
@@ -83,7 +99,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw SingleParamExpression.typeInferIsNotCodecField("multiParam");
         }
-        return new NonNameMultiParam((TableField) infer, values);
+        return new ImmutableAnonymousMultiParam((TableField) infer, values);
     }
 
     /**
@@ -104,7 +120,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw SingleParamExpression.typeInferIsNotCodecField("namedMultiParam");
         }
-        return new NamedMultiParamExpression((TableField) infer, name, size);
+        return new ImmutableNamedMultiParam((TableField) infer, name, size);
     }
 
     private static CriteriaException valuesIsEmpty() {
@@ -120,15 +136,10 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    private MultiParamExpression(TypeMeta type) {
-        super(type);
-    }
-
-
-    @Override
-    public final TypeMeta typeMeta() {
-        return this.type;
+    /**
+     * private constructor
+     */
+    private MultiParamExpression() {
     }
 
     @Override
@@ -136,49 +147,27 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         context.appendParam(this);
     }
 
-    private static final class NonNameMultiParam extends MultiParamExpression
-            implements MultiParam {
+    private static abstract class AnonymousMultiParam extends MultiParamExpression implements MultiParam {
 
-        private final List<?> valueList;
+        final List<?> valueList;
 
-        public NonNameMultiParam(TypeMeta type, Collection<?> values) {
-            super(type);
+        public AnonymousMultiParam(Collection<?> values) {
             this.valueList = Collections.unmodifiableList(new ArrayList<>(values));
         }
 
 
         @Override
-        public int valueSize() {
+        public final int valueSize() {
             return this.valueList.size();
         }
 
         @Override
-        public List<?> valueList() {
+        public final List<?> valueList() {
             return this.valueList;
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(this.type, this.valueList);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof NonNameMultiParam) {
-                final NonNameMultiParam o = (NonNameMultiParam) obj;
-                match = o.type.equals(this.type)
-                        && o.valueList.equals(this.valueList);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        public String toString() {
+        public final String toString() {
             final int valueSize;
             valueSize = this.valueList.size();
             final StringBuilder builder = new StringBuilder(valueSize << 2);
@@ -192,35 +181,31 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         }
 
 
-    }//NonNameMultiParamExpression
-
-    private static final class NamedMultiParamExpression extends MultiParamExpression
-            implements NamedParam.NamedMulti {
-
-        private final String name;
-
-        private final int size;
-
-        private NamedMultiParamExpression(TypeMeta type, String name, int size) {
-            super(type);
-            this.name = name;
-            this.size = size;
-        }
+    }//AnonymousMultiParam
 
 
-        @Override
-        public int valueSize() {
-            return this.size;
+    private static final class ImmutableAnonymousMultiParam extends AnonymousMultiParam {
+
+        private final TypeMeta type;
+
+        private ImmutableAnonymousMultiParam(TypeMeta type, Collection<?> values) {
+            super(values);
+            if (type instanceof QualifiedField) {
+                this.type = ((QualifiedField<?>) type).fieldMeta();
+            } else {
+                assert type instanceof FieldMeta || type instanceof MappingType;
+                this.type = type;
+            }
         }
 
         @Override
-        public String name() {
-            return this.name;
+        public TypeMeta typeMeta() {
+            return this.type;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.type, this.name, this.size);
+            return Objects.hash(this.type, this.valueList);
         }
 
         @Override
@@ -228,20 +213,99 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof NamedMultiParamExpression) {
-                final NamedMultiParamExpression o = (NamedMultiParamExpression) obj;
+            } else if (obj instanceof ImmutableAnonymousMultiParam) {
+                final ImmutableAnonymousMultiParam o = (ImmutableAnonymousMultiParam) obj;
                 match = o.type.equals(this.type)
-                        && o.name.equals(this.name)
-                        && o.size == this.size;
+                        && o.valueList.equals(this.valueList);
             } else {
                 match = false;
             }
             return match;
         }
 
+
+    }//ImmutableAnonymousMultiParam
+
+    private static final class DelayAnonymousMultiParam extends AnonymousMultiParam
+            implements TypeInfer.DelayTypeInfer {
+
+        private final TypeInfer.DelayTypeInfer infer;
+
+        private TypeMeta type;
+
+        /**
+         * @see #multi(TypeInfer, Collection)
+         */
+        private DelayAnonymousMultiParam(DelayTypeInfer infer, Collection<?> values) {
+            super(values);
+            this.infer = infer;
+            ContextStack.peek().addEndEventListener(this::typeMeta);
+        }
+
         @Override
-        public String toString() {
-            final int valueSize = this.size;
+        public boolean isDelay() {
+            return this.type == null && this.infer.isDelay();
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            TypeMeta type = this.type;
+            if (type == null) {
+                type = SingleParamExpression.inferDelayType(this.infer, "encodingMultiParam");
+                this.type = type;
+            }
+            return type;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.infer, this.valueList);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof DelayAnonymousMultiParam) {
+                final DelayAnonymousMultiParam o = (DelayAnonymousMultiParam) obj;
+                match = o.infer.equals(this.infer)
+                        && o.valueList.equals(this.valueList);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+
+    }//DelayAnonymousMultiParam
+
+
+    private static abstract class NamedMultiParam extends MultiParamExpression implements NamedParam.NamedMulti {
+
+        final String name;
+
+        final int valueSize;
+
+        private NamedMultiParam(String name, int valueSize) {
+            assert valueSize > 0;
+            this.name = name;
+            this.valueSize = valueSize;
+        }
+
+        @Override
+        public final String name() {
+            return this.name;
+        }
+
+        @Override
+        public final int valueSize() {
+            return this.valueSize;
+        }
+
+        @Override
+        public final String toString() {
+            final int valueSize = this.valueSize;
             final StringBuilder builder = new StringBuilder((5 + this.name.length()) * valueSize);
             for (int i = 0; i < valueSize; i++) {
                 if (i > 0) {
@@ -254,7 +318,109 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         }
 
 
-    }//NamedMultiParamExpression
+    }//NamedMultiParam
+
+
+    private static final class ImmutableNamedMultiParam extends NamedMultiParam {
+
+        private final TypeMeta type;
+
+        /**
+         * @see #named(TypeInfer, String, int)
+         * @see #encodingNamed(TypeInfer, String, int)
+         */
+        private ImmutableNamedMultiParam(TypeMeta type, String name, int valueSize) {
+            super(name, valueSize);
+            if (type instanceof QualifiedField) {
+                this.type = ((QualifiedField<?>) type).fieldMeta();
+            } else {
+                assert type instanceof FieldMeta || type instanceof MappingType;
+                this.type = type;
+            }
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.type;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.type, this.name, this.valueSize);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof ImmutableNamedMultiParam) {
+                final ImmutableNamedMultiParam o = (ImmutableNamedMultiParam) obj;
+                match = o.type.equals(this.type)
+                        && o.name.equals(this.name)
+                        && o.valueSize == this.valueSize;
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+
+    }//ImmutableNamedMultiParam
+
+    private static final class DelayNamedMultiParam extends NamedMultiParam implements TypeInfer.DelayTypeInfer {
+
+        private final TypeInfer.DelayTypeInfer infer;
+
+        private TypeMeta type;
+
+        /**
+         * @see #named(TypeInfer, String, int)
+         */
+        private DelayNamedMultiParam(DelayTypeInfer infer, String name, int valueSize) {
+            super(name, valueSize);
+            this.infer = infer;
+            ContextStack.peek().addEndEventListener(this::typeMeta);
+        }
+
+        @Override
+        public boolean isDelay() {
+            return this.type == null && this.infer.isDelay();
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            TypeMeta type = this.type;
+            if (type == null) {
+                type = SingleParamExpression.inferDelayType(this.infer, "encodingNamedMultiParam");
+                this.type = type;
+            }
+            return type;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.infer, this.name, this.valueSize);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof DelayNamedMultiParam) {
+                final DelayNamedMultiParam o = (DelayNamedMultiParam) obj;
+                match = o.infer.equals(this.infer)
+                        && o.name.equals(this.name)
+                        && o.valueSize == this.valueSize;
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+
+    }//DelayNamedMultiParam
 
 
 }
