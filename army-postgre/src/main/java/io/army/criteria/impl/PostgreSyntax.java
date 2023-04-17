@@ -204,6 +204,131 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
         return Expressions.dialectUnaryExp(ExpUnaryOperator.AT, operand, Expressions::identityType);
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">@-@ geometric_type → double precision<br/>
+     * Computes the total length. Available for lseg, path.
+     * </a>
+     */
+    public static Expression atHyphenAt(Expression operand) {
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.AT_HYPHEN_AT, operand, PostgreExpressions::atHyphenAtType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">@@ geometric_type → point<br>
+     * Computes the center point. Available for box, lseg, polygon, circle.
+     * </a>
+     */
+    public static Expression atAt(Expression operand) {
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.AT_AT, operand, PostgreExpressions::atAtType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE"># geometric_type → integer<br>
+     * Returns the number of points. Available for path, polygon.
+     * </a>
+     */
+    public static Expression pound(Expression operand) {
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.POUND, operand, PostgreExpressions::unaryPoundType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type # geometric_type → point<br>
+     * Computes the point of intersection, or NULL if there is none. Available for lseg, line.
+     * </a>
+     */
+    public static Expression pound(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, ExpDualOperator.POUND, right, PostgreExpressions::dualPoundType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type <-> geometric_type → double precision<br/>
+     * Computes the distance between the objects. Available for all seven geometric types, for all combinations of point with another geometric type, and for these additional pairs of types: (box, lseg), (lseg, line), (polygon, circle) (and the commutator cases).
+     * </a>
+     */
+    public static Expression ltHyphenGt(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, ExpDualOperator.LT_HYPHEN_GT, right, PostgreExpressions::lessHyphenGreaterType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type @> geometric_type → boolean<br/>
+     * Does first object contain second? Available for these pairs of types: (box, point), (box, box), (path, point), (polygon, point), (polygon, polygon), (circle, point), (circle, circle).
+     */
+    public static IPredicate atGt(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AT_GT, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;@ geometric_type → boolean<br/>
+     * Is first object contained in or on second? Available for these pairs of types: (point, box), (point, lseg), (point, line), (point, path), (point, polygon), (point, circle), (box, box), (lseg, box), (lseg, line), (polygon, polygon), (circle, circle).
+     */
+    public static IPredicate ltAt(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_AT, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&amp; geometric_type → boolean<br/>
+     * Do these objects overlap? (One point in common makes this true.) Available for box, polygon, circle.
+     */
+    public static IPredicate amp(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_AMP, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&lt; geometric_type → boolean<br/>
+     * Is first object strictly left of second? Available for point, box, polygon, circle.
+     */
+    public static IPredicate ltLt(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_LT, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type >> geometric_type → boolean<br/>
+     * Is first object strictly right of second? Available for point, box, polygon, circle.
+     */
+    public static IPredicate gtGt(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.GT_GT, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&lt; geometric_type → boolean<br/>
+     * Does first object not extend to the right of second? Available for box, polygon, circle.
+     */
+    public static IPredicate ampLt(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_LT, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&gt; geometric_type → boolean<br/>
+     * Does first object not extend to the left of second? Available for box, polygon, circle.
+     */
+    public static IPredicate ampGt(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_GT, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&lt;| geometric_type → boolean<br/>
+     * Is first object strictly below second? Available for point, box, polygon, circle.
+     */
+    public static IPredicate ltLtVertical(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_LT_VERTICAL, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type |>> geometric_type → boolean<br/>
+     * Is first object strictly above second? Available for point, box, polygon, circle.
+     */
+    public static IPredicate verticalGtGt(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.VERTICAL_GT_GT, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&lt;| geometric_type → boolean<br/>
+     * Does first object not extend above second? Available for box, polygon, circle.
+     */
+    public static IPredicate ampLtVertical(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_LT_VERTICAL, right);
+    }
+
 
     /**
      * <p>
@@ -217,7 +342,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
      */
     public static IPredicate caretAt(Expression left, Expression right) {
-        return Expressions.dualPredicate(left, BooleanDualOperator.CARET_AT, right);
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.CARET_AT, right);
     }
 
     /**
@@ -256,8 +381,9 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Modulo (remainder); available for smallint, integer, bigint, and numeric</a>
      */
     public static Expression mode(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.MOD, right, null); //TODO
+        return Expressions.dialectDualExp(left, ExpDualOperator.MOD, right, Expressions::mathExpType);
     }
+
 
     /**
      * <p>
@@ -359,7 +485,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String matches regular expression, case sensitively</a>
      */
     public static IPredicate tilde(final Expression left, final Expression right) {
-        return Expressions.dualPredicate(left, BooleanDualOperator.TILDE, right);
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.TILDE, right);
     }
 
     /**
@@ -373,7 +499,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String does not match regular expression, case sensitively</a>
      */
     public static IPredicate notTilde(final Expression left, final Expression right) {
-        return Expressions.dualPredicate(left, BooleanDualOperator.NOT_TILDE, right);
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.NOT_TILDE, right);
     }
 
     /**
@@ -385,7 +511,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String matches regular expression, case insensitively</a>
      */
     public static IPredicate tildeStar(final Expression left, final Expression right) {
-        return Expressions.dualPredicate(left, BooleanDualOperator.TILDE_STAR, right);
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.TILDE_STAR, right);
     }
 
     /**
@@ -397,7 +523,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String does not match regular expression, case insensitively</a>
      */
     public static IPredicate notTildeStar(final Expression left, final Expression right) {
-        return Expressions.dualPredicate(left, BooleanDualOperator.NOT_TILDE_STAR, right);
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.NOT_TILDE_STAR, right);
     }
 
 

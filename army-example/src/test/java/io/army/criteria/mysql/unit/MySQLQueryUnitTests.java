@@ -47,7 +47,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                                 .and().currentRow())::as, "log2"
                 )
                 .from(ChinaRegion_.T, AS, "cr")
-                .where(ChinaRegion_.id::greatEqual, SQLs::literal, 10)
+                .where(ChinaRegion_.id::greaterEqual, SQLs::literal, 10)
                 .and(ChinaRegion_.createTime::between, SQLs::literal, now.minusDays(1), AND, now)
                 .window("w").as(s -> s.partitionBy(ChinaRegion_.regionType).orderBy(ChinaRegion_.id::desc))
                 .orderBy(SQLs.ref("rowNumber")::desc)

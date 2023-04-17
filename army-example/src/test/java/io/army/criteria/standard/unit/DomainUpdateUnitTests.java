@@ -41,7 +41,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, addGdp)
                 .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
                 .and(ChinaRegion_.name.equal(SQLs::literal, "江湖"))
-                .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -60,7 +60,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaProvince_.governor, SQLs::param, "张无忌")
                 .where(ChinaProvince_.id.equal(SQLs::literal, 1))
                 .and(ChinaRegion_.name::equal, SQLs::param, "江湖")
-                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
                 .and(ChinaProvince_.governor.equal(SQLs::param, "石教主").or(consumer -> {
                             consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "钟教主"));
                             consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "老钟"));
@@ -81,7 +81,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .set(ChinaProvince_.governor, SQLs::namedParam)
                 .where(ChinaProvince_.id::equal, SQLs::namedParam)
-                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO)
                 .and(ChinaRegion_.version::equal, SQLs::param, "0")
                 .namedParamList(this::createProvinceList)
                 .asUpdate();
@@ -103,7 +103,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaProvince_.governor, SQLs::param, "张无忌")
                 .where(ChinaProvince_.id.equal(SQLs::namedParam, ChinaRegion_.ID))
                 .and(ChinaRegion_.name.equal(SQLs::namedParam, ChinaRegion_.NAME))
-                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
                 .and(ChinaProvince_.governor.equal(SQLs::param, "石教主").or(consumer -> {
                             consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "钟教主"));
                             consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "老钟"));

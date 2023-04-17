@@ -166,7 +166,7 @@ abstract class Expressions {
             }
 
         }
-        return new DualPredicate(left, operator, right);
+        return new StandardDualPredicate(left, operator, right);
     }
 
     static OperationPredicate likePredicate(final Expression left, final BooleanDualOperator operator,
@@ -212,8 +212,8 @@ abstract class Expressions {
             case LESS_EQUAL:
             case EQUAL:
             case NOT_EQUAL:
-            case GREAT:
-            case GREAT_EQUAL: {
+            case GREATER:
+            case GREATER_EQUAL: {
                 switch (queryOperator) {
                     case ALL:
                     case ANY:
@@ -266,7 +266,7 @@ abstract class Expressions {
 
     }
 
-    private static CriteriaException unsupportedOperator(Enum<?> operator, Database database) {
+    private static CriteriaException unsupportedOperator(Operator operator, Database database) {
         String m = String.format("%s isn't supported by %s", operator, database);
         return new CriteriaException(m);
     }
@@ -798,52 +798,45 @@ abstract class Expressions {
     }//UnaryPredicate
 
 
-    static final class DualPredicate extends OperationPredicate.CompoundPredicate {
+    static abstract class DualPredicate extends OperationPredicate.CompoundPredicate {
 
 
         final ArmyExpression left;
 
-        final BooleanDualOperator operator;
+        final Operator.BooleanDualOperator operator;
 
         final ArmyExpression right;
 
-        /**
-         * @see #dualPredicate(Expression, BooleanDualOperator, Expression)
-         */
-        private DualPredicate(Expression left, BooleanDualOperator operator, Expression right) {
+
+        DualPredicate(Expression left, Operator.BooleanDualOperator operator, Expression right) {
             this.left = (ArmyExpression) left;
             this.operator = operator;
             this.right = (ArmyExpression) right;
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final BooleanDualOperator operator = this.operator;
-            switch (operator) {
-                case CARET_AT:
-                case TILDE:
-                case NOT_TILDE:
-                case TILDE_STAR:
-                case NOT_TILDE_STAR: {
-                    if (context.database() != Database.PostgreSQL) {
-                        throw unsupportedOperator(operator, context.database());
-                    }
-                }
-                break;
-                default:
-                    //no-op
-
+        public final void appendSql(final _SqlContext context) {
+            final Operator.BooleanDualOperator operator = this.operator;
+            if (!(operator instanceof BooleanDualOperator) && context.database() != operator.database()) {
+                throw unsupportedOperator(operator, context.database());
             }
 
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder();
+            final ArmyExpression left = this.left, right = this.right;
+            final boolean leftOuterParens, rightOuterParens;
+            leftOuterParens = left instanceof OperationPredicate.CompoundPredicate;
 
-            this.left.appendSql(context);
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            left.appendSql(context);
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
 
-            sqlBuilder.append(operator.spaceOperator);
+            sqlBuilder.append(this.operator.spaceRender());
 
-            final ArmyExpression right = this.right;
-            final boolean rightOuterParens;
             rightOuterParens = !(right instanceof ArmySimpleExpression);
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
@@ -857,12 +850,12 @@ abstract class Expressions {
         }
 
         @Override
-        public int hashCode() {
+        public final int hashCode() {
             return Objects.hash(this.left, this.operator, this.right);
         }
 
         @Override
-        public boolean equals(final Object obj) {
+        public final boolean equals(final Object obj) {
             final boolean match;
             if (obj == this) {
                 match = true;
@@ -878,18 +871,23 @@ abstract class Expressions {
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
 
             final StringBuilder sqlBuilder;
             sqlBuilder = new StringBuilder();
 
-            sqlBuilder.append(this.left);
+            final ArmyExpression left = this.left, right = this.right;
+            final boolean leftOuterParens, rightOuterParens;
+            leftOuterParens = left instanceof OperationPredicate.CompoundPredicate;
 
-            sqlBuilder.append(operator.spaceOperator);
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            sqlBuilder.append(left);
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
 
-
-            final ArmyExpression right = this.right;
-            final boolean rightOuterParens;
             rightOuterParens = !(right instanceof ArmySimpleExpression);
 
             if (rightOuterParens) {
@@ -906,6 +904,17 @@ abstract class Expressions {
 
 
     }//DualPredicate
+
+    private static final class StandardDualPredicate extends DualPredicate {
+
+        /**
+         * @see #dualPredicate(Expression, BooleanDualOperator, Expression)
+         */
+        private StandardDualPredicate(Expression left, BooleanDualOperator operator, Expression right) {
+            super(left, operator, right);
+        }
+
+    }//StandardDualPredicate
 
 
     private static final class LikePredicate extends OperationPredicate.CompoundPredicate {

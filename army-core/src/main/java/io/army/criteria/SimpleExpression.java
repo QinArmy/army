@@ -121,7 +121,7 @@ public interface SimpleExpression extends Expression {
 
     /**
      * <p>
-     * Operator <strong>></strong> . This method is similar to {@link #great(Expression)},except that the operand
+     * Operator <strong>></strong> . This method is similar to {@link #greater(Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
@@ -147,11 +147,11 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate great(BiFunction<Expression, T, Expression> funcRef, T value);
+    <T> IPredicate greater(BiFunction<Expression, T, Expression> funcRef, T value);
 
     /**
      * <p>
-     * Operator <strong>>=</strong> . This method is similar to {@link #greatEqual(Expression)},except that the operand
+     * Operator <strong>>=</strong> . This method is similar to {@link #greaterEqual(Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
@@ -177,7 +177,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate greatEqual(BiFunction<Expression, T, Expression> funcRef, T value);
+    <T> IPredicate greaterEqual(BiFunction<Expression, T, Expression> funcRef, T value);
 
     /**
      * <p>

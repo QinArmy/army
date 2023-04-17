@@ -1,17 +1,20 @@
 package io.army.criteria.impl;
 
 
+import io.army.dialect.Database;
+
 /**
  * Interface representing sql dual operator.
  */
-enum BooleanDualOperator implements Operator.DualOperator {
+enum BooleanDualOperator implements Operator.BooleanDualOperator {
+
 
     EQUAL(" ="),
     NOT_EQUAL(" !="),
     LESS(" <"),
     LESS_EQUAL(" <="),
-    GREAT_EQUAL(" >="),
-    GREAT(" >"),
+    GREATER_EQUAL(" >="),
+    GREATER(" >"),
 
 
     IN(" IN"),
@@ -21,36 +24,8 @@ enum BooleanDualOperator implements Operator.DualOperator {
     LIKE(" LIKE"),
     NOT_LIKE(" NOT LIKE"),
     SIMILAR_TO(" SIMILAR TO"), // currently,postgre only
-    NOT_SIMILAR_TO(" NOT SIMILAR TO"), // currently,postgre only
+    NOT_SIMILAR_TO(" NOT SIMILAR TO"); // currently,postgre only
 
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
-     */
-    CARET_AT(" ^@"), // postgre only
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text ~ text → boolean<br/>
-     * String matches regular expression, case sensitively</a>
-     */
-    TILDE(" ~"),// postgre only
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text !~ text → boolean<br/>
-     * String does not match regular expression, case sensitively</a>
-     */
-    NOT_TILDE(" !~"),// postgre only
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text ~* text → boolean<br/>
-     * String matches regular expression, case insensitively</a>
-     */
-    TILDE_STAR(" ~*"),// postgre only
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-POSIX-TABLE">text !~* text → boolean<br/>
-     * String does not match regular expression, case insensitively</a>
-     */
-    NOT_TILDE_STAR(" !~*");// postgre only
 
     final String spaceOperator;
 
@@ -62,6 +37,16 @@ enum BooleanDualOperator implements Operator.DualOperator {
     }
 
 
+    @Override
+    public final String spaceRender() {
+        return this.spaceOperator;
+    }
+
+    @Override
+    public final Database database() {
+        // no bug ,never here
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public final String toString() {

@@ -79,22 +79,22 @@ public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortIte
 
     IPredicate lessEqualAll(SubQuery subQuery);
 
-    IPredicate great(Expression operand);
+    IPredicate greater(Expression operand);
 
 
-    IPredicate greatAny(SubQuery subQuery);
+    IPredicate greaterAny(SubQuery subQuery);
 
-    IPredicate greatSome(SubQuery subQuery);
+    IPredicate greaterSome(SubQuery subQuery);
 
-    IPredicate greatAll(SubQuery subQuery);
+    IPredicate greaterAll(SubQuery subQuery);
 
-    IPredicate greatEqual(Expression operand);
+    IPredicate greaterEqual(Expression operand);
 
-    IPredicate greatEqualAny(SubQuery subQuery);
+    IPredicate greaterEqualAny(SubQuery subQuery);
 
-    IPredicate greatEqualSome(SubQuery subQuery);
+    IPredicate greaterEqualSome(SubQuery subQuery);
 
-    IPredicate greatEqualAll(SubQuery subQuery);
+    IPredicate greaterEqualAll(SubQuery subQuery);
 
     IPredicate notEqual(Expression operand);
 

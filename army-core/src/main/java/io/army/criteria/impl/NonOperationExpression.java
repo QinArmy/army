@@ -90,44 +90,44 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final OperationPredicate great(Expression operand) {
+    public final OperationPredicate greater(Expression operand) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final OperationPredicate greatAny(SubQuery subQuery) {
+    public final OperationPredicate greaterAny(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate greatSome(SubQuery subQuery) {
+    public final OperationPredicate greaterSome(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate greatAll(SubQuery subQuery) {
+    public final OperationPredicate greaterAll(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate greatEqual(Expression operand) {
+    public final OperationPredicate greaterEqual(Expression operand) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final OperationPredicate greatEqualAny(SubQuery subQuery) {
+    public final OperationPredicate greaterEqualAny(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate greatEqualSome(SubQuery subQuery) {
+    public final OperationPredicate greaterEqualSome(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate greatEqualAll(SubQuery subQuery) {
+    public final OperationPredicate greaterEqualAll(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 

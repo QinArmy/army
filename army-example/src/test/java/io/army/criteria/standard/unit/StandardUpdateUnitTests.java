@@ -41,7 +41,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, addGdp)
                 .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
                 .and(SQLs::bracket, ChinaRegion_.name.equal(SQLs::literal, "江湖"))
-                .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -57,7 +57,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .where(ChinaRegion_.id.equal(SQLs::literal, 1))
                 .and(ChinaRegion_.name::equal, SQLs::param, () -> "江湖")
-                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -71,7 +71,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .update(ChinaProvince_.T, AS, "p")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
-                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO)
                 .and(ChinaRegion_.version::equal, SQLs::param, () -> "0")
                 .namedParamList(this::createProvinceList)
                 .asUpdate();
@@ -91,7 +91,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .where(ChinaRegion_.id.equal(SQLs::namedParam, ChinaRegion_.ID))
                 .and(ChinaRegion_.name.equal(SQLs::namedParam, ChinaRegion_.NAME))
-                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greatEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
                 .namedParamList(this::createProvinceList)
                 .asUpdate();
 

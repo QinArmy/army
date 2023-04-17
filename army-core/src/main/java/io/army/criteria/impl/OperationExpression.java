@@ -113,49 +113,49 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
 
 
     @Override
-    public final OperationPredicate great(Expression operand) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.GREAT, operand);
+    public final OperationPredicate greater(Expression operand) {
+        return Expressions.dualPredicate(this, BooleanDualOperator.GREATER, operand);
     }
 
 
     @Override
-    public final OperationPredicate greatAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREAT, QueryOperator.ANY, subQuery);
+    public final OperationPredicate greaterAny(SubQuery subQuery) {
+        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate greatSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREAT, QueryOperator.SOME, subQuery);
+    public final OperationPredicate greaterSome(SubQuery subQuery) {
+        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate greatAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREAT, QueryOperator.ALL, subQuery);
+    public final OperationPredicate greaterAll(SubQuery subQuery) {
+        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER, QueryOperator.ALL, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate greatEqual(Expression operand) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.GREAT_EQUAL, operand);
+    public final OperationPredicate greaterEqual(Expression operand) {
+        return Expressions.dualPredicate(this, BooleanDualOperator.GREATER_EQUAL, operand);
     }
 
 
     @Override
-    public final OperationPredicate greatEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREAT_EQUAL, QueryOperator.ANY, subQuery);
+    public final OperationPredicate greaterEqualAny(SubQuery subQuery) {
+        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER_EQUAL, QueryOperator.ANY, subQuery);
     }
 
     @Override
-    public final OperationPredicate greatEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREAT_EQUAL, QueryOperator.SOME, subQuery);
+    public final OperationPredicate greaterEqualSome(SubQuery subQuery) {
+        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER_EQUAL, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
-    public final OperationPredicate greatEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREAT_EQUAL, QueryOperator.ALL, subQuery);
+    public final OperationPredicate greaterEqualAll(SubQuery subQuery) {
+        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER_EQUAL, QueryOperator.ALL, subQuery);
     }
 
 
@@ -502,13 +502,13 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
         }
 
         @Override
-        public final <T> OperationPredicate great(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.GREAT, funcRef.apply(this, value));
+        public final <T> OperationPredicate greater(BiFunction<Expression, T, Expression> funcRef, T value) {
+            return Expressions.dualPredicate(this, BooleanDualOperator.GREATER, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> OperationPredicate greatEqual(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.GREAT_EQUAL, funcRef.apply(this, value));
+        public final <T> OperationPredicate greaterEqual(BiFunction<Expression, T, Expression> funcRef, T value) {
+            return Expressions.dualPredicate(this, BooleanDualOperator.GREATER_EQUAL, funcRef.apply(this, value));
         }
 
         @Override

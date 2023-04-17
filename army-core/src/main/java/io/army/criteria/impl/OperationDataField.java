@@ -38,12 +38,12 @@ abstract class OperationDataField extends OperationExpression.OperationSimpleExp
 
     @Override
     public final OperationPredicate great(BiFunction<DataField, String, Expression> namedOperator) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.GREAT, namedOperator.apply(this, this.fieldName()));
+        return Expressions.dualPredicate(this, BooleanDualOperator.GREATER, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override
     public final OperationPredicate greatEqual(BiFunction<DataField, String, Expression> namedOperator) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.GREAT_EQUAL, namedOperator.apply(this, this.fieldName()));
+        return Expressions.dualPredicate(this, BooleanDualOperator.GREATER_EQUAL, namedOperator.apply(this, this.fieldName()));
     }
 
     @Override

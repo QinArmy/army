@@ -5,6 +5,8 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
+import io.army.mapping.postgre.PostgreBoxType;
+import io.army.mapping.postgre.PostgrePointType;
 import io.army.type.Interval;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -30,6 +32,14 @@ abstract class PostgreExpressions {
             throw overlapsDontSupportMultiValue();
         }
         return new PeriodOverlapsPredicate(start, endOrLength);
+    }
+
+    static OperationPredicate dualPredicate(final Expression left, final PostgreBooleanDualOperator operator,
+                                            final Expression right) {
+        if (!(left instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(left);
+        }
+        return new PostgreDualPredicate(left, operator, right);
     }
 
 
@@ -147,6 +157,74 @@ abstract class PostgreExpressions {
         } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType) { // geometric_type / point → geometric_type
             returnType = left;
         } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+
+    /**
+     * @see Postgres#atHyphenAt(Expression)
+     */
+    static MappingType atHyphenAtType(final MappingType operandType) {
+        final MappingType returnType;
+        if (operandType instanceof MappingType.SqlGeometryType) {
+            returnType = DoubleType.INSTANCE;
+        } else { // error or unknown
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see Postgres#atAt(Expression)
+     */
+    static MappingType atAtType(final MappingType operandType) {
+        final MappingType returnType;
+        if (operandType instanceof MappingType.SqlGeometryType) {
+            returnType = PostgrePointType.INSTANCE;
+        } else { // error or unknown
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see Postgres#pound(Expression)
+     */
+    static MappingType unaryPoundType(final MappingType operandType) {
+        final MappingType returnType;
+        if (operandType instanceof MappingType.SqlGeometryType) {
+            returnType = IntegerType.INSTANCE;
+        } else { // error or unknown
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see Postgres#pound(Expression, Expression)
+     */
+    static MappingType dualPoundType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left instanceof PostgreBoxType && right instanceof PostgreBoxType) {
+            returnType = PostgreBoxType.INSTANCE;
+        } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlGeometryType) {
+            returnType = PostgrePointType.INSTANCE;
+        } else { // error or unknown
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see Postgres#ltHyphenGt(Expression, Expression)
+     */
+    static MappingType lessHyphenGreaterType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlGeometryType) {
+            returnType = DoubleType.INSTANCE;
+        } else { // error or unknown
             returnType = StringType.INSTANCE;
         }
         return returnType;
@@ -279,6 +357,18 @@ abstract class PostgreExpressions {
 
 
     }//PeriodOverlapsPredicate
+
+    private static final class PostgreDualPredicate extends Expressions.DualPredicate {
+
+        /**
+         * @see #dualPredicate(Expression, PostgreBooleanDualOperator, Expression)
+         */
+        private PostgreDualPredicate(Expression left, PostgreBooleanDualOperator operator, Expression right) {
+            super(left, operator, right);
+        }
+
+
+    }//PostgreDualPredicate
 
 
 }

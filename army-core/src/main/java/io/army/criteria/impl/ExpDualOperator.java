@@ -31,7 +31,28 @@ enum ExpDualOperator implements Operator.DualOperator {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"> AT TIME ZONE Variants</a>
      */
-    AT_TIME_ZONE(" AT TIME ZONE", 20);
+    AT_TIME_ZONE(" AT TIME ZONE", 20),
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type # geometric_type → point<br>
+     * Computes the point of intersection, or NULL if there is none. Available for lseg, line.
+     * </a>
+     */
+    POUND(" #", 20),// postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type ## geometric_type → point<br>
+     * Computes the closest point to the first object on the second object. Available for these pairs of types: (point, box), (point, lseg), (point, line), (lseg, box), (lseg, lseg), (line, lseg).
+     * </a>
+     */
+    POUND_POUND(" ##", 20),// postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;-> geometric_type → double precision<br/>
+     * Computes the distance between the objects. Available for all seven geometric types, for all combinations of point with another geometric type, and for these additional pairs of types: (box, lseg), (lseg, line), (polygon, circle) (and the commutator cases).
+     * </a>
+     */
+    LT_HYPHEN_GT(" <->", 20);// postgre only
 
 
     final String spaceOperator;
