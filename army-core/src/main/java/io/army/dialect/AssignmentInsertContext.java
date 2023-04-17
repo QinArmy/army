@@ -127,7 +127,7 @@ final class AssignmentInsertContext extends InsertContext
 
             final _Expression expression;
             expression = wrapper.nonChildPairMap.get(insertTable.nonChildId());
-            assert expression instanceof SqlValueParam.SingleNonNamedValue; //validated by FieldValueGenerator
+            assert expression instanceof SqlValueParam.SingleAnonymousValue; //validated by FieldValueGenerator
             expression.appendSql(this);
         }
 
@@ -213,7 +213,7 @@ final class AssignmentInsertContext extends InsertContext
             if (generatorType == null) {
                 final _Expression expression;
                 expression = this.rowWrapper.nonChildPairMap.get(this.insertTable.nonChildId());
-                assert expression instanceof SqlValueParam.SingleNonNamedValue; //validated by FieldValueGenerator
+                assert expression instanceof SqlValueParam.SingleAnonymousValue; //validated by FieldValueGenerator
                 expression.appendSql(this);
                 idValue = expression;
             } else if (generatorType == GeneratorType.PRECEDE) {

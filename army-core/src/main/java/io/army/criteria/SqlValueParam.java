@@ -22,7 +22,7 @@ public interface SqlValueParam extends TypeInfer {
 
     }
 
-    interface SingleNonNamedValue extends SingleValue {
+    interface SingleAnonymousValue extends SingleValue {
 
         @Nullable
         Object value();

@@ -1,6 +1,5 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.impl._JoinableDelete;
 import io.army.criteria.impl._Pair;
 import io.army.meta.TableMeta;
 

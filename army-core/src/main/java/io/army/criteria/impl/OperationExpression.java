@@ -44,8 +44,8 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
 
     @Override
     public final boolean isNullValue() {
-        return this instanceof SqlValueParam.SingleNonNamedValue
-                && ((SqlValueParam.SingleNonNamedValue) this).value() == null;
+        return this instanceof SqlValueParam.SingleAnonymousValue
+                && ((SqlValueParam.SingleAnonymousValue) this).value() == null;
     }
 
     @Override
@@ -757,7 +757,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
     }//CompoundExpression
 
 
-    static abstract class PredicateExpression extends OperationExpression implements _Predicate, FixedType {
+    static abstract class PredicateExpression extends OperationExpression implements _Predicate {
 
         /**
          * package constructor
@@ -842,11 +842,10 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
      * @see SQLs#NULL
      */
     private static final class NullWord extends OperationExpression
-            implements SqlValueParam.SingleNonNamedValue,
+            implements SqlValueParam.SingleAnonymousValue,
             ArmySimpleExpression,
             SqlSyntax.WordNull,
-            SqlSyntax.ArmyKeyWord,
-            FixedType {
+            SqlSyntax.ArmyKeyWord {
 
         private static final NullWord INSTANCE = new NullWord();
 

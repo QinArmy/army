@@ -3,8 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.standard.SQLFunction;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
@@ -19,15 +17,15 @@ import java.util.function.BiFunction;
 abstract class NonOperationExpression implements ArmyExpression {
 
 
-    private NonOperationExpression() {
-    }
+     NonOperationExpression() {
+     }
 
 
     @Override
     public final boolean isNullValue() {
         final boolean nullable;
-        if (this instanceof SqlValueParam.SingleNonNamedValue) {
-            nullable = ((SqlValueParam.SingleNonNamedValue) this).value() == null;
+        if (this instanceof SqlValueParam.SingleAnonymousValue) {
+            nullable = ((SqlValueParam.SingleAnonymousValue) this).value() == null;
         } else {
             nullable = false;
         }
@@ -383,20 +381,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
 
-    static SqlSyntax.WordDefault defaultWord() {
-        return DefaultWord.INSTANCE;
-    }
-
-    static NonOperationExpression allWord() {
-        return AllWord.INSTANCE;
-    }
-
-    /**
-     * @see SQLs#_ASTERISK_EXP
-     */
-    static NonOperationExpression symbolAsterisk() {
-        return LiteralSymbolAsterisk.INSTANCE;
-    }
 
     static CriteriaException unsupportedOperation(NonOperationExpression expression) {
         String m;
@@ -434,7 +418,7 @@ abstract class NonOperationExpression implements ArmyExpression {
      * @since 1.0
      */
     static abstract class MultiValueExpression extends NonOperationExpression
-            implements SqlValueParam.MultiValue, FunctionArg, FixedType {
+            implements SqlValueParam.MultiValue, FunctionArg {
 
         final TypeMeta type;
 
@@ -460,87 +444,4 @@ abstract class NonOperationExpression implements ArmyExpression {
     }//NonOperationFunction
 
 
-    /**
-     * <p>
-     * This class representing sql {@code DEFAULT} key word.
-     * </p>
-     *
-     * @see SQLs#DEFAULT
-     */
-    private static final class DefaultWord extends NonOperationExpression
-            implements SqlSyntax.WordDefault, FunctionArg.SingleFunctionArg {
-
-        private static final DefaultWord INSTANCE = new DefaultWord();
-
-        private DefaultWord() {
-        }
-
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation(this);
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(_Constant.SPACE_DEFAULT);
-        }
-
-        @Override
-        public String toString() {
-            return _Constant.SPACE_DEFAULT;
-        }
-
-
-    }// DefaultWord
-
-
-    private static final class AllWord extends NonOperationExpression {
-
-        private static final AllWord INSTANCE = new AllWord();
-
-        private AllWord() {
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation(this);
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" ALL");
-        }
-
-    }//AllWord
-
-
-    /**
-     * @see SQLs#_ASTERISK_EXP
-     */
-    private static final class LiteralSymbolAsterisk extends NonOperationExpression
-            implements FunctionArg.SingleFunctionArg {
-
-        private static final LiteralSymbolAsterisk INSTANCE = new LiteralSymbolAsterisk();
-
-        private LiteralSymbolAsterisk() {
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation(this);
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" *");
-        }
-
-        @Override
-        public String toString() {
-            return " *";
-        }
-
-
-    }//LiteralSymbolAsterisk
 }

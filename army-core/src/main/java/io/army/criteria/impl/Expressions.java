@@ -1118,7 +1118,7 @@ abstract class Expressions {
 
             final QueryOperator queryOperator = this.queryOperator;
             if (queryOperator != null) {
-                sqlBuilder.append(this.queryOperator.rendered());
+                sqlBuilder.append(queryOperator.spaceWord);
             }
             context.parser().subQuery(this.subQuery, context);
         }
@@ -1131,7 +1131,7 @@ abstract class Expressions {
 
             final QueryOperator queryOperator = this.queryOperator;
             if (queryOperator != null) {
-                builder.append(this.queryOperator.rendered());
+                builder.append(queryOperator.spaceWord);
             }
 
             return builder.append(this.subQuery)

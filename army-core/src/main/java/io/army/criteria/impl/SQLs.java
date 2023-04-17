@@ -10,10 +10,12 @@ import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyInnerMapping;
 import io.army.meta.ServerMeta;
+import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
@@ -62,7 +64,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     public static final WordBooleans FALSE = OperationPredicate.booleanWord(false);
 
-    public static final WordDefault DEFAULT = NonOperationExpression.defaultWord();
+    public static final WordDefault DEFAULT = new DefaultWord();
 
     public static final WordNull NULL = OperationExpression.nullWord();
 
@@ -70,7 +72,7 @@ public abstract class SQLs extends SQLsSyntax {
     /**
      * package field
      */
-    static final Expression _ASTERISK_EXP = NonOperationExpression.symbolAsterisk();
+    static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
 
     private static final Function<? extends Item, ? extends Item> _IDENTITY = SQLs::_identity;
 
@@ -690,6 +692,70 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     }// _NullType
+
+
+    /**
+     * <p>
+     * This class representing sql {@code DEFAULT} key word.
+     * </p>
+     *
+     * @see SQLs#DEFAULT
+     */
+    private static final class DefaultWord extends NonOperationExpression
+            implements WordDefault, FunctionArg.SingleFunctionArg {
+
+        private static final DefaultWord INSTANCE = new DefaultWord();
+
+        private DefaultWord() {
+        }
+
+
+        @Override
+        public TypeMeta typeMeta() {
+            throw unsupportedOperation(this);
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(_Constant.SPACE_DEFAULT);
+        }
+
+        @Override
+        public String toString() {
+            return _Constant.SPACE_DEFAULT;
+        }
+
+
+    }// DefaultWord
+
+    /**
+     * @see SQLs#_ASTERISK_EXP
+     */
+    private static final class LiteralSymbolAsterisk extends NonOperationExpression
+            implements FunctionArg.SingleFunctionArg {
+
+        private static final LiteralSymbolAsterisk INSTANCE = new LiteralSymbolAsterisk();
+
+        private LiteralSymbolAsterisk() {
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            throw unsupportedOperation(this);
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(" *");
+        }
+
+        @Override
+        public String toString() {
+            return " *";
+        }
+
+
+    }//LiteralSymbolAsterisk
 
 
 }

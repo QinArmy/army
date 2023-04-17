@@ -2,7 +2,6 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.impl._JoinType;
-import io.army.criteria.impl._JoinableDelete;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;

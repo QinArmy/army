@@ -231,7 +231,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
                 } else if (field instanceof PrimaryFieldMeta) { //child id must be managed by army
                     if (migration || nonChildIdType == null) {
                         expression = rowWrapper.nonChildRowList.get(rowIndex).get(nonChildId);
-                        assert expression instanceof SqlValueParam.SingleNonNamedValue;//because io.army.dialect.FieldValueGenerator have validated
+                        assert expression instanceof SqlValueParam.SingleAnonymousValue;//because io.army.dialect.FieldValueGenerator have validated
                         expression.appendSql(this);
                     } else {
                         assert mockEnv;//must assert

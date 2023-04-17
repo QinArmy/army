@@ -1187,10 +1187,10 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      */
     private static MappingType _strToDateReturnType(final ArmyExpression formatExp, final MappingType type) {
         final MappingType returnType;
-        if (formatExp instanceof SqlValueParam.SingleNonNamedValue
+        if (formatExp instanceof SqlValueParam.SingleAnonymousValue
                 && type instanceof StringType) {
             final Object value;
-            value = ((SqlValueParam.SingleNonNamedValue) formatExp).value();
+            value = ((SqlValueParam.SingleAnonymousValue) formatExp).value();
             if (value instanceof String) {
                 returnType = _parseStrToDateReturnType((String) value);
             } else {

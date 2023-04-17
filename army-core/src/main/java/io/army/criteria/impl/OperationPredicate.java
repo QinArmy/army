@@ -887,14 +887,14 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     private static final class BooleanWord extends OperationSimplePredicate
             implements SqlSyntax.WordBooleans, SqlSyntax.ArmyKeyWord {
 
-        private static final BooleanWord TRUE = new BooleanWord(" TRUE");
+        private static final BooleanWord TRUE = new BooleanWord(true);
 
-        private static final BooleanWord FALSE = new BooleanWord(" FALSE");
+        private static final BooleanWord FALSE = new BooleanWord(false);
 
         private final String spaceWord;
 
-        private BooleanWord(String spaceWord) {
-            this.spaceWord = spaceWord;
+        private BooleanWord(boolean value) {
+            this.spaceWord = value ? " TRUE" : " FALSE";
         }
 
         @Override

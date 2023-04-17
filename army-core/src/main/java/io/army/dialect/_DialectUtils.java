@@ -325,11 +325,11 @@ public abstract class _DialectUtils {
     @Nullable
     static Object readParamValue(final FieldMeta<?> field, final @Nullable _Expression expression
             , final MappingEnv mappingEnv) {
-        if (!(expression instanceof SqlValueParam.SingleNonNamedValue)) {
+        if (!(expression instanceof SqlValueParam.SingleAnonymousValue)) {
             return null;
         }
         Object value;
-        value = ((SqlValueParam.SingleNonNamedValue) expression).value();
+        value = ((SqlValueParam.SingleAnonymousValue) expression).value();
 
         final Class<?> javaType = field.javaType();
         if (value == null || javaType.isInstance(value)) {
@@ -371,8 +371,8 @@ public abstract class _DialectUtils {
             final boolean match;
             if (expression == null) {
                 match = true;
-            } else if (expression instanceof SqlValueParam.SingleNonNamedValue) {
-                match = ((SqlValueParam.SingleNonNamedValue) expression).value() == null;
+            } else if (expression instanceof SqlValueParam.SingleAnonymousValue) {
+                match = ((SqlValueParam.SingleAnonymousValue) expression).value() == null;
             } else {
                 match = true; //the fields that is managed by field must be value param
             }

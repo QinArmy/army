@@ -779,8 +779,8 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
     public static NamedExpression nameConst(final Expression name, final Expression value) {
         final String funcName = "NAME_CONST";
         final Object paramValue;
-        if (!(name instanceof SqlValueParam.SingleNonNamedValue
-                && (paramValue = ((SqlValueParam.SingleNonNamedValue) name).value()) instanceof String)) {
+        if (!(name instanceof SqlValueParam.SingleAnonymousValue
+                && (paramValue = ((SqlValueParam.SingleAnonymousValue) name).value()) instanceof String)) {
             throw CriteriaUtils.funcArgError(funcName, name);
         }
         final List<Object> argList = new ArrayList<>(3);

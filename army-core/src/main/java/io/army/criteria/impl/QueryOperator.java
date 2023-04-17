@@ -3,29 +3,21 @@ package io.army.criteria.impl;
 
 enum QueryOperator {
 
-    ANY {
-        @Override
-        public String rendered() {
-            return " ANY";
-        }
-    },
-    SOME {
-        @Override
-        public String rendered() {
-            return " SOME";
-        }
-    },
-    ALL {
-        @Override
-        public String rendered() {
-            return " ALL";
-        }
-    };
+    ANY(" ANY"),
+    SOME(" SOME"),
+    ALL(" ALL");
 
-    /**
-     * @return one space char and operator
-     */
-    abstract String rendered();
+    final String spaceWord;
+
+    QueryOperator(String spaceWord) {
+        this.spaceWord = spaceWord;
+    }
+
+    @Override
+    public final String toString() {
+        return CriteriaUtils.enumToString(this);
+    }
+
 
 }
 

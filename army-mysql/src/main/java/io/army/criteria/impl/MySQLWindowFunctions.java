@@ -679,11 +679,11 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
             returnType = StringType.INSTANCE; //TODO optimize unknown,compatibility
         } else if (!(paramMeta.mappingType() instanceof StringType)) {
             returnType = LongType.INSTANCE;
-        } else if (!(expr instanceof SqlValueParam.SingleNonNamedValue)) {
+        } else if (!(expr instanceof SqlValueParam.SingleAnonymousValue)) {
             returnType = StringType.INSTANCE; //ODO optimize unknown,compatibility
         } else {
             final Object value;
-            value = ((SqlValueParam.SingleNonNamedValue) expr).value();
+            value = ((SqlValueParam.SingleAnonymousValue) expr).value();
             if (value instanceof String && _StringUtils.isBinary((String) value)) {
                 returnType = StringType.INSTANCE;
             } else {

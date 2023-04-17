@@ -670,7 +670,12 @@ abstract class CriteriaUtils {
 
     static CriteriaException funcArgListIsEmpty(String name) {
         String m = String.format("function %s argument list must non-empty.", name);
-        return ContextStack.criteriaError(ContextStack.peek(), m);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
+    static CriteriaException delayTypeInfer(TypeInfer.DelayTypeInfer infer) {
+        String m = String.format("%s %s isPrepared() return false", TypeInfer.DelayTypeInfer.class.getName(), infer);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException nonCollectionValue(String keyName) {

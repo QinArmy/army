@@ -22,7 +22,7 @@ import java.util.Objects;
  * @since 1.0
  */
 abstract class SingleLiteralExpression extends OperationExpression.OperationSimpleExpression
-        implements FixedType, SqlValueParam.SingleValue, ArmyExpression {
+        implements SqlValueParam.SingleValue, ArmyExpression {
 
     /**
      * @see SQLs#literalValue(Object)
@@ -163,7 +163,7 @@ abstract class SingleLiteralExpression extends OperationExpression.OperationSimp
 
 
     static final class NonNamedSingleLiteral extends SingleLiteralExpression
-            implements SqlValueParam.SingleNonNamedValue {
+            implements SingleAnonymousValue {
 
         private final Object value;
 
