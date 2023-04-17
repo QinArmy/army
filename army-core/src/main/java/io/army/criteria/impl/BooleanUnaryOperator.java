@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.dialect._Constant;
 
-enum BooleanUnaryOperator implements Operator.UnaryOperator {
+enum BooleanUnaryOperator implements Operator.SqlUnaryOperator {
 
 
     EXISTS(_Constant.SPACE_EXISTS),

@@ -1065,7 +1065,12 @@ abstract class Functions extends SqlSyntax {
         }
 
         @Override
-        public TypeMeta typeMeta() {
+        public boolean isDelay() {
+            return false;
+        }
+
+        @Override
+        public MappingType typeMeta() {
             return LongType.INSTANCE;
         }
 

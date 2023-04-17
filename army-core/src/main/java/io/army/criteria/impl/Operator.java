@@ -10,7 +10,7 @@ interface Operator {
     @Override
     String toString();
 
-    interface UnaryOperator extends Operator {
+    interface SqlUnaryOperator extends Operator {
 
     }
 

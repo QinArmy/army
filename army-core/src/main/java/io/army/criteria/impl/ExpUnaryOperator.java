@@ -6,7 +6,7 @@ package io.army.criteria.impl;
  *
  * @see BooleanUnaryOperator
  */
-enum ExpUnaryOperator implements Operator.UnaryOperator {
+enum ExpUnaryOperator implements Operator.SqlUnaryOperator {
 
     NEGATE(" -"),
     POSITIVE(" +"),

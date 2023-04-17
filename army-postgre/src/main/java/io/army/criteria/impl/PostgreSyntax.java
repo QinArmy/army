@@ -201,7 +201,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">Absolute value operator</a>
      */
     public static Expression at(Expression operand) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.AT, operand, operand.typeMeta());
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.AT, operand, Expressions::identityType);
     }
 
 
@@ -224,9 +224,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type + numeric_type → numeric_type</a>
      */
     public static Expression plus(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.PLUS, right,
-                _returnType(left, right, PostgreExpressions::plusType)
-        );
+        return Expressions.dialectDualExp(left, ExpDualOperator.PLUS, right, PostgreExpressions::plusType);
     }
 
     /**
@@ -234,9 +232,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Subtraction</a>
      */
     public static Expression minus(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.MINUS, right,
-                _returnType(left, right, PostgreExpressions::minusType)
-        );
+        return Expressions.dialectDualExp(left, ExpDualOperator.MINUS, right, PostgreExpressions::minusType);
     }
 
     /**
@@ -244,9 +240,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Multiplication</a>
      */
     public static Expression times(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.TIMES, right,
-                _returnType(left, right, PostgreExpressions::timesType)
-        );
+        return Expressions.dialectDualExp(left, ExpDualOperator.TIMES, right, PostgreExpressions::timesType);
     }
 
     /**
@@ -254,9 +248,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Division (for integral types, division truncates the result towards zero)</a>
      */
     public static Expression divide(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.DIVIDE, right,
-                _returnType(left, right, PostgreExpressions::divideType)
-        );
+        return Expressions.dialectDualExp(left, ExpDualOperator.DIVIDE, right, PostgreExpressions::divideType);
     }
 
     /**
@@ -264,9 +256,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Modulo (remainder); available for smallint, integer, bigint, and numeric</a>
      */
     public static Expression mode(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.MOD, right,
-                _returnType(left, right, PostgreExpressions::plusType)
-        );
+        return Expressions.dialectDualExp(left, ExpDualOperator.MOD, right, null); //TODO
     }
 
     /**
@@ -290,8 +280,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Exponentiation</a>
      */
     public static Expression caret(final Expression left, final Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.CARET, right,
-                _returnType(left, right, PostgreSyntax::caretResultType));
+        return Expressions.dialectDualExp(left, ExpDualOperator.CARET, right, PostgreSyntax::caretResultType);
     }
 
 
@@ -329,9 +318,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
      */
     public static Expression doubleVertical(final Expression left, final Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.DOUBLE_VERTICAL, right,
-                _returnType(left, right, PostgreSyntax::doubleVerticalType)
-        );
+        return Expressions.dialectDualExp(left, ExpDualOperator.DOUBLE_VERTICAL, right, PostgreSyntax::doubleVerticalType);
     }
 
 
@@ -345,7 +332,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression verticalSlash(final Expression exp) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.VERTICAL_SLASH, exp, DoubleType.INSTANCE);
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.VERTICAL_SLASH, exp, Expressions::doubleType);
     }
 
     /**
@@ -358,7 +345,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression doubleVerticalSlash(final Expression expression) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.DOUBLE_VERTICAL_SLASH, expression, DoubleType.INSTANCE);
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.DOUBLE_VERTICAL_SLASH, expression, Expressions::doubleType);
     }
 
     /**
@@ -482,9 +469,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"> AT TIME ZONE Variants</a>
      */
     public static Expression atTimeZone(final Expression source, final Expression zone) {
-        return Expressions.dialectDualExp(source, ExpDualOperator.AT_TIME_ZONE, zone,
-                _returnType(source, PostgreSyntax::atTimeZoneType)
-        );
+        return Expressions.dialectDualExp(source, ExpDualOperator.AT_TIME_ZONE, zone, PostgreSyntax::atTimeZoneType);
     }
 
     /**
@@ -535,18 +520,18 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
     /**
      * @see #atTimeZone(Expression, Expression)
      */
-    private static MappingType atTimeZoneType(final MappingType type) {
+    private static MappingType atTimeZoneType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (type instanceof MappingType.SqlLocalDateTimeType) {
+        if (left instanceof MappingType.SqlLocalDateTimeType) {
             returnType = OffsetDateTimeType.INSTANCE;
-        } else if (type instanceof MappingType.SqlOffsetDateTimeType) {
+        } else if (left instanceof MappingType.SqlOffsetDateTimeType) {
             returnType = LocalDateTimeType.INSTANCE;
-        } else if (type instanceof MappingType.SqlLocalTimeType) {
+        } else if (left instanceof MappingType.SqlLocalTimeType) {
             returnType = OffsetTimeType.INSTANCE;
-        } else if (type instanceof MappingType.SqlOffsetTimeType) {
+        } else if (left instanceof MappingType.SqlOffsetTimeType) {
             returnType = LocalTimeType.INSTANCE;
         } else {
-            String m = String.format("AT TIME ZONE operator don't support %s", type);
+            String m = String.format("AT TIME ZONE operator don't support %s", left);
             throw ContextStack.clearStackAndCriteriaError(m);
         }
         return returnType;

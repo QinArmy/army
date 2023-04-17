@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._DerivedTable;
-import io.army.criteria.impl.inner._Expression;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -15,6 +14,8 @@ import io.army.util._StringUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BinaryOperator;
+import java.util.function.UnaryOperator;
 
 abstract class Expressions {
 
@@ -23,42 +24,43 @@ abstract class Expressions {
     }
 
     static OperationExpression dualExp(final Expression left, final ExpDualOperator operator, final Expression right) {
-        if (!(left instanceof OperationExpression)) {
-            throw NonOperationExpression.nonOperationExpression(left);
-        } else if (!(right instanceof OperationExpression)) {
-            throw NonOperationExpression.nonOperationExpression(right);
-        }
-        final ArmyExpression rightExp = (ArmyExpression) right;
-        final TypeMeta returnType;
+        final BinaryOperator<MappingType> inferFunc;
         switch (operator) {
             case PLUS:
             case MINUS:
             case TIMES:
             case DIVIDE:
             case MOD:
-                returnType = Functions._returnType(left, right, Expressions::mathExpType);
+                inferFunc = Expressions::mathExpType;
                 break;
             case BITWISE_AND:
             case BITWISE_OR:
             case BITWISE_XOR:
             case RIGHT_SHIFT:
             case LEFT_SHIFT:
-                returnType = Functions._returnType(left, right, Expressions::bitwiseType);
+                inferFunc = Expressions::bitwiseType;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new DualExpression(left, operator, rightExp, returnType);
+        return dialectDualExp(left, operator, right, inferFunc);
     }
 
     static OperationExpression dialectDualExp(final Expression left, final ExpDualOperator operator,
-                                              final Expression right, final TypeMeta returnType) {
+                                              final Expression right, final BinaryOperator<MappingType> inferFunc) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
         } else if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
         }
-        return new DualExpression(left, operator, right, returnType);
+        final DualExpression result;
+        if ((left instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) left).isDelay())
+                || (right instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) right).isDelay())) {
+            result = new DelayDualExpression(left, operator, right, inferFunc);
+        } else {
+            result = new DualExpression(left, operator, right, inferFunc);
+        }
+        return result;
     }
 
 
@@ -67,30 +69,29 @@ abstract class Expressions {
             throw NonOperationExpression.nonOperationExpression(operand);
         }
         switch (operator) {
-            case BITWISE_NOT:
             case NEGATE:
+            case BITWISE_NOT:
+            case POSITIVE:
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(operator);
+
         }
-        return new UnaryExpression(operator, operand, operand.typeMeta());
+        return dialectUnaryExp(operator, operand, Expressions::identityType);
     }
 
-    static OperationExpression dialectUnaryExp(final ExpUnaryOperator operator, final Expression expression,
-                                               final TypeMeta returnType) {
-        if (!(expression instanceof OperationExpression)) {
-            throw NonOperationExpression.nonOperationExpression(expression);
+    static SimpleExpression dialectUnaryExp(final ExpUnaryOperator operator, final Expression operand,
+                                            final UnaryOperator<MappingType> inferFunc) {
+        if (!(operand instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(operand);
         }
-        switch (operator) {
-            case BITWISE_NOT:
-            case NEGATE:
-            case VERTICAL_SLASH: // postgre only
-            case DOUBLE_VERTICAL_SLASH: // postgre only
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(operator);
+        final UnaryExpression result;
+        if (operand instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) operand).isDelay()) {
+            result = new DelayUnaryExpression(operator, operand, inferFunc);
+        } else {
+            result = new UnaryExpression(operator, operand, inferFunc);
         }
-        return new UnaryExpression(operator, expression, returnType);
+        return result;
     }
 
     static OperationExpression castExp(OperationExpression expression, TypeMeta typeMeta) {
@@ -270,6 +271,14 @@ abstract class Expressions {
         return new CriteriaException(m);
     }
 
+    static MappingType identityType(MappingType type) {
+        return type;
+    }
+
+    static MappingType doubleType(MappingType type) {
+        return DoubleType.INSTANCE;
+    }
+
     static MappingType mathExpType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if (!(left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType)) {
@@ -313,39 +322,50 @@ abstract class Expressions {
      *
      * @since 1.0
      */
-    private static final class DualExpression extends OperationExpression.CompoundExpression {
+    private static class DualExpression extends OperationExpression.CompoundExpression {
+
+        final ArmyExpression left;
+
+        final ExpDualOperator operator;
+
+        final ArmyExpression right;
+
+        final BinaryOperator<MappingType> inferFunc;
 
 
-        private final ArmyExpression left;
-
-        private final ExpDualOperator operator;
-
-        private final ArmyExpression right;
-
-        private final TypeMeta returnType;
+        private MappingType type;
 
         /**
          * @see #dualExp(Expression, ExpDualOperator, Expression)
-         * @see #dialectDualExp(Expression, ExpDualOperator, Expression, TypeMeta)
+         * @see #dialectDualExp(Expression, ExpDualOperator, Expression, BinaryOperator)
          */
         private DualExpression(final Expression left, final ExpDualOperator operator, final Expression right,
-                               final TypeMeta returnType) {
-
+                               final BinaryOperator<MappingType> inferFunc) {
             this.left = (ArmyExpression) left;
             this.operator = operator;
             this.right = (ArmyExpression) right;
-            this.returnType = returnType;
+            this.inferFunc = inferFunc;
+        }
+
+        @Override
+        public final MappingType typeMeta() {
+            MappingType type = this.type;
+            if (type == null) {
+                if (this.left instanceof DualExpression) {
+                    type = ((DualExpression) this.left).inferToLeft(this.operator, this.right.typeMeta().mappingType(),
+                            this.inferFunc);
+                } else {
+                    type = this.inferFunc.apply(this.left.typeMeta().mappingType(),
+                            this.right.typeMeta().mappingType());
+                }
+                this.type = type;
+            }
+            return type;
         }
 
 
         @Override
-        public TypeMeta typeMeta() {
-            return this.returnType;
-        }
-
-
-        @Override
-        public void appendSql(final _SqlContext context) {
+        public final void appendSql(final _SqlContext context) {
 
             final ExpDualOperator operator = this.operator;
             switch (operator) {
@@ -365,7 +385,7 @@ abstract class Expressions {
             sqlBuilder = context.sqlBuilder();
             final ArmyExpression left = this.left, right = this.right;
             final boolean leftOuterParens, rightOuterParens;
-            leftOuterParens = left instanceof IPredicate; // if predicate must append outer parens
+            leftOuterParens = left instanceof OperationPredicate.CompoundPredicate; // if CompoundPredicate must append outer parens
 
             //1. append left expression
             if (leftOuterParens) {
@@ -379,8 +399,7 @@ abstract class Expressions {
             }
 
             //2. append operator
-            if (operator == ExpDualOperator.BITWISE_XOR
-                    && context.parser().dialect().database() == Database.PostgreSQL) {
+            if (operator == ExpDualOperator.BITWISE_XOR && context.database() == Database.PostgreSQL) {
                 sqlBuilder.append(" #");
             } else {
                 sqlBuilder.append(operator.spaceOperator);
@@ -400,50 +419,34 @@ abstract class Expressions {
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(this.left, this.operator, this.right, this.returnType);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof DualExpression) {
-                final DualExpression o = (DualExpression) obj;
-                match = o.left.equals(this.left)
-                        && o.operator == this.operator
-                        && o.right.equals(this.right)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        public String toString() {
-            final ArmyExpression right = this.right;
-
-            final StringBuilder sqlBuilder;
-            sqlBuilder = new StringBuilder();
+        public final String toString() {
+            final StringBuilder sqlBuilder = new StringBuilder();
+            final ArmyExpression left = this.left, right = this.right;
+            final boolean leftOuterParens, rightOuterParens;
+            leftOuterParens = left instanceof OperationPredicate.CompoundPredicate; // if CompoundPredicate must append outer parens
 
             //1. append left expression
-            sqlBuilder.append(this.left);
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+
+            sqlBuilder.append(left);
+
+            if (leftOuterParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
 
             //2. append operator
             sqlBuilder.append(this.operator.spaceOperator);
 
-            final boolean rightInnerParens;
-            rightInnerParens = !(right instanceof ArmySimpleExpression);
-            if (rightInnerParens) {
+            rightOuterParens = !(right instanceof ArmySimpleExpression);
+            if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-
             //3. append right expression
-            sqlBuilder.append(this.right);
+            sqlBuilder.append(right);
 
-            if (rightInnerParens) {
+            if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
@@ -451,7 +454,56 @@ abstract class Expressions {
         }
 
 
+        /**
+         * @see #typeMeta()
+         */
+        private MappingType inferToLeft(final ExpDualOperator operator, final MappingType right,
+                                        final BinaryOperator<MappingType> rightFunc) {
+            final MappingType interim, resultType;
+            if (this.operator.precedence - operator.precedence < 0) {
+                interim = rightFunc.apply(this.right.typeMeta().mappingType(), right);
+                if (this.left instanceof DualExpression) {
+                    resultType = ((DualExpression) this.left).inferToLeft(this.operator, interim, this.inferFunc);
+                } else {
+                    resultType = this.inferFunc.apply(this.left.typeMeta().mappingType(), interim);
+                }
+            } else {
+                if (this.left instanceof DualExpression) {
+                    interim = ((DualExpression) this.left).inferToLeft(this.operator,
+                            this.right.typeMeta().mappingType(), this.inferFunc);
+                } else {
+                    interim = this.inferFunc.apply(this.left.typeMeta().mappingType(),
+                            this.right.typeMeta().mappingType());
+                }
+                resultType = rightFunc.apply(interim, right);
+            }
+            return resultType;
+        }
+
+
     }//DualExpression
+
+
+    private static final class DelayDualExpression extends DualExpression implements TypeInfer.DelayTypeInfer {
+
+        /**
+         * @see #dualExp(Expression, ExpDualOperator, Expression)
+         * @see #dialectDualExp(Expression, ExpDualOperator, Expression, BinaryOperator)
+         */
+        private DelayDualExpression(Expression left, ExpDualOperator operator, Expression right,
+                                    BinaryOperator<MappingType> inferFunc) {
+            super(left, operator, right, inferFunc);
+        }
+
+        @Override
+        public boolean isDelay() {
+            final ArmyExpression left = this.left, right = this.right;
+            return (left instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) left).isDelay())
+                    || (right instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) right).isDelay());
+        }
+
+
+    }//DelayDualExpression
 
     /**
      * <p>
@@ -460,41 +512,86 @@ abstract class Expressions {
      * This class is a implementation of {@link Expression}.
      * The expression consist of a  {@link Expression} and a {@link ExpUnaryOperator}.
      */
-    private static final class UnaryExpression extends OperationExpression.OperationSimpleExpression {
+    private static class UnaryExpression extends OperationExpression.OperationSimpleExpression {
 
         private final ExpUnaryOperator operator;
 
         final ArmyExpression operand;
 
-        private final TypeMeta returnType;
+        private final UnaryOperator<MappingType> inferFunc;
 
         /**
          * @see #unaryExp(ExpUnaryOperator, Expression)
          */
-        private UnaryExpression(ExpUnaryOperator operator, Expression operand, TypeMeta returnType) {
+        private UnaryExpression(ExpUnaryOperator operator, Expression operand, UnaryOperator<MappingType> inferFunc) {
             this.operator = operator;
             this.operand = (ArmyExpression) operand;
-            this.returnType = returnType;
+            this.inferFunc = inferFunc;
         }
 
+        /**
+         * @return expression couldn't return {@link TableField},avoid to codec filed.
+         */
         @Override
-        public TypeMeta typeMeta() {
-            return this.returnType;
+        public final MappingType typeMeta() {
+            MappingType type = null;
+            if (this instanceof DelayUnaryExpression) {
+                type = ((DelayUnaryExpression) this).type;
+            }
+
+            if (type != null) {
+                return type;
+            }
+
+            final TypeMeta typeMeta;
+            if ((typeMeta = this.operand.typeMeta()) instanceof MappingType) {
+                type = (MappingType) typeMeta;
+            } else {
+                type = typeMeta.mappingType();
+            }
+
+            type = this.inferFunc.apply(type); // infer
+            if (this instanceof DelayUnaryExpression) {
+                ((DelayUnaryExpression) this).type = type;
+            }
+            return type;
         }
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public final void appendSql(final _SqlContext context) {
 
             final ExpUnaryOperator operator = this.operator;
-
-            if (operator == ExpUnaryOperator.AT
-                    && context.database() != Database.PostgreSQL) {
-                throw unsupportedOperator(operator, context.database());
+            final boolean outerParens;
+            switch (operator) {
+                case NEGATE:
+                case POSITIVE:
+                    outerParens = false;
+                    break;
+                case AT:
+                case DOUBLE_VERTICAL_SLASH:
+                case VERTICAL_SLASH: {
+                    if (context.database() != Database.PostgreSQL) {
+                        throw unsupportedOperator(operator, context.database());
+                    }
+                    outerParens = true;
+                }
+                break;
+                case BITWISE_NOT:
+                    outerParens = true;
+                    break;
+                default:
+                    //no bug,never here
+                    throw _Exceptions.unexpectedEnum(operator);
             }
+
             final StringBuilder builder;
-            builder = context.sqlBuilder()
-                    .append(operator.spaceOperator);
+            builder = context.sqlBuilder();
+
+            if (outerParens) {
+                builder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            builder.append(operator.spaceOperator);
 
             final ArmyExpression operand = this.operand;
             final boolean operandOuterParens = !(operand instanceof ArmySimpleExpression);
@@ -509,23 +606,26 @@ abstract class Expressions {
                 builder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
+            if (outerParens) {
+                builder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(this.operator, this.operand, this.returnType);
+        public final int hashCode() {
+            return Objects.hash(this.operator, this.operand);
         }
 
         @Override
-        public boolean equals(final Object obj) {
+        public final boolean equals(final Object obj) {
             final boolean match;
             if (obj == this) {
                 match = true;
             } else if (obj instanceof UnaryExpression) {
                 final UnaryExpression o = (UnaryExpression) obj;
                 match = o.operator == this.operator
-                        && o.operand.equals(this.operand)
-                        && o.returnType.equals(this.returnType);
+                        && o.operand.equals(this.operand);
             } else {
                 match = false;
             }
@@ -533,21 +633,46 @@ abstract class Expressions {
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
+            final ExpUnaryOperator operator = this.operator;
+            final boolean outerParens;
+            switch (operator) {
+                case NEGATE:
+                case POSITIVE:
+                    outerParens = false;
+                    break;
+                case AT:
+                case DOUBLE_VERTICAL_SLASH:
+                case VERTICAL_SLASH:
+                case BITWISE_NOT:
+                    outerParens = true;
+                    break;
+                default:
+                    //no bug,never here
+                    throw _Exceptions.unexpectedEnum(operator);
+            }
 
             final StringBuilder builder = new StringBuilder();
-            builder.append(this.operator.spaceOperator);
 
-            final _Expression expression = this.operand;
-            final boolean innerBracket = !(expression instanceof ArmySimpleExpression);
+            if (outerParens) {
+                builder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+            builder.append(operator.spaceOperator);
 
-            if (innerBracket) {
+            final ArmyExpression operand = this.operand;
+            final boolean operandOuterParens = !(operand instanceof ArmySimpleExpression);
+
+            if (operandOuterParens) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }
             // append expression
-            builder.append(expression);
+            builder.append(operand);
 
-            if (innerBracket) {
+            if (operandOuterParens) {
+                builder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
+            if (outerParens) {
                 builder.append(_Constant.SPACE_RIGHT_PAREN);
             }
             return builder.toString();
@@ -555,6 +680,27 @@ abstract class Expressions {
 
 
     }//UnaryExpression
+
+    private static final class DelayUnaryExpression extends UnaryExpression implements TypeInfer.DelayTypeInfer {
+
+        private MappingType type;
+
+        /**
+         * @see #unaryExp(ExpUnaryOperator, Expression)
+         * @see #dialectUnaryExp(ExpUnaryOperator, Expression, UnaryOperator)
+         */
+        private DelayUnaryExpression(ExpUnaryOperator operator, Expression operand,
+                                     UnaryOperator<MappingType> inferFunc) {
+            super(operator, operand, inferFunc);
+        }
+
+        @Override
+        public boolean isDelay() {
+            return this.type == null && ((DelayTypeInfer) this.operand).isDelay();
+        }
+
+
+    }//DelayUnaryExpression
 
 
     private static final class ScalarExpression extends OperationExpression.OperationSimpleExpression {
@@ -1037,7 +1183,7 @@ abstract class Expressions {
     }//BetweenPredicate
 
 
-    private static final class CastExpression extends OperationExpression.CompoundExpression {
+    private static class CastExpression extends OperationExpression.CompoundExpression {
 
         private final ArmyExpression expression;
 
@@ -1050,17 +1196,17 @@ abstract class Expressions {
         }
 
         @Override
-        public TypeMeta typeMeta() {
-            return this.castType;
+        public MappingType typeMeta() {
+            return this.castType.mappingType();
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public final void appendSql(final _SqlContext context) {
             this.expression.appendSql(context);
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
             return this.expression.toString();
         }
 

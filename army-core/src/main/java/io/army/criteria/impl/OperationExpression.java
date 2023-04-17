@@ -733,13 +733,21 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
     }//OperationSimpleExpression
 
 
-    static abstract class SqlFunctionExpression extends OperationSimpleExpression implements SQLFunction {
+    static abstract class SqlFunctionExpression extends OperationSimpleExpression
+            implements SQLFunction, TypeInfer.DelayTypeInfer {
 
         /**
          * package constructor
          */
         SqlFunctionExpression() {
         }
+
+        /**
+         * @return sql function couldn't return {@link TableField},void to codec {@link TableField}
+         */
+        @Override
+        public abstract MappingType typeMeta();
+
 
     }//FunctionExpression
 
@@ -750,8 +758,13 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
          * package constructor
          */
         CompoundExpression() {
-            assert !(this instanceof IPredicate);
         }
+
+        /**
+         * @return compound expression couldn't return {@link TableField},void to codec {@link TableField}
+         */
+        @Override
+        public abstract MappingType typeMeta();
 
 
     }//CompoundExpression

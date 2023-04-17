@@ -12,6 +12,7 @@ import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping.VoidType;
 import io.army.meta.TypeMeta;
@@ -890,8 +891,14 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final TypeMeta typeMeta() {
-            return this.returnType;
+        public boolean isDelay() {
+            final TypeMeta returnType = this.returnType;
+            return returnType instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) returnType).isDelay();
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            return this.returnType.mappingType();
         }
 
         @Override
@@ -1127,8 +1134,15 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public TypeMeta typeMeta() {
-            return this.returnType;
+        public boolean isDelay() {
+            final TypeMeta returnType = this.returnType;
+            return returnType instanceof TypeInfer.DelayTypeInfer
+                    && ((DelayTypeInfer) returnType).isDelay();
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            return this.returnType.mappingType();
         }
 
         @Override
@@ -1186,8 +1200,14 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public TypeMeta typeMeta() {
-            return this.returnType;
+        public boolean isDelay() {
+            final TypeMeta returnType = this.returnType;
+            return returnType instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) returnType).isDelay();
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            return this.returnType.mappingType();
         }
 
         @Override
@@ -1243,8 +1263,14 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final TypeMeta typeMeta() {
-            return this.returnType;
+        public boolean isDelay() {
+            final TypeMeta returnType = this.returnType;
+            return returnType instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) returnType).isDelay();
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            return this.returnType.mappingType();
         }
 
         @Override
@@ -2130,8 +2156,14 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final TypeMeta typeMeta() {
-            return this.returnType;
+        public boolean isDelay() {
+            final TypeMeta returnType = this.returnType;
+            return returnType instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) returnType).isDelay();
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            return this.returnType.mappingType();
         }
 
         @Override
@@ -2577,8 +2609,14 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public TypeMeta typeMeta() {
-            return this.returnType;
+        public boolean isDelay() {
+            final TypeMeta returnType = this.returnType;
+            return returnType instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) returnType).isDelay();
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            return this.returnType.mappingType();
         }
 
         @Override
@@ -2670,7 +2708,7 @@ abstract class FunctionUtils {
 
         private ArmyExpression elseExpression;
 
-        private TypeMeta returnType = StringType.INSTANCE;
+        private MappingType returnType = StringType.INSTANCE;
 
         private CaseFunction(@Nullable ArmyExpression caseValue) {
             this.caseValue = caseValue;
@@ -2683,8 +2721,14 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public TypeMeta typeMeta() {
-            return this.returnType;
+        public boolean isDelay() {
+            final TypeMeta returnType = this.returnType;
+            return returnType instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) returnType).isDelay();
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            return this.returnType.mappingType();
         }
 
         @Override
@@ -3196,10 +3240,10 @@ abstract class FunctionUtils {
             if (type == null) {
                 throw ContextStack.nullPointer(this.context);
             }
-            if (type instanceof TypeMeta) {
-                this.returnType = (TypeMeta) type;
+            if (type instanceof MappingType) {
+                this.returnType = (MappingType) type;
             } else {
-                this.returnType = type.typeMeta();
+                this.returnType = type.typeMeta().mappingType();
             }
             return this;
         }
