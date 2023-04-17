@@ -127,7 +127,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
             , final Expression n) {
         assert as == SQLs.AS;
         final String funcName = "CAST";
-        if (!(n instanceof SingleLiteralExpression.NonNamedSingleLiteral || n instanceof SingleLiteralExpression.NamedSingleLiteral)) {
+        if (!(n instanceof SingleLiteralExpression)) {
             throw CriteriaUtils.funcArgError(funcName, n);
         }
 
@@ -196,10 +196,10 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
         if (type != MySQLCastType.DECIMAL) {
             throw CriteriaUtils.funcArgError(funcName, type);
         }
-        if (!(m instanceof SingleLiteralExpression.NonNamedSingleLiteral || m instanceof SingleLiteralExpression.NamedSingleLiteral)) {
+        if (!(m instanceof SingleLiteralExpression)) {
             throw CriteriaUtils.funcArgError(funcName, m);
         }
-        if (!(d instanceof SingleLiteralExpression.NonNamedSingleLiteral || d instanceof SingleLiteralExpression.NamedSingleLiteral)) {
+        if (!(d instanceof SingleLiteralExpression)) {
             throw CriteriaUtils.funcArgError(funcName, d);
         }
 

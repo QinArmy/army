@@ -285,6 +285,7 @@ abstract class SingleParamExpression extends OperationExpression.OperationSimple
         private DelayAnonymousSingleParam(DelayTypeInfer infer, @Nullable Object value) {
             super(value);
             this.infer = infer;
+            ContextStack.peek().addEndEventListener(this::typeMeta);
         }
 
         @Override
@@ -396,12 +397,12 @@ abstract class SingleParamExpression extends OperationExpression.OperationSimple
         private TypeMeta type;
 
         /**
-         * @see #named(TypeInfer, String)
-         * @see #encodingNamed(TypeInfer, String)
+         * @see #namedNullable(TypeInfer, String)
          */
         private DelayNamedSingleParam(DelayTypeInfer infer, String name) {
             super(name);
             this.infer = infer;
+            ContextStack.peek().addEndEventListener(this::typeMeta);
         }
 
         @Override
@@ -431,7 +432,6 @@ abstract class SingleParamExpression extends OperationExpression.OperationSimple
 
         /**
          * @see #named(TypeInfer, String)
-         * @see #encodingNamed(TypeInfer, String)
          */
         private DelayNamedNonNullSingleParam(DelayTypeInfer infer, String name) {
             super(infer, name);

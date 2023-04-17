@@ -6,6 +6,7 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect._DialectUtils;
 import io.army.lang.Nullable;
+import io.army.mapping.CodeEnumType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
@@ -2316,15 +2317,18 @@ abstract class InsertSupports {
         final Expression discriminatorExp;
         discriminatorExp = ((_Selection) discriminatorSelection).underlyingExp();
 
-        if (!(discriminatorExp instanceof SingleLiteralExpression.NonNamedSingleLiteral)) {
+        if (!(discriminatorExp instanceof SingleLiteralExpression
+                && discriminatorExp instanceof SqlValueParam.SingleAnonymousValue
+                && discriminatorExp.typeMeta().mappingType() instanceof CodeEnumType)) {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be literal."
                     , Selection.class.getSimpleName(), discriminatorSelection.selectionName()
                     , discriminatorField);
             throw ContextStack.criteriaError(context, m);
         }
 
+
         final Object value;
-        value = ((SingleLiteralExpression.NonNamedSingleLiteral) discriminatorExp).value();
+        value = ((SqlValueParam.SingleAnonymousValue) discriminatorExp).value();
         final Class<?> discriminatorJavaType;
         discriminatorJavaType = discriminatorField.javaType();
 
