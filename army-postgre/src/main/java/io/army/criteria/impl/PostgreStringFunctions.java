@@ -18,7 +18,7 @@ import java.util.function.BiFunction;
  *
  * @see <a href="https://www.postgresql.org/docs/current/functions-string.html">String Functions and Operators</a>
  */
-abstract class PostgreStringFunctions extends PostgreFuncSyntax {
+abstract class PostgreStringFunctions extends Functions {
 
     /**
      * package constructor

@@ -113,6 +113,9 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * Computes the total length. Available for lseg, path.<br/>
      * length(path '((-1,0),(1,0))') → 4
      * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">length ( tsvector ) → integer<br/>
+     * Returns the number of lexemes in the tsvector.<br/>
+     * </a>
      */
     public static SimpleExpression length(Expression geometricType) {
         return FunctionUtils.oneArgFunc("LENGTH", geometricType, _returnType(geometricType, PostgreExpressions::lengthFuncType));

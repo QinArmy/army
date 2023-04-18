@@ -231,13 +231,13 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link VoidType}
+     * The {@link MappingType} of function return type: {@link StringType}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-RANDOM-TABLE">setseed ( double precision ) → void</a>
      */
     public static SimpleExpression setSeed(Expression exp) {
-        return FunctionUtils.oneArgFunc("SETSEED", exp, VoidType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SETSEED", exp, StringType.INSTANCE);
     }
 
 

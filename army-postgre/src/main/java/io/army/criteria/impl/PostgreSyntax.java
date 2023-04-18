@@ -18,7 +18,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
+abstract class PostgreSyntax extends PostgreMiscellaneous2Functions {
 
     /**
      * Package constructor
