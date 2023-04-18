@@ -23,6 +23,7 @@ interface Operator {
 
     }
 
+
     interface BooleanDualOperator extends DualOperator {
 
         String spaceRender();

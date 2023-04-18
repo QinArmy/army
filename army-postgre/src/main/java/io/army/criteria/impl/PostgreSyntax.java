@@ -250,6 +250,154 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
     }
 
     /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type + numeric_type → numeric_type</a>
+     */
+    public static Expression plus(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, ExpDualOperator.PLUS, right, PostgreExpressions::plusType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type - numeric_type → numeric_type<br/>
+     * Subtraction</a>
+     */
+    public static Expression minus(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, ExpDualOperator.MINUS, right, PostgreExpressions::minusType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type * numeric_type → numeric_type<br/>
+     * Multiplication</a>
+     */
+    public static Expression times(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, ExpDualOperator.TIMES, right, PostgreExpressions::timesType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type / numeric_type → numeric_type<br/>
+     * Division (for integral types, division truncates the result towards zero)</a>
+     */
+    public static Expression divide(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, ExpDualOperator.DIVIDE, right, PostgreExpressions::divideType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type % numeric_type → numeric_type<br/>
+     * Modulo (remainder); available for smallint, integer, bigint, and numeric</a>
+     */
+    public static Expression mode(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, ExpDualOperator.MOD, right, Expressions::mathExpType);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: follow <code><pre><br>
+     *    private static MappingType caretResultType(final MappingType left, final MappingType right) {
+     *        final MappingType returnType;
+     *        if (left instanceof MappingType.IntegerOrDecimalType
+     *                && right instanceof MappingType.IntegerOrDecimalType) {
+     *            returnType = BigDecimalType.INSTANCE;
+     *        } else {
+     *            returnType = DoubleType.INSTANCE;
+     *        }
+     *        return returnType;
+     *    }
+     * </pre></code>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
+     * double precision ^ double precision → double precision <br/>
+     * Exponentiation</a>
+     */
+    public static Expression caret(final Expression left, final Expression right) {
+        return Expressions.dialectDualExp(left, ExpDualOperator.EXPONENTIATION, right, PostgreSyntax::caretResultType);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of operator return type: follow  <code><pre><br/>
+     *    private static MappingType doubleVerticalType(final MappingType left, final MappingType right) {
+     *        final MappingType returnType;
+     *        if (left instanceof MappingType.SqlStringType || right instanceof MappingType.SqlStringType) {
+     *            returnType = TextType.INSTANCE;
+     *        } else if (left instanceof MappingType.SqlBinaryType || right instanceof MappingType.SqlBinaryType) {
+     *            if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
+     *                throw CriteriaUtils.dualOperandError(DualOperator.DOUBLE_VERTICAL, left, right);
+     *            }
+     *            returnType = PrimitiveByteArrayType.INSTANCE;
+     *        } else if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
+     *            returnType = BitSetType.INSTANCE;
+     *        } else {
+     *            throw CriteriaUtils.dualOperandError(DualOperator.DOUBLE_VERTICAL, left, right);
+     *        }
+     *        return returnType;
+     *    }
+     * </pre></code>
+     * </p>
+     *
+     * @param left  not {@link SQLs#DEFAULT} etc.
+     * @param right not {@link SQLs#DEFAULT} etc.
+     * @see Expression#apply(BiFunction, Expression)
+     * @see SimpleExpression#apply(BiFunction, BiFunction, Object)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-OP-TABLE">bit || bit → bit</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">text || text → text <br/>
+     * text || anynonarray → text <br/>
+     * anynonarray || text → text
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
+     */
+    public static Expression doubleVertical(final Expression left, final Expression right) {
+        return Expressions.dialectDualExp(left, ExpDualOperator.DOUBLE_VERTICAL, right, PostgreSyntax::doubleVerticalType);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">|/ double precision → double precision<br/>
+     * Square root
+     * </a>
+     */
+    public static Expression verticalSlash(final Expression exp) {
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.VERTICAL_SLASH, exp, Expressions::doubleType);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:{@link DoubleType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">||/ double precision → double precision<br/>
+     * Cube root
+     * </a>
+     */
+    public static Expression verticalVerticalSlash(final Expression operand) {
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.VERTICAL_VERTICAL_SLASH, operand, Expressions::doubleType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">?- line → boolean<br/>
+     * ?- lseg → boolean<br/>
+     * Is line horizontal?
+     */
+    public static IPredicate questionHyphen(Expression operand) {
+        return PostgreExpressions.unaryPredicate(PostgreBooleanUnaryOperator.QUESTION_HYPHEN, operand);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">?| line → boolean<br/>
+     * ?| lseg → boolean<br/>
+     * Is line vertical?
+     */
+    public static IPredicate questionVertical(Expression operand) {
+        return PostgreExpressions.unaryPredicate(PostgreBooleanUnaryOperator.QUESTION_VERTICAL, operand);
+    }
+
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type @> geometric_type → boolean<br/>
      * Does first object contain second? Available for these pairs of types: (box, point), (box, box), (path, point), (polygon, point), (polygon, polygon), (circle, point), (circle, circle).
      */
@@ -329,6 +477,80 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_LT_VERTICAL, right);
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type |&amp;> geometric_type → boolean<br/>
+     * Does first object not extend below second? Available for box, polygon, circle.
+     */
+    public static IPredicate verticalAmpGt(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.VERTICAL_AMP_GT, right);
+    }
+
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">box &lt;^ box → boolean<br/>
+     * Is first object below second (allows edges to touch)?
+     */
+    public static IPredicate ltCaret(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_CARET, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">box >^ box → boolean<br/>
+     * Is first object above second (allows edges to touch)?
+     */
+    public static IPredicate gtCaret(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.GT_CARET, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type ?# geometric_type → boolean<br/>
+     * Is first object above second (allows edges to touch)?
+     */
+    public static IPredicate questionPound(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_POUND, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">point ?- point → boolean<br/>
+     * Are points horizontally aligned (that is, have same y coordinate)?
+     */
+    public static IPredicate questionHyphen(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_HYPHEN, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">point ?| point → boolean<br/>
+     * Are points vertically aligned (that is, have same x coordinate)?
+     */
+    public static IPredicate questionVertical(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_VERTICAL, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">line ?-| line → boolean<br/>
+     * lseg ?-| lseg → boolean
+     */
+    public static IPredicate questionHyphenVertical(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_HYPHEN_VERTICAL, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">line ?|| line → boolean<br/>
+     * lseg ?|| lseg → boolean
+     */
+    public static IPredicate questionVerticalVertical(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_VERTICAL_VERTICAL, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type ~= geometric_type → boolean<br/>
+     * Are these objects the same? Available for point, box, polygon, circle.<br/>
+     * </a>
+     */
+    public static IPredicate tildeEqual(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.TILDE_EQUAL, right);
+    }
+
 
     /**
      * <p>
@@ -345,134 +567,6 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.CARET_AT, right);
     }
 
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type + numeric_type → numeric_type</a>
-     */
-    public static Expression plus(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.PLUS, right, PostgreExpressions::plusType);
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type - numeric_type → numeric_type<br/>
-     * Subtraction</a>
-     */
-    public static Expression minus(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.MINUS, right, PostgreExpressions::minusType);
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type * numeric_type → numeric_type<br/>
-     * Multiplication</a>
-     */
-    public static Expression times(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.TIMES, right, PostgreExpressions::timesType);
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type / numeric_type → numeric_type<br/>
-     * Division (for integral types, division truncates the result towards zero)</a>
-     */
-    public static Expression divide(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.DIVIDE, right, PostgreExpressions::divideType);
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type % numeric_type → numeric_type<br/>
-     * Modulo (remainder); available for smallint, integer, bigint, and numeric</a>
-     */
-    public static Expression mode(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.MOD, right, Expressions::mathExpType);
-    }
-
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: follow <code><pre><br>
-     *    private static MappingType caretResultType(final MappingType left, final MappingType right) {
-     *        final MappingType returnType;
-     *        if (left instanceof MappingType.IntegerOrDecimalType
-     *                && right instanceof MappingType.IntegerOrDecimalType) {
-     *            returnType = BigDecimalType.INSTANCE;
-     *        } else {
-     *            returnType = DoubleType.INSTANCE;
-     *        }
-     *        return returnType;
-     *    }
-     * </pre></code>
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
-     * double precision ^ double precision → double precision <br/>
-     * Exponentiation</a>
-     */
-    public static Expression caret(final Expression left, final Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.CARET, right, PostgreSyntax::caretResultType);
-    }
-
-
-    /**
-     * <p>
-     * The {@link MappingType} of operator return type: follow  <code><pre><br/>
-     *    private static MappingType doubleVerticalType(final MappingType left, final MappingType right) {
-     *        final MappingType returnType;
-     *        if (left instanceof MappingType.SqlStringType || right instanceof MappingType.SqlStringType) {
-     *            returnType = TextType.INSTANCE;
-     *        } else if (left instanceof MappingType.SqlBinaryType || right instanceof MappingType.SqlBinaryType) {
-     *            if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
-     *                throw CriteriaUtils.dualOperandError(DualOperator.DOUBLE_VERTICAL, left, right);
-     *            }
-     *            returnType = PrimitiveByteArrayType.INSTANCE;
-     *        } else if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
-     *            returnType = BitSetType.INSTANCE;
-     *        } else {
-     *            throw CriteriaUtils.dualOperandError(DualOperator.DOUBLE_VERTICAL, left, right);
-     *        }
-     *        return returnType;
-     *    }
-     * </pre></code>
-     * </p>
-     *
-     * @param left  not {@link SQLs#DEFAULT} etc.
-     * @param right not {@link SQLs#DEFAULT} etc.
-     * @see Expression#apply(BiFunction, Expression)
-     * @see SimpleExpression#apply(BiFunction, BiFunction, Object)
-     * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-OP-TABLE">bit || bit → bit</a>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">text || text → text <br/>
-     * text || anynonarray → text <br/>
-     * anynonarray || text → text
-     * </a>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
-     */
-    public static Expression doubleVertical(final Expression left, final Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.DOUBLE_VERTICAL, right, PostgreSyntax::doubleVerticalType);
-    }
-
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">|/ double precision → double precision<br/>
-     * Square root
-     * </a>
-     */
-    public static Expression verticalSlash(final Expression exp) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.VERTICAL_SLASH, exp, Expressions::doubleType);
-    }
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type:{@link DoubleType}
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">||/ double precision → double precision<br/>
-     * Cube root
-     * </a>
-     */
-    public static Expression doubleVerticalSlash(final Expression expression) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.DOUBLE_VERTICAL_SLASH, expression, Expressions::doubleType);
-    }
 
     /**
      * <p>

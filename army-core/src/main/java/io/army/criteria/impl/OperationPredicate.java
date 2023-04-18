@@ -604,11 +604,13 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
      * <li>{@link OrPredicate},because OR/XOR operator always have outer parentheses。</li>
      * </p>
      */
-    private static abstract class OperationSimplePredicate extends OperationPredicate
+    static abstract class OperationSimplePredicate extends OperationPredicate
             implements SimplePredicate, ArmySimpleExpression {
 
         /**
-         * private constructor
+         * <p>
+         * <strong>Private constructor</strong>
+         * </p>
          */
         private OperationSimplePredicate() {
         }

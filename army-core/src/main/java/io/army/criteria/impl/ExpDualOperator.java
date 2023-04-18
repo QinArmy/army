@@ -6,8 +6,9 @@ enum ExpDualOperator implements Operator.DualOperator {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
      * double precision ^ double precision → double precision <br/>
      * Exponentiation</a>
+     * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-lexical.html#SQL-PRECEDENCE-TABLE">Operator Precedence (highest to lowest) </a>
      */
-    CARET(" ^", 90),
+    EXPONENTIATION(" ^", 90),// postgre only
 
     BITWISE_XOR(" ^", 85),  // for MySQL , BITWISE_XOR > TIMES
 
@@ -27,11 +28,11 @@ enum ExpDualOperator implements Operator.DualOperator {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
      */
-    DOUBLE_VERTICAL(" ||", 20),
+    DOUBLE_VERTICAL(" ||", 20),// postgre only
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"> AT TIME ZONE Variants</a>
      */
-    AT_TIME_ZONE(" AT TIME ZONE", 20),
+    AT_TIME_ZONE(" AT TIME ZONE", 20),// postgre only
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type # geometric_type → point<br>

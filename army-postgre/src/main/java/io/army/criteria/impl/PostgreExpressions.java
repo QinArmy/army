@@ -34,10 +34,19 @@ abstract class PostgreExpressions {
         return new PeriodOverlapsPredicate(start, endOrLength);
     }
 
+    static OperationPredicate unaryPredicate(PostgreBooleanUnaryOperator operator, Expression operand) {
+        if (!(operand instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(operand);
+        }
+        return new PostgreUnaryPredicate(operator, operand);
+    }
+
     static OperationPredicate dualPredicate(final Expression left, final PostgreBooleanDualOperator operator,
                                             final Expression right) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
+        } else if (!(right instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(right);
         }
         return new PostgreDualPredicate(left, operator, right);
     }
@@ -369,6 +378,58 @@ abstract class PostgreExpressions {
 
 
     }//PostgreDualPredicate
+
+
+    private static final class PostgreUnaryPredicate extends OperationPredicate.CompoundPredicate {
+
+        private final PostgreBooleanUnaryOperator operator;
+
+        private final ArmyExpression operand;
+
+        /**
+         * @see #unaryPredicate(PostgreBooleanUnaryOperator, Expression)
+         */
+        private PostgreUnaryPredicate(PostgreBooleanUnaryOperator operator, Expression operand) {
+            this.operator = operator;
+            this.operand = (ArmyExpression) operand;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(this.operator.spaceOperator);
+            this.operand.appendSql(context);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.operator, this.operand);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final boolean match;
+            if (obj == this) {
+                match = true;
+            } else if (obj instanceof PostgreUnaryPredicate) {
+                final PostgreUnaryPredicate o = (PostgreUnaryPredicate) obj;
+                match = o.operator == this.operator
+                        && o.operand.equals(this.operand);
+            } else {
+                match = false;
+            }
+            return match;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(this.operator)
+                    .append(this.operand)
+                    .toString();
+        }
+
+
+    }//PostgreUnaryPredicate
 
 
 }

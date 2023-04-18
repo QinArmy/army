@@ -788,14 +788,18 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
     }//PredicateExpression
 
 
-    private static final class BracketsExpression extends OperationExpression implements ArmySimpleExpression {
+     static final class BracketsExpression extends OperationExpression implements ArmySimpleExpression {
 
-        private final ArmyExpression expression;
+         private final ArmyExpression expression;
 
-        /**
-         * @see #bracketExp(Expression)
-         */
-        private BracketsExpression(ArmyExpression expression) {
+         /**
+          * <p>
+          * <strong>Private constructor</strong>
+          * </p>
+          *
+          * @see #bracketExp(Expression)
+          */
+         private BracketsExpression(ArmyExpression expression) {
             this.expression = expression;
         }
 

@@ -369,7 +369,7 @@ abstract class Expressions {
 
             final ExpDualOperator operator = this.operator;
             switch (operator) {
-                case CARET:
+                case EXPONENTIATION:
                 case DOUBLE_VERTICAL:
                 case AT_TIME_ZONE: {
                     if (context.database() != Database.PostgreSQL) {
@@ -569,7 +569,7 @@ abstract class Expressions {
                     outerParens = false;
                     break;
                 case AT:
-                case DOUBLE_VERTICAL_SLASH:
+                case VERTICAL_VERTICAL_SLASH:
                 case VERTICAL_SLASH: {
                     if (context.database() != Database.PostgreSQL) {
                         throw unsupportedOperator(operator, context.database());
@@ -642,7 +642,7 @@ abstract class Expressions {
                     outerParens = false;
                     break;
                 case AT:
-                case DOUBLE_VERTICAL_SLASH:
+                case VERTICAL_VERTICAL_SLASH:
                 case VERTICAL_SLASH:
                 case BITWISE_NOT:
                     outerParens = true;
