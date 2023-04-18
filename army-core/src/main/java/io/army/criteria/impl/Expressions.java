@@ -27,6 +27,8 @@ abstract class Expressions {
         final BinaryOperator<MappingType> inferFunc;
         switch (operator) {
             case PLUS:
+                inferFunc = Expressions::plusType;
+                break;
             case MINUS:
             case TIMES:
             case DIVIDE:
@@ -279,9 +281,39 @@ abstract class Expressions {
         return DoubleType.INSTANCE;
     }
 
+
+    static MappingType plusType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) {
+            returnType = left;
+        } else if (!(right instanceof MappingType.SqlNumberOrStringType) && left instanceof MappingType.SqlNumberType) {
+            returnType = right;
+        } else if (!(left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType)) {
+            if (left.getClass() == right.getClass()) {
+                returnType = left;
+            } else {
+                returnType = StringType.INSTANCE;
+            }
+        } else if (left instanceof MappingType.SqlFloatType || right instanceof MappingType.SqlFloatType) {
+            returnType = DoubleType.INSTANCE;
+        } else if (left instanceof MappingType.SqlDecimalType || right instanceof MappingType.SqlDecimalType) {
+            returnType = BigDecimalType.INSTANCE;
+        } else if (!(left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType)) {
+            returnType = left;
+        } else if (((MappingType.SqlIntegerType) left).lengthType()
+                .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
+            returnType = left;
+        } else {
+            returnType = right;
+        }
+        return returnType;
+    }
+
     static MappingType mathExpType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (!(left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType)) {
+        if (left.getClass() == right.getClass()) {
+            returnType = left;
+        } else if (!(left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType)) {
             returnType = StringType.INSTANCE;
         } else if (left instanceof MappingType.SqlFloatType || right instanceof MappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
@@ -300,7 +332,9 @@ abstract class Expressions {
 
     static MappingType bitwiseType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
+        if (left.getClass() == right.getClass()) {
+            returnType = left;
+        } else if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
             returnType = left instanceof MappingType.SqlBitType ? left : right;
         } else if (!(left instanceof MappingType.SqlIntegerType || right instanceof MappingType.SqlIntegerType)) {
             returnType = StringType.INSTANCE;
@@ -569,7 +603,7 @@ abstract class Expressions {
                     outerParens = false;
                     break;
                 case AT:
-                case VERTICAL_VERTICAL_SLASH:
+                case DOUBLE_VERTICAL_SLASH:
                 case VERTICAL_SLASH: {
                     if (context.database() != Database.PostgreSQL) {
                         throw unsupportedOperator(operator, context.database());
@@ -642,7 +676,7 @@ abstract class Expressions {
                     outerParens = false;
                     break;
                 case AT:
-                case VERTICAL_VERTICAL_SLASH:
+                case DOUBLE_VERTICAL_SLASH:
                 case VERTICAL_SLASH:
                 case BITWISE_NOT:
                     outerParens = true;

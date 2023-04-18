@@ -26,7 +26,7 @@ enum ExpUnaryOperator implements Operator.SqlUnaryOperator {
      * Cube root
      * </a>
      */
-    VERTICAL_VERTICAL_SLASH(" ||/"),// postgre only
+    DOUBLE_VERTICAL_SLASH(" ||/"),// postgre only
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">@-@ geometric_type → double precision<br/>

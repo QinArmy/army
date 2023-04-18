@@ -680,7 +680,13 @@ abstract class CriteriaUtils {
 
     static CriteriaException nonCollectionValue(String keyName) {
         String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
-        return ContextStack.criteriaError(ContextStack.peek(), m);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
+    static CriteriaException errorCustomReturnType(String name, MappingType returnType) {
+        String m = String.format("You specify error return type[%s] for function[%s]",
+                _ClassUtils.safeClassName(returnType), name);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 

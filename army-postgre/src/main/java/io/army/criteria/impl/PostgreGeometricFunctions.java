@@ -20,7 +20,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-abstract class PostgreGeometricFunctions extends PostgreStringFunctions {
+abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
 
     /**
      * package constructor

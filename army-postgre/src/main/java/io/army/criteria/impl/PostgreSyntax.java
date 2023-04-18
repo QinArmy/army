@@ -374,14 +374,15 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Cube root
      * </a>
      */
-    public static Expression verticalVerticalSlash(final Expression operand) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.VERTICAL_VERTICAL_SLASH, operand, Expressions::doubleType);
+    public static Expression doubleVerticalSlash(final Expression operand) {
+        return Expressions.dialectUnaryExp(ExpUnaryOperator.DOUBLE_VERTICAL_SLASH, operand, Expressions::doubleType);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">?- line → boolean<br/>
      * ?- lseg → boolean<br/>
      * Is line horizontal?
+     * </a>
      */
     public static IPredicate questionHyphen(Expression operand) {
         return PostgreExpressions.unaryPredicate(PostgreBooleanUnaryOperator.QUESTION_HYPHEN, operand);
@@ -391,6 +392,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">?| line → boolean<br/>
      * ?| lseg → boolean<br/>
      * Is line vertical?
+     * </a>
      */
     public static IPredicate questionVertical(Expression operand) {
         return PostgreExpressions.unaryPredicate(PostgreBooleanUnaryOperator.QUESTION_VERTICAL, operand);
@@ -400,6 +402,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type @> geometric_type → boolean<br/>
      * Does first object contain second? Available for these pairs of types: (box, point), (box, box), (path, point), (polygon, point), (polygon, polygon), (circle, point), (circle, circle).
+     * </a>
      */
     public static IPredicate atGt(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AT_GT, right);
@@ -408,6 +411,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;@ geometric_type → boolean<br/>
      * Is first object contained in or on second? Available for these pairs of types: (point, box), (point, lseg), (point, line), (point, path), (point, polygon), (point, circle), (box, box), (lseg, box), (lseg, line), (polygon, polygon), (circle, circle).
+     * </a>
      */
     public static IPredicate ltAt(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_AT, right);
@@ -415,31 +419,71 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&amp; geometric_type → boolean<br/>
-     * Do these objects overlap? (One point in common makes this true.) Available for box, polygon, circle.
+     * Do these objects overlap? (One point in common makes this true.) Available for box, polygon, circle.</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-OPERATORS-TABLE">inet &amp;&amp; inet → boolean<br/>
+     * Does either subnet contain or equal the other?<br/>
+     * inet '192.168.1/24' &amp;&amp; inet '192.168.1.80/28' → t<br/>
+     * inet '192.168.1/24' &amp;&amp; inet '192.168.2.0/28' → f
+     * </a>
      */
-    public static IPredicate amp(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_AMP, right);
+    public static IPredicate doubleAmp(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.DOUBLE_AMP, right);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&lt; geometric_type → boolean<br/>
-     * Is first object strictly left of second? Available for point, box, polygon, circle.
+     * Is first object strictly left of second? Available for point, box, polygon, circle.<br/>
+     * inet &lt;&lt; inet → boolean<br/>
+     * Is subnet strictly contained by subnet? This operator, and the next four, test for subnet inclusion. They consider only the network parts of the two<br/>
+     * addresses (ignoring any bits to the right of the netmasks) and determine whether one network is identical to or a subnet of the other. <br/>
+     * inet '192.168.1.5'  &lt;&lt; inet '192.168.1/24' → t <br/>
+     * inet '192.168.0.5'  &lt;&lt; inet '192.168.1/24' → f<br/>
+     * inet '192.168.1/24' &lt;&lt; inet '192.168.1/24' → f
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-OPERATORS-TABLE">inet &lt;&lt; inet → boolean<br/>
+     * Is subnet strictly contained by subnet? This operator, and the next four, test for subnet inclusion. They consider only the network parts of the two<br/>
+     * addresses (ignoring any bits to the right of the netmasks) and determine whether one network is identical to or a subnet of the other. <br/>
+     * inet '192.168.1.5'  &lt;&lt; inet '192.168.1/24' → t <br/>
+     * inet '192.168.0.5'  &lt;&lt; inet '192.168.1/24' → f<br/>
+     * inet '192.168.1/24' &lt;&lt; inet '192.168.1/24' → f
+     * </a>
      */
     public static IPredicate ltLt(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_LT, right);
     }
 
+
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type >> geometric_type → boolean<br/>
-     * Is first object strictly right of second? Available for point, box, polygon, circle.
+     * Is first object strictly right of second? Available for point, box, polygon, circle.</a>
      */
     public static IPredicate gtGt(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.GT_GT, right);
     }
 
     /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-OPERATORS-TABLE">inet &lt;&lt;= inet → boolean<br/>
+     * Is subnet contained by or equal to subnet?<br/>
+     * inet '192.168.1/24' &lt;&lt;= inet '192.168.1/24' → t
+     * </a>
+     */
+    public static IPredicate ltLtEqual(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_LT_EQUAL, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-OPERATORS-TABLE">inet >>= inet → boolean<br/>
+     * Does subnet contain or equal subnet?<br/>
+     * inet '192.168.1/24' >>= inet '192.168.1/24' → t
+     * </a>
+     */
+    public static IPredicate gtGtEqual(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.GT_GT_EQUAL, right);
+    }
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&lt; geometric_type → boolean<br/>
-     * Does first object not extend to the right of second? Available for box, polygon, circle.
+     * Does first object not extend to the right of second? Available for box, polygon, circle.</a>
      */
     public static IPredicate ampLt(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_LT, right);
@@ -447,7 +491,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&gt; geometric_type → boolean<br/>
-     * Does first object not extend to the left of second? Available for box, polygon, circle.
+     * Does first object not extend to the left of second? Available for box, polygon, circle.</a>
      */
     public static IPredicate ampGt(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_GT, right);
@@ -455,7 +499,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&lt;| geometric_type → boolean<br/>
-     * Is first object strictly below second? Available for point, box, polygon, circle.
+     * Is first object strictly below second? Available for point, box, polygon, circle.</a>
      */
     public static IPredicate ltLtVertical(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_LT_VERTICAL, right);
@@ -463,7 +507,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type |>> geometric_type → boolean<br/>
-     * Is first object strictly above second? Available for point, box, polygon, circle.
+     * Is first object strictly above second? Available for point, box, polygon, circle.</a>
      */
     public static IPredicate verticalGtGt(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.VERTICAL_GT_GT, right);
@@ -471,7 +515,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&lt;| geometric_type → boolean<br/>
-     * Does first object not extend above second? Available for box, polygon, circle.
+     * Does first object not extend above second? Available for box, polygon, circle.</a>
      */
     public static IPredicate ampLtVertical(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_LT_VERTICAL, right);
@@ -479,7 +523,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type |&amp;> geometric_type → boolean<br/>
-     * Does first object not extend below second? Available for box, polygon, circle.
+     * Does first object not extend below second? Available for box, polygon, circle.</a>
      */
     public static IPredicate verticalAmpGt(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.VERTICAL_AMP_GT, right);
@@ -488,7 +532,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">box &lt;^ box → boolean<br/>
-     * Is first object below second (allows edges to touch)?
+     * Is first object below second (allows edges to touch)?</a>
      */
     public static IPredicate ltCaret(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_CARET, right);
@@ -496,7 +540,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">box >^ box → boolean<br/>
-     * Is first object above second (allows edges to touch)?
+     * Is first object above second (allows edges to touch)?</a>
      */
     public static IPredicate gtCaret(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.GT_CARET, right);
@@ -504,7 +548,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type ?# geometric_type → boolean<br/>
-     * Is first object above second (allows edges to touch)?
+     * Is first object above second (allows edges to touch)?</a>
      */
     public static IPredicate questionPound(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_POUND, right);
@@ -512,7 +556,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">point ?- point → boolean<br/>
-     * Are points horizontally aligned (that is, have same y coordinate)?
+     * Are points horizontally aligned (that is, have same y coordinate)?</a>
      */
     public static IPredicate questionHyphen(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_HYPHEN, right);
@@ -520,7 +564,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">point ?| point → boolean<br/>
-     * Are points vertically aligned (that is, have same x coordinate)?
+     * Are points vertically aligned (that is, have same x coordinate)?</a>
      */
     public static IPredicate questionVertical(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_VERTICAL, right);
@@ -528,7 +572,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">line ?-| line → boolean<br/>
-     * lseg ?-| lseg → boolean
+     * lseg ?-| lseg → boolean</a>
      */
     public static IPredicate questionHyphenVertical(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_HYPHEN_VERTICAL, right);
@@ -536,7 +580,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">line ?|| line → boolean<br/>
-     * lseg ?|| lseg → boolean
+     * lseg ?|| lseg → boolean</a>
      */
     public static IPredicate questionVerticalVertical(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_VERTICAL_VERTICAL, right);

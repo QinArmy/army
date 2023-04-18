@@ -5,6 +5,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
+import io.army.mapping.postgre.PostgreInetType;
 import io.army.mapping.spatial.postgre.PostgreBoxType;
 import io.army.mapping.spatial.postgre.PostgreGeometricType;
 import io.army.mapping.spatial.postgre.PostgrePointType;
@@ -65,20 +66,34 @@ abstract class PostgreExpressions {
 
 
     /**
+     * <p>
+     *     <ul>
+     *         <li>numeric_type + numeric_type → numeric_type</li>
+     *         <li>date + integer </li>
+     *         <li>date + interval → timestamp or date </li>
+     *         <li>date + time → timestamp</li>
+     *         <li>timestamp + interval → timestamp</li>
+     *         <li>time + interval → time</li>
+     *         <li>interval + interval → interval</li>
+     *         <li>geometric_type + point → geometric_type</li>
+     *         <li>path + path → path</li>
+     *         <li>inet + bigint → inet</li>
+     *     </ul>
+     * </p>
+     *
      * @see Postgres#plus(Expression, Expression)
+     * @see Expressions#plusType(MappingType, MappingType)
      */
     static MappingType plusType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type + numeric_type → numeric_type
-            returnType = Expressions.mathExpType(left, right);
+        if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) { // date + integer → date ; inet + bigint → inet
+            returnType = left;
+        } else if (left instanceof MappingType.SqlNumberType && !(right instanceof MappingType.SqlNumberOrStringType)) { // date + integer → date ; inet + bigint → inet
+            returnType = right;
+        } else if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type + numeric_type → numeric_type
+            returnType = Expressions.plusType(left, right);
         } else if (left instanceof MappingType.SqlLocalDateType || right instanceof MappingType.SqlLocalDateType) {
-            if ((right instanceof MappingType.SqlIntegerType
-                    && ((MappingType.SqlIntegerType) right).lengthType().compareWith(MappingType.LengthType.DEFAULT) <= 0)
-                    || (left instanceof MappingType.SqlIntegerType
-                    && ((MappingType.SqlIntegerType) left).lengthType().compareWith(MappingType.LengthType.DEFAULT) <= 0)) {  // date + integer → date
-                returnType = left instanceof MappingType.SqlLocalDateType ? left : right;
-            } else if (right instanceof MappingType.SqlIntervalType || right instanceof MappingType.SqlLocalTimeType
-                    || left instanceof MappingType.SqlIntervalType || left instanceof MappingType.SqlLocalTimeType) { // date + interval → timestamp or date + time → timestamp
+            if (right instanceof MappingType.SqlIntervalType || left instanceof MappingType.SqlIntervalType) { // date + interval → timestamp or date + time → timestamp
                 returnType = LocalDateTimeType.INSTANCE;
             } else {
                 returnType = StringType.INSTANCE;
@@ -99,6 +114,8 @@ abstract class PostgreExpressions {
             returnType = right instanceof MappingType.SqlPointType ? left : right;
         } else if (left instanceof MappingType.SqlLineStringType && right instanceof MappingType.SqlLineStringType) { // path + path → path
             returnType = left;
+        } else if (left.getClass() == right.getClass()) {
+            returnType = left;
         } else {
             returnType = StringType.INSTANCE;
         }
@@ -110,9 +127,7 @@ abstract class PostgreExpressions {
      */
     static MappingType minusType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type - numeric_type → numeric_type
-            returnType = Expressions.mathExpType(left, right);
-        } else if (left instanceof MappingType.SqlLocalDateType) {
+        if (left instanceof MappingType.SqlLocalDateType) {
             if (right instanceof MappingType.SqlLocalDateType) { // date - date → integer
                 returnType = IntegerType.INSTANCE;
             } else if (right instanceof MappingType.SqlIntegerType) { // date - integer → date
@@ -142,6 +157,14 @@ abstract class PostgreExpressions {
             returnType = IntervalType.from(Interval.class);
         } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType) { // geometric_type - point → geometric_type
             returnType = left;
+        } else if (left instanceof PostgreInetType && right instanceof PostgreInetType) {
+            returnType = LongType.INSTANCE;
+        } else if (left.getClass() == right.getClass()) { // numeric_type - numeric_type → numeric_type ;  date - date → integer ; time - time → interval
+            returnType = left;
+        } else if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) { // date - integer → date
+            returnType = left;
+        } else if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type - numeric_type → numeric_type
+            returnType = Expressions.mathExpType(left, right);
         } else { // error or unknown
             returnType = StringType.INSTANCE;
         }

@@ -153,5 +153,17 @@ public abstract class _ArrayUtils {
         return Collections.unmodifiableList(asList(collection, addElements));
     }
 
+    public static Class<?> underlyingComponent(final Class<?> arrayType) {
+        assert arrayType.isArray();
+
+        Class<?> componentType;
+        componentType = arrayType.getComponentType();
+        while (componentType.isArray()) {
+            componentType = componentType.getComponentType();
+        }
+        return componentType;
+
+    }
+
 
 }
