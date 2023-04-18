@@ -582,5 +582,213 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         return FunctionUtils.twoArgFunc("TO_TSVECTOR", config, document, PostgreTsVectorType.INSTANCE);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsVectorType}
+     * </p>
+     *
+     * @param funcRefForDocument the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                           <ul>
+     *                               <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                               <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                               <li>developer custom method</li>
+     *                           </ul>.
+     *                           the first argument of funcRefForDocument always is {@link JsonType#TEXT_INSTANCE}.
+     * @param document           non-null,it will be passed to funcRefForDocument as the second argument of funcRefForDocument
+     * @param funcRefForFilter   the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                           <ul>
+     *                               <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                               <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                               <li>developer custom method</li>
+     *                           </ul>.
+     *                           the first argument of funcRefForFilter always is {@link JsonbType#TEXT_INSTANCE} .
+     * @param filter             non-null,it will be passed to funcRefForFilter as the second argument of funcRefForFilter
+     * @see #jsonToTsVector(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">json_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
+     */
+    public static <T, U> SimpleExpression jsonToTsVector(BiFunction<MappingType, T, Expression> funcRefForDocument, T document,
+                                                         BiFunction<MappingType, U, Expression> funcRefForFilter, U filter) {
+        return jsonToTsVector(funcRefForDocument.apply(JsonType.TEXT_INSTANCE, document),
+                funcRefForFilter.apply(JsonbType.TEXT_INSTANCE, filter)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsVectorType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">json_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
+     */
+    public static SimpleExpression jsonToTsVector(Expression document, Expression filter) {
+        return FunctionUtils.twoArgFunc("JSON_TO_TSVECTOR", document, filter, PostgreTsVectorType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsVectorType}
+     * </p>
+     *
+     * @param funcRefForConfig   the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                           <ul>
+     *                               <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                               <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                               <li>developer custom method</li>
+     *                           </ul>.
+     *                           The first argument of funcRefForConfig always is {@link StringType#INSTANCE}.
+     * @param config             non-null,it will be passed to funcRefForConfig as the second argument of funcRefForConfig
+     * @param funcRefForDocument the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                           <ul>
+     *                               <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                               <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                               <li>developer custom method</li>
+     *                           </ul>.
+     *                           the first argument of funcRefForDocument always is {@link JsonType#TEXT_INSTANCE}.
+     * @param document           non-null,it will be passed to funcRefForDocument as the second argument of funcRefForDocument
+     * @param funcRefForFilter   the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                           <ul>
+     *                               <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                               <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                               <li>developer custom method</li>
+     *                           </ul>.
+     *                           the first argument of funcRefForFilter always is {@link JsonbType#TEXT_INSTANCE} .
+     * @param filter             non-null,it will be passed to funcRefForFilter as the second argument of funcRefForFilter
+     * @see #jsonToTsVector(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">json_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
+     */
+    public static <T, U, V> SimpleExpression jsonToTsVector(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
+                                                            BiFunction<MappingType, U, Expression> funcRefForDocument, U document,
+                                                            BiFunction<MappingType, V, Expression> funcRefForFilter, V filter) {
+        return jsonToTsVector(funcRefForConfig.apply(StringType.INSTANCE, config),
+                funcRefForDocument.apply(JsonType.TEXT_INSTANCE, document),
+                funcRefForFilter.apply(JsonbType.TEXT_INSTANCE, filter)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsVectorType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">json_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
+     */
+    public static SimpleExpression jsonToTsVector(Expression config, Expression document, Expression filter) {
+        return FunctionUtils.threeArgFunc("JSON_TO_TSVECTOR", config, document, filter, PostgreTsVectorType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsVectorType}
+     * </p>
+     *
+     * @param funcRefForDocument the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                           <ul>
+     *                               <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                               <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                               <li>developer custom method</li>
+     *                           </ul>.
+     *                           the first argument of funcRefForDocument always is {@link JsonType#TEXT_INSTANCE}.
+     * @param document           non-null,it will be passed to funcRefForDocument as the second argument of funcRefForDocument
+     * @param funcRefForFilter   the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                           <ul>
+     *                               <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                               <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                               <li>developer custom method</li>
+     *                           </ul>.
+     *                           the first argument of funcRefForFilter always is {@link JsonbType#TEXT_INSTANCE} .
+     * @param filter             non-null,it will be passed to funcRefForFilter as the second argument of funcRefForFilter
+     * @see #jsonbToTsVector(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">jsonb_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
+     */
+    public static <T, U> SimpleExpression jsonbToTsVector(BiFunction<MappingType, T, Expression> funcRefForDocument, T document,
+                                                          BiFunction<MappingType, U, Expression> funcRefForFilter, U filter) {
+        return jsonbToTsVector(funcRefForDocument.apply(JsonType.TEXT_INSTANCE, document),
+                funcRefForFilter.apply(JsonbType.TEXT_INSTANCE, filter)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsVectorType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">jsonb_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
+     */
+    public static SimpleExpression jsonbToTsVector(Expression document, Expression filter) {
+        return FunctionUtils.twoArgFunc("JSONB_TO_TSVECTOR", document, filter, PostgreTsVectorType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsVectorType}
+     * </p>
+     *
+     * @param funcRefForConfig   the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                           <ul>
+     *                               <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                               <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                               <li>developer custom method</li>
+     *                           </ul>.
+     *                           The first argument of funcRefForConfig always is {@link StringType#INSTANCE}.
+     * @param config             non-null,it will be passed to funcRefForConfig as the second argument of funcRefForConfig
+     * @param funcRefForDocument the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                           <ul>
+     *                               <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                               <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                               <li>developer custom method</li>
+     *                           </ul>.
+     *                           the first argument of funcRefForDocument always is {@link JsonType#TEXT_INSTANCE}.
+     * @param document           non-null,it will be passed to funcRefForDocument as the second argument of funcRefForDocument
+     * @param funcRefForFilter   the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                           <ul>
+     *                               <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                               <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                               <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                               <li>developer custom method</li>
+     *                           </ul>.
+     *                           the first argument of funcRefForFilter always is {@link JsonbType#TEXT_INSTANCE} .
+     * @param filter             non-null,it will be passed to funcRefForFilter as the second argument of funcRefForFilter
+     * @see #jsonbToTsVector(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">jsonb_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
+     */
+    public static <T, U, V> SimpleExpression jsonbToTsVector(BiFunction<MappingType, T, Expression> funcRefForConfig, T config,
+                                                             BiFunction<MappingType, U, Expression> funcRefForDocument, U document,
+                                                             BiFunction<MappingType, V, Expression> funcRefForFilter, V filter) {
+        return jsonbToTsVector(funcRefForConfig.apply(StringType.INSTANCE, config),
+                funcRefForDocument.apply(JsonType.TEXT_INSTANCE, document),
+                funcRefForFilter.apply(JsonbType.TEXT_INSTANCE, filter)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsVectorType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">jsonb_to_tsvector ( [ config regconfig, ] document json, filter jsonb ) → tsvector</a>
+     */
+    public static SimpleExpression jsonbToTsVector(Expression config, Expression document, Expression filter) {
+        return FunctionUtils.threeArgFunc("JSONB_TO_TSVECTOR", config, document, filter, PostgreTsVectorType.INSTANCE);
+    }
 
 }

@@ -1,33 +1,40 @@
-package io.army.mapping.optional;
+package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 
-@Deprecated
-public final class JsonType extends MappingType {
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+public final class JsonbType extends _ArmyInnerMapping implements MappingType.SqlJsonbType {
 
 
-    public static final JsonType INSTANCE = new JsonType();
+    public static final JsonbType TEXT_INSTANCE = new JsonbType(String.class);
 
-    public static JsonType from(Class<?> javaType) {
-        if (javaType != String.class) {
-            throw errorJavaType(JsonType.class, javaType);
+    private static final ConcurrentMap<Class<?>, JsonbType> INSTANCE_MAP = new ConcurrentHashMap<>();
+
+    public static JsonbType from(final Class<?> javaType) {
+        final JsonbType instance;
+        if (javaType == String.class) {
+            instance = TEXT_INSTANCE;
+        } else {
+            instance = INSTANCE_MAP.computeIfAbsent(javaType, JsonbType::new);
         }
-        return INSTANCE;
+        return instance;
     }
 
-    private JsonType() {
+    private final Class<?> javaType;
+
+    private JsonbType(Class<?> javaType) {
+        this.javaType = javaType;
     }
 
     @Override
     public Class<?> javaType() {
-        return String.class;
+        return this.javaType;
     }
 
     @Override
@@ -68,6 +75,4 @@ public final class JsonType extends MappingType {
         }
         return (String) nonNull;
     }
-
-
 }
