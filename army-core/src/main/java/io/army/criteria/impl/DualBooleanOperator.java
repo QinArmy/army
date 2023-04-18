@@ -6,7 +6,7 @@ import io.army.dialect.Database;
 /**
  * Interface representing sql dual operator.
  */
-enum BooleanDualOperator implements Operator.BooleanDualOperator {
+enum DualBooleanOperator implements Operator.SqlDualBooleanOperator {
 
 
     EQUAL(" ="),
@@ -32,7 +32,7 @@ enum BooleanDualOperator implements Operator.BooleanDualOperator {
     /**
      * @param spaceOperator space and sign
      */
-    BooleanDualOperator(String spaceOperator) {
+    DualBooleanOperator(String spaceOperator) {
         this.spaceOperator = spaceOperator;
     }
 

@@ -9,6 +9,18 @@ interface Operator {
 
     String name();
 
+    String spaceRender();
+
+    /**
+     * @throws UnsupportedOperationException throw when this is standard operator enum :
+     *                                       <ul>
+     *                                           <li>{@link UnaryExpOperator}</li>
+     *                                           <li>{@link UnaryExpOperator}</li>
+     *                                           <li>{@link SqlDualBooleanOperator} type</li>
+     *                                       </ul>
+     */
+    Database database();
+
 
     @Override
     String toString();
@@ -17,21 +29,30 @@ interface Operator {
 
     }
 
+    interface SqlUnaryExpOperator extends SqlUnaryOperator {
 
-    interface DualOperator extends Operator {
+    }
+
+    interface SqlUnaryBooleanOperator extends SqlUnaryOperator {
+
+    }
+
+
+    interface SqlDualOperator extends Operator {
 
 
     }
 
 
-    interface BooleanDualOperator extends DualOperator {
+    interface SqlDualBooleanOperator extends SqlDualOperator {
 
-        String spaceRender();
 
-        /**
-         * @throws UnsupportedOperationException throw when this is {@link io.army.criteria.impl.BooleanDualOperator} type.
-         */
-        Database database();
+    }
+
+    interface SqlDualExpressionOperator extends SqlDualOperator {
+
+
+        int precedence();
 
     }
 

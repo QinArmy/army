@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.dialect.Database;
 
-enum PostgreBooleanDualOperator implements Operator.BooleanDualOperator {
+enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
@@ -165,13 +165,28 @@ enum PostgreBooleanDualOperator implements Operator.BooleanDualOperator {
     TILDE_EQUAL(" ~="),
 
     /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsvector @@ tsquery → boolean<br/>
+     * tsquery @@ tsvector → boolean<br/>
+     * text @@ tsquery → boolean<br/>
+     * </a>
+     */
+    DOUBLE_AT(" @@"),
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsvector @@@ tsquery → boolean<br/>
+     * tsquery @@@ tsvector → boolean<br/>
+     * </a>
+     */
+    TRIPLE_AT(" @@@"),
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&gt; geometric_type → boolean<br/>
      * Does first object not extend to the left of second? Available for box, polygon, circle.</a>
      */
     AMP_GT(" &>");
     private final String spaceOperator;
 
-    PostgreBooleanDualOperator(String spaceOperator) {
+    PostgreDualBooleanOperator(String spaceOperator) {
         this.spaceOperator = spaceOperator;
     }
 

@@ -50,135 +50,135 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
 
     @Override
     public final OperationPredicate equal(Expression operand) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.EQUAL, operand);
+        return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, operand);
     }
 
 
     @Override
     public final OperationPredicate equalAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.EQUAL, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.EQUAL, QueryOperator.ANY, subQuery);
     }
 
     @Override
     public final OperationPredicate equalSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.EQUAL, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.EQUAL, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
     public final OperationPredicate less(Expression operand) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.LESS, operand);
+        return Expressions.dualPredicate(this, DualBooleanOperator.LESS, operand);
     }
 
 
     @Override
     public final OperationPredicate lessAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.LESS, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
     public final OperationPredicate lessSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.LESS, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, QueryOperator.SOME, subQuery);
     }
 
     @Override
     public final OperationPredicate lessAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.LESS, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, QueryOperator.ALL, subQuery);
     }
 
 
     @Override
     public final OperationPredicate lessEqual(Expression operand) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.LESS_EQUAL, operand);
+        return Expressions.dualPredicate(this, DualBooleanOperator.LESS_EQUAL, operand);
     }
 
 
     @Override
     public final OperationPredicate lessEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.LESS_EQUAL, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
     public final OperationPredicate lessEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.LESS_EQUAL, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
     public final OperationPredicate lessEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.LESS_EQUAL, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, QueryOperator.ALL, subQuery);
     }
 
 
     @Override
     public final OperationPredicate greater(Expression operand) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.GREATER, operand);
+        return Expressions.dualPredicate(this, DualBooleanOperator.GREATER, operand);
     }
 
 
     @Override
     public final OperationPredicate greaterAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
     public final OperationPredicate greaterSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
     public final OperationPredicate greaterAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, QueryOperator.ALL, subQuery);
     }
 
 
     @Override
     public final OperationPredicate greaterEqual(Expression operand) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.GREATER_EQUAL, operand);
+        return Expressions.dualPredicate(this, DualBooleanOperator.GREATER_EQUAL, operand);
     }
 
 
     @Override
     public final OperationPredicate greaterEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER_EQUAL, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, QueryOperator.ANY, subQuery);
     }
 
     @Override
     public final OperationPredicate greaterEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER_EQUAL, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, QueryOperator.SOME, subQuery);
     }
 
 
     @Override
     public final OperationPredicate greaterEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.GREATER_EQUAL, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, QueryOperator.ALL, subQuery);
     }
 
 
     @Override
     public final OperationPredicate notEqual(Expression operand) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.NOT_EQUAL, operand);
+        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, operand);
     }
 
 
     @Override
     public final OperationPredicate notEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.NOT_EQUAL, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, QueryOperator.ANY, subQuery);
     }
 
 
     @Override
     public final OperationPredicate notEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.NOT_EQUAL, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, QueryOperator.SOME, subQuery);
     }
 
     @Override
     public final OperationPredicate notEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, BooleanDualOperator.NOT_EQUAL, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, QueryOperator.ALL, subQuery);
     }
 
     @Override
@@ -235,116 +235,116 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
 
     @Override
     public final OperationPredicate in(Expression operand) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.IN, operand);
+        return Expressions.dualPredicate(this, DualBooleanOperator.IN, operand);
     }
 
     @Override
     public final OperationPredicate in(SubQuery subQuery) {
-        return Expressions.inOperator(this, BooleanDualOperator.IN, subQuery);
+        return Expressions.inOperator(this, DualBooleanOperator.IN, subQuery);
     }
 
     @Override
     public final OperationPredicate notIn(Expression operand) {
-        return Expressions.dualPredicate(this, BooleanDualOperator.NOT_IN, operand);
+        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_IN, operand);
     }
 
     @Override
     public final OperationPredicate notIn(SubQuery subQuery) {
-        return Expressions.inOperator(this, BooleanDualOperator.NOT_IN, subQuery);
+        return Expressions.inOperator(this, DualBooleanOperator.NOT_IN, subQuery);
     }
 
     @Override
     public final OperationPredicate like(Expression pattern) {
-        return Expressions.likePredicate(this, BooleanDualOperator.LIKE, pattern, SQLs.ESCAPE, null);
+        return Expressions.likePredicate(this, DualBooleanOperator.LIKE, pattern, SQLs.ESCAPE, null);
     }
 
 
     @Override
     public final IPredicate like(Expression pattern, SQLs.WordEscape escape, char escapeChar) {
-        return Expressions.likePredicate(this, BooleanDualOperator.LIKE, pattern,
+        return Expressions.likePredicate(this, DualBooleanOperator.LIKE, pattern,
                 escape, SQLs.literal(StringType.INSTANCE, escapeChar)
         );
     }
 
     @Override
     public final IPredicate like(Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
-        return Expressions.likePredicate(this, BooleanDualOperator.LIKE, pattern, escape, escapeChar);
+        return Expressions.likePredicate(this, DualBooleanOperator.LIKE, pattern, escape, escapeChar);
     }
 
 
     @Override
     public final OperationPredicate notLike(Expression pattern) {
-        return Expressions.likePredicate(this, BooleanDualOperator.NOT_LIKE, pattern, SQLs.ESCAPE, null);
+        return Expressions.likePredicate(this, DualBooleanOperator.NOT_LIKE, pattern, SQLs.ESCAPE, null);
     }
 
 
     @Override
     public final IPredicate notLike(Expression pattern, SQLs.WordEscape escape, char escapeChar) {
-        return Expressions.likePredicate(this, BooleanDualOperator.NOT_LIKE, pattern,
+        return Expressions.likePredicate(this, DualBooleanOperator.NOT_LIKE, pattern,
                 escape, SQLs.literal(StringType.INSTANCE, escapeChar)
         );
     }
 
     @Override
     public final IPredicate notLike(Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
-        return Expressions.likePredicate(this, BooleanDualOperator.NOT_LIKE, pattern, escape, escapeChar);
+        return Expressions.likePredicate(this, DualBooleanOperator.NOT_LIKE, pattern, escape, escapeChar);
     }
 
     @Override
     public final OperationExpression mod(Expression operand) {
-        return Expressions.dualExp(this, ExpDualOperator.MOD, operand);
+        return Expressions.dualExp(this, DualExpOperator.MOD, operand);
     }
 
 
     @Override
     public final OperationExpression times(Expression operand) {
-        return Expressions.dualExp(this, ExpDualOperator.TIMES, operand);
+        return Expressions.dualExp(this, DualExpOperator.TIMES, operand);
     }
 
 
     @Override
     public final OperationExpression plus(Expression operand) {
-        return Expressions.dualExp(this, ExpDualOperator.PLUS, operand);
+        return Expressions.dualExp(this, DualExpOperator.PLUS, operand);
     }
 
 
     @Override
     public final OperationExpression minus(Expression operand) {
-        return Expressions.dualExp(this, ExpDualOperator.MINUS, operand);
+        return Expressions.dualExp(this, DualExpOperator.MINUS, operand);
     }
 
 
     @Override
     public final OperationExpression divide(Expression operand) {
-        return Expressions.dualExp(this, ExpDualOperator.DIVIDE, operand);
+        return Expressions.dualExp(this, DualExpOperator.DIVIDE, operand);
     }
 
 
     @Override
     public final OperationExpression bitwiseAnd(Expression operand) {
-        return Expressions.dualExp(this, ExpDualOperator.BITWISE_AND, operand);
+        return Expressions.dualExp(this, DualExpOperator.BITWISE_AND, operand);
     }
 
 
     @Override
     public final OperationExpression bitwiseOr(Expression operand) {
-        return Expressions.dualExp(this, ExpDualOperator.BITWISE_OR, operand);
+        return Expressions.dualExp(this, DualExpOperator.BITWISE_OR, operand);
     }
 
     @Override
     public final OperationExpression bitwiseXor(Expression operand) {
-        return Expressions.dualExp(this, ExpDualOperator.BITWISE_XOR, operand);
+        return Expressions.dualExp(this, DualExpOperator.BITWISE_XOR, operand);
     }
 
 
     @Override
     public final OperationExpression rightShift(Expression operand) {
-        return Expressions.dualExp(this, ExpDualOperator.RIGHT_SHIFT, operand);
+        return Expressions.dualExp(this, DualExpOperator.RIGHT_SHIFT, operand);
     }
 
     @Override
     public final OperationExpression leftShift(Expression operand) {
-        return Expressions.dualExp(this, ExpDualOperator.LEFT_SHIFT, operand);
+        return Expressions.dualExp(this, DualExpOperator.LEFT_SHIFT, operand);
     }
 
     @Override
@@ -487,33 +487,33 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
 
         @Override
         public final <T> OperationPredicate equal(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.EQUAL, funcRef.apply(this, value));
+            return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, funcRef.apply(this, value));
         }
 
 
         @Override
         public final <T> OperationPredicate less(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.LESS, funcRef.apply(this, value));
+            return Expressions.dualPredicate(this, DualBooleanOperator.LESS, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationPredicate lessEqual(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.LESS_EQUAL, funcRef.apply(this, value));
+            return Expressions.dualPredicate(this, DualBooleanOperator.LESS_EQUAL, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationPredicate greater(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.GREATER, funcRef.apply(this, value));
+            return Expressions.dualPredicate(this, DualBooleanOperator.GREATER, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationPredicate greaterEqual(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.GREATER_EQUAL, funcRef.apply(this, value));
+            return Expressions.dualPredicate(this, DualBooleanOperator.GREATER_EQUAL, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationPredicate notEqual(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.NOT_EQUAL, funcRef.apply(this, value));
+            return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, funcRef.apply(this, value));
         }
 
         @Override
@@ -557,28 +557,28 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
         @Override
         public final <T extends Collection<?>> OperationPredicate in(BiFunction<Expression, T, Expression> funcRef,
                                                                      T value) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.IN, funcRef.apply(this, value));
+            return Expressions.dualPredicate(this, DualBooleanOperator.IN, funcRef.apply(this, value));
         }
 
         @Override
         public final <T extends Collection<?>> OperationPredicate notIn(BiFunction<Expression, T, Expression> funcRef,
                                                                         T value) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.NOT_IN, funcRef.apply(this, value));
+            return Expressions.dualPredicate(this, DualBooleanOperator.NOT_IN, funcRef.apply(this, value));
         }
 
         @Override
         public final OperationPredicate in(TeNamedOperator<Expression> funcRef, String paramName, int size) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.IN, funcRef.apply(this, paramName, size));
+            return Expressions.dualPredicate(this, DualBooleanOperator.IN, funcRef.apply(this, paramName, size));
         }
 
         @Override
         public final OperationPredicate notIn(TeNamedOperator<Expression> funcRef, String paramName, int size) {
-            return Expressions.dualPredicate(this, BooleanDualOperator.NOT_IN, funcRef.apply(this, paramName, size));
+            return Expressions.dualPredicate(this, DualBooleanOperator.NOT_IN, funcRef.apply(this, paramName, size));
         }
 
         @Override
         public final <T> OperationPredicate like(BiFunction<MappingType, T, Expression> funcRef, T value) {
-            return Expressions.likePredicate(this, BooleanDualOperator.LIKE, funcRef.apply(TextType.INSTANCE, value),
+            return Expressions.likePredicate(this, DualBooleanOperator.LIKE, funcRef.apply(TextType.INSTANCE, value),
                     SQLs.ESCAPE, null);
         }
 
@@ -586,7 +586,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
         @Override
         public final <T> IPredicate like(BiFunction<MappingType, T, Expression> funcRef, T value,
                                          SqlSyntax.WordEscape escape, char escapeChar) {
-            return Expressions.likePredicate(this, BooleanDualOperator.LIKE, funcRef.apply(TextType.INSTANCE, value),
+            return Expressions.likePredicate(this, DualBooleanOperator.LIKE, funcRef.apply(TextType.INSTANCE, value),
                     escape, SQLs.literal(StringType.INSTANCE, escapeChar)
             );
         }
@@ -594,66 +594,66 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
 
         @Override
         public final <T> OperationPredicate notLike(BiFunction<MappingType, T, Expression> funcRef, T value) {
-            return Expressions.likePredicate(this, BooleanDualOperator.NOT_LIKE, funcRef.apply(TextType.INSTANCE, value),
+            return Expressions.likePredicate(this, DualBooleanOperator.NOT_LIKE, funcRef.apply(TextType.INSTANCE, value),
                     SQLs.ESCAPE, null);
         }
 
         @Override
         public final <T> IPredicate notLike(BiFunction<MappingType, T, Expression> funcRef, T value,
                                             SqlSyntax.WordEscape escape, char escapeChar) {
-            return Expressions.likePredicate(this, BooleanDualOperator.NOT_LIKE, funcRef.apply(TextType.INSTANCE, value),
+            return Expressions.likePredicate(this, DualBooleanOperator.NOT_LIKE, funcRef.apply(TextType.INSTANCE, value),
                     escape, SQLs.literal(StringType.INSTANCE, escapeChar)
             );
         }
 
         @Override
         public final <T> OperationExpression mod(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualExp(this, ExpDualOperator.MOD, funcRef.apply(this, value));
+            return Expressions.dualExp(this, DualExpOperator.MOD, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationExpression times(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualExp(this, ExpDualOperator.TIMES, funcRef.apply(this, value));
+            return Expressions.dualExp(this, DualExpOperator.TIMES, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationExpression plus(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualExp(this, ExpDualOperator.PLUS, funcRef.apply(this, value));
+            return Expressions.dualExp(this, DualExpOperator.PLUS, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationExpression minus(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualExp(this, ExpDualOperator.MINUS, funcRef.apply(this, value));
+            return Expressions.dualExp(this, DualExpOperator.MINUS, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationExpression divide(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualExp(this, ExpDualOperator.DIVIDE, funcRef.apply(this, value));
+            return Expressions.dualExp(this, DualExpOperator.DIVIDE, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationExpression bitwiseAnd(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualExp(this, ExpDualOperator.BITWISE_AND, funcRef.apply(this, value));
+            return Expressions.dualExp(this, DualExpOperator.BITWISE_AND, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationExpression bitwiseOr(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualExp(this, ExpDualOperator.BITWISE_OR, funcRef.apply(this, value));
+            return Expressions.dualExp(this, DualExpOperator.BITWISE_OR, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationExpression bitwiseXor(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualExp(this, ExpDualOperator.BITWISE_XOR, funcRef.apply(this, value));
+            return Expressions.dualExp(this, DualExpOperator.BITWISE_XOR, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationExpression rightShift(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualExp(this, ExpDualOperator.RIGHT_SHIFT, funcRef.apply(this, value));
+            return Expressions.dualExp(this, DualExpOperator.RIGHT_SHIFT, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> OperationExpression leftShift(BiFunction<Expression, T, Expression> funcRef, T value) {
-            return Expressions.dualExp(this, ExpDualOperator.LEFT_SHIFT, funcRef.apply(this, value));
+            return Expressions.dualExp(this, DualExpOperator.LEFT_SHIFT, funcRef.apply(this, value));
         }
 
 

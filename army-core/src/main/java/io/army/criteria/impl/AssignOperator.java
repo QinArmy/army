@@ -38,10 +38,10 @@ enum AssignOperator {
         ((_SelfDescribed) field).appendSql(context);
         switch (this) {
             case PLUS_EQUAL:
-                sqlBuilder.append(ExpDualOperator.PLUS.spaceOperator);
+                sqlBuilder.append(DualExpOperator.PLUS.spaceOperator);
                 break;
             case MINUS_EQUAL:
-                sqlBuilder.append(ExpDualOperator.MINUS.spaceOperator);
+                sqlBuilder.append(DualExpOperator.MINUS.spaceOperator);
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(this);

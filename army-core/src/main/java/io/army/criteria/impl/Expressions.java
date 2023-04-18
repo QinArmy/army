@@ -23,7 +23,7 @@ abstract class Expressions {
         throw new UnsupportedOperationException();
     }
 
-    static OperationExpression dualExp(final Expression left, final ExpDualOperator operator, final Expression right) {
+    static OperationExpression dualExp(final Expression left, final DualExpOperator operator, final Expression right) {
         final BinaryOperator<MappingType> inferFunc;
         switch (operator) {
             case PLUS:
@@ -48,7 +48,7 @@ abstract class Expressions {
         return dialectDualExp(left, operator, right, inferFunc);
     }
 
-    static OperationExpression dialectDualExp(final Expression left, final ExpDualOperator operator,
+    static OperationExpression dialectDualExp(final Expression left, final DualExpOperator operator,
                                               final Expression right, final BinaryOperator<MappingType> inferFunc) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
@@ -66,35 +66,19 @@ abstract class Expressions {
     }
 
 
-    static SimpleExpression unaryExp(final ExpUnaryOperator operator, final Expression operand) {
-        if (!(operand instanceof OperationExpression)) {
-            throw NonOperationExpression.nonOperationExpression(operand);
-        }
-        switch (operator) {
-            case NEGATE:
-            case BITWISE_NOT:
-            case POSITIVE:
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(operator);
-
-        }
-        return dialectUnaryExp(operator, operand, Expressions::identityType);
-    }
-
-    static SimpleExpression dialectUnaryExp(final ExpUnaryOperator operator, final Expression operand,
-                                            final UnaryOperator<MappingType> inferFunc) {
+    static SimpleExpression unaryExp(final UnaryExpOperator operator, final Expression operand) {
         if (!(operand instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(operand);
         }
         final UnaryExpression result;
         if (operand instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) operand).isDelay()) {
-            result = new DelayUnaryExpression(operator, operand, inferFunc);
+            result = new StandardDelayUnaryExpression(operator, operand, Expressions::identityType);
         } else {
-            result = new UnaryExpression(operator, operand, inferFunc);
+            result = new StandardUnaryExpression(operator, operand, Expressions::identityType);
         }
         return result;
     }
+
 
     static OperationExpression castExp(OperationExpression expression, TypeMeta typeMeta) {
         return new CastExpression(expression, typeMeta);
@@ -110,7 +94,7 @@ abstract class Expressions {
     }
 
 
-    static OperationPredicate existsPredicate(BooleanUnaryOperator operator, @Nullable SubQuery subQuery) {
+    static OperationPredicate existsPredicate(UnaryBooleanOperator operator, @Nullable SubQuery subQuery) {
         if (subQuery == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -148,7 +132,7 @@ abstract class Expressions {
     }
 
 
-    static OperationPredicate dualPredicate(final Expression left, final BooleanDualOperator operator, final Expression right) {
+    static OperationPredicate dualPredicate(final Expression left, final DualBooleanOperator operator, final Expression right) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
         }
@@ -171,7 +155,7 @@ abstract class Expressions {
         return new StandardDualPredicate(left, operator, right);
     }
 
-    static OperationPredicate likePredicate(final Expression left, final BooleanDualOperator operator,
+    static OperationPredicate likePredicate(final Expression left, final DualBooleanOperator operator,
                                             final @Nullable Expression right, SqlSyntax.WordEscape escape,
                                             @Nullable final Expression escapeChar) {
         switch (operator) {
@@ -208,7 +192,7 @@ abstract class Expressions {
     }
 
     static OperationPredicate compareQueryPredicate(OperationExpression left
-            , BooleanDualOperator operator, QueryOperator queryOperator, SubQuery subQuery) {
+            , DualBooleanOperator operator, QueryOperator queryOperator, SubQuery subQuery) {
         switch (operator) {
             case LESS:
             case LESS_EQUAL:
@@ -233,7 +217,7 @@ abstract class Expressions {
         return new SubQueryPredicate(left, operator, queryOperator, subQuery);
     }
 
-    static OperationPredicate inOperator(final OperationExpression left, final BooleanDualOperator operator,
+    static OperationPredicate inOperator(final OperationExpression left, final DualBooleanOperator operator,
                                          final SubQuery subQuery) {
         switch (operator) {
             case IN:
@@ -249,10 +233,10 @@ abstract class Expressions {
 
 
     /**
-     * @see #compareQueryPredicate(OperationExpression, BooleanDualOperator, QueryOperator, SubQuery)
-     * @see #inOperator(OperationExpression, BooleanDualOperator, SubQuery)
+     * @see #compareQueryPredicate(OperationExpression, DualBooleanOperator, QueryOperator, SubQuery)
+     * @see #inOperator(OperationExpression, DualBooleanOperator, SubQuery)
      */
-    private static void assertColumnSubQuery(final BooleanDualOperator operator
+    private static void assertColumnSubQuery(final DualBooleanOperator operator
             , final @Nullable QueryOperator queryOperator, final SubQuery subQuery) {
         if (((_DerivedTable) subQuery).refAllSelection().size() != 1) {
             StringBuilder builder = new StringBuilder();
@@ -268,14 +252,11 @@ abstract class Expressions {
 
     }
 
-    private static CriteriaException unsupportedOperator(Operator operator, Database database) {
-        String m = String.format("%s isn't supported by %s", operator, database);
-        return new CriteriaException(m);
-    }
 
     static MappingType identityType(MappingType type) {
         return type;
     }
+
 
     static MappingType doubleType(MappingType type) {
         return DoubleType.INSTANCE;
@@ -349,10 +330,15 @@ abstract class Expressions {
         return returnType;
     }
 
+    private static CriteriaException unsupportedOperator(Operator operator, Database database) {
+        String m = String.format("%s isn't supported by %s", operator, database);
+        return new CriteriaException(m);
+    }
+
 
     /**
      * This class is a implementation of {@link Expression}.
-     * The expression consist of a left {@link Expression} ,a {@link BooleanDualOperator} and right {@link Expression}.
+     * The expression consist of a left {@link Expression} ,a {@link DualBooleanOperator} and right {@link Expression}.
      *
      * @since 1.0
      */
@@ -360,7 +346,7 @@ abstract class Expressions {
 
         final ArmyExpression left;
 
-        final ExpDualOperator operator;
+        final DualExpOperator operator;
 
         final ArmyExpression right;
 
@@ -370,10 +356,10 @@ abstract class Expressions {
         private MappingType type;
 
         /**
-         * @see #dualExp(Expression, ExpDualOperator, Expression)
-         * @see #dialectDualExp(Expression, ExpDualOperator, Expression, BinaryOperator)
+         * @see #dualExp(Expression, DualExpOperator, Expression)
+         * @see #dialectDualExp(Expression, DualExpOperator, Expression, BinaryOperator)
          */
-        private DualExpression(final Expression left, final ExpDualOperator operator, final Expression right,
+        private DualExpression(final Expression left, final DualExpOperator operator, final Expression right,
                                final BinaryOperator<MappingType> inferFunc) {
             this.left = (ArmyExpression) left;
             this.operator = operator;
@@ -401,11 +387,13 @@ abstract class Expressions {
         @Override
         public final void appendSql(final _SqlContext context) {
 
-            final ExpDualOperator operator = this.operator;
+            final DualExpOperator operator = this.operator;
             switch (operator) {
                 case EXPONENTIATION:
                 case DOUBLE_VERTICAL:
-                case AT_TIME_ZONE: {
+                case AT_TIME_ZONE:
+                case DOUBLE_AMP:
+                case POUND: {
                     if (context.database() != Database.PostgreSQL) {
                         throw unsupportedOperator(operator, context.database());
                     }
@@ -433,7 +421,7 @@ abstract class Expressions {
             }
 
             //2. append operator
-            if (operator == ExpDualOperator.BITWISE_XOR && context.database() == Database.PostgreSQL) {
+            if (operator == DualExpOperator.BITWISE_XOR && context.database() == Database.PostgreSQL) {
                 sqlBuilder.append(" #");
             } else {
                 sqlBuilder.append(operator.spaceOperator);
@@ -491,10 +479,10 @@ abstract class Expressions {
         /**
          * @see #typeMeta()
          */
-        private MappingType inferToLeft(final ExpDualOperator operator, final MappingType right,
+        private MappingType inferToLeft(final DualExpOperator operator, final MappingType right,
                                         final BinaryOperator<MappingType> rightFunc) {
             final MappingType interim, resultType;
-            if (this.operator.precedence - operator.precedence < 0) {
+            if (this.operator.precedenceValue - operator.precedenceValue < 0) {
                 interim = rightFunc.apply(this.right.typeMeta().mappingType(), right);
                 if (this.left instanceof DualExpression) {
                     resultType = ((DualExpression) this.left).inferToLeft(this.operator, interim, this.inferFunc);
@@ -521,10 +509,10 @@ abstract class Expressions {
     private static final class DelayDualExpression extends DualExpression implements TypeInfer.DelayTypeInfer {
 
         /**
-         * @see #dualExp(Expression, ExpDualOperator, Expression)
-         * @see #dialectDualExp(Expression, ExpDualOperator, Expression, BinaryOperator)
+         * @see #dualExp(Expression, DualExpOperator, Expression)
+         * @see #dialectDualExp(Expression, DualExpOperator, Expression, BinaryOperator)
          */
-        private DelayDualExpression(Expression left, ExpDualOperator operator, Expression right,
+        private DelayDualExpression(Expression left, DualExpOperator operator, Expression right,
                                     BinaryOperator<MappingType> inferFunc) {
             super(left, operator, right, inferFunc);
         }
@@ -544,20 +532,21 @@ abstract class Expressions {
      * This class representing unary expression,unary expression always out outer bracket.
      * </p>
      * This class is a implementation of {@link Expression}.
-     * The expression consist of a  {@link Expression} and a {@link ExpUnaryOperator}.
+     * The expression consist of a  {@link Expression} and a {@link UnaryExpOperator}.
      */
-    private static class UnaryExpression extends OperationExpression.OperationSimpleExpression {
+    static class UnaryExpression extends OperationExpression.OperationSimpleExpression {
 
-        private final ExpUnaryOperator operator;
+        private final Operator.SqlUnaryExpOperator operator;
 
         final ArmyExpression operand;
 
         private final UnaryOperator<MappingType> inferFunc;
 
         /**
-         * @see #unaryExp(ExpUnaryOperator, Expression)
+         * @see #unaryExp(UnaryExpOperator, Expression)
          */
-        private UnaryExpression(ExpUnaryOperator operator, Expression operand, UnaryOperator<MappingType> inferFunc) {
+        UnaryExpression(Operator.SqlUnaryExpOperator operator, Expression operand,
+                        UnaryOperator<MappingType> inferFunc) {
             this.operator = operator;
             this.operand = (ArmyExpression) operand;
             this.inferFunc = inferFunc;
@@ -595,28 +584,11 @@ abstract class Expressions {
         @Override
         public final void appendSql(final _SqlContext context) {
 
-            final ExpUnaryOperator operator = this.operator;
+            final Operator.SqlUnaryExpOperator operator = this.operator;
             final boolean outerParens;
-            switch (operator) {
-                case NEGATE:
-                case POSITIVE:
-                    outerParens = false;
-                    break;
-                case AT:
-                case DOUBLE_VERTICAL_SLASH:
-                case VERTICAL_SLASH: {
-                    if (context.database() != Database.PostgreSQL) {
-                        throw unsupportedOperator(operator, context.database());
-                    }
-                    outerParens = true;
-                }
-                break;
-                case BITWISE_NOT:
-                    outerParens = true;
-                    break;
-                default:
-                    //no bug,never here
-                    throw _Exceptions.unexpectedEnum(operator);
+            outerParens = operator != UnaryExpOperator.NEGATE;
+            if (!(operator instanceof UnaryExpOperator) && operator.database() != context.database()) {
+                throw unsupportedOperator(operator, context.database());
             }
 
             final StringBuilder builder;
@@ -625,7 +597,7 @@ abstract class Expressions {
             if (outerParens) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            builder.append(operator.spaceOperator);
+            builder.append(operator.spaceRender());
 
             final ArmyExpression operand = this.operand;
             final boolean operandOuterParens = !(operand instanceof ArmySimpleExpression);
@@ -668,30 +640,16 @@ abstract class Expressions {
 
         @Override
         public final String toString() {
-            final ExpUnaryOperator operator = this.operator;
+            final Operator.SqlUnaryExpOperator operator = this.operator;
             final boolean outerParens;
-            switch (operator) {
-                case NEGATE:
-                case POSITIVE:
-                    outerParens = false;
-                    break;
-                case AT:
-                case DOUBLE_VERTICAL_SLASH:
-                case VERTICAL_SLASH:
-                case BITWISE_NOT:
-                    outerParens = true;
-                    break;
-                default:
-                    //no bug,never here
-                    throw _Exceptions.unexpectedEnum(operator);
-            }
+            outerParens = operator != UnaryExpOperator.NEGATE;
 
             final StringBuilder builder = new StringBuilder();
 
             if (outerParens) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            builder.append(operator.spaceOperator);
+            builder.append(operator.spaceRender());
 
             final ArmyExpression operand = this.operand;
             final boolean operandOuterParens = !(operand instanceof ArmySimpleExpression);
@@ -715,26 +673,48 @@ abstract class Expressions {
 
     }//UnaryExpression
 
-    private static final class DelayUnaryExpression extends UnaryExpression implements TypeInfer.DelayTypeInfer {
+    static abstract class DelayUnaryExpression extends UnaryExpression implements TypeInfer.DelayTypeInfer {
 
         private MappingType type;
 
-        /**
-         * @see #unaryExp(ExpUnaryOperator, Expression)
-         * @see #dialectUnaryExp(ExpUnaryOperator, Expression, UnaryOperator)
-         */
-        private DelayUnaryExpression(ExpUnaryOperator operator, Expression operand,
-                                     UnaryOperator<MappingType> inferFunc) {
+
+        DelayUnaryExpression(Operator.SqlUnaryExpOperator operator, Expression operand,
+                             UnaryOperator<MappingType> inferFunc) {
             super(operator, operand, inferFunc);
         }
 
         @Override
-        public boolean isDelay() {
+        public final boolean isDelay() {
             return this.type == null && ((DelayTypeInfer) this.operand).isDelay();
         }
 
 
     }//DelayUnaryExpression
+
+
+    private static final class StandardUnaryExpression extends UnaryExpression {
+
+        /**
+         * @see #unaryExp(UnaryExpOperator, Expression)
+         */
+        private StandardUnaryExpression(UnaryExpOperator operator, Expression operand,
+                                        UnaryOperator<MappingType> inferFunc) {
+            super(operator, operand, inferFunc);
+        }
+
+    }//StandardUnaryExpression
+
+    private static final class StandardDelayUnaryExpression extends DelayUnaryExpression {
+
+        /**
+         * @see #unaryExp(UnaryExpOperator, Expression)
+         */
+        private StandardDelayUnaryExpression(UnaryExpOperator operator, Expression operand,
+                                             UnaryOperator<MappingType> inferFunc) {
+            super(operator, operand, inferFunc);
+        }
+
+    }//StandardDelayUnaryExpression
 
 
     private static final class ScalarExpression extends OperationExpression.OperationSimpleExpression {
@@ -777,12 +757,12 @@ abstract class Expressions {
 
     private static final class ExistsPredicate extends OperationPredicate.CompoundPredicate {
 
-        private final BooleanUnaryOperator operator;
+        private final UnaryBooleanOperator operator;
 
         private final SubQuery subQuery;
 
 
-        private ExistsPredicate(SubQuery query, BooleanUnaryOperator operator) {
+        private ExistsPredicate(SubQuery query, UnaryBooleanOperator operator) {
             this.operator = operator;
             this.subQuery = query;
         }
@@ -837,12 +817,12 @@ abstract class Expressions {
 
         final ArmyExpression left;
 
-        final Operator.BooleanDualOperator operator;
+        final Operator.SqlDualBooleanOperator operator;
 
         final ArmyExpression right;
 
 
-        DualPredicate(Expression left, Operator.BooleanDualOperator operator, Expression right) {
+        DualPredicate(Expression left, Operator.SqlDualBooleanOperator operator, Expression right) {
             this.left = (ArmyExpression) left;
             this.operator = operator;
             this.right = (ArmyExpression) right;
@@ -850,8 +830,8 @@ abstract class Expressions {
 
         @Override
         public final void appendSql(final _SqlContext context) {
-            final Operator.BooleanDualOperator operator = this.operator;
-            if (!(operator instanceof BooleanDualOperator) && context.database() != operator.database()) {
+            final Operator.SqlDualBooleanOperator operator = this.operator;
+            if (!(operator instanceof DualBooleanOperator) && context.database() != operator.database()) {
                 throw unsupportedOperator(operator, context.database());
             }
 
@@ -942,9 +922,9 @@ abstract class Expressions {
     private static final class StandardDualPredicate extends DualPredicate {
 
         /**
-         * @see #dualPredicate(Expression, BooleanDualOperator, Expression)
+         * @see #dualPredicate(Expression, DualBooleanOperator, Expression)
          */
-        private StandardDualPredicate(Expression left, BooleanDualOperator operator, Expression right) {
+        private StandardDualPredicate(Expression left, DualBooleanOperator operator, Expression right) {
             super(left, operator, right);
         }
 
@@ -955,16 +935,16 @@ abstract class Expressions {
 
         private final ArmyExpression left;
 
-        private final BooleanDualOperator operator;
+        private final DualBooleanOperator operator;
 
         private final ArmyExpression right;
 
         private final ArmyExpression escapeChar;
 
         /**
-         * @see #likePredicate(Expression, BooleanDualOperator, Expression, SqlSyntax.WordEscape, Expression)
+         * @see #likePredicate(Expression, DualBooleanOperator, Expression, SqlSyntax.WordEscape, Expression)
          */
-        private LikePredicate(OperationExpression left, BooleanDualOperator operator, Expression right,
+        private LikePredicate(OperationExpression left, DualBooleanOperator operator, Expression right,
                               @Nullable Expression escapeChar) {
             this.left = left;
             this.operator = operator;
@@ -1281,13 +1261,13 @@ abstract class Expressions {
     private static final class SubQueryPredicate extends OperationPredicate.CompoundPredicate {
         private final ArmyExpression left;
 
-        private final BooleanDualOperator operator;
+        private final DualBooleanOperator operator;
 
         private final QueryOperator queryOperator;
 
         private final SubQuery subQuery;
 
-        private SubQueryPredicate(OperationExpression left, BooleanDualOperator operator,
+        private SubQueryPredicate(OperationExpression left, DualBooleanOperator operator,
                                   @Nullable QueryOperator queryOperator, SubQuery subQuery) {
             this.left = left;
             this.operator = operator;

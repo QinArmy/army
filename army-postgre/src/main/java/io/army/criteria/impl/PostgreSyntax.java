@@ -201,7 +201,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">Absolute value operator</a>
      */
     public static Expression at(Expression operand) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.AT, operand, Expressions::identityType);
+        return PostgreExpressions.unaryExpression(PostgreUnaryExpOperator.AT, operand, Expressions::identityType);
     }
 
     /**
@@ -210,7 +210,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression atHyphenAt(Expression operand) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.AT_HYPHEN_AT, operand, PostgreExpressions::atHyphenAtType);
+        return PostgreExpressions.unaryExpression(PostgreUnaryExpOperator.AT_HYPHEN_AT, operand, PostgreExpressions::atHyphenAtType);
     }
 
     /**
@@ -219,7 +219,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression atAt(Expression operand) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.AT_AT, operand, PostgreExpressions::atAtType);
+        return PostgreExpressions.unaryExpression(PostgreUnaryExpOperator.AT_AT, operand, PostgreExpressions::atAtType);
     }
 
     /**
@@ -228,7 +228,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression pound(Expression operand) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.POUND, operand, PostgreExpressions::unaryPoundType);
+        return PostgreExpressions.unaryExpression(PostgreUnaryExpOperator.POUND, operand, PostgreExpressions::unaryPoundType);
     }
 
     /**
@@ -237,7 +237,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression pound(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.POUND, right, PostgreExpressions::dualPoundType);
+        return Expressions.dialectDualExp(left, DualExpOperator.POUND, right, PostgreExpressions::dualPoundType);
     }
 
     /**
@@ -246,14 +246,14 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression ltHyphenGt(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.LT_HYPHEN_GT, right, PostgreExpressions::lessHyphenGreaterType);
+        return Expressions.dialectDualExp(left, DualExpOperator.LT_HYPHEN_GT, right, PostgreExpressions::ltHyphenGtType);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type + numeric_type → numeric_type</a>
      */
     public static Expression plus(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.PLUS, right, PostgreExpressions::plusType);
+        return Expressions.dialectDualExp(left, DualExpOperator.PLUS, right, PostgreExpressions::plusType);
     }
 
     /**
@@ -261,7 +261,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Subtraction</a>
      */
     public static Expression minus(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.MINUS, right, PostgreExpressions::minusType);
+        return Expressions.dialectDualExp(left, DualExpOperator.MINUS, right, PostgreExpressions::minusType);
     }
 
     /**
@@ -269,7 +269,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Multiplication</a>
      */
     public static Expression times(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.TIMES, right, PostgreExpressions::timesType);
+        return Expressions.dialectDualExp(left, DualExpOperator.TIMES, right, PostgreExpressions::timesType);
     }
 
     /**
@@ -277,7 +277,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Division (for integral types, division truncates the result towards zero)</a>
      */
     public static Expression divide(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.DIVIDE, right, PostgreExpressions::divideType);
+        return Expressions.dialectDualExp(left, DualExpOperator.DIVIDE, right, PostgreExpressions::divideType);
     }
 
     /**
@@ -285,7 +285,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Modulo (remainder); available for smallint, integer, bigint, and numeric</a>
      */
     public static Expression mode(Expression left, Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.MOD, right, Expressions::mathExpType);
+        return Expressions.dialectDualExp(left, DualExpOperator.MOD, right, Expressions::mathExpType);
     }
 
 
@@ -310,7 +310,18 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Exponentiation</a>
      */
     public static Expression caret(final Expression left, final Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.EXPONENTIATION, right, PostgreSyntax::caretResultType);
+        return Expressions.dialectDualExp(left, DualExpOperator.EXPONENTIATION, right, PostgreSyntax::caretResultType);
+    }
+
+
+    /**
+     * @see #doubleAmp(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery && tsquery → tsquery<br>
+     * ANDs two tsquerys together, producing a query that matches documents that match both input queries.
+     * </a>
+     */
+    public static Expression ampAmp(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, DualExpOperator.DOUBLE_AMP, right, PostgreExpressions::doubleAmpType);
     }
 
 
@@ -346,9 +357,12 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * anynonarray || text → text
      * </a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsvector || tsvector → tsvector</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery || tsquery → tsquery</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery || tsquery → tsquery</a>
      */
     public static Expression doubleVertical(final Expression left, final Expression right) {
-        return Expressions.dialectDualExp(left, ExpDualOperator.DOUBLE_VERTICAL, right, PostgreSyntax::doubleVerticalType);
+        return Expressions.dialectDualExp(left, DualExpOperator.DOUBLE_VERTICAL, right, PostgreExpressions::doubleVerticalType);
     }
 
 
@@ -362,7 +376,16 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression verticalSlash(final Expression exp) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.VERTICAL_SLASH, exp, Expressions::doubleType);
+        return PostgreExpressions.unaryExpression(PostgreUnaryExpOperator.VERTICAL_SLASH, exp, Expressions::doubleType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">!! tsquery → tsquery<br>
+     * Negates a tsquery, producing a query that matches documents that do not match the input query.
+     * </a>
+     */
+    public static Expression doubleExclamation(final Expression exp) {
+        return PostgreExpressions.unaryExpression(PostgreUnaryExpOperator.DOUBLE_EXCLAMATION, exp, Expressions::identityType);
     }
 
     /**
@@ -375,8 +398,9 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static Expression doubleVerticalSlash(final Expression operand) {
-        return Expressions.dialectUnaryExp(ExpUnaryOperator.DOUBLE_VERTICAL_SLASH, operand, Expressions::doubleType);
+        return PostgreExpressions.unaryExpression(PostgreUnaryExpOperator.DOUBLE_VERTICAL_SLASH, operand, Expressions::doubleType);
     }
+
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">?- line → boolean<br/>
@@ -391,7 +415,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">?| line → boolean<br/>
      * ?| lseg → boolean<br/>
-     * Is line vertical?
+     * Is line vertical?<br/>
      * </a>
      */
     public static IPredicate questionVertical(Expression operand) {
@@ -403,18 +427,22 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type @> geometric_type → boolean<br/>
      * Does first object contain second? Available for these pairs of types: (box, point), (box, box), (path, point), (polygon, point), (polygon, polygon), (circle, point), (circle, circle).
      * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery @> tsquery → boolean<br/>
+     * </a>
      */
     public static IPredicate atGt(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AT_GT, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.AT_GT, right);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;@ geometric_type → boolean<br/>
      * Is first object contained in or on second? Available for these pairs of types: (point, box), (point, lseg), (point, line), (point, path), (point, polygon), (point, circle), (box, box), (lseg, box), (lseg, line), (polygon, polygon), (circle, circle).
      * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery <@ tsquery → boolean<br/>
+     * </a>
      */
     public static IPredicate ltAt(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_AT, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.LT_AT, right);
     }
 
     /**
@@ -427,7 +455,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static IPredicate doubleAmp(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.DOUBLE_AMP, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.DOUBLE_AMP, right);
     }
 
     /**
@@ -449,7 +477,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static IPredicate ltLt(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_LT, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.LT_LT, right);
     }
 
 
@@ -458,7 +486,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Is first object strictly right of second? Available for point, box, polygon, circle.</a>
      */
     public static IPredicate gtGt(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.GT_GT, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.GT_GT, right);
     }
 
     /**
@@ -468,7 +496,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static IPredicate ltLtEqual(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_LT_EQUAL, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.LT_LT_EQUAL, right);
     }
 
     /**
@@ -478,7 +506,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static IPredicate gtGtEqual(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.GT_GT_EQUAL, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.GT_GT_EQUAL, right);
     }
 
     /**
@@ -486,7 +514,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Does first object not extend to the right of second? Available for box, polygon, circle.</a>
      */
     public static IPredicate ampLt(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_LT, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.AMP_LT, right);
     }
 
     /**
@@ -494,7 +522,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Does first object not extend to the left of second? Available for box, polygon, circle.</a>
      */
     public static IPredicate ampGt(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_GT, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.AMP_GT, right);
     }
 
     /**
@@ -502,7 +530,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Is first object strictly below second? Available for point, box, polygon, circle.</a>
      */
     public static IPredicate ltLtVertical(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_LT_VERTICAL, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.LT_LT_VERTICAL, right);
     }
 
     /**
@@ -510,7 +538,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Is first object strictly above second? Available for point, box, polygon, circle.</a>
      */
     public static IPredicate verticalGtGt(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.VERTICAL_GT_GT, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.VERTICAL_GT_GT, right);
     }
 
     /**
@@ -518,7 +546,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Does first object not extend above second? Available for box, polygon, circle.</a>
      */
     public static IPredicate ampLtVertical(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.AMP_LT_VERTICAL, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.AMP_LT_VERTICAL, right);
     }
 
     /**
@@ -526,7 +554,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Does first object not extend below second? Available for box, polygon, circle.</a>
      */
     public static IPredicate verticalAmpGt(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.VERTICAL_AMP_GT, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.VERTICAL_AMP_GT, right);
     }
 
 
@@ -535,7 +563,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Is first object below second (allows edges to touch)?</a>
      */
     public static IPredicate ltCaret(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.LT_CARET, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.LT_CARET, right);
     }
 
     /**
@@ -543,7 +571,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Is first object above second (allows edges to touch)?</a>
      */
     public static IPredicate gtCaret(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.GT_CARET, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.GT_CARET, right);
     }
 
     /**
@@ -551,7 +579,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Is first object above second (allows edges to touch)?</a>
      */
     public static IPredicate questionPound(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_POUND, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.QUESTION_POUND, right);
     }
 
     /**
@@ -559,7 +587,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Are points horizontally aligned (that is, have same y coordinate)?</a>
      */
     public static IPredicate questionHyphen(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_HYPHEN, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.QUESTION_HYPHEN, right);
     }
 
     /**
@@ -567,7 +595,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * Are points vertically aligned (that is, have same x coordinate)?</a>
      */
     public static IPredicate questionVertical(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_VERTICAL, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.QUESTION_VERTICAL, right);
     }
 
     /**
@@ -575,7 +603,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * lseg ?-| lseg → boolean</a>
      */
     public static IPredicate questionHyphenVertical(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_HYPHEN_VERTICAL, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.QUESTION_HYPHEN_VERTICAL, right);
     }
 
     /**
@@ -583,7 +611,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * lseg ?|| lseg → boolean</a>
      */
     public static IPredicate questionVerticalVertical(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.QUESTION_VERTICAL_VERTICAL, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.QUESTION_VERTICAL_VERTICAL, right);
     }
 
     /**
@@ -592,7 +620,27 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * </a>
      */
     public static IPredicate tildeEqual(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.TILDE_EQUAL, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.TILDE_EQUAL, right);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsvector @@ tsquery → boolean<br/>
+     * tsquery @@ tsvector → boolean<br/>
+     * text @@ tsquery → boolean<br/>
+     * </a>
+     */
+    public static IPredicate doubleAt(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.DOUBLE_AT, right);
+    }
+
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsvector @@@ tsquery → boolean<br/>
+     * tsquery @@@ tsvector → boolean<br/>
+     * </a>
+     */
+    public static IPredicate tripleAt(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.TRIPLE_AT, right);
     }
 
 
@@ -608,7 +656,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">text ^@ text → boolean</a>
      */
     public static IPredicate caretAt(Expression left, Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.CARET_AT, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.CARET_AT, right);
     }
 
 
@@ -623,7 +671,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String matches regular expression, case sensitively</a>
      */
     public static IPredicate tilde(final Expression left, final Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.TILDE, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.TILDE, right);
     }
 
     /**
@@ -637,7 +685,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String does not match regular expression, case sensitively</a>
      */
     public static IPredicate notTilde(final Expression left, final Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.NOT_TILDE, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.NOT_TILDE, right);
     }
 
     /**
@@ -649,7 +697,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String matches regular expression, case insensitively</a>
      */
     public static IPredicate tildeStar(final Expression left, final Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.TILDE_STAR, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.TILDE_STAR, right);
     }
 
     /**
@@ -661,7 +709,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * String does not match regular expression, case insensitively</a>
      */
     public static IPredicate notTildeStar(final Expression left, final Expression right) {
-        return PostgreExpressions.dualPredicate(left, PostgreBooleanDualOperator.NOT_TILDE_STAR, right);
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.NOT_TILDE_STAR, right);
     }
 
 
@@ -733,35 +781,35 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"> AT TIME ZONE Variants</a>
      */
     public static Expression atTimeZone(final Expression source, final Expression zone) {
-        return Expressions.dialectDualExp(source, ExpDualOperator.AT_TIME_ZONE, zone, PostgreSyntax::atTimeZoneType);
+        return Expressions.dialectDualExp(source, DualExpOperator.AT_TIME_ZONE, zone, PostgreSyntax::atTimeZoneType);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
      */
     public static IPredicate similarTo(Expression exp, Expression pattern) {
-        return Expressions.likePredicate(exp, BooleanDualOperator.SIMILAR_TO, pattern, SQLs.ESCAPE, null);
+        return Expressions.likePredicate(exp, DualBooleanOperator.SIMILAR_TO, pattern, SQLs.ESCAPE, null);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
      */
     public static IPredicate similarTo(Expression exp, Expression pattern, WordEscape escape, Expression escapeChar) {
-        return Expressions.likePredicate(exp, BooleanDualOperator.SIMILAR_TO, pattern, escape, escapeChar);
+        return Expressions.likePredicate(exp, DualBooleanOperator.SIMILAR_TO, pattern, escape, escapeChar);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
      */
     public static IPredicate notSimilarTo(Expression exp, Expression pattern) {
-        return Expressions.likePredicate(exp, BooleanDualOperator.NOT_SIMILAR_TO, pattern, SQLs.ESCAPE, null);
+        return Expressions.likePredicate(exp, DualBooleanOperator.NOT_SIMILAR_TO, pattern, SQLs.ESCAPE, null);
     }
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
      */
     public static IPredicate notSimilarTo(Expression exp, Expression pattern, WordEscape escape, Expression escapeChar) {
-        return Expressions.likePredicate(exp, BooleanDualOperator.NOT_SIMILAR_TO, pattern, escape, escapeChar);
+        return Expressions.likePredicate(exp, DualBooleanOperator.NOT_SIMILAR_TO, pattern, escape, escapeChar);
     }
 
 
@@ -797,26 +845,6 @@ abstract class PostgreSyntax extends PostgreMiscellaneousFunctions {
         } else {
             String m = String.format("AT TIME ZONE operator don't support %s", left);
             throw ContextStack.clearStackAndCriteriaError(m);
-        }
-        return returnType;
-    }
-
-    /**
-     * @see #doubleVertical(Expression, Expression)
-     */
-    private static MappingType doubleVerticalType(final MappingType left, final MappingType right) {
-        final MappingType returnType;
-        if (left instanceof MappingType.SqlStringType || right instanceof MappingType.SqlStringType) {
-            returnType = TextType.INSTANCE;
-        } else if (left instanceof MappingType.SqlBinaryType || right instanceof MappingType.SqlBinaryType) {
-            if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
-                throw CriteriaUtils.dualOperandError(ExpDualOperator.DOUBLE_VERTICAL, left, right);
-            }
-            returnType = PrimitiveByteArrayType.INSTANCE;
-        } else if (left instanceof MappingType.SqlBitType || right instanceof MappingType.SqlBitType) {
-            returnType = BitSetType.INSTANCE;
-        } else {
-            throw CriteriaUtils.dualOperandError(ExpDualOperator.DOUBLE_VERTICAL, left, right);
         }
         return returnType;
     }

@@ -1,6 +1,8 @@
 package io.army.criteria.impl;
 
-enum ExpDualOperator implements Operator.DualOperator {
+import io.army.dialect.Database;
+
+enum DualExpOperator implements Operator.SqlDualExpressionOperator {
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
@@ -49,6 +51,13 @@ enum ExpDualOperator implements Operator.DualOperator {
     POUND_POUND(" ##", 20),// postgre only
 
     /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery && tsquery → tsquery<br>
+     * ANDs two tsquerys together, producing a query that matches documents that match both input queries.
+     * </a>
+     */
+    DOUBLE_AMP(" &&", 20),// postgre only
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;-> geometric_type → double precision<br/>
      * Computes the distance between the objects. Available for all seven geometric types, for all combinations of point with another geometric type, and for these additional pairs of types: (box, lseg), (lseg, line), (polygon, circle) (and the commutator cases).
      * </a>
@@ -58,18 +67,39 @@ enum ExpDualOperator implements Operator.DualOperator {
 
     final String spaceOperator;
 
-    final byte precedence;
+    final byte precedenceValue;
 
-    ExpDualOperator(String spaceOperator, int precedence) {
-        assert precedence <= Byte.MAX_VALUE;
+    DualExpOperator(String spaceOperator, int precedenceValue) {
+        assert precedenceValue <= Byte.MAX_VALUE;
         this.spaceOperator = spaceOperator;
-        this.precedence = (byte) precedence;
+        this.precedenceValue = (byte) precedenceValue;
     }
+
+
+    @Override
+    public final String spaceRender() {
+        return this.spaceOperator;
+    }
+
+    @Override
+    public final int precedence() {
+        return this.precedenceValue;
+    }
+
+    @Override
+    public final Database database() {
+        // no bug,never here
+        throw new UnsupportedOperationException();
+    }
+
 
     @Override
     public final String toString() {
         return CriteriaUtils.enumToString(this);
     }
+
+
+
 
 
 }

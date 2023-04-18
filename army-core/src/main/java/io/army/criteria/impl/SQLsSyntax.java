@@ -1052,11 +1052,11 @@ abstract class SQLsSyntax extends Functions {
     }
 
     public static SimpleExpression bitwiseNot(Expression exp) {
-        return Expressions.unaryExp(ExpUnaryOperator.BITWISE_NOT, exp);
+        return Expressions.unaryExp(UnaryExpOperator.BITWISE_NOT, exp);
     }
 
     public static SimpleExpression negate(Expression exp) {
-        return Expressions.unaryExp(ExpUnaryOperator.NEGATE, exp);
+        return Expressions.unaryExp(UnaryExpOperator.NEGATE, exp);
     }
 
     public static IPredicate not(IPredicate predicate) {
@@ -1075,14 +1075,14 @@ abstract class SQLsSyntax extends Functions {
      * @param subQuery non-null
      */
     public static IPredicate exists(SubQuery subQuery) {
-        return Expressions.existsPredicate(BooleanUnaryOperator.EXISTS, subQuery);
+        return Expressions.existsPredicate(UnaryBooleanOperator.EXISTS, subQuery);
     }
 
     /**
      * @param subQuery non-null
      */
     public static IPredicate notExists(SubQuery subQuery) {
-        return Expressions.existsPredicate(BooleanUnaryOperator.NOT_EXISTS, subQuery);
+        return Expressions.existsPredicate(UnaryBooleanOperator.NOT_EXISTS, subQuery);
     }
 
     public static ItemPair plusEqual(final DataField field, final Expression value) {

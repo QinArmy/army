@@ -6,6 +6,7 @@ import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.postgre.PostgreInetType;
+import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.spatial.postgre.PostgreBoxType;
 import io.army.mapping.spatial.postgre.PostgreGeometricType;
 import io.army.mapping.spatial.postgre.PostgrePointType;
@@ -15,6 +16,7 @@ import io.army.util._StringUtils;
 
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.UnaryOperator;
 
 abstract class PostgreExpressions {
 
@@ -36,6 +38,22 @@ abstract class PostgreExpressions {
         return new PeriodOverlapsPredicate(start, endOrLength);
     }
 
+
+    static SimpleExpression unaryExpression(final PostgreUnaryExpOperator operator, final Expression operand,
+                                            final UnaryOperator<MappingType> inferFunc) {
+        if (!(operand instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(operand);
+        }
+        final SimpleExpression expression;
+        if (operand instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) operand).isDelay()) {
+            expression = new PostgreDelayUnaryExpression(operator, operand, inferFunc);
+        } else {
+            expression = new PostgreUnaryExpression(operator, operand, inferFunc);
+        }
+        return expression;
+    }
+
+
     static OperationPredicate unaryPredicate(PostgreBooleanUnaryOperator operator, Expression operand) {
         if (!(operand instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(operand);
@@ -43,7 +61,7 @@ abstract class PostgreExpressions {
         return new PostgreUnaryPredicate(operator, operand);
     }
 
-    static OperationPredicate dualPredicate(final Expression left, final PostgreBooleanDualOperator operator,
+    static OperationPredicate dualPredicate(final Expression left, final PostgreDualBooleanOperator operator,
                                             final Expression right) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
@@ -206,6 +224,54 @@ abstract class PostgreExpressions {
         return returnType;
     }
 
+    /**
+     * <p>
+     *     <ul>
+     *         <li>bit || bit → bit</li>
+     *         <li>text || text → text</li>
+     *         <li>text || anynonarray → text </li>
+     *         <li>tsvector || tsvector → tsvector</li>
+     *         <li>tsquery || tsquery → tsquery</li>
+     *     </ul>
+     * </p>
+     *
+     * @see Postgres#doubleVertical(Expression, Expression)
+     */
+    static MappingType doubleVerticalType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left.getClass() == right.getClass()) {
+            returnType = left;
+        } else if (left instanceof MappingType.SqlStringType || right instanceof MappingType.SqlStringType) {
+            returnType = TextType.INSTANCE;
+        } else if (left instanceof MappingType.SqlBinaryType && right instanceof MappingType.SqlBinaryType) {
+            returnType = PrimitiveByteArrayType.INSTANCE;
+        } else if (left instanceof MappingType.SqlBitType && right instanceof MappingType.SqlBitType) {
+            returnType = BitSetType.INSTANCE;
+        } else {
+            returnType = TextType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * <p>
+     *     <ul>
+     *         <li>tsquery && tsquery → tsquery</li>
+     *     </ul>
+     * </p>
+     *
+     * @see Postgres#ampAmp(Expression, Expression)
+     */
+    static MappingType doubleAmpType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left instanceof PostgreTsQueryType && right instanceof PostgreTsQueryType) {
+            returnType = left;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
 
     /**
      * @see Postgres#atHyphenAt(Expression)
@@ -264,9 +330,13 @@ abstract class PostgreExpressions {
     /**
      * @see Postgres#ltHyphenGt(Expression, Expression)
      */
-    static MappingType lessHyphenGreaterType(final MappingType left, final MappingType right) {
+    static MappingType ltHyphenGtType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlGeometryType) {
+        if (left instanceof PostgreTsQueryType && right instanceof PostgreTsQueryType) {
+            returnType = left;
+        } else if (left instanceof PostgreGeometricType && right instanceof PostgreGeometricType) {
+            returnType = DoubleType.INSTANCE;
+        } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlGeometryType) {
             returnType = DoubleType.INSTANCE;
         } else { // error or unknown
             returnType = StringType.INSTANCE;
@@ -405,14 +475,37 @@ abstract class PostgreExpressions {
     private static final class PostgreDualPredicate extends Expressions.DualPredicate {
 
         /**
-         * @see #dualPredicate(Expression, PostgreBooleanDualOperator, Expression)
+         * @see #dualPredicate(Expression, PostgreDualBooleanOperator, Expression)
          */
-        private PostgreDualPredicate(Expression left, PostgreBooleanDualOperator operator, Expression right) {
+        private PostgreDualPredicate(Expression left, PostgreDualBooleanOperator operator, Expression right) {
             super(left, operator, right);
         }
 
 
     }//PostgreDualPredicate
+
+
+    private static final class PostgreUnaryExpression extends Expressions.UnaryExpression {
+
+        /**
+         * @see #unaryExpression(PostgreUnaryExpOperator, Expression, UnaryOperator)
+         */
+        private PostgreUnaryExpression(PostgreUnaryExpOperator operator, Expression operand,
+                                       UnaryOperator<MappingType> inferFunc) {
+            super(operator, operand, inferFunc);
+        }
+    }//PostgreUnaryExpression
+
+    private static final class PostgreDelayUnaryExpression extends Expressions.DelayUnaryExpression {
+
+        /**
+         * @see #unaryExpression(PostgreUnaryExpOperator, Expression, UnaryOperator)
+         */
+        private PostgreDelayUnaryExpression(PostgreUnaryExpOperator operator, Expression operand,
+                                            UnaryOperator<MappingType> inferFunc) {
+            super(operator, operand, inferFunc);
+        }
+    }//PostgreDelayExpression
 
 
     private static final class PostgreUnaryPredicate extends OperationPredicate.CompoundPredicate {

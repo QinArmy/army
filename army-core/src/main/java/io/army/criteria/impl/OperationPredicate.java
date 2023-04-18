@@ -475,7 +475,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         final boolean match;
         final Expressions.DualPredicate predicate;
         if (!(this instanceof Expressions.DualPredicate)
-                || (predicate = (Expressions.DualPredicate) this).operator != BooleanDualOperator.EQUAL) {
+                || (predicate = (Expressions.DualPredicate) this).operator != DualBooleanOperator.EQUAL) {
             match = false;
         } else if (predicate.left instanceof TableField
                 && _MetaBridge.VERSION.equals(((TableField) predicate.left).fieldName())) {
@@ -505,11 +505,11 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             match = false;
         } else if (!((dualPredicate = (Expressions.DualPredicate) predicate).left instanceof PrimaryFieldMeta)) {
             match = false;
-        } else if (dualPredicate.operator == BooleanDualOperator.EQUAL) {
+        } else if (dualPredicate.operator == DualBooleanOperator.EQUAL) {
             match = dualPredicate.right instanceof SqlValueParam.SingleValue
                     && (dualPredicate.right instanceof SingleParamExpression
                     || dualPredicate.right instanceof SingleLiteralExpression);
-        } else if (dualPredicate.operator == BooleanDualOperator.IN) {
+        } else if (dualPredicate.operator == DualBooleanOperator.IN) {
             match = dualPredicate.right instanceof NonOperationExpression.MultiValueExpression;
         } else {
             match = false;
@@ -526,7 +526,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         final TableField leftField, rightField;
 
 
-        if (!(this instanceof Expressions.DualPredicate) || (predicate = (Expressions.DualPredicate) this).operator != BooleanDualOperator.EQUAL) {
+        if (!(this instanceof Expressions.DualPredicate) || (predicate = (Expressions.DualPredicate) this).operator != DualBooleanOperator.EQUAL) {
             parentId = null;
         } else if (!(predicate.left instanceof TableField && predicate.right instanceof TableField)) {
             parentId = null;

@@ -612,7 +612,7 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException dualOperandError(Operator.DualOperator operator, MappingType left, MappingType right) {
+    static CriteriaException dualOperandError(Operator.SqlDualOperator operator, MappingType left, MappingType right) {
         String m = String.format("%s don't left operand[%s] and right operand[%s]", operator, left, right);
         return ContextStack.clearStackAndCriteriaError(m);
     }
