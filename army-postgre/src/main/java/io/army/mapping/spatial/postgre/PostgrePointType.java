@@ -1,4 +1,4 @@
-package io.army.mapping.spatial;
+package io.army.mapping.spatial.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
@@ -8,41 +8,37 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 
+
 /**
- * @see <a href="https://www.ogc.org/standards/sfa">Simple Feature Access - Part 1: Common Architecture PDF</a>
+ * <p>
+ * This class representing Postgre point type {@link MappingType}
+ * </p>
+ *
+ * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">point</a>
  */
-public final class PointType extends ArmyGeometryType implements MappingType.SqlPointType {
+public final class PostgrePointType extends PostgreGeometricType implements MappingType.SqlPointType {
 
-    public static final PointType TEXT_INSTANCE = new PointType(String.class);
 
-    public static final PointType BINARY_INSTANCE = new PointType(byte[].class);
+    public static final PostgrePointType INSTANCE = new PostgrePointType();
 
-    public static PointType from(final Class<?> javaType) {
-        final PointType instance;
-        if (javaType == String.class) {
-            instance = TEXT_INSTANCE;
-        } else if (javaType == byte[].class) {
-            instance = BINARY_INSTANCE;
-        } else {
-            throw errorJavaType(PointType.class, javaType);
+    public static PostgrePointType from(final Class<?> javaType) {
+        if (javaType != String.class) {
+            throw errorJavaType(PostgrePointType.class, javaType);
         }
-        return instance;
+        return INSTANCE;
     }
 
 
-    private final Class<?> javaType;
-
-    private PointType(Class<?> javaType) {
-        this.javaType = javaType;
+    private PostgrePointType() {
     }
 
     @Override
     public Class<?> javaType() {
-        return this.javaType;
+        return String.class;
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
         //TODO
         throw new UnsupportedOperationException();
     }

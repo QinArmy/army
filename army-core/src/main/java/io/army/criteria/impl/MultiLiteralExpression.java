@@ -199,6 +199,16 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
 
         @Override
         public final String toString() {
+            final boolean encoding;
+            if (this instanceof ImmutableAnonymousMultiLiteral) {
+                final TypeMeta type = ((ImmutableAnonymousMultiLiteral) this).type;
+                encoding = type instanceof TableField && ((TableField) type).codec();
+            } else if (this instanceof DelayAnonymousMultiLiteral) {
+                final TypeMeta type = ((DelayAnonymousMultiLiteral) this).type;
+                encoding = type == null || (type instanceof TableField && ((TableField) type).codec());
+            } else {
+                encoding = true;
+            }
             final List<?> valueList = this.valueList;
             final int valueSize = valueList.size();
             assert valueSize > 0;
@@ -209,7 +219,12 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
                 } else {
                     builder.append(_Constant.SPACE);
                 }
-                builder.append(valueList.get(i));
+                if (encoding) {
+                    builder.append("{LITERAL}");
+                } else {
+                    builder.append(valueList.get(i));
+                }
+
             }
             return builder.toString();
         }

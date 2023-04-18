@@ -3063,7 +3063,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public boolean isPrepared() {
+        public boolean isDelay() {
             return this.selection != null;
         }
 

@@ -1,28 +1,33 @@
-package io.army.mapping.postgre;
+package io.army.mapping.spatial.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 
-public final class PostgrePointType extends _ArmyNoInjectionMapping implements MappingType.SqlPointType {
+/**
+ * <p>
+ * This class representing Postgre line type {@link MappingType}
+ * </p>
+ *
+ * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">line</a>
+ */
+public final class PostgreLineType extends PostgreGeometricType {
 
+    public static final PostgreLineType INSTANCE = new PostgreLineType();
 
-    public static final PostgrePointType INSTANCE = new PostgrePointType();
-
-    public static PostgrePointType from(final Class<?> javaType) {
+    public static PostgreLineType from(final Class<?> javaType) {
         if (javaType != String.class) {
-            throw errorJavaType(PostgrePointType.class, javaType);
+            throw errorJavaType(PostgreLineType.class, javaType);
         }
         return INSTANCE;
     }
 
 
-    private PostgrePointType() {
+    private PostgreLineType() {
     }
 
     @Override
@@ -53,6 +58,5 @@ public final class PostgrePointType extends _ArmyNoInjectionMapping implements M
         //TODO
         throw new UnsupportedOperationException();
     }
-
 
 }

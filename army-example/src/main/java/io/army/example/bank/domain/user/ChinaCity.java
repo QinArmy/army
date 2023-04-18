@@ -12,7 +12,6 @@ public class ChinaCity extends ChinaRegion<ChinaCity> {
     @Column(precision = 30, defaultValue = "''", nullable = false, comment = "city mayor name")
     private String mayorName;
 
-
     public final String getMayorName() {
         return mayorName;
     }
@@ -21,6 +20,5 @@ public class ChinaCity extends ChinaRegion<ChinaCity> {
         this.mayorName = mayorName;
         return this;
     }
-
 
 }

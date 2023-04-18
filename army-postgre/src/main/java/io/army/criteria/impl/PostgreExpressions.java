@@ -5,8 +5,9 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
-import io.army.mapping.postgre.PostgreBoxType;
-import io.army.mapping.postgre.PostgrePointType;
+import io.army.mapping.spatial.postgre.PostgreBoxType;
+import io.army.mapping.spatial.postgre.PostgreGeometricType;
+import io.army.mapping.spatial.postgre.PostgrePointType;
 import io.army.type.Interval;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -49,6 +50,17 @@ abstract class PostgreExpressions {
             throw NonOperationExpression.nonOperationExpression(right);
         }
         return new PostgreDualPredicate(left, operator, right);
+    }
+
+
+    static MappingType lengthFuncType(final MappingType operandType) {
+        final MappingType returnType;
+        if (operandType instanceof PostgreGeometricType || operandType instanceof MappingType.SqlGeometryType) {
+            returnType = DoubleType.INSTANCE;
+        } else {
+            returnType = IntegerType.INSTANCE;
+        }
+        return returnType;
     }
 
 

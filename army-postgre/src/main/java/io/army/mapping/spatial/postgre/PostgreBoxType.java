@@ -1,45 +1,30 @@
-package io.army.mapping.spatial;
+package io.army.mapping.spatial.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 
-/**
- * @see <a href="https://www.ogc.org/standards/sfa">Simple Feature Access - Part 1: Common Architecture PDF</a>
- */
-public final class GeometryType extends ArmyGeometryType implements MappingType.SqlGeometryType {
+public final class PostgreBoxType extends PostgreGeometricType {
 
-    public static final GeometryType TEXT_INSTANCE = new GeometryType(String.class);
+    public static final PostgreBoxType INSTANCE = new PostgreBoxType();
 
-    public static final GeometryType BINARY_INSTANCE = new GeometryType(byte[].class);
-
-    public static GeometryType from(final Class<?> javaType) {
-        final GeometryType instance;
-        if (javaType == String.class) {
-            instance = TEXT_INSTANCE;
-        } else if (javaType == byte[].class) {
-            instance = BINARY_INSTANCE;
-        } else {
-            throw errorJavaType(GeometryType.class, javaType);
+    public static PostgreBoxType from(final Class<?> javaType) {
+        if (javaType != String.class) {
+            throw errorJavaType(PostgreBoxType.class, javaType);
         }
-        return instance;
+        return INSTANCE;
     }
 
 
-    private final Class<?> javaType;
-
-    private GeometryType(Class<?> javaType) {
-        this.javaType = javaType;
+    private PostgreBoxType() {
     }
-
 
     @Override
     public Class<?> javaType() {
-        return this.javaType;
+        return String.class;
     }
 
     @Override
@@ -65,6 +50,4 @@ public final class GeometryType extends ArmyGeometryType implements MappingType.
         //TODO
         throw new UnsupportedOperationException();
     }
-
-
 }

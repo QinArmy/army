@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
 /**
@@ -795,8 +795,8 @@ abstract class Functions extends SqlSyntax {
         leftType = left.typeMeta();
         rightType = right.typeMeta();
         final TypeMeta returnType;
-        if ((leftType instanceof TypeMeta.Delay && !((TypeMeta.Delay) leftType).isPrepared())
-                || (rightType instanceof TypeMeta.Delay && !((TypeMeta.Delay) rightType).isPrepared())) {
+        if ((leftType instanceof TypeMeta.Delay && !((TypeMeta.Delay) leftType).isDelay())
+                || (rightType instanceof TypeMeta.Delay && !((TypeMeta.Delay) rightType).isDelay())) {
             returnType = CriteriaSupports.biDelayWrapper(leftType, rightType, function);
         } else {
             returnType = function.apply(leftType.mappingType(), rightType.mappingType());
@@ -804,15 +804,14 @@ abstract class Functions extends SqlSyntax {
         return returnType;
     }
 
-    static TypeMeta _returnType(final Expression exp, Function<MappingType, MappingType> function) {
-        final TypeMeta typeMeta;
-        typeMeta = exp.typeMeta();
-
-        final TypeMeta returnType;
-        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isPrepared()) {
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) typeMeta, function);
+    static TypeMeta _returnType(final Expression exp, final UnaryOperator<MappingType> function) {
+        final TypeMeta returnType, expType;
+        if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
+            returnType = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) exp, function);
+        } else if ((expType = exp.typeMeta()) instanceof MappingType) {
+            returnType = function.apply((MappingType) expType);
         } else {
-            returnType = function.apply(typeMeta.mappingType());
+            returnType = function.apply(expType.mappingType());
         }
         return returnType;
     }
@@ -965,7 +964,7 @@ abstract class Functions extends SqlSyntax {
         typeMeta = exp.typeMeta();
 
         final TypeMeta returnType;
-        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isPrepared()) {
+        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isDelay()) {
             returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) typeMeta, Functions::_doubleOrNumberType);
         } else {
             returnType = _doubleOrNumberType(typeMeta.mappingType());
@@ -979,15 +978,13 @@ abstract class Functions extends SqlSyntax {
         typeMeta = exp.typeMeta();
 
         final TypeMeta returnType;
-        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isPrepared()) {
+        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isDelay()) {
             returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) typeMeta, Functions::_numberOrDecimal);
         } else {
             returnType = _numberOrDecimal(typeMeta.mappingType());
         }
         return returnType;
     }
-
-
 
 
     /**

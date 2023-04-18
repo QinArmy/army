@@ -22,7 +22,7 @@ public interface TypeMeta extends Meta {
 
     interface Delay extends TypeMeta {
 
-        boolean isPrepared();
+        boolean isDelay();
     }
 
 

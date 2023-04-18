@@ -187,17 +187,6 @@ abstract class SingleLiteralExpression extends OperationExpression.OperationSimp
             return this.value;
         }
 
-        @Override
-        public final String toString() {
-            final String s;
-            if (this.value == null) {
-                s = _Constant.SPACE_NULL;
-            } else {
-                s = " " + this.value;
-            }
-            return s;
-        }
-
 
     }//AnonymousSingleLiteral
 
@@ -250,6 +239,19 @@ abstract class SingleLiteralExpression extends OperationExpression.OperationSimp
             return match;
         }
 
+        @Override
+        public String toString() {
+            final String s;
+            if (this.value == null) {
+                s = _Constant.SPACE_NULL;
+            } else if (this.type instanceof TableField && ((TableField) this.type).codec()) {
+                s = " {LITERAL}";
+            } else {
+                s = " " + this.value;
+            }
+            return s;
+        }
+
 
     }//ImmutableAnonymousSingleLiteral
 
@@ -290,6 +292,21 @@ abstract class SingleLiteralExpression extends OperationExpression.OperationSimp
                 this.type = type;
             }
             return type;
+        }
+
+
+        @Override
+        public String toString() {
+            final TypeMeta type = this.type;
+            final String s;
+            if (this.value == null) {
+                s = _Constant.SPACE_NULL;
+            } else if (type == null || (type instanceof TableField && ((TableField) type).codec())) {
+                s = " {LITERAL}";
+            } else {
+                s = " " + this.value;
+            }
+            return s;
         }
 
 

@@ -21,10 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 abstract class CriteriaSupports {
 
@@ -58,6 +55,11 @@ abstract class CriteriaSupports {
     static TypeMeta delayWrapper(TypeMeta.Delay delayType, Function<MappingType, MappingType> function) {
         return new DelayTypeWrapper(delayType, function);
     }
+
+    static TypeMeta unaryInfer(TypeInfer.DelayTypeInfer infer, UnaryOperator<MappingType> function) {
+        return new UnaryDelayInferWrapper(infer, function);
+    }
+
 
     static TypeMeta biDelayWrapper(TypeMeta type1, TypeMeta type2,
                                    BiFunction<MappingType, MappingType, MappingType> function) {
@@ -471,7 +473,7 @@ abstract class CriteriaSupports {
         public MappingType mappingType() {
             MappingType actualType = this.actualType;
             if (actualType == null) {
-                if (!this.delayType.isPrepared()) {
+                if (!this.delayType.isDelay()) {
                     String m = String.format("%s %s isn't prepared.", TypeMeta.Delay.class.getName(), this.delayType);
                     throw new IllegalStateException(m);
                 }
@@ -482,8 +484,8 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public boolean isPrepared() {
-            return this.delayType.isPrepared();
+        public boolean isDelay() {
+            return this.delayType.isDelay();
         }
 
         private void contextEnd() {
@@ -494,6 +496,53 @@ abstract class CriteriaSupports {
 
 
     }//DelayTypeWrapper
+
+
+    private static final class UnaryDelayInferWrapper implements TypeMeta.Delay {
+
+        private final TypeInfer.DelayTypeInfer infer;
+
+        private final UnaryOperator<MappingType> function;
+
+        private MappingType type;
+
+        /**
+         * @see #unaryInfer(TypeInfer.DelayTypeInfer, UnaryOperator)
+         */
+        private UnaryDelayInferWrapper(TypeInfer.DelayTypeInfer infer, UnaryOperator<MappingType> function) {
+            this.infer = infer;
+            this.function = function;
+            ContextStack.peek().addEndEventListener(this::mappingType);
+        }
+
+        @Override
+        public MappingType mappingType() {
+            MappingType type = this.type;
+            if (type == null) {
+                if (this.infer.isDelay()) {
+                    String m = String.format("%s is delay", this);
+                    throw ContextStack.clearStackAndCriteriaError(m);
+                }
+                final TypeMeta typeMeta;
+                typeMeta = this.infer.typeMeta();
+                if (typeMeta instanceof MappingType) {
+                    type = (MappingType) typeMeta;
+                } else {
+                    type = typeMeta.mappingType();
+                }
+                type = this.function.apply(type);
+                this.type = type;
+            }
+            return type;
+        }
+
+        @Override
+        public boolean isDelay() {
+            return this.type == null && this.infer.isDelay();
+        }
+
+
+    }//DelayInferWrapper
 
     private static final class BiDelayTypeWrapper implements TypeMeta.Delay {
 
@@ -520,7 +569,7 @@ abstract class CriteriaSupports {
         public MappingType mappingType() {
             MappingType actualType = this.actualType;
             if (actualType == null) {
-                if (!this.isPrepared()) {
+                if (!this.isDelay()) {
                     String m = String.format("%s isn't prepared.", TypeMeta.Delay.class.getName());
                     throw new IllegalStateException(m);
                 }
@@ -531,12 +580,12 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public boolean isPrepared() {
+        public boolean isDelay() {
             boolean prepared1 = true, prepared2 = true;
             if (this.type1 instanceof TypeMeta.Delay) {
-                prepared1 = ((Delay) this.type1).isPrepared();
+                prepared1 = ((Delay) this.type1).isDelay();
             } else if (this.type2 instanceof TypeMeta.Delay) {
-                prepared2 = ((Delay) this.type2).isPrepared();
+                prepared2 = ((Delay) this.type2).isDelay();
             }
             return prepared1 && prepared2;
         }

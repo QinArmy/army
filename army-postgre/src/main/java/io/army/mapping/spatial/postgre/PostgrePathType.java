@@ -1,26 +1,34 @@
-package io.army.mapping.postgre;
+package io.army.mapping.spatial.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 
-public final class PostgreBoxType extends _ArmyNoInjectionMapping {
+/**
+ * <p>
+ * This class representing Postgre path type {@link MappingType}
+ * </p>
+ *
+ * @see <a href="https://www.postgresql.org/docs/current/datatype-geometric.html#DATATYPE-GEO-TABLE">path</a>
+ */
+public final class PostgrePathType extends PostgreGeometricType implements MappingType.SqlLineStringType {
 
-    public static final PostgreBoxType INSTANCE = new PostgreBoxType();
 
-    public static PostgreBoxType from(final Class<?> javaType) {
+    public static final PostgrePathType INSTANCE = new PostgrePathType();
+
+    public static PostgrePathType from(final Class<?> javaType) {
         if (javaType != String.class) {
-            throw errorJavaType(PostgreBoxType.class, javaType);
+            throw errorJavaType(PostgrePathType.class, javaType);
         }
         return INSTANCE;
     }
 
 
-    private PostgreBoxType() {
+    private PostgrePathType() {
     }
 
     @Override
