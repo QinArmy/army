@@ -1,43 +1,55 @@
-package io.army.mapping.postgre;
+package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
+import io.army.util._ArrayUtils;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+public final class ShortArrayType extends _ArmyNoInjectionMapping {
 
 
-/**
- * <p>
- * This class representing Postgre tsvector type {@link MappingType}
- * </p>
- *
- * @see <a href="https://www.postgresql.org/docs/current/datatype-textsearch.html#DATATYPE-TSVECTOR">tsvector</a>
- */
-public final class PostgreTsVectorType extends _ArmyNoInjectionMapping {
-
-
-    public static final PostgreTsVectorType INSTANCE = new PostgreTsVectorType();
-
-    public static PostgreTsVectorType from(final Class<?> javaType) {
-        if (javaType != String.class) {
-            throw errorJavaType(PostgreTsVectorType.class, javaType);
+    public static ShortArrayType from(final Class<?> javaType) {
+        if (!javaType.isArray()) {
+            throw errorJavaType(ShortArrayType.class, javaType);
         }
-        return INSTANCE;
+
+        return INSTANCE_MAP.computeIfAbsent(javaType, ShortArrayType::new);
     }
 
+    public static final ShortArrayType UNLIMITED = new ShortArrayType();
 
-    private PostgreTsVectorType() {
+    private static final ConcurrentMap<Class<?>, ShortArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
+
+
+    private final Class<?> javaType;
+
+    private final Class<?> underlyingType;
+
+    /**
+     * @see #UNLIMITED
+     */
+    private ShortArrayType() {
+        this.javaType = Object.class;
+        this.underlyingType = Object.class;
+    }
+
+    private ShortArrayType(Class<?> javaType) {
+        this.javaType = javaType;
+        this.underlyingType = _ArrayUtils.underlyingComponent(javaType);
     }
 
     @Override
     public Class<?> javaType() {
-        return String.class;
+        return this.javaType;
     }
 
     @Override
@@ -45,28 +57,26 @@ public final class PostgreTsVectorType extends _ArmyNoInjectionMapping {
         if (meta.database() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreTypes.TSVECTOR;
+        return PostgreTypes.VARCHAR_ARRAY;
     }
 
     @Override
     public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        //TODO
+        // TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        //TODO
-        if (nonNull instanceof String) {
-            return nonNull;
-        }
+        // TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
-        //TODO
+        // TODO
         throw new UnsupportedOperationException();
     }
+
 
 }

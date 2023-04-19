@@ -38,13 +38,34 @@ abstract class Functions extends SqlSyntax {
         throw new UnsupportedOperationException();
     }
 
-    public interface _TabularFunction extends DerivedTable, SelectionSpec, SQLFunction, TypeInfer.TypeUpdateSpec {
+    public interface _WithOrdinalityClause {
+
+        _TabularFunction withOrdinality();
+
+        _TabularFunction ifWithOrdinality(BooleanSupplier predicate);
+
+    }
+
+
+    public interface _TabularFunction extends DerivedTable, SQLFunction {
+
+    }
+
+    public interface _ColumnFunction extends _TabularFunction, SelectionSpec, TypeInfer.TypeUpdateSpec {
 
         @Override
         SelectionSpec mapTo(TypeMeta mapType);
 
     }
 
+    public interface _TabularWithOrdinalityFunction extends _TabularFunction, _WithOrdinalityClause {
+
+    }
+
+
+    public interface _ColumnWithOrdinalityFunction extends _ColumnFunction, _WithOrdinalityClause {
+
+    }
 
     interface _NullTreatmentClause<NR> {
 

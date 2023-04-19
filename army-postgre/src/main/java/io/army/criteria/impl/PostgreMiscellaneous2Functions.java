@@ -1,13 +1,17 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Expression;
+import io.army.criteria.Selection;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.TypeInfer;
 import io.army.mapping.*;
+import io.army.mapping.optional.ShortArrayType;
+import io.army.mapping.optional.TextArrayType;
 import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.postgre.PostgreTsVectorType;
-import io.army.mapping.postgre.TextArrayType;
+import io.army.util._CollectionUtils;
 
+import java.util.List;
 import java.util.function.BiFunction;
 
 abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFunctions {
@@ -790,5 +794,224 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     public static SimpleExpression jsonbToTsVector(Expression config, Expression document, Expression filter) {
         return FunctionUtils.threeArgFunc("JSONB_TO_TSVECTOR", config, document, filter, PostgreTsVectorType.INSTANCE);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsVectorType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_delete ( vector tsvector, lexeme text ) → tsvector</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_delete ( vector tsvector, lexemes text[] ) → tsvector</a>
+     */
+    public static SimpleExpression tsDelete(Expression tsVector, Expression lexeme) {
+        return FunctionUtils.twoArgFunc("TS_DELETE", tsVector, lexeme, PostgreTsVectorType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsVectorType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_filter ( vector tsvector, weights "char"[] ) → tsvector</a>
+     */
+    public static SimpleExpression tsFilter(Expression tsVector, Expression lexeme) {
+        return FunctionUtils.twoArgFunc("TS_FILTER", tsVector, lexeme, PostgreTsVectorType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  TextType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document text, query tsquery [, options text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document json, query tsquery [, options text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document jsonb, query tsquery [, options text ] ) → text</a>
+     */
+    public static SimpleExpression tsHeadline(Expression config, Expression document, Expression query, Expression options) {
+        return FunctionUtils.fourArgFunc("TS_HEADLINE", config, document, query, options, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  TextType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document text, query tsquery [, options text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document json, query tsquery [, options text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document jsonb, query tsquery [, options text ] ) → text</a>
+     */
+    public static SimpleExpression tsHeadline(Expression exp1, Expression exp2, Expression exp3) {
+        return FunctionUtils.threeArgFunc("TS_HEADLINE", exp1, exp2, exp3, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  TextType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document text, query tsquery [, options text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document json, query tsquery [, options text ] ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_headline ( [ config regconfig, ] document jsonb, query tsquery [, options text ] ) → text</a>
+     */
+    public static SimpleExpression tsHeadline(Expression document, Expression query) {
+        return FunctionUtils.twoArgFunc("TS_HEADLINE", document, query, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  FloatType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
+     */
+    public static SimpleExpression tsRank(Expression weights, Expression vector, Expression query, Expression normalization) {
+        return FunctionUtils.fourArgFunc("TS_RANK", weights, vector, query, normalization, FloatType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  FloatType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
+     */
+    public static SimpleExpression tsRank(Expression exp1, Expression exp2, Expression exp3) {
+        return FunctionUtils.threeArgFunc("TS_RANK", exp1, exp2, exp3, FloatType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  FloatType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
+     */
+    public static SimpleExpression tsRank(Expression vector, Expression query) {
+        return FunctionUtils.twoArgFunc("TS_RANK", vector, query, FloatType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  FloatType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank_cd ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
+     */
+    public static SimpleExpression tsRankCd(Expression weights, Expression vector, Expression query, Expression normalization) {
+        return FunctionUtils.fourArgFunc("TS_RANK_CD", weights, vector, query, normalization, FloatType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  FloatType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank_cd ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
+     */
+    public static SimpleExpression tsRankCd(Expression exp1, Expression exp2, Expression exp3) {
+        return FunctionUtils.threeArgFunc("TS_RANK_CD", exp1, exp2, exp3, FloatType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  FloatType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rank_cd ( [ weights real[], ] vector tsvector, query tsquery [, normalization integer ] ) → real</a>
+     */
+    public static SimpleExpression tsRankCd(Expression vector, Expression query) {
+        return FunctionUtils.twoArgFunc("TS_RANK_CD", vector, query, FloatType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsQueryType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rewrite ( query tsquery, target tsquery, substitute tsquery ) → tsquery</a>
+     */
+    public static SimpleExpression tsRewrite(Expression query, Expression target, Expression substitute) {
+        return FunctionUtils.threeArgFunc("TS_REWRITE", query, target, substitute, PostgreTsQueryType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsQueryType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">ts_rewrite ( query tsquery, select text ) → tsquery</a>
+     */
+    public static SimpleExpression tsRewrite(Expression query, Expression select) {
+        return FunctionUtils.twoArgFunc("TS_REWRITE", query, select, PostgreTsQueryType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsQueryType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">tsquery_phrase ( query1 tsquery, query2 tsquery ) → tsquery</a>
+     */
+    public static SimpleExpression tsQueryPhrase(Expression query1, Expression query2) {
+        return FunctionUtils.twoArgFunc("TSQUERY_PHRASE", query1, query2, PostgreTsQueryType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  PostgreTsQueryType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">tsquery_phrase ( query1 tsquery, query2 tsquery, distance integer ) → tsquery</a>
+     */
+    public static SimpleExpression tsQueryPhrase(Expression query1, Expression query2, Expression distance) {
+        return FunctionUtils.threeArgFunc("TSQUERY_PHRASE", query1, query2, distance, PostgreTsQueryType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  TextArrayType} with one dimension.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">tsvector_to_array ( tsvector ) → text[]</a>
+     */
+    public static SimpleExpression tsVectorToArray(Expression tsVector) {
+        return FunctionUtils.oneArgFunc("TSVECTOR_TO_ARRAY", tsVector, TextArrayType.from(String[].class));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function returned fields type:<ol>
+     * <li>{@link TextType}</li>
+     * <li>{@link ShortArrayType} with one dimension</li>
+     * <li>{@link TextType}</li>
+     * </ol>
+     * </p>
+     * <p>
+     * <pre>
+     *          select * from unnest('cat:3 fat:2,4 rat:5A'::tsvector) →
+     *
+     *          lexeme | positions | weights
+     *          --------+-----------+---------
+     *          cat    | {3}       | {D}
+     *          fat    | {2,4}     | {D,D}
+     *          rat    | {5}       | {A}
+     *     </pre>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">unnest ( tsvector ) → setof record ( lexeme text, positions smallint[], weights text ) <br/>
+     * Expands a tsvector into a set of rows, one per lexeme
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction unnest(Expression exp) {
+
+        final List<Selection> fieldList = _CollectionUtils.arrayList(3);
+
+        fieldList.add(ArmySelections.forName("lexeme", TextType.INSTANCE));
+        fieldList.add(ArmySelections.forName("positions", ShortArrayType.from(Short[].class)));
+        fieldList.add(ArmySelections.forName("weights", TextType.INSTANCE));
+
+        return FunctionUtils.oneArgTabularFunc("UNNEST", exp, fieldList);
+    }
+
 
 }

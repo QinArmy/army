@@ -7,6 +7,7 @@ import io.army.dialect._SqlContext;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
+import io.army.util._StringUtils;
 
 import java.util.Objects;
 
@@ -39,8 +40,16 @@ abstract class ArmySelections implements _Selection {
     }
 
 
-    static Selection forName(String alias, MappingType typeMeta) {
-        return new SelectionForName(alias, typeMeta);
+    static Selection forName(final String alias, final TypeMeta typeMeta) {
+        final Selection selection;
+        if (typeMeta instanceof TypeMeta.Delay && ((TypeMeta.Delay) typeMeta).isDelay()) {
+            selection = new DelaySelectionForName(alias, (TypeMeta.Delay) typeMeta);
+        } else if (typeMeta instanceof MappingType) {
+            selection = new ImmutableSelectionForName(alias, (MappingType) typeMeta);
+        } else {
+            selection = new ImmutableSelectionForName(alias, typeMeta.mappingType());
+        }
+        return selection;
     }
 
 
@@ -289,36 +298,99 @@ abstract class ArmySelections implements _Selection {
 
     }//RenameSelection
 
-    private static final class SelectionForName extends ArmySelections {
+    private static abstract class SelectionForName extends ArmySelections {
 
-        private final MappingType typeMeta;
 
-        private SelectionForName(String alias, MappingType typeMeta) {
+        private SelectionForName(String alias) {
             super(alias);
-            this.typeMeta = typeMeta;
+        }
+
+
+        @Override
+        public final void appendSelectItem(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+
+            final String safeAlias;
+            safeAlias = context.parser().identifier(this.alias);
+
+            sqlBuilder.append(safeAlias)
+                    .append(_Constant.SPACE_AS_SPACE)
+                    .append(safeAlias);
+
+        }
+
+        @Override
+        public final TableField tableField() {
+            return null;
+        }
+
+        @Override
+        public final Expression underlyingExp() {
+            return null;
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.alias)
+                    .append(_Constant.SPACE_AS_SPACE)
+                    .append(this.alias)
+                    .toString();
+        }
+
+
+    }//SelectionForName
+
+    private static final class ImmutableSelectionForName extends SelectionForName {
+
+        private final MappingType type;
+
+        private ImmutableSelectionForName(String alias, MappingType type) {
+            super(alias);
+            this.type = type;
         }
 
         @Override
         public TypeMeta typeMeta() {
-            return this.typeMeta;
+            return this.type;
+        }
+
+
+    }//ImmutableSelectionForName
+
+
+    private static final class DelaySelectionForName extends SelectionForName implements TypeInfer.DelayTypeInfer {
+
+        private final TypeMeta.Delay delay;
+
+        private MappingType type;
+
+        private DelaySelectionForName(String alias, TypeMeta.Delay delay) {
+            super(alias);
+            this.delay = delay;
+            ContextStack.peek().addEndEventListener(this::typeMeta);
         }
 
         @Override
-        public void appendSelectItem(final _SqlContext context) {
-            context.parser().identifier(this.alias, context.sqlBuilder().append(_Constant.SPACE));
+        public TypeMeta typeMeta() {
+            MappingType type = this.type;
+            if (type == null) {
+                type = this.delay.mappingType();
+                this.type = type;
+            }
+            return type;
         }
 
         @Override
-        public TableField tableField() {
-            return null;
+        public boolean isDelay() {
+            return this.type == null && this.delay.isDelay();
         }
 
-        @Override
-        public Expression underlyingExp() {
-            return null;
-        }
 
-    }//SelectionForName
+    }//DelaySelectionForName
 
 
 }

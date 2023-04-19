@@ -1,10 +1,10 @@
-package io.army.mapping.postgre;
+package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
-import io.army.mapping._ArmyArrayType;
+import io.army.mapping._ArmyInnerMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreTypes;
@@ -14,7 +14,7 @@ import io.army.util._ArrayUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class TextArrayType extends _ArmyArrayType {
+public final class TextArrayType extends _ArmyInnerMapping {
 
 
     public static TextArrayType from(final Class<?> javaType) {

@@ -7,6 +7,43 @@ import java.util.*;
 public abstract class _CollectionUtils extends io.qinarmy.util.CollectionUtils {
 
 
+    public static <K, V> HashMap<K, V> hashMap() {
+        return new FinalHashMap<>();
+    }
+
+    public static <K, V> HashMap<K, V> hashMap(int initialCapacity) {
+        return new FinalHashMap<>(initialCapacity);
+    }
+
+    public static <K, V> HashMap<K, V> hashMap(Map<? extends K, ? extends V> m) {
+        return new FinalHashMap<>(m);
+    }
+
+    public static <K, V> HashMap<K, V> hashMapIgnoreKey(Object ignoreKey) {
+        return new FinalHashMap<>();
+    }
+
+    public static <E> ArrayList<E> arrayList() {
+        return new FinalArrayList<>();
+    }
+
+    public static <E> ArrayList<E> arrayList(int initialCapacity) {
+        return new FinalArrayList<>(initialCapacity);
+    }
+
+    public static <E> ArrayList<E> arrayList(Collection<? extends E> c) {
+        return new FinalArrayList<>(c);
+    }
+
+    public static <E> LinkedList<E> linkedList() {
+        return new FinalLinkedArray<>();
+    }
+
+    public static <E> LinkedList<E> linkedList(Collection<? extends E> c) {
+        return new FinalLinkedArray<>(c);
+    }
+
+
     public static <T> List<T> safeUnmodifiableList(@Nullable List<T> list) {
         if (list == null) {
             return Collections.emptyList();
@@ -82,6 +119,50 @@ public abstract class _CollectionUtils extends io.qinarmy.util.CollectionUtils {
 
 
     /*############################## private method ######################################*/
+
+
+    private static final class FinalHashMap<K, V> extends HashMap<K, V> {
+
+        private FinalHashMap() {
+        }
+
+        private FinalHashMap(int initialCapacity) {
+            super(initialCapacity);
+        }
+
+        private FinalHashMap(Map<? extends K, ? extends V> m) {
+            super(m);
+        }
+
+    }//FinalHashMap
+
+
+    private static final class FinalArrayList<E> extends ArrayList<E> {
+
+        private FinalArrayList() {
+        }
+
+        private FinalArrayList(int initialCapacity) {
+            super(initialCapacity);
+        }
+
+        private FinalArrayList(Collection<? extends E> c) {
+            super(c);
+        }
+
+    }//FinalArrayList
+
+
+    private static final class FinalLinkedArray<E> extends LinkedList<E> {
+
+        private FinalLinkedArray() {
+        }
+
+        private FinalLinkedArray(Collection<? extends E> c) {
+            super(c);
+        }
+
+    }//FinalLinkedArray
 
 
 }

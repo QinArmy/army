@@ -1046,7 +1046,7 @@ abstract class CriteriaContexts {
             }
             Map<String, _AliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             if (nestedDerivedBufferMap == null) {
-                nestedDerivedBufferMap = new HashMap<>();
+                nestedDerivedBufferMap = _CollectionUtils.hashMap();
                 this.nestedDerivedBufferMap = nestedDerivedBufferMap;
             }
             if (nestedDerivedBufferMap.putIfAbsent(block.alias(), block) != null) {
@@ -1115,10 +1115,10 @@ abstract class CriteriaContexts {
 
             Map<String, Map<FieldMeta<?>, QualifiedField<?>>> aliasFieldMap = this.aliasFieldMap;
             if (aliasFieldMap == null) {
-                aliasFieldMap = new HashMap<>();
+                aliasFieldMap = _CollectionUtils.hashMap();
                 this.aliasFieldMap = aliasFieldMap;
             }
-            return (QualifiedField<T>) aliasFieldMap.computeIfAbsent(tableAlias, k -> new HashMap<>())
+            return (QualifiedField<T>) aliasFieldMap.computeIfAbsent(tableAlias, _CollectionUtils::hashMapIgnoreKey)
                     .computeIfAbsent(field,
                             alias -> QualifiedFieldImpl.create(tableAlias, field));
         }
@@ -1244,7 +1244,7 @@ abstract class CriteriaContexts {
             if (notExists) {
                 List<QualifiedField<?>> list = this.fieldsFromSubContext;
                 if (list == null) {
-                    list = new ArrayList<>();
+                    list = _CollectionUtils.arrayList();
                     this.fieldsFromSubContext = list;
                 }
                 list.add(field);
@@ -1438,9 +1438,9 @@ abstract class CriteriaContexts {
             List<_TabularBlock> tableBlockList = this.tableBlockList;
             if (aliasToBlock == null) {
                 assert tableBlockList == null;
-                aliasToBlock = new HashMap<>();
+                aliasToBlock = _CollectionUtils.hashMap();
                 this.aliasToBlock = aliasToBlock;
-                tableBlockList = new ArrayList<>();
+                tableBlockList = _CollectionUtils.arrayList();
                 this.tableBlockList = tableBlockList;
 
                 if (this instanceof SimpleQueryContext) {
@@ -1535,9 +1535,9 @@ abstract class CriteriaContexts {
                 if (context.getOuterContext() != this) {
                     String m = String.format("%s[%s] context not match.", DerivedTable.class.getSimpleName(), alias);
                     throw ContextStack.criteriaError(this, CriteriaException::new, m);
-                } else if (((JoinableContext) context).refOuter
-                        && (!(block instanceof _ModifierTabularBlock)
-                        || ((_ModifierTabularBlock) block).modifier() != SQLs.LATERAL)) {
+                } else if (context instanceof JoinableContext
+                        && ((JoinableContext) context).refOuter
+                        && (!(block instanceof _ModifierTabularBlock) || ((_ModifierTabularBlock) block).modifier() != SQLs.LATERAL)) {
                     String m = String.format("DerivedTable[%s] isn't LATERAL,couldn't reference outer field.", alias);
                     throw ContextStack.criteriaError(this, NonLateralException::new, m);
                 }
@@ -1590,11 +1590,11 @@ abstract class CriteriaContexts {
 
             Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             if (aliasToSelection == null) {
-                aliasToSelection = new HashMap<>();
+                aliasToSelection = _CollectionUtils.hashMap();
                 this.aliasToDerivedField = aliasToSelection;
             }
             final Map<String, DerivedField> derivedFieldMap;
-            derivedFieldMap = aliasToSelection.computeIfAbsent(tableAlias, k -> new HashMap<>());
+            derivedFieldMap = aliasToSelection.computeIfAbsent(tableAlias, _CollectionUtils::hashMapIgnoreKey);
 
             Selection selection;
             for (RefDerivedField field : fieldMap.values()) {
@@ -1615,7 +1615,7 @@ abstract class CriteriaContexts {
                                             final boolean create) {
             Map<String, Map<String, RefDerivedField>> aliasToRefDerivedField = this.aliasToRefDerivedField;
             if (aliasToRefDerivedField == null && create) {
-                aliasToRefDerivedField = new HashMap<>();
+                aliasToRefDerivedField = _CollectionUtils.hashMap();
                 this.aliasToRefDerivedField = aliasToRefDerivedField;
             }
 
@@ -1624,7 +1624,7 @@ abstract class CriteriaContexts {
             if (aliasToRefDerivedField == null) {
                 field = null;
             } else if (create) {
-                fieldMap = aliasToRefDerivedField.computeIfAbsent(derivedTableAlias, k -> new HashMap<>());
+                fieldMap = aliasToRefDerivedField.computeIfAbsent(derivedTableAlias, _CollectionUtils::hashMapIgnoreKey);
                 field = fieldMap.computeIfAbsent(fieldName, k -> new RefDerivedField(derivedTableAlias, k));
             } else {
                 fieldMap = aliasToRefDerivedField.get(derivedTableAlias);
@@ -1641,11 +1641,11 @@ abstract class CriteriaContexts {
                                              final String fieldName) {
             Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             if (aliasToSelection == null) {
-                aliasToSelection = new HashMap<>();
+                aliasToSelection = _CollectionUtils.hashMap();
                 this.aliasToDerivedField = aliasToSelection;
             }
 
-            return aliasToSelection.computeIfAbsent(tableAlias, k -> new HashMap<>())
+            return aliasToSelection.computeIfAbsent(tableAlias, _CollectionUtils::hashMapIgnoreKey)
                     .computeIfAbsent(fieldName, fieldNameKey -> {
                         final Selection selection;
                         selection = selectionMap.refSelection(fieldNameKey);

@@ -46,14 +46,14 @@ public abstract class _ArrayUtils {
 
 
     public static <T> List<T> asUnmodifiableList(T t1, T t2) {
-        final List<T> list = new ArrayList<>(2);
+        final List<T> list = _CollectionUtils.arrayList(2);
         list.add(t1);
         list.add(t2);
         return Collections.unmodifiableList(list);
     }
 
     public static <T> List<T> asUnmodifiableList(T t1, T t2, T t3) {
-        final List<T> list = new ArrayList<>(3);
+        final List<T> list = _CollectionUtils.arrayList(3);
         list.add(t1);
         list.add(t2);
         list.add(t3);
@@ -61,7 +61,7 @@ public abstract class _ArrayUtils {
     }
 
     public static <T> List<T> asUnmodifiableList(T t1, T t2, T t3, T t4) {
-        final List<T> list = new ArrayList<>(4);
+        final List<T> list = _CollectionUtils.arrayList(4);
         list.add(t1);
         list.add(t2);
         list.add(t3);
@@ -76,9 +76,9 @@ public abstract class _ArrayUtils {
     public static <T> List<T> asUnmodifiableList(T t1, T t2, T t3, T t4, T t5, @Nullable T... rest) {
         final List<T> list;
         if (rest == null) {
-            list = new ArrayList<>(5);
+            list = _CollectionUtils.arrayList(5);
         } else {
-            list = new ArrayList<>(5 + rest.length);
+            list = _CollectionUtils.arrayList(5 + rest.length);
         }
 
         list.add(t1);
@@ -101,7 +101,7 @@ public abstract class _ArrayUtils {
         } else if (array.length == 1) {
             list = Collections.singletonList(array[0]);
         } else {
-            list = new ArrayList<>(array.length);
+            list = _CollectionUtils.arrayList(array.length);
             Collections.addAll(list, array);
             list = Collections.unmodifiableList(list);
         }
@@ -116,7 +116,7 @@ public abstract class _ArrayUtils {
         if (rest.length == 0) {
             list = Collections.singletonList(first);
         } else {
-            final List<T> temp = new ArrayList<>(1 + rest.length);
+            final List<T> temp = _CollectionUtils.arrayList(1 + rest.length);
             temp.add(first);
             Collections.addAll(temp, rest);
             list = Collections.unmodifiableList(temp);
@@ -133,7 +133,7 @@ public abstract class _ArrayUtils {
         if (addElements != null) {
             size += addElements.length;
         }
-        list = new ArrayList<>(size);
+        list = _CollectionUtils.arrayList(size);
         list.addAll(collection);
 
         if (addElements != null) {
