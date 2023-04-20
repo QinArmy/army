@@ -21,6 +21,8 @@ public abstract class Postgres extends PostgreSyntax {
     private Postgres() {
     }
 
+    public static final WordName NAME = PostgreWords.KeyWordName.NAME;
+
     /**
      * <p>
      * create single-table INSERT statement that is primary statement.

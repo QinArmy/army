@@ -32,6 +32,11 @@ abstract class FunctionUtils {
     }
 
 
+    interface ArmyFuncClause extends _SelfDescribed, Clause {
+
+    }
+
+
     static SQLFunction._CaseFuncWhenClause caseFunction(final @Nullable Expression caseValue) {
         if (!(caseValue == null || caseValue instanceof OperationExpression)) {
             throw CriteriaUtils.funcArgError("CASE", caseValue);
@@ -603,20 +608,25 @@ abstract class FunctionUtils {
     static void appendComplexArg(final List<?> argumentList, final _SqlContext context) {
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
-        DialectParser parser = null;
+        final DialectParser parser = context.parser();
         for (Object o : argumentList) {
             if (o instanceof Expression) {
                 ((ArmyExpression) o).appendSql(context); // convert to ArmyExpression to avoid non-army expression
             } else if (o == Functions.FuncWord.LEFT_PAREN) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
             } else if (o instanceof SQLWords) {
+                if (!(o instanceof SqlSyntax.ArmyKeyWord)) {
+                    throw new CriteriaException(String.format("%s non-army words", o));
+                }
                 sqlBuilder.append(((SQLWords) o).spaceRender());
+            } else if (o instanceof String) {
+                sqlBuilder.append(_Constant.SPACE);
+                parser.identifier((String) o, sqlBuilder);
             } else if (o instanceof SQLIdentifier) { // sql identifier
                 sqlBuilder.append(_Constant.SPACE);
-                if (parser == null) {
-                    parser = context.parser();
-                }
                 parser.identifier(((SQLIdentifier) o).render(), sqlBuilder);
+            } else if (o instanceof ArmyFuncClause) {
+                ((ArmyFuncClause) o).appendSql(context);
             } else {
                 //no bug,never here
                 throw new IllegalArgumentException();
@@ -628,7 +638,7 @@ abstract class FunctionUtils {
 
     static void complexArgToString(final List<?> argumentList, final StringBuilder builder) {
         for (Object o : argumentList) {
-            if (o instanceof Expression || o instanceof Clause) {
+            if (o instanceof Expression) {
                 builder.append(o);
             } else if (o == Functions.FuncWord.LEFT_PAREN) {
                 builder.append(((SQLWords) o).spaceRender());
@@ -637,9 +647,14 @@ abstract class FunctionUtils {
                         .append(((SQLWords) o).spaceRender());
             } else if (o instanceof SQLIdentifier) { // sql identifier
                 builder.append(((SQLIdentifier) o).render());
+            } else if (o instanceof String) {
+                builder.append(_Constant.SPACE)
+                        .append(o);
+            } else if (o instanceof ArmyFuncClause) {
+                builder.append(o);
             } else {
                 //no bug,never here
-                throw new IllegalStateException();
+                throw new IllegalArgumentException();
             }
 
         }//for

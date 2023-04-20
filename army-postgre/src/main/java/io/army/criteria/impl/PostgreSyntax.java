@@ -27,6 +27,7 @@ abstract class PostgreSyntax extends PostgreMiscellaneous2Functions {
     }
 
 
+
     public interface Modifier extends Query.SelectModifier {
 
     }
@@ -36,6 +37,10 @@ abstract class PostgreSyntax extends PostgreMiscellaneous2Functions {
     }
 
     public interface WordMaterialized extends SQLWords {
+
+    }
+
+    public interface WordName extends SQLWords {
 
     }
 

@@ -14,6 +14,7 @@ import io.army.util._CollectionUtils;
 
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFunctions {
 
@@ -1139,20 +1140,186 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </ol>
      * </p>
      *
+     * @see #tsStat(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE">ts_stat ( sqlquery text [, weights text ] ) → setof record ( word text, ndoc integer, nentry integer )<br/>
      * Executes the sqlquery, which must return a single tsvector column, and returns statistics about each distinct lexeme contained in the data.<br/>
      * ts_stat('SELECT vector FROM apod') → (foo,10,15)<br/>
      * </a>
      */
-    public static _TabularWithOrdinalityFunction tsStat(Expression exp) {
-        final List<Selection> fieldList = _CollectionUtils.arrayList(3);
-
-        fieldList.add(ArmySelections.forName("word", TextType.INSTANCE));
-        fieldList.add(ArmySelections.forName("ndoc", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("nentry", IntegerType.INSTANCE));
-
-        return FunctionUtils.oneArgTabularFunc("TS_STAT", exp, fieldList);
+    public static _TabularWithOrdinalityFunction tsStat(Expression sqlQuery) {
+        return _tsStat(sqlQuery, null);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function returned fields type:<ol>
+     * <li>word {@link TextType}</li>
+     * <li>ndoc {@link IntegerType}</li>
+     * <li>nentry {@link IntegerType}</li>
+     * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
+     * </ol>
+     * </p>
+     *
+     * @see #tsStat(Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE">ts_stat ( sqlquery text [, weights text ] ) → setof record ( word text, ndoc integer, nentry integer )<br/>
+     * Executes the sqlquery, which must return a single tsvector column, and returns statistics about each distinct lexeme contained in the data.<br/>
+     * ts_stat('SELECT vector FROM apod') → (foo,10,15)<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction tsStat(Expression sqlQuery, Expression weights) {
+        return _tsStat(sqlQuery, weights);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  UUIDType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-uuid.html">UUID Functions</a>
+     */
+    public static SimpleExpression genRandomUuid() {
+        return FunctionUtils.zeroArgFunc("GEN_RANDOM_UUID", UUIDType.INSTANCE);
+    }
+
+    /*-------------------below XML Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  XmlType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlcomment ( text ) → xml</a>
+     */
+    public static SimpleExpression xmlComment(Expression exp) {
+        return FunctionUtils.oneArgFunc("XMLCOMMENT", exp, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  XmlType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlconcat ( xml [, ...] ) → xml</a>
+     */
+    public static SimpleExpression xmlConcat(Expression xmls) {
+        return FunctionUtils.oneOrMultiArgFunc("XMLCONCAT", xmls, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  XmlType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlconcat ( xml [, ...] ) → xml</a>
+     */
+    public static SimpleExpression xmlConcat(Expression xml1, Expression... xml2) {
+        return FunctionUtils.oneAndRestFunc("XMLCONCAT", XmlType.TEXT_INSTANCE, xml1, xml2);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  XmlType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlconcat ( xml [, ...] ) → xml</a>
+     */
+    public static SimpleExpression xmlConcat(List<Expression> xmlList) {
+        return FunctionUtils.multiArgFunc("XMLCONCAT", xmlList, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  VoidType}.
+     * <strong>Note:</strong>This function cannot exist independently,see {@link #xmlElement(PostgreSyntax.WordName, String, XmlAttributes, Expression...)}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
+     * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
+     * </a>
+     */
+    public static XmlAttributes xmlAttributes(Consumer<_XmlAttributeConsumer> consumer) {
+        final PostgreFunctionUtils.XmlAttributes attributes;
+        attributes = PostgreFunctionUtils.xmlAttributes();
+        consumer.accept(attributes);
+        return attributes.endXmlAttributes();
+    }
+
+
+    /**
+     * @param nameWord   see {@link Postgres#NAME}
+     * @param name       The nam items shown in the syntax are simple identifiers, not values.
+     * @param attributes see {@link #xmlAttributes(Consumer)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
+     * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
+     * </a>
+     */
+    public static SimpleExpression xmlElement(PostgreSyntax.WordName nameWord, String name, XmlAttributes attributes,
+                                              Expression... contents) {
+        ContextStack.assertNonNull(attributes);
+        ContextStack.assertNonNull(contents);
+        return _xmlElement(nameWord, name, attributes, c -> {
+            for (Expression content : contents) {
+                c.accept(FuncWord.COMMA);
+                c.accept(content);
+            }
+        });
+    }
+
+    /**
+     * @param nameWord see {@link Postgres#NAME}
+     * @param name     The nam items shown in the syntax are simple identifiers, not values.
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
+     * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
+     * </a>
+     */
+    public static SimpleExpression xmlElement(PostgreSyntax.WordName nameWord, String name, Expression... contents) {
+        ContextStack.assertNonNull(contents);
+        return _xmlElement(nameWord, name, null, c -> {
+            for (Expression content : contents) {
+                c.accept(FuncWord.COMMA);
+                c.accept(content);
+            }
+        });
+    }
+
+    /**
+     * @param nameWord   see {@link Postgres#NAME}
+     * @param name       The nam items shown in the syntax are simple identifiers, not values.
+     * @param attributes see {@link #xmlAttributes(Consumer)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
+     * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
+     * </a>
+     */
+    public static SimpleExpression xmlElement(PostgreSyntax.WordName nameWord, String name, XmlAttributes attributes,
+                                              List<Expression> contentList) {
+        ContextStack.assertNonNull(attributes);
+        return _xmlElement(nameWord, name, attributes, c -> {
+            for (Expression content : contentList) {
+                c.accept(FuncWord.COMMA);
+                c.accept(content);
+            }
+        });
+    }
+
+    /**
+     * @param nameWord see {@link Postgres#NAME}
+     * @param name     The nam items shown in the syntax are simple identifiers, not values.
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
+     * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
+     * </a>
+     */
+    public static SimpleExpression xmlElement(PostgreSyntax.WordName nameWord, String name,
+                                              List<Expression> contentList) {
+        return _xmlElement(nameWord, name, null, c -> {
+            for (Expression content : contentList) {
+                c.accept(FuncWord.COMMA);
+                c.accept(content);
+            }
+        });
+    }
+
+
+
 
 
 
@@ -1182,6 +1349,69 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
             func = FunctionUtils.twoArgTabularFunc(name, config, document, fieldList);
         }
         return func;
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function returned fields type:<ol>
+     * <li>word {@link TextType}</li>
+     * <li>ndoc {@link IntegerType}</li>
+     * <li>nentry {@link IntegerType}</li>
+     * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
+     * </ol>
+     * </p>
+     *
+     * @see #tsStat(Expression)
+     * @see #tsStat(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE">ts_stat ( sqlquery text [, weights text ] ) → setof record ( word text, ndoc integer, nentry integer )<br/>
+     * Executes the sqlquery, which must return a single tsvector column, and returns statistics about each distinct lexeme contained in the data.<br/>
+     * ts_stat('SELECT vector FROM apod') → (foo,10,15)<br/>
+     * </a>
+     */
+    private static _TabularWithOrdinalityFunction _tsStat(final Expression sqlQuery, final @Nullable Expression weights) {
+        final List<Selection> fieldList = _CollectionUtils.arrayList(3);
+
+        fieldList.add(ArmySelections.forName("word", TextType.INSTANCE));
+        fieldList.add(ArmySelections.forName("ndoc", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("nentry", IntegerType.INSTANCE));
+
+        final String name = "TS_STAT";
+        _TabularWithOrdinalityFunction func;
+        if (weights == null) {
+            func = FunctionUtils.oneArgTabularFunc(name, sqlQuery, fieldList);
+        } else {
+            func = FunctionUtils.twoArgTabularFunc(name, sqlQuery, weights, fieldList);
+        }
+        return func;
+    }
+
+
+    /**
+     * @see #xmlElement(PostgreSyntax.WordName, String, XmlAttributes, Expression...)
+     * @see #xmlElement(PostgreSyntax.WordName, String, Expression...)
+     * @see #xmlElement(PostgreSyntax.WordName, String, List)
+     * @see #xmlElement(PostgreSyntax.WordName, String, XmlAttributes, List)
+     */
+    private static SimpleExpression _xmlElement(final PostgreSyntax.WordName nameWord, final @Nullable String name,
+                                                final @Nullable XmlAttributes attributes,
+                                                Consumer<Consumer<Object>> consumer) {
+        final String funcName = "XMLELEMENT";
+        if (nameWord != Postgres.NAME) {
+            throw CriteriaUtils.funcArgError(funcName, nameWord);
+        } else if (name == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!(attributes == null || attributes instanceof PostgreFunctionUtils.XmlAttributes)) {
+            throw CriteriaUtils.funcArgError(funcName, attributes);
+        }
+        final List<Object> argList = _CollectionUtils.arrayList();
+        argList.add(nameWord);
+        argList.add(name);
+        if (attributes != null) {
+            argList.add(FuncWord.COMMA);
+            argList.add(attributes);
+        }
+        consumer.accept(argList::add);
+        return FunctionUtils.complexArgFunc(funcName, argList, XmlType.TEXT_INSTANCE);
     }
 
 

@@ -10,9 +10,7 @@ import io.army.sqltype.SqlType;
  * </p>
  *
  * @see Void
- * @deprecated use {@link StringType}
  */
-@Deprecated
 public final class VoidType extends _ArmyInnerMapping {
 
     public static final VoidType INSTANCE = new VoidType();

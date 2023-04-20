@@ -34,6 +34,18 @@ abstract class PostgreStringFunctions extends Functions {
 
     }
 
+    public interface XmlAttributes {
+
+    }
+
+    public interface _XmlAttributeConsumer {
+
+        _XmlAttributeConsumer accept(DataField field);
+
+        _XmlAttributeConsumer accept(Expression attValue, SqlSyntax.WordAs as, String attName);
+
+    }
+
 
     private enum KeyWordNormalizeForm implements WordNormalizeForm, ArmyKeyWord, SQLWords {
 

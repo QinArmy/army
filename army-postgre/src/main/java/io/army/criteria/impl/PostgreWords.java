@@ -57,4 +57,27 @@ abstract class PostgreWords {
     }//WordTimeField
 
 
+    enum KeyWordName implements PostgreSyntax.WordName, SqlSyntax.ArmyKeyWord {
+
+        NAME(" NAME");
+
+        private final String spaceWord;
+
+        KeyWordName(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return Postgres.keyWordToString(this);
+        }
+
+    }
+
+
 }
