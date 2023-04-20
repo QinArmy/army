@@ -1,5 +1,7 @@
 package io.army.mapping;
 
+import java.lang.ref.SoftReference;
+
 public abstract class _ArmyInnerMapping extends MappingType {
 
     protected _ArmyInnerMapping() {
@@ -11,6 +13,15 @@ public abstract class _ArmyInnerMapping extends MappingType {
 
 
     }
+
+
+    protected static final class InstanceRef<T> extends SoftReference<T> {
+
+        public InstanceRef(T referent) {
+            super(referent);
+        }
+
+    }//InstanceRef
 
 
 }

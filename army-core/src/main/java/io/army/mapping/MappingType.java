@@ -80,12 +80,6 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
         return this == obj;
     }
 
-    /**
-     * MappingType cannot have finalize methods.
-     */
-    @Override
-    protected final void finalize() {
-    }
 
     /**
      * Throws CloneNotSupportedException.  This guarantees that MappingType

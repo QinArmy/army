@@ -789,6 +789,13 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
+    static CriteriaException tabularFuncErrorPosition(String name) {
+        String m;
+        m = String.format("function[%s] don't support %s,because isDelay() return true,please check sql syntax. ", name,
+                TypeInfer.DelayTypeInfer.class.getName());
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
     static UnknownFieldGroupException unknownFieldDerivedGroup(final @Nullable CriteriaContext currentContext,
                                                                String groupAlias) {
         final String m = String.format("unknown derived field group[%s].", groupAlias);

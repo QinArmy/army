@@ -537,6 +537,17 @@ abstract class FunctionUtils {
         return new OneArgTabularFunction(name, one, funcFieldList);
     }
 
+    static Functions._TabularWithOrdinalityFunction twoArgTabularFunc(final String name, final Expression one,
+                                                                      final Expression two,
+                                                                      final List<Selection> funcFieldList) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
+        return new TwoArgTabularFunction(name, one, two, funcFieldList);
+    }
+
 
     static SimpleExpression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
         return new JsonObjectFunc(name, expMap, returnType);
@@ -2777,6 +2788,39 @@ abstract class FunctionUtils {
 
 
     }//OneArgTabularFunction
+
+    private static final class TwoArgTabularFunction extends MultiFieldTabularFunction {
+
+        private final FunctionArg one;
+
+        private final FunctionArg two;
+
+        /**
+         * @see #twoArgTabularFunc(String, Expression, Expression, List)
+         */
+        private TwoArgTabularFunction(String name, Expression one, Expression two, List<Selection> funcFieldList) {
+            super(name, funcFieldList);
+            this.one = (FunctionArg) one;
+            this.two = (FunctionArg) two;
+        }
+
+
+        @Override
+        void appendArg(_SqlContext context) {
+            this.one.appendSql(context);
+            context.sqlBuilder().append(_Constant.SPACE_COMMA);
+            this.two.appendSql(context);
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two);
+        }
+
+
+    }//TwoArgTabularFunction
 
     private static final class JsonObjectFunc extends OperationExpression.SqlFunctionExpression {
 

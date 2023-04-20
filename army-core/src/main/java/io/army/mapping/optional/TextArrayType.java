@@ -3,6 +3,7 @@ package io.army.mapping.optional;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyInnerMapping;
 import io.army.meta.ServerMeta;
@@ -11,48 +12,95 @@ import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
 
+import java.lang.ref.SoftReference;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
 public final class TextArrayType extends _ArmyInnerMapping {
 
 
     public static TextArrayType from(final Class<?> javaType) {
-        if (!javaType.isArray()) {
+        final TextArrayType instance;
+        if (javaType == List.class) {
+            instance = LIST;
+        } else if (javaType == String[].class) {
+            instance = LINEAR;
+        } else if (javaType == Object.class) {
+            instance = UNLIMITED;
+        } else if (List.class.isAssignableFrom(javaType)
+                || (javaType.isArray() && _ArrayUtils.underlyingComponent(javaType) == String.class)) {
+            instance = getInstance(javaType);
+        } else {
             throw errorJavaType(StringArrayType.class, javaType);
         }
+        return instance;
+    }
 
-        return INSTANCE_MAP.computeIfAbsent(javaType, TextArrayType::new);
+    public static TextArrayType supplier(final Supplier<List<String>> constructor) {
+        Objects.requireNonNull(constructor);
+        return new TextArrayType(constructor);
+    }
+
+    private static TextArrayType getInstance(final Class<?> javaType) {
+        final SoftReference<TextArrayType> reference;
+        reference = INSTANCE_MAP.compute(javaType, TextArrayType::compute);
+
+        TextArrayType instance;
+        instance = reference.get();
+        if (instance == null) {
+            instance = new TextArrayType(javaType);
+        }
+        return instance;
+    }
+
+    private static SoftReference<TextArrayType> compute(final Class<?> javaType,
+                                                        final @Nullable SoftReference<TextArrayType> old) {
+        final SoftReference<TextArrayType> reference;
+        if (old == null || old.get() == null) {
+            reference = new InstanceRef<>(new TextArrayType(javaType));
+        } else {
+            reference = old;
+        }
+        return reference;
     }
 
 
-    public static final TextArrayType UNLIMITED = new TextArrayType();
+    public static final TextArrayType UNLIMITED = new TextArrayType(Object.class);
+    public static final TextArrayType LINEAR = new TextArrayType(String[].class);
 
-    private static final ConcurrentMap<Class<?>, TextArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    public static final TextArrayType LIST = new TextArrayType(List.class);
 
-
-    private final Class<?> javaType;
-
-    private final Class<?> underlyingType;
+    private static final ConcurrentMap<Class<?>, SoftReference<TextArrayType>> INSTANCE_MAP = new ConcurrentHashMap<>();
 
 
-    /**
-     * @see #UNLIMITED
-     */
-    private TextArrayType() {
-        this.javaType = Object.class;
-        this.underlyingType = Object.class;
+    private final Object source;
+
+
+    private TextArrayType(Class<?> source) {
+        this.source = source;
     }
 
-
-    private TextArrayType(Class<?> javaType) {
-        this.javaType = javaType;
-        this.underlyingType = _ArrayUtils.underlyingComponent(javaType);
+    private TextArrayType(Supplier<List<String>> source) {
+        this.source = source;
     }
+
 
     @Override
     public Class<?> javaType() {
-        return this.javaType;
+        final Object source = this.source;
+        final Class<?> javaClass;
+        if (source instanceof Class) {
+            javaClass = (Class<?>) source;
+        } else if (source instanceof Supplier) {
+            javaClass = List.class;
+        } else {
+            // no bug,never here
+            throw new IllegalStateException();
+        }
+        return javaClass;
     }
 
     @Override
@@ -79,6 +127,14 @@ public final class TextArrayType extends _ArmyInnerMapping {
     public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
         // TODO
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected void finalize() {
+        if (this.source instanceof Class) {
+            INSTANCE_MAP.remove(this.source);
+        }
+
     }
 
 
