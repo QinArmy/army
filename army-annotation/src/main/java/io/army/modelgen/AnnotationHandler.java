@@ -41,6 +41,7 @@ final class AnnotationHandler {
         List<TypeElement> mappedList;
         Map<String, IndexMode> indexModeMap;
         MappingMode mode;
+        String customeTableName, tableName;
         for (Element element : domainElementSet) {
             domain = (TypeElement) element;
             if (domain.getNestingKind() != NestingKind.TOP_LEVEL) {
@@ -61,6 +62,17 @@ final class AnnotationHandler {
             }
 
             mode = validateMode(domain, parentDomain);
+            // validate table name
+            customeTableName = domain.getAnnotation(Table.class).name();
+            tableName = customeTableName.toLowerCase(Locale.ROOT);
+            if (!tableName.toUpperCase(Locale.ROOT).equals(customeTableName.toUpperCase(Locale.ROOT))) {  // army don't allow camel
+                String m = String.format("%s table name is camel.", MetaUtils.getClassName(domain));
+                this.errorMsgList.add(m);
+            }
+            if (!tableName.trim().equals(tableName)) {
+                String m = String.format("please trim %s table name .", MetaUtils.getClassName(domain));
+                this.errorMsgList.add(m);
+            }
             if (mode == null || errorMsgList.size() > 0) {
                 // occur error
                 continue;
@@ -79,6 +91,10 @@ final class AnnotationHandler {
 
             codeCreator.create(domain, fieldMap, parentDomain, mode, indexModeMap);
 
+        }
+
+        if (errorMsgList.size() == 0) {
+            codeCreator.flush(); // finally flush
         }
 
     }
@@ -336,6 +352,14 @@ final class AnnotationHandler {
             }
         } else {
             columnName = customColumnName.toLowerCase(Locale.ROOT);
+            if (!columnName.toUpperCase(Locale.ROOT).equals(customColumnName.toUpperCase(Locale.ROOT))) { // army don't allow camel
+                String m = String.format("Field %s.%s column name[%s] is camel.", className, fieldName, columnName);
+                this.errorMsgList.add(m);
+            }
+            if (!columnName.trim().equals(columnName)) {
+                String m = String.format("please trim Field %s.%s column name[%s].", className, fieldName, columnName);
+                this.errorMsgList.add(m);
+            }
         }
         return columnName;
     }

@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -53,6 +54,8 @@ final class SourceCodeCreator {
     private final Filer filer;
 
     private final String codeCreateTime;
+
+    private final Map<String, StringBuilder> fieldPairMap = new HashMap<>();
 
     SourceCodeCreator(Filer filer) {
         this.filer = filer;
@@ -181,12 +184,38 @@ final class SourceCodeCreator {
                 .append(fieldBuilder)
                 .append("\n\n}\n\n");
 
+//        FileObject fileObject;
+//        fileObject = this.filer.createSourceFile(MetaUtils.getClassName(element) + _MetaBridge.META_CLASS_NAME_SUFFIX);
+//
+//        try (PrintWriter pw = new PrintWriter(fileObject.openOutputStream())) {
+//            pw.println(builder);
+//        }
+
         //7. output source code.
-        final FileObject fileObject;
-        fileObject = this.filer.createSourceFile(MetaUtils.getClassName(element) + _MetaBridge.META_CLASS_NAME_SUFFIX);
-        try (PrintWriter pw = new PrintWriter(fileObject.openOutputStream())) {
-            pw.println(builder);
+        if (this.fieldPairMap.putIfAbsent(MetaUtils.getClassName(element) + _MetaBridge.META_CLASS_NAME_SUFFIX, builder) != null) {
+            // no bug,never here
+            throw new AnnotationMetaException(String.format("%s duplication.", MetaUtils.getClassName(element)));
         }
+
+        if (this.fieldPairMap.size() >= 100) {
+            this.flush();
+        }
+
+
+    }
+
+    void flush() throws IOException {
+        FileObject fileObject;
+
+        for (Map.Entry<String, StringBuilder> pari : this.fieldPairMap.entrySet()) {
+            fileObject = this.filer.createSourceFile(pari.getKey());
+
+            try (PrintWriter pw = new PrintWriter(fileObject.openOutputStream())) {
+                pw.println(pari.getValue());
+            }
+        }
+
+        this.fieldPairMap.clear();
 
     }
 
