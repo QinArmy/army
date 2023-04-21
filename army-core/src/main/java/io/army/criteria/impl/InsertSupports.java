@@ -11,7 +11,7 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -1040,7 +1040,7 @@ abstract class InsertSupports {
             } else if (domainList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            return _CollectionUtils.asUnmodifiableList(domainList);
+            return _Collections.asUnmodifiableList(domainList);
         }
 
         /**
@@ -1482,7 +1482,7 @@ abstract class InsertSupports {
                     ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
                 }
             } else if (pairList instanceof ArrayList) {
-                this.assignmentPairList = _CollectionUtils.unmodifiableList(pairList);
+                this.assignmentPairList = _Collections.unmodifiableList(pairList);
                 this.assignmentMap = Collections.unmodifiableMap(fieldMap);
                 assert ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode == null;
                 ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode = InsertMode.ASSIGNMENT;
@@ -1651,7 +1651,7 @@ abstract class InsertSupports {
             if (!(rowValueList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            rowValueList = _CollectionUtils.unmodifiableList(rowValueList);
+            rowValueList = _Collections.unmodifiableList(rowValueList);
             this.rowList = rowValueList;
             return rowValueList;
         }

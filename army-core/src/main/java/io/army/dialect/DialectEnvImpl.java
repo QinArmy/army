@@ -4,7 +4,7 @@ import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.mapping.MappingEnv;
 import io.army.meta.FieldMeta;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.Map;
 
@@ -26,7 +26,7 @@ final class DialectEnvImpl implements DialectEnv {
     private DialectEnvImpl(EnvBuilder builder) {
         this.factoryName = builder.factoryName;
         this.environment = builder.env;
-        this.fieldGeneratorMap = _CollectionUtils.unmodifiableMap(builder.generatorMap);
+        this.fieldGeneratorMap = _Collections.unmodifiableMap(builder.generatorMap);
         this.mappingEnv = builder.mappingEnv;
     }
 

@@ -532,7 +532,7 @@ abstract class InsertContext extends StatementContext
 
     @Override
     public final void appendReturnIdIfNeed() {
-        assert this.parser.childUpdateMode == _ChildUpdateMode.CTE;
+        assert this.parser.childUpdateMode == ArmyParser.ChildUpdateMode.CTE;
 
         final PrimaryFieldMeta<?> returnId = this.returnId;
         if (returnId == null || !this.appendReturningClause) {

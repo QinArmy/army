@@ -4,7 +4,7 @@ import io.army.lang.Nullable;
 
 import java.util.*;
 
-public abstract class _CollectionUtils extends io.qinarmy.util.CollectionUtils {
+public abstract class _Collections extends io.qinarmy.util.CollectionUtils {
 
 
     public static <K, V> HashMap<K, V> hashMap() {
@@ -163,6 +163,26 @@ public abstract class _CollectionUtils extends io.qinarmy.util.CollectionUtils {
         }
 
     }//FinalLinkedArray
+
+    private static final class FinalHashSet<E> extends HashSet<E> {
+
+        private FinalHashSet() {
+        }
+
+        private FinalHashSet(Collection<? extends E> c) {
+            super(c);
+        }
+
+        private FinalHashSet(int initialCapacity) {
+            super(initialCapacity);
+        }
+
+        private FinalHashSet(int initialCapacity, float loadFactor) {
+            super(initialCapacity, loadFactor);
+        }
+
+
+    }//FinalHashSet
 
 
 }

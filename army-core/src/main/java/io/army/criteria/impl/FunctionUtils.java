@@ -18,7 +18,7 @@ import io.army.mapping.StringType;
 import io.army.mapping.VoidType;
 import io.army.meta.TypeMeta;
 import io.army.util._ArrayUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -794,7 +794,7 @@ abstract class FunctionUtils {
         } else if (argList.size() == 0) {
             throw CriteriaUtils.funcArgListIsEmpty(name);
         }
-        return new MultiArgVoidFunction(name, _CollectionUtils.unmodifiableList(argList));
+        return new MultiArgVoidFunction(name, _Collections.unmodifiableList(argList));
     }
 
 
@@ -841,7 +841,7 @@ abstract class FunctionUtils {
      */
     private static Map<String, Selection> createSelectionMapFrom(final CriteriaContext context,
                                                                  final List<? extends Selection> selectionList) {
-        final Map<String, Selection> map = _CollectionUtils.hashMap((int) (selectionList.size() / 0.75F));
+        final Map<String, Selection> map = _Collections.hashMap((int) (selectionList.size() / 0.75F));
         for (Selection s : selectionList) {
             if (map.putIfAbsent(s.selectionName(), s) != null) {
                 String m = String.format("Tabular %s %s name[%s] duplication.", SQLFunction.class.getName(),
@@ -2356,7 +2356,7 @@ abstract class FunctionUtils {
         private ColumnTabularFunctionWrapper(ColumnTabularFunction columnFunction, boolean withOrdinality) {
             super(columnFunction);
             this.columnFunction = columnFunction;
-            final List<Selection> fieldList = _CollectionUtils.arrayList(2);
+            final List<Selection> fieldList = _Collections.arrayList(2);
             fieldList.add(ArmySelections.forName(columnFunction.name.toLowerCase(Locale.ROOT), columnFunction.returnType));
             fieldList.add(ArmySelections.forName(ORDINALITY, LongType.INSTANCE));
 
@@ -3500,7 +3500,7 @@ abstract class FunctionUtils {
             if (expPairList == null) {
                 throw noWhenClause();
             } else if (expPairList instanceof ArrayList) {
-                this.expPairList = _CollectionUtils.unmodifiableList(expPairList);
+                this.expPairList = _Collections.unmodifiableList(expPairList);
             } else {
                 throw ContextStack.castCriteriaApi(this.context);
             }

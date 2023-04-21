@@ -29,7 +29,7 @@ abstract class MySQLLiterals extends _Literals {
                 }
                 break;
                 case _Constant.BACK_SLASH:
-                case _Constant.EMPTY_CHAR:
+                case _Constant.NUL_CHAR:
                 case '\b':
                 case '\n':
                 case '\r':

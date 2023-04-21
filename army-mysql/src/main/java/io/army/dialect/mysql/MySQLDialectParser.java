@@ -18,7 +18,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.StringType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -853,7 +853,7 @@ final class MySQLDialectParser extends MySQLParser {
         if (aliasToLonelyParent == null) {
             aliasToLonelyParent = Collections.emptyMap();
         } else {
-            aliasToLonelyParent = _CollectionUtils.unmodifiableMap(aliasToLonelyParent);
+            aliasToLonelyParent = _Collections.unmodifiableMap(aliasToLonelyParent);
         }
         return aliasToLonelyParent;
     }

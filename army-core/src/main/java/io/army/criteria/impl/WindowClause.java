@@ -578,7 +578,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
     private PR endPartitionBy(final boolean required) {
         final List<_Expression> partitionByList = this.partitionByList;
         if (partitionByList instanceof ArrayList) {
-            this.partitionByList = _CollectionUtils.unmodifiableList(partitionByList);
+            this.partitionByList = _Collections.unmodifiableList(partitionByList);
         } else if (partitionByList != null) {
             throw ContextStack.castCriteriaApi(this.context);
         } else if (required) {

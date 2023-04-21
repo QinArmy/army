@@ -4,7 +4,7 @@ package io.army.schema;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.sqltype.SqlType;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.*;
 
@@ -183,8 +183,8 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
                 , List<TableMeta<?>> newTableList, List<_TableResult> tableResultList) {
             this.catalog = catalog;
             this.schema = schema;
-            this.newTableList = _CollectionUtils.unmodifiableList(newTableList);
-            this.tableResultList = _CollectionUtils.unmodifiableList(tableResultList);
+            this.newTableList = _Collections.unmodifiableList(newTableList);
+            this.tableResultList = _Collections.unmodifiableList(tableResultList);
         }
 
         @Override

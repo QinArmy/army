@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.mapping.BooleanType;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
@@ -31,6 +32,15 @@ public abstract class _Literals {
             hexDigitArray[j + 1] = LOWER_CASE_HEX_DIGITS[b & 0xF]; // write lowBits
         }
         return hexDigitArray;
+    }
+
+
+    public static void bindBoolean(final TypeMeta typeMeta, final SqlType type, final Object value,
+                                   final StringBuilder sqlBuilder) {
+        if (!(value instanceof Boolean)) {
+            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+        }
+        sqlBuilder.append(((Boolean) value) ? BooleanType.TRUE : BooleanType.FALSE);
     }
 
 

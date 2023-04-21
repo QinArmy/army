@@ -11,7 +11,7 @@ import io.army.criteria.mysql.MySQLStatement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -167,7 +167,7 @@ abstract class MySQLSupports extends CriteriaSupports {
                 indexHintList = Collections.emptyList();
                 this.indexHintList = indexHintList;
             } else if (indexHintList instanceof ArrayList) {
-                indexHintList = _CollectionUtils.unmodifiableList(indexHintList);
+                indexHintList = _Collections.unmodifiableList(indexHintList);
                 this.indexHintList = indexHintList;
             }
             return indexHintList;
@@ -352,7 +352,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         public final List<? extends _IndexHint> indexHintList() {
             List<_IndexHint> indexHintList = this.indexHintList;
             if (indexHintList instanceof ArrayList) {
-                indexHintList = _CollectionUtils.unmodifiableList(indexHintList);
+                indexHintList = _Collections.unmodifiableList(indexHintList);
                 this.indexHintList = indexHintList;
             } else if (indexHintList == null) {
                 indexHintList = Collections.emptyList();
@@ -427,7 +427,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             if (list.size() == 0) {
                 throw MySQLUtils.partitionListIsEmpty(this.context);
             }
-            this.partitionList = _CollectionUtils.unmodifiableList(list);
+            this.partitionList = _Collections.unmodifiableList(list);
             return this;
         }
 
@@ -436,7 +436,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             final List<String> list = new ArrayList<>();
             consumer.accept(list::add);
             if (list.size() > 0) {
-                this.partitionList = _CollectionUtils.unmodifiableList(list);
+                this.partitionList = _Collections.unmodifiableList(list);
             } else {
                 this.partitionList = Collections.emptyList();
             }
@@ -614,7 +614,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             }
             this.command = command;
             this.purpose = purpose;
-            this.indexNameList = _CollectionUtils.asUnmodifiableList(indexNameList);
+            this.indexNameList = _Collections.asUnmodifiableList(indexNameList);
         }
 
 

@@ -9,13 +9,11 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -292,6 +290,22 @@ public abstract class _DialectUtils {
 
     }
 
+    /**
+     * @return a unmodified map
+     */
+    static Map<String, Boolean> createKeyWordMap(final Set<String> keyWordSet) {
+        final Map<String, Boolean> map;
+        map = _Collections.hashMap((int) (keyWordSet.size() / 0.75f));
+        for (String keyWord : keyWordSet) {
+            map.putIfAbsent(keyWord.toUpperCase(Locale.ROOT), Boolean.TRUE);
+        }
+
+        for (String keyWord : requiredKeyWordMap().keySet()) {
+            map.putIfAbsent(keyWord.toUpperCase(Locale.ROOT), Boolean.TRUE);
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
 
     static int generatedFieldSize(final TableMeta<?> domainTable, final boolean manageVisible) {
         int size = 1; //create time
@@ -347,6 +361,21 @@ public abstract class _DialectUtils {
 
 
 
+
+    /*-------------------below private method -------------------*/
+
+
+    /**
+     * @see #createKeyWordMap(Set)
+     */
+    private static Map<String, Boolean> requiredKeyWordMap() {
+        final Map<String, Boolean> map;
+        map = _Collections.hashMap();
+
+        map.put("SELECT", Boolean.TRUE); //TODO
+        map.put("DELETE", Boolean.TRUE);
+        return map;
+    }
 
 
     /*################################## blow private static innner class ##################################*/

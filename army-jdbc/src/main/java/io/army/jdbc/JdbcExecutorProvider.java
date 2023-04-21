@@ -151,11 +151,11 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
 
         final Database database;
         database = getDatabase(name);
-
-        // return ServerMeta.create(name, database, version, major, minor);
         return ServerMeta.builder()
                 .name(name)
                 .database(database)
+                .catalog(conn.getCatalog())
+                .schema(conn.getSchema())
                 .version(metaData.getDatabaseProductVersion())
                 .major(metaData.getDatabaseMajorVersion())
                 .minor(metaData.getDatabaseMinorVersion())

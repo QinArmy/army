@@ -14,7 +14,7 @@ import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -43,7 +43,7 @@ abstract class CriteriaUtils {
         List<String> list = new ArrayList<>();
         consumer.accept(list::add);
         if (list.size() > 0) {
-            list = _CollectionUtils.unmodifiableList(list);
+            list = _Collections.unmodifiableList(list);
         } else if (required) {
             list = Collections.emptyList();
         } else {
@@ -56,7 +56,7 @@ abstract class CriteriaUtils {
         List<String> list = new ArrayList<>();
         consumer.accept(list::add);
         if (list.size() > 0) {
-            list = _CollectionUtils.unmodifiableList(list);
+            list = _Collections.unmodifiableList(list);
         } else if (required) {
             throw ContextStack.criteriaError(ctx, "you don't add any string");
         } else {

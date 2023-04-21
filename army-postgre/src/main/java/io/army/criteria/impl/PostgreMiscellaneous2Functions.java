@@ -10,7 +10,7 @@ import io.army.mapping.optional.ShortArrayType;
 import io.army.mapping.optional.TextArrayType;
 import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.postgre.PostgreTsVectorType;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -1010,7 +1010,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
             throw CriteriaUtils.tabularFuncErrorPosition(name);
         }
-        final List<Selection> fieldList = _CollectionUtils.arrayList(3);
+        final List<Selection> fieldList = _Collections.arrayList(3);
 
         fieldList.add(ArmySelections.forName("lexeme", TextType.INSTANCE));
         fieldList.add(ArmySelections.forName("positions", ShortArrayType.from(Short[].class)));
@@ -1093,7 +1093,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static _TabularWithOrdinalityFunction tsParse(Expression parserName, Expression document) {
-        final List<Selection> fieldList = _CollectionUtils.arrayList(2);
+        final List<Selection> fieldList = _Collections.arrayList(2);
 
         fieldList.add(ArmySelections.forName("tokid", IntegerType.INSTANCE));
         fieldList.add(ArmySelections.forName("token", TextType.INSTANCE));
@@ -1120,7 +1120,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static _TabularWithOrdinalityFunction tsTokenType(Expression exp) {
-        final List<Selection> fieldList = _CollectionUtils.arrayList(3);
+        final List<Selection> fieldList = _Collections.arrayList(3);
 
         fieldList.add(ArmySelections.forName("tokid", IntegerType.INSTANCE));
         fieldList.add(ArmySelections.forName("alias", TextType.INSTANCE));
@@ -1237,7 +1237,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static XmlAttributes xmlAttributes(Consumer<_XmlAttributeConsumer> consumer) {
+    public static XmlAttributes xmlAttributes(Consumer<Postgres._XmlAttributeConsumer> consumer) {
         final PostgreFunctionUtils.XmlAttributes attributes;
         attributes = PostgreFunctionUtils.xmlAttributes();
         consumer.accept(attributes);
@@ -1330,7 +1330,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see #tsDebug(Expression, Expression)
      */
     private static _TabularWithOrdinalityFunction _tsDebug(final @Nullable Expression config, final Expression document) {
-        final List<Selection> fieldList = _CollectionUtils.arrayList(6);
+        final List<Selection> fieldList = _Collections.arrayList(6);
 
 
         fieldList.add(ArmySelections.forName("alias", TextType.INSTANCE));
@@ -1369,7 +1369,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     private static _TabularWithOrdinalityFunction _tsStat(final Expression sqlQuery, final @Nullable Expression weights) {
-        final List<Selection> fieldList = _CollectionUtils.arrayList(3);
+        final List<Selection> fieldList = _Collections.arrayList(3);
 
         fieldList.add(ArmySelections.forName("word", TextType.INSTANCE));
         fieldList.add(ArmySelections.forName("ndoc", IntegerType.INSTANCE));
@@ -1403,7 +1403,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         } else if (!(attributes == null || attributes instanceof PostgreFunctionUtils.XmlAttributes)) {
             throw CriteriaUtils.funcArgError(funcName, attributes);
         }
-        final List<Object> argList = _CollectionUtils.arrayList();
+        final List<Object> argList = _Collections.arrayList();
         argList.add(nameWord);
         argList.add(name);
         if (attributes != null) {

@@ -14,7 +14,7 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -488,7 +488,7 @@ abstract class MySQLLoads {
             if (list == null) {
                 this.columnExpList = Collections.emptyList();
             } else {
-                this.columnExpList = _CollectionUtils.unmodifiableList(list);
+                this.columnExpList = _Collections.unmodifiableList(list);
             }
             return this;
         }
@@ -590,7 +590,7 @@ abstract class MySQLLoads {
             this.strategyOption = clause.strategyOption;
             this.targetTable = clause.insertTable;
 
-            this.partitionList = _CollectionUtils.safeList(clause.partitionLit);
+            this.partitionList = _Collections.safeList(clause.partitionLit);
 
             this.charset = clause.charset;
             this.fieldsKeyWords = clause.fieldsKeyWords;
@@ -617,7 +617,7 @@ abstract class MySQLLoads {
             }
 
             this.ignoreRows = clause.ignoreLine;
-            this.columnOrUserVarList = _CollectionUtils.safeList(clause.columnExpList);
+            this.columnOrUserVarList = _Collections.safeList(clause.columnExpList);
             this.columItemPairList = clause.assignmentPairList();
         }
 

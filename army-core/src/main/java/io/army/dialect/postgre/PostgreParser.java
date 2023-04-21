@@ -8,10 +8,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.DatabaseObject;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.TypeMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
@@ -22,6 +19,7 @@ import io.army.util._StringUtils;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 abstract class PostgreParser extends _ArmyDialectParser {
@@ -376,40 +374,95 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     public final String identifier(final String identifier) {
-        return this.identifier(identifier, new StringBuilder(2 + identifier.length()))
-                .toString();
+        final String safeIdentifier;
+        final IdentifierMode mode;
+        if (this.keyWordSet.contains(identifier.toUpperCase(Locale.ROOT))
+                || (mode = identifierMode(identifier)) == IdentifierMode.QUOTING) {
+            final StringBuilder builder = new StringBuilder(2 + identifier.length());
+            safeIdentifier = builder.append(_Constant.DOUBLE_QUOTE)
+                    .append(identifier)
+                    .append(_Constant.DOUBLE_QUOTE)
+                    .toString();
+        } else switch (mode) {
+            case ERROR:
+                throw _Exceptions.identifierError(identifier, this.dialect);
+            case ESCAPES: {
+                final int capacity;
+                capacity = identifier.length() + 2;
+                final StringBuilder builder = new StringBuilder(capacity);
+                escapesIdentifier(identifier, builder);
+                assert builder.length() > capacity;
+                safeIdentifier = builder.toString();
+            }
+            break;
+            case SIMPLE:
+                safeIdentifier = identifier;
+                break;
+            case QUOTING:
+            default:
+                // no bug,never here
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+        return safeIdentifier;
     }
 
 
     @Override
     public final StringBuilder identifier(final String identifier, final StringBuilder builder) {
-        // due to postgre identifier is case insensitivity,so have to use quoted identifier.
-        if (!_StringUtils.hasText(identifier)) {
-            throw _Exceptions.identifierNoText();
-        } else if (identifier.indexOf(_Constant.DOUBLE_QUOTE) > -1) {
-            String m = String.format("%s identifier[%s] couldn't contains double-quotes.",
-                    Database.PostgreSQL, identifier);
-            throw new CriteriaException(m);
+        final IdentifierMode mode;
+        if (this.keyWordSet.contains(identifier.toUpperCase(Locale.ROOT))
+                || (mode = identifierMode(identifier)) == IdentifierMode.QUOTING) {
+            builder.append(_Constant.DOUBLE_QUOTE)
+                    .append(identifier)
+                    .append(_Constant.DOUBLE_QUOTE);
+        } else switch (mode) {
+            case ERROR:
+                throw _Exceptions.identifierError(identifier, this.dialect);
+            case ESCAPES:
+                escapesIdentifier(identifier, builder);
+                break;
+            case SIMPLE:
+                builder.append(identifier);
+                break;
+            case QUOTING:
+            default:
+                // no bug,never here
+                throw _Exceptions.unexpectedEnum(mode);
         }
-        return builder.append(_Constant.DOUBLE_QUOTE)
-                .append(identifier)
-                .append(_Constant.DOUBLE_QUOTE);
+        return builder;
     }
 
     @Override
     protected final String doSafeObjectName(final DatabaseObject object) {
         final String objectName, safeObjectName;
         objectName = object.objectName();
-        if (!this.keyWordSet.contains(objectName) && _DialectUtils.isSafeIdentifier(objectName)) {
-            safeObjectName = objectName;
-        } else if (objectName.indexOf(_Constant.DOUBLE_QUOTE) > -1) {
-            throw _Exceptions.objectNameContainsDelimited(Database.PostgreSQL, object, _Constant.DOUBLE_QUOTE);
-        } else {
+        final IdentifierMode mode;
+        if (this.keyWordSet.contains(objectName.toUpperCase(Locale.ROOT))
+                || (mode = identifierMode(objectName)) == IdentifierMode.QUOTING) {
             final StringBuilder builder = new StringBuilder(2 + objectName.length());
             safeObjectName = builder.append(_Constant.DOUBLE_QUOTE)
                     .append(objectName)
                     .append(_Constant.DOUBLE_QUOTE)
                     .toString();
+        } else switch (mode) {
+            case ERROR:
+                throw _Exceptions.objectNameError(object, this.dialect);
+            case ESCAPES: {
+                final int capacity;
+                capacity = objectName.length() + 2;
+                final StringBuilder builder = new StringBuilder(capacity);
+                escapesIdentifier(objectName, builder);
+                assert builder.length() > capacity;
+                safeObjectName = builder.toString();
+            }
+            break;
+            case SIMPLE:
+                safeObjectName = objectName;
+                break;
+            case QUOTING:
+            default:
+                // no bug,never here
+                throw _Exceptions.unexpectedEnum(mode);
         }
         return safeObjectName;
     }
@@ -419,14 +472,25 @@ abstract class PostgreParser extends _ArmyDialectParser {
     protected final StringBuilder doSafeObjectName(final DatabaseObject object, final StringBuilder builder) {
         final String objectName;
         objectName = object.objectName();
-        if (!this.keyWordSet.contains(objectName) && _DialectUtils.isSafeIdentifier(objectName)) {
-            builder.append(objectName);
-        } else if (objectName.indexOf(_Constant.DOUBLE_QUOTE) > -1) {
-            throw _Exceptions.objectNameContainsDelimited(Database.PostgreSQL, object, _Constant.DOUBLE_QUOTE);
-        } else {
+        final IdentifierMode mode;
+        if (this.keyWordSet.contains(objectName.toUpperCase(Locale.ROOT))
+                || (mode = identifierMode(objectName)) == IdentifierMode.QUOTING) {
             builder.append(_Constant.DOUBLE_QUOTE)
                     .append(objectName)
                     .append(_Constant.DOUBLE_QUOTE);
+        } else switch (mode) {
+            case ERROR:
+                throw _Exceptions.objectNameError(object, this.dialect);
+            case ESCAPES:
+                escapesIdentifier(objectName, builder);
+                break;
+            case SIMPLE:
+                builder.append(objectName);
+                break;
+            case QUOTING:
+            default:
+                // no bug,never here
+                throw _Exceptions.unexpectedEnum(mode);
         }
         return builder;
     }
@@ -467,9 +531,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final _ChildUpdateMode childUpdateMode() {
+    protected final ChildUpdateMode childUpdateMode() {
         // Postgre support DML in cte.
-        return _ChildUpdateMode.CTE;
+        return ChildUpdateMode.CTE;
     }
 
     @Override
@@ -494,6 +558,85 @@ abstract class PostgreParser extends _ArmyDialectParser {
     protected final boolean isSupportUpdateDerivedField() {
         // Postgre don't support update derived field
         return false;
+    }
+
+    @Override
+    protected final String qualifiedSchemaName(final ServerMeta meta) {
+        final String catalog, schema, qualifiedSchema;
+        catalog = meta.catalog();
+        schema = meta.schema();
+        if (!_StringUtils.hasText(catalog) || !_StringUtils.hasText(schema)) {
+            throw _Exceptions.serverMetaError(meta);
+        }
+
+
+        return null;
+    }
+
+    @Override
+    protected final IdentifierMode identifierMode(String identifier) {
+        final int length = identifier.length();
+        if (length == 0) {
+            return IdentifierMode.ERROR;
+        }
+        IdentifierMode mode = null;
+        char ch;
+        boolean upperCase = false;
+
+        for (int i = 0; i < length; i++) {
+            ch = identifier.charAt(i);
+            if ((ch >= 'a' && ch <= 'z') || ch == '_') {
+                continue;
+            } else if (ch >= 'A' && ch <= 'Z') {
+                upperCase = true;
+                continue;
+            } else if ((ch >= '0' && ch <= '9') || ch == '$') {
+                if (i == 0) {
+                    mode = IdentifierMode.ERROR;
+                    break;
+                }
+                continue;
+            }
+
+            switch (ch) {
+                case _Constant.DOUBLE_QUOTE:
+                    throw _Exceptions.identifierContainsDelimited(this.database, identifier, _Constant.DOUBLE_QUOTE);
+                case '\b':
+                case '\f':
+                case '\n':
+                case '\r':
+                case '\t':
+                case _Constant.NUL_CHAR:
+                case _Constant.BACK_SLASH:
+                    mode = IdentifierMode.ESCAPES;
+                    break;
+                default:
+                    mode = IdentifierMode.QUOTING;
+                    break;
+            }// switch
+
+            break; // break outer for
+
+
+        } // for
+
+        if (mode == null) {
+            if (upperCase) {
+                mode = IdentifierMode.QUOTING;
+            } else {
+                mode = IdentifierMode.SIMPLE;
+            }
+        }
+        return mode;
+    }
+
+    /**
+     * @see #doSafeObjectName(DatabaseObject)
+     * @see #doSafeObjectName(DatabaseObject, StringBuilder)
+     */
+    protected final void escapesIdentifier(final String identifier, final StringBuilder sqlBuilder) {
+
+
     }
 
     @Override

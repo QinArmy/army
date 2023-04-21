@@ -6,13 +6,12 @@ import io.army.criteria.impl.inner._Statement;
 import io.army.dialect.Dialect;
 import io.army.function.*;
 import io.army.lang.Nullable;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.UnaryOperator;
 import java.util.function.*;
 
 /**
@@ -435,7 +434,7 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
     final List<_Predicate> endWhereClause() {
         List<_Predicate> list = this.predicateList;
         if (list instanceof ArrayList) {
-            list = _CollectionUtils.unmodifiableList(list);
+            list = _Collections.unmodifiableList(list);
             this.predicateList = list;
         } else if (list != null) {
             throw ContextStack.castCriteriaApi(this.context);

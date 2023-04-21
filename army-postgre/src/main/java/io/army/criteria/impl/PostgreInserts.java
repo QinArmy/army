@@ -16,7 +16,7 @@ import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -812,7 +812,7 @@ abstract class PostgreInserts extends InsertSupports {
         private final List<_Predicate> updatePredicateList;
 
         private ConflictActionClauseResult(OnConflictClause<?, ?, ?> clause) {
-            this.targetItemList = _CollectionUtils.safeList(clause.targetItemList);
+            this.targetItemList = _Collections.safeList(clause.targetItemList);
             if (this.targetItemList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(clause.valuesClause.context);
             }
@@ -827,7 +827,7 @@ abstract class PostgreInserts extends InsertSupports {
         private ConflictActionClauseResult(OnConflictClause<?, ?, ?> clause, List<_ItemPair> itemPairList
                 , List<_Predicate> updatePredicateList) {
             this.doNothing = clause.doNothing;
-            this.targetItemList = _CollectionUtils.safeList(clause.targetItemList);
+            this.targetItemList = _Collections.safeList(clause.targetItemList);
             if (this.targetItemList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(clause.valuesClause.context);
             }
@@ -1175,7 +1175,7 @@ abstract class PostgreInserts extends InsertSupports {
                 if (!(selectionList instanceof ArrayList && selectionList.size() > 0)) {
                     throw ContextStack.castCriteriaApi(this.context);
                 }
-                this.returningList = _CollectionUtils.unmodifiableList(selectionList);
+                this.returningList = _Collections.unmodifiableList(selectionList);
             }
             return this.dqlFunction.apply(this);
         }
@@ -1502,7 +1502,7 @@ abstract class PostgreInserts extends InsertSupports {
         private PrimaryParentDomainInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             this.originalDomainList = clause.originalDomainList();
-            this.domainList = _CollectionUtils.asUnmodifiableList(this.originalDomainList);
+            this.domainList = _Collections.asUnmodifiableList(this.originalDomainList);
         }
 
         @Override
@@ -1594,7 +1594,7 @@ abstract class PostgreInserts extends InsertSupports {
         private PrimaryParentDomainReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             this.originalDomainList = clause.originalDomainList();
-            this.domainList = _CollectionUtils.asUnmodifiableList(this.originalDomainList);
+            this.domainList = _Collections.asUnmodifiableList(this.originalDomainList);
         }
 
         @Override
@@ -1632,7 +1632,7 @@ abstract class PostgreInserts extends InsertSupports {
         private SubDomainInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             if (clause.insertTable instanceof ParentTableMeta) {
-                this.domainList = _CollectionUtils.asUnmodifiableList(clause.originalDomainList());
+                this.domainList = _Collections.asUnmodifiableList(clause.originalDomainList());
             } else {
                 this.domainList = clause.domainListForSingle();
             }
@@ -1654,7 +1654,7 @@ abstract class PostgreInserts extends InsertSupports {
         private SubDomainReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             if (clause.insertTable instanceof ParentTableMeta) {
-                this.domainList = _CollectionUtils.asUnmodifiableList(clause.originalDomainList());
+                this.domainList = _Collections.asUnmodifiableList(clause.originalDomainList());
             } else {
                 this.domainList = clause.domainListForSingle();
             }

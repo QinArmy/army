@@ -14,7 +14,7 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util._ArrayUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -531,7 +531,7 @@ abstract class MySQLInserts extends InsertSupports {
                 pairList = Collections.emptyList();
                 this.itemPairList = pairList;
             } else if (pairList instanceof ArrayList) {
-                pairList = _CollectionUtils.unmodifiableList(pairList);
+                pairList = _Collections.unmodifiableList(pairList);
                 this.itemPairList = pairList;
             } else {
                 throw ContextStack.castCriteriaApi(this.clause.context);
@@ -629,24 +629,24 @@ abstract class MySQLInserts extends InsertSupports {
         private MySQLComplexValuesClause(PrimaryInsertIntoClause options, SingleTableMeta<T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
-            this.hintList = _CollectionUtils.safeList(options.hintList);
-            this.modifierList = _CollectionUtils.safeList(options.modifierList);
+            this.hintList = _Collections.safeList(options.hintList);
+            this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;
         }
 
         private MySQLComplexValuesClause(ChildInsertIntoClause<?> options, ChildTableMeta<T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
-            this.hintList = _CollectionUtils.safeList(options.hintList);
-            this.modifierList = _CollectionUtils.safeList(options.modifierList);
+            this.hintList = _Collections.safeList(options.hintList);
+            this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;
         }
 
         private MySQLComplexValuesClause(PrimarySingleInsertIntoClause<?> options, SingleTableMeta<T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
-            this.hintList = _CollectionUtils.safeList(options.hintList);
-            this.modifierList = _CollectionUtils.safeList(options.modifierList);
+            this.hintList = _Collections.safeList(options.hintList);
+            this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;
         }
 
@@ -711,7 +711,7 @@ abstract class MySQLInserts extends InsertSupports {
             if (list.size() == 0) {
                 throw CriteriaUtils.conflictClauseIsEmpty(this.context);
             }
-            this.conflictPairList = _CollectionUtils.unmodifiableList(list);
+            this.conflictPairList = _Collections.unmodifiableList(list);
             return this;
         }
 
@@ -724,7 +724,7 @@ abstract class MySQLInserts extends InsertSupports {
             consumer.accept(CriteriaSupports.simpleFieldItemPairs(this.context, this.insertTable, list::add));
 
             if (list.size() > 0) {
-                this.conflictPairList = _CollectionUtils.unmodifiableList(list);
+                this.conflictPairList = _Collections.unmodifiableList(list);
             }
             return this;
         }
@@ -775,10 +775,10 @@ abstract class MySQLInserts extends InsertSupports {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+            this.partitionList = _Collections.safeList(clause.partitionList);
             this.rowAlias = clause.rowAlias;
 
-            this.conflictPairList = _CollectionUtils.safeList(clause.conflictPairList);
+            this.conflictPairList = _Collections.safeList(clause.conflictPairList);
         }
 
 
@@ -907,7 +907,7 @@ abstract class MySQLInserts extends InsertSupports {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
             this.originalDomainList = clause.originalDomainList();
-            this.domainList = _CollectionUtils.unmodifiableList(this.originalDomainList);
+            this.domainList = _Collections.unmodifiableList(this.originalDomainList);
         }
 
         @Override
@@ -1032,10 +1032,10 @@ abstract class MySQLInserts extends InsertSupports {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+            this.partitionList = _Collections.safeList(clause.partitionList);
             this.rowAlias = clause.rowAlias;
 
-            this.conflictPairList = _CollectionUtils.safeList(clause.conflictPairList);
+            this.conflictPairList = _Collections.safeList(clause.conflictPairList);
         }
 
 
@@ -1168,10 +1168,10 @@ abstract class MySQLInserts extends InsertSupports {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+            this.partitionList = _Collections.safeList(clause.partitionList);
             this.rowAlias = clause.rowAlias;
 
-            this.conflictPairList = _CollectionUtils.safeList(clause.conflictPairList);
+            this.conflictPairList = _Collections.safeList(clause.conflictPairList);
         }
 
 

@@ -6,7 +6,7 @@ import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
 import io.army.stmt._StmtParams;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -220,7 +220,7 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
 
     @Override
     public final List<SQLParam> paramList() {
-        return _CollectionUtils.unmodifiableList(this.paramConsumer.paramList);
+        return _Collections.unmodifiableList(this.paramConsumer.paramList);
     }
 
     @Override

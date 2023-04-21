@@ -9,7 +9,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,14 +60,14 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
             if (childItemList == null) {
                 ((SimpleDomainUpdate<F>) this).childItemPairList = Collections.emptyList();
             } else {
-                ((SimpleDomainUpdate<F>) this).childItemPairList = _CollectionUtils.unmodifiableList(childItemList);
+                ((SimpleDomainUpdate<F>) this).childItemPairList = _Collections.unmodifiableList(childItemList);
             }
         } else if (this instanceof BatchDomainUpdate) {
             final List<_ItemPair> childItemList = ((BatchDomainUpdate<F>) this).childItemPairList;
             if (childItemList == null) {
                 ((BatchDomainUpdate<F>) this).childItemPairList = Collections.emptyList();
             } else {
-                ((BatchDomainUpdate<F>) this).childItemPairList = _CollectionUtils.unmodifiableList(childItemList);
+                ((BatchDomainUpdate<F>) this).childItemPairList = _Collections.unmodifiableList(childItemList);
             }
         } else if (this instanceof StandardUpdates.BatchSingleUpdate
                 && ((BatchSingleUpdate<F>) this).paramList == null) {

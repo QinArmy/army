@@ -21,6 +21,12 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<ZoneOffset> ZONE_OFFSET = new ArmyKey<>("zone.offset", ZoneOffset.class, null);
 
+    public static final ArmyKey<Boolean> USE_QUALIFIED_TABLE_NAME = new ArmyKey<>("use.qualified.table.name", Boolean.class, Boolean.FALSE);
+
+    public static final ArmyKey<Boolean> TABLE_NAME_UPPER = new ArmyKey<>("table.name.upper", Boolean.class, Boolean.FALSE);
+
+    public static final ArmyKey<Boolean> COLUMN_NAME_UPPER = new ArmyKey<>("column.name.upper", Boolean.class, Boolean.FALSE);
+
     public static final ArmyKey<QueryInsertMode> SUBQUERY_INSERT_MODE = new ArmyKey<>("subquery.insert.mode", QueryInsertMode.class, QueryInsertMode.ONLY_MIGRATION);
 
     public static final ArmyKey<Boolean> SQL_LOG_DYNAMIC = new ArmyKey<>("sql.log.dynamic", Boolean.class, Boolean.FALSE);

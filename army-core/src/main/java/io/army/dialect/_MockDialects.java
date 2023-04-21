@@ -110,6 +110,7 @@ public abstract class _MockDialects implements DialectEnv {
         builder = ServerMeta.builder()
                 .name("MySQL")
                 .database(Database.MySQL)
+                .catalog("mock")
                 .usedDialect(dialect)
                 .supportSavePoint(true);
         switch (dialect) {
@@ -144,6 +145,8 @@ public abstract class _MockDialects implements DialectEnv {
         builder = ServerMeta.builder()
                 .name("PostgreSQL")
                 .database(Database.PostgreSQL)
+                .catalog("army")
+                .schema("mock")
                 .usedDialect(dialect)
                 .supportSavePoint(true);
 

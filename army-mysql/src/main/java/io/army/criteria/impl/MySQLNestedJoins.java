@@ -11,7 +11,7 @@ import io.army.criteria.mysql.MySQLStatement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -418,7 +418,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         public final List<? extends _IndexHint> indexHintList() {
             List<_IndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null || indexHintList instanceof ArrayList) {
-                indexHintList = _CollectionUtils.safeUnmodifiableList(indexHintList);
+                indexHintList = _Collections.safeUnmodifiableList(indexHintList);
                 this.indexHintList = indexHintList;
             }
             return indexHintList;

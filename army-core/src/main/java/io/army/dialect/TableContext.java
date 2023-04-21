@@ -10,7 +10,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
@@ -32,12 +32,12 @@ final class TableContext {
 
     private TableContext(Map<String, TabularItem> aliasToTable, Map<TableMeta<?>, String> tableToSafeAlias
             , @Nullable Map<String, String> childAliasToParentAlias) {
-        this.aliasToTable = _CollectionUtils.unmodifiableMap(aliasToTable);
-        this.tableToSafeAlias = _CollectionUtils.unmodifiableMap(tableToSafeAlias);
+        this.aliasToTable = _Collections.unmodifiableMap(aliasToTable);
+        this.tableToSafeAlias = _Collections.unmodifiableMap(tableToSafeAlias);
         if (childAliasToParentAlias == null) {
             this.childAliasToParentAlias = Collections.emptyMap();
         } else {
-            this.childAliasToParentAlias = _CollectionUtils.unmodifiableMap(childAliasToParentAlias);
+            this.childAliasToParentAlias = _Collections.unmodifiableMap(childAliasToParentAlias);
         }
     }
 
@@ -403,7 +403,7 @@ final class TableContext {
                 this.childMap = Collections.emptyMap();
             } else {
                 this.childAliasToParentAlias = new HashMap<>();
-                this.childMap = _CollectionUtils.unmodifiableMap(childMap);
+                this.childMap = _Collections.unmodifiableMap(childMap);
             }
 
         }

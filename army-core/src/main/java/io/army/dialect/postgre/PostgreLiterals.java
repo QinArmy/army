@@ -38,7 +38,7 @@ import io.army.util._StringUtils;
                 case _Constant.BACK_SLASH:
                     followChar = _Constant.BACK_SLASH;
                     break;
-                case _Constant.EMPTY_CHAR:
+                case _Constant.NUL_CHAR:
                     followChar = '0';
                     break;
                 case '\b':

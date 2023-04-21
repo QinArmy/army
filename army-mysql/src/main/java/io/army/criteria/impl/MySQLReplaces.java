@@ -16,7 +16,7 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util._ArrayUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
@@ -281,24 +281,24 @@ abstract class MySQLReplaces extends InsertSupports {
         private MySQLComplexValuesClause(PrimaryReplaceIntoClause options, SingleTableMeta<T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
-            this.hintList = _CollectionUtils.safeList(options.hintList);
-            this.modifierList = _CollectionUtils.safeList(options.modifierList);
+            this.hintList = _Collections.safeList(options.hintList);
+            this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;
         }
 
         private MySQLComplexValuesClause(ChildReplaceIntoClause<?> options, ComplexTableMeta<?, T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
-            this.hintList = _CollectionUtils.safeList(options.hintList);
-            this.modifierList = _CollectionUtils.safeList(options.modifierList);
+            this.hintList = _Collections.safeList(options.hintList);
+            this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;
         }
 
         private MySQLComplexValuesClause(PrimarySingleReplaceIntoClause<?> options, SingleTableMeta<T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
             super(options, table);
-            this.hintList = _CollectionUtils.safeList(options.hintList);
-            this.modifierList = _CollectionUtils.safeList(options.modifierList);
+            this.hintList = _Collections.safeList(options.hintList);
+            this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;
         }
 
@@ -372,7 +372,7 @@ abstract class MySQLReplaces extends InsertSupports {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+            this.partitionList = _Collections.safeList(clause.partitionList);
         }
 
 
@@ -497,7 +497,7 @@ abstract class MySQLReplaces extends InsertSupports {
             super(clause);
             assert clause.insertTable instanceof ParentTableMeta;
             this.originalDomainList = clause.originalDomainList();
-            this.domainList = _CollectionUtils.unmodifiableList(this.originalDomainList);
+            this.domainList = _Collections.unmodifiableList(this.originalDomainList);
         }
 
         @Override
@@ -612,7 +612,7 @@ abstract class MySQLReplaces extends InsertSupports {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+            this.partitionList = _Collections.safeList(clause.partitionList);
         }
 
 
@@ -738,7 +738,7 @@ abstract class MySQLReplaces extends InsertSupports {
             super(clause);
             this.hintList = clause.hintList;
             this.modifierList = clause.modifierList;
-            this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+            this.partitionList = _Collections.safeList(clause.partitionList);
         }
 
 

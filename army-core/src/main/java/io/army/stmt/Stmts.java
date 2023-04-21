@@ -6,7 +6,7 @@ import io.army.bean.ReadAccessor;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.meta.PrimaryFieldMeta;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -98,7 +98,7 @@ public abstract class Stmts {
                 //here bug
                 throw new IllegalStateException("create parameter group error.");
             }
-            groupList.add(_CollectionUtils.unmodifiableList(group));
+            groupList.add(_Collections.unmodifiableList(group));
         }
         if (namedParam == null) {
             throw new CriteriaException("Not found any named parameter in batch statement.");

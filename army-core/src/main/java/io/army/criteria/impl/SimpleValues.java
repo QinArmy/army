@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -412,7 +412,7 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
                     || !(rowList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.rowList = _CollectionUtils.unmodifiableList(rowList);
+            this.rowList = _Collections.unmodifiableList(rowList);
             this.endOrderByClause();
             this.prepared = Boolean.TRUE;
             this.context.endContext();

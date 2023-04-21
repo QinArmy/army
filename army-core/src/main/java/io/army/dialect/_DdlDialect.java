@@ -205,7 +205,7 @@ public abstract class _DdlDialect implements DdlDialect {
                     lastWritten = i; // not i+1 as ch wasn't written.
                 }
                 break;
-                case _Constant.EMPTY_CHAR: {
+                case _Constant.NUL_CHAR: {
                     if (i > lastWritten) {
                         builder.append(array, lastWritten, i - lastWritten);
                     }

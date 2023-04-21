@@ -172,7 +172,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
     @Nullable
     private static SingleTableDmlContext decideParentContext(final SingleTableDmlContext parentContext) {
         final SingleTableDmlContext actual;
-        if (parentContext.parser.childUpdateMode == _ChildUpdateMode.CTE) {
+        if (parentContext.parser.childUpdateMode == ArmyParser.ChildUpdateMode.CTE) {
             actual = parentContext; //same StringBuilder instance
         } else {
             actual = null;

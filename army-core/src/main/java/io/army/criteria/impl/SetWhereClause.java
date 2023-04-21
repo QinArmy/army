@@ -10,7 +10,7 @@ import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.*;
@@ -253,7 +253,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
             itemPairList = Collections.emptyList();
             this.itemPairList = itemPairList;
         } else if (itemPairList instanceof ArrayList) {
-            itemPairList = _CollectionUtils.unmodifiableList(itemPairList);
+            itemPairList = _Collections.unmodifiableList(itemPairList);
             this.itemPairList = itemPairList;
         } else {
             throw ContextStack.castCriteriaApi(this.context);

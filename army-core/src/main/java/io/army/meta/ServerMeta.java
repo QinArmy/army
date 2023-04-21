@@ -2,12 +2,19 @@ package io.army.meta;
 
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.lang.Nullable;
 
 public interface ServerMeta {
 
     String name();
 
     Database database();
+
+    @Nullable
+    String catalog();
+
+    @Nullable
+    String schema();
 
     String version();
 
@@ -30,6 +37,10 @@ public interface ServerMeta {
     interface Builder {
 
         Builder name(String name);
+
+        Builder catalog(String catalogName);
+
+        Builder schema(String schemaName);
 
         Builder database(Database database);
 

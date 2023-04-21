@@ -16,7 +16,7 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -456,7 +456,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     final void onEndQuery() {
-        this.windowList = _CollectionUtils.safeUnmodifiableList(this.windowList);
+        this.windowList = _Collections.safeUnmodifiableList(this.windowList);
         if (this.intoVarList == null) {
             this.intoVarList = Collections.emptyList();
         }

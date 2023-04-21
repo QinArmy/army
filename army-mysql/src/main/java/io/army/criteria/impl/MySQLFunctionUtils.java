@@ -20,7 +20,7 @@ import io.army.sqltype.MySQLTypes;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
 import io.army.stmt.Stmt;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -1845,7 +1845,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (!(columnList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.columnList = _CollectionUtils.unmodifiableList(columnList);
+            this.columnList = _Collections.unmodifiableList(columnList);
             return this.onRightParen();
         }
 
@@ -2203,8 +2203,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (!(selectionList instanceof ArrayList && selectionMap instanceof HashMap && selectionList.size() > 0)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.selectionList = _CollectionUtils.unmodifiableList(selectionList);
-            this.selectionMap = _CollectionUtils.unmodifiableMap(selectionMap);
+            this.selectionList = _Collections.unmodifiableList(selectionList);
+            this.selectionMap = _Collections.unmodifiableMap(selectionMap);
             return this.function.apply(this);
         }
 

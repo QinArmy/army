@@ -11,7 +11,7 @@ import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -759,7 +759,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             }
             //null,no-op
         } else if (itemList instanceof ArrayList) {
-            this.groupByList = _CollectionUtils.unmodifiableList(itemList);
+            this.groupByList = _Collections.unmodifiableList(itemList);
         } else {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -791,7 +791,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             }
             this.havingList = Collections.emptyList();
         } else if (predicateList instanceof ArrayList) {
-            this.havingList = _CollectionUtils.unmodifiableList(predicateList);
+            this.havingList = _Collections.unmodifiableList(predicateList);
         } else {
             throw ContextStack.castCriteriaApi(this.context);
         }

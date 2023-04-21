@@ -11,7 +11,7 @@ import io.army.criteria.mysql.MySQLStatement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -389,7 +389,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         public final List<? extends _IndexHint> indexHintList() {
             List<_IndexHint> list = this.indexHintList;
             if (list == null || list instanceof ArrayList) {
-                list = _CollectionUtils.safeUnmodifiableList(list);
+                list = _Collections.safeUnmodifiableList(list);
                 this.indexHintList = list;
             }
             return list;

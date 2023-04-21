@@ -15,7 +15,7 @@ import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -674,7 +674,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
             }
             this.endDeleteStatement();
             if (returningList instanceof ArrayList) {
-                this.returningList = _CollectionUtils.unmodifiableList(returningList);
+                this.returningList = _Collections.unmodifiableList(returningList);
             } else {
                 this.returningList = CriteriaUtils.returningAll(this.table(), this.tableAlias(), this.tableBlockList());
             }
@@ -1068,7 +1068,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
             }
             this.endDeleteStatement();
             if (returningList instanceof ArrayList) {
-                this.returningList = _CollectionUtils.unmodifiableList(returningList);
+                this.returningList = _Collections.unmodifiableList(returningList);
             } else {
                 this.returningList = CriteriaUtils.returningAll(this.table(), this.tableAlias(), this.tableBlockList());
             }

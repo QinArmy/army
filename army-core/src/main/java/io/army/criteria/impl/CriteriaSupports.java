@@ -14,7 +14,7 @@ import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.Stmt;
 import io.army.util._ArrayUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -375,7 +375,7 @@ abstract class CriteriaSupports {
         public final RR rightParen() {
             List<String> stringList = this.stringList;
             if (stringList instanceof ArrayList) {
-                stringList = _CollectionUtils.unmodifiableList(stringList);
+                stringList = _Collections.unmodifiableList(stringList);
             } else if (stringList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             } else if (this.optionalClause) {

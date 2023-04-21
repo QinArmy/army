@@ -5,7 +5,7 @@ import io.army.criteria.SQLParam;
 import io.army.criteria.SqlValueParam;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.Collection;
@@ -20,7 +20,7 @@ abstract class SqlParams implements SQLParam {
 
     static MultiParam multi(final NamedParam.NamedMulti namedParam, final Collection<?> values) {
         final List<?> valueList;
-        valueList = _CollectionUtils.asUnmodifiableList(values);
+        valueList = _Collections.asUnmodifiableList(values);
         if (valueList.size() != namedParam.valueSize()) {
             throw _Exceptions.namedMultiParamSizeError(namedParam, values.size());
         }

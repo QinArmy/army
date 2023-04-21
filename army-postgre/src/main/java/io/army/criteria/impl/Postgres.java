@@ -4,6 +4,9 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.*;
 import io.army.criteria.postgre.*;
+import io.army.mapping.MappingType;
+
+import java.util.function.BiFunction;
 
 /**
  * <p>
@@ -104,4 +107,13 @@ public abstract class Postgres extends PostgreSyntax {
     }
 
 
+    public interface _XmlAttributeConsumer {
+
+        _XmlAttributeConsumer accept(DataField field);
+
+        _XmlAttributeConsumer accept(Expression attValue, WordAs as, String attName);
+
+        _XmlAttributeConsumer accept(BiFunction<MappingType, String, Expression> funcRef, String attValue, WordAs as, String attName);
+
+    }
 }

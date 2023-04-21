@@ -6,11 +6,14 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.util._CollectionUtils;
+import io.army.mapping.MappingType;
+import io.army.mapping.StringType;
+import io.army.util._Collections;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 
 abstract class PostgreFunctionUtils extends FunctionUtils {
 
@@ -25,7 +28,7 @@ abstract class PostgreFunctionUtils extends FunctionUtils {
 
     static final class XmlAttributes implements ArmyFuncClause,
             PostgreStringFunctions.XmlAttributes,
-            PostgreStringFunctions._XmlAttributeConsumer {
+            Postgres._XmlAttributeConsumer {
 
         private static final String SPACE_XML_ATTRIBUTES = " XMLATTRIBUTES";
 
@@ -69,6 +72,7 @@ abstract class PostgreFunctionUtils extends FunctionUtils {
 
                     attrPair.first.appendSql(context);
                     sqlBuilder.append(SQLs.AS.spaceRender());
+                    sqlBuilder.append(_Constant.SPACE);
                     parser.identifier(attrPair.second, sqlBuilder);
 
                 } else if (attObject instanceof DataField) {
@@ -84,10 +88,10 @@ abstract class PostgreFunctionUtils extends FunctionUtils {
 
 
         @Override
-        public PostgreStringFunctions._XmlAttributeConsumer accept(final @Nullable DataField field) {
+        public Postgres._XmlAttributeConsumer accept(final @Nullable DataField field) {
             List<Object> attValueList = this.attValueList;
             if (attValueList == null) {
-                attValueList = _CollectionUtils.arrayList();
+                attValueList = _Collections.arrayList();
                 this.attValueList = attValueList;
             } else if (!(attValueList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
@@ -102,12 +106,12 @@ abstract class PostgreFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public PostgreStringFunctions._XmlAttributeConsumer accept(
+        public Postgres._XmlAttributeConsumer accept(
                 final @Nullable Expression attValue, SqlSyntax.WordAs as, final @Nullable String attName) {
 
             List<Object> attValueList = this.attValueList;
             if (attValueList == null) {
-                attValueList = _CollectionUtils.arrayList();
+                attValueList = _Collections.arrayList();
                 this.attValueList = attValueList;
             } else if (!(attValueList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
@@ -123,12 +127,17 @@ abstract class PostgreFunctionUtils extends FunctionUtils {
             return this;
         }
 
+        @Override
+        public Postgres._XmlAttributeConsumer accept(BiFunction<MappingType, String, Expression> funcRef, String attValue, SqlSyntax.WordAs as, String attName) {
+            return this.accept(funcRef.apply(StringType.INSTANCE, attValue), as, attName);
+        }
+
         PostgreStringFunctions.XmlAttributes endXmlAttributes() {
             final List<Object> attValueList = this.attValueList;
             if (attValueList == null) {
                 this.attValueList = Collections.emptyList();
             } else if (attValueList instanceof ArrayList) {
-                this.attValueList = _CollectionUtils.unmodifiableList(attValueList);
+                this.attValueList = _Collections.unmodifiableList(attValueList);
             } else {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }

@@ -13,7 +13,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -314,7 +314,7 @@ abstract class StandardInserts extends InsertSupports {
             assert clause.insertTable instanceof ParentTableMeta;
             this.function = function;
             this.originalDomainList = clause.originalDomainList();
-            this.domainList = _CollectionUtils.asUnmodifiableList(this.originalDomainList);
+            this.domainList = _Collections.asUnmodifiableList(this.originalDomainList);
         }
 
         @Override

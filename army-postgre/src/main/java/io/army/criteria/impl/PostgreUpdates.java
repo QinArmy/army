@@ -16,7 +16,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -664,7 +664,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             }
             this.endUpdateStatement();
             if (returningList instanceof ArrayList) {
-                this.returningList = _CollectionUtils.unmodifiableList(returningList);
+                this.returningList = _Collections.unmodifiableList(returningList);
             } else {
                 this.returningList = CriteriaUtils.returningAll(this.targetTable, this.targetTableAlias, this.tableBlockList());
             }
@@ -1021,7 +1021,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             }
             this.endUpdateStatement();
             if (returningList instanceof ArrayList) {
-                this.returningList = _CollectionUtils.unmodifiableList(returningList);
+                this.returningList = _Collections.unmodifiableList(returningList);
             } else {
                 this.returningList = CriteriaUtils.returningAll(this.targetTable, this.targetTableAlias, this.tableBlockList());
             }

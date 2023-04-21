@@ -18,6 +18,10 @@ final class ServerMetaImpl implements ServerMeta {
 
     private final Database database;
 
+    private final String catalogName;
+
+    private final String schemaName;
+
     private final String version;
 
     private final int major;
@@ -32,11 +36,14 @@ final class ServerMetaImpl implements ServerMeta {
     private ServerMetaImpl(ServerMetaBuilder builder) {
         this.name = builder.name;
         this.database = builder.database;
+        this.catalogName = builder.catalogName;
+        this.schemaName = builder.schemaName;
+
         this.version = builder.version;
         this.major = builder.major;
-
         this.minor = builder.minor;
         this.usedDialect = builder.usedDialect;
+
         this.supportSavePoint = builder.supportSavePoint;
 
         if (_StringUtils.isEmpty(this.name)
@@ -60,6 +67,16 @@ final class ServerMetaImpl implements ServerMeta {
     @Override
     public Database database() {
         return this.database;
+    }
+
+    @Override
+    public String catalog() {
+        return this.catalogName;
+    }
+
+    @Override
+    public String schema() {
+        return this.schemaName;
     }
 
     @Override
@@ -89,8 +106,9 @@ final class ServerMetaImpl implements ServerMeta {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.name, this.database, this.version, this.major,
-                this.minor, this.usedDialect, this.supportSavePoint);
+        return Objects.hash(this.name, this.database, this.catalogName, this.schemaName,
+                this.version, this.major, this.minor, this.usedDialect,
+                this.supportSavePoint);
     }
 
     @Override
@@ -102,6 +120,8 @@ final class ServerMetaImpl implements ServerMeta {
             final ServerMeta o = (ServerMeta) obj;
             match = this.name.equals(o.name())
                     && this.database == o.database()
+                    && Objects.equals(this.catalogName, o.catalog())
+                    && Objects.equals(this.schemaName, o.schema())
                     && this.version.equals(o.version())
                     && this.major == o.major()
                     && this.minor == o.minor()
@@ -121,6 +141,10 @@ final class ServerMetaImpl implements ServerMeta {
                 .append(this.name)
                 .append(",database:")
                 .append(this.database.name())
+                .append(",catalog:")
+                .append(this.catalogName)
+                .append(",schema:")
+                .append(this.schemaName)
                 .append(",version:")
                 .append(this.version)
                 .append(",major:")
@@ -144,6 +168,10 @@ final class ServerMetaImpl implements ServerMeta {
 
         private Database database;
 
+        private String catalogName;
+
+        private String schemaName;
+
         private String version;
 
         private int major;
@@ -163,6 +191,18 @@ final class ServerMetaImpl implements ServerMeta {
         @Override
         public Builder database(Database database) {
             this.database = database;
+            return this;
+        }
+
+        @Override
+        public Builder catalog(String catalogName) {
+            this.catalogName = catalogName;
+            return this;
+        }
+
+        @Override
+        public Builder schema(String schemaName) {
+            this.catalogName = schemaName;
             return this;
         }
 

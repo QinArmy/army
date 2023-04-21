@@ -15,7 +15,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -289,7 +289,7 @@ abstract class PostgreSupports extends CriteriaSupports {
                    @Nullable PostgreSyntax.WordMaterialized modifier, SubStatement subStatement,
                    final @Nullable _SearchClause searchClause, final @Nullable _CycleClause cycleClause) {
             this.name = name;
-            this.columnAliasList = _CollectionUtils.safeUnmodifiableList(columnAliasList);
+            this.columnAliasList = _Collections.safeUnmodifiableList(columnAliasList);
             this.modifier = modifier;
             this.subStatement = subStatement;
 

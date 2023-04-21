@@ -10,7 +10,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.EnumSet;
@@ -238,7 +238,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     throw _Exceptions.unexpectedEnum(hintType);
             }
             this.queryBlockName = queryBlockName;
-            this.tableNameList = _CollectionUtils.asUnmodifiableList(tableNameList);
+            this.tableNameList = _Collections.asUnmodifiableList(tableNameList);
         }
 
         @Override
@@ -321,7 +321,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     throw _Exceptions.unexpectedEnum(hintType);
             }
             this.queryBlockName = queryBlockName;
-            this.tableNameList = _CollectionUtils.asUnmodifiableList(tableNameList);
+            this.tableNameList = _Collections.asUnmodifiableList(tableNameList);
         }
 
 
@@ -418,7 +418,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
             }
             this.queryBlockName = queryBlockName;
             this.tableName = tableName;
-            this.indexNameList = _CollectionUtils.asUnmodifiableList(indexNameList);
+            this.indexNameList = _Collections.asUnmodifiableList(indexNameList);
         }
 
         @Override

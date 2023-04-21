@@ -20,7 +20,7 @@ import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,10 +80,10 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
         super(clause.context, clause.updateTable, clause.tableAlias);
         this.recursive = clause.isRecursive();
         this.cteList = clause.cteList();
-        this.hintList = _CollectionUtils.safeList(clause.hintList);
-        this.modifierList = _CollectionUtils.safeList(clause.modifierList);
+        this.hintList = _Collections.safeList(clause.hintList);
+        this.modifierList = _Collections.safeList(clause.modifierList);
 
-        this.partitionList = _CollectionUtils.safeList(clause.partitionList);
+        this.partitionList = _Collections.safeList(clause.partitionList);
 
     }
 
@@ -167,7 +167,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
     @Override
     final I onAsUpdate() {
-        this.indexHintList = _CollectionUtils.safeUnmodifiableList(this.indexHintList);
+        this.indexHintList = _Collections.safeUnmodifiableList(this.indexHintList);
         return this.asMySQLUpdate();
     }
 

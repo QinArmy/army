@@ -10,16 +10,13 @@ import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
-import io.army.mapping.BooleanType;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.DatabaseObject;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.TypeMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 
 import java.math.BigDecimal;
@@ -36,7 +33,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
 
-    static final char IDENTIFIER_QUOTE = '`';
+    static final char BACKTICK = '`';
 
     final boolean asOf80;
 
@@ -75,13 +72,13 @@ abstract class MySQLParser extends _ArmyDialectParser {
         if (!this.keyWordSet.contains(identifier.toUpperCase(Locale.ROOT))
                 && _DialectUtils.isSafeIdentifier(identifier)) {
             safeIdentifier = identifier;
-        } else if (identifier.indexOf(IDENTIFIER_QUOTE) > -1) {
-            throw _Exceptions.identifierContainsDelimited(Database.MySQL, identifier, IDENTIFIER_QUOTE);
+        } else if (identifier.indexOf(BACKTICK) > -1) {
+            throw _Exceptions.identifierContainsDelimited(Database.MySQL, identifier, BACKTICK);
         } else {
             final StringBuilder builder = new StringBuilder(identifier.length() + 2);
-            safeIdentifier = builder.append(IDENTIFIER_QUOTE)
+            safeIdentifier = builder.append(BACKTICK)
                     .append(identifier)
-                    .append(IDENTIFIER_QUOTE)
+                    .append(BACKTICK)
                     .toString();
         }
         return safeIdentifier;
@@ -92,12 +89,12 @@ abstract class MySQLParser extends _ArmyDialectParser {
         if (!this.keyWordSet.contains(identifier.toUpperCase(Locale.ROOT))
                 && _DialectUtils.isSafeIdentifier(identifier)) {
             builder.append(identifier);
-        } else if (identifier.indexOf(IDENTIFIER_QUOTE) > -1) {
-            throw _Exceptions.identifierContainsDelimited(Database.MySQL, identifier, IDENTIFIER_QUOTE);
+        } else if (identifier.indexOf(BACKTICK) > -1) {
+            throw _Exceptions.identifierContainsDelimited(Database.MySQL, identifier, BACKTICK);
         } else {
-            builder.append(IDENTIFIER_QUOTE)
+            builder.append(BACKTICK)
                     .append(identifier)
-                    .append(IDENTIFIER_QUOTE);
+                    .append(BACKTICK);
         }
         return builder;
     }
@@ -110,13 +107,13 @@ abstract class MySQLParser extends _ArmyDialectParser {
         if (!this.keyWordSet.contains(objectName.toUpperCase(Locale.ROOT))
                 && _DialectUtils.isSafeIdentifier(objectName)) {
             safeObjectName = objectName;
-        } else if (objectName.indexOf(IDENTIFIER_QUOTE) > -1) {
-            throw _Exceptions.objectNameContainsDelimited(Database.MySQL, object, IDENTIFIER_QUOTE);
+        } else if (objectName.indexOf(BACKTICK) > -1) {
+            throw _Exceptions.objectNameContainsDelimited(Database.MySQL, object, BACKTICK);
         } else {
             final StringBuilder builder = new StringBuilder(objectName.length() + 2);
-            safeObjectName = builder.append(IDENTIFIER_QUOTE)
+            safeObjectName = builder.append(BACKTICK)
                     .append(objectName)
-                    .append(IDENTIFIER_QUOTE)
+                    .append(BACKTICK)
                     .toString();
         }
         return safeObjectName;
@@ -129,12 +126,12 @@ abstract class MySQLParser extends _ArmyDialectParser {
         if (!this.keyWordSet.contains(objectName.toUpperCase(Locale.ROOT))
                 && _DialectUtils.isSafeIdentifier(objectName)) {
             builder.append(objectName);
-        } else if (objectName.indexOf(IDENTIFIER_QUOTE) > -1) {
-            throw _Exceptions.objectNameContainsDelimited(Database.MySQL, object, IDENTIFIER_QUOTE);
+        } else if (objectName.indexOf(BACKTICK) > -1) {
+            throw _Exceptions.objectNameContainsDelimited(Database.MySQL, object, BACKTICK);
         } else {
-            builder.append(IDENTIFIER_QUOTE)
+            builder.append(BACKTICK)
                     .append(objectName)
-                    .append(IDENTIFIER_QUOTE);
+                    .append(BACKTICK);
         }
         return builder;
     }
@@ -204,13 +201,9 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 sqlBuilder.append(((BigDecimal) value).toPlainString());
             }
             break;
-            case BOOLEAN: {
-                if (!(value instanceof Boolean)) {
-                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
-                }
-                sqlBuilder.append(((Boolean) value) ? BooleanType.TRUE : BooleanType.FALSE);
-            }
-            break;
+            case BOOLEAN:
+                _Literals.bindBoolean(typeMeta, type, value, sqlBuilder);
+                break;
             case DATETIME: {
                 final String timeText;
                 if (value instanceof LocalDateTime) {
@@ -224,17 +217,22 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 } else {
                     throw _Exceptions.outRangeOfSqlType(MySQLTypes.DATETIME, value);
                 }
-                sqlBuilder.append(_Constant.QUOTE)
+                sqlBuilder.append(" TIMESTAMP")
+                        .append(_Constant.QUOTE)
                         .append(timeText)
                         .append(_Constant.QUOTE);
             }
             break;
-            case DATE:
+            case DATE: {
+                sqlBuilder.append(" DATE");
                 _Literals.bindLocalDate(typeMeta, type, value, sqlBuilder);
-                break;
-            case TIME:
+            }
+            break;
+            case TIME: {
+                sqlBuilder.append(" TIME");
                 _Literals.bindLocalTime(typeMeta, type, value, sqlBuilder);
-                break;
+            }
+            break;
             case CHAR:
             case VARCHAR:
             case TINYTEXT:
@@ -462,7 +460,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     protected final char identifierDelimitedQuote() {
-        return IDENTIFIER_QUOTE;
+        return BACKTICK;
     }
 
     @Override
@@ -489,8 +487,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final _ChildUpdateMode childUpdateMode() {
-        return _ChildUpdateMode.MULTI_TABLE;
+    protected final ChildUpdateMode childUpdateMode() {
+        return ChildUpdateMode.MULTI_TABLE;
     }
 
     @Override
@@ -515,6 +513,110 @@ abstract class MySQLParser extends _ArmyDialectParser {
     protected final boolean isSupportUpdateDerivedField() {
         //MySQL don't support update derive field
         return false;
+    }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/identifiers.html"> Schema Object Names</a>
+     */
+    @Override
+    protected final IdentifierMode identifierMode(final String identifier) {
+        final int length = identifier.length();
+        if (length == 0) {
+            return IdentifierMode.ERROR;
+        }
+        IdentifierMode mode = null;
+        char ch;
+        outerFor:
+        for (int i = 0; i < length; i++) {
+            ch = identifier.charAt(i);
+            if ((ch >= 'a' && ch <= 'z') || ch == '_' || (ch >= 'A' && ch <= 'Z')) {
+                continue;
+            } else if (ch >= '0' && ch <= '9') {
+                if (i == 0) {
+                    // Identifiers may begin with a digit but unless quoted may not consist solely of digits.
+                    mode = IdentifierMode.QUOTING;
+                }
+                continue;
+            } else if (ch == '$') {
+                if (i == 0 || mode == null) {
+                    mode = IdentifierMode.QUOTING;
+                }
+                continue;
+            }
+
+            switch (ch) {
+                case BACKTICK:
+                    mode = IdentifierMode.ESCAPES;
+                    break outerFor;
+                case _Constant.NUL_CHAR:
+                    mode = IdentifierMode.ERROR;
+                    break outerFor;
+                default: {
+                    if (mode == null && (ch < '\u0080' || Character.isWhitespace(ch))) {
+                        mode = IdentifierMode.QUOTING;
+                    }
+                }
+            }// switch
+
+
+        } // for
+
+        if (mode == null) {
+            mode = IdentifierMode.SIMPLE;
+        }
+        return mode;
+    }
+
+    /**
+     * @see #identifierMode(String)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/identifiers.html"> Schema Object Names</a>
+     */
+    @Override
+    protected final void escapesIdentifier(final String identifier, final StringBuilder sqlBuilder) {
+        final int length;
+        length = identifier.length();
+        if (length == 0) {
+            throw _Exceptions.identifierError(identifier, this.dialect);
+        }
+        sqlBuilder.append(BACKTICK);
+        int lastWritten = 0;
+        char ch;
+        for (int i = 0; i < length; i++) {
+            ch = identifier.charAt(i);
+            switch (ch) {
+                case _Constant.NUL_CHAR:
+                    throw _Exceptions.identifierError(identifier, this.dialect);
+                case BACKTICK: {
+                    if (i > lastWritten) {
+                        sqlBuilder.append(identifier, lastWritten, i - lastWritten);
+                    }
+                    sqlBuilder.append(BACKTICK);
+                    lastWritten = i;//not i + 1 as current char wasn't written
+                }
+                break;
+                default:
+            }
+        }
+
+        sqlBuilder.append(identifier, lastWritten, length - lastWritten)
+                .append(BACKTICK);
+
+    }
+
+    @Override
+    protected final String qualifiedSchemaName(final ServerMeta meta) {
+        final String catalog, schema, qualifiedSchema;
+        catalog = meta.catalog();
+        schema = meta.schema();
+        if (schema == null) {
+            qualifiedSchema = catalog;
+        } else {
+            qualifiedSchema = schema;
+        }
+        if (!_StringUtils.hasText(qualifiedSchema)) {
+            throw _Exceptions.serverMetaError(meta);
+        }
+        return qualifiedSchema;
     }
 
     /*################################## blow private method ##################################*/

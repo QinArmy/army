@@ -9,7 +9,7 @@ import io.army.mapping._MappingFactory;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -42,7 +42,7 @@ abstract class FieldMetaUtils extends TableMetaUtils {
         private PreGeneratorMetaImpl(FieldMeta<?> fieldMeta, Class<?> javaType, Map<String, String> params) {
             this.javaType = javaType;
             this.fieldMeta = fieldMeta;
-            this.params = _CollectionUtils.unmodifiableMap(params);
+            this.params = _Collections.unmodifiableMap(params);
         }
 
         @Override

@@ -167,7 +167,7 @@ public interface _Constant {
 
     char POINT = '.';
 
-    char EMPTY_CHAR = '\0';
+    char NUL_CHAR = '\0';
     char BACK_SLASH = '\\';
 
     char QUOTE = '\'';

@@ -24,7 +24,7 @@ import io.army.session.DdlMode;
 import io.army.session.FactoryBuilderSupport;
 import io.army.session.SessionFactoryException;
 import io.army.sync.executor.*;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
@@ -110,7 +110,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
 
     @Override
     public LocalFactoryBuilder packagesToScan(List<String> packageList) {
-        this.packagesToScan = _CollectionUtils.asUnmodifiableList(packageList);
+        this.packagesToScan = _Collections.asUnmodifiableList(packageList);
         return this;
     }
 

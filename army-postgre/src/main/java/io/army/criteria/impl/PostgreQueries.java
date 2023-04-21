@@ -18,7 +18,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util._ArrayUtils;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -395,8 +395,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     @Override
     final void onEndQuery() {
-        this.windowList = _CollectionUtils.safeUnmodifiableList(this.windowList);
-        this.lockBlockList = _CollectionUtils.safeUnmodifiableList(this.lockBlockList);
+        this.windowList = _Collections.safeUnmodifiableList(this.windowList);
+        this.lockBlockList = _Collections.safeUnmodifiableList(this.lockBlockList);
     }
 
 

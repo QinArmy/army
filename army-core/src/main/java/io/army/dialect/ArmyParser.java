@@ -12,6 +12,8 @@ import io.army.criteria.standard.StandardDelete;
 import io.army.criteria.standard.StandardInsert;
 import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardUpdate;
+import io.army.env.ArmyEnvironment;
+import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingEnv;
@@ -64,7 +66,11 @@ abstract class ArmyParser implements DialectParser {
      */
     protected final Set<String> keyWordSet;
 
+    protected final Map<String, Boolean> keyWordMap;
+
     protected final Dialect dialect;
+
+    protected final Database database;
 
     protected final char identifierQuote;
 
@@ -90,20 +96,27 @@ abstract class ArmyParser implements DialectParser {
 
     final boolean supportUpdateDerivedField;
 
-    final Database database;
 
-    final _ChildUpdateMode childUpdateMode;
+    final ChildUpdateMode childUpdateMode;
     final FieldValueGenerator generator;
+
+    private final String qualifiedSchemaName;
+    private final boolean tableNameUpper;
+
+    private final boolean columnNameUpper;
 
     ArmyParser(final DialectEnv dialectEnv, final Dialect dialect) {
         this.dialect = dialect; // first
+        this.database = this.dialect.database();
         this.dialectEnv = dialectEnv;
         this.mappingEnv = dialectEnv.mappingEnv();
         this.serverMeta = this.mappingEnv.serverMeta();
 
         this.mockEnv = this.dialectEnv instanceof _MockDialects;
 
-        assert dialect.database() == this.serverMeta.database();
+        assert this.serverMeta.database().isCompatible(this.dialect);
+        this.keyWordMap = _DialectUtils.createKeyWordMap(this.createKeyWordSet());
+
         this.childUpdateMode = this.childUpdateMode();
         this.aliasAfterAs = this.isTableAliasAfterAs();
         this.identifierQuote = this.identifierDelimitedQuote();
@@ -122,13 +135,35 @@ abstract class ArmyParser implements DialectParser {
 
         this.supportRowAlias = this.isSupportRowAlias();
 
-        this.database = this.dialect.database();
+
         this.keyWordSet = Collections.unmodifiableSet(this.createKeyWordSet());
         if (this.mockEnv) {
             this.generator = FieldValuesGenerators.mock(this.mappingEnv::databaseZoneOffset);
         } else {
             this.generator = FieldValuesGenerators.create(this.mappingEnv::databaseZoneOffset, dialectEnv.fieldGeneratorMap());
         }
+
+        final ArmyEnvironment env;
+        env = dialectEnv.environment();
+        this.tableNameUpper = env.getOrDefault(ArmyKey.TABLE_NAME_UPPER);
+        this.columnNameUpper = env.getOrDefault(ArmyKey.COLUMN_NAME_UPPER);
+
+
+        if (env.getOrDefault(ArmyKey.USE_QUALIFIED_TABLE_NAME)) {
+            final String schemaName;
+            schemaName = this.qualifiedSchemaName(this.serverMeta);
+            if (!this.tableNameUpper) {
+                this.qualifiedSchemaName = this.identifier(schemaName);
+            } else if (schemaName.toLowerCase(Locale.ROOT).toUpperCase(Locale.ROOT)
+                    .equals(schemaName.toUpperCase(Locale.ROOT))) {
+                this.qualifiedSchemaName = this.identifier(schemaName.toUpperCase(Locale.ROOT));
+            } else {
+                this.qualifiedSchemaName = this.identifier(schemaName);
+            }
+        } else {
+            this.qualifiedSchemaName = null;
+        }
+
     }
 
 
@@ -316,7 +351,7 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract boolean isSupportTableOnly();
 
-    protected abstract _ChildUpdateMode childUpdateMode();
+    protected abstract ChildUpdateMode childUpdateMode();
 
     protected abstract boolean isSupportSingleUpdateAlias();
 
@@ -326,18 +361,147 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract boolean isSupportUpdateDerivedField();
 
+    protected abstract String qualifiedSchemaName(ServerMeta meta);
+
+    protected abstract IdentifierMode identifierMode(String identifier);
+
+    protected abstract void escapesIdentifier(String identifier, StringBuilder sqlBuilder);
 
 
     /*################################## blow dialect template method ##################################*/
 
-    public final String safeObjectName(DatabaseObject object) {
-        //TODO append Qualified for table name
-        return this.doSafeObjectName(object);
+    public final String safeObjectName(final DatabaseObject object) {
+        final String objectName, upperObjectName, safeObjectName;
+        final StringBuilder schemaTableBuilder;
+        if (object instanceof FieldMeta) {
+            if (this.columnNameUpper) {
+                upperObjectName = object.objectName().toUpperCase(Locale.ROOT);
+                objectName = upperObjectName;// army don't allow camel
+            } else {
+                objectName = object.objectName();
+                upperObjectName = objectName.toUpperCase(Locale.ROOT);
+            }
+            schemaTableBuilder = null;
+        } else if (object instanceof TableMeta) {
+            if (this.tableNameUpper) {
+                upperObjectName = object.objectName().toUpperCase(Locale.ROOT);
+                objectName = upperObjectName;// army don't allow camel
+            } else {
+                objectName = object.objectName();
+                upperObjectName = objectName.toUpperCase(Locale.ROOT);
+            }
+            final String schemaName;
+            if ((schemaName = this.qualifiedSchemaName) == null) {
+                schemaTableBuilder = null;
+            } else {
+                schemaTableBuilder = new StringBuilder(schemaName.length() + 1 + objectName.length());
+                schemaTableBuilder.append(schemaName)
+                        .append(_Constant.POINT);
+            }
+        } else {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+
+        final IdentifierMode mode;
+        if (this.keyWordMap.containsKey(upperObjectName)
+                || (mode = this.identifierMode(objectName)) == IdentifierMode.QUOTING) {
+            final StringBuilder builder;
+            if (schemaTableBuilder == null) {
+                builder = new StringBuilder(objectName.length() + 2);
+            } else {
+                builder = schemaTableBuilder;
+            }
+            safeObjectName = builder.append(this.identifierQuote)
+                    .append(objectName)
+                    .append(this.identifierQuote)
+                    .toString();
+        } else switch (mode) {
+            case ERROR:
+                throw _Exceptions.objectNameError(object, this.dialect);
+            case SIMPLE: {
+                if (schemaTableBuilder == null) {
+                    safeObjectName = objectName;
+                } else {
+                    safeObjectName = schemaTableBuilder.append(objectName)
+                            .toString();
+                }
+            }
+            break;
+            case ESCAPES: {
+                final StringBuilder builder;
+                if (schemaTableBuilder == null) {
+                    builder = new StringBuilder(objectName.length() + 3);
+                } else {
+                    builder = schemaTableBuilder;
+                }
+                final int oldLength;
+                oldLength = builder.length();
+                this.escapesIdentifier(objectName, builder);
+                assert builder.length() > oldLength;
+                safeObjectName = builder.toString();
+            }
+            break;
+            case QUOTING:
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+        return safeObjectName;
     }
 
-    public final StringBuilder safeObjectName(DatabaseObject object, StringBuilder builder) {
-        //TODO append Qualified for table name
-        return this.doSafeObjectName(object, builder);
+    public final StringBuilder safeObjectName(final DatabaseObject object, final StringBuilder builder) {
+
+        final String objectName, upperObjectName;
+        if (object instanceof FieldMeta) {
+            if (this.columnNameUpper) {
+                upperObjectName = object.objectName().toUpperCase(Locale.ROOT);
+                objectName = upperObjectName;// army don't allow camel
+            } else {
+                objectName = object.objectName();
+                upperObjectName = objectName.toUpperCase(Locale.ROOT);
+            }
+        } else if (object instanceof TableMeta) {
+            final String schemaName;
+            if ((schemaName = this.qualifiedSchemaName) != null) {
+                builder.append(schemaName)
+                        .append(_Constant.POINT);
+            }
+            if (this.tableNameUpper) {
+                upperObjectName = object.objectName().toUpperCase(Locale.ROOT);
+                objectName = upperObjectName;// army don't allow camel
+            } else {
+                objectName = object.objectName();
+                upperObjectName = objectName.toUpperCase(Locale.ROOT);
+            }
+        } else {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+
+        final IdentifierMode mode;
+        if (this.keyWordMap.containsKey(upperObjectName)
+                || (mode = this.identifierMode(objectName)) == IdentifierMode.QUOTING) {
+            builder.append(this.identifierQuote)
+                    .append(objectName)
+                    .append(this.identifierQuote);
+        } else switch (mode) {
+            case ERROR:
+                throw _Exceptions.objectNameError(object, this.dialect);
+            case SIMPLE:
+                builder.append(objectName);
+                break;
+            case ESCAPES: {
+                final int oldLength;
+                oldLength = builder.length();
+                this.escapesIdentifier(objectName, builder);
+                assert builder.length() > oldLength;
+            }
+            break;
+            case QUOTING:
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+        return builder;
     }
 
 
@@ -1534,7 +1698,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     protected final void appendParentVisible(final _SingleTableContext childContext) {
-        assert this.childUpdateMode == _ChildUpdateMode.WITH_ID;
+        assert this.childUpdateMode == ChildUpdateMode.WITH_ID;
 
         final _DmlContext parentContext = ((NarrowDmlContext) childContext).parentContext();
         assert parentContext != null;
@@ -1938,20 +2102,20 @@ abstract class ArmyParser implements DialectParser {
     private _UpdateContext handleDomainUpdate(final @Nullable _SqlContext outerContext, final _DomainUpdate stmt
             , final Visible visible) {
         final _UpdateContext context;
-        final _ChildUpdateMode mode = this.childUpdateMode;
+        final ChildUpdateMode mode = this.childUpdateMode;
         if (!(stmt.table() instanceof ChildTableMeta) || stmt.childItemPairList().size() == 0) {
             context = DomainUpdateContext.forSingle(outerContext, stmt, this, visible);
             this.parseStandardSingleUpdate(stmt, (_SingleUpdateContext) context);
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
                 multiStmtBatch(stmt, (_SingleUpdateContext) context, this::parseStandardSingleUpdate);
             }
-        } else if (mode == _ChildUpdateMode.MULTI_TABLE) {
+        } else if (mode == ChildUpdateMode.MULTI_TABLE) {
             context = MultiUpdateContext.forChild(outerContext, stmt, this, visible);
             this.parseDomainChildUpdate(stmt, context);
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
                 multiStmtBatch(stmt, context, this::parseDomainChildUpdate);
             }
-        } else if (mode == _ChildUpdateMode.CTE) {
+        } else if (mode == ChildUpdateMode.CTE) {
             final DomainUpdateContext primaryContext;
             primaryContext = DomainUpdateContext.forSingle(outerContext, stmt, this, visible);
             context = DomainUpdateContext.forChild(stmt, primaryContext);
@@ -1959,7 +2123,7 @@ abstract class ArmyParser implements DialectParser {
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
                 multiStmtBatch(stmt, context, this::parseDomainChildUpdate);
             }
-        } else if (mode == _ChildUpdateMode.WITH_ID) {
+        } else if (mode == ChildUpdateMode.WITH_ID) {
             assert outerContext == null; //now don't support multi statement.
             final DomainUpdateContext parentContext;
             parentContext = DomainUpdateContext.forSingle(null, stmt, this, visible);
@@ -1981,10 +2145,10 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
      * @see #parseDomainParentUpdateWithId(_DomainUpdate, _Predicate, DomainUpdateContext)
-     * @see _ChildUpdateMode#WITH_ID
+     * @see ChildUpdateMode#WITH_ID
      */
     private _Predicate parseDomainChildUpdateWithId(final _DomainUpdate stmt, final DomainUpdateContext context) {
-        assert this.childUpdateMode == _ChildUpdateMode.WITH_ID
+        assert this.childUpdateMode == ChildUpdateMode.WITH_ID
                 && context.parentContext != null;
 
         //1. append child common
@@ -2024,7 +2188,7 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleDomainUpdate(_SqlContext, _DomainUpdate, Visible)
      * @see #parseDomainChildUpdateWithId(_DomainUpdate, DomainUpdateContext)
-     * @see _ChildUpdateMode#WITH_ID
+     * @see ChildUpdateMode#WITH_ID
      */
     private void parseDomainParentUpdateWithId(final _DomainUpdate stmt, final _Predicate idPredicate
             , final DomainUpdateContext context) {
@@ -2151,20 +2315,20 @@ abstract class ArmyParser implements DialectParser {
     private _DeleteContext handleDomainDelete(final @Nullable _SqlContext outerContext, final _DomainDelete stmt
             , final Visible visible) {
         final _DeleteContext context;
-        final _ChildUpdateMode mode = this.childUpdateMode;
+        final ChildUpdateMode mode = this.childUpdateMode;
         if (!(stmt.table() instanceof ChildTableMeta)) {
             context = DomainDeleteContext.forSingle(outerContext, stmt, this, visible);
             this.parseStandardSingleDelete(stmt, (_SingleDeleteContext) context);
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
                 multiStmtBatch(stmt, (_SingleDeleteContext) context, this::parseStandardSingleDelete);
             }
-        } else if (mode == _ChildUpdateMode.MULTI_TABLE) {
+        } else if (mode == ChildUpdateMode.MULTI_TABLE) {
             context = MultiDeleteContext.forChild(outerContext, stmt, this, visible);
             this.parseDomainChildDelete(stmt, context);
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
                 multiStmtBatch(stmt, context, this::parseDomainChildDelete);
             }
-        } else if (mode == _ChildUpdateMode.CTE) {
+        } else if (mode == ChildUpdateMode.CTE) {
             final DomainDeleteContext primaryContext;//TODO modify
             primaryContext = DomainDeleteContext.forSingle(outerContext, stmt, this, visible);
             context = DomainDeleteContext.forChild(stmt, primaryContext);
@@ -2172,7 +2336,7 @@ abstract class ArmyParser implements DialectParser {
             if (outerContext instanceof _MultiStatementContext && stmt instanceof _BatchDml) {
                 multiStmtBatch(stmt, context, this::parseDomainChildDelete);
             }
-        } else if (mode == _ChildUpdateMode.WITH_ID) {
+        } else if (mode == ChildUpdateMode.WITH_ID) {
             assert outerContext == null; //now don't support multi statement.
             final DomainDeleteContext parentContext;
             parentContext = DomainDeleteContext.forSingle(null, stmt, this, visible);
@@ -2194,7 +2358,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
      */
     private _Predicate parseDomainChildDeleteWithId(final _DomainDelete stmt, final DomainDeleteContext childContext) {
-        assert this.childUpdateMode == _ChildUpdateMode.WITH_ID;
+        assert this.childUpdateMode == ChildUpdateMode.WITH_ID;
         assert childContext.parentContext != null;
         final ParentTableMeta<?> parentTable;
         parentTable = ((ChildTableMeta<?>) childContext.domainTable).parentMeta();
@@ -2494,7 +2658,7 @@ abstract class ArmyParser implements DialectParser {
         if (parentStmt.insertTable().id().generatorType() == GeneratorType.POST
                 && parentStmt instanceof _Insert._SupportConflictClauseSpec
                 && ((_Insert._SupportConflictClauseSpec) parentStmt).hasConflictAction()
-                && this.childUpdateMode != _ChildUpdateMode.CTE) { // support RETURNING clause,could returning parent id
+                && this.childUpdateMode != ChildUpdateMode.CTE) { // support RETURNING clause,could returning parent id
             throw _Exceptions.duplicateKeyAndPostIdInsert(childTable);
         }
     }
@@ -2523,7 +2687,7 @@ abstract class ArmyParser implements DialectParser {
         final Stmt stmt;
         if (context instanceof _MultiUpdateContext || (parentContext = context.parentContext()) == null) {
             stmt = context.build();
-        } else if (this.childUpdateMode == _ChildUpdateMode.CTE) {
+        } else if (this.childUpdateMode == ChildUpdateMode.CTE) {
             assert context instanceof DomainUpdateContext;
             assert parentContext.sqlBuilder() == context.sqlBuilder();
             stmt = context.build();
@@ -2551,7 +2715,7 @@ abstract class ArmyParser implements DialectParser {
         final Stmt stmt;
         if (context instanceof _MultiDeleteContext || (parentContext = context.parentContext()) == null) {
             stmt = context.build();
-        } else if (this.childUpdateMode == _ChildUpdateMode.CTE) {
+        } else if (this.childUpdateMode == ChildUpdateMode.CTE) {
             assert context instanceof DomainDeleteContext;
             assert parentContext.sqlBuilder() == context.sqlBuilder();
             stmt = context.build();
@@ -2613,6 +2777,25 @@ abstract class ArmyParser implements DialectParser {
             parserMethod.accept(stmt, context);
         }
         assert context.currentIndex() == (paramSize - 1);
+    }
+
+
+    protected enum IdentifierMode {
+
+        SIMPLE,
+        QUOTING,
+        ESCAPES,
+        ERROR
+
+    }
+
+
+    protected enum ChildUpdateMode {
+
+        MULTI_TABLE,
+        CTE,
+        WITH_ID
+
     }
 
 

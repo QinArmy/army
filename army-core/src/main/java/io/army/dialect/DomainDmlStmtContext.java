@@ -62,7 +62,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
         } else if (targetTable instanceof ChildTableMeta
                 && fieldTable == ((ChildTableMeta<?>) targetTable).parentMeta()) {
             // parent table filed
-            if (this.parser.childUpdateMode == _ChildUpdateMode.CTE) {
+            if (this.parser.childUpdateMode == ArmyParser.ChildUpdateMode.CTE) {
                 assert this.safeRelatedAlias != null;
                 sqlBuilder.append(_Constant.SPACE)
                         .append(this.safeRelatedAlias)
@@ -72,7 +72,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
                 this.parentColumnFromSubQuery(field);
             }
         } else if (targetTable instanceof ParentTableMeta && fieldTable == this.domainTable) {
-            if (this.parser.childUpdateMode == _ChildUpdateMode.CTE) {
+            if (this.parser.childUpdateMode == ArmyParser.ChildUpdateMode.CTE) {
                 assert this.safeRelatedAlias != null;
                 sqlBuilder.append(_Constant.SPACE)
                         .append(this.safeRelatedAlias)

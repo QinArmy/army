@@ -9,7 +9,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._MockDialects;
 import io.army.stmt.Stmt;
-import io.army.util._CollectionUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -106,7 +106,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         if (orderByList == null) {
             this.orderByList = Collections.emptyList();
         } else if (orderByList instanceof ArrayList) {
-            this.orderByList = _CollectionUtils.unmodifiableList(orderByList);
+            this.orderByList = _Collections.unmodifiableList(orderByList);
         } else {
             throw ContextStack.castCriteriaApi(this.context);
         }
