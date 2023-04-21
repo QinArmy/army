@@ -163,6 +163,10 @@
 35. 为什么设计 SQLs.encodingParam(TypeInfer, Object) 等方法?
     * 因为 codec field 作为参数类型时具有加密参数这样的特殊含义,语义必须明确，不能暗含，否则将造成不
       可挽回的数据灾难.
+36. 为什么 Tabular function 不能有 context ?
+    * 因为不像语句有明确的开始和结束时间
+    * push 到 stack 容易,但却没有 pop 的时机
+    * SQL.refOut() 应用困难,因为引用发生在 context 创建之前.
 
     
 

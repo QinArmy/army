@@ -79,5 +79,26 @@ abstract class PostgreWords {
 
     }
 
+    enum KeyWordVersion implements PostgreStringFunctions.WordVersion, SqlSyntax.ArmyKeyWord {
+
+        VERSION(" VERSION");
+
+        private final String spaceWord;
+
+        KeyWordVersion(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
+
+        @Override
+        public final String toString() {
+            return Postgres.keyWordToString(this);
+        }
+    }
+
 
 }

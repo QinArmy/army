@@ -106,7 +106,7 @@ public abstract class _DialectUtils {
     /**
      * @see ArmyParser#safeObjectName(DatabaseObject)
      */
-    public static boolean isSafeIdentifier(final String objectName) {
+    public static boolean isSimpleIdentifier(final String objectName) {
         final int length = objectName.length();
         char ch;
         // empty string isn't safe identifier

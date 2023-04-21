@@ -7,24 +7,25 @@ import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
- abstract class PostgreLiterals extends _Literals {
+abstract class PostgreLiterals extends _Literals {
 
-     private PostgreLiterals() {
-     }
+    private PostgreLiterals() {
+    }
 
 
-     static StringBuilder postgreBackslashEscapes(final TypeMeta typeMeta, final SqlType type, final Object value,
-                                                  final StringBuilder sqlBuilder) {
-         if (!(value instanceof String)) {//TODO think long string
-             throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+    static StringBuilder postgreBackslashEscapes(final TypeMeta typeMeta, final SqlType type, final Object value,
+                                                 final StringBuilder sqlBuilder) {
+        if (!(value instanceof String)) {//TODO think long string
+            throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
         }
 
         final char[] charArray = ((String) value).toCharArray();
+        final int startIndex;
+        startIndex = sqlBuilder.length();
 
-        sqlBuilder.append('E')
-                .append(_Constant.QUOTE);
+        sqlBuilder.append(_Constant.QUOTE);
         int lastWritten = 0;
-        char followChar;
+        char followChar = _Constant.NUL_CHAR;
         for (int i = 0; i < charArray.length; i++) {
             switch (charArray[i]) {
                 case _Constant.QUOTE: {
@@ -73,6 +74,9 @@ import io.army.util._StringUtils;
         if (lastWritten < charArray.length) {
             sqlBuilder.append(charArray, lastWritten, charArray.length - lastWritten);
         }
+        if (followChar != _Constant.NUL_CHAR) {
+            sqlBuilder.insert(startIndex, 'E');
+        }
         return sqlBuilder.append(_Constant.QUOTE);
 
     }
@@ -94,4 +98,4 @@ import io.army.util._StringUtils;
     }
 
 
- }
+}

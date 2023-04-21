@@ -34,7 +34,11 @@ abstract class PostgreStringFunctions extends Functions {
 
     }
 
-    public interface XmlAttributes {
+    public interface XmlAttributes extends Item {
+
+    }
+
+    public interface WordVersion extends SQLWords {
 
     }
 

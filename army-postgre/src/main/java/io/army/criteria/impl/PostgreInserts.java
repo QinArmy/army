@@ -504,12 +504,8 @@ abstract class PostgreInserts extends InsertSupports {
             }
             final String operatorClass = this.operatorClass;
             if (operatorClass != null) {
-                if (parser.isKeyWords(operatorClass) //TODO validation
-                        || !_DialectUtils.isSafeIdentifier(operatorClass)) {  // must validate operatorClass
-                    throw nonSafeOperatorClassName(operatorClass);
-                }
-                sqlBuilder.append(_Constant.SPACE)
-                        .append(operatorClass);
+                sqlBuilder.append(_Constant.SPACE);
+                parser.identifier(operatorClass, sqlBuilder);
             }
         }
 
@@ -545,7 +541,7 @@ abstract class PostgreInserts extends InsertSupports {
                 throw ContextStack.castCriteriaApi(this.clause.valuesClause.context);
             } else if (operatorClass == null) {
                 throw ContextStack.nullPointer(this.clause.valuesClause.context);
-            } else if (!_DialectUtils.isSafeIdentifier(operatorClass)) {
+            } else if (!_DialectUtils.isSimpleIdentifier(operatorClass)) {
                 throw nonSafeOperatorClassName(operatorClass);
             }
             this.operatorClass = operatorClass;
@@ -560,7 +556,7 @@ abstract class PostgreInserts extends InsertSupports {
             final String operatorClass;
             operatorClass = supplier.get();
             if (operatorClass != null) {
-                if (!_DialectUtils.isSafeIdentifier(operatorClass)) {
+                if (!_DialectUtils.isSimpleIdentifier(operatorClass)) {
                     throw nonSafeOperatorClassName(operatorClass);
                 }
                 this.operatorClass = operatorClass;

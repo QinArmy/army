@@ -4,6 +4,7 @@ import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.TypeInfer;
+import io.army.dialect._DialectUtils;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.ShortArrayType;
@@ -1229,7 +1230,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  VoidType}.
      * <strong>Note:</strong>This function cannot exist independently,see {@link #xmlElement(PostgreSyntax.WordName, String, XmlAttributes, Expression...)}
      * </p>
      *
@@ -1237,27 +1237,42 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static XmlAttributes xmlAttributes(Consumer<Postgres._XmlAttributeConsumer> consumer) {
-        final PostgreFunctionUtils.XmlAttributes attributes;
-        attributes = PostgreFunctionUtils.xmlAttributes();
-        consumer.accept(attributes);
-        return attributes.endXmlAttributes();
+    public static XmlAttributes xmlAttributes(Consumer<Postgres._XmlNamedElementPart> consumer) {
+        final PostgreFunctionUtils.XmlNamedElementPart<PostgreFunctionUtils.XmlAttributes> part;
+        part = PostgreFunctionUtils.xmlAttributes();
+        consumer.accept(part);
+        return part.endNamedPart();
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">Xmlforest<br/>
+     * </a>
+     */
+    public SimpleExpression xmlForest(Consumer<Postgres._XmlNamedElementPart> consumer) {
+        final PostgreFunctionUtils.XmlNamedElementPart<SimpleExpression> part;
+        part = PostgreFunctionUtils.xmlForest();
+        consumer.accept(part);
+        return part.endNamedPart();
     }
 
 
     /**
-     * @param nameWord   see {@link Postgres#NAME}
+     * @param wordName   see {@link Postgres#NAME}
      * @param name       The nam items shown in the syntax are simple identifiers, not values.
      * @param attributes see {@link #xmlAttributes(Consumer)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(PostgreSyntax.WordName nameWord, String name, XmlAttributes attributes,
+    public static SimpleExpression xmlElement(PostgreSyntax.WordName wordName, String name, XmlAttributes attributes,
                                               Expression... contents) {
         ContextStack.assertNonNull(attributes);
         ContextStack.assertNonNull(contents);
-        return _xmlElement(nameWord, name, attributes, c -> {
+        return _xmlElement(wordName, name, attributes, c -> {
             for (Expression content : contents) {
                 c.accept(FuncWord.COMMA);
                 c.accept(content);
@@ -1266,15 +1281,15 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     }
 
     /**
-     * @param nameWord see {@link Postgres#NAME}
+     * @param wordName see {@link Postgres#NAME}
      * @param name     The nam items shown in the syntax are simple identifiers, not values.
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(PostgreSyntax.WordName nameWord, String name, Expression... contents) {
+    public static SimpleExpression xmlElement(PostgreSyntax.WordName wordName, String name, Expression... contents) {
         ContextStack.assertNonNull(contents);
-        return _xmlElement(nameWord, name, null, c -> {
+        return _xmlElement(wordName, name, null, c -> {
             for (Expression content : contents) {
                 c.accept(FuncWord.COMMA);
                 c.accept(content);
@@ -1283,17 +1298,17 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     }
 
     /**
-     * @param nameWord   see {@link Postgres#NAME}
+     * @param wordName   see {@link Postgres#NAME}
      * @param name       The nam items shown in the syntax are simple identifiers, not values.
      * @param attributes see {@link #xmlAttributes(Consumer)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(PostgreSyntax.WordName nameWord, String name, XmlAttributes attributes,
+    public static SimpleExpression xmlElement(PostgreSyntax.WordName wordName, String name, XmlAttributes attributes,
                                               List<Expression> contentList) {
         ContextStack.assertNonNull(attributes);
-        return _xmlElement(nameWord, name, attributes, c -> {
+        return _xmlElement(wordName, name, attributes, c -> {
             for (Expression content : contentList) {
                 c.accept(FuncWord.COMMA);
                 c.accept(content);
@@ -1302,15 +1317,15 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     }
 
     /**
-     * @param nameWord see {@link Postgres#NAME}
+     * @param wordName see {@link Postgres#NAME}
      * @param name     The nam items shown in the syntax are simple identifiers, not values.
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(PostgreSyntax.WordName nameWord, String name,
+    public static SimpleExpression xmlElement(PostgreSyntax.WordName wordName, String name,
                                               List<Expression> contentList) {
-        return _xmlElement(nameWord, name, null, c -> {
+        return _xmlElement(wordName, name, null, c -> {
             for (Expression content : contentList) {
                 c.accept(FuncWord.COMMA);
                 c.accept(content);
@@ -1318,8 +1333,53 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         });
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * </p>
+     *
+     * @see #xmlPi(PostgreSyntax.WordName, String, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
+     * </a>
+     */
+    public static SimpleExpression xmlPi(PostgreSyntax.WordName wordName, String name) {
+        return _xmlPi(wordName, name, null);
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * </p>
+     *
+     * @see #xmlPi(PostgreSyntax.WordName, String)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
+     * </a>
+     */
+    public static SimpleExpression xmlPi(PostgreSyntax.WordName wordName, String name,
+                                         BiFunction<MappingType, String, Expression> funcRef, String content) {
+        final Expression contentExp;
+        contentExp = funcRef.apply(StringType.INSTANCE, content);
+        ContextStack.assertNonNull(contentExp);
+        return _xmlPi(wordName, name, contentExp);
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * </p>
+     *
+     * @see #xmlPi(PostgreSyntax.WordName, String)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
+     * </a>
+     */
+    public static SimpleExpression xmlPi(PostgreSyntax.WordName wordName, String name, Expression content) {
+        ContextStack.assertNonNull(content);
+        return _xmlPi(wordName, name, content);
+    }
+
+    public static SimpleExpression xmlRoot(WordVersion version, Expression text,) {
+
+    }
 
 
 
@@ -1412,6 +1472,33 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         }
         consumer.accept(argList::add);
         return FunctionUtils.complexArgFunc(funcName, argList, XmlType.TEXT_INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * </p>
+     *
+     * @see #xmlPi(PostgreSyntax.WordName, String)
+     * @see #xmlPi(PostgreSyntax.WordName, String, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
+     * </a>
+     */
+    private static SimpleExpression _xmlPi(PostgreSyntax.WordName wordName, String name, @Nullable Expression content) {
+        final String funcName = "XMLPI";
+        if (wordName != Postgres.NAME) {
+            throw CriteriaUtils.funcArgError(funcName, wordName);
+        } else if (!_DialectUtils.isSimpleIdentifier(name)) {
+            throw CriteriaUtils.funcArgError(funcName, name);
+        }
+        final SimpleExpression func;
+        if (content == null) {
+            func = FunctionUtils.complexArgFunc(funcName, XmlType.TEXT_INSTANCE, wordName, name);
+        } else {
+            func = FunctionUtils.complexArgFunc(funcName, XmlType.TEXT_INSTANCE, wordName, name, FuncWord.COMMA, content);
+        }
+        return func;
     }
 
 

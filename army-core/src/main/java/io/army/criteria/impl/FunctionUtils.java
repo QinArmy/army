@@ -236,7 +236,7 @@ abstract class FunctionUtils {
 
 
     static Expression namedNotation(final String name, final Expression argument) {
-        if (!_DialectUtils.isSafeIdentifier(name)) {
+        if (!_DialectUtils.isSimpleIdentifier(name)) {
             String m = String.format("named notation[%s] isn't simple identifier.", name);
             throw ContextStack.clearStackAndCriteriaError(m);
         }
@@ -444,6 +444,10 @@ abstract class FunctionUtils {
 
     static SimpleExpression safeMultiArgFunc(String name, List<ArmyExpression> argList, TypeMeta returnType) {
         return new MultiArgFunctionExpression(name, null, argList, returnType);
+    }
+
+    static SimpleExpression clauseFunc(String name, ArmyFuncClause clause, TypeMeta returnType) {
+        return new ArmyFuncClauseFunction(name, clause, returnType);
     }
 
 
@@ -2931,6 +2935,32 @@ abstract class FunctionUtils {
 
 
     }//NamedComplexArgFunc
+
+
+    private static final class ArmyFuncClauseFunction extends FunctionUtils.FunctionExpression {
+
+        private final ArmyFuncClause clause;
+
+        /**
+         * @see #clauseFunc(String, ArmyFuncClause, TypeMeta)
+         */
+        private ArmyFuncClauseFunction(String name, ArmyFuncClause clause, TypeMeta returnType) {
+            super(name, returnType);
+            this.clause = clause;
+        }
+
+        @Override
+        void appendArg(_SqlContext context) {
+            this.clause.appendSql(context);
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            builder.append(this.clause);
+        }
+
+
+    }//ArmyFuncClauseFunction
 
 
     private static final class CaseFunction extends OperationExpression.SqlFunctionExpression

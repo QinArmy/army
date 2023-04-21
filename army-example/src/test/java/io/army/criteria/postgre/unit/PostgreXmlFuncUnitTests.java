@@ -41,5 +41,19 @@ public class PostgreXmlFuncUnitTests extends PostgreUnitTests {
         printStmt(LOG, stmt);
     }
 
+    /**
+     * @see Postgres#xmlPi(WordName, String)
+     * @see Postgres#xmlPi(WordName, String, Expression)
+     */
+    @Test
+    public void xmlPiTests() {
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(xmlPi(NAME, "java", SQLs::literal, "echo \"hello world\";")::as, "xml1")
+                .comma(xmlPi(NAME, "java")::as, "xml2")
+                .asQuery();
+        printStmt(LOG, stmt);
+    }
+
 
 }

@@ -24,7 +24,19 @@ public abstract class Postgres extends PostgreSyntax {
     private Postgres() {
     }
 
+    public interface _XmlNamedElementPart {
+
+        _XmlNamedElementPart accept(DataField field);
+
+        _XmlNamedElementPart accept(Expression attValue, WordAs as, String attName);
+
+        _XmlNamedElementPart accept(BiFunction<MappingType, String, Expression> funcRef, String attValue, WordAs as, String attName);
+
+    }
+
     public static final WordName NAME = PostgreWords.KeyWordName.NAME;
+
+    public static final WordVersion VERSION = PostgreWords.KeyWordVersion.VERSION;
 
     /**
      * <p>
@@ -107,13 +119,5 @@ public abstract class Postgres extends PostgreSyntax {
     }
 
 
-    public interface _XmlAttributeConsumer {
 
-        _XmlAttributeConsumer accept(DataField field);
-
-        _XmlAttributeConsumer accept(Expression attValue, WordAs as, String attName);
-
-        _XmlAttributeConsumer accept(BiFunction<MappingType, String, Expression> funcRef, String attValue, WordAs as, String attName);
-
-    }
 }
