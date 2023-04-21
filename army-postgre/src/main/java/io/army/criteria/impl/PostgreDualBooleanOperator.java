@@ -80,6 +80,8 @@ enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
      */
     GT_GT_EQUAL(" >>="),
     /**
+     * double ampersand
+     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&amp; geometric_type → boolean<br/>
      * Do these objects overlap? (One point in common makes this true.) Available for box, polygon, circle.</a>
      */

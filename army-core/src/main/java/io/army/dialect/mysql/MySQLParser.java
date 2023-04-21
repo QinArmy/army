@@ -10,7 +10,10 @@ import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.ParentTableMeta;
+import io.army.meta.ServerMeta;
+import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLTypes;
 import io.army.sqltype.SqlType;
@@ -24,7 +27,10 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 abstract class MySQLParser extends _ArmyDialectParser {
 
@@ -63,77 +69,6 @@ abstract class MySQLParser extends _ArmyDialectParser {
             stmtList = Collections.unmodifiableList(stmtList);
         }
         return stmtList;
-    }
-
-
-    @Override
-    public final String identifier(final String identifier) {
-        final String safeIdentifier;
-        if (!this.keyWordSet.contains(identifier.toUpperCase(Locale.ROOT))
-                && _DialectUtils.isSafeIdentifier(identifier)) {
-            safeIdentifier = identifier;
-        } else if (identifier.indexOf(BACKTICK) > -1) {
-            throw _Exceptions.identifierContainsDelimited(Database.MySQL, identifier, BACKTICK);
-        } else {
-            final StringBuilder builder = new StringBuilder(identifier.length() + 2);
-            safeIdentifier = builder.append(BACKTICK)
-                    .append(identifier)
-                    .append(BACKTICK)
-                    .toString();
-        }
-        return safeIdentifier;
-    }
-
-    @Override
-    public final StringBuilder identifier(final String identifier, final StringBuilder builder) {
-        if (!this.keyWordSet.contains(identifier.toUpperCase(Locale.ROOT))
-                && _DialectUtils.isSafeIdentifier(identifier)) {
-            builder.append(identifier);
-        } else if (identifier.indexOf(BACKTICK) > -1) {
-            throw _Exceptions.identifierContainsDelimited(Database.MySQL, identifier, BACKTICK);
-        } else {
-            builder.append(BACKTICK)
-                    .append(identifier)
-                    .append(BACKTICK);
-        }
-        return builder;
-    }
-
-
-    @Override
-    protected final String doSafeObjectName(final DatabaseObject object) {
-        final String objectName, safeObjectName;
-        objectName = object.objectName();
-        if (!this.keyWordSet.contains(objectName.toUpperCase(Locale.ROOT))
-                && _DialectUtils.isSafeIdentifier(objectName)) {
-            safeObjectName = objectName;
-        } else if (objectName.indexOf(BACKTICK) > -1) {
-            throw _Exceptions.objectNameContainsDelimited(Database.MySQL, object, BACKTICK);
-        } else {
-            final StringBuilder builder = new StringBuilder(objectName.length() + 2);
-            safeObjectName = builder.append(BACKTICK)
-                    .append(objectName)
-                    .append(BACKTICK)
-                    .toString();
-        }
-        return safeObjectName;
-    }
-
-    @Override
-    protected final StringBuilder doSafeObjectName(final DatabaseObject object, final StringBuilder builder) {
-        final String objectName;
-        objectName = object.objectName();
-        if (!this.keyWordSet.contains(objectName.toUpperCase(Locale.ROOT))
-                && _DialectUtils.isSafeIdentifier(objectName)) {
-            builder.append(objectName);
-        } else if (objectName.indexOf(BACKTICK) > -1) {
-            throw _Exceptions.objectNameContainsDelimited(Database.MySQL, object, BACKTICK);
-        } else {
-            builder.append(BACKTICK)
-                    .append(objectName)
-                    .append(BACKTICK);
-        }
-        return builder;
     }
 
 
@@ -588,7 +523,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
                     throw _Exceptions.identifierError(identifier, this.dialect);
                 case BACKTICK: {
                     if (i > lastWritten) {
-                        sqlBuilder.append(identifier, lastWritten, i - lastWritten);
+                        sqlBuilder.append(identifier, lastWritten, i);// identifier is String not char[],so is i not i- lastWritten
                     }
                     sqlBuilder.append(BACKTICK);
                     lastWritten = i;//not i + 1 as current char wasn't written
@@ -598,7 +533,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
             }
         }
 
-        sqlBuilder.append(identifier, lastWritten, length - lastWritten)
+        sqlBuilder.append(identifier, lastWritten, length)// identifier is String not char[],so is length not length- lastWritten
                 .append(BACKTICK);
 
     }

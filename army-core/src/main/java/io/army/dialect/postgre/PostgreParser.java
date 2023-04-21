@@ -8,7 +8,10 @@ import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
-import io.army.meta.*;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.ParentTableMeta;
+import io.army.meta.ServerMeta;
+import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.PostgreTypes;
 import io.army.sqltype.SqlType;
@@ -19,7 +22,6 @@ import io.army.util._StringUtils;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 abstract class PostgreParser extends _ArmyDialectParser {
@@ -372,129 +374,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return null;
     }
 
-    @Override
-    public final String identifier(final String identifier) {
-        final String safeIdentifier;
-        final IdentifierMode mode;
-        if (this.keyWordSet.contains(identifier.toUpperCase(Locale.ROOT))
-                || (mode = identifierMode(identifier)) == IdentifierMode.QUOTING) {
-            final StringBuilder builder = new StringBuilder(2 + identifier.length());
-            safeIdentifier = builder.append(_Constant.DOUBLE_QUOTE)
-                    .append(identifier)
-                    .append(_Constant.DOUBLE_QUOTE)
-                    .toString();
-        } else switch (mode) {
-            case ERROR:
-                throw _Exceptions.identifierError(identifier, this.dialect);
-            case ESCAPES: {
-                final int capacity;
-                capacity = identifier.length() + 2;
-                final StringBuilder builder = new StringBuilder(capacity);
-                escapesIdentifier(identifier, builder);
-                assert builder.length() > capacity;
-                safeIdentifier = builder.toString();
-            }
-            break;
-            case SIMPLE:
-                safeIdentifier = identifier;
-                break;
-            case QUOTING:
-            default:
-                // no bug,never here
-                throw _Exceptions.unexpectedEnum(mode);
-        }
-        return safeIdentifier;
-    }
-
-
-    @Override
-    public final StringBuilder identifier(final String identifier, final StringBuilder builder) {
-        final IdentifierMode mode;
-        if (this.keyWordSet.contains(identifier.toUpperCase(Locale.ROOT))
-                || (mode = identifierMode(identifier)) == IdentifierMode.QUOTING) {
-            builder.append(_Constant.DOUBLE_QUOTE)
-                    .append(identifier)
-                    .append(_Constant.DOUBLE_QUOTE);
-        } else switch (mode) {
-            case ERROR:
-                throw _Exceptions.identifierError(identifier, this.dialect);
-            case ESCAPES:
-                escapesIdentifier(identifier, builder);
-                break;
-            case SIMPLE:
-                builder.append(identifier);
-                break;
-            case QUOTING:
-            default:
-                // no bug,never here
-                throw _Exceptions.unexpectedEnum(mode);
-        }
-        return builder;
-    }
-
-    @Override
-    protected final String doSafeObjectName(final DatabaseObject object) {
-        final String objectName, safeObjectName;
-        objectName = object.objectName();
-        final IdentifierMode mode;
-        if (this.keyWordSet.contains(objectName.toUpperCase(Locale.ROOT))
-                || (mode = identifierMode(objectName)) == IdentifierMode.QUOTING) {
-            final StringBuilder builder = new StringBuilder(2 + objectName.length());
-            safeObjectName = builder.append(_Constant.DOUBLE_QUOTE)
-                    .append(objectName)
-                    .append(_Constant.DOUBLE_QUOTE)
-                    .toString();
-        } else switch (mode) {
-            case ERROR:
-                throw _Exceptions.objectNameError(object, this.dialect);
-            case ESCAPES: {
-                final int capacity;
-                capacity = objectName.length() + 2;
-                final StringBuilder builder = new StringBuilder(capacity);
-                escapesIdentifier(objectName, builder);
-                assert builder.length() > capacity;
-                safeObjectName = builder.toString();
-            }
-            break;
-            case SIMPLE:
-                safeObjectName = objectName;
-                break;
-            case QUOTING:
-            default:
-                // no bug,never here
-                throw _Exceptions.unexpectedEnum(mode);
-        }
-        return safeObjectName;
-    }
-
-
-    @Override
-    protected final StringBuilder doSafeObjectName(final DatabaseObject object, final StringBuilder builder) {
-        final String objectName;
-        objectName = object.objectName();
-        final IdentifierMode mode;
-        if (this.keyWordSet.contains(objectName.toUpperCase(Locale.ROOT))
-                || (mode = identifierMode(objectName)) == IdentifierMode.QUOTING) {
-            builder.append(_Constant.DOUBLE_QUOTE)
-                    .append(objectName)
-                    .append(_Constant.DOUBLE_QUOTE);
-        } else switch (mode) {
-            case ERROR:
-                throw _Exceptions.objectNameError(object, this.dialect);
-            case ESCAPES:
-                escapesIdentifier(objectName, builder);
-                break;
-            case SIMPLE:
-                builder.append(objectName);
-                break;
-            case QUOTING:
-            default:
-                // no bug,never here
-                throw _Exceptions.unexpectedEnum(mode);
-        }
-        return builder;
-    }
-
 
     @Override
     protected final Set<String> createKeyWordSet() {
@@ -562,15 +441,17 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     protected final String qualifiedSchemaName(final ServerMeta meta) {
-        final String catalog, schema, qualifiedSchema;
+        final String catalog, schema;
         catalog = meta.catalog();
         schema = meta.schema();
         if (!_StringUtils.hasText(catalog) || !_StringUtils.hasText(schema)) {
             throw _Exceptions.serverMetaError(meta);
         }
-
-
-        return null;
+        return _StringUtils.builder()
+                .append(catalog)
+                .append(_Constant.POINT)
+                .append(schema)
+                .toString();
     }
 
     @Override
@@ -583,6 +464,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
         char ch;
         boolean upperCase = false;
 
+        outerFor:
         for (int i = 0; i < length; i++) {
             ch = identifier.charAt(i);
             if ((ch >= 'a' && ch <= 'z') || ch == '_') {
@@ -599,23 +481,25 @@ abstract class PostgreParser extends _ArmyDialectParser {
             }
 
             switch (ch) {
-                case _Constant.DOUBLE_QUOTE:
-                    throw _Exceptions.identifierContainsDelimited(this.database, identifier, _Constant.DOUBLE_QUOTE);
+                case _Constant.NUL_CHAR:
+                    mode = IdentifierMode.ERROR;
+                    break outerFor;
                 case '\b':
                 case '\f':
                 case '\n':
                 case '\r':
                 case '\t':
-                case _Constant.NUL_CHAR:
+                case _Constant.DOUBLE_QUOTE:
                 case _Constant.BACK_SLASH:
                     mode = IdentifierMode.ESCAPES;
-                    break;
-                default:
-                    mode = IdentifierMode.QUOTING;
-                    break;
+                    break outerFor;
+                default: {
+                    if (mode == null) {
+                        mode = IdentifierMode.QUOTING;
+                    }
+                }
+                break;
             }// switch
-
-            break; // break outer for
 
 
         } // for
@@ -630,11 +514,71 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return mode;
     }
 
-    /**
-     * @see #doSafeObjectName(DatabaseObject)
-     * @see #doSafeObjectName(DatabaseObject, StringBuilder)
-     */
+
     protected final void escapesIdentifier(final String identifier, final StringBuilder sqlBuilder) {
+        final int length;
+        length = identifier.length();
+        if (length == 0) {
+            throw _Exceptions.identifierError(identifier, this.dialect);
+        }
+        final int startIndex;
+        startIndex = sqlBuilder.length();
+
+        sqlBuilder.append(_Constant.DOUBLE_QUOTE);
+        int lastWritten = 0;
+        String unicode = null;
+        char ch;
+        for (int i = 0; i < length; i++) {
+            ch = identifier.charAt(i);
+            switch (ch) {
+                case _Constant.NUL_CHAR:
+                    throw _Exceptions.identifierError(identifier, this.dialect);
+                case _Constant.DOUBLE_QUOTE: {
+                    if (i > lastWritten) {
+                        sqlBuilder.append(identifier, lastWritten, i); // identifier is String not char[],so is i not i- lastWritten
+                    }
+                    sqlBuilder.append(_Constant.DOUBLE_QUOTE); //
+                    lastWritten = i;//not i + 1 as current char wasn't written
+                }
+                continue;
+                case '\b':
+                    unicode = "\\u0008";
+                    break;
+                case '\f':
+                    unicode = "\\u000c";
+                    break;
+                case '\n':
+                    unicode = "\\u000a";
+                    break;
+                case '\r':
+                    unicode = "\\u000d";
+                    break;
+                case '\t':
+                    unicode = "\\u0009";
+                    break;
+                case _Constant.BACK_SLASH:
+                    unicode = "\\\\";
+                    break;
+                default:
+                    continue;
+            }
+
+            if (i > lastWritten) {
+                sqlBuilder.append(identifier, lastWritten, i); // identifier is String not char[],so is i not i- lastWritten
+            }
+            sqlBuilder.append(unicode);
+            lastWritten = i + 1;
+
+        }// for
+
+        if (lastWritten < length) {
+            sqlBuilder.append(identifier, lastWritten, length); // identifier is String not char[],so is length not length- lastWritten
+        }
+        sqlBuilder.append(_Constant.DOUBLE_QUOTE);
+        if (unicode != null) {
+            sqlBuilder.insert(startIndex, "U&");
+            sqlBuilder.append(" UESCAPE '\\'");
+        }
 
 
     }

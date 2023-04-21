@@ -150,12 +150,13 @@ abstract class ArmyParser implements DialectParser {
 
 
         if (env.getOrDefault(ArmyKey.USE_QUALIFIED_TABLE_NAME)) {
-            final String schemaName;
+            final String schemaName, lowerSchemaName;
             schemaName = this.qualifiedSchemaName(this.serverMeta);
+            lowerSchemaName = schemaName.toUpperCase(Locale.ROOT);
             if (!this.tableNameUpper) {
                 this.qualifiedSchemaName = this.identifier(schemaName);
-            } else if (schemaName.toLowerCase(Locale.ROOT).toUpperCase(Locale.ROOT)
-                    .equals(schemaName.toUpperCase(Locale.ROOT))) {
+            } else if (lowerSchemaName.equals(schemaName)
+                    || lowerSchemaName.toUpperCase(Locale.ROOT).equals(schemaName)) {
                 this.qualifiedSchemaName = this.identifier(schemaName.toUpperCase(Locale.ROOT));
             } else {
                 this.qualifiedSchemaName = this.identifier(schemaName);
@@ -505,9 +506,69 @@ abstract class ArmyParser implements DialectParser {
     }
 
 
-    protected abstract String doSafeObjectName(DatabaseObject object);
+    @Override
+    public final String identifier(final String identifier) {
+        final String safeIdentifier;
+        final IdentifierMode mode;
+        if (this.keyWordMap.containsKey(identifier.toUpperCase(Locale.ROOT))
+                || (mode = this.identifierMode(identifier)) == IdentifierMode.QUOTING) {
+            final StringBuilder builder = new StringBuilder(identifier.length() + 2);
+            safeIdentifier = builder.append(this.identifierQuote)
+                    .append(identifier)
+                    .append(this.identifierQuote)
+                    .toString();
+        } else switch (mode) {
+            case ERROR:
+                throw _Exceptions.identifierError(identifier, this.dialect);
+            case SIMPLE:
+                safeIdentifier = identifier;
+                break;
+            case ESCAPES: {
+                final int identifierLength;
+                identifierLength = identifier.length();
+                final StringBuilder builder = new StringBuilder(identifierLength + 3);
+                this.escapesIdentifier(identifier, builder);
 
-    protected abstract StringBuilder doSafeObjectName(DatabaseObject object, StringBuilder builder);
+                assert builder.length() > identifierLength;
+                safeIdentifier = builder.toString();
+            }
+            break;
+            case QUOTING:
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+        return safeIdentifier;
+    }
+
+
+    @Override
+    public final StringBuilder identifier(final String identifier, final StringBuilder builder) {
+
+        final IdentifierMode mode;
+        if (this.keyWordMap.containsKey(identifier.toUpperCase(Locale.ROOT))
+                || (mode = this.identifierMode(identifier)) == IdentifierMode.QUOTING) {
+            builder.append(this.identifierQuote)
+                    .append(identifier)
+                    .append(this.identifierQuote);
+        } else switch (mode) {
+            case ERROR:
+                throw _Exceptions.identifierError(identifier, this.dialect);
+            case SIMPLE:
+                builder.append(identifier);
+                break;
+            case ESCAPES: {
+                final int oldLength;
+                oldLength = builder.length();
+                this.escapesIdentifier(identifier, builder);
+                assert builder.length() > oldLength + identifier.length();
+            }
+            break;
+            case QUOTING:
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+        return builder;
+    }
 
     protected abstract boolean isNeedConvert(SqlType type, Object nonNull);
 
