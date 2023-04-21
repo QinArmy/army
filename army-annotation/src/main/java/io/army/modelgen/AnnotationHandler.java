@@ -65,7 +65,7 @@ final class AnnotationHandler {
             // validate table name
             customeTableName = domain.getAnnotation(Table.class).name();
             tableName = customeTableName.toLowerCase(Locale.ROOT);
-            if (!tableName.toUpperCase(Locale.ROOT).equals(customeTableName.toUpperCase(Locale.ROOT))) {  // army don't allow camel
+            if (!(tableName.equals(customeTableName) || tableName.toUpperCase(Locale.ROOT).equals(customeTableName))) {  // army don't allow camel
                 String m = String.format("%s table name is camel.", MetaUtils.getClassName(domain));
                 this.errorMsgList.add(m);
             }
@@ -352,12 +352,12 @@ final class AnnotationHandler {
             }
         } else {
             columnName = customColumnName.toLowerCase(Locale.ROOT);
-            if (!columnName.toUpperCase(Locale.ROOT).equals(customColumnName.toUpperCase(Locale.ROOT))) { // army don't allow camel
-                String m = String.format("Field %s.%s column name[%s] is camel.", className, fieldName, columnName);
+            if (!(columnName.equals(customColumnName) || columnName.toUpperCase(Locale.ROOT).equals(customColumnName))) { // army don't allow camel
+                String m = String.format("Field %s.%s column name[%s] is camel.", className, fieldName, customColumnName);
                 this.errorMsgList.add(m);
             }
             if (!columnName.trim().equals(columnName)) {
-                String m = String.format("please trim Field %s.%s column name[%s].", className, fieldName, columnName);
+                String m = String.format("please trim Field %s.%s column name[%s].", className, fieldName, customColumnName);
                 this.errorMsgList.add(m);
             }
         }
