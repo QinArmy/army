@@ -18,14 +18,13 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-abstract class PostgreSyntax extends PostgreMiscellaneous2Functions {
+abstract class PostgreSyntax extends PostgreDocumentFunctions {
 
     /**
      * Package constructor
      */
     PostgreSyntax() {
     }
-
 
 
     public interface Modifier extends Query.SelectModifier {

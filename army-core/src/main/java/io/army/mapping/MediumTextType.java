@@ -4,8 +4,8 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
@@ -73,10 +73,10 @@ public final class MediumTextType extends _ArmyInnerMapping implements MappingTy
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                type = MySQLTypes.MEDIUMTEXT;
+                type = MySQLType.MEDIUMTEXT;
                 break;
             case PostgreSQL:
-                type = PostgreTypes.TEXT;
+                type = PgSqlType.TEXT;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

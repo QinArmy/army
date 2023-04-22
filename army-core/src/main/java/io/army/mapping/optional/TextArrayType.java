@@ -8,7 +8,7 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyInnerMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
 
@@ -108,7 +108,7 @@ public final class TextArrayType extends _ArmyInnerMapping {
         if (meta.database() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreTypes.TEXT_ARRAY;
+        return PgSqlType.TEXT_ARRAY;
     }
 
     @Override
@@ -119,6 +119,9 @@ public final class TextArrayType extends _ArmyInnerMapping {
 
     @Override
     public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+        if (nonNull instanceof String) {
+            return nonNull;
+        }
         // TODO
         throw new UnsupportedOperationException();
     }

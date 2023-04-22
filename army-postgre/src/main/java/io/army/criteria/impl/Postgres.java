@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.*;
 import io.army.criteria.postgre.*;
 import io.army.mapping.MappingType;
+import io.army.sqltype.PgSqlType;
 
 import java.util.function.BiFunction;
 
@@ -24,19 +25,33 @@ public abstract class Postgres extends PostgreSyntax {
     private Postgres() {
     }
 
-    public interface _XmlNamedElementPart {
-
-        _XmlNamedElementPart accept(DataField field);
-
-        _XmlNamedElementPart accept(Expression attValue, WordAs as, String attName);
-
-        _XmlNamedElementPart accept(BiFunction<MappingType, String, Expression> funcRef, String attValue, WordAs as, String attName);
-
-    }
 
     public static final WordName NAME = PostgreWords.KeyWordName.NAME;
 
     public static final WordVersion VERSION = PostgreWords.KeyWordVersion.VERSION;
+
+    public static final WordStandalone STANDALONE = PostgreWords.KeyWordStandalone.STANDALONE;
+
+    public static final StandaloneOption YES = PostgreWords.KeyWordStandaloneOption.YES;
+
+    public static final StandaloneOption NO = PostgreWords.KeyWordStandaloneOption.NO;
+
+    public static final WordsNoValue NO_VALUE = PostgreWords.KeyWordsNoValue.NO_VALUE;
+
+    public static final BooleanTestWord DOCUMENT = BooleanTestKeyWord.DOCUMENT;
+
+    public static final WordPassing PASSING = PostgreWords.KeyWordPassing.PASSING;
+
+    public static final PassingOption BY_REF = PostgreWords.WordPassingOption.BY_REF;
+
+    public static final PassingOption BY_VALUE = PostgreWords.WordPassingOption.BY_VALUE;
+
+    public static final NullOption NOT_NULL = SqlWords.KeyWordNotNull.NOT_NULL;
+
+    public static final WordPath PATH = SqlWords.KeyWordPath.PATH;
+
+    public static final WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
+
 
     /**
      * <p>
@@ -118,6 +133,86 @@ public abstract class Postgres extends PostgreSyntax {
         return PostgreSimpleValues.subValues(ContextStack.peek(), SQLs::_identity);
     }
 
+    public interface _XmlNamedElementClause {
+
+        _XmlNamedElementClause accept(Expression value, WordAs as, String name);
+
+        _XmlNamedElementClause accept(BiFunction<MappingType, String, Expression> funcRef, String value, WordAs as, String name);
+
+    }
+
+    public interface _XmlNamedElementFieldClause extends _XmlNamedElementClause {
+
+        _XmlNamedElementFieldClause accept(DataField field);
+
+        _XmlNamedElementFieldClause accept(Expression value, WordAs as, String name);
+
+        _XmlNamedElementFieldClause accept(BiFunction<MappingType, String, Expression> funcRef, String value, WordAs as, String name);
+
+    }
+
+
+    public interface _XmlTableColumnsClause {
+
+        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+
+        XmlTableCommaClause columns(String name, PgSqlType type, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+
+        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, Expression columnExp, NullOption nullOption);
+
+        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp);
+
+        XmlTableCommaClause columns(String name, PgSqlType type, NullOption nullOption);
+
+        XmlTableCommaClause columns(String name, PgSqlType type, WordDefault wordDefault, Expression defaultExp);
+
+        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, Expression columnExp);
+
+        XmlTableCommaClause columns(String name, PgSqlType type);
+
+        XmlTableCommaClause columns(String name, WordsForOrdinality forOrdinality);
+
+
+        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+
+
+        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, NullOption nullOption);
+
+        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp);
+
+
+    }
+
+    public interface XmlTableCommaClause {
+
+        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+
+        XmlTableCommaClause comma(String name, PgSqlType type, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+
+        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, Expression columnExp, NullOption nullOption);
+
+        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp);
+
+        XmlTableCommaClause comma(String name, PgSqlType type, NullOption nullOption);
+
+        XmlTableCommaClause comma(String name, PgSqlType type, WordDefault wordDefault, Expression defaultExp);
+
+        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, Expression columnExp);
+
+        XmlTableCommaClause comma(String name, PgSqlType type);
+
+        XmlTableCommaClause comma(String name, WordsForOrdinality forOrdinality);
+
+
+        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+
+
+        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, NullOption nullOption);
+
+        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp);
+
+
+    }
 
 
 }

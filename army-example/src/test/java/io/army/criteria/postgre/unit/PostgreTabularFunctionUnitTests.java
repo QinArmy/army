@@ -17,7 +17,7 @@ public class PostgreTabularFunctionUnitTests extends PostgreUnitTests {
      * @see Postgres#unnest(Expression)
      */
     @Test
-    public void unnest() {
+    public void unnestTest() {
         final Select stmt;
         stmt = Postgres.query()
                 .select("a", SQLs.PERIOD, SQLs.ASTERISK)

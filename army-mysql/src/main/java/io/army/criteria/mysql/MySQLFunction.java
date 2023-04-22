@@ -3,7 +3,7 @@ package io.army.criteria.mysql;
 import io.army.criteria.*;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.standard.SQLFunction;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -153,40 +153,40 @@ public interface MySQLFunction extends SQLFunction {
 
         _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLs.WordsForOrdinality forOrdinality);
 
-        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLType type, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, Expression n, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLType type, Expression n, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, int n, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLType type, int n, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, Expression n, SQLElement charset, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLType type, Expression n, SQLElement charset, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, int n, SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLType type, int n, SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, Expression n, SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLType type, Expression n, SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, int p, int m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLType type, int p, int m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLTypes type, Expression p, Expression m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> comma(String name, MySQLType type, Expression p, Expression m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
         /*-------------------below exists path -------------------*/
 
 
-        _JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> comma(String name, MySQLType type, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, Expression n, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> comma(String name, MySQLType type, Expression n, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, int n, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> comma(String name, MySQLType type, int n, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, Expression n, SQLElement charset, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> comma(String name, MySQLType type, Expression n, SQLElement charset, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, int n, SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> comma(String name, MySQLType type, int n, SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, Expression n, SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> comma(String name, MySQLType type, Expression n, SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, int p, int m, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> comma(String name, MySQLType type, int p, int m, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> comma(String name, MySQLTypes type, Expression p, Expression m, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> comma(String name, MySQLType type, Expression p, Expression m, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
 
         /*-------------------below nested -------------------*/
@@ -268,40 +268,40 @@ public interface MySQLFunction extends SQLFunction {
 
         _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLs.WordsForOrdinality forOrdinality);
 
-        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLType type, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, Expression n, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLType type, Expression n, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, int n, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLType type, int n, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, Expression n, SQLElement charset, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLType type, Expression n, SQLElement charset, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, int n, SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLType type, int n, SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, Expression n, SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLType type, Expression n, SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, int p, int m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLType type, int p, int m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLTypes type, Expression p, Expression m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableOnEmptyActionSpec<R> leftParen(String name, MySQLType type, Expression p, Expression m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
         /*-------------------below exists path -------------------*/
 
 
-        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLType type, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, Expression n, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLType type, Expression n, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, int n, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLType type, int n, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, Expression n, SQLElement charset, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLType type, Expression n, SQLElement charset, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, int n, SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLType type, int n, SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, Expression n, SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLType type, Expression n, SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, int p, int m, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLType type, int p, int m, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
-        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLTypes type, Expression p, Expression m, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
+        _JsonTableColumnCommaSpec<R> leftParen(String name, MySQLType type, Expression p, Expression m, MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath);
 
 
         /*-------------------below nested -------------------*/

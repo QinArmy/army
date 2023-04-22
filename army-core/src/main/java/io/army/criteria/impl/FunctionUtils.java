@@ -557,6 +557,10 @@ abstract class FunctionUtils {
         return new TwoArgTabularFunction(name, one, two, funcFieldList);
     }
 
+    static OrderByOptionClause orderByOptionClause() {
+        return new OrderByOptionClause();
+    }
+
 
     static SimpleExpression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
         return new JsonObjectFunc(name, expMap, returnType);
@@ -671,18 +675,6 @@ abstract class FunctionUtils {
         }
     }
 
-    static List<Object> twoArgList(final String name, Expression one, Expression two) {
-        if (one instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, two);
-        }
-        final List<Object> argList = new ArrayList<>(3);
-        argList.add(one);
-        argList.add(Functions.FuncWord.COMMA);
-        argList.add(two);
-        return argList;
-    }
 
     static List<ArmyExpression> twoExpList(final String name, Expression one, Expression two) {
         if (one instanceof SqlValueParam.MultiValue) {
@@ -724,20 +716,6 @@ abstract class FunctionUtils {
         argList.add((ArmyExpression) two);
     }
 
-    static void appendThreeSingleExp(List<ArmyExpression> argList, String name
-            , Expression one, Expression two, Expression three) {
-        if (one instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, two);
-        } else if (three instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, three);
-        }
-        argList.add((ArmyExpression) one);
-        argList.add((ArmyExpression) two);
-        argList.add((ArmyExpression) three);
-    }
-
 
     static List<ArmyExpression> twoAndMultiExpList(final String name, final Expression exp1, Expression exp2
             , final List<Expression> expList) {
@@ -766,42 +744,6 @@ abstract class FunctionUtils {
     }
 
 
-    static List<Object> threeArgList(final String name, Expression one, Expression two, Expression three) {
-        if (one instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (two instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, two);
-        } else if (three instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, three);
-        }
-        final List<Object> argList = new ArrayList<>(5);
-
-        argList.add(one);
-        argList.add(Functions.FuncWord.COMMA);
-        argList.add(two);
-        argList.add(Functions.FuncWord.COMMA);
-
-        argList.add(three);
-        return argList;
-    }
-
-    static ArmyExpression oneArgVoidFunc(final String name, final Expression arg) {
-        if (!Functions.FUN_NAME_PATTER.matcher(name).matches()) {
-            throw Functions._customFuncNameError(name);
-        }
-        return new MultiArgVoidFunction(name, Collections.singletonList(arg));
-    }
-
-    static ArmyExpression multiArgVoidFunc(final String name, final List<? extends Expression> argList) {
-        if (!Functions.FUN_NAME_PATTER.matcher(name).matches()) {
-            throw Functions._customFuncNameError(name);
-        } else if (argList.size() == 0) {
-            throw CriteriaUtils.funcArgListIsEmpty(name);
-        }
-        return new MultiArgVoidFunction(name, _Collections.unmodifiableList(argList));
-    }
-
-
     static void appendMultiArgFunc(final String name, final List<? extends Expression> argList
             , final _SqlContext context) {
         final StringBuilder sqlBuilder;
@@ -818,6 +760,30 @@ abstract class FunctionUtils {
         }
 
         sqlBuilder.append(_Constant.RIGHT_PAREN);
+    }
+
+    /**
+     * @see MultiFieldTabularFunction#refSelection(String)
+     * @see ColumnTabularFunctionWrapper#refSelection(String)
+     */
+    static Map<String, Selection> createSelectionMapFrom(final @Nullable CriteriaContext context,
+                                                         final List<? extends Selection> selectionList) {
+        final Map<String, Selection> map = _Collections.hashMap((int) (selectionList.size() / 0.75F));
+        for (Selection s : selectionList) {
+            if (map.putIfAbsent(s.selectionName(), s) == null) {
+                continue;
+            }
+            String m = String.format("Tabular %s %s name[%s] duplication.", SQLFunction.class.getName(),
+                    Selection.class.getName(), s.selectionName());
+            final CriteriaException e;
+            if (context == null) {
+                e = ContextStack.clearStackAndCriteriaError(m);
+            } else {
+                e = ContextStack.criteriaError(context, m);
+            }
+            throw e;
+        }
+        return Collections.unmodifiableMap(map);
     }
 
     /*-------------------below private method -------------------*/
@@ -839,22 +805,6 @@ abstract class FunctionUtils {
         return notation;
     }
 
-    /**
-     * @see MultiFieldTabularFunction#refSelection(String)
-     * @see ColumnTabularFunctionWrapper#refSelection(String)
-     */
-    private static Map<String, Selection> createSelectionMapFrom(final CriteriaContext context,
-                                                                 final List<? extends Selection> selectionList) {
-        final Map<String, Selection> map = _Collections.hashMap((int) (selectionList.size() / 0.75F));
-        for (Selection s : selectionList) {
-            if (map.putIfAbsent(s.selectionName(), s) != null) {
-                String m = String.format("Tabular %s %s name[%s] duplication.", SQLFunction.class.getName(),
-                        Selection.class.getName(), s.selectionName());
-                throw ContextStack.criteriaError(context, m);
-            }
-        }
-        return Collections.unmodifiableMap(map);
-    }
 
     private static CriteriaException namedNotationIsMultiValue() {
         throw ContextStack.clearStackAndCriteriaError("Named Notation couldn't be %s multi-value parameter/literal.");
@@ -3581,6 +3531,46 @@ abstract class FunctionUtils {
         }
 
     }//GlobalWindow
+
+
+    static final class OrderByOptionClause extends OrderByClause<Item> implements ArmyFuncClause {
+
+        /**
+         * @see #orderByOptionClause()
+         */
+        private OrderByOptionClause() {
+            super(ContextStack.peek());
+        }
+
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final List<? extends SortItem> sortItemList;
+            sortItemList = this.orderByList();
+            final int itemSize;
+            if ((itemSize = sortItemList.size()) == 0) {
+                return;
+            }
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_ORDER_BY);
+            for (int i = 0; i < itemSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                ((ArmySortItem) sortItemList.get(i)).appendSql(context);
+
+            }
+
+        }
+
+        @Override
+        Dialect statementDialect() {
+            throw _Exceptions.castCriteriaApi();
+        }
+
+
+    }//OrderByOptionClause
 
 
 }

@@ -2,9 +2,9 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
@@ -54,10 +54,10 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                type = MySQLTypes.TIME;
+                type = MySQLType.TIME;
                 break;
             case PostgreSQL:
-                type = PostgreTypes.TIMETZ;
+                type = PgSqlType.TIMETZ;
                 break;
             case Oracle:
                 type = OracleDataType.TIMESTAMPTZ;

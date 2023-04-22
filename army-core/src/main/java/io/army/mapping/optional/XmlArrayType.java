@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping._ArmyInnerMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PgSqlType;
@@ -14,20 +14,22 @@ import io.army.util._ArrayUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class ShortArrayType extends _ArmyNoInjectionMapping {
+public final class XmlArrayType extends _ArmyInnerMapping {
 
 
-    public static ShortArrayType from(final Class<?> javaType) {
+    public static XmlArrayType from(final Class<?> javaType) {
         if (!javaType.isArray()) {
-            throw errorJavaType(ShortArrayType.class, javaType);
+            throw errorJavaType(XmlArrayType.class, javaType);
         }
 
-        return INSTANCE_MAP.computeIfAbsent(javaType, ShortArrayType::new);
+        return INSTANCE_MAP.computeIfAbsent(javaType, XmlArrayType::new);
     }
 
-    public static final ShortArrayType UNLIMITED = new ShortArrayType();
+    public static final XmlArrayType UNLIMITED = new XmlArrayType();
 
-    private static final ConcurrentMap<Class<?>, ShortArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    public static final XmlArrayType TEXT_LINEAR = new XmlArrayType(String[].class);
+
+    private static final ConcurrentMap<Class<?>, XmlArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
 
     private final Class<?> javaType;
@@ -37,12 +39,12 @@ public final class ShortArrayType extends _ArmyNoInjectionMapping {
     /**
      * @see #UNLIMITED
      */
-    private ShortArrayType() {
+    private XmlArrayType() {
         this.javaType = Object.class;
         this.underlyingType = Object.class;
     }
 
-    private ShortArrayType(Class<?> javaType) {
+    private XmlArrayType(Class<?> javaType) {
         this.javaType = javaType;
         this.underlyingType = _ArrayUtils.underlyingComponent(javaType);
     }

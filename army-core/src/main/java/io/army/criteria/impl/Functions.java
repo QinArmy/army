@@ -91,6 +91,15 @@ abstract class Functions extends SqlSyntax {
     }
 
 
+    public interface WordPath extends SQLWords {
+
+    }
+
+    public interface WordsForOrdinality extends SQLWords {
+
+    }
+
+
     public interface WordIn {
 
     }
@@ -139,137 +148,6 @@ abstract class Functions extends SqlSyntax {
 
 
     }//Word
-
-
-    private enum KeyWordIn implements WordIn, ArmyKeyWord {
-
-        IN(" IN");
-
-        private final String spaceWord;
-
-        KeyWordIn(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return functionsKeyWordToString(this);
-        }
-
-
-    }//KeyWordIn
-
-    private enum KeyWordSimilar implements WordSimilar, ArmyKeyWord, SQLWords {
-
-        SIMILAR(" SIMILAR");
-
-        private final String spaceWord;
-
-        KeyWordSimilar(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return functionsKeyWordToString(this);
-        }
-
-    }//KeyWordSimilar
-
-    private enum KeyWordFrom implements WordFrom, ArmyKeyWord {
-
-        FROM(" FROM");
-
-        private final String spaceWords;
-
-        KeyWordFrom(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return functionsKeyWordToString(this);
-        }
-
-
-    }//KeyWordFrom
-
-    private enum KeyWordFor implements WordFor, SQLWords, ArmyKeyWord {
-
-        FOR(" FOR");
-
-        private final String spaceWords;
-
-        KeyWordFor(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return functionsKeyWordToString(this);
-        }
-
-
-    }//KeyWordFor
-
-
-    enum WordTrimPosition implements TrimPosition, ArmyKeyWord, SQLWords {
-
-        BOTH(" BOTH"),
-        LEADING(" LEADING"),
-        TRAILING(" TRAILING");
-
-        private final String spaceWords;
-
-        WordTrimPosition(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return functionsKeyWordToString(this);
-        }
-
-
-    }//WordTrimPosition
-
-
-    public static final TrimPosition BOTH = WordTrimPosition.BOTH;
-    public static final TrimPosition LEADING = WordTrimPosition.LEADING;
-    public static final TrimPosition TRAILING = WordTrimPosition.TRAILING;
-
-    public static final WordIn IN = KeyWordIn.IN;
-
-    public static final WordFor FOR = KeyWordFor.FOR;
-
-    public static final WordFrom FROM = KeyWordFrom.FROM;
-    public static final WordSimilar SIMILAR = KeyWordSimilar.SIMILAR;
 
 
 

@@ -3,8 +3,8 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
 import java.time.*;
@@ -55,10 +55,10 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                type = MySQLTypes.YEAR;
+                type = MySQLType.YEAR;
                 break;
             case PostgreSQL:
-                type = PostgreTypes.DATE;
+                type = PgSqlType.DATE;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

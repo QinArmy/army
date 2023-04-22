@@ -8,7 +8,7 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.TextEnumType;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
@@ -57,7 +57,7 @@ public final class MySQLTextEnumSetType extends MappingType implements ElementMa
         if (meta.database() != Database.MySQL) {
             throw noMappingError(meta);
         }
-        return MySQLTypes.SET;
+        return MySQLType.SET;
     }
 
     @Override

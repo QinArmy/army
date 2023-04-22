@@ -2,9 +2,9 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
 public final class SQLCharType extends MappingType {
@@ -31,10 +31,10 @@ public final class SQLCharType extends MappingType {
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                type = MySQLTypes.CHAR;
+                type = MySQLType.CHAR;
                 break;
             case PostgreSQL:
-                type = PostgreTypes.CHAR;
+                type = PgSqlType.CHAR;
                 break;
             case Oracle:
                 type = OracleDataType.CHAR;

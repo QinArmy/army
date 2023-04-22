@@ -8,7 +8,7 @@ import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.struct.TextEnum;
 import io.army.util._Exceptions;
@@ -215,7 +215,7 @@ final class MySQLDdl extends _DdlDialect {
 
     @Override
     protected void dataType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
-        switch ((MySQLTypes) type) {
+        switch ((MySQLType) type) {
             case TINYINT:
             case SMALLINT:
             case INT:
@@ -248,7 +248,7 @@ final class MySQLDdl extends _DdlDialect {
             case DECIMAL: {
                 builder.append("DECIMAL");
                 decimalType(field, builder);
-                if (type == MySQLTypes.DECIMAL_UNSIGNED) {
+                if (type == MySQLType.DECIMAL_UNSIGNED) {
                     builder.append(SPACE_UNSIGNED);
                 }
             }
@@ -306,7 +306,7 @@ final class MySQLDdl extends _DdlDialect {
                 builder.append("BIGINT UNSIGNED");
                 break;
             default:
-                throw _Exceptions.unexpectedEnum((MySQLTypes) type);
+                throw _Exceptions.unexpectedEnum((MySQLType) type);
         }
 
 

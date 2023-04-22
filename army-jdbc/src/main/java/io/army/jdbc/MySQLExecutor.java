@@ -1,6 +1,6 @@
 package io.army.jdbc;
 
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.sync.executor.LocalStmtExecutor;
 import io.army.sync.executor.RmStmtExecutor;
@@ -53,7 +53,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
     @Override
     void bind(final PreparedStatement stmt, final int index, final SqlType sqlDataType, final Object nonNull)
             throws SQLException {
-        switch ((MySQLTypes) sqlDataType) {
+        switch ((MySQLType) sqlDataType) {
             case BOOLEAN:
                 stmt.setBoolean(index, (Boolean) nonNull);
                 break;
@@ -171,7 +171,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 }
             }
             default:
-                throw _Exceptions.unexpectedEnum((MySQLTypes) sqlDataType);
+                throw _Exceptions.unexpectedEnum((MySQLType) sqlDataType);
 
         }
 
@@ -180,7 +180,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
     @Override
     Object get(final ResultSet resultSet, final String alias, final SqlType sqlType) throws SQLException {
         final Object value;
-        switch ((MySQLTypes) sqlType) {
+        switch ((MySQLType) sqlType) {
             case TINYINT:
             case TINYINT_UNSIGNED:
             case SMALLINT:
@@ -249,7 +249,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 value = resultSet.getObject(alias, byte[].class);
                 break;
             default:
-                throw _Exceptions.unexpectedEnum((MySQLTypes) sqlType);
+                throw _Exceptions.unexpectedEnum((MySQLType) sqlType);
         }
         return value;
     }

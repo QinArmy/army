@@ -3,8 +3,8 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -131,10 +131,10 @@ public final class IntegerType extends _NumericType._IntegerType {
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.INT;
+                sqlType = MySQLType.INT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreTypes.INTEGER;
+                sqlType = PgSqlType.INTEGER;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);

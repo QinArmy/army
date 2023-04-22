@@ -37,10 +37,6 @@ abstract class SQLsSyntax extends Functions {
 
     }
 
-    public interface BooleanTestWord extends SQLWords {
-
-    }
-
     public interface IsComparisonWord extends SQLWords {
 
     }

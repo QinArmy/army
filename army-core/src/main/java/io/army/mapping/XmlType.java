@@ -2,8 +2,8 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,16 +42,16 @@ public final class XmlType extends _ArmyInnerMapping {
         final SqlType sqlDataType;
         switch (meta.database()) {
             case MySQL:
-                sqlDataType = MySQLTypes.TEXT;
+                sqlDataType = MySQLType.TEXT;
                 break;
             case PostgreSQL:
-                sqlDataType = PostgreTypes.XML;
+                sqlDataType = PgSqlType.XML;
                 break;
             case Oracle:
 
             case H2:
             default:
-                throw noMappingError(meta);
+                throw MAP_ERROR_HANDLER.apply(this, meta);
 
         }
         return sqlDataType;
@@ -65,6 +65,10 @@ public final class XmlType extends _ArmyInnerMapping {
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        //TODO
+        if (nonNull instanceof String) {
+            return (String) nonNull;
+        }
         return StringType.beforeBind(type, nonNull);
     }
 

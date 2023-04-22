@@ -7,13 +7,19 @@ package io.army.criteria.impl;
  *
  * @since 1.0
  */
-enum BooleanTestWord implements SQLsSyntax.BooleanTestWord, Functions.ArmyKeyWord {
+enum BooleanTestKeyWord implements SQLsSyntax.BooleanTestWord, Functions.ArmyKeyWord {
 
-    JSON(" JSON");
+    JSON(" JSON"),
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PREDICATES">xml IS DOCUMENT → boolean<br/>
+     * </a>
+     */
+    DOCUMENT(" DOCUMENT"); // postgre xml
 
     final String spaceOperator;
 
-    BooleanTestWord(String spaceOperator) {
+    BooleanTestKeyWord(String spaceOperator) {
         this.spaceOperator = spaceOperator;
     }
 

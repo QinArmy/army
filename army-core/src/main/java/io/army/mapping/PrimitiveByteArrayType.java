@@ -40,10 +40,10 @@ public final class PrimitiveByteArrayType extends _ArmyInnerMapping implements M
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                type = MySQLTypes.VARBINARY;
+                type = MySQLType.VARBINARY;
                 break;
             case PostgreSQL:
-                type = PostgreTypes.BYTEA;
+                type = PgSqlType.BYTEA;
                 break;
             case Oracle:
                 type = OracleDataType.BLOB;

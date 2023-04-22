@@ -4,9 +4,9 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
@@ -103,10 +103,10 @@ public final class StringType extends _ArmyInnerMapping implements MappingType.S
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.VARCHAR;
+                sqlType = MySQLType.VARCHAR;
                 break;
             case PostgreSQL:
-                sqlType = PostgreTypes.VARCHAR;
+                sqlType = PgSqlType.VARCHAR;
                 break;
             case Oracle:
                 sqlType = OracleDataType.VARCHAR2;

@@ -2,8 +2,8 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -77,10 +77,10 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.DECIMAL_UNSIGNED;
+                sqlType = MySQLType.DECIMAL_UNSIGNED;
                 break;
             case PostgreSQL:
-                sqlType = PostgreTypes.DECIMAL;
+                sqlType = PgSqlType.DECIMAL;
                 break;
             case Oracle:
             case H2:

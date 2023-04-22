@@ -133,10 +133,10 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
         final SqlType sqlType;
         switch (meta.database()) {
             case MySQL:
-                sqlType = MySQLTypes.DECIMAL;
+                sqlType = MySQLType.DECIMAL;
                 break;
             case PostgreSQL:
-                sqlType = PostgreTypes.DECIMAL;
+                sqlType = PgSqlType.DECIMAL;
                 break;
             case H2:
                 sqlType = H2DataType.DECIMAL;

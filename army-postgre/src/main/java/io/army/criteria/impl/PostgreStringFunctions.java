@@ -42,6 +42,26 @@ abstract class PostgreStringFunctions extends Functions {
 
     }
 
+    public interface WordStandalone extends SQLWords {
+
+    }
+
+    public interface StandaloneOption extends SQLWords {
+
+    }
+
+    public interface WordsNoValue extends StandaloneOption {
+
+    }
+
+    public interface WordPassing extends SQLWords {
+
+    }
+
+    public interface PassingOption extends SQLWords {
+
+    }
+
 
     private enum KeyWordNormalizeForm implements WordNormalizeForm, ArmyKeyWord, SQLWords {
 
@@ -200,7 +220,7 @@ abstract class PostgreStringFunctions extends Functions {
      */
     public static SimpleExpression overlay(Expression string, WordPlacing placing, Expression newSubstring,
                                            WordFrom from, Expression start) {
-        return _overlay(string, placing, newSubstring, from, start, Functions.FOR, null);
+        return _overlay(string, placing, newSubstring, from, start, SQLs.FOR, null);
     }
 
     /**
@@ -226,7 +246,7 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type:  {@link  IntegerType}.
      * </p>
      *
-     * @param in {@link Functions#IN}
+     * @param in {@link SQLs#IN}
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">position ( substring text IN string text ) → integer</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">position ( substring bit IN bits bit ) → integer</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">position ( substring bytea IN bytes bytea ) → integer</a>
@@ -238,7 +258,7 @@ abstract class PostgreStringFunctions extends Functions {
             throw CriteriaUtils.funcArgError(name, substring);
         } else if (string instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, string);
-        } else if (in != Functions.IN) {
+        } else if (in != SQLs.IN) {
             throw CriteriaUtils.funcArgError(name, in);
         } else {
             func = FunctionUtils.complexArgFunc(name, IntegerType.INSTANCE,
@@ -252,7 +272,7 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
      * </p>
      *
-     * @param from {@link Functions#FROM}
+     * @param from {@link SQLs#FROM}
      * @see #substring(Expression, WordFor, Expression)
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text [ FROM start integer ] [ FOR count integer ] ) → text ; substring ( string text FROM pattern text ) → text</a>
@@ -261,7 +281,7 @@ abstract class PostgreStringFunctions extends Functions {
      */
     public static SimpleExpression substring(Expression string, WordFrom from, Expression startOrPattern) {
         ContextStack.assertNonNull(startOrPattern);
-        return _substring(string, from, startOrPattern, Functions.FOR, null);
+        return _substring(string, from, startOrPattern, SQLs.FOR, null);
     }
 
     /**
@@ -269,7 +289,7 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
      * </p>
      *
-     * @param wordFor {@link Functions#FOR}
+     * @param wordFor {@link SQLs#FOR}
      * @see #substring(Expression, WordFrom, Expression)
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text [ FROM start integer ] [ FOR count integer ] ) → text</a>
@@ -278,7 +298,7 @@ abstract class PostgreStringFunctions extends Functions {
      */
     public static SimpleExpression substring(Expression string, WordFor wordFor, Expression count) {
         ContextStack.assertNonNull(count);
-        return _substring(string, Functions.FROM, null, wordFor, count);
+        return _substring(string, SQLs.FROM, null, wordFor, count);
     }
 
     /**
@@ -286,8 +306,8 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
      * </p>
      *
-     * @param from    {@link Functions#FROM}
-     * @param wordFor {@link Functions#FOR}
+     * @param from    {@link SQLs#FROM}
+     * @param wordFor {@link SQLs#FOR}
      * @see #substring(Expression, WordFrom, Expression)
      * @see #substring(Expression, WordFor, Expression)
      * @see #substring(Expression, WordSimilar, Expression, SQLs.WordEscape, Expression)
@@ -307,7 +327,7 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
      * </p>
      *
-     * @param similar    {@link Functions#SIMILAR}
+     * @param similar    {@link SQLs#SIMILAR}
      * @param wordEscape {@link SQLs#ESCAPE}
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text SIMILAR pattern text ESCAPE escape text ) → text</a>
@@ -323,7 +343,7 @@ abstract class PostgreStringFunctions extends Functions {
             throw CriteriaUtils.funcArgError(name, pattern);
         } else if (escape instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, escape);
-        } else if (similar != Functions.SIMILAR) {
+        } else if (similar != SQLs.SIMILAR) {
             throw CriteriaUtils.funcArgError(name, similar);
         } else if (wordEscape != SQLs.ESCAPE) {
             throw CriteriaUtils.funcArgError(name, wordEscape);
@@ -350,12 +370,12 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
      * </p>
      *
-     * @param from {@link Functions#FROM}
+     * @param from {@link SQLs#FROM}
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
      */
     public static SimpleExpression trim(WordFrom from, Expression string) {
         final String name = "TRIM";
-        if (from != Functions.FROM) {
+        if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
         } else if (string instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, string);
@@ -370,11 +390,11 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @param position below:
      *                 <ul>
-     *                      <li>{@link Functions#LEADING}</li>
-     *                      <li>{@link Functions#TRAILING}</li>
-     *                      <li>{@link Functions#BOTH}</li>
+     *                      <li>{@link SQLs#LEADING}</li>
+     *                      <li>{@link SQLs#TRAILING}</li>
+     *                      <li>{@link SQLs#BOTH}</li>
      *                 </ul>
-     * @param from     {@link Functions#FROM}
+     * @param from     {@link SQLs#FROM}
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ characters text ] FROM string text ) → text</a>
      */
@@ -382,9 +402,9 @@ abstract class PostgreStringFunctions extends Functions {
         final String name = "TRIM";
         if (string instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, string);
-        } else if (!(position instanceof Functions.WordTrimPosition)) {
+        } else if (!(position instanceof SqlWords.WordTrimPosition)) {
             throw CriteriaUtils.funcArgError(name, position);
-        } else if (from != Functions.FROM) {
+        } else if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
         }
         return FunctionUtils.complexArgFunc(name, string.typeMeta(),
@@ -396,7 +416,7 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
      * </p>
      *
-     * @param from {@link Functions#FROM}
+     * @param from {@link SQLs#FROM}
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ characters text ] FROM string text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] bytesremoved bytea FROM bytes bytea ) → bytea</a>
@@ -407,7 +427,7 @@ abstract class PostgreStringFunctions extends Functions {
             throw CriteriaUtils.funcArgError(name, characters);
         } else if (string instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, string);
-        } else if (from != Functions.FROM) {
+        } else if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
         }
         return FunctionUtils.complexArgFunc(name, string.typeMeta(),
@@ -421,11 +441,11 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @param position below:
      *                 <ul>
-     *                      <li>{@link Functions#LEADING}</li>
-     *                      <li>{@link Functions#TRAILING}</li>
-     *                      <li>{@link Functions#BOTH}</li>
+     *                      <li>{@link SQLs#LEADING}</li>
+     *                      <li>{@link SQLs#TRAILING}</li>
+     *                      <li>{@link SQLs#BOTH}</li>
      *                 </ul>
-     * @param from     {@link Functions#FROM}
+     * @param from     {@link SQLs#FROM}
      * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ characters text ] FROM string text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] bytesremoved bytea FROM bytes bytea ) → bytea</a>
@@ -436,9 +456,9 @@ abstract class PostgreStringFunctions extends Functions {
             throw CriteriaUtils.funcArgError(name, characters);
         } else if (string instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, string);
-        } else if (!(position instanceof Functions.WordTrimPosition)) {
+        } else if (!(position instanceof SqlWords.WordTrimPosition)) {
             throw CriteriaUtils.funcArgError(name, position);
-        } else if (from != Functions.FROM) {
+        } else if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
         }
         return FunctionUtils.complexArgFunc(name, string.typeMeta(),
@@ -473,7 +493,7 @@ abstract class PostgreStringFunctions extends Functions {
      */
     public static SimpleExpression trim(WordFrom from, Expression string, Expression characters) {
         final String name = "TRIM";
-        if (from != Functions.FROM) {
+        if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
         } else if (string instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, string);
@@ -492,11 +512,11 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @param position below:
      *                 <ul>
-     *                      <li>{@link Functions#LEADING}</li>
-     *                      <li>{@link Functions#TRAILING}</li>
-     *                      <li>{@link Functions#BOTH}</li>
+     *                      <li>{@link SQLs#LEADING}</li>
+     *                      <li>{@link SQLs#TRAILING}</li>
+     *                      <li>{@link SQLs#BOTH}</li>
      *                 </ul>
-     * @param from     {@link Functions#FROM}
+     * @param from     {@link SQLs#FROM}
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] bytes bytea, bytesremoved bytea ) → bytea</a>
      */
@@ -506,9 +526,9 @@ abstract class PostgreStringFunctions extends Functions {
             throw CriteriaUtils.funcArgError(name, string);
         } else if (characters instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, characters);
-        } else if (!(position instanceof Functions.WordTrimPosition)) {
+        } else if (!(position instanceof SqlWords.WordTrimPosition)) {
             throw CriteriaUtils.funcArgError(name, position);
-        } else if (from != Functions.FROM) {
+        } else if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
         }
         return FunctionUtils.complexArgFunc(name, string.typeMeta(),
@@ -1603,9 +1623,9 @@ abstract class PostgreStringFunctions extends Functions {
             throw CriteriaUtils.funcArgError(name, count);
         } else if (placing != PLACING) {
             throw CriteriaUtils.funcArgError(name, placing);
-        } else if (from != Functions.FROM) {
+        } else if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
-        } else if (wordFor != Functions.FOR) {
+        } else if (wordFor != SQLs.FOR) {
             throw CriteriaUtils.funcArgError(name, wordFor);
         } else if (count == null) {
             func = FunctionUtils.complexArgFunc(name, string.typeMeta(),
@@ -1633,9 +1653,9 @@ abstract class PostgreStringFunctions extends Functions {
             throw CriteriaUtils.funcArgError(name, start);
         } else if (count instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, count);
-        } else if (from != Functions.FROM) {
+        } else if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
-        } else if (wordFor != Functions.FOR) {
+        } else if (wordFor != SQLs.FOR) {
             throw CriteriaUtils.funcArgError(name, wordFor);
         } else if (start != null && count != null) {
             func = FunctionUtils.complexArgFunc(name, string.typeMeta(),

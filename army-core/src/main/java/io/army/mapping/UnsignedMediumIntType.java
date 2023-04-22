@@ -2,8 +2,8 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
 
@@ -58,10 +58,10 @@ public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerTy
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                type = MySQLTypes.MEDIUMINT_UNSIGNED;
+                type = MySQLType.MEDIUMINT_UNSIGNED;
                 break;
             case PostgreSQL:
-                type = PostgreTypes.INTEGER;
+                type = PgSqlType.INTEGER;
                 break;
             case Oracle:
             case H2:

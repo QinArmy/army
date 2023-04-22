@@ -4,7 +4,7 @@ import io.army.dialect.Database;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 
 final class MySQLComparer extends AbstractSchemaComparer {
@@ -37,7 +37,7 @@ final class MySQLComparer extends AbstractSchemaComparer {
     @Override
     boolean compareSqlType(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
         final boolean match;
-        switch ((MySQLTypes) sqlType) {
+        switch ((MySQLType) sqlType) {
             case INT:
             case BIGINT:
             case DECIMAL:
@@ -72,7 +72,7 @@ final class MySQLComparer extends AbstractSchemaComparer {
                 final String typeName = columnInfo.typeName();
                 if (sqlType.name().equals(typeName)) {
                     match = true;
-                } else if (MySQLTypes.TINYINT.name().equals(typeName) || MySQLTypes.BIT.name().equals(typeName)) {
+                } else if (MySQLType.TINYINT.name().equals(typeName) || MySQLType.BIT.name().equals(typeName)) {
                     match = columnInfo.precision() == 1;
                 } else {
                     match = false;

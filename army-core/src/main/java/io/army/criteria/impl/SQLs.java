@@ -17,7 +17,7 @@ import io.army.mapping._ArmyInnerMapping;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 
@@ -39,6 +39,7 @@ import static io.army.dialect.Database.PostgreSQL;
 public abstract class SQLs extends SQLsSyntax {
 
 
+
     /**
      * private constructor
      */
@@ -49,6 +50,15 @@ public abstract class SQLs extends SQLsSyntax {
     public static final WordAs AS = KeyWordAs.AS;
 
     public static final WordAnd AND = KeyWordAnd.AND;
+
+
+    public static final TrimPosition BOTH = SqlWords.WordTrimPosition.BOTH;
+    public static final TrimPosition LEADING = SqlWords.WordTrimPosition.LEADING;
+    public static final TrimPosition TRAILING = SqlWords.WordTrimPosition.TRAILING;
+    public static final WordIn IN = SqlWords.KeyWordIn.IN;
+    public static final WordFor FOR = SqlWords.KeyWordFor.FOR;
+    public static final WordFrom FROM = SqlWords.KeyWordFrom.FROM;
+    public static final WordSimilar SIMILAR = SqlWords.KeyWordSimilar.SIMILAR;
 
     @Support({PostgreSQL, H2})
     public static final BetweenModifier SYMMETRIC = KeyWordSymmetric.SYMMETRIC;
@@ -664,7 +674,7 @@ public abstract class SQLs extends SQLsSyntax {
             final SqlType sqlType;
             switch (meta.database()) {
                 case MySQL:
-                    sqlType = MySQLTypes.NULL;
+                    sqlType = MySQLType.NULL;
                     break;
                 case PostgreSQL:
                 case Oracle:
@@ -702,13 +712,17 @@ public abstract class SQLs extends SQLsSyntax {
      * @see SQLs#DEFAULT
      */
     private static final class DefaultWord extends NonOperationExpression
-            implements WordDefault, FunctionArg.SingleFunctionArg {
+            implements WordDefault, ArmyKeyWord {
 
         private static final DefaultWord INSTANCE = new DefaultWord();
 
         private DefaultWord() {
         }
 
+        @Override
+        public String spaceRender() {
+            return _Constant.SPACE_DEFAULT;
+        }
 
         @Override
         public TypeMeta typeMeta() {

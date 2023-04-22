@@ -857,7 +857,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(remstr FROM str)</a>
      */
     public static SimpleExpression trim(final Expression remstr, WordFrom from, final Expression str) {
-        assert from == Functions.FROM;
+        assert from == SQLs.FROM;
         return FunctionUtils.complexArgFunc("TRIM", StringType.INSTANCE, remstr, from, str);
     }
 
@@ -868,9 +868,9 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      *
      * @param position non-null,should be below:
      *                 <ul>
-     *                      <li>{@link Functions#BOTH}</li>
-     *                      <li>{@link Functions#LEADING}</li>
-     *                      <li>{@link Functions#TRAILING}</li>
+     *                      <li>{@link SQLs#BOTH}</li>
+     *                      <li>{@link SQLs#LEADING}</li>
+     *                      <li>{@link SQLs#TRAILING}</li>
      *                 </ul>
      * @param remstr   nullable parameter or {@link Expression}
      * @param str      nullable parameter or {@link Expression}
@@ -882,11 +882,11 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
         final String name = "TRIM";
         if (!(str instanceof ArmyExpression)) {
             throw CriteriaUtils.funcArgError(name, str);
-        } else if (position != null && !(position instanceof Functions.WordTrimPosition)) {
+        } else if (position != null && !(position instanceof SqlWords.WordTrimPosition)) {
             throw CriteriaUtils.funcArgError(name, position);
-        } else if (remstr != null && from != Functions.FROM) {
+        } else if (remstr != null && from != SQLs.FROM) {
             throw ContextStack.criteriaError(ContextStack.peek(), "remstr and from syntax error");
-        } else if (position != null && from != Functions.FROM) {
+        } else if (position != null && from != SQLs.FROM) {
             throw ContextStack.criteriaError(ContextStack.peek(), "position and from syntax error");
         }
         return FunctionUtils.complexArgFunc(name, StringType.INSTANCE, position, remstr, from, str);

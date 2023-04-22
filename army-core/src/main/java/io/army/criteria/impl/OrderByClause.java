@@ -39,12 +39,18 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR orderBy(SortItem sortItem) {
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+        }
         this.onAddOrderBy(sortItem);
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+        }
         this.onAddOrderBy(sortItem1)
                 .onAddOrderBy(sortItem2);
         return (OR) this;
@@ -52,6 +58,9 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+        }
         this.onAddOrderBy(sortItem1)
                 .onAddOrderBy(sortItem2)
                 .onAddOrderBy(sortItem3);
@@ -60,6 +69,9 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4) {
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+        }
         this.onAddOrderBy(sortItem1)
                 .onAddOrderBy(sortItem2)
                 .onAddOrderBy(sortItem3)
@@ -69,6 +81,9 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4, SortItem sortItem5) {
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+        }
         this.onAddOrderBy(sortItem1)
                 .onAddOrderBy(sortItem2)
                 .onAddOrderBy(sortItem3)
@@ -79,6 +94,9 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+        }
         consumer.accept(this::onAddOrderBy);
         if (this.orderByList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
@@ -88,6 +106,9 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
+        if (this instanceof OrderByEventListener) {
+            ((OrderByEventListener) this).onOrderByEvent();
+        }
         consumer.accept(this::onAddOrderBy);
         return (OR) this;
     }
@@ -126,11 +147,8 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     private OrderByClause<?> onAddOrderBy(final SortItem sortItem) {
         List<ArmySortItem> orderByList = this.orderByList;
         if (orderByList == null) {
-            orderByList = new ArrayList<>();
+            orderByList = _Collections.arrayList();
             this.orderByList = orderByList;
-            if (this instanceof Statement) {
-                this.context.onOrderByStart();
-            }
         } else if (!(orderByList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
         }

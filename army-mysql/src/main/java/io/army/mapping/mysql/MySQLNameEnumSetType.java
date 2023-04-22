@@ -7,7 +7,7 @@ import io.army.mapping.ElementMappingType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 
 import java.util.Collections;
@@ -53,7 +53,7 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
         if (meta.database() != Database.MySQL) {
             throw noMappingError(meta);
         }
-        return MySQLTypes.SET;
+        return MySQLType.SET;
     }
 
     @Override

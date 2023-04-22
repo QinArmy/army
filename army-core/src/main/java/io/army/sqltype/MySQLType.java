@@ -9,7 +9,7 @@ import io.army.mapping.ShortType;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-public enum MySQLTypes implements SqlType, SQLWords {
+public enum MySQLType implements SqlType, SQLWords {
 
     NULL,
     BOOLEAN,

@@ -2,8 +2,8 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLTypes;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.MySQLType;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
 /**
@@ -54,10 +54,10 @@ public final class ShortType extends _NumericType._IntegerType {
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                type = MySQLTypes.SMALLINT;
+                type = MySQLType.SMALLINT;
                 break;
             case PostgreSQL:
-                type = PostgreTypes.SMALLINT;
+                type = PgSqlType.SMALLINT;
                 break;
 
             case Oracle:

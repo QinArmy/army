@@ -657,7 +657,18 @@ abstract class CriteriaUtils {
 
     static CriteriaException operandError(String operatorName, @Nullable Object errorOperand) {
         String m = String.format("SQL operator %s don't support %s", operatorName, _ClassUtils.safeClassName(errorOperand));
-        throw ContextStack.clearStackAndCriteriaError(m);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
+    static CriteriaException funcColumnDuplicate(CriteriaContext context, String funcName, String columnName) {
+        String m = String.format("tabular function[%s] column[%s] duplication.", funcName, columnName);
+        return ContextStack.criteriaError(context, m);
+    }
+
+    static CriteriaException funcColumnNameIsNotSimpleIdentifier(CriteriaContext context, String funcName,
+                                                                 String columnName) {
+        String m = String.format("tabular function[%s] column[%s] isn't simple identifier.", funcName, columnName);
+        return ContextStack.criteriaError(context, m);
     }
 
     static RuntimeException funcArgError(String funcName, @Nullable Object errorArg) {

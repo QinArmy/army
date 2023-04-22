@@ -15,7 +15,7 @@ import io.army.meta.ParentTableMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
@@ -92,7 +92,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean isNeedConvert(final SqlType type, final Object nonNull) {
-        return !(type == MySQLTypes.DATETIME
+        return !(type == MySQLType.DATETIME
                 && this.asOf80
                 && (nonNull instanceof OffsetDateTime || nonNull instanceof ZonedDateTime));
     }
@@ -108,7 +108,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
     protected final void bindLiteral(final TypeMeta typeMeta, final SqlType type, final Object value,
                                      final StringBuilder sqlBuilder) {
 
-        switch ((MySQLTypes) type) {
+        switch ((MySQLType) type) {
             case INT:
             case SMALLINT_UNSIGNED:
             case MEDIUMINT:
@@ -150,7 +150,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 } else if (value instanceof ZonedDateTime) {
                     timeText = _TimeUtils.format(((ZonedDateTime) value).toOffsetDateTime(), typeMeta);
                 } else {
-                    throw _Exceptions.outRangeOfSqlType(MySQLTypes.DATETIME, value);
+                    throw _Exceptions.outRangeOfSqlType(MySQLType.DATETIME, value);
                 }
                 sqlBuilder.append(" TIMESTAMP")
                         .append(_Constant.QUOTE)
@@ -242,7 +242,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
             case GEOMETRY://TODO
                 throw _Exceptions.outRangeOfSqlType(type, typeMeta.mappingType());
             default:
-                throw _Exceptions.unexpectedEnum((MySQLTypes) type);
+                throw _Exceptions.unexpectedEnum((MySQLType) type);
         }
 
     }

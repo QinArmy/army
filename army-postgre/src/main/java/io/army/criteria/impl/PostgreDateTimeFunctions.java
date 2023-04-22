@@ -293,7 +293,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
         final String name = "EXTRACT";
         if (!(field instanceof PostgreWords.WordExtractTimeField)) {
             throw CriteriaUtils.funcArgError(name, from);
-        } else if (from != Functions.FROM) {
+        } else if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
         }
         return FunctionUtils.complexArgFunc(name, BigDecimalType.INSTANCE, field, from, timestampOrInterval);

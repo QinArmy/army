@@ -115,7 +115,7 @@ abstract class Expressions {
                 || operand == SQLs.TRUE
                 || operand == SQLs.FALSE
                 || operand == SQLs.UNKNOWN
-                || operand instanceof BooleanTestWord)) {
+                || operand instanceof BooleanTestKeyWord)) {
             String m = String.format("unknown operand[%s]", operand);
             throw ContextStack.criteriaError(ContextStack.peek(), m);
         }

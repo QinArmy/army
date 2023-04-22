@@ -41,10 +41,10 @@ public final class MediumBlobType extends _ArmyInnerMapping {
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                type = MySQLTypes.MEDIUMBLOB;
+                type = MySQLType.MEDIUMBLOB;
                 break;
             case PostgreSQL:
-                type = PostgreTypes.BYTEA;
+                type = PgSqlType.BYTEA;
                 break;
             case Oracle:
                 type = OracleDataType.BLOB;

@@ -39,10 +39,10 @@ public final class BlobType extends _ArmyInnerMapping {
         final SqlType type;
         switch (meta.database()) {
             case MySQL:
-                type = MySQLTypes.BLOB;
+                type = MySQLType.BLOB;
                 break;
             case PostgreSQL:
-                type = PostgreTypes.BYTEA;
+                type = PgSqlType.BYTEA;
                 break;
             case Oracle:
                 type = OracleDataType.BLOB;

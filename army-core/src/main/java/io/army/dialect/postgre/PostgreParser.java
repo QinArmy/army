@@ -13,7 +13,7 @@ import io.army.meta.ParentTableMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
-import io.army.sqltype.PostgreTypes;
+import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
 import io.army.util._Exceptions;
@@ -87,7 +87,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
     @Override
     protected final void bindLiteral(final TypeMeta typeMeta, final SqlType type, final Object value,
                                      final StringBuilder sqlBuilder) {
-        switch ((PostgreTypes) type) {
+        switch ((PgSqlType) type) {
             case BOOLEAN: {
                 if (!(value instanceof Boolean)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -135,26 +135,31 @@ abstract class PostgreParser extends _ArmyDialectParser {
                         .append("::REAL");
             }
             break;
-            case TIME:
-                _Literals.bindLocalTime(typeMeta, type, value, sqlBuilder)
-                        .append("::TIME WITHOUT TIME ZONE");
-                break;
-            case DATE:
-                _Literals.bindLocalDate(typeMeta, type, value, sqlBuilder)
-                        .append("::DATE");
-                break;
-            case TIMETZ:
-                _Literals.bindOffsetTime(typeMeta, type, value, sqlBuilder)
-                        .append("::TIME WITH TIME ZONE");
-                break;
-            case TIMESTAMP:
-                _Literals.bindLocalDateTime(typeMeta, type, value, sqlBuilder)
-                        .append("::TIMESTAMP WITHOUT TIME ZONE");
-                break;
-            case TIMESTAMPTZ:
-                _Literals.bindOffsetDateTime(typeMeta, type, value, sqlBuilder)
-                        .append("::TIMESTAMP WITH TIME ZONE");
-                break;
+            case TIME: {
+                sqlBuilder.append("TIME ");
+                _Literals.bindLocalTime(typeMeta, type, value, sqlBuilder);
+            }
+            break;
+            case DATE: {
+                sqlBuilder.append("DATE ");
+                _Literals.bindLocalDate(typeMeta, type, value, sqlBuilder);
+            }
+            break;
+            case TIMETZ: {
+                sqlBuilder.append("TIMETZ ");
+                _Literals.bindOffsetTime(typeMeta, type, value, sqlBuilder);
+            }
+            break;
+            case TIMESTAMP: {
+                sqlBuilder.append("TIMESTAMP ");
+                _Literals.bindLocalDateTime(typeMeta, type, value, sqlBuilder);
+            }
+            break;
+            case TIMESTAMPTZ: {
+                sqlBuilder.append("TIMESTAMPTZ ");
+                _Literals.bindOffsetDateTime(typeMeta, type, value, sqlBuilder);
+            }
+            break;
             case SMALLINT: {
                 if (!(value instanceof Short)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -163,18 +168,21 @@ abstract class PostgreParser extends _ArmyDialectParser {
                         .append("::SMALLINT");
             }
             break;
-            case CHAR:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::CHAR");
-                break;
-            case VARCHAR:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::VARCHAR");
-                break;
-            case TEXT:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::TEXT");
-                break;
+            case CHAR: {
+                sqlBuilder.append("CHAR "); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+            }
+            break;
+            case VARCHAR: {
+                sqlBuilder.append("VARCHAR "); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+            }
+            break;
+            case TEXT: {
+                sqlBuilder.append("TEXT "); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+            }
+            break;
             case JSON:
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
                         .append("::JSON");
@@ -202,10 +210,11 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
                         .append("::JSONB");
                 break;
-            case XML:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::XML");
-                break;
+            case XML: {
+                sqlBuilder.append("XML "); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+            }
+            break;
             // Geometric Types
             case POINT:
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
@@ -316,6 +325,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case PATH_ARRAY:
             case REAL_ARRAY:
             case TEXT_ARRAY:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
+                        .append("::TEXT[][]");
+                break;
             case TIME_ARRAY:
             case UUID_ARRAY:
             case BYTEA_ARRAY:
@@ -351,7 +363,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
                 break;
             default:
-                throw _Exceptions.unexpectedEnum((PostgreTypes) type);
+                throw _Exceptions.unexpectedEnum((PgSqlType) type);
 
         }// switch
 

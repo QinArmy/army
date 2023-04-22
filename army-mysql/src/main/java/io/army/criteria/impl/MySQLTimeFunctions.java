@@ -8,7 +8,7 @@ import io.army.criteria.mysql.MySQLTimeFormat;
 import io.army.criteria.mysql.MySQLTimeUnit;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
-import io.army.sqltype.MySQLTypes;
+import io.army.sqltype.MySQLType;
 import io.army.util._Exceptions;
 
 import java.util.Objects;
@@ -339,7 +339,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      */
     public static SimpleExpression extract(final MySQLTimeUnit unit, final WordFrom from, final Expression date) {
         final String name = "EXTRACT";
-        if (from != Functions.FROM) {
+        if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
         } else if (!(date instanceof ArmyExpression)) {
             throw CriteriaUtils.funcArgError(name, date);
@@ -430,15 +430,15 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      *
      * @param type   non-null,should be below:
      *               <ul>
-     *                      <li>{@link MySQLTypes#TIME}</li>
-     *                      <li>{@link MySQLTypes#DATE}</li>
-     *                      <li>{@link MySQLTypes#DATETIME}</li>
+     *                      <li>{@link MySQLType#TIME}</li>
+     *                      <li>{@link MySQLType#DATE}</li>
+     *                      <li>{@link MySQLType#DATETIME}</li>
      *               </ul>
      * @param format nullable
      * @throws CriteriaException throw when 1.type error;2.invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_get-format">GET_FORMAT({DATE|TIME|DATETIME}, {'EUR'|'USA'|'JIS'|'ISO'|'INTERNAL'})</a>
      */
-    public static SimpleExpression getFormat(final MySQLTypes type, final MySQLTimeFormat format) {
+    public static SimpleExpression getFormat(final MySQLType type, final MySQLTimeFormat format) {
         final String name = "GET_FORMAT";
         switch (type) {
             case TIME:

@@ -46,19 +46,11 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
     }
 
-    public interface WordPath extends SQLWords {
-
-    }
-
     public interface WordNested extends SQLWords {
 
     }
 
     public interface WordExistsPath extends SQLWords {
-
-    }
-
-    public interface WordsForOrdinality extends SQLWords {
 
     }
 
@@ -170,29 +162,6 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
     }//KeyWordUsing
 
-    private enum KeyWordPath implements WordPath {
-
-        PATH(" PATH");
-
-        private final String spaceWord;
-
-        KeyWordPath(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//KeyWordPath
-
     private enum KeyWordNested implements WordNested {
 
         NESTED(" NESTED");
@@ -239,30 +208,6 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
 
     }//KeyWordExistsPath
-
-
-    private enum KeyWordsForOrdinality implements WordsForOrdinality {
-
-        FOR_ORDINALITY(" FOR ORDINALITY");
-
-        private final String spaceWord;
-
-        KeyWordsForOrdinality(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordsToString(this);
-        }
-
-    }//KeyWordsForOrdinality
 
 
     private enum KeyWordsAtTimeZone implements WordsAtTimeZone {
@@ -364,12 +309,12 @@ abstract class MySQLSyntax extends MySQLFunctions {
     public static final WordUsing USING = KeyWordUsing.USING;
 
 
-    public static final WordPath PATH = KeyWordPath.PATH;
+    public static final WordPath PATH = SqlWords.KeyWordPath.PATH;
 
     public static final WordExistsPath EXISTS_PATH = KeyWordExistsPath.EXISTS_PATH;
 
 
-    public static final WordsForOrdinality FOR_ORDINALITY = KeyWordsForOrdinality.FOR_ORDINALITY;
+    public static final WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
 
     // public static final WordNested NESTED = KeyWordNested.NESTED;
 
