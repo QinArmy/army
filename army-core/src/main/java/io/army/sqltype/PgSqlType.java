@@ -51,7 +51,7 @@ public enum PgSqlType implements SqlType {
     UUID,
     XML,
     POINT,
-    CIRCLES,
+    CIRCLE,
     @Deprecated
     LINE_SEGMENT,
     PATH,

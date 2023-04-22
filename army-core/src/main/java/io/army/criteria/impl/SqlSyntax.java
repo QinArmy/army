@@ -39,7 +39,7 @@ abstract class SqlSyntax {
 
     }
 
-    public interface NullOption extends SQLWords {
+    public interface NullOption {
 
     }
 

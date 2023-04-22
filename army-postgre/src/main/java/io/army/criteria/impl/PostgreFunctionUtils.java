@@ -6,15 +6,16 @@ import io.army.dialect._Constant;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.IntegerType;
-import io.army.mapping.MappingType;
-import io.army.mapping.TextType;
-import io.army.mapping.XmlType;
+import io.army.mapping.*;
+import io.army.mapping.postgre.*;
+import io.army.mapping.spatial.postgre.*;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.PgSqlType;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -38,11 +39,182 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         return new XmlNamedElementPart<>(true, PostgreFunctionUtils::onXmlForestEnd);
     }
 
+    static XmlTableColumnsClause xmlTableColumnsClause() {
+        return new XmlTableColumnsClause();
+    }
+
 
     private static SimpleExpression onXmlForestEnd(ArmyFuncClause clause) {
         assert clause instanceof XmlNamedElementPart;
         return FunctionUtils.clauseFunc("XMLFOREST", clause, XmlType.TEXT_INSTANCE);
     }
+
+    private static MappingType map(final PgSqlType sqlType) {
+        final MappingType type;
+        switch (sqlType) {
+            case BOOLEAN:
+                type = BooleanType.INSTANCE;
+                break;
+            case SMALLINT:
+                type = ShortType.INSTANCE;
+                break;
+            case INTEGER:
+                type = IntegerType.INSTANCE;
+                break;
+            case BIGINT:
+                type = LongType.INSTANCE;
+                break;
+            case DECIMAL:
+                type = BigDecimalType.INSTANCE;
+                break;
+            case DOUBLE:
+                type = DoubleType.INSTANCE;
+                break;
+            case REAL:
+                type = FloatType.INSTANCE;
+                break;
+            case TIME:
+                type = LocalTimeType.INSTANCE;
+                break;
+            case DATE:
+                type = LocalDateType.INSTANCE;
+                break;
+            case TIMESTAMP:
+                type = LocalDateTimeType.INSTANCE;
+                break;
+            case TIMETZ:
+                type = OffsetTimeType.INSTANCE;
+                break;
+            case TIMESTAMPTZ:
+                type = OffsetDateTimeType.INSTANCE;
+                break;
+            case CHAR:
+            case VARCHAR:
+                type = StringType.INSTANCE;
+                break;
+            case TEXT:
+                type = TextType.INSTANCE;
+                break;
+            case JSON:
+                type = JsonType.TEXT_INSTANCE;
+                break;
+            case JSONB:
+                type = JsonbType.TEXT_INSTANCE;
+                break;
+            case BYTEA:
+                type = PrimitiveByteArrayType.INSTANCE;
+                break;
+            case BIT:
+            case VARBIT:
+                type = BitSetType.INSTANCE;
+                break;
+            case XML:
+                type = XmlType.TEXT_INSTANCE;
+                break;
+            case CIDR:
+                type = PostgreCidrType.INSTANCE;
+                break;
+            case INET:
+                type = PostgreInetType.INSTANCE;
+                break;
+            case LINE:
+                type = PostgreLineType.INSTANCE;
+                break;
+            case PATH:
+                type = PostgrePathType.INSTANCE;
+                break;
+            case UUID:
+                type = UUIDType.INSTANCE;
+                break;
+            case MONEY: //TODO consider Currency
+                type = BigDecimalType.INSTANCE;
+                break;
+            case MACADDR8:
+                type = PostgreMacAddr8Type.INSTANCE;
+                break;
+            case POINT:
+                type = PostgrePointType.INSTANCE;
+                break;
+            case BOX:
+                type = PostgreBoxType.INSTANCE;
+                break;
+            case POLYGON:
+                type = PostgrePolygonType.INSTANCE;
+                break;
+            case CIRCLE:
+                type = PostgreCircleType.INSTANCE;
+                break;
+            case TSQUERY:
+                type = PostgreTsQueryType.INSTANCE;
+                break;
+            case TSVECTOR:
+                type = PostgreTsVectorType.INSTANCE;
+                break;
+            case LSEG:
+                type = PostgreLsegType.INSTANCE;
+                break;
+            case TSRANGE:
+            case INTERVAL:
+            case NUMRANGE:
+            case DATERANGE:
+            case INT4RANGE:
+            case INT8RANGE:
+            case TSTZRANGE:
+            case MACADDR:
+            case BOX_ARRAY:
+            case OID_ARRAY:
+            case BIT_ARRAY:
+            case XML_ARRAY:
+            case CHAR_ARRAY:
+            case CIDR_ARRAY:
+            case DATE_ARRAY:
+            case INET_ARRAY:
+            case JSON_ARRAY:
+            case LINE_ARRAY:
+            case PATH_ARRAY:
+            case REAL_ARRAY:
+            case REF_CURSOR:
+            case TEXT_ARRAY:
+            case TIME_ARRAY:
+            case UUID_ARRAY:
+            case BYTEA_ARRAY:
+            case JSONB_ARRAY:
+            case MONEY_ARRAY:
+            case POINT_ARRAY:
+            case BIGINT_ARRAY:
+            case DOUBLE_ARRAY:
+            case TIMETZ_ARRAY:
+            case VARBIT_ARRAY:
+            case BOOLEAN_ARRAY:
+            case CIRCLES_ARRAY:
+            case DECIMAL_ARRAY:
+            case INTEGER_ARRAY:
+            case MACADDR_ARRAY:
+            case POLYGON_ARRAY:
+            case TSQUERY_ARRAY:
+            case TSRANGE_ARRAY:
+            case VARCHAR_ARRAY:
+            case INTERVAL_ARRAY:
+            case MACADDR8_ARRAY:
+            case NUMRANGE_ARRAY:
+            case SMALLINT_ARRAY:
+            case TSVECTOR_ARRAY:
+            case DATERANGE_ARRAY:
+            case INT4RANGE_ARRAY:
+            case INT8RANGE_ARRAY:
+            case TIMESTAMP_ARRAY:
+            case TSTZRANGE_ARRAY:
+            case TIMESTAMPTZ_ARRAY:
+            case LINE_SEGMENT_ARRAY:
+            default:
+                // TODO
+                throw _Exceptions.unexpectedEnum(sqlType);
+        }
+        return type;
+    }
+
+
+    /*-------------------below inner class  -------------------*/
 
 
     static final class XmlNamedElementPart<R extends Item> implements ArmyFuncClause,
@@ -219,7 +391,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }//XmlNameSpaces
 
 
-    private static final class XmlTableColumnsClause implements Postgres._XmlTableColumnsClause,
+    static final class XmlTableColumnsClause implements Postgres._XmlTableColumnsClause,
             Postgres.XmlTableCommaClause,
             ArmyFuncClause {
 
@@ -227,7 +399,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         private final CriteriaContext outerContext;
 
-        private List<XmlTableColumn> columnList = _Collections.arrayList();
+        private List<Selection> columnList = _Collections.arrayList();
 
         private Map<String, Selection> selectionMap = _Collections.hashMap();
 
@@ -437,6 +609,35 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                     wordDefault, defaultExp);
         }
 
+        /**
+         * @return a unmodified list
+         */
+        List<Selection> endColumnsClause() {
+            List<Selection> columnList = this.columnList;
+            final Map<String, Selection> selectionMap = this.selectionMap;
+            if (!(columnList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.outerContext);
+            } else if (columnList.size() == 0) {
+                throw ContextStack.criteriaError(this.outerContext, "You don't add any column.");
+            }
+            columnList = _Collections.unmodifiableList(columnList);
+            this.columnList = columnList;
+            this.selectionMap = _Collections.unmodifiableMap(selectionMap);
+            return columnList;
+        }
+
+        /**
+         * @return a unmodified map
+         */
+        Map<String, Selection> getSelectionMap() {
+            final Map<String, Selection> selectionMap = this.selectionMap;
+            if (selectionMap == null || selectionMap instanceof HashMap) {
+                // no bug,never here
+                throw new IllegalStateException();
+            }
+            return selectionMap;
+        }
+
 
         private Postgres.XmlTableCommaClause onAdd(
                 final @Nullable String name, @Nullable final PgSqlType type, final Functions.WordPath path,
@@ -461,12 +662,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 throw CriteriaUtils.funcArgError(XMLTABLE, nullOption);
             }
 
-            return this.onAddColumn(new XmlTableDataColumn(name, null, columnExp, defaultExp, nullOption));
+            return this.onAddColumn(new XmlTableDataColumn(name, map(type), columnExp, defaultExp, nullOption));
         }
 
 
         private Postgres.XmlTableCommaClause onAddColumn(final XmlTableColumn column) {
-            final List<XmlTableColumn> columnList = this.columnList;
+            final List<Selection> columnList = this.columnList;
             final Map<String, Selection> selectionMap = this.selectionMap;
             if (!(columnList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
@@ -559,7 +760,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
             final ArmyExpression columnExp = this.columnExp, defaultExp = this.defaultExp;
             if (columnExp != null) {
-                sqlBuilder.append(Postgres.PATH.spaceRender());
+                sqlBuilder.append(((SQLWords) Postgres.PATH).spaceRender());
                 columnExp.appendSql(context);
             }
 
@@ -570,7 +771,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
             final SqlSyntax.NullOption nullOption = this.nullOption;
             if (nullOption != null) {
-                sqlBuilder.append(nullOption.spaceRender());
+                sqlBuilder.append(((SQLWords) nullOption).spaceRender());
             }
 
         }
@@ -591,7 +792,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                     .append(_Constant.SPACE);
 
             context.parser().identifier(this.name, sqlBuilder)
-                    .append(Postgres.FOR_ORDINALITY.spaceRender());
+                    .append(((SQLWords) Postgres.FOR_ORDINALITY).spaceRender());
 
         }
 

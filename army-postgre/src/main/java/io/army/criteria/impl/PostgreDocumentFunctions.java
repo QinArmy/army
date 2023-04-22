@@ -9,6 +9,7 @@ import io.army.mapping.optional.TextArrayType;
 import io.army.mapping.optional.XmlArrayType;
 import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.postgre.PostgreTsVectorType;
+import io.army.sqltype.PgSqlType;
 import io.army.util._Collections;
 
 import java.util.List;
@@ -1509,11 +1510,63 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         return clause.endNamedPart();
     }
 
+    public static _TabularFunction xmlTable(Expression rowExp, WordPassing passing, Expression docExp,
+                                            Consumer<Postgres._XmlTableColumnsClause> consumer) {
+        return _xmlTable(null, rowExp, passing, null, docExp, null, consumer);
+    }
+
+    public static _TabularFunction xmlTable(XmlNameSpaces nameSpaces, Expression rowExp, WordPassing passing,
+                                            Expression docExp, Consumer<Postgres._XmlTableColumnsClause> consumer) {
+        ContextStack.assertNonNull(nameSpaces);
+        return _xmlTable(nameSpaces, rowExp, passing, null, docExp, null, consumer);
+    }
+
+    public static _TabularFunction xmlTable(Expression rowExp, WordPassing passing, PassingOption rowOption,
+                                            Expression docExp, Consumer<Postgres._XmlTableColumnsClause> consumer) {
+        ContextStack.assertNonNull(rowOption);
+        return _xmlTable(null, rowExp, passing, rowOption, docExp, null, consumer);
+    }
+
+
+    public static _TabularFunction xmlTable(Expression rowExp, WordPassing passing, Expression docExp,
+                                            PassingOption docOption,
+                                            Consumer<Postgres._XmlTableColumnsClause> consumer) {
+        ContextStack.assertNonNull(docOption);
+        return _xmlTable(null, rowExp, passing, null, docExp, docOption, consumer);
+    }
+
+
+    public static _TabularFunction xmlTable(XmlNameSpaces nameSpaces, Expression rowExp, WordPassing passing,
+                                            PassingOption rowOption, Expression docExp,
+                                            Consumer<Postgres._XmlTableColumnsClause> consumer) {
+        ContextStack.assertNonNull(nameSpaces);
+        ContextStack.assertNonNull(rowOption);
+        return _xmlTable(nameSpaces, rowExp, passing, rowOption, docExp, null, consumer);
+    }
+
+    public static _TabularFunction xmlTable(XmlNameSpaces nameSpaces, Expression rowExp, WordPassing passing,
+                                            Expression docExp, PassingOption docOption,
+                                            Consumer<Postgres._XmlTableColumnsClause> consumer) {
+        ContextStack.assertNonNull(nameSpaces);
+        ContextStack.assertNonNull(docOption);
+        return _xmlTable(nameSpaces, rowExp, passing, null, docExp, docOption, consumer);
+    }
+
+    public static _TabularFunction xmlTable(Expression rowExp, WordPassing passing, PassingOption rowOption,
+                                            Expression docExp, PassingOption docOption,
+                                            Consumer<Postgres._XmlTableColumnsClause> consumer) {
+        ContextStack.assertNonNull(rowOption);
+        ContextStack.assertNonNull(docOption);
+        return _xmlTable(null, rowExp, passing, rowOption, docExp, docOption, consumer);
+    }
 
     public static _TabularFunction xmlTable(XmlNameSpaces nameSpaces, Expression rowExp, WordPassing passing,
                                             PassingOption rowOption, Expression docExp, PassingOption docOption,
-                                            Consumer<Postgres._XmlNamedElementClause> consumer) {
-        return null;
+                                            Consumer<Postgres._XmlTableColumnsClause> consumer) {
+        ContextStack.assertNonNull(nameSpaces);
+        ContextStack.assertNonNull(rowOption);
+        ContextStack.assertNonNull(docOption);
+        return _xmlTable(nameSpaces, rowExp, passing, rowOption, docExp, docOption, consumer);
     }
 
 
@@ -1654,6 +1707,80 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
             func = FunctionUtils.complexArgPredicateFrom(name, text, passing, xml);
         }
         return func;
+    }
+
+    /**
+     * <pre><br/>
+     *     XMLTABLE (
+     *     [ XMLNAMESPACES ( namespace_uri AS namespace_name [, ...] ), ]
+     *     row_expression PASSING [BY {REF|VALUE}] document_expression [BY {REF|VALUE}]
+     *     COLUMNS name { type [PATH column_expression] [DEFAULT default_expression] [NOT NULL | NULL]
+     *                   | FOR ORDINALITY }
+     *             [, ...]
+     * ) → setof record
+     * </pre>
+     * <p>  column types:
+     *     <ul>
+     *         <li>{@link PgSqlType#BOOLEAN} → {@link BooleanType}</li>
+     *         <li>{@link PgSqlType#SMALLINT} → {@link ShortType}</li>
+     *     </ul>
+     * </p>
+     *
+     * @see #xmlTable(Expression, WordPassing, Expression, Consumer)
+     * @see #xmlTable(Expression, WordPassing, PassingOption, Expression, Consumer)
+     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, Consumer)
+     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, Expression, PassingOption, Consumer)
+     * @see #xmlTable(Expression, WordPassing, Expression, PassingOption, Consumer)
+     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, Consumer)
+     * @see #xmlTable(XmlNameSpaces, Expression, WordPassing, PassingOption, Expression, PassingOption, Consumer)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLTABLE</a>
+     */
+    private static _TabularFunction _xmlTable(final @Nullable XmlNameSpaces nameSpaces, final Expression rowExp,
+                                              final WordPassing passing, final @Nullable PassingOption rowOption,
+                                              final Expression docExp, final @Nullable PassingOption docOption,
+                                              final @Nullable Consumer<Postgres._XmlTableColumnsClause> consumer) {
+
+        final String name = PostgreFunctionUtils.XmlTableColumnsClause.XMLTABLE;
+
+        if (!(nameSpaces == null || nameSpaces instanceof PostgreFunctionUtils.XmlNameSpaces)) {
+            throw CriteriaUtils.funcArgError(name, nameSpaces);
+        } else if (!(rowExp instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, rowExp);
+        } else if (passing != Postgres.PASSING) {
+            throw CriteriaUtils.funcArgError(name, passing);
+        } else if (!(rowOption == null || rowOption == Postgres.BY_REF || rowOption == Postgres.BY_VALUE)) {
+            throw CriteriaUtils.funcArgError(name, rowOption);
+        } else if (!(docExp instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, docExp);
+        } else if (!(docOption == null || docOption == Postgres.BY_REF || docOption == Postgres.BY_VALUE)) {
+            throw CriteriaUtils.funcArgError(name, docOption);
+        } else if (consumer == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+
+        final PostgreFunctionUtils.XmlTableColumnsClause columnsClause;
+        columnsClause = PostgreFunctionUtils.xmlTableColumnsClause();
+        consumer.accept(columnsClause);
+
+        final List<Selection> selectionList;
+        selectionList = columnsClause.endColumnsClause();
+
+        final List<Object> argList = _Collections.arrayList(8);
+        if (nameSpaces != null) {
+            argList.add(nameSpaces);
+            argList.add(FuncWord.COMMA);
+        }
+        argList.add(rowExp);
+        argList.add(passing);
+        if (rowOption != null) {
+            argList.add(rowOption);
+        }
+        argList.add(docExp);
+        if (docOption != null) {
+            argList.add(docOption);
+        }
+        argList.add(columnsClause);
+        return PostgreFunctionUtils.compositeTabularFunc(name, argList, selectionList, columnsClause.getSelectionMap());
     }
 
 

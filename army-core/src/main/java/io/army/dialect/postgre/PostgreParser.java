@@ -240,7 +240,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
                         .append("::POLYGON");
                 break;
-            case CIRCLES:
+            case CIRCLE:
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
                         .append("::CIRCLES");
                 break;

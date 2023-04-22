@@ -91,11 +91,11 @@ abstract class Functions extends SqlSyntax {
     }
 
 
-    public interface WordPath extends SQLWords {
+    public interface WordPath {
 
     }
 
-    public interface WordsForOrdinality extends SQLWords {
+    public interface WordsForOrdinality {
 
     }
 

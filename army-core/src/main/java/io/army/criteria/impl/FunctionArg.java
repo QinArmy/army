@@ -21,7 +21,6 @@ interface FunctionArg extends ArmyExpression {
      * This interface is base interface of below:
      *     <ul>
      *         <li>{@link OperationExpression}</li>
-     *         <li>{@link SQLs#DEFAULT}</li>
      *         <li>{@link SQLs#_ASTERISK_EXP}</li>
      *     </ul>
      * </p>

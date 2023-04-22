@@ -17,7 +17,12 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
     static Functions._TabularFunction compositeTabularFunc(String name, List<?> argList, List<Selection> selectionList) {
-        return new CompositeTabularFunction(name, argList, selectionList);
+        return new CompositeTabularFunction(name, argList, selectionList, null);
+    }
+
+    static Functions._TabularFunction compositeTabularFunc(String name, List<?> argList, List<Selection> selectionList,
+                                                           Map<String, Selection> selectionMap) {
+        return new CompositeTabularFunction(name, argList, selectionList, selectionMap);
     }
 
     /**
@@ -36,10 +41,13 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         private Map<String, Selection> selectionMap;
 
-        private CompositeTabularFunction(String name, List<?> argList, List<Selection> selectionList) {
+        private CompositeTabularFunction(String name, List<?> argList, List<Selection> selectionList,
+                                         @Nullable Map<String, Selection> selectionMap) {
+            assert selectionMap == null || selectionMap.size() == selectionList.size();
             this.name = name;
             this.argList = argList;
             this.selectionList = selectionList;
+            this.selectionMap = selectionMap;
         }
 
         @Override
