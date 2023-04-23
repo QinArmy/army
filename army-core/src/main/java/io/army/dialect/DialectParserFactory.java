@@ -18,7 +18,7 @@ public abstract class DialectParserFactory {
 
     public static DialectParser createDialect(DialectEnv environment) {
         final Database database;
-        database = environment.mappingEnv().serverMeta().database();
+        database = environment.mappingEnv().serverMeta().dialectDatabase();
         final DialectParser parser;
         switch (database) {
             case MySQL:
@@ -76,7 +76,7 @@ public abstract class DialectParserFactory {
 
     protected static Dialect targetDialect(final DialectEnv environment, final Database database) {
         final ServerMeta meta = environment.mappingEnv().serverMeta();
-        if (meta.database() != database) {
+        if (meta.dialectDatabase() != database) {
             String m = String.format("%s database isn't %s", meta, database);
             throw new IllegalArgumentException(m);
         }

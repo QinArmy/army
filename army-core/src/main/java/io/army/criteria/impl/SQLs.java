@@ -672,7 +672,7 @@ public abstract class SQLs extends SQLsSyntax {
         @Override
         public SqlType map(final ServerMeta meta) {
             final SqlType sqlType;
-            switch (meta.database()) {
+            switch (meta.dialectDatabase()) {
                 case MySQL:
                     sqlType = MySQLType.NULL;
                     break;

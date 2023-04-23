@@ -74,7 +74,7 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
 
     static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.DATE;
                 break;

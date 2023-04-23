@@ -53,7 +53,7 @@ public final class StringArrayType extends _ArmyInnerMapping {
 
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        if (meta.database() != Database.PostgreSQL) {
+        if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return PgSqlType.VARCHAR_ARRAY;

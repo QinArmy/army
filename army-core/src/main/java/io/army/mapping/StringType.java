@@ -101,7 +101,7 @@ public final class StringType extends _ArmyInnerMapping implements MappingType.S
 
     static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.VARCHAR;
                 break;

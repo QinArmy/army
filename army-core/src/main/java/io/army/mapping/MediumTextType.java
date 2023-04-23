@@ -71,7 +71,7 @@ public final class MediumTextType extends _ArmyInnerMapping implements MappingTy
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         final SqlType type;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.MEDIUMTEXT;
                 break;

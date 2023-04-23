@@ -915,5 +915,15 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new MetaException(m);
     }
 
+    public static MetaException mapMethodError(MappingType type, Class<? extends SqlType> sqlType) {
+        String m = String.format("%s map(%s) don't return %s", type, ServerMeta.class.getName(), sqlType.getName());
+        return new MetaException(m);
+    }
+
+    public static MetaException javaTypeMethodNotArray(MappingType type) {
+        String m = String.format("%s javaType() don't return array type or List", type);
+        return new MetaException(m);
+    }
+
 
 }

@@ -58,7 +58,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         final SqlType sqlType;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.BOOLEAN;
                 break;

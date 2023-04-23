@@ -421,6 +421,10 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
 
     }
 
+    public interface SqlArrayType {
+
+    }
+
     public interface SqlGeometryType {
 
     }
@@ -476,6 +480,7 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
     public interface SqlMultiPolygonType extends SqlMultiSurfaceType {
 
     }
+
 
 
 

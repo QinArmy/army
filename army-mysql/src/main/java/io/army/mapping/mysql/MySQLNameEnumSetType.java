@@ -50,7 +50,7 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
 
     @Override
     public SqlType map(final ServerMeta meta) {
-        if (meta.database() != Database.MySQL) {
+        if (meta.dialectDatabase() != Database.MySQL) {
             throw noMappingError(meta);
         }
         return MySQLType.SET;

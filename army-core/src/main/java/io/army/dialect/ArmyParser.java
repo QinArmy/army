@@ -114,7 +114,7 @@ abstract class ArmyParser implements DialectParser {
 
         this.mockEnv = this.dialectEnv instanceof _MockDialects;
 
-        assert this.serverMeta.database().isCompatible(this.dialect);
+        assert this.serverMeta.dialectDatabase().isCompatible(this.dialect);
         this.keyWordMap = _DialectUtils.createKeyWordMap(this.createKeyWordSet());
 
         this.childUpdateMode = this.childUpdateMode();
@@ -314,6 +314,11 @@ abstract class ArmyParser implements DialectParser {
     @Override
     public final boolean isKeyWords(final String words) {
         return this.keyWordSet.contains(words.toUpperCase(Locale.ROOT));
+    }
+
+    @Override
+    public final ServerMeta serverMeta() {
+        return this.serverMeta;
     }
 
     @Override

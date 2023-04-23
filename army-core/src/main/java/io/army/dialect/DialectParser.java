@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
+import io.army.meta.ServerMeta;
 import io.army.schema._SchemaResult;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
@@ -55,6 +56,8 @@ public interface DialectParser {
 
 
     boolean isKeyWords(String words);
+
+    ServerMeta serverMeta();
 
     default StringBuilder identifier(String identifier, StringBuilder builder) {
         throw new UnsupportedOperationException();

@@ -42,7 +42,7 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.TINYINT_UNSIGNED;
                 break;

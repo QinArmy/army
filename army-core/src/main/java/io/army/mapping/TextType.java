@@ -71,7 +71,7 @@ public final class TextType extends _ArmyInnerMapping implements MappingType.Sql
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         final SqlType type;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.TEXT;
                 break;

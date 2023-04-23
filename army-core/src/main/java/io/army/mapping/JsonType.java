@@ -40,7 +40,7 @@ public final class JsonType extends _ArmyInnerMapping implements MappingType.Sql
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType sqlDataType;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlDataType = MySQLType.JSON;
                 break;

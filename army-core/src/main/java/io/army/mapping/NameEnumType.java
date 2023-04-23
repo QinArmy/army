@@ -106,7 +106,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
 
     static SqlType mapToSqlEnumType(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.ENUM;
                 break;

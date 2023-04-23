@@ -13,7 +13,7 @@ public interface _SchemaComparer {
 
     static _SchemaComparer create(final ServerMeta serverMeta) {
         final _SchemaComparer comparer;
-        switch (serverMeta.database()) {
+        switch (serverMeta.dialectDatabase()) {
             case MySQL:
                 comparer = MySQLComparer.create(serverMeta);
                 break;
@@ -22,7 +22,7 @@ public interface _SchemaComparer {
             case H2:
 
             default:
-                throw _Exceptions.unexpectedEnum(serverMeta.database());
+                throw _Exceptions.unexpectedEnum(serverMeta.dialectDatabase());
         }
         return comparer;
     }

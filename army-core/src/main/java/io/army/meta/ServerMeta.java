@@ -8,7 +8,14 @@ public interface ServerMeta {
 
     String name();
 
-    Database database();
+    /**
+     * <p>
+     * This method is equivalent to {@link Dialect#database()} of {@link #usedDialect()}
+     * </p>
+     */
+    Database dialectDatabase();
+
+    Database underlyingDatabase();
 
     @Nullable
     String catalog();

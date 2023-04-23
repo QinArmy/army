@@ -165,5 +165,17 @@ public abstract class _ArrayUtils {
 
     }
 
+    public static int dimensionOf(final Class<?> arrayType) {
+        assert arrayType.isArray();
+        int dimension = 1;
+        Class<?> componentType;
+        componentType = arrayType.getComponentType();
+        while (componentType.isArray()) {
+            componentType = componentType.getComponentType();
+            dimension++;
+        }
+        return dimension;
+    }
+
 
 }

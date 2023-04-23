@@ -39,7 +39,7 @@ public final class MediumBlobType extends _ArmyInnerMapping {
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.MEDIUMBLOB;
                 break;

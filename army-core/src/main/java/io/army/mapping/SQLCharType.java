@@ -29,7 +29,7 @@ public final class SQLCharType extends MappingType {
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.CHAR;
                 break;

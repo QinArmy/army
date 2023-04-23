@@ -5,7 +5,6 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.*;
 import io.army.criteria.postgre.*;
 import io.army.mapping.MappingType;
-import io.army.sqltype.PgSqlType;
 
 import java.util.function.BiFunction;
 
@@ -154,62 +153,62 @@ public abstract class Postgres extends PostgreSyntax {
 
     public interface _XmlTableColumnsClause {
 
-        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+        XmlTableCommaClause columns(String name, MappingType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
 
-        XmlTableCommaClause columns(String name, PgSqlType type, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+        XmlTableCommaClause columns(String name, MappingType type, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
 
-        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, Expression columnExp, NullOption nullOption);
+        XmlTableCommaClause columns(String name, MappingType type, WordPath path, Expression columnExp, NullOption nullOption);
 
-        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp);
+        XmlTableCommaClause columns(String name, MappingType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp);
 
-        XmlTableCommaClause columns(String name, PgSqlType type, NullOption nullOption);
+        XmlTableCommaClause columns(String name, MappingType type, NullOption nullOption);
 
-        XmlTableCommaClause columns(String name, PgSqlType type, WordDefault wordDefault, Expression defaultExp);
+        XmlTableCommaClause columns(String name, MappingType type, WordDefault wordDefault, Expression defaultExp);
 
-        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, Expression columnExp);
+        XmlTableCommaClause columns(String name, MappingType type, WordPath path, Expression columnExp);
 
-        XmlTableCommaClause columns(String name, PgSqlType type);
+        XmlTableCommaClause columns(String name, MappingType type);
 
         XmlTableCommaClause columns(String name, WordsForOrdinality forOrdinality);
 
 
-        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+        XmlTableCommaClause columns(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
 
 
-        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, NullOption nullOption);
+        XmlTableCommaClause columns(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, NullOption nullOption);
 
-        XmlTableCommaClause columns(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp);
+        XmlTableCommaClause columns(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp);
 
 
     }
 
     public interface XmlTableCommaClause {
 
-        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+        XmlTableCommaClause comma(String name, MappingType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
 
-        XmlTableCommaClause comma(String name, PgSqlType type, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+        XmlTableCommaClause comma(String name, MappingType type, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
 
-        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, Expression columnExp, NullOption nullOption);
+        XmlTableCommaClause comma(String name, MappingType type, WordPath path, Expression columnExp, NullOption nullOption);
 
-        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp);
+        XmlTableCommaClause comma(String name, MappingType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp);
 
-        XmlTableCommaClause comma(String name, PgSqlType type, NullOption nullOption);
+        XmlTableCommaClause comma(String name, MappingType type, NullOption nullOption);
 
-        XmlTableCommaClause comma(String name, PgSqlType type, WordDefault wordDefault, Expression defaultExp);
+        XmlTableCommaClause comma(String name, MappingType type, WordDefault wordDefault, Expression defaultExp);
 
-        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, Expression columnExp);
+        XmlTableCommaClause comma(String name, MappingType type, WordPath path, Expression columnExp);
 
-        XmlTableCommaClause comma(String name, PgSqlType type);
+        XmlTableCommaClause comma(String name, MappingType type);
 
         XmlTableCommaClause comma(String name, WordsForOrdinality forOrdinality);
 
 
-        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
+        XmlTableCommaClause comma(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
 
 
-        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, NullOption nullOption);
+        XmlTableCommaClause comma(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, NullOption nullOption);
 
-        XmlTableCommaClause comma(String name, PgSqlType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp);
+        XmlTableCommaClause comma(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp);
 
 
     }

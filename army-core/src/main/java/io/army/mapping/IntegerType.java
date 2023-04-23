@@ -129,7 +129,7 @@ public final class IntegerType extends _NumericType._IntegerType {
 
     static SqlType mapToInteger(final MappingType type, final ServerMeta meta) {
         final SqlType sqlType;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.INT;
                 break;

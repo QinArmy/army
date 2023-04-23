@@ -52,7 +52,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.TIME;
                 break;

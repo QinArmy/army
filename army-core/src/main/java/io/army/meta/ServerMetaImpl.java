@@ -18,6 +18,8 @@ final class ServerMetaImpl implements ServerMeta {
 
     private final Database database;
 
+    private final Database dialectDatabase;
+
     private final String catalogName;
 
     private final String schemaName;
@@ -56,6 +58,7 @@ final class ServerMetaImpl implements ServerMeta {
         } else if (!this.database.isCompatible(this.usedDialect)) {
             throw _Exceptions.databaseNotCompatible(this.usedDialect, this.database);
         }
+        this.dialectDatabase = this.usedDialect.database();
 
     }
 
@@ -65,7 +68,12 @@ final class ServerMetaImpl implements ServerMeta {
     }
 
     @Override
-    public Database database() {
+    public Database dialectDatabase() {
+        return this.dialectDatabase;
+    }
+
+    @Override
+    public Database underlyingDatabase() {
         return this.database;
     }
 
@@ -119,7 +127,7 @@ final class ServerMetaImpl implements ServerMeta {
         } else if (obj instanceof ServerMeta) {
             final ServerMeta o = (ServerMeta) obj;
             match = this.name.equals(o.name())
-                    && this.database == o.database()
+                    && this.database == o.dialectDatabase()
                     && Objects.equals(this.catalogName, o.catalog())
                     && Objects.equals(this.schemaName, o.schema())
                     && this.version.equals(o.version())

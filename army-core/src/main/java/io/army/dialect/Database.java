@@ -52,7 +52,7 @@ public enum Database {
 
     public static Dialect from(final ServerMeta meta) {
         final Dialect dialect;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 dialect = MySQLDialect.from(meta);
                 break;
@@ -66,7 +66,7 @@ public enum Database {
                 dialect = H2Dialect.from(meta);
                 break;
             default:
-                throw _Exceptions.unexpectedEnum(meta.database());
+                throw _Exceptions.unexpectedEnum(meta.dialectDatabase());
         }
         return dialect;
     }

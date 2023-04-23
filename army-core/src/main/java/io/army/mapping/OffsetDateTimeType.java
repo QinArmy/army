@@ -124,7 +124,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
 
     static SqlType mapToSqlType(final ServerMeta meta, final MappingType type) {
         final SqlType sqlType;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.DATETIME;
                 break;

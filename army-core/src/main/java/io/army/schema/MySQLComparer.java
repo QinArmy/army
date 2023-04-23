@@ -16,7 +16,7 @@ final class MySQLComparer extends AbstractSchemaComparer {
 
     private MySQLComparer(ServerMeta serverMeta) {
         super(serverMeta);
-        if (serverMeta.database() != Database.MySQL) {
+        if (serverMeta.dialectDatabase() != Database.MySQL) {
             throw new IllegalArgumentException("serverMeta error.");
         }
     }

@@ -6,11 +6,14 @@ import io.army.dialect._Constant;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.*;
-import io.army.mapping.postgre.*;
-import io.army.mapping.spatial.postgre.*;
+import io.army.mapping.IntegerType;
+import io.army.mapping.MappingType;
+import io.army.mapping.TextType;
+import io.army.mapping.XmlType;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.PgSqlType;
+import io.army.sqltype.SqlType;
+import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -49,110 +52,43 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         return FunctionUtils.clauseFunc("XMLFOREST", clause, XmlType.TEXT_INSTANCE);
     }
 
-    private static MappingType map(final PgSqlType sqlType) {
-        final MappingType type;
+    private static void mapTypeName(final PgSqlType sqlType, final MappingType type, final StringBuilder builder) {
         switch (sqlType) {
             case BOOLEAN:
-                type = BooleanType.INSTANCE;
-                break;
             case SMALLINT:
-                type = ShortType.INSTANCE;
-                break;
             case INTEGER:
-                type = IntegerType.INSTANCE;
-                break;
             case BIGINT:
-                type = LongType.INSTANCE;
-                break;
             case DECIMAL:
-                type = BigDecimalType.INSTANCE;
-                break;
             case DOUBLE:
-                type = DoubleType.INSTANCE;
-                break;
             case REAL:
-                type = FloatType.INSTANCE;
-                break;
             case TIME:
-                type = LocalTimeType.INSTANCE;
-                break;
             case DATE:
-                type = LocalDateType.INSTANCE;
-                break;
             case TIMESTAMP:
-                type = LocalDateTimeType.INSTANCE;
-                break;
             case TIMETZ:
-                type = OffsetTimeType.INSTANCE;
-                break;
             case TIMESTAMPTZ:
-                type = OffsetDateTimeType.INSTANCE;
-                break;
             case CHAR:
             case VARCHAR:
-                type = StringType.INSTANCE;
-                break;
             case TEXT:
-                type = TextType.INSTANCE;
-                break;
             case JSON:
-                type = JsonType.TEXT_INSTANCE;
-                break;
             case JSONB:
-                type = JsonbType.TEXT_INSTANCE;
-                break;
             case BYTEA:
-                type = PrimitiveByteArrayType.INSTANCE;
-                break;
             case BIT:
             case VARBIT:
-                type = BitSetType.INSTANCE;
-                break;
             case XML:
-                type = XmlType.TEXT_INSTANCE;
-                break;
             case CIDR:
-                type = PostgreCidrType.INSTANCE;
-                break;
             case INET:
-                type = PostgreInetType.INSTANCE;
-                break;
             case LINE:
-                type = PostgreLineType.INSTANCE;
-                break;
             case PATH:
-                type = PostgrePathType.INSTANCE;
-                break;
             case UUID:
-                type = UUIDType.INSTANCE;
-                break;
-            case MONEY: //TODO consider Currency
-                type = BigDecimalType.INSTANCE;
-                break;
+            case MONEY:
             case MACADDR8:
-                type = PostgreMacAddr8Type.INSTANCE;
-                break;
             case POINT:
-                type = PostgrePointType.INSTANCE;
-                break;
             case BOX:
-                type = PostgreBoxType.INSTANCE;
-                break;
             case POLYGON:
-                type = PostgrePolygonType.INSTANCE;
-                break;
             case CIRCLE:
-                type = PostgreCircleType.INSTANCE;
-                break;
             case TSQUERY:
-                type = PostgreTsQueryType.INSTANCE;
-                break;
             case TSVECTOR:
-                type = PostgreTsVectorType.INSTANCE;
-                break;
             case LSEG:
-                type = PostgreLsegType.INSTANCE;
-                break;
             case TSRANGE:
             case INTERVAL:
             case NUMRANGE:
@@ -161,6 +97,8 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             case INT8RANGE:
             case TSTZRANGE:
             case MACADDR:
+                builder.append(sqlType.name());
+                break;
             case BOX_ARRAY:
             case OID_ARRAY:
             case BIT_ARRAY:
@@ -205,12 +143,34 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             case TIMESTAMP_ARRAY:
             case TSTZRANGE_ARRAY:
             case TIMESTAMPTZ_ARRAY:
-            case LINE_SEGMENT_ARRAY:
+            case LSEG_ARRAY: {
+
+                final int dimension;
+                final Class<?> javaType;
+                javaType = type.javaType();
+                if (javaType == Object.class) {
+                    throw xmlTableObjectArrayError(null, type);
+                } else if (List.class.isAssignableFrom(javaType)) {
+                    dimension = 1;
+                } else if (javaType.isArray()) {
+                    dimension = _ArrayUtils.dimensionOf(javaType);
+                } else {
+                    throw _Exceptions.javaTypeMethodNotArray(type);
+                }
+                String name;
+                name = sqlType.name();
+                name = name.substring(0, name.indexOf("_ARRAY"));
+                builder.append(name);
+
+                for (int i = 0; i < dimension; i++) {
+                    builder.append("[]");
+                }
+            }
+            break;
             default:
-                // TODO
+                // no bug,never here
                 throw _Exceptions.unexpectedEnum(sqlType);
         }
-        return type;
     }
 
 
@@ -391,6 +351,19 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }//XmlNameSpaces
 
 
+    private static CriteriaException xmlTableObjectArrayError(@Nullable CriteriaContext context, MappingType type) {
+        String m = String.format("%s javaType() return %s,unsupported by %s",
+                type, Object.class.getName(), XmlTableColumnsClause.XMLTABLE);
+        final CriteriaException e;
+        if (context == null) {
+            e = ContextStack.clearStackAndCriteriaError(m);
+        } else {
+            e = ContextStack.criteriaError(context, m);
+        }
+        return e;
+    }
+
+
     static final class XmlTableColumnsClause implements Postgres._XmlTableColumnsClause,
             Postgres.XmlTableCommaClause,
             ArmyFuncClause {
@@ -399,7 +372,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         private final CriteriaContext outerContext;
 
-        private List<Selection> columnList = _Collections.arrayList();
+        private List<XmlTableColumn> columnList = _Collections.arrayList();
 
         private Map<String, Selection> selectionMap = _Collections.hashMap();
 
@@ -408,12 +381,29 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public void appendSql(_SqlContext context) {
+        public void appendSql(final _SqlContext context) {
+            final List<XmlTableColumn> columnList = this.columnList;
+            final int columnSize;
+            if (columnList == null || columnList instanceof ArrayList || (columnSize = columnList.size()) == 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            for (int i = 0; i < columnSize; i++) {
+                if (i == 0) {
+                    sqlBuilder.append(" COLUMNS");
+                } else {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                columnList.get(i).appendSql(context);
+            }
 
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
                                                     Expression columnExp, SqlSyntax.WordDefault wordDefault,
                                                     Expression defaultExp,
                                                     SqlSyntax.NullOption nullOption) {
@@ -421,43 +411,43 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type, SqlSyntax.WordDefault wordDefault,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SqlSyntax.WordDefault wordDefault,
                                                     Expression defaultExp, SqlSyntax.NullOption nullOption) {
             return this.comma(name, type, wordDefault, defaultExp, nullOption);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
                                                     Expression columnExp, SqlSyntax.NullOption nullOption) {
             return this.comma(name, type, path, columnExp, nullOption);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
                                                     Expression columnExp, SqlSyntax.WordDefault wordDefault,
                                                     Expression defaultExp) {
             return this.comma(name, type, path, columnExp, wordDefault, defaultExp);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type, SqlSyntax.NullOption nullOption) {
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SqlSyntax.NullOption nullOption) {
             return this.comma(name, type, nullOption);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type, SqlSyntax.WordDefault wordDefault,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SqlSyntax.WordDefault wordDefault,
                                                     Expression defaultExp) {
             return this.comma(name, type, wordDefault, defaultExp);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
                                                     Expression columnExp) {
             return this.comma(name, type, path, columnExp);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type) {
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type) {
             return this.comma(name, type);
         }
 
@@ -467,7 +457,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
                                                     BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                     String columnExp, SqlSyntax.WordDefault wordDefault,
                                                     Expression defaultExp, SqlSyntax.NullOption nullOption) {
@@ -475,14 +465,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
                                                     BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                     String columnExp, SqlSyntax.NullOption nullOption) {
             return this.comma(name, type, path, funcRefForColumnExp, columnExp, nullOption);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
                                                     BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                     String columnExp, SqlSyntax.WordDefault wordDefault,
                                                     Expression defaultExp) {
@@ -490,7 +480,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   @Nullable Expression columnExp, SqlSyntax.WordDefault wordDefault,
                                                   @Nullable Expression defaultExp,
                                                   @Nullable SqlSyntax.NullOption nullOption) {
@@ -505,7 +495,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type, SqlSyntax.WordDefault wordDefault,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SqlSyntax.WordDefault wordDefault,
                                                   @Nullable Expression defaultExp,
                                                   @Nullable SqlSyntax.NullOption nullOption) {
             if (defaultExp == null) {
@@ -517,7 +507,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   @Nullable Expression columnExp,
                                                   @Nullable SqlSyntax.NullOption nullOption) {
             if (columnExp == null) {
@@ -529,7 +519,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   @Nullable Expression columnExp, SqlSyntax.WordDefault wordDefault,
                                                   @Nullable Expression defaultExp) {
             if (columnExp == null) {
@@ -541,7 +531,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type,
                                                   @Nullable SqlSyntax.NullOption nullOption) {
             if (nullOption == null) {
                 throw ContextStack.nullPointer(this.outerContext);
@@ -550,7 +540,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type, SqlSyntax.WordDefault wordDefault,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SqlSyntax.WordDefault wordDefault,
                                                   @Nullable Expression defaultExp) {
             if (defaultExp == null) {
                 throw ContextStack.nullPointer(this.outerContext);
@@ -559,7 +549,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   @Nullable Expression columnExp) {
             if (columnExp == null) {
                 throw ContextStack.nullPointer(this.outerContext);
@@ -568,7 +558,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type) {
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type) {
             return this.onAdd(name, type, Postgres.PATH, null, SQLs.DEFAULT, null, null);
         }
 
@@ -585,7 +575,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                   String columnExp, SqlSyntax.WordDefault wordDefault,
                                                   Expression defaultExp, SqlSyntax.NullOption nullOption) {
@@ -594,14 +584,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                   String columnExp, SqlSyntax.NullOption nullOption) {
             return this.comma(name, type, path, funcRefForColumnExp.apply(TextType.INSTANCE, columnExp), nullOption);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, PgSqlType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                   String columnExp, SqlSyntax.WordDefault wordDefault,
                                                   Expression defaultExp) {
@@ -612,8 +602,8 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         /**
          * @return a unmodified list
          */
-        List<Selection> endColumnsClause() {
-            List<Selection> columnList = this.columnList;
+        List<XmlTableColumn> endColumnsClause() {
+            List<XmlTableColumn> columnList = this.columnList;
             final Map<String, Selection> selectionMap = this.selectionMap;
             if (!(columnList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
@@ -640,7 +630,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
         private Postgres.XmlTableCommaClause onAdd(
-                final @Nullable String name, @Nullable final PgSqlType type, final Functions.WordPath path,
+                final @Nullable String name, @Nullable final MappingType type, final Functions.WordPath path,
                 final @Nullable Expression columnExp, final SqlSyntax.WordDefault wordDefault,
                 final @Nullable Expression defaultExp, final @Nullable SqlSyntax.NullOption nullOption) {
 
@@ -661,13 +651,15 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             } else if (!(nullOption == null || nullOption == SQLs.NULL || nullOption == Postgres.NOT_NULL)) {
                 throw CriteriaUtils.funcArgError(XMLTABLE, nullOption);
             }
-
-            return this.onAddColumn(new XmlTableDataColumn(name, map(type), columnExp, defaultExp, nullOption));
+            if (type instanceof MappingType.SqlArrayType && type.javaType() == Object.class) {
+                throw xmlTableObjectArrayError(this.outerContext, type);
+            }
+            return this.onAddColumn(new XmlTableDataColumn(name, type, columnExp, defaultExp, nullOption));
         }
 
 
         private Postgres.XmlTableCommaClause onAddColumn(final XmlTableColumn column) {
-            final List<Selection> columnList = this.columnList;
+            final List<XmlTableColumn> columnList = this.columnList;
             final Map<String, Selection> selectionMap = this.selectionMap;
             if (!(columnList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
@@ -687,7 +679,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         final String name;
 
-        private final MappingType type;
+        final MappingType type;
 
 
         private XmlTableColumn(String name, MappingType type) {
@@ -752,15 +744,30 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         public void appendSql(final _SqlContext context) {
+            final DialectParser parser;
+            parser = context.parser();
+
+            final MappingType type = this.type;
+            final SqlType sqlType;
+            sqlType = type.map(parser.serverMeta());
+            if (!(sqlType instanceof PgSqlType)) {
+                throw _Exceptions.mapMethodError(type, PgSqlType.class);
+            }
+
+
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE);
 
-            context.parser().identifier(this.name, sqlBuilder);
+
+            parser.identifier(this.name, sqlBuilder)
+                    .append(_Constant.SPACE);
+
+            mapTypeName((PgSqlType) sqlType, type, sqlBuilder);
 
             final ArmyExpression columnExp = this.columnExp, defaultExp = this.defaultExp;
             if (columnExp != null) {
-                sqlBuilder.append(((SQLWords) Postgres.PATH).spaceRender());
+                sqlBuilder.append(Postgres.PATH.spaceRender());
                 columnExp.appendSql(context);
             }
 
@@ -792,7 +799,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                     .append(_Constant.SPACE);
 
             context.parser().identifier(this.name, sqlBuilder)
-                    .append(((SQLWords) Postgres.FOR_ORDINALITY).spaceRender());
+                    .append(Postgres.FOR_ORDINALITY.spaceRender());
 
         }
 

@@ -29,7 +29,7 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
             , final int methodFlag) {
         super(executorEnv, methodFlag);
         this.dataSource = dataSource;
-        this.executorFunction = localFunction(this.serverMeta.database());
+        this.executorFunction = localFunction(this.serverMeta.dialectDatabase());
 
 
     }

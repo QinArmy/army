@@ -49,7 +49,7 @@ public final class DoubleType extends _NumericType._FloatNumericType {
     @Override
     public SqlType map(ServerMeta meta) {
         final SqlType type;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.DOUBLE;
                 break;

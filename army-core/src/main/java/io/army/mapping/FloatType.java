@@ -48,7 +48,7 @@ public final class FloatType extends _NumericType._FloatNumericType {
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.FLOAT;
                 break;

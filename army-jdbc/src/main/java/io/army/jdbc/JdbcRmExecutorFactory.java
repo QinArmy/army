@@ -28,7 +28,7 @@ final class JdbcRmExecutorFactory extends JdbcExecutorFactory implements RmExecu
     private JdbcRmExecutorFactory(XADataSource dataSource, ExecutorEnv executorEnv, int methodFlag) {
         super(executorEnv, methodFlag);
         this.dataSource = dataSource;
-        this.executorFunction = rmFunction(this.serverMeta.database());
+        this.executorFunction = rmFunction(this.serverMeta.dialectDatabase());
     }
 
 

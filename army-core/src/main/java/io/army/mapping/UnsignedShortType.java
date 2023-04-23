@@ -53,7 +53,7 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
     @Override
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
-        switch (meta.database()) {
+        switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.SMALLINT_UNSIGNED;
                 break;

@@ -1260,6 +1260,10 @@ abstract class CriteriaContexts {
                 //no bug,never here
                 throw ContextStack.castCriteriaApi(this);
             }
+
+            //2. flush bufferDerivedBlock
+            this.flushBufferDerivedBlock();
+
             final Map<String, _TabularBlock> aliasToBlock;
             aliasToBlock = _Collections.safeUnmodifiableMap(this.aliasToBlock);
             this.aliasToBlock = aliasToBlock;
@@ -1269,15 +1273,12 @@ abstract class CriteriaContexts {
             this.tableBlockList = blockList;//store for recursive checking
 
 
-            //2. assert nestedDerivedBufferMap
+            //3. assert nestedDerivedBufferMap
             final Map<String, _AliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             if (nestedDerivedBufferMap != null && nestedDerivedBufferMap.size() > 0) {
                 throw ContextStack.castCriteriaApi(this);
             }
             this.nestedDerivedBufferMap = null; //clear
-
-            //3. flush bufferDerivedBlock
-            this.flushBufferDerivedBlock();
 
 
             //4. validate aliasToBlock

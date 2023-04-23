@@ -120,7 +120,9 @@ public enum PgSqlType implements SqlType {
 
     POINT_ARRAY,
     LINE_ARRAY,
+    @Deprecated
     LINE_SEGMENT_ARRAY,
+    LSEG_ARRAY,
     BOX_ARRAY,
 
     PATH_ARRAY,
