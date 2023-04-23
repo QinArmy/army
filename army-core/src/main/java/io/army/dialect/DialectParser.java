@@ -59,9 +59,7 @@ public interface DialectParser {
 
     ServerMeta serverMeta();
 
-    default StringBuilder identifier(String identifier, StringBuilder builder) {
-        throw new UnsupportedOperationException();
-    }
+    StringBuilder identifier(String identifier, StringBuilder builder);
 
 
     String identifier(String identifier);
@@ -71,6 +69,8 @@ public interface DialectParser {
 
 
     String printStmt(Stmt stmt, boolean beautify);
+
+    String sqlElement(SQLElement element);
 
 
 }

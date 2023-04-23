@@ -119,7 +119,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public String sql() {
+        public String sqlText() {
             return this.sql;
         }
 
@@ -175,15 +175,15 @@ public abstract class Stmts {
         @Override
         public String printSql(final Function<String, String> function) {
             return _StringUtils.builder()
-                    .append(function.apply(this.first.sql()))
+                    .append(function.apply(this.first.sqlText()))
                     .append('\n')
-                    .append(function.apply(this.second.sql()))
+                    .append(function.apply(this.second.sqlText()))
                     .toString();
         }
 
         @Override
         public String toString() {
-            return String.format("first sql:\n%s\n%s", this.first.sql(), this.second.sql());
+            return String.format("first sql:\n%s\n%s", this.first.sqlText(), this.second.sqlText());
         }
     }
 
@@ -213,9 +213,9 @@ public abstract class Stmts {
         public String printSql(Function<String, String> function) {
             return _StringUtils.builder()
                     .append("batch pair first:\n")
-                    .append(function.apply(this.first.sql()))
+                    .append(function.apply(this.first.sqlText()))
                     .append("\nbatch pair second:\n")
-                    .append(function.apply(this.second.sql()))
+                    .append(function.apply(this.second.sqlText()))
                     .toString();
         }
 
@@ -223,9 +223,9 @@ public abstract class Stmts {
         public String toString() {
             return _StringUtils.builder()
                     .append("batch pair first:\n")
-                    .append(this.first.sql())
+                    .append(this.first.sqlText())
                     .append("\nbatch pair second:\n")
-                    .append(this.second.sql())
+                    .append(this.second.sqlText())
                     .toString();
         }
 
@@ -251,7 +251,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public String sql() {
+        public String sqlText() {
             return this.sql;
         }
 
@@ -301,7 +301,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public String sql() {
+        public String sqlText() {
             return this.sql;
         }
 
@@ -336,7 +336,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public String sql() {
+        public String sqlText() {
             return this.sql;
         }
 
@@ -400,7 +400,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public final String sql() {
+        public final String sqlText() {
             return this.sql;
         }
 

@@ -312,6 +312,11 @@ abstract class ArmyParser implements DialectParser {
     }
 
     @Override
+    public String sqlElement(SQLElement element) {
+        throw _Exceptions.castCriteriaApi();
+    }
+
+    @Override
     public final boolean isKeyWords(final String words) {
         return this.keyWordSet.contains(words.toUpperCase(Locale.ROOT));
     }

@@ -1,18 +1,20 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.dialect.DialectParser;
-import io.army.dialect._Constant;
-import io.army.dialect._DialectUtils;
-import io.army.dialect._SqlContext;
+import io.army.criteria.impl.inner._TableNameElement;
+import io.army.criteria.postgre.PostgreQuery;
+import io.army.criteria.standard.StandardQuery;
+import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.TextType;
 import io.army.mapping.XmlType;
+import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
+import io.army.stmt.SimpleStmt;
 import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -44,6 +46,26 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
     static XmlTableColumnsClause xmlTableColumnsClause() {
         return new XmlTableColumnsClause();
+    }
+
+    static Expression tableNameExp(final @Nullable TableMeta<?> table) {
+        if (table == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return new TableNameExpression(table);
+    }
+
+
+    static Expression queryStringExp(final @Nullable Select query, final @Nullable Visible visible) {
+        if (query == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (visible == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!(query instanceof StandardQuery || query instanceof PostgreQuery)) {
+            String m = String.format("%s don't support %s", Database.PostgreSQL, query.getClass().getName());
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        return new QueryExpression(query, visible);
     }
 
 
@@ -175,6 +197,34 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
     /*-------------------below inner class  -------------------*/
+
+
+    static final class TableNameExpression extends NonOperationExpression
+            implements FunctionArg.SingleFunctionArg, _TableNameElement {
+
+        private final TableMeta<?> table;
+
+        private TableNameExpression(TableMeta<?> table) {
+            this.table = table;
+        }
+
+        @Override
+        public TableMeta<?> tableMeta() {
+            return this.table;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return TextType.INSTANCE;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.appendLiteral(this.typeMeta(), context.parser().sqlElement(this));
+        }
+
+
+    }//TableNameExpression
 
 
     static final class XmlNamedElementPart<R extends Item> implements ArmyFuncClause,
@@ -805,6 +855,38 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
     }//XmlTableOrdinalityColumn
+
+    private static final class QueryExpression extends NonOperationExpression implements FunctionArg.SingleFunctionArg {
+
+        private final Select query;
+
+        private final Visible visible;
+
+        /**
+         * @see #queryStringExp(Select, Visible)
+         */
+        private QueryExpression(Select query, Visible visible) {
+            this.query = query;
+            this.visible = visible;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return TextType.INSTANCE;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final SimpleStmt stmt;
+            stmt = context.parser().select(this.query, this.visible);
+            if (stmt.paramGroup().size() > 0) {
+                throw new CriteriaException("query expression couldn't have any parameter.");
+            }
+            context.appendLiteral(this.typeMeta(), stmt.sqlText());
+        }
+
+
+    }//QueryExpression
 
 
 }

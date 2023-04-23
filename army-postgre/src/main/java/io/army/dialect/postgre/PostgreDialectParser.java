@@ -47,6 +47,15 @@ final class PostgreDialectParser extends PostgreParser {
 
 
     @Override
+    public String sqlElement(final SQLElement element) {
+        _PostgreConsultant.assertSqlElement(element);
+        if (!(element instanceof _TableNameElement)) {
+            throw _Exceptions.castCriteriaApi();
+        }
+        return this.safeObjectName(((_TableNameElement) element).tableMeta());
+    }
+
+    @Override
     protected void assertInsert(InsertStatement insert) {
         _PostgreConsultant.assertInsert(insert);
     }

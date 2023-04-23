@@ -105,5 +105,15 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
         }
     }
 
+    public static void assertSqlElement(final SQLElement element) {
+        if (element instanceof _TableNameElement) {
+            if (!(element instanceof PostgreFunctionUtils.TableNameExpression)) {
+                throw illegalSqlElement(element);
+            }
+        } else {
+            throw illegalSqlElement(element);
+        }
+    }
+
 
 }

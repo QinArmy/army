@@ -9,6 +9,7 @@ import io.army.mapping.optional.TextArrayType;
 import io.army.mapping.optional.XmlArrayType;
 import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.postgre.PostgreTsVectorType;
+import io.army.meta.TableMeta;
 import io.army.util._Collections;
 
 import java.util.List;
@@ -1727,8 +1728,177 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     }
 
 
+    /**
+     * @param table will output strings identifying tables using the usual notation, including optional schema qualification and double quotes
+     * @see #tableToXml(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xml</a>
+     */
+    public static SimpleExpression tableToXml(TableMeta<?> table, Expression nulls, Expression tableForest,
+                                              Expression targetNs) {
+        return tableToXml(PostgreFunctionUtils.tableNameExp(table), nulls, tableForest, targetNs);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xml</a>
+     */
+    public static SimpleExpression tableToXml(Expression table, Expression nulls, Expression tableForest,
+                                              Expression targetNs) {
+        return FunctionUtils.fourArgFunc("TABLE_TO_XML", table, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * @param query will output literal sql
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml</a>
+     */
+    public static SimpleExpression queryToXml(Select query, Visible visible, Expression nulls, Expression tableForest,
+                                              Expression targetNs) {
+        return queryToXml(PostgreFunctionUtils.queryStringExp(query, visible), nulls, tableForest, targetNs);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml</a>
+     */
+    public static SimpleExpression queryToXml(Expression query, Expression nulls, Expression tableForest,
+                                              Expression targetNs) {
+        return FunctionUtils.fourArgFunc("QUERY_TO_XML", query, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">cursor_to_xml</a>
+     */
+    public static SimpleExpression cursorToXml(Expression cursor, Expression nulls, Expression tableForest,
+                                               Expression targetNs) {
+        return FunctionUtils.fourArgFunc("CURSOR_TO_XML", cursor, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
 
 
+    /**
+     * @param table will output strings identifying tables using the usual notation, including optional schema qualification and double quotes
+     * @see #tableToXmlSchema(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xmlschema</a>
+     */
+    public static SimpleExpression tableToXmlSchema(TableMeta<?> table, Expression nulls, Expression tableForest,
+                                                    Expression targetNs) {
+        return tableToXmlSchema(PostgreFunctionUtils.tableNameExp(table), nulls, tableForest, targetNs);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xmlschema</a>
+     */
+    public static SimpleExpression tableToXmlSchema(Expression table, Expression nulls, Expression tableForest,
+                                                    Expression targetNs) {
+        return FunctionUtils.fourArgFunc("TABLE_TO_XMLSCHEMA", table, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * @param query will output literal sql
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xmlschema</a>
+     */
+    public static SimpleExpression queryToXmlSchema(Select query, Visible visible, Expression nulls, Expression tableForest,
+                                                    Expression targetNs) {
+        return queryToXmlSchema(PostgreFunctionUtils.queryStringExp(query, visible), nulls, tableForest, targetNs);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xmlschema</a>
+     */
+    public static SimpleExpression queryToXmlSchema(Expression query, Expression nulls, Expression tableForest,
+                                                    Expression targetNs) {
+        return FunctionUtils.fourArgFunc("QUERY_TO_XMLSCHEMA", query, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">cursor_to_xmlschema</a>
+     */
+    public static SimpleExpression cursorToXmlSchema(Expression cursor, Expression nulls, Expression tableForest,
+                                                     Expression targetNs) {
+        return FunctionUtils.fourArgFunc("CURSOR_TO_XMLSCHEMA", cursor, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+
+    /**
+     * @param table will output strings identifying tables using the usual notation, including optional schema qualification and double quotes
+     * @see #tableToXmlAndXmlSchema(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xml_and_xmlschema</a>
+     */
+    public static SimpleExpression tableToXmlAndXmlSchema(TableMeta<?> table, Expression nulls, Expression tableForest,
+                                                          Expression targetNs) {
+        return tableToXmlAndXmlSchema(PostgreFunctionUtils.tableNameExp(table), nulls, tableForest, targetNs);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">table_to_xml_and_xmlschema</a>
+     */
+    public static SimpleExpression tableToXmlAndXmlSchema(Expression table, Expression nulls, Expression tableForest,
+                                                          Expression targetNs) {
+        return FunctionUtils.fourArgFunc("TABLE_TO_XML_AND_XMLSCHEMA", table, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * @param query will output literal sql
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml_and_xmlschema</a>
+     */
+    public static SimpleExpression queryToXmlAndXmlSchema(Select query, Visible visible, Expression nulls, Expression tableForest,
+                                                          Expression targetNs) {
+        return queryToXmlAndXmlSchema(PostgreFunctionUtils.queryStringExp(query, visible), nulls, tableForest, targetNs);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml_and_xmlschema</a>
+     */
+    public static SimpleExpression queryToXmlAndXmlSchema(Expression query, Expression nulls, Expression tableForest,
+                                                          Expression targetNs) {
+        return FunctionUtils.fourArgFunc("QUERY_TO_XML_AND_XMLSCHEMA", query, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">schema_to_xml</a>
+     */
+    public static SimpleExpression schemaToXml(Expression schema, Expression nulls, Expression tableForest,
+                                               Expression targetNs) {
+        return FunctionUtils.fourArgFunc("SCHEMA_TO_XML", schema, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">schema_to_xmlschema</a>
+     */
+    public static SimpleExpression schemaToXmlSchema(Expression schema, Expression nulls, Expression tableForest,
+                                                     Expression targetNs) {
+        return FunctionUtils.fourArgFunc("SCHEMA_TO_XMLSCHEMA", schema, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">schema_to_xml_and_xmlschema</a>
+     */
+    public static SimpleExpression schemaToXmlAndXmlSchema(Expression schema, Expression nulls, Expression tableForest,
+                                                           Expression targetNs) {
+        return FunctionUtils.fourArgFunc("SCHEMA_TO_XML_AND_XMLSCHEMA", schema, nulls, tableForest, targetNs,
+                XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">database_to_xml</a>
+     */
+    public static SimpleExpression databaseToXml(Expression nulls, Expression tableForest, Expression targetNs) {
+        return FunctionUtils.threeArgFunc("DATABASE_TO_XML", nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">database_to_xmlschema</a>
+     */
+    public static SimpleExpression databaseToXmlSchema(Expression nulls, Expression tableForest, Expression targetNs) {
+        return FunctionUtils.threeArgFunc("DATABASE_TO_XMLSCHEMA", nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">database_to_xml_and_xmlschema</a>
+     */
+    public static SimpleExpression databaseToXmlAndXmlSchema(Expression nulls, Expression tableForest,
+                                                             Expression targetNs) {
+        return FunctionUtils.threeArgFunc("DATABASE_TO_XML_AND_XMLSCHEMA", nulls, tableForest, targetNs,
+                XmlType.TEXT_INSTANCE);
+    }
 
 
     /*-------------------below private method -------------------*/

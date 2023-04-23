@@ -53,6 +53,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
         return Collections.singletonList(builder.toString());
     }
 
+
     @Override
     public final boolean isSupportOnlyDefault() {
         //Postgre don't support

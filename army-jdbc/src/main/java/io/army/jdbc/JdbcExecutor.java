@@ -75,7 +75,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     @Override
     public final long update(final SimpleStmt stmt, final int timeout) {
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
 
             bindParameter(statement, stmt.paramGroup());
             if (timeout > 0) {
@@ -96,7 +96,7 @@ abstract class JdbcExecutor implements StmtExecutor {
     @Override
     public List<Long> batchUpdate(final BatchStmt stmt, final int timeout) throws DataAccessException {
 
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
             final List<List<SQLParam>> paramGroupList = stmt.groupList();
 
             for (List<SQLParam> group : paramGroupList) {
@@ -147,7 +147,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                                     final Supplier<List<T>> listConstructor) {
 
         final List<? extends Selection> selectionList = stmt.selectionList();
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
 
             bindParameter(statement, stmt.paramGroup());
             if (timeout > 0) {
@@ -209,7 +209,7 @@ abstract class JdbcExecutor implements StmtExecutor {
             throws DataAccessException {
 
         final List<? extends Selection> selectionList = stmt.selectionList();
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql())) {
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
 
             bindParameter(statement, stmt.paramGroup());
             if (timeout > 0) {
@@ -407,7 +407,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } else {
             resultSetType = Statement.RETURN_GENERATED_KEYS;
         }
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sql(), resultSetType)) {
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText(), resultSetType)) {
 
             bindParameter(statement, stmt.paramGroup());
 

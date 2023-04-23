@@ -618,9 +618,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             }
 
             if (this.literal) {
-                context.appendLiteral(StringType.INSTANCE, ((SimpleStmt) stmt).sql());
+                context.appendLiteral(StringType.INSTANCE, ((SimpleStmt) stmt).sqlText());
             } else {
-                context.appendParam(SingleParam.build(StringType.INSTANCE, ((SimpleStmt) stmt).sql()));
+                context.appendParam(SingleParam.build(StringType.INSTANCE, ((SimpleStmt) stmt).sqlText()));
             }
         }
 

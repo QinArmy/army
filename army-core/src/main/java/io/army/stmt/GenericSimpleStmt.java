@@ -5,7 +5,7 @@ import io.army.codec.StatementType;
 
 public interface GenericSimpleStmt extends Stmt {
 
-    String sql();
+    String sqlText();
 
     boolean hasOptimistic();
 

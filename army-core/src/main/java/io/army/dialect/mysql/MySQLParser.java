@@ -1,9 +1,6 @@
 package io.army.dialect.mysql;
 
-import io.army.criteria.CriteriaException;
-import io.army.criteria.SQLWords;
-import io.army.criteria.UpdateStatement;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleDelete;
@@ -71,6 +68,10 @@ abstract class MySQLParser extends _ArmyDialectParser {
         return stmtList;
     }
 
+    @Override
+    public final String sqlElement(SQLElement element) {
+        throw _Exceptions.castCriteriaApi();
+    }
 
     @Override
     protected final MySQLDdl createDdlDialect() {

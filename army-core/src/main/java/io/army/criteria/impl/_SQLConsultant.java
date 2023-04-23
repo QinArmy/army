@@ -100,5 +100,10 @@ public abstract class _SQLConsultant {
         return new CriteriaException(m);
     }
 
+    static CriteriaException illegalSqlElement(@Nullable SQLElement element) {
+        String m = String.format("Illegal SQLElement[%s]", _ClassUtils.safeClassName(element));
+        return new CriteriaException(m);
+    }
+
 
 }
