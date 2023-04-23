@@ -128,6 +128,15 @@ enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
     GT_CARET(" >^"),
 
     /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb ? text → boolean<br/>
+     * Does the text string exist as a top-level key or array element within the JSON value?<br/>
+     * '{"a":1, "b":2}'::jsonb ? 'b' → t<br/>
+     * '["a", "b", "c"]'::jsonb ? 'b' → t
+     * </a>
+     */
+    QUESTION(" ?"),
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type ?# geometric_type → boolean<br/>
      * Is first object above second (allows edges to touch)?</a>
      */
@@ -138,6 +147,14 @@ enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
      * Are points horizontally aligned (that is, have same y coordinate)?</a>
      */
     QUESTION_HYPHEN(" ?-"),
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb ?& text[] → boolean<br/>
+     * Do all of the strings in the text array exist as top-level keys or array elements?<br/>
+     * '["a", "b", "c"]'::jsonb ?& array['a', 'b'] → t
+     * </a>
+     */
+    QUESTION_AMP(" ?&"),
 
 
     /**
@@ -165,6 +182,14 @@ enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
      * </a>
      */
     TILDE_EQUAL(" ~="),
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb @? jsonpath → boolean<br/>
+     * Does JSON path return any item for the specified JSON value?<br/>
+     * '{"a":[1,2,3,4,5]}'::jsonb @? '$.a[*] ? (@ > 2)' → t
+     * </a>
+     */
+    AT_QUESTION(" @?"),
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsvector @@ tsquery → boolean<br/>

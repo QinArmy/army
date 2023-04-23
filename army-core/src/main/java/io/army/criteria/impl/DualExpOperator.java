@@ -53,6 +53,14 @@ enum DualExpOperator implements Operator.SqlDualExpressionOperator {
     POUND_GT(" #>", 20),// postgre only
 
     /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb #- text[] → jsonb<br>
+     * Deletes the field or array element at the specified path, where path elements can be either field keys or array indexes.<br/>
+     * '["a", {"b":1}]'::jsonb #- '{1,b}' → ["a", {}]
+     * </a>
+     */
+    POUND_HYPHEN(" #-", 20),// postgre only
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json #>> text[] → text<br>
      * jsonb #>> text[] → text<br/>
      * Extracts JSON sub-object at the specified path as text.

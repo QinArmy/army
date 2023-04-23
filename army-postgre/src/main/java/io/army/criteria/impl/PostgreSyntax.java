@@ -166,6 +166,10 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric_type - numeric_type → numeric_type<br/>
      * Subtraction</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb - text → jsonb<br/>
+     * jsonb - text[] → jsonb<br/>
+     * jsonb - integer → jsonb<br/>
+     * </a>
      */
     public static Expression minus(Expression left, Expression right) {
         return Expressions.dialectDualExp(left, DualExpOperator.MINUS, right, PostgreExpressions::minusType);
@@ -256,6 +260,17 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb #- text[] → jsonb<br>
+     * Deletes the field or array element at the specified path, where path elements can be either field keys or array indexes.<br/>
+     * '["a", {"b":1}]'::jsonb #- '{1,b}' → ["a", {}]
+     * </a>
+     */
+    public static Expression poundHyphen(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, DualExpOperator.POUND_HYPHEN, right, PostgreExpressions::poundHyphenType);
+    }
+
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json #> text[] → json<br>
      * jsonb #> text[] → jsonb<br/>
      * Extracts JSON sub-object at the specified path, where path elements can be either field keys or array indexes.
@@ -313,6 +328,7 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsvector || tsvector → tsvector</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery || tsquery → tsquery</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery || tsquery → tsquery</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb || jsonb → jsonb</a>
      */
     public static Expression doubleVertical(final Expression left, final Expression right) {
         return Expressions.dialectDualExp(left, DualExpOperator.DOUBLE_VERTICAL, right, PostgreExpressions::doubleVerticalType);
@@ -377,6 +393,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
 
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type @> geometric_type → boolean<br/>
      * Does first object contain second? Available for these pairs of types: (box, point), (box, box), (path, point), (polygon, point), (polygon, polygon), (circle, point), (circle, circle).
      * </a>
@@ -390,10 +408,26 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb @? jsonpath → boolean<br/>
+     * Does JSON path return any item for the specified JSON value?<br/>
+     * '{"a":[1,2,3,4,5]}'::jsonb @? '$.a[*] ? (@ > 2)' → t
+     * </a>
+     */
+    public static IPredicate atQuestion(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.AT_QUESTION, right);
+    }
+
+    /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;@ geometric_type → boolean<br/>
      * Is first object contained in or on second? Available for these pairs of types: (point, box), (point, lseg), (point, line), (point, path), (point, polygon), (point, circle), (box, box), (lseg, box), (lseg, line), (polygon, polygon), (circle, circle).
      * </a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery <@ tsquery → boolean<br/>
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb <@ jsonb → boolean<br/>
      * </a>
      */
     public static IPredicate ltAt(Expression left, Expression right) {
@@ -401,6 +435,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&amp; geometric_type → boolean<br/>
      * Do these objects overlap? (One point in common makes this true.) Available for box, polygon, circle.</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-OPERATORS-TABLE">inet &amp;&amp; inet → boolean<br/>
@@ -414,6 +450,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&lt; geometric_type → boolean<br/>
      * Is first object strictly left of second? Available for point, box, polygon, circle.<br/>
      * inet &lt;&lt; inet → boolean<br/>
@@ -437,6 +475,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
 
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type >> geometric_type → boolean<br/>
      * Is first object strictly right of second? Available for point, box, polygon, circle.</a>
      */
@@ -445,6 +485,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-OPERATORS-TABLE">inet &lt;&lt;= inet → boolean<br/>
      * Is subnet contained by or equal to subnet?<br/>
      * inet '192.168.1/24' &lt;&lt;= inet '192.168.1/24' → t
@@ -455,6 +497,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-OPERATORS-TABLE">inet >>= inet → boolean<br/>
      * Does subnet contain or equal subnet?<br/>
      * inet '192.168.1/24' >>= inet '192.168.1/24' → t
@@ -465,6 +509,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&lt; geometric_type → boolean<br/>
      * Does first object not extend to the right of second? Available for box, polygon, circle.</a>
      */
@@ -473,6 +519,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&gt; geometric_type → boolean<br/>
      * Does first object not extend to the left of second? Available for box, polygon, circle.</a>
      */
@@ -481,6 +529,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&lt;| geometric_type → boolean<br/>
      * Is first object strictly below second? Available for point, box, polygon, circle.</a>
      */
@@ -489,6 +539,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type |>> geometric_type → boolean<br/>
      * Is first object strictly above second? Available for point, box, polygon, circle.</a>
      */
@@ -497,6 +549,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&lt;| geometric_type → boolean<br/>
      * Does first object not extend above second? Available for box, polygon, circle.</a>
      */
@@ -505,6 +559,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type |&amp;> geometric_type → boolean<br/>
      * Does first object not extend below second? Available for box, polygon, circle.</a>
      */
@@ -514,6 +570,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
 
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">box &lt;^ box → boolean<br/>
      * Is first object below second (allows edges to touch)?</a>
      */
@@ -522,6 +580,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">box >^ box → boolean<br/>
      * Is first object above second (allows edges to touch)?</a>
      */
@@ -530,6 +590,21 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb ? text → boolean<br/>
+     * Does the text string exist as a top-level key or array element within the JSON value?<br/>
+     * '{"a":1, "b":2}'::jsonb ? 'b' → t<br/>
+     * '["a", "b", "c"]'::jsonb ? 'b' → t
+     * </a>
+     */
+    public static IPredicate question(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.QUESTION, right);
+    }
+
+    /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type ?# geometric_type → boolean<br/>
      * Is first object above second (allows edges to touch)?</a>
      */
@@ -538,6 +613,20 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb ?& text[] → boolean<br/>
+     * Do all of the strings in the text array exist as top-level keys or array elements?<br/>
+     * '["a", "b", "c"]'::jsonb ?& array['a', 'b'] → t
+     * </a>
+     */
+    public static IPredicate questionAmp(Expression left, Expression right) {
+        return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.QUESTION_AMP, right);
+    }
+
+    /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">point ?- point → boolean<br/>
      * Are points horizontally aligned (that is, have same y coordinate)?</a>
      */
@@ -546,14 +635,22 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">point ?| point → boolean<br/>
      * Are points vertically aligned (that is, have same x coordinate)?</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb ?| text[] → boolean<br/>
+     * Do any of the strings in the text array exist as top-level keys or array elements?<br/>
+     * '{"a":1, "b":2, "c":3}'::jsonb ?| array['b', 'd'] → t
+     * </a>
      */
     public static IPredicate questionVertical(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.QUESTION_VERTICAL, right);
     }
 
     /**
+     * @see Expression#test(BiFunction, Expression)
+     * @see SimpleExpression#test(BiFunction, BiFunction, Object)
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">line ?-| line → boolean<br/>
      * lseg ?-| lseg → boolean</a>
      */
@@ -582,6 +679,10 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsvector @@ tsquery → boolean<br/>
      * tsquery @@ tsvector → boolean<br/>
      * text @@ tsquery → boolean<br/>
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb @@ jsonpath → boolean<br/>
+     * tReturns the result of a JSON path predicate check for the specified JSON value. Only the first item of the result is taken into account. If the result is not Boolean, then NULL is returned.<br/>
+     * '{"a":[1,2,3,4,5]}'::jsonb @@ '$.a[*] > 2' → t<br/>
      * </a>
      */
     public static IPredicate doubleAt(Expression left, Expression right) {

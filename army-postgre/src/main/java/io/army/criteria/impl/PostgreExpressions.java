@@ -171,6 +171,8 @@ abstract class PostgreExpressions {
             } else { // error or unknown
                 returnType = StringType.INSTANCE;
             }
+        } else if (left instanceof MappingType.SqlJsonbType && right instanceof MappingType.SqlNumberOrStringType) {
+            returnType = left;
         } else if (left instanceof MappingType.SqlTemporalAmountType && right instanceof MappingType.SqlTemporalAmountType) { // interval - interval → interval
             returnType = IntervalType.from(Interval.class);
         } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType) { // geometric_type - point → geometric_type
@@ -247,6 +249,8 @@ abstract class PostgreExpressions {
             returnType = PrimitiveByteArrayType.INSTANCE;
         } else if (left instanceof MappingType.SqlBitType && right instanceof MappingType.SqlBitType) {
             returnType = BitSetType.INSTANCE;
+        } else if (left instanceof MappingType.SqlJsonbType && right instanceof MappingType.SqlJsonbType) {
+            returnType = left;
         } else {
             returnType = TextType.INSTANCE;
         }
@@ -306,6 +310,24 @@ abstract class PostgreExpressions {
         return returnType;
     }
 
+    /**
+     * @see Postgres#poundHyphen(Expression, Expression)
+     */
+    static MappingType poundHyphenType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if (left instanceof MappingType.SqlJsonbType
+                && right instanceof MappingType.SqlStringType
+                && right instanceof MappingType.SqlArrayType) {
+            returnType = left;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see Postgres#poundGtGt(Expression, Expression)
+     */
     static MappingType poundGtGtType(final MappingType left, final MappingType right) {
         final MappingType returnType;
         if ((left instanceof MappingType.SqlJsonType || left instanceof MappingType.SqlJsonbType)
