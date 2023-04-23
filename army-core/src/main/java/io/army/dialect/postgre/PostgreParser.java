@@ -359,7 +359,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case TIMESTAMP_ARRAY:
             case TSTZRANGE_ARRAY:
             case TIMESTAMPTZ_ARRAY:
-            case LINE_SEGMENT_ARRAY:
+            case LSEG_ARRAY:
                 //TODO check array syntax
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
                 break;

@@ -66,7 +66,19 @@ abstract class SqlSyntax {
 
     }
 
-    public interface WordBooleans extends SQLsSyntax.BooleanTestWord, SimplePredicate {
+    public interface WordBooleans extends BooleanTestWord, SimplePredicate {
+
+    }
+
+    public interface DocumentValueOption extends SQLWords {
+
+    }
+
+    public interface WordDocument extends BooleanTestWord, DocumentValueOption {
+
+    }
+
+    public interface WordContent extends DocumentValueOption {
 
     }
 

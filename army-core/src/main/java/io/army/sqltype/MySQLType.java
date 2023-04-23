@@ -3,10 +3,6 @@ package io.army.sqltype;
 import io.army.criteria.SQLWords;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
-import io.army.mapping.ByteType;
-import io.army.mapping.MappingType;
-import io.army.mapping.ShortType;
-import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 public enum MySQLType implements SqlType, SQLWords {
@@ -168,30 +164,6 @@ public enum MySQLType implements SqlType, SQLWords {
     }
 
 
-    @Override
-    public final MappingType mappingType() {
-        final MappingType t;
-        switch (this) {
-            case TINYINT:
-                t = ByteType.INSTANCE;
-                break;
-            case TINYINT_UNSIGNED:
-            case SMALLINT:
-                t = ShortType.INSTANCE;
-                break;
-            case SMALLINT_UNSIGNED:
-            case INT:
-            case BIT:
-            case SET:
-            case BLOB:
-            case CHAR:
-            case DATE:
-            case ENUM://TODO
-            default:
-                throw _Exceptions.unexpectedEnum(this);
-        }
-        return t;
-    }
 
 
     @Override

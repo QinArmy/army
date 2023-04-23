@@ -29,7 +29,12 @@ public interface SqlType {
         throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     default MappingType mappingType() {
+        throw new UnsupportedOperationException();
+    }
+
+    default void sqlTypeName(MappingType type, StringBuilder builder) {
         throw new UnsupportedOperationException();
     }
 

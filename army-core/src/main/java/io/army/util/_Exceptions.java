@@ -895,6 +895,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException unknownArrayDimension(SqlType sqlType, MappingType type) {
+        String m = String.format("unknown array type %s dimension of %s", sqlType, type);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException objectNameError(final DatabaseObject object, final Dialect dialect) {
         final String m, objectName;
         objectName = object.objectName();

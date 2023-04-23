@@ -541,7 +541,7 @@ public abstract class SQLs extends SQLsSyntax {
     }//SQLIdentifierImpl
 
 
-    private enum KeyWordAs implements WordAs {
+    private enum KeyWordAs implements WordAs, ArmyKeyWord {
 
         AS(" AS");
 
@@ -563,9 +563,20 @@ public abstract class SQLs extends SQLsSyntax {
 
     }//KeyWordAs
 
-    private enum KeyWordAnd implements WordAnd {
+    private enum KeyWordAnd implements WordAnd, ArmyKeyWord {
 
-        AND;
+        AND(" AND");
+
+        private final String spaceWord;
+
+        KeyWordAnd(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
 
         @Override
         public final String toString() {

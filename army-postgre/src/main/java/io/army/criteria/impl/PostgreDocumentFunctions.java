@@ -10,6 +10,7 @@ import io.army.mapping.optional.XmlArrayType;
 import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.postgre.PostgreTsVectorType;
 import io.army.meta.TableMeta;
+import io.army.sqltype.PgSqlType;
 import io.army.util._Collections;
 
 import java.util.List;
@@ -1005,6 +1006,61 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /*-------------------below XML function -------------------*/
 
+    /**
+     * @param option  {@link Postgres#DOCUMENT} or {@link Postgres#CONTENT}
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link TextType#INSTANCE}.
+     * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
+     * @see #xmlParse(DocumentValueOption, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/datatype-xml.html#id-1.5.7.21.6">XMLPARSE ( { DOCUMENT | CONTENT } value)<br/>
+     * </a>
+     */
+    public static SimpleExpression xmlParse(final DocumentValueOption option, BiFunction<MappingType, String, Expression> funcRef, String value) {
+        return xmlParse(option, funcRef.apply(TextType.INSTANCE, value));
+    }
+
+    /**
+     * @param option {@link Postgres#DOCUMENT} or {@link Postgres#CONTENT}
+     * @see <a href="https://www.postgresql.org/docs/current/datatype-xml.html#id-1.5.7.21.6">XMLPARSE ( { DOCUMENT | CONTENT } value)<br/>
+     * </a>
+     */
+    public static SimpleExpression xmlParse(final DocumentValueOption option, final Expression value) {
+        final String name = "XMLPARSE";
+        if (!(option == Postgres.DOCUMENT || option == Postgres.CONTENT)) {
+            throw CriteriaUtils.funcArgError(name, option);
+        } else if (!(value instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, value);
+        }
+        return FunctionUtils.complexArgFunc(name, XmlType.TEXT_INSTANCE, option, value);
+    }
+
+    /**
+     * @param option {@link Postgres#DOCUMENT} or {@link Postgres#CONTENT}
+     * @see <a href="https://www.postgresql.org/docs/current/datatype-xml.html#id-1.5.7.21.6">XMLSERIALIZE ( { DOCUMENT | CONTENT } value AS type )<br/>
+     * </a>
+     */
+    public static SimpleExpression xmlSerialize(final DocumentValueOption option, final Expression value, final WordAs as,
+                                                final MappingType type) {
+        final String name = "XMLSERIALIZE";
+        if (!(option == Postgres.DOCUMENT || option == Postgres.CONTENT)) {
+            throw CriteriaUtils.funcArgError(name, option);
+        } else if (!(value instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, value);
+        } else if (as != SQLs.AS) {
+            throw CriteriaUtils.funcArgError(name, as);
+        }
+        return FunctionUtils.complexArgFunc(name, XmlType.TEXT_INSTANCE, option, value, as,
+                NonOperationExpression.sqlTypeNameExp(type, PgSqlType.class)
+        );
+    }
+
 
     /**
      * <p>
@@ -1756,6 +1812,15 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     }
 
     /**
+     * @param query will output literal sql
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml</a>
+     */
+    public static SimpleExpression queryToXml(Select query, Expression nulls, Expression tableForest,
+                                              Expression targetNs) {
+        return queryToXml(PostgreFunctionUtils.queryStringExp(query, Visible.ONLY_VISIBLE), nulls, tableForest, targetNs);
+    }
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml</a>
      */
     public static SimpleExpression queryToXml(Expression query, Expression nulls, Expression tableForest,
@@ -1800,6 +1865,17 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     }
 
     /**
+     * @param query will output literal sql
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xmlschema</a>
+     */
+    public static SimpleExpression queryToXmlSchema(Select query, Expression nulls, Expression tableForest,
+                                                    Expression targetNs) {
+        return queryToXmlSchema(PostgreFunctionUtils.queryStringExp(query, Visible.ONLY_VISIBLE), nulls, tableForest,
+                targetNs);
+    }
+
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xmlschema</a>
      */
     public static SimpleExpression queryToXmlSchema(Expression query, Expression nulls, Expression tableForest,
@@ -1841,6 +1917,15 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     public static SimpleExpression queryToXmlAndXmlSchema(Select query, Visible visible, Expression nulls, Expression tableForest,
                                                           Expression targetNs) {
         return queryToXmlAndXmlSchema(PostgreFunctionUtils.queryStringExp(query, visible), nulls, tableForest, targetNs);
+    }
+
+    /**
+     * @param query will output literal sql
+     * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">query_to_xml_and_xmlschema</a>
+     */
+    public static SimpleExpression queryToXmlAndXmlSchema(Select query, Expression nulls, Expression tableForest,
+                                                          Expression targetNs) {
+        return queryToXmlAndXmlSchema(PostgreFunctionUtils.queryStringExp(query, Visible.ONLY_VISIBLE), nulls, tableForest, targetNs);
     }
 
     /**

@@ -37,7 +37,9 @@ public abstract class Postgres extends PostgreSyntax {
 
     public static final WordsNoValue NO_VALUE = PostgreWords.KeyWordsNoValue.NO_VALUE;
 
-    public static final BooleanTestWord DOCUMENT = BooleanTestKeyWord.DOCUMENT;
+    public static final WordDocument DOCUMENT = SqlWords.KeyWordDocument.DOCUMENT;
+
+    public static final WordContent CONTENT = SqlWords.KeyWordContent.CONTENT;
 
     public static final WordPassing PASSING = PostgreWords.KeyWordPassing.PASSING;
 

@@ -194,4 +194,87 @@ abstract class SqlWords {
         }
 
     }//KeyWordsForOrdinality
+
+    enum KeyWordDocument implements SqlSyntax.WordDocument, SqlSyntax.ArmyKeyWord {
+
+        /**
+         * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PREDICATES">xml IS DOCUMENT → boolean<br/>
+         * </a>
+         */
+        DOCUMENT(" DOCUMENT");
+
+        private final String spaceWord;
+
+        KeyWordDocument(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.enumToString(this);
+        }
+
+    }//KeyWordDocument
+
+    enum KeyWordContent implements SqlSyntax.WordContent, SqlSyntax.ArmyKeyWord {
+
+        CONTENT(" CONTENT");
+
+        private final String spaceWord;
+
+        KeyWordContent(String spaceWord) {
+            this.spaceWord = spaceWord;
+        }
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceWord;
+        }
+
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.enumToString(this);
+        }
+
+    }//KeyWordContent
+
+
+    /**
+     * <p>
+     * package enum
+     * </p>
+     *
+     * @since 1.0
+     */
+    enum BooleanTestKeyWord implements SQLsSyntax.BooleanTestWord, Functions.ArmyKeyWord {
+
+        JSON(" JSON");
+
+        final String spaceOperator;
+
+        BooleanTestKeyWord(String spaceOperator) {
+            this.spaceOperator = spaceOperator;
+        }
+
+
+        @Override
+        public final String spaceRender() {
+            return this.spaceOperator;
+        }
+
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.enumToString(this);
+        }
+
+
+    }
 }

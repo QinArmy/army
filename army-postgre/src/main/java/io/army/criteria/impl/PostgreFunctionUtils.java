@@ -15,7 +15,6 @@ import io.army.meta.TypeMeta;
 import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.SimpleStmt;
-import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -61,7 +60,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             throw ContextStack.clearStackAndNullPointer();
         } else if (visible == null) {
             throw ContextStack.clearStackAndNullPointer();
-        } else if (!(query instanceof StandardQuery || query instanceof PostgreQuery)) {
+        } else if (!(query instanceof PostgreQuery || query instanceof StandardQuery)) {
             String m = String.format("%s don't support %s", Database.PostgreSQL, query.getClass().getName());
             throw ContextStack.clearStackAndCriteriaError(m);
         }
@@ -72,127 +71,6 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     private static SimpleExpression onXmlForestEnd(ArmyFuncClause clause) {
         assert clause instanceof XmlNamedElementPart;
         return FunctionUtils.clauseFunc("XMLFOREST", clause, XmlType.TEXT_INSTANCE);
-    }
-
-    private static void mapTypeName(final PgSqlType sqlType, final MappingType type, final StringBuilder builder) {
-        switch (sqlType) {
-            case BOOLEAN:
-            case SMALLINT:
-            case INTEGER:
-            case BIGINT:
-            case DECIMAL:
-            case DOUBLE:
-            case REAL:
-            case TIME:
-            case DATE:
-            case TIMESTAMP:
-            case TIMETZ:
-            case TIMESTAMPTZ:
-            case CHAR:
-            case VARCHAR:
-            case TEXT:
-            case JSON:
-            case JSONB:
-            case BYTEA:
-            case BIT:
-            case VARBIT:
-            case XML:
-            case CIDR:
-            case INET:
-            case LINE:
-            case PATH:
-            case UUID:
-            case MONEY:
-            case MACADDR8:
-            case POINT:
-            case BOX:
-            case POLYGON:
-            case CIRCLE:
-            case TSQUERY:
-            case TSVECTOR:
-            case LSEG:
-            case TSRANGE:
-            case INTERVAL:
-            case NUMRANGE:
-            case DATERANGE:
-            case INT4RANGE:
-            case INT8RANGE:
-            case TSTZRANGE:
-            case MACADDR:
-                builder.append(sqlType.name());
-                break;
-            case BOX_ARRAY:
-            case OID_ARRAY:
-            case BIT_ARRAY:
-            case XML_ARRAY:
-            case CHAR_ARRAY:
-            case CIDR_ARRAY:
-            case DATE_ARRAY:
-            case INET_ARRAY:
-            case JSON_ARRAY:
-            case LINE_ARRAY:
-            case PATH_ARRAY:
-            case REAL_ARRAY:
-            case REF_CURSOR:
-            case TEXT_ARRAY:
-            case TIME_ARRAY:
-            case UUID_ARRAY:
-            case BYTEA_ARRAY:
-            case JSONB_ARRAY:
-            case MONEY_ARRAY:
-            case POINT_ARRAY:
-            case BIGINT_ARRAY:
-            case DOUBLE_ARRAY:
-            case TIMETZ_ARRAY:
-            case VARBIT_ARRAY:
-            case BOOLEAN_ARRAY:
-            case CIRCLES_ARRAY:
-            case DECIMAL_ARRAY:
-            case INTEGER_ARRAY:
-            case MACADDR_ARRAY:
-            case POLYGON_ARRAY:
-            case TSQUERY_ARRAY:
-            case TSRANGE_ARRAY:
-            case VARCHAR_ARRAY:
-            case INTERVAL_ARRAY:
-            case MACADDR8_ARRAY:
-            case NUMRANGE_ARRAY:
-            case SMALLINT_ARRAY:
-            case TSVECTOR_ARRAY:
-            case DATERANGE_ARRAY:
-            case INT4RANGE_ARRAY:
-            case INT8RANGE_ARRAY:
-            case TIMESTAMP_ARRAY:
-            case TSTZRANGE_ARRAY:
-            case TIMESTAMPTZ_ARRAY:
-            case LSEG_ARRAY: {
-
-                final int dimension;
-                final Class<?> javaType;
-                javaType = type.javaType();
-                if (javaType == Object.class) {
-                    throw xmlTableObjectArrayError(null, type);
-                } else if (List.class.isAssignableFrom(javaType)) {
-                    dimension = 1;
-                } else if (javaType.isArray()) {
-                    dimension = _ArrayUtils.dimensionOf(javaType);
-                } else {
-                    throw _Exceptions.javaTypeMethodNotArray(type);
-                }
-                String name;
-                name = sqlType.name();
-                name = name.substring(0, name.indexOf("_ARRAY"));
-                builder.append(name);
-
-                for (int i = 0; i < dimension; i++) {
-                    builder.append("[]");
-                }
-            }
-            break;
-            default:
-                // no bug,never here
-                throw _Exceptions.unexpectedEnum(sqlType);
-        }
     }
 
 
@@ -813,7 +691,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             parser.identifier(this.name, sqlBuilder)
                     .append(_Constant.SPACE);
 
-            mapTypeName((PgSqlType) sqlType, type, sqlBuilder);
+            sqlType.sqlTypeName(type, sqlBuilder);
 
             final ArmyExpression columnExp = this.columnExp, defaultExp = this.defaultExp;
             if (columnExp != null) {
@@ -856,7 +734,8 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
     }//XmlTableOrdinalityColumn
 
-    private static final class QueryExpression extends NonOperationExpression implements FunctionArg.SingleFunctionArg {
+    private static final class QueryExpression extends NonOperationExpression
+            implements FunctionArg.SingleFunctionArg {
 
         private final Select query;
 

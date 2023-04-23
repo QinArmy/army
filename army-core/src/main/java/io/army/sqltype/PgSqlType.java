@@ -3,6 +3,11 @@ package io.army.sqltype;
 import io.army.dialect.Database;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.util._ArrayUtils;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
+
+import java.util.List;
 
 /**
  * @see <a href="https://www.postgresql.org/docs/11/datatype.html">Postgre Data Types</a>
@@ -52,8 +57,6 @@ public enum PgSqlType implements SqlType {
     XML,
     POINT,
     CIRCLE,
-    @Deprecated
-    LINE_SEGMENT,
     PATH,
 
     // below Geometries use ResultRow.get
@@ -120,8 +123,6 @@ public enum PgSqlType implements SqlType {
 
     POINT_ARRAY,
     LINE_ARRAY,
-    @Deprecated
-    LINE_SEGMENT_ARRAY,
     LSEG_ARRAY,
     BOX_ARRAY,
 
@@ -153,10 +154,133 @@ public enum PgSqlType implements SqlType {
         return Database.PostgreSQL;
     }
 
+    @Override
+    public final void sqlTypeName(final MappingType type, final StringBuilder builder) {
+        switch (this) {
+            case BOOLEAN:
+            case SMALLINT:
+            case INTEGER:
+            case BIGINT:
+            case DECIMAL:
+            case DOUBLE:
+            case REAL:
+            case TIME:
+            case DATE:
+            case TIMESTAMP:
+            case TIMETZ:
+            case TIMESTAMPTZ:
+            case CHAR:
+            case VARCHAR:
+            case TEXT:
+            case JSON:
+            case JSONB:
+            case BYTEA:
+            case BIT:
+            case VARBIT:
+            case XML:
+            case CIDR:
+            case INET:
+            case LINE:
+            case PATH:
+            case UUID:
+            case MONEY:
+            case MACADDR8:
+            case POINT:
+            case BOX:
+            case POLYGON:
+            case CIRCLE:
+            case TSQUERY:
+            case TSVECTOR:
+            case LSEG:
+            case TSRANGE:
+            case INTERVAL:
+            case NUMRANGE:
+            case DATERANGE:
+            case INT4RANGE:
+            case INT8RANGE:
+            case TSTZRANGE:
+            case MACADDR:
+                builder.append(this.name());
+                break;
+            case BOX_ARRAY:
+            case OID_ARRAY:
+            case BIT_ARRAY:
+            case XML_ARRAY:
+            case CHAR_ARRAY:
+            case CIDR_ARRAY:
+            case DATE_ARRAY:
+            case INET_ARRAY:
+            case JSON_ARRAY:
+            case LINE_ARRAY:
+            case PATH_ARRAY:
+            case REAL_ARRAY:
+            case REF_CURSOR:
+            case TEXT_ARRAY:
+            case TIME_ARRAY:
+            case UUID_ARRAY:
+            case BYTEA_ARRAY:
+            case JSONB_ARRAY:
+            case MONEY_ARRAY:
+            case POINT_ARRAY:
+            case BIGINT_ARRAY:
+            case DOUBLE_ARRAY:
+            case TIMETZ_ARRAY:
+            case VARBIT_ARRAY:
+            case BOOLEAN_ARRAY:
+            case CIRCLES_ARRAY:
+            case DECIMAL_ARRAY:
+            case INTEGER_ARRAY:
+            case MACADDR_ARRAY:
+            case POLYGON_ARRAY:
+            case TSQUERY_ARRAY:
+            case TSRANGE_ARRAY:
+            case VARCHAR_ARRAY:
+            case INTERVAL_ARRAY:
+            case MACADDR8_ARRAY:
+            case NUMRANGE_ARRAY:
+            case SMALLINT_ARRAY:
+            case TSVECTOR_ARRAY:
+            case DATERANGE_ARRAY:
+            case INT4RANGE_ARRAY:
+            case INT8RANGE_ARRAY:
+            case TIMESTAMP_ARRAY:
+            case TSTZRANGE_ARRAY:
+            case TIMESTAMPTZ_ARRAY:
+            case LSEG_ARRAY: {
+
+                final int dimension;
+                final Class<?> javaType;
+                javaType = type.javaType();
+                if (javaType == Object.class) {
+                    throw _Exceptions.unknownArrayDimension(this, type);
+                } else if (List.class.isAssignableFrom(javaType)) {
+                    dimension = 1;
+                } else if (javaType.isArray()) {
+                    dimension = _ArrayUtils.dimensionOf(javaType);
+                } else {
+                    throw _Exceptions.javaTypeMethodNotArray(type);
+                }
+                String name;
+                name = this.name();
+                name = name.substring(0, name.indexOf("_ARRAY"));
+                builder.append(name);
+
+                for (int i = 0; i < dimension; i++) {
+                    builder.append("[]");
+                }
+            }
+            break;
+            default:
+                // no bug,never here
+                throw _Exceptions.unexpectedEnum(this);
+        }
+
+    }
+
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", PgSqlType.class.getName(), this.name());
+        return _StringUtils.enumToString(this);
     }
 
 

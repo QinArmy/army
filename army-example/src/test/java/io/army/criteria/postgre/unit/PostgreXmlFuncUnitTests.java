@@ -2,20 +2,23 @@ package io.army.criteria.postgre.unit;
 
 import io.army.criteria.Expression;
 import io.army.criteria.Select;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
-import io.army.mapping.FloatType;
-import io.army.mapping.IntegerType;
-import io.army.mapping.TextType;
-import io.army.mapping.XmlType;
+import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.mapping.*;
 import io.army.mapping.optional.TextArrayType;
+import io.army.meta.TableMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+import static io.army.criteria.impl.Postgres.DocumentValueOption;
+import static io.army.criteria.impl.Postgres.WordAs;
 import static io.army.criteria.impl.Postgres.*;
 import static io.army.criteria.impl.SQLs.*;
 
@@ -150,6 +153,72 @@ public class PostgreXmlFuncUnitTests extends PostgreUnitTests {
                                         .comma("premier_name", TextType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "PREMIER_NAME"), DEFAULT, SQLs.literal(TextType.INSTANCE, "not specified"))
                         )//xmlTable
                 ).as("x")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#tableToXml(TableMeta, Expression, Expression, Expression)
+     * @see Postgres#tableToXml(Expression, Expression, Expression, Expression)
+     */
+    @Test
+    public void tableToXmlFunc() {
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(tableToXml(ChinaRegion_.T, FALSE, FALSE, SQLs.literalValue(""))::as, "chinaRegionXml")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
+    }
+
+    /**
+     * @see Postgres#queryToXml(Select, Visible, Expression, Expression, Expression)
+     * @see Postgres#queryToXml(Expression, Expression, Expression, Expression)
+     */
+    @Test
+    public void queryToXmlFunc() {
+        final Select query, stmt;
+        query = Postgres.query()
+                .select("c", PERIOD, ChinaRegion_.T)
+                .from(ChinaRegion_.T, AS, "c")
+                .asQuery();
+
+        stmt = Postgres.query()
+                .select(queryToXml(query, FALSE, FALSE, SQLs.literalValue(""))::as, "chinaRegionXml")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#xmlParse(DocumentValueOption, Expression)
+     * @see Postgres#xmlParse(DocumentValueOption, BiFunction, String)
+     */
+    @Test
+    public void xmlParseFunc() {
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(xmlParse(CONTENT, SQLs::literal, "abc<foo>bar</foo><bar>foo</bar>")::as, "contentXml")
+                .comma(xmlParse(DOCUMENT, SQLs::literal, "<?xml version=\"1.0\"?><book><title>Manual</title><chapter>...</chapter></book>")::as, "documentXml")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#xmlSerialize(DocumentValueOption, Expression, WordAs, MappingType)
+     */
+    @Test
+    public void xmlSerializeFunc() {
+        final String xml = "<?xml version=\"1.0\"?><book><title>Manual</title><chapter>...</chapter></book>";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(xmlSerialize(CONTENT, SQLs.literal(XmlType.TEXT_INSTANCE, xml), AS, TextType.INSTANCE)::as, "contentXml"
+                )
+                .comma(xmlSerialize(DOCUMENT, SQLs.literal(XmlType.TEXT_INSTANCE, xml), AS, TextType.INSTANCE)::as, "documentXml"
+                )
                 .asQuery();
 
         printStmt(LOG, stmt);
