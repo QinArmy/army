@@ -56,115 +56,18 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
 
     }
 
-    private enum SelectModifier implements Modifier {
 
-        ALL(" ALL");
+    public static final Modifier ALL = PostgreWords.SelectModifier.ALL;
 
-        private final String spaceWord;
+    public static final WordDistinct DISTINCT = PostgreWords.KeyWordDistinct.DISTINCT;
 
-        SelectModifier(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
+    public static final WordMaterialized MATERIALIZED = PostgreWords.KeyWordMaterialized.MATERIALIZED;
 
+    public static final WordMaterialized NOT_MATERIALIZED = PostgreWords.KeyWordMaterialized.NOT_MATERIALIZED;
 
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
+    public static final BooleanTestWord FROM_NORMALIZED = PostgreWords.FromNormalizedWord.FROM_NORMALIZED;
 
-        @Override
-        public final String toString() {
-            return keyWordToString(this);
-        }
-
-
-    }//SelectModifier
-
-
-    private enum KeyWordDistinct implements WordDistinct {
-
-        DISTINCT(" DISTINCT");
-
-        private final String spaceWord;
-
-        KeyWordDistinct(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return keyWordToString(this);
-        }
-    }//KeyWordDistinct
-
-
-    private enum KeyWordMaterialized implements WordMaterialized {
-
-        MATERIALIZED(" MATERIALIZED"),
-        NOT_MATERIALIZED(" NOT MATERIALIZED");
-
-        private final String spaceWord;
-
-        KeyWordMaterialized(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return keyWordToString(this);
-        }
-
-
-    }//KeyWordMaterialized
-
-    private enum FromNormalizedWord implements SQLsSyntax.BooleanTestWord {
-        FROM_NORMALIZED(" FROM NORMALIZED"),
-        NORMALIZED(" NORMALIZED");
-
-        private final String spaceWords;
-
-        FromNormalizedWord(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWords;
-        }
-
-
-        @Override
-        public String toString() {
-            return keyWordToString(this);
-        }
-
-
-    }//FromNormalizedWord
-
-
-    public static final Modifier ALL = SelectModifier.ALL;
-
-    public static final WordDistinct DISTINCT = KeyWordDistinct.DISTINCT;
-
-    public static final WordMaterialized MATERIALIZED = KeyWordMaterialized.MATERIALIZED;
-
-    public static final WordMaterialized NOT_MATERIALIZED = KeyWordMaterialized.NOT_MATERIALIZED;
-
-    public static final SQLsSyntax.BooleanTestWord FROM_NORMALIZED = FromNormalizedWord.FROM_NORMALIZED;
-
-    public static final SQLsSyntax.BooleanTestWord NORMALIZED = FromNormalizedWord.NORMALIZED;
+    public static final BooleanTestWord NORMALIZED = PostgreWords.FromNormalizedWord.NORMALIZED;
 
 
     public static Expression excluded(FieldMeta<?> field) {
@@ -328,6 +231,52 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
         return Expressions.dialectDualExp(left, DualExpOperator.DOUBLE_AMP, right, PostgreExpressions::doubleAmpType);
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json -> integer → json<br>
+     * jsonb -> integer → jsonb<br/>
+     * Extracts n'th element of JSON array (array elements are indexed from zero, but negative integers count from the end).<br/>
+     * '[{"a":"foo"},{"b":"bar"},{"c":"baz"}]'::json -> 2 → {"c":"baz"}
+     * </a>
+     */
+    public static Expression hyphenGt(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, DualExpOperator.HYPHEN_GT, right, PostgreExpressions::hyphenGtType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json ->> integer → text<br>
+     * jsonb ->> integer → text<br/>
+     * Extracts n'th element of JSON array, as text.<br/>
+     * '[1,2,3]'::json ->> 2 → 3<br/>
+     * json ->> text → text<br/>
+     * jsonb ->> text → text<br/>
+     * </a>
+     */
+    public static Expression hyphenGtGt(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, DualExpOperator.HYPHEN_GT_GT, right, PostgreExpressions::hyphenGtGtType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json #> text[] → json<br>
+     * jsonb #> text[] → jsonb<br/>
+     * Extracts JSON sub-object at the specified path, where path elements can be either field keys or array indexes.
+     * '{"a": {"b": ["foo","bar"]}}'::json #> '{a,b,1}' → "bar"
+     * </a>
+     */
+    public static Expression poundGt(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, DualExpOperator.POUND_GT, right, PostgreExpressions::poundGtType);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json #>> text[] → text<br>
+     * jsonb #>> text[] → text<br/>
+     * Extracts JSON sub-object at the specified path as text.
+     * '{"a": {"b": ["foo","bar"]}}'::json #>> '{a,b,1}' → bar
+     * </a>
+     */
+    public static Expression poundGtGt(Expression left, Expression right) {
+        return Expressions.dialectDualExp(left, DualExpOperator.POUND_GT_GT, right, PostgreExpressions::poundGtGtType);
+    }
+
 
     /**
      * <p>
@@ -432,6 +381,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
      * Does first object contain second? Available for these pairs of types: (box, point), (box, box), (path, point), (polygon, point), (polygon, polygon), (circle, point), (circle, circle).
      * </a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery @> tsquery → boolean<br/>
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb @> jsonb → boolean<br/>
      * </a>
      */
     public static IPredicate atGt(Expression left, Expression right) {

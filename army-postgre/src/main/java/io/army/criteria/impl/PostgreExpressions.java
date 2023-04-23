@@ -272,6 +272,51 @@ abstract class PostgreExpressions {
         return returnType;
     }
 
+    static MappingType hyphenGtType(final MappingType left, final MappingType right) {
+        final boolean leftJsonType;
+        leftJsonType = (left instanceof MappingType.SqlJsonType || left instanceof MappingType.SqlJsonbType);
+        final MappingType returnType;
+        if (leftJsonType && (right instanceof MappingType.SqlNumberOrStringType)) {
+            returnType = left;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    static MappingType hyphenGtGtType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if ((left instanceof MappingType.SqlJsonType || left instanceof MappingType.SqlJsonbType)
+                && (right instanceof MappingType.SqlNumberOrStringType)) {
+            returnType = TextType.INSTANCE;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    static MappingType poundGtType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if ((left instanceof MappingType.SqlJsonType || left instanceof MappingType.SqlJsonbType)
+                && (right instanceof MappingType.SqlArrayType && right instanceof MappingType.SqlStringType)) {
+            returnType = left;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    static MappingType poundGtGtType(final MappingType left, final MappingType right) {
+        final MappingType returnType;
+        if ((left instanceof MappingType.SqlJsonType || left instanceof MappingType.SqlJsonbType)
+                && (right instanceof MappingType.SqlArrayType && right instanceof MappingType.SqlStringType)) {
+            returnType = TextType.INSTANCE;
+        } else {
+            returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
 
     /**
      * @see Postgres#atHyphenAt(Expression)

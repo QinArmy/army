@@ -44,6 +44,23 @@ enum DualExpOperator implements Operator.SqlDualExpressionOperator {
     POUND(" #", 20),// postgre only
 
     /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json #> text[] → json<br>
+     * jsonb #> text[] → jsonb<br/>
+     * Extracts JSON sub-object at the specified path, where path elements can be either field keys or array indexes.
+     * '{"a": {"b": ["foo","bar"]}}'::json #> '{a,b,1}' → "bar"
+     * </a>
+     */
+    POUND_GT(" #>", 20),// postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json #>> text[] → text<br>
+     * jsonb #>> text[] → text<br/>
+     * Extracts JSON sub-object at the specified path as text.
+     * '{"a": {"b": ["foo","bar"]}}'::json #>> '{a,b,1}' → bar
+     * </a>
+     */
+    POUND_GT_GT(" #>>", 20),// postgre only
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type ## geometric_type → point<br>
      * Computes the closest point to the first object on the second object. Available for these pairs of types: (point, box), (point, lseg), (point, line), (lseg, box), (lseg, lseg), (line, lseg).
      * </a>
@@ -56,6 +73,26 @@ enum DualExpOperator implements Operator.SqlDualExpressionOperator {
      * </a>
      */
     DOUBLE_AMP(" &&", 20),// postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json -> integer → json<br>
+     * jsonb -> integer → jsonb<br/>
+     * Extracts n'th element of JSON array (array elements are indexed from zero, but negative integers count from the end).<br/>
+     * '[{"a":"foo"},{"b":"bar"},{"c":"baz"}]'::json -> 2 → {"c":"baz"}
+     * </a>
+     */
+    HYPHEN_GT(" ->", 20),// postgre only
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING">json ->> integer → text<br>
+     * jsonb ->> integer → text<br/>
+     * Extracts n'th element of JSON array, as text.<br/>
+     * '[1,2,3]'::json ->> 2 → 3<br/>
+     * json ->> text → text<br/>
+     * jsonb ->> text → text<br/>
+     * </a>
+     */
+    HYPHEN_GT_GT(" ->>", 20),// postgre only
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;-> geometric_type → double precision<br/>
