@@ -3263,13 +3263,82 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                </ul>.
      *                The first argument of funcRef always is {@link JsonbType#TEXT}.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
-     * @see #jsonObjectKeys(Expression)
+     * @see #jsonbObjectKeys(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_object_keys ( json ) → setof text<br/>
      * Returns the set of keys in the top-level JSON object.<br/>
      * </a>
      */
     public static <T> _ColumnWithOrdinalityFunction jsonbObjectKeys(BiFunction<MappingType, T, Expression> funcRef, T value) {
         return jsonbObjectKeys(funcRef.apply(JsonbType.TEXT, value));
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of fields of derived table :<li>
+     * <li>fields follow {@link MappingType.SqlCompositeType#fieldList()}</li>
+     * <li>ordinality (optioinal) : {@link IntegerType}. see {@link _WithOrdinalityClause#withOrdinality()}</li>
+     * </li>
+     * </p>
+     *
+     * @param base composite type expression.
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_populate_record ( base anyelement, from_json json ) → anyelement<br/>
+     * <br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction jsonPopulateRecord(final Expression base, final Expression json) {
+        return _jsonbPopulateRecordFunc("JSON_POPULATE_RECORD", base, json);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of fields of derived table :<li>
+     * <li>fields follow {@link MappingType.SqlCompositeType#fieldList()}</li>
+     * <li>ordinality (optioinal) : {@link IntegerType}. see {@link _WithOrdinalityClause#withOrdinality()}</li>
+     * </li>
+     * </p>
+     *
+     * @param base composite type expression.
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_populate_record ( base anyelement, from_json json ) → anyelement<br/>
+     * <br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction jsonbPopulateRecord(final Expression base, final Expression json) {
+        return _jsonbPopulateRecordFunc("JSONB_POPULATE_RECORD", base, json);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of fields of derived table :<li>
+     * <li>fields follow {@link MappingType.SqlCompositeType#fieldList()}</li>
+     * <li>ordinality (optioinal) : {@link IntegerType}. see {@link _WithOrdinalityClause#withOrdinality()}</li>
+     * </li>
+     * </p>
+     *
+     * @param base composite type expression.
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_populate_recordset ( base anyelement, from_json json ) → anyelement<br/>
+     * <br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction jsonPopulateRecordSet(final Expression base, final Expression json) {
+        return _jsonbPopulateRecordFunc("JSON_POPULATE_RECORDSET", base, json);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of fields of derived table :<li>
+     * <li>fields follow {@link MappingType.SqlCompositeType#fieldList()}</li>
+     * <li>ordinality (optioinal) : {@link IntegerType}. see {@link _WithOrdinalityClause#withOrdinality()}</li>
+     * </li>
+     * </p>
+     *
+     * @param base composite type expression.
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_populate_recordset ( base anyelement, from_json json ) → anyelement<br/>
+     * <br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction jsonbPopulateRecordSet(final Expression base, final Expression json) {
+        return _jsonbPopulateRecordFunc("JSONB_POPULATE_RECORDSET", base, json);
     }
 
 
@@ -3478,6 +3547,23 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         }
         argList.add(columnsClause);
         return PostgreFunctionUtils.compositeTabularFunc(name, argList, selectionList, columnsClause.getSelectionMap());
+    }
+
+
+    /**
+     * @see #jsonPopulateRecord(Expression, Expression)
+     * @see #jsonbPopulateRecord(Expression, Expression)
+     * @see #jsonPopulateRecordSet(Expression, Expression)
+     * @see #jsonbPopulateRecordSet(Expression, Expression)
+     */
+    private static _TabularWithOrdinalityFunction _jsonbPopulateRecordFunc(final String name, final Expression base,
+                                                                           final Expression json) {
+        if (base instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) base).isDelay()) {
+            throw CriteriaUtils.tabularFuncErrorPosition(name);
+        }
+        final List<Selection> fieldList;
+        fieldList = DialectFunctionUtils.compositeFieldList(name, base);
+        return DialectFunctionUtils.twoArgTabularFunc(name, base, json, fieldList);
     }
 
 

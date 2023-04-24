@@ -6,6 +6,7 @@ import io.army.criteria.TypeInfer;
 import io.army.dialect.NotSupportDialectException;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
+import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
@@ -20,6 +21,7 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 import java.time.temporal.Temporal;
+import java.util.List;
 import java.util.function.BiFunction;
 
 public abstract class MappingType implements TypeMeta, TypeInfer {
@@ -482,10 +484,26 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
     }
 
 
-    public interface SqlUserDefinedType {
+    /**
+     * private interface
+     */
+    private interface TypeNameSpec {
 
         String sqlTypeName(ServerMeta meta);
     }
+
+    public interface SqlUserDefinedType extends TypeNameSpec {
+
+
+    }
+
+    public interface SqlCompositeType extends TypeNameSpec {
+
+        List<CompositeTypeField> fieldList();
+
+    }
+
+
 
 
     /*-------------------below protected interfaces -------------------*/

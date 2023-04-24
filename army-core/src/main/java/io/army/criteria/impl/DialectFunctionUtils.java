@@ -11,8 +11,9 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
+import io.army.mapping.MappingType;
+import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.TypeMeta;
-import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -101,6 +102,27 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             throw CriteriaUtils.funcArgError(name, four);
         }
         return new FourArgColumnFunction(name, defaultSelectionAlias, one, two, three, four, returnType);
+    }
+
+    static List<Selection> compositeFieldList(final String name, final Expression compositeExp) {
+        final MappingType type;
+        type = compositeExp.typeMeta().mappingType();
+        if (!(type instanceof MappingType.SqlCompositeType)) {
+            throw CriteriaUtils.notCompositeType(name, compositeExp);
+        }
+        final List<CompositeTypeField> fieldList;
+        fieldList = ((MappingType.SqlCompositeType) type).fieldList();
+        final int fieldSize;
+        if ((fieldSize = fieldList.size()) == 0) {
+            String m = String.format("%s's fieldMap() return empty.", type);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        final List<Selection> selectionList;
+        selectionList = _Collections.arrayList(fieldSize);
+        for (CompositeTypeField field : fieldList) {
+            selectionList.add(ArmySelections.forName(field.name, field.type));
+        }
+        return selectionList;
     }
 
     /**
@@ -269,7 +291,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             fieldList.add(ArmySelections.forName(columnFunction.name.toLowerCase(Locale.ROOT), columnFunction.returnType));
             fieldList.add(ArmySelections.forName(ORDINALITY, LongType.INSTANCE));
 
-            this.funcFieldList = _ArrayUtils.asUnmodifiableList(fieldList);
+            this.funcFieldList = Collections.unmodifiableList(fieldList);
             this.withOrdinality = withOrdinality;
         }
 

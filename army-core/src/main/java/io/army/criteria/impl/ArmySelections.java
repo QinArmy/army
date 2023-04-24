@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Selection;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
@@ -40,7 +41,12 @@ abstract class ArmySelections implements _Selection {
     }
 
 
-    static Selection forName(final String alias, final TypeMeta typeMeta) {
+    static Selection forName(final @Nullable String alias, final @Nullable TypeMeta typeMeta) {
+        if (alias == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (typeMeta == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
         final Selection selection;
         if (typeMeta instanceof TypeMeta.Delay && ((TypeMeta.Delay) typeMeta).isDelay()) {
             selection = new DelaySelectionForName(alias, (TypeMeta.Delay) typeMeta);

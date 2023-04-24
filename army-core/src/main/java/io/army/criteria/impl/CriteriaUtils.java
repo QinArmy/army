@@ -680,6 +680,12 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
+    static CriteriaException notCompositeType(String funcName, Expression exp) {
+        String m = String.format("%s isn't composite type expression,function[%s] don't support"
+                , _ClassUtils.safeClassName(exp), funcName);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
     static CriteriaException funcArgListIsEmpty(String name) {
         String m = String.format("function %s argument list must non-empty.", name);
         return ContextStack.clearStackAndCriteriaError(m);
