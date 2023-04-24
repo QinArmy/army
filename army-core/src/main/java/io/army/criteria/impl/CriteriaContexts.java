@@ -267,7 +267,7 @@ abstract class CriteriaContexts {
             }
         } else if (field instanceof DerivedSelection) {
             final DerivedSelection ref = (DerivedSelection) field;
-            if (ref.selection.selectionName().equals(alias)) {
+            if (ref.selection.alias().equals(alias)) {
                 selection = ref;
             } else {
                 selection = new DerivedAliasSelection(field, alias);
@@ -2421,13 +2421,13 @@ abstract class CriteriaContexts {
                 case 1: {
                     final Selection selection;
                     selection = selectionList.get(0);
-                    selectionMap = Collections.singletonMap(selection.selectionName(), selection);
+                    selectionMap = Collections.singletonMap(selection.alias(), selection);
                 }
                 break;
                 default: {
                     selectionMap = new HashMap<>((int) (selectionSize / 0.75f));
                     for (Selection selection : selectionList) {
-                        selectionMap.put(selection.selectionName(), selection);// override,if duplication
+                        selectionMap.put(selection.alias(), selection);// override,if duplication
                     }
                     selectionMap = Collections.unmodifiableMap(selectionMap);
                 }
@@ -2892,7 +2892,7 @@ abstract class CriteriaContexts {
 
         @Override
         public String fieldName() {
-            return this.selection.selectionName();
+            return this.selection.alias();
         }
 
         @Override
@@ -2901,8 +2901,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public String selectionName() {
-            return this.selection.selectionName();
+        public String alias() {
+            return this.selection.alias();
         }
 
 
@@ -2910,7 +2910,7 @@ abstract class CriteriaContexts {
         public void appendSelectItem(final _SqlContext context) {
             final DialectParser dialect = context.parser();
 
-            final String safeFieldName = dialect.identifier(this.selection.selectionName());
+            final String safeFieldName = dialect.identifier(this.selection.alias());
 
             final StringBuilder builder;
             builder = context.sqlBuilder()
@@ -2932,7 +2932,7 @@ abstract class CriteriaContexts {
 
             dialect.identifier(this.tableName, builder)
                     .append(_Constant.POINT);
-            dialect.identifier(this.selection.selectionName(), builder);
+            dialect.identifier(this.selection.alias(), builder);
 
         }
 
@@ -2958,7 +2958,7 @@ abstract class CriteriaContexts {
 
         @Override
         public String toString() {
-            return String.format(" %s.%s", this.tableName, this.selection.selectionName());
+            return String.format(" %s.%s", this.tableName, this.selection.alias());
         }
 
     }//DerivedSelection
@@ -3008,7 +3008,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public String selectionName() {
+        public String alias() {
             return this.fieldName;
         }
 
@@ -3101,7 +3101,7 @@ abstract class CriteriaContexts {
                     .append(_Constant.SPACE);
 
             context.parser()
-                    .identifier(((RefSelection) this).selection.selectionName(), builder);
+                    .identifier(((RefSelection) this).selection.alias(), builder);
         }
 
     }// NameRefSelection
@@ -3217,7 +3217,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public String selectionName() {
+        public String alias() {
             return this.alias;
         }
 

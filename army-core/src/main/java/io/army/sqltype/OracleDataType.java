@@ -17,5 +17,10 @@ public enum OracleDataType implements SqlType {
         return Database.Oracle;
     }
 
+    @Override
+    public final boolean isUserDefined() {
+        throw new UnsupportedOperationException();
+    }
+
 
 }

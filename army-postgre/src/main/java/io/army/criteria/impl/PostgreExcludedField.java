@@ -38,7 +38,7 @@ final class PostgreExcludedField extends OperationDataField implements _Selectio
     }
 
     @Override
-    public String selectionName() {
+    public String alias() {
         return this.field.fieldName();
     }
 

@@ -13,6 +13,8 @@ public interface SqlType {
 
     Database database();
 
+    boolean isUserDefined();
+
     default boolean isNoPrecision() {
         throw new UnsupportedOperationException();
     }

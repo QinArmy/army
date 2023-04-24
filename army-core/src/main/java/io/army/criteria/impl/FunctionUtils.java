@@ -2,8 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner._DerivedTable;
-import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.standard.SQLFunction;
@@ -12,12 +10,10 @@ import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
-import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping.VoidType;
 import io.army.meta.TypeMeta;
-import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -249,52 +245,6 @@ abstract class FunctionUtils {
         return new NamedNotation(name, (ArmyExpression) argument);
     }
 
-    static Functions._ColumnFunction oneArgDerivedFunction(final String name, final Expression one,
-                                                           final TypeMeta returnType) {
-        if (one instanceof SqlValueParam.MultiValue) {
-            throw CriteriaUtils.funcArgError(name, one);
-        }
-        return new OneArgScalarTabularFunction(name, one, returnType);
-    }
-
-    static Functions._ColumnFunction twoArgDerivedFunction(final String name, final Expression one, final Expression two,
-                                                           final TypeMeta returnType) {
-        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, two);
-        }
-        return new TwoArgScalarTabularFunction(name, one, two, returnType);
-    }
-
-    static Functions._ColumnFunction threeArgDerivedFunction(final String name, final Expression one, final Expression two,
-                                                             final Expression three,
-                                                             final TypeMeta returnType) {
-        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, two);
-        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, three);
-        }
-        return new ThreeArgScalarTabularFunction(name, one, two, three, returnType);
-    }
-
-    static Functions._ColumnFunction fourArgScalarFunction(final String name, final Expression one, final Expression two,
-                                                           final Expression three, final Expression four,
-                                                           final TypeMeta returnType) {
-        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, two);
-        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, three);
-        } else if (!(four instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, four);
-        }
-        return new FourArgScalarTabularFunction(name, one, two, three, four, returnType);
-    }
-
 
     static SimplePredicate twoArgPredicateFunc(final String name, final Expression one, final Expression two) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
@@ -330,7 +280,16 @@ abstract class FunctionUtils {
         if (!(exp instanceof FunctionArg)) {
             throw CriteriaUtils.funcArgError(name, exp);
         }
-        return new OneArgFunction(name, (ArmyExpression) exp, returnType);
+        return new OneArgFunction(name, exp, returnType);
+    }
+
+    static SimpleExpression oneAndMulti(String name, Expression one, Expression multi, TypeMeta returnType) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (!(multi instanceof FunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, multi);
+        }
+        return new TwoArgFunction(name, one, multi, returnType);
     }
 
     static SimpleExpression twoOrMultiArgFunc(final String name, final Expression one, final Expression two,
@@ -340,7 +299,7 @@ abstract class FunctionUtils {
         }
         final List<ArmyExpression> argList;
         argList = Arrays.asList((ArmyExpression) one, (ArmyExpression) two);
-        return new MultiArgFunctionExpression(name, null, argList, returnType);
+        return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
     static SimpleExpression oneAndMultiArgFunc(final String name, final Expression exp, final List<Expression> expList,
@@ -357,32 +316,69 @@ abstract class FunctionUtils {
         for (Expression e : expList) {
             argList.add((ArmyExpression) e);
         }
-        return new MultiArgFunctionExpression(name, null, argList, returnType);
+        return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
     static SimpleExpression twoAndMultiArgFunc(final String name, final Expression exp1, Expression exp2,
                                                final List<Expression> expList, final TypeMeta returnType) {
-        return new MultiArgFunctionExpression(name, null, twoAndMultiExpList(name, exp1, exp2, expList), returnType);
+        return new MultiArgFunctionExpression(name, twoAndMultiExpList(name, exp1, exp2, expList), returnType);
     }
 
     static SimpleExpression multiArgFunc(String name, List<Expression> argList, TypeMeta returnType) {
-        return new MultiArgFunctionExpression(name, null, expList(name, argList), returnType);
+        return new MultiArgFunctionExpression(name, expList(name, argList), returnType);
     }
+
+    static SimpleExpression varargsFunc(String name, Consumer<Consumer<Expression>> consumer, TypeMeta returnType) {
+        return new MultiArgFunctionExpression(name, varargsArgs(name, consumer), returnType);
+    }
+
+    static SimpleExpression varargsFunc(final String name, final TypeMeta returnType, final Expression first,
+                                        final @Nullable Expression... rest) {
+        if (!(first instanceof FunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, first);
+        }
+        final SimpleExpression func;
+        if (rest == null || rest.length == 0) {
+            func = new OneArgFunction(name, first, returnType);
+        } else {
+            final List<FunctionArg> argList;
+            argList = _Collections.arrayList(1 + rest.length);
+            argList.add((FunctionArg) first);
+            appendRestVarargsArgs(name, argList, rest);
+            func = new MultiArgFunctionExpression(name, argList, returnType);
+        }
+        return func;
+    }
+
 
     static SimpleExpression oneAndRestFunc(String name, TypeMeta returnType, Expression first, Expression... rest) {
         if (first instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, first);
         }
         final SimpleExpression func;
-        if (rest.length == 0) {
-            func = new OneArgFunction(name, (ArmyExpression) first, returnType);
+        if (rest.length > 0) {
+            func = new OneArgFunction(name, first, returnType);
         } else {
-            final List<ArmyExpression> argList = new ArrayList<>(1 + rest.length);
+            final List<ArmyExpression> argList = _Collections.arrayList(1 + rest.length);
             argList.add((ArmyExpression) first);
-            addRestExp(argList, rest);
-            func = new MultiArgFunctionExpression(name, null, argList, returnType);
+            addRestExp(name, argList, rest);
+            func = new MultiArgFunctionExpression(name, argList, returnType);
         }
         return func;
+    }
+
+    static SimpleExpression oneAndAtLeastFunc(String name, TypeMeta returnType, Expression one, Expression first,
+                                              Expression... rest) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, first);
+        } else if (!(first instanceof FunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, first);
+        }
+        final List<ArmyExpression> argList = _Collections.arrayList(2 + rest.length);
+        argList.add((ArmyExpression) one);
+        argList.add((ArmyExpression) first);
+        addRestExp(name, argList, rest);
+        return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
 
@@ -402,7 +398,7 @@ abstract class FunctionUtils {
             }
             argList.add((ArmyExpression) arg);
         }
-        return new MultiArgFunctionExpression(name, null, argList, returnType);
+        return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
 
@@ -416,7 +412,7 @@ abstract class FunctionUtils {
             }
             argList.add((ArmyExpression) exp);
         }
-        return new MultiArgFunctionExpression(name, null, argList, returnType);
+        return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
     static SimpleExpression multiNotationFunc(final String name, final TypeMeta returnType, final Predicate<String> validator,
@@ -443,7 +439,7 @@ abstract class FunctionUtils {
 
 
     static SimpleExpression safeMultiArgFunc(String name, List<ArmyExpression> argList, TypeMeta returnType) {
-        return new MultiArgFunctionExpression(name, null, argList, returnType);
+        return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
     static SimpleExpression clauseFunc(String name, ArmyFuncClause clause, TypeMeta returnType) {
@@ -501,7 +497,7 @@ abstract class FunctionUtils {
         } else {
             final List<ArmyExpression> argList = new ArrayList<>(1 + rest.length);
             argList.add((ArmyExpression) first);
-            addRestExp(argList, rest);
+            addRestExp(name, argList, rest);
             func = new MultiArgFuncPredicate(name, null, argList);
         }
         return func;
@@ -538,25 +534,6 @@ abstract class FunctionUtils {
         return new NamedComplexArgFunc(name, argList, returnType, expAlias);
     }
 
-    static Functions._TabularWithOrdinalityFunction oneArgTabularFunc(final String name, final Expression one,
-                                                                      final List<Selection> funcFieldList) {
-        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, one);
-        }
-        return new OneArgTabularFunction(name, one, funcFieldList);
-    }
-
-    static Functions._TabularWithOrdinalityFunction twoArgTabularFunc(final String name, final Expression one,
-                                                                      final Expression two,
-                                                                      final List<Selection> funcFieldList) {
-        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, one);
-        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, two);
-        }
-        return new TwoArgTabularFunction(name, one, two, funcFieldList);
-    }
-
     static OrderByOptionClause orderByOptionClause() {
         return new OrderByOptionClause();
     }
@@ -566,9 +543,71 @@ abstract class FunctionUtils {
         return new JsonObjectFunc(name, expMap, returnType);
     }
 
+    /**
+     * @see #varargsFunc(String, TypeMeta, Expression, Expression...)
+     */
+    static void appendRestVarargsArgs(final String name, final List<? super FunctionArg> argList,
+                                      final Expression... rest) {
+        for (Expression exp : rest) {
+            if (!(exp instanceof FunctionArg)) {
+                throw CriteriaUtils.funcArgError(name, exp);
+            }
+            argList.add((FunctionArg) exp);
+        }
 
-    static void appendArguments(final @Nullable SQLWords option, final List<ArmyExpression> argList
-            , final _SqlContext context) {
+    }
+
+    /**
+     * @see #varargsFunc(String, Consumer, TypeMeta)
+     */
+    static List<FunctionArg> varargsArgs(final String name, final Consumer<Consumer<Expression>> consumer) {
+        final List<FunctionArg> list;
+        list = _Collections.arrayList();
+
+        consumer.accept(e -> {
+            if (!(e instanceof FunctionArg)) {
+                throw CriteriaUtils.funcArgError(name, e);
+            }
+            list.add((FunctionArg) e);
+        });
+        if (list.size() == 0) {
+            throw CriteriaUtils.funcArgListIsEmpty(name);
+        }
+        return list;
+    }
+
+    /**
+     * @param name function name
+     * @return a unmodified list
+     */
+    static List<String> pairMapToList(final String name, final Map<String, String> map) {
+        final int pairSize;
+        if ((pairSize = map.size()) == 0) {
+            String m = String.format("function[%s] pair map must be non-empty.", name);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        final List<String> pairList;
+        pairList = _Collections.arrayList(pairSize << 1);
+        for (Map.Entry<String, String> pair : map.entrySet()) {
+            pairList.add(pair.getKey());
+            pairList.add(pair.getValue());
+        }
+        return Collections.unmodifiableList(pairList);
+    }
+
+    static List<String> pairConsumerToList(final Consumer<BiConsumer<String, String>> consumer) {
+        final List<String> pairList;
+        pairList = _Collections.arrayList();
+        consumer.accept((key, value) -> {
+            pairList.add(key);
+            pairList.add(value);
+        });
+        return Collections.unmodifiableList(pairList);
+    }
+
+
+    static void appendArguments(final @Nullable SQLWords option, final List<? extends ArmyExpression> argList,
+                                final _SqlContext context) {
 
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder();
@@ -591,7 +630,7 @@ abstract class FunctionUtils {
 
     }
 
-    static void argumentsToString(final @Nullable SQLWords option, final List<ArmyExpression> argList
+    static void argumentsToString(final @Nullable SQLWords option, final List<? extends ArmyExpression> argList
             , final StringBuilder builder) {
 
         if (option != null) {
@@ -669,9 +708,12 @@ abstract class FunctionUtils {
     }
 
 
-    static void addRestExp(List<ArmyExpression> expList, Expression... rest) {
+    static void addRestExp(final String name, final List<? super FunctionArg> expList, final Expression... rest) {
         for (Expression exp : rest) {
-            expList.add((ArmyExpression) exp);
+            if (!(exp instanceof FunctionArg)) {
+                throw CriteriaUtils.funcArgError(name, exp);
+            }
+            expList.add((FunctionArg) exp);
         }
     }
 
@@ -762,19 +804,16 @@ abstract class FunctionUtils {
         sqlBuilder.append(_Constant.RIGHT_PAREN);
     }
 
-    /**
-     * @see MultiFieldTabularFunction#refSelection(String)
-     * @see ColumnTabularFunctionWrapper#refSelection(String)
-     */
+
     static Map<String, Selection> createSelectionMapFrom(final @Nullable CriteriaContext context,
                                                          final List<? extends Selection> selectionList) {
         final Map<String, Selection> map = _Collections.hashMap((int) (selectionList.size() / 0.75F));
         for (Selection s : selectionList) {
-            if (map.putIfAbsent(s.selectionName(), s) == null) {
+            if (map.putIfAbsent(s.alias(), s) == null) {
                 continue;
             }
             String m = String.format("Tabular %s %s name[%s] duplication.", SQLFunction.class.getName(),
-                    Selection.class.getName(), s.selectionName());
+                    Selection.class.getName(), s.alias());
             final CriteriaException e;
             if (context == null) {
                 e = ContextStack.clearStackAndCriteriaError(m);
@@ -1319,9 +1358,9 @@ abstract class FunctionUtils {
 
         private final ArmyExpression argument;
 
-        private OneArgFunction(String name, ArmyExpression argument, TypeMeta returnType) {
+        private OneArgFunction(String name, Expression argument, TypeMeta returnType) {
             super(name, returnType);
-            this.argument = argument;
+            this.argument = (ArmyExpression) argument;
         }
 
         @Override
@@ -1860,26 +1899,23 @@ abstract class FunctionUtils {
 
     private static final class MultiArgFunctionExpression extends FunctionExpression {
 
-        private final SQLWords option;
 
-        private final List<ArmyExpression> argList;
+        private final List<? extends ArmyExpression> argList;
 
-        private MultiArgFunctionExpression(String name, @Nullable final SQLWords option
-                , List<ArmyExpression> argList, TypeMeta returnType) {
+        private MultiArgFunctionExpression(String name, List<? extends ArmyExpression> argList, TypeMeta returnType) {
             super(name, returnType);
             assert argList.size() > 0;
-            this.option = option;
             this.argList = argList;
         }
 
         @Override
         void appendArg(final _SqlContext context) {
-            FunctionUtils.appendArguments(this.option, this.argList, context);
+            FunctionUtils.appendArguments(null, this.argList, context);
         }
 
         @Override
         void argToString(final StringBuilder builder) {
-            FunctionUtils.argumentsToString(this.option, this.argList, builder);
+            FunctionUtils.argumentsToString(null, this.argList, builder);
         }
 
 
@@ -2204,593 +2240,6 @@ abstract class FunctionUtils {
 
     }//ComplexArgFuncExpression
 
-    private static abstract class TabularSqlFunction implements _DerivedTable,
-            Functions._TabularFunction, _SelfDescribed {
-
-        static final String ORDINALITY = "ordinality";
-
-        private static final String SPACE_WITH_ORDINALITY = " WITH ORDINALITY";
-
-        final CriteriaContext outerContext;
-
-        final String name;
-
-        private TabularSqlFunction(String name) {
-            this.name = name;
-            this.outerContext = ContextStack.peek();
-        }
-
-        private TabularSqlFunction(ColumnTabularFunction columnFunction) {
-            this.outerContext = columnFunction.outerContext;
-            this.name = columnFunction.name;
-        }
-
-
-        @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-
-            if (context.isLowerFunctionName()) {
-                sqlBuilder.append(this.name.toLowerCase(Locale.ROOT));
-            } else {
-                sqlBuilder.append(this.name);
-            }
-            sqlBuilder.append(_Constant.LEFT_PAREN);
-
-            appendArg(context);
-
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
-            if (this.isWithOrdinality()) {
-                sqlBuilder.append(SPACE_WITH_ORDINALITY);
-            }
-
-        }
-
-        @Override
-        public final int hashCode() {
-            return super.hashCode();
-        }
-
-        @Override
-        public final boolean equals(Object obj) {
-            return obj == this;
-        }
-
-        @Override
-        public final String toString() {
-            final StringBuilder builder = new StringBuilder();
-            builder.append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
-            argToString(builder);
-            builder.append(_Constant.SPACE_RIGHT_PAREN);
-            if (this.isWithOrdinality()) {
-                builder.append(SPACE_WITH_ORDINALITY);
-            }
-            return builder.toString();
-        }
-
-        abstract void appendArg(_SqlContext context);
-
-        abstract void argToString(StringBuilder builder);
-
-        private boolean isWithOrdinality() {
-            final boolean withOrdinality;
-            if (this instanceof MultiFieldTabularFunction) {
-                final Boolean v = ((MultiFieldTabularFunction) this).ordinality;
-                withOrdinality = v != null && v;
-            } else if (this instanceof ColumnTabularFunctionWrapper) {
-                withOrdinality = ((ColumnTabularFunctionWrapper) this).withOrdinality;
-            } else if (this instanceof ColumnTabularFunction) {
-                withOrdinality = false;
-            } else {
-                // no bug, never here
-                throw new IllegalArgumentException();
-            }
-            return withOrdinality;
-        }
-
-
-    }//TabularSqlFunction
-
-
-    private static final class ColumnTabularFunctionWrapper extends TabularSqlFunction {
-
-        private final ColumnTabularFunction columnFunction;
-
-        private final List<Selection> funcFieldList;
-
-        private final boolean withOrdinality;
-
-        private Map<String, Selection> selectionMap;
-
-        private ColumnTabularFunctionWrapper(ColumnTabularFunction columnFunction, boolean withOrdinality) {
-            super(columnFunction);
-            this.columnFunction = columnFunction;
-            final List<Selection> fieldList = _Collections.arrayList(2);
-            fieldList.add(ArmySelections.forName(columnFunction.name.toLowerCase(Locale.ROOT), columnFunction.returnType));
-            fieldList.add(ArmySelections.forName(ORDINALITY, LongType.INSTANCE));
-
-            this.funcFieldList = _ArrayUtils.asUnmodifiableList(fieldList);
-            this.withOrdinality = withOrdinality;
-        }
-
-        @Override
-        void appendArg(_SqlContext context) {
-            this.columnFunction.appendArg(context);
-        }
-
-        @Override
-        void argToString(StringBuilder builder) {
-            this.columnFunction.argToString(builder);
-        }
-
-        @Override
-        public Selection refSelection(final @Nullable String name) {
-            if (name == null) {
-                throw ContextStack.nullPointer(this.outerContext);
-            }
-            Map<String, Selection> selectionMap = this.selectionMap;
-            if (selectionMap == null) {
-                selectionMap = createSelectionMapFrom(this.outerContext, this.funcFieldList);
-                this.selectionMap = selectionMap;
-            }
-            return selectionMap.get(name);
-        }
-
-        @Override
-        public List<? extends Selection> refAllSelection() {
-            return this.funcFieldList;
-        }
-
-
-    }//ColumnTabularFunctionWrapper
-
-
-    private static abstract class ColumnTabularFunction extends TabularSqlFunction
-            implements Functions._ColumnWithOrdinalityFunction, _Selection {
-
-        private final TypeMeta returnType;
-
-        private String selectionName;
-
-        private TypeMeta mapToType;
-
-        private Boolean ordinality;
-
-        private ColumnTabularFunction(String name, TypeMeta returnType) {
-            super(name);
-            this.returnType = returnType;
-        }
-
-        @Override
-        public final Selection as(final @Nullable String selectionAlas) {
-            if (this.ordinality != null || this.selectionName != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            } else if (selectionAlas == null) {
-                throw ContextStack.nullPointer(this.outerContext);
-            }
-            this.selectionName = selectionAlas;
-            return this;
-        }
-
-        @Override
-        public final String selectionName() {
-            final String selectionName = this.selectionName;
-            if (selectionName == null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            return selectionName;
-        }
-
-
-        @Override
-        public final void appendSelectItem(final _SqlContext context) {
-            final String selectionName = this.selectionName;
-            if (this.ordinality != null || selectionName == null) {
-                throw _Exceptions.castCriteriaApi();
-            }
-            this.appendSql(context);
-
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_AS_SPACE);
-
-            context.parser().identifier(selectionName, sqlBuilder);
-
-        }
-
-        @Override
-        public final Functions._TabularFunction withOrdinality() {
-            if (this.ordinality != null || this.selectionName != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            this.ordinality = Boolean.TRUE;
-            return new ColumnTabularFunctionWrapper(this, true);
-        }
-
-        @Override
-        public final Functions._TabularFunction ifWithOrdinality(BooleanSupplier predicate) {
-            if (this.ordinality != null || this.selectionName != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            final boolean withOrdinality;
-            withOrdinality = predicate.getAsBoolean();
-            this.ordinality = withOrdinality;
-            return new ColumnTabularFunctionWrapper(this, withOrdinality);
-        }
-
-        @Override
-        public final Selection refSelection(final String name) {
-            final String selectionName = this.selectionName;
-            if (this.ordinality != null || selectionName == null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            return selectionName.equals(name) ? this : null;
-        }
-
-        @Override
-        public final List<? extends Selection> refAllSelection() {
-            if (this.ordinality != null || this.selectionName == null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            return Collections.singletonList(this);
-        }
-
-        @Override
-        public final TypeMeta typeMeta() {
-            if (this.ordinality != null || this.selectionName == null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            TypeMeta type = this.mapToType;
-            if (type == null) {
-                type = this.returnType;
-            }
-            return type;
-        }
-
-        @Override
-        public final SelectionSpec mapTo(final @Nullable TypeMeta mapType) {
-            if (this.ordinality != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            } else if (this.mapToType != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            } else if (mapType == null) {
-                throw ContextStack.nullPointer(this.outerContext);
-            }
-            this.mapToType = mapType;
-            return this;
-        }
-
-        @Override
-        public final TableField tableField() {
-            if (this.ordinality != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            // always null
-            return null;
-        }
-
-        @Override
-        public final Expression underlyingExp() {
-            if (this.ordinality != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            // always null
-            return null;
-        }
-
-
-    }//ScalarTabularFunction
-
-
-    private static final class OneArgScalarTabularFunction extends ColumnTabularFunction {
-
-        private final ArmyExpression one;
-
-        /**
-         * @see #oneArgDerivedFunction(String, Expression, TypeMeta)
-         */
-        private OneArgScalarTabularFunction(String name, Expression one, TypeMeta returnType) {
-            super(name, returnType);
-            this.one = (ArmyExpression) one;
-        }
-
-
-        @Override
-        void appendArg(final _SqlContext context) {
-            this.one.appendSql(context);
-        }
-
-        @Override
-        void argToString(final StringBuilder builder) {
-            builder.append(this.one);
-        }
-
-
-    }//OneArgScalarTabularFunction
-
-
-    private static final class TwoArgScalarTabularFunction extends ColumnTabularFunction {
-
-        private final ArmyExpression one;
-
-        private final ArmyExpression two;
-
-        private TwoArgScalarTabularFunction(String name, Expression one, Expression two, TypeMeta returnType) {
-            super(name, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
-        }
-
-
-        @Override
-        void appendArg(final _SqlContext context) {
-            this.one.appendSql(context);
-            context.sqlBuilder().append(_Constant.SPACE_COMMA);
-            this.two.appendSql(context);
-        }
-
-        @Override
-        void argToString(final StringBuilder builder) {
-            builder.append(this.one)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.two);
-        }
-
-
-    }//TwoArgScalarTabularFunction
-
-
-    private static final class ThreeArgScalarTabularFunction extends ColumnTabularFunction {
-
-        private final ArmyExpression one;
-
-        private final ArmyExpression two;
-
-        private final ArmyExpression three;
-
-        private ThreeArgScalarTabularFunction(String name, Expression one, Expression two, Expression three,
-                                              TypeMeta returnType) {
-            super(name, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
-            this.three = (ArmyExpression) three;
-        }
-
-
-        @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
-
-            this.one.appendSql(context);
-            sqlBuilder.append(_Constant.SPACE_COMMA);
-
-            this.two.appendSql(context);
-            sqlBuilder.append(_Constant.SPACE_COMMA);
-
-            this.three.appendSql(context);
-
-        }
-
-        @Override
-        void argToString(final StringBuilder builder) {
-            builder.append(this.one)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.two)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.three);
-        }
-
-
-    }//ThreeArgScalarTabularFunction
-
-    private static final class FourArgScalarTabularFunction extends ColumnTabularFunction {
-
-        private final ArmyExpression one;
-
-        private final ArmyExpression two;
-
-        private final ArmyExpression three;
-
-        private final ArmyExpression four;
-
-        /**
-         * @see #fourArgScalarFunction(String, Expression, Expression, Expression, Expression, TypeMeta)
-         */
-        private FourArgScalarTabularFunction(String name, Expression one, Expression two, Expression three, Expression four,
-                                             TypeMeta returnType) {
-            super(name, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
-            this.three = (ArmyExpression) three;
-            this.four = (ArmyExpression) four;
-        }
-
-
-        @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
-
-            this.one.appendSql(context);
-            sqlBuilder.append(_Constant.SPACE_COMMA);
-
-            this.two.appendSql(context);
-            sqlBuilder.append(_Constant.SPACE_COMMA);
-
-            this.three.appendSql(context);
-            sqlBuilder.append(_Constant.SPACE_COMMA);
-
-            this.four.appendSql(context);
-
-        }
-
-        @Override
-        void argToString(final StringBuilder builder) {
-            builder.append(this.one)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.two)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.three)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.four);
-        }
-
-
-    }//FourArgScalarTabularFunction
-
-    private static abstract class MultiFieldTabularFunction extends TabularSqlFunction
-            implements Functions._TabularWithOrdinalityFunction {
-
-
-        private final List<Selection> funcFieldList;
-
-        private List<Selection> actualFuncFieldList;
-
-        private Map<String, Selection> fieldMap;
-
-        private Boolean ordinality;
-
-
-        private MultiFieldTabularFunction(String name, List<Selection> funcFieldList) {
-            super(name);
-            assert funcFieldList.size() > 0;
-            this.funcFieldList = Collections.unmodifiableList(funcFieldList);
-            this.actualFuncFieldList = this.funcFieldList;
-        }
-
-        @Override
-        public final Selection refSelection(final @Nullable String name) {
-            if (this.ordinality == null) {
-                this.ordinality = Boolean.FALSE;
-            }
-            if (name == null) {
-                throw ContextStack.nullPointer(this.outerContext);
-            }
-            Map<String, Selection> fieldMap = this.fieldMap;
-            if (fieldMap == null) {
-                fieldMap = createSelectionMapFrom(this.outerContext, this.refAllSelection());// must invoke this.refAllSelection()
-                this.fieldMap = fieldMap;
-            }
-            return fieldMap.get(name);
-        }
-
-        @Override
-        public final List<? extends Selection> refAllSelection() {
-
-            final Boolean ordinality = this.ordinality;
-            if (ordinality == null) {
-                this.ordinality = Boolean.FALSE;
-            }
-
-            final List<Selection> actualFieldList = this.actualFuncFieldList;
-            if (actualFieldList == this.funcFieldList) {
-                assert ordinality == null || !ordinality;
-            } else {
-                final int actualFieldsSize;
-                actualFieldsSize = actualFieldList.size();
-
-                assert ordinality != null && ordinality;
-                assert actualFieldsSize - this.funcFieldList.size() == 1;
-                assert actualFieldList.get(actualFieldsSize - 1).selectionName().equals(ORDINALITY);
-            }
-            return actualFieldList;
-        }
-
-        @Override
-        public final Functions._TabularFunction withOrdinality() {
-            if (this.ordinality != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            final List<Selection> list = new ArrayList<>(this.funcFieldList.size() + 1);
-            list.addAll(this.funcFieldList);
-            list.add(ArmySelections.forName(ORDINALITY, LongType.INSTANCE));
-            this.actualFuncFieldList = Collections.unmodifiableList(list);
-
-            this.ordinality = Boolean.TRUE;
-            return this;
-        }
-
-        @Override
-        public final Functions._TabularFunction ifWithOrdinality(final BooleanSupplier predicate) {
-            if (this.ordinality != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            } else if (predicate.getAsBoolean()) {
-                this.withOrdinality();
-            } else {
-                this.ordinality = Boolean.FALSE;
-            }
-            return this;
-        }
-
-
-    }//MultiFieldTabularFunction
-
-
-    private static final class OneArgTabularFunction extends MultiFieldTabularFunction {
-
-        private final FunctionArg one;
-
-        /**
-         * @see #oneArgTabularFunc(String, Expression, List)
-         */
-        private OneArgTabularFunction(String name, Expression one, List<Selection> funcFieldList) {
-            super(name, funcFieldList);
-            this.one = (FunctionArg) one;
-        }
-
-
-        @Override
-        void appendArg(_SqlContext context) {
-            this.one.appendSql(context);
-        }
-
-        @Override
-        void argToString(StringBuilder builder) {
-            builder.append(this.one);
-        }
-
-
-    }//OneArgTabularFunction
-
-    private static final class TwoArgTabularFunction extends MultiFieldTabularFunction {
-
-        private final FunctionArg one;
-
-        private final FunctionArg two;
-
-        /**
-         * @see #twoArgTabularFunc(String, Expression, Expression, List)
-         */
-        private TwoArgTabularFunction(String name, Expression one, Expression two, List<Selection> funcFieldList) {
-            super(name, funcFieldList);
-            this.one = (FunctionArg) one;
-            this.two = (FunctionArg) two;
-        }
-
-
-        @Override
-        void appendArg(_SqlContext context) {
-            this.one.appendSql(context);
-            context.sqlBuilder().append(_Constant.SPACE_COMMA);
-            this.two.appendSql(context);
-        }
-
-        @Override
-        void argToString(StringBuilder builder) {
-            builder.append(this.one)
-                    .append(_Constant.SPACE_COMMA)
-                    .append(this.two);
-        }
-
-
-    }//TwoArgTabularFunction
-
     private static final class JsonObjectFunc extends OperationExpression.SqlFunctionExpression {
 
         private final String name;
@@ -2879,7 +2328,7 @@ abstract class FunctionUtils {
 
 
         @Override
-        public String selectionName() {
+        public String alias() {
             return this.expAlias;
         }
 

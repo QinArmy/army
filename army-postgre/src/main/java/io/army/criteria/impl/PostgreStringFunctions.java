@@ -5,10 +5,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.TextArrayType;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 
 /**
@@ -996,9 +993,10 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
      */
-    public static _ColumnFunction regexpMatches(Expression string, Expression pattern) {
-        return FunctionUtils.twoArgDerivedFunction("REGEXP_MATCHES", string, pattern,
-                TextArrayType.from(String[].class));
+    public static _ColumnWithOrdinalityFunction regexpMatches(Expression string, Expression pattern) {
+        final String name = "REGEXP_MATCHES";
+        return DialectFunctionUtils.twoArgColumnFunction(name, string, pattern,
+                name.toLowerCase(Locale.ROOT), TextArrayType.from(String[].class));
     }
 
     /**
@@ -1008,9 +1006,10 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
      */
-    public static _ColumnFunction regexpMatches(Expression string, Expression pattern, Expression flags) {
-        return FunctionUtils.threeArgDerivedFunction("REGEXP_MATCHES", string, pattern, flags,
-                TextArrayType.from(String[].class));
+    public static _ColumnWithOrdinalityFunction regexpMatches(Expression string, Expression pattern, Expression flags) {
+        final String name = "REGEXP_MATCHES";
+        return DialectFunctionUtils.threeArgColumnFunction(name, string, pattern, flags,
+                name.toLowerCase(Locale.ROOT), TextArrayType.from(String[].class));
     }
 
     /**
@@ -1093,8 +1092,10 @@ abstract class PostgreStringFunctions extends Functions {
      * @see #regexpSplitToTable(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_table ( string text, pattern text [, flags text ] ) → setof text</a>
      */
-    public static _ColumnFunction regexpSplitToTable(Expression string, Expression pattern) {
-        return FunctionUtils.twoArgDerivedFunction("REGEXP_SPLIT_TO_TABLE", string, pattern, TextType.INSTANCE);
+    public static _ColumnWithOrdinalityFunction regexpSplitToTable(Expression string, Expression pattern) {
+        final String name = "REGEXP_SPLIT_TO_TABLE";
+        return DialectFunctionUtils.twoArgColumnFunction(name, string, pattern,
+                name.toLowerCase(Locale.ROOT), TextType.INSTANCE);
     }
 
     /**
@@ -1105,8 +1106,10 @@ abstract class PostgreStringFunctions extends Functions {
      * @see #regexpSplitToTable(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_table ( string text, pattern text [, flags text ] ) → setof text</a>
      */
-    public static _ColumnFunction regexpSplitToTable(Expression string, Expression pattern, Expression flags) {
-        return FunctionUtils.threeArgDerivedFunction("REGEXP_SPLIT_TO_TABLE", string, pattern, flags, TextType.INSTANCE);
+    public static _ColumnWithOrdinalityFunction regexpSplitToTable(Expression string, Expression pattern, Expression flags) {
+        final String name = "REGEXP_SPLIT_TO_TABLE";
+        return DialectFunctionUtils.threeArgColumnFunction(name, string, pattern, flags,
+                name.toLowerCase(Locale.ROOT), TextType.INSTANCE);
     }
 
     /**
@@ -1297,8 +1300,11 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_table ( string text, delimiter text [, null_string text ] ) → setof text</a>
      */
-    public static _ColumnFunction stringToTable(Expression string, Expression delimiter) {
-        return FunctionUtils.twoArgDerivedFunction("STRING_TO_TABLE", string, delimiter, TextType.INSTANCE);
+    public static _ColumnWithOrdinalityFunction stringToTable(Expression string, Expression delimiter) {
+        final String name = "STRING_TO_TABLE";
+        return DialectFunctionUtils.twoArgColumnFunction("STRING_TO_TABLE", string, delimiter,
+                name.toLowerCase(Locale.ROOT), TextType.INSTANCE
+        );
     }
 
 
@@ -1309,8 +1315,10 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_table ( string text, delimiter text [, null_string text ] ) → setof text</a>
      */
-    public static _ColumnFunction stringToTable(Expression string, Expression delimiter, Expression nullString) {
-        return FunctionUtils.threeArgDerivedFunction("STRING_TO_TABLE", string, delimiter, nullString, TextType.INSTANCE);
+    public static _ColumnWithOrdinalityFunction stringToTable(Expression string, Expression delimiter, Expression nullString) {
+        final String name = "STRING_TO_TABLE";
+        return DialectFunctionUtils.threeArgColumnFunction("STRING_TO_TABLE", string, delimiter, nullString,
+                name.toLowerCase(Locale.ROOT), TextType.INSTANCE);
     }
 
     /**

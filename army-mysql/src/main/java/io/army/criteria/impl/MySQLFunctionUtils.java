@@ -1043,7 +1043,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public String selectionName() {
+        public String alias() {
             return this.name;
         }
 
@@ -1154,7 +1154,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public String selectionName() {
+        public String alias() {
             return this.name;
         }
 
@@ -2186,8 +2186,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (!(selectionList instanceof ArrayList && selectionMap instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            if (selectionMap.putIfAbsent(selection.selectionName(), selection) != null) {
-                String m = String.format("Duplicate column name[%s]", selection.selectionName());
+            if (selectionMap.putIfAbsent(selection.alias(), selection) != null) {
+                String m = String.format("Duplicate column name[%s]", selection.alias());
                 throw ContextStack.criteriaError(this.context, m);
             }
             selectionList.add((_Selection) selection);

@@ -482,6 +482,10 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
     }
 
 
+    public interface SqlUserDefinedType {
+
+        String sqlTypeName(ServerMeta meta);
+    }
 
 
     /*-------------------below protected interfaces -------------------*/

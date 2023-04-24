@@ -163,7 +163,7 @@ abstract class InsertContext extends StatementContext
             if (needReturnId) {
                 this.returnId = idField;
                 this.idSelectionAlias = returnIdSelection(parser, idField, this.returningList)
-                        .selectionName();
+                        .alias();
             } else {
                 this.returnId = null;
                 this.idSelectionAlias = null;
@@ -178,7 +178,7 @@ abstract class InsertContext extends StatementContext
                 this.returningList = Collections.emptyList();
             }
             this.returnId = idField;
-            this.idSelectionAlias = idField.selectionName();
+            this.idSelectionAlias = idField.alias();
         } else {
             this.returningList = Collections.emptyList();
             this.returnId = null;

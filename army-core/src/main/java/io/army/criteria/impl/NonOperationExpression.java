@@ -3,13 +3,16 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.standard.SQLFunction;
+import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.SqlType;
+import io.army.util._Exceptions;
 
 import java.util.function.BiFunction;
 
@@ -459,8 +462,13 @@ abstract class NonOperationExpression implements ArmyExpression {
         @Override
         public void appendSql(final _SqlContext context) {
             final MappingType type = this.type;
+            final DialectParser parser;
+            parser = context.parser();
+
+            final ServerMeta serverMeta;
+            serverMeta = parser.serverMeta();
             final SqlType sqlType;
-            sqlType = type.map(context.parser().serverMeta());
+            sqlType = type.map(serverMeta);
             if (!this.sqlTypeClass.isInstance(sqlType)) {
                 String m = String.format(" %s of map result of %s isn't instance of %s", sqlType, type,
                         this.sqlTypeClass.getName());
@@ -470,7 +478,13 @@ abstract class NonOperationExpression implements ArmyExpression {
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE);
 
-            sqlType.sqlTypeName(type, sqlBuilder);
+            if (!sqlType.isUserDefined()) {
+                sqlType.sqlTypeName(type, sqlBuilder);
+            } else if (type instanceof MappingType.SqlUserDefinedType) {
+                parser.identifier(((MappingType.SqlUserDefinedType) type).sqlTypeName(serverMeta), sqlBuilder);
+            } else {
+                throw _Exceptions.notUserDefinedType(type, sqlType);
+            }
 
 
         }

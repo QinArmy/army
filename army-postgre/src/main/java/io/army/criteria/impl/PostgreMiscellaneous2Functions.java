@@ -120,7 +120,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         fieldList.add(ArmySelections.forName("tokid", IntegerType.INSTANCE));
         fieldList.add(ArmySelections.forName("token", TextType.INSTANCE));
 
-        return FunctionUtils.twoArgTabularFunc("TS_PARSE", parserName, document, fieldList);
+        return DialectFunctionUtils.twoArgTabularFunc("TS_PARSE", parserName, document, fieldList);
     }
 
     /**
@@ -148,7 +148,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         fieldList.add(ArmySelections.forName("alias", TextType.INSTANCE));
         fieldList.add(ArmySelections.forName("description", TextType.INSTANCE));
 
-        return FunctionUtils.oneArgTabularFunc("TS_TOKEN_TYPE", exp, fieldList);
+        return DialectFunctionUtils.oneArgTabularFunc("TS_TOKEN_TYPE", exp, fieldList);
     }
 
 
@@ -226,9 +226,9 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         final String name = "TS_DEBUG";
         final _TabularWithOrdinalityFunction func;
         if (config == null) {
-            func = FunctionUtils.oneArgTabularFunc(name, document, fieldList);
+            func = DialectFunctionUtils.oneArgTabularFunc(name, document, fieldList);
         } else {
-            func = FunctionUtils.twoArgTabularFunc(name, config, document, fieldList);
+            func = DialectFunctionUtils.twoArgTabularFunc(name, config, document, fieldList);
         }
         return func;
     }
@@ -260,9 +260,9 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         final String name = "TS_STAT";
         _TabularWithOrdinalityFunction func;
         if (weights == null) {
-            func = FunctionUtils.oneArgTabularFunc(name, sqlQuery, fieldList);
+            func = DialectFunctionUtils.oneArgTabularFunc(name, sqlQuery, fieldList);
         } else {
-            func = FunctionUtils.twoArgTabularFunc(name, sqlQuery, weights, fieldList);
+            func = DialectFunctionUtils.twoArgTabularFunc(name, sqlQuery, weights, fieldList);
         }
         return func;
     }

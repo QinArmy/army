@@ -12,14 +12,14 @@ import java.util.concurrent.ConcurrentMap;
 
 public final class JsonType extends _ArmyInnerMapping implements MappingType.SqlJsonType {
 
-    public static final JsonType TEXT_INSTANCE = new JsonType(String.class);
+    public static final JsonType TEXT = new JsonType(String.class);
 
     private static final ConcurrentMap<Class<?>, JsonType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     public static JsonType from(final Class<?> javaType) {
         final JsonType instance;
         if (javaType == String.class) {
-            instance = TEXT_INSTANCE;
+            instance = TEXT;
         } else {
             instance = INSTANCE_MAP.computeIfAbsent(javaType, JsonType::new);
         }

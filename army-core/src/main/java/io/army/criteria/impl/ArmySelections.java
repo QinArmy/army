@@ -31,7 +31,7 @@ abstract class ArmySelections implements _Selection {
 
     static Selection renameSelection(Selection selection, String alias) {
         final Selection s;
-        if (selection.selectionName().equals(alias)) {
+        if (selection.alias().equals(alias)) {
             s = selection;
         } else {
             s = new RenameSelection(selection, alias);
@@ -61,7 +61,7 @@ abstract class ArmySelections implements _Selection {
 
 
     @Override
-    public final String selectionName() {
+    public final String alias() {
         return this.alias;
     }
 

@@ -86,7 +86,7 @@ final class QualifiedFieldImpl<T> extends OperationDataField implements Qualifie
     }
 
     @Override
-    public String selectionName() {
+    public String alias() {
         return this.field.fieldName;
     }
 

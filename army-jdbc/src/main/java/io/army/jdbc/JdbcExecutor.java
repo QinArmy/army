@@ -189,7 +189,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                         bean = ObjectAccessorFactory.createBean(constructor);
                         for (Selection selection : selectionList) {
                             columnValue = getColumnValue(resultSet, selection);
-                            accessor.set(bean, selection.selectionName(), columnValue);
+                            accessor.set(bean, selection.alias(), columnValue);
                         }
                         list.add(bean);
                     }
@@ -222,7 +222,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                 while (resultSet.next()) {
                     rowMap = mapConstructor.get();
                     for (Selection selection : selectionList) {
-                        rowMap.put(selection.selectionName(), getColumnValue(resultSet, selection));
+                        rowMap.put(selection.alias(), getColumnValue(resultSet, selection));
                     }
                     list.add(rowMap);
                 }
@@ -502,7 +502,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         final SqlType sqlType;
         sqlType = mappingType.map(this.factory.serverMeta);
         Object value;
-        value = get(resultSet, selection.selectionName(), sqlType);
+        value = get(resultSet, selection.alias(), sqlType);
         if (value != null) {
             value = mappingType.afterGet(sqlType, this.factory.mappingEnv, value);
         }

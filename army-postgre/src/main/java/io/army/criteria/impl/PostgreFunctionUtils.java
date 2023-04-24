@@ -10,6 +10,7 @@ import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.TextType;
 import io.army.mapping.XmlType;
+import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.PgSqlType;
@@ -627,7 +628,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final String selectionName() {
+        public final String alias() {
             return this.name;
         }
 
@@ -676,8 +677,10 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             parser = context.parser();
 
             final MappingType type = this.type;
+            final ServerMeta serverMeta;
+            serverMeta = parser.serverMeta();
             final SqlType sqlType;
-            sqlType = type.map(parser.serverMeta());
+            sqlType = type.map(serverMeta);
             if (!(sqlType instanceof PgSqlType)) {
                 throw _Exceptions.mapMethodError(type, PgSqlType.class);
             }
@@ -691,8 +694,13 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             parser.identifier(this.name, sqlBuilder)
                     .append(_Constant.SPACE);
 
-            sqlType.sqlTypeName(type, sqlBuilder);
-
+            if (!sqlType.isUserDefined()) {
+                sqlType.sqlTypeName(type, sqlBuilder);
+            } else if (type instanceof MappingType.SqlUserDefinedType) {
+                parser.identifier(((MappingType.SqlUserDefinedType) type).sqlTypeName(serverMeta), sqlBuilder);
+            } else {
+                throw _Exceptions.notUserDefinedType(type, sqlType);
+            }
             final ArmyExpression columnExp = this.columnExp, defaultExp = this.defaultExp;
             if (columnExp != null) {
                 sqlBuilder.append(Postgres.PATH.spaceRender());

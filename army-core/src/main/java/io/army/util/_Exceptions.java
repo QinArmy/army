@@ -854,6 +854,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException selectionAliasNoText() {
+        return new CriteriaException(String.format("%s alias must have text", Selection.class.getName()));
+    }
+
     public static CriteriaException tableAliasIsEmpty() {
         return new CriteriaException("table alias must non-empty.");
     }
@@ -922,6 +926,12 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static MetaException mapMethodError(MappingType type, Class<? extends SqlType> sqlType) {
         String m = String.format("%s map(%s) don't return %s", type, ServerMeta.class.getName(), sqlType.getName());
+        return new MetaException(m);
+    }
+
+    public static MetaException notUserDefinedType(MappingType type, SqlType sqlType) {
+        String m = String.format("%s return %s but don't implements %s .", type, sqlType,
+                MappingType.SqlUserDefinedType.class.getName());
         return new MetaException(m);
     }
 

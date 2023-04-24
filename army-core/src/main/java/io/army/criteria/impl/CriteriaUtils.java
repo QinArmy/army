@@ -178,16 +178,16 @@ abstract class CriteriaUtils {
 
         if (selectItemSize == 1 && selectItemList.get(0) instanceof Selection) {
             final Selection selection = (Selection) selectItemList.get(0);
-            selectionMap = Collections.singletonMap(selection.selectionName(), selection);
+            selectionMap = Collections.singletonMap(selection.alias(), selection);
         } else {
             final Map<String, Selection> map = new HashMap<>((int) (selectItemSize / 0.75F));
             for (SelectItem item : selectItemList) {
 
                 if (item instanceof Selection) {
-                    map.put(((Selection) item).selectionName(), (Selection) item); // if alias duplication then override. Be consistent with  statement executor.
+                    map.put(((Selection) item).alias(), (Selection) item); // if alias duplication then override. Be consistent with  statement executor.
                 } else if (item instanceof _SelectionGroup) {
                     for (Selection selection : ((_SelectionGroup) item).selectionList()) {
-                        map.put(selection.selectionName(), selection); // if alias duplication then override.Be consistent with  statement executor.
+                        map.put(selection.alias(), selection); // if alias duplication then override.Be consistent with  statement executor.
                     }
                 }
             }
@@ -305,6 +305,7 @@ abstract class CriteriaUtils {
     static int standardModifier(final SQLsSyntax.Modifier distinct) {
         return (distinct == SQLs.DISTINCT || distinct == SQLs.ALL) ? 1 : -1;
     }
+
 
     static CriteriaException limitParamError(CriteriaContext criteriaContext, @Nullable Object value) {
         String m = String.format("limit clause only support [%s,%s,%s,%s] and non-negative,but input %s"
@@ -485,7 +486,7 @@ abstract class CriteriaUtils {
             selection = ArmySelections.renameSelection(refSelectionList.get(0), columnAliasList.get(0));
             return _Pair.create(
                     Collections.singletonList(selection),
-                    Collections.singletonMap(selection.selectionName(), selection)
+                    Collections.singletonMap(selection.alias(), selection)
             );
         }
         final List<Selection> selectionList = new ArrayList<>(selectionSize);
@@ -524,7 +525,7 @@ abstract class CriteriaUtils {
             selection = ArmySelections.renameSelection(refSelectionList.get(0), columnAliasList.get(0));
             return new SelectionMap(
                     Collections.singletonList(selection),
-                    Collections.singletonMap(selection.selectionName(), selection)
+                    Collections.singletonMap(selection.alias(), selection)
             );
         }
         final List<Selection> selectionList = new ArrayList<>(selectionSize);

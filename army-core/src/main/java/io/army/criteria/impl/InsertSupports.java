@@ -2321,7 +2321,7 @@ abstract class InsertSupports {
                 && discriminatorExp instanceof SqlValueParam.SingleAnonymousValue
                 && discriminatorExp.typeMeta().mappingType() instanceof CodeEnumType)) {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be literal."
-                    , Selection.class.getSimpleName(), discriminatorSelection.selectionName()
+                    , Selection.class.getSimpleName(), discriminatorSelection.alias()
                     , discriminatorField);
             throw ContextStack.criteriaError(context, m);
         }
@@ -2334,7 +2334,7 @@ abstract class InsertSupports {
 
         if (!discriminatorJavaType.isInstance(value)) {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be instance of %s."
-                    , Selection.class.getSimpleName(), discriminatorSelection.selectionName()
+                    , Selection.class.getSimpleName(), discriminatorSelection.alias()
                     , discriminatorField, discriminatorJavaType.getName());
             throw ContextStack.criteriaError(context, m);
         }

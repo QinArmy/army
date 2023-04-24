@@ -69,6 +69,13 @@ public enum MySQLType implements SqlType, SQLWords {
     }
 
     @Override
+    public final boolean isUserDefined() {
+        // false, MySQL don't user defined data type
+        return false;
+    }
+
+
+    @Override
     public final boolean isNoPrecision() {
         final boolean match;
         switch (this) {

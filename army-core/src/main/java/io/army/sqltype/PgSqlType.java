@@ -146,13 +146,21 @@ public enum PgSqlType implements SqlType {
     INT8RANGE_ARRAY,
     NUMRANGE_ARRAY,
 
-    ;
+    USER_DEFINED,
+
+    UNKNOWN;
 
 
     @Override
     public final Database database() {
         return Database.PostgreSQL;
     }
+
+    @Override
+    public final boolean isUserDefined() {
+        return this == USER_DEFINED;
+    }
+
 
     @Override
     public final void sqlTypeName(final MappingType type, final StringBuilder builder) {
@@ -270,6 +278,8 @@ public enum PgSqlType implements SqlType {
                 }
             }
             break;
+            case UNKNOWN:
+                throw _Exceptions.mapMethodError(type, PgSqlType.class);
             default:
                 // no bug,never here
                 throw _Exceptions.unexpectedEnum(this);
