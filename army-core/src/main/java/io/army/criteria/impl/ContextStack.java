@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -41,10 +40,9 @@ abstract class ContextStack {
         if (stack == null) {
             throw noContextStack();
         }
-        return stack.peek();
+        return stack.getLast();
 
     }
-
 
 
     static CriteriaContext pop(final CriteriaContext context) {
@@ -52,11 +50,19 @@ abstract class ContextStack {
         if (stack == null) {
             throw noContextStack();
         }
-        if (context.getOuterContext() == null) {
-            stack.clear(context);
+        final CriteriaContext currentContext;
+        currentContext = stack.getLast();
+        if (context != currentContext) {
+            // no bug,never here
+            String m = String.format("%s and current %s not match,reject pop.", context, currentContext);
+            throw new IllegalArgumentException(m);
+        } else if (context.getOuterContext() == null) {
+            assert stack.size() == 1;
+            stack.clear();
             HOLDER.remove();
-        } else {
-            stack.pop(context);
+        } else if (stack.removeLast() != currentContext) {
+            // Stack no bug,never here
+            throw new IllegalStateException("stack state error");
         }
         context.contextEndEvent();
         if (LOG.isTraceEnabled()) {
@@ -70,16 +76,16 @@ abstract class ContextStack {
         outerContext = context.getOuterContext();
         final Stack stack;
         if (outerContext == null) {
-            //reset
-            HOLDER.set(new ArmyContextStack(context));
+            //reset stack
+            HOLDER.set(new Stack(context));
             if (LOG.isTraceEnabled()) {
                 LOG.trace("reset stack for primary context {}.", context);
             }
         } else if ((stack = HOLDER.get()) == null) {
             //no bug,never here
             throw new IllegalArgumentException("exists outer context,but no stack.");
-        } else if (outerContext == stack.peek()) {
-            stack.push(context);
+        } else if (outerContext == stack.getLast()) {
+            stack.addLast(context);
             if (LOG.isTraceEnabled()) {
                 LOG.trace("push {}", context);
             }
@@ -97,7 +103,12 @@ abstract class ContextStack {
         if (stack == null) {
             throw noContextStack();
         }
-        return stack.rootContext();
+        return stack.getFirst();
+    }
+
+    static boolean isEmpty() {
+        final Stack stack = HOLDER.get();
+        return stack == null || stack.size() == 0;
     }
 
 
@@ -117,6 +128,7 @@ abstract class ContextStack {
             final Stack stack = HOLDER.get();
             if (stack != null) {
                 HOLDER.remove();
+                stack.clear();
             }
             throw new NullPointerException();
         }
@@ -166,6 +178,7 @@ abstract class ContextStack {
     static NullPointerException clearStackAndNullPointer() {
         final Stack stack = HOLDER.get();
         if (stack != null) {
+            stack.clear();
             HOLDER.remove();
         }
         return new NullPointerException();
@@ -174,14 +187,13 @@ abstract class ContextStack {
     static CriteriaException clearStackAndCriteriaError(String msg) {
         final Stack stack = HOLDER.get();
         if (stack != null) {
+            stack.clear();
             HOLDER.remove();
         }
         return new CriteriaException(msg);
     }
 
-    /**
-     * @see #peekIfBracket()
-     */
+
     @Deprecated
     static RowSet unionQuerySupplier(Supplier<? extends RowSet> supplier) {
         try {
@@ -239,9 +251,9 @@ abstract class ContextStack {
     private static void clearStackOnError(final CriteriaContext criteriaContext) {
         final Stack stack;
         stack = HOLDER.get();
-        if (stack != null && stack.peek() == criteriaContext) {
+        if (stack != null && stack.peekLast() == criteriaContext) {
             HOLDER.remove();
-            stack.clearOnError();
+            stack.clear();
         }
 
     }
@@ -254,109 +266,13 @@ abstract class ContextStack {
     }
 
 
-    private interface Stack {
+    private static final class Stack extends LinkedList<CriteriaContext> {
 
-        void pop(CriteriaContext subContext);
-
-        void push(CriteriaContext subContext);
-
-
-        boolean isEmpty();
-
-        CriteriaContext peek();
-
-        CriteriaContext rootContext();
-
-        void clear(CriteriaContext rootContext);
-
-        void clearOnError();
-    }
-
-    private static final class ArmyContextStack implements Stack {
-
-        private final LinkedList<CriteriaContext> list;
-
-        private ArmyContextStack(final CriteriaContext rootContext) {
-            Objects.requireNonNull(rootContext);
-            final LinkedList<CriteriaContext> list = new LinkedList<>();
-            list.addLast(rootContext);
-            this.list = list;
+        private Stack(CriteriaContext root) {
+            this.addLast(root);
         }
 
-        @Override
-        public void pop(final CriteriaContext subContext) {
-            final LinkedList<CriteriaContext> list = this.list;
-            if (list.size() < 2) {
-                throw new CriteriaException(String.format("No sub %s,reject pop.", CriteriaContext.class.getName()));
-            }
-            if (subContext != list.peekLast()) {
-                String m = String.format("sub %s not match,reject pop.", CriteriaContext.class.getName());
-                throw new CriteriaException(m);
-            }
-            list.pollLast();
-        }
-
-        @Override
-        public void push(final CriteriaContext subContext) {
-            final LinkedList<CriteriaContext> list = this.list;
-            if (list.size() == 0) {
-                throw new IllegalStateException("stack error");
-            }
-            list.addLast(subContext);
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return this.list.size() == 0;
-        }
-
-        @Override
-        public CriteriaContext peek() {
-            final LinkedList<CriteriaContext> list = this.list;
-            if (list.size() == 0) {
-                throw new CriteriaException("Not found any context.");
-            }
-            return list.peekLast();
-        }
-
-        @Override
-        public CriteriaContext rootContext() {
-            final LinkedList<CriteriaContext> list = this.list;
-            if (list.size() == 0) {
-                //no bug,never here
-                throw new IllegalStateException("stack error");
-            }
-            return list.peekFirst();
-        }
-
-        @Override
-        public void clear(final CriteriaContext rootContext) {
-            final LinkedList<CriteriaContext> list = this.list;
-            switch (list.size()) {
-                case 0:
-                    //no bug,never here
-                    throw new IllegalStateException("stack error");
-                case 1: {
-                    if (rootContext != list.peekFirst()) {
-                        throw new CriteriaException("Root context not match,reject clear context stack.");
-                    }
-                    list.clear();
-                }
-                break;
-                default: {
-                    throw new CriteriaException("Exists sub context,reject clear context stack.");
-                }
-            }
-
-        }
-
-        @Override
-        public void clearOnError() {
-            this.list.clear();
-        }
-
-
-    }//ContextStack
+    }//Stack
 
 
 }

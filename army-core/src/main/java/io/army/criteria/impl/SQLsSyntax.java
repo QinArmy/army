@@ -698,7 +698,6 @@ abstract class SQLsSyntax extends Functions {
     }
 
 
-
     /**
      * <p>
      * Create named non-null literal expression. This expression can only be used in values insert statement.
@@ -981,37 +980,72 @@ abstract class SQLsSyntax extends Functions {
      * <p>
      * Get a {@link QualifiedField}. You don't need a {@link QualifiedField},if no self-join in statement.
      * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li>current statement don't support this method,eg: single-table UPDATE statement</li>
+     *                           <li>qualified field don't exists,here always is defer,because army validate qualified field when statement end.</li>
+     *                           </ul>
      */
     public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
         return ContextStack.peek().field(tableAlias, field);
     }
 
-    public static DerivedField refThis(String derivedAlias, String selectionName) {
-        return ContextStack.peek().refThis(derivedAlias, selectionName);
+    /**
+     * <p>
+     * Reference a derived field from current statement.
+     * </p>
+     *
+     * @param derivedAlias   derived table alias,
+     * @param selectionAlias derived field alias
+     */
+    public static DerivedField refThis(String derivedAlias, String selectionAlias) {
+        return ContextStack.peek().refThis(derivedAlias, selectionAlias);
     }
 
-    public static DerivedField refOuter(String derivedAlias, String selectionName) {
-        return ContextStack.peek().refOuter(derivedAlias, selectionName);
+    /**
+     * <p>
+     * Reference a derived field from outer statement.
+     * </p>
+     *
+     * @param derivedAlias   derived table alias,
+     * @param selectionAlias derived field alias
+     */
+    public static DerivedField refOuter(String derivedAlias, String selectionAlias) {
+        return ContextStack.peek().refOuter(derivedAlias, selectionAlias);
     }
 
 
     /**
      * <p>
-     * Reference a {@link  Selection} of current statement after selection list end,eg: ORDER BY clause.
+     * Reference a {@link  Selection} of current statement ,eg: ORDER BY clause.
+     * The {@link Expression} returned don't support {@link Expression#as(String)} method.
      * </p>
+     *
+     * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link TypeMeta#mappingType()} of {@link Selection#typeMeta()} .
+     * @throws CriteriaException then when <ul>
+     *                           <li>current statement don't support this method,eg: UPDATE statement</li>
+     *                           <li>the {@link Selection} not exists,here possibly is defer,if you invoke this method before SELECT clause end. eg: postgre DISTINCT ON clause</li>
+     *                           </ul>
      */
-    public static SimpleExpression ref(String selectionAlias) {
+    public static Expression refSelection(String selectionAlias) {
         return ContextStack.peek().refSelection(selectionAlias);
     }
 
     /**
      * <p>
-     * Reference a {@link  Selection} of current statement after selection list end,eg: ORDER BY clause.
+     * Reference a {@link  Selection} of current statement ,eg: ORDER BY clause.
+     * The {@link Expression} returned don't support {@link Expression#as(String)} method.
      * </p>
      *
      * @param selectionOrdinal based 1 .
+     * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link io.army.mapping.IntegerType#INSTANCE}
+     * @throws CriteriaException throw when<ul>
+     *                           <li>selectionOrdinal less than 1</li>
+     *                           <li>the {@link Selection} not exists,here possibly is defer,if you invoke this method before SELECT clause end. eg: postgre DISTINCT ON clause</li>
+     *                           <li>current statement don't support this method,eg: UPDATE statement</li>
+     *                           </ul>
      */
-    public static SimpleExpression ref(int selectionOrdinal) {
+    public static Expression ref(int selectionOrdinal) {
         return ContextStack.peek().refSelection(selectionOrdinal);
     }
 

@@ -52,7 +52,7 @@ abstract class CriteriaSupports {
     }
 
 
-    static TypeMeta delayWrapper(TypeMeta.Delay delayType, Function<MappingType, MappingType> function) {
+    static TypeMeta delayWrapper(TypeMeta.DelayTypeMeta delayType, Function<MappingType, MappingType> function) {
         return new DelayTypeWrapper(delayType, function);
     }
 
@@ -452,18 +452,18 @@ abstract class CriteriaSupports {
     }//SimpleDelayParamMeta
 
 
-    private static final class DelayTypeWrapper implements TypeMeta.Delay {
+    private static final class DelayTypeWrapper implements TypeMeta.DelayTypeMeta {
 
-        private final Delay delayType;
+        private final DelayTypeMeta delayType;
 
         private final Function<MappingType, MappingType> function;
 
         private MappingType actualType;
 
         /**
-         * @see #delayWrapper(Delay, Function)
+         * @see #delayWrapper(DelayTypeMeta, Function)
          */
-        private DelayTypeWrapper(Delay delayType, Function<MappingType, MappingType> function) {
+        private DelayTypeWrapper(DelayTypeMeta delayType, Function<MappingType, MappingType> function) {
             this.delayType = delayType;
             this.function = function;
             ContextStack.peek().addEndEventListener(this::contextEnd);
@@ -474,7 +474,7 @@ abstract class CriteriaSupports {
             MappingType actualType = this.actualType;
             if (actualType == null) {
                 if (!this.delayType.isDelay()) {
-                    String m = String.format("%s %s isn't prepared.", TypeMeta.Delay.class.getName(), this.delayType);
+                    String m = String.format("%s %s isn't prepared.", DelayTypeMeta.class.getName(), this.delayType);
                     throw new IllegalStateException(m);
                 }
                 actualType = this.function.apply(this.delayType.mappingType());
@@ -498,7 +498,7 @@ abstract class CriteriaSupports {
     }//DelayTypeWrapper
 
 
-    private static final class UnaryDelayInferWrapper implements TypeMeta.Delay {
+    private static final class UnaryDelayInferWrapper implements TypeMeta.DelayTypeMeta {
 
         private final TypeInfer.DelayTypeInfer infer;
 
@@ -512,7 +512,7 @@ abstract class CriteriaSupports {
         private UnaryDelayInferWrapper(TypeInfer.DelayTypeInfer infer, UnaryOperator<MappingType> function) {
             this.infer = infer;
             this.function = function;
-            ContextStack.peek().addEndEventListener(this::mappingType);
+            ContextStack.peek().addEndEventListener(this::onContextEnd);
         }
 
         @Override
@@ -520,8 +520,7 @@ abstract class CriteriaSupports {
             MappingType type = this.type;
             if (type == null) {
                 if (this.infer.isDelay()) {
-                    String m = String.format("%s is delay", this);
-                    throw ContextStack.clearStackAndCriteriaError(m);
+                    throw CriteriaUtils.delayTypeInfer(this.infer);
                 }
                 final TypeMeta typeMeta;
                 typeMeta = this.infer.typeMeta();
@@ -541,10 +540,21 @@ abstract class CriteriaSupports {
             return this.type == null && this.infer.isDelay();
         }
 
+        private void onContextEnd() {
+            if (!this.infer.isDelay()) {
+                this.mappingType();
+            } else if (ContextStack.isEmpty()) {
+                throw CriteriaUtils.delayTypeInfer(this.infer);
+            } else {
+                //here, possibly recursive reference in WITH RECURSIVE clause
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            }
+        }
+
 
     }//DelayInferWrapper
 
-    private static final class BiDelayTypeWrapper implements TypeMeta.Delay {
+    private static final class BiDelayTypeWrapper implements TypeMeta.DelayTypeMeta {
 
         private final TypeMeta type1;
 
@@ -570,7 +580,7 @@ abstract class CriteriaSupports {
             MappingType actualType = this.actualType;
             if (actualType == null) {
                 if (!this.isDelay()) {
-                    String m = String.format("%s isn't prepared.", TypeMeta.Delay.class.getName());
+                    String m = String.format("%s isn't prepared.", DelayTypeMeta.class.getName());
                     throw new IllegalStateException(m);
                 }
                 actualType = this.function.apply(this.type1.mappingType(), this.type2.mappingType());
@@ -582,10 +592,10 @@ abstract class CriteriaSupports {
         @Override
         public boolean isDelay() {
             boolean prepared1 = true, prepared2 = true;
-            if (this.type1 instanceof TypeMeta.Delay) {
-                prepared1 = ((Delay) this.type1).isDelay();
-            } else if (this.type2 instanceof TypeMeta.Delay) {
-                prepared2 = ((Delay) this.type2).isDelay();
+            if (this.type1 instanceof DelayTypeMeta) {
+                prepared1 = ((DelayTypeMeta) this.type1).isDelay();
+            } else if (this.type2 instanceof DelayTypeMeta) {
+                prepared2 = ((DelayTypeMeta) this.type2).isDelay();
             }
             return prepared1 && prepared2;
         }

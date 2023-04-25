@@ -312,7 +312,7 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
         private DelayAnonymousMultiLiteral(List<?> unsafeList, TypeInfer.DelayTypeInfer infer) {
             super(Collections.unmodifiableList(unsafeList));
             this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::typeMeta);
+            ContextStack.peek().addEndEventListener(this::onContextEnd);
         }
 
         @Override
@@ -348,6 +348,17 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
                 match = false;
             }
             return match;
+        }
+
+        private void onContextEnd() {
+            if (!this.infer.isDelay()) {
+                this.typeMeta();
+            } else if (ContextStack.isEmpty()) {
+                throw CriteriaUtils.delayTypeInfer(this.infer);
+            } else {
+                //here, possibly recursive reference in WITH RECURSIVE clause
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            }
         }
 
 
@@ -466,7 +477,7 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
         private DelayNamedMultiLiteral(DelayTypeInfer infer, String name, int valueSize) {
             super(name, valueSize);
             this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::typeMeta);
+            ContextStack.peek().addEndEventListener(this::onContextEnd);
         }
 
         @Override
@@ -504,6 +515,17 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
                 match = false;
             }
             return match;
+        }
+
+        private void onContextEnd() {
+            if (!this.infer.isDelay()) {
+                this.typeMeta();
+            } else if (ContextStack.isEmpty()) {
+                throw CriteriaUtils.delayTypeInfer(this.infer);
+            } else {
+                //here, possibly recursive reference in WITH RECURSIVE clause
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            }
         }
 
 

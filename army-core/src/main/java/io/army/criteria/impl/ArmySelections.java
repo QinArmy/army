@@ -48,8 +48,8 @@ abstract class ArmySelections implements _Selection {
             throw ContextStack.clearStackAndNullPointer();
         }
         final Selection selection;
-        if (typeMeta instanceof TypeMeta.Delay && ((TypeMeta.Delay) typeMeta).isDelay()) {
-            selection = new DelaySelectionForName(alias, (TypeMeta.Delay) typeMeta);
+        if (typeMeta instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) typeMeta).isDelay()) {
+            selection = new DelaySelectionForName(alias, (TypeMeta.DelayTypeMeta) typeMeta);
         } else if (typeMeta instanceof MappingType) {
             selection = new ImmutableSelectionForName(alias, (MappingType) typeMeta);
         } else {
@@ -370,11 +370,11 @@ abstract class ArmySelections implements _Selection {
 
     private static final class DelaySelectionForName extends SelectionForName implements TypeInfer.DelayTypeInfer {
 
-        private final TypeMeta.Delay delay;
+        private final TypeMeta.DelayTypeMeta delay;
 
         private MappingType type;
 
-        private DelaySelectionForName(String alias, TypeMeta.Delay delay) {
+        private DelaySelectionForName(String alias, TypeMeta.DelayTypeMeta delay) {
             super(alias);
             this.delay = delay;
             ContextStack.peek().addEndEventListener(this::typeMeta);

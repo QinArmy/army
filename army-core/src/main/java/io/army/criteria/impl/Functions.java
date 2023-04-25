@@ -54,7 +54,7 @@ abstract class Functions extends SqlSyntax {
     public interface _ColumnFunction extends _TabularFunction, SelectionSpec, TypeInfer.TypeUpdateSpec {
 
         @Override
-        SelectionSpec mapTo(TypeMeta mapType);
+        SelectionSpec mapTo(TypeMeta typeMeta);
 
     }
 
@@ -694,8 +694,8 @@ abstract class Functions extends SqlSyntax {
         leftType = left.typeMeta();
         rightType = right.typeMeta();
         final TypeMeta returnType;
-        if ((leftType instanceof TypeMeta.Delay && !((TypeMeta.Delay) leftType).isDelay())
-                || (rightType instanceof TypeMeta.Delay && !((TypeMeta.Delay) rightType).isDelay())) {
+        if ((leftType instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) leftType).isDelay())
+                || (rightType instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) rightType).isDelay())) {
             returnType = CriteriaSupports.biDelayWrapper(leftType, rightType, function);
         } else {
             returnType = function.apply(leftType.mappingType(), rightType.mappingType());
@@ -863,8 +863,8 @@ abstract class Functions extends SqlSyntax {
         typeMeta = exp.typeMeta();
 
         final TypeMeta returnType;
-        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isDelay()) {
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) typeMeta, Functions::_doubleOrNumberType);
+        if (typeMeta instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) typeMeta).isDelay()) {
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.DelayTypeMeta) typeMeta, Functions::_doubleOrNumberType);
         } else {
             returnType = _doubleOrNumberType(typeMeta.mappingType());
         }
@@ -877,8 +877,8 @@ abstract class Functions extends SqlSyntax {
         typeMeta = exp.typeMeta();
 
         final TypeMeta returnType;
-        if (typeMeta instanceof TypeMeta.Delay && !((TypeMeta.Delay) typeMeta).isDelay()) {
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) typeMeta, Functions::_numberOrDecimal);
+        if (typeMeta instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) typeMeta).isDelay()) {
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.DelayTypeMeta) typeMeta, Functions::_numberOrDecimal);
         } else {
             returnType = _numberOrDecimal(typeMeta.mappingType());
         }

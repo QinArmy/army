@@ -8,6 +8,7 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
+import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -254,43 +255,15 @@ abstract class CriteriaContexts {
 
 
     /**
-     * @see OperationExpression#as(String)
-     */
-    static Selection createDerivedSelection(final DerivedField field, final String alias) {
-        final _Selection selection;
-        if (field instanceof RefDerivedField) {
-            final RefDerivedField ref = (RefDerivedField) field;
-            if (ref.fieldName.equals(alias)) {
-                selection = ref;
-            } else {
-                selection = new DerivedAliasSelection(field, alias);
-            }
-        } else if (field instanceof DerivedSelection) {
-            final DerivedSelection ref = (DerivedSelection) field;
-            if (ref.selection.alias().equals(alias)) {
-                selection = ref;
-            } else {
-                selection = new DerivedAliasSelection(field, alias);
-            }
-        } else {
-            String m = String.format("unknown %s type[%s]", DerivedField.class.getName(), field.getClass().getName());
-            throw new IllegalArgumentException(m);
-        }
-        return selection;
-    }
-
-    /**
      * @see #migrateToQueryContext(SimpleQueryContext, DispatcherContext)
      */
     private static void migrateContext(final StatementContext context, final StatementContext migrated) {
         context.withCteContext = migrated.withCteContext;
         context.varMap = migrated.varMap;
-        context.refCteMap = migrated.refCteMap;
         context.endListenerList = migrated.endListenerList;
 
         migrated.withCteContext = null;
         migrated.varMap = null;
-        migrated.refCteMap = null;
         migrated.endListenerList = null;
 
         if (migrated instanceof DispatcherContext) {
@@ -374,15 +347,7 @@ abstract class CriteriaContexts {
         throw ContextStack.criteriaError(context, m);
     }
 
-    private static CriteriaException notFoundCte(CriteriaContext context, String name) {
-        String m = String.format("Not found the %s[%s]", _Cte.class.getName(), name);
-        return ContextStack.criteriaError(context, m);
-    }
 
-    private static CriteriaException referenceCteSyntaxError(CriteriaContext context, String cteName) {
-        String m = String.format("reference cte[%s] syntax error.", cteName);
-        return ContextStack.criteriaError(context, m);
-    }
 
     /**
      * @see JoinableContext#validateQualifiedFieldMap()
@@ -444,12 +409,12 @@ abstract class CriteriaContexts {
 
 
     private static UnknownDerivedFieldException unknownRestDerivedField(CriteriaContext context
-            , Map<String, Map<String, RefDerivedField>> aliasToRefSelection) {
+            , Map<String, Map<String, MutableDerivedField>> aliasToRefSelection) {
         return ContextStack.criteriaError(context, UnknownDerivedFieldException::new,
                 createNotFoundAllDerivedFieldMessage(aliasToRefSelection));
     }
 
-    private static UnknownDerivedFieldException unknownDerivedFields(CriteriaContext context, Map<String, RefDerivedField> map) {
+    private static UnknownDerivedFieldException unknownDerivedFields(CriteriaContext context, Map<String, MutableDerivedField> map) {
         final StringBuilder builder = new StringBuilder();
         builder.append("Not found derived field[");
         appendFoundDerivedFieldsMessage(map, builder, 0);
@@ -475,20 +440,20 @@ abstract class CriteriaContexts {
         return ContextStack.criteriaError(currentContext, UnknownFieldGroupException::new, builder.toString());
     }
 
-    private static String createNotFoundAllDerivedFieldMessage(Map<String, Map<String, RefDerivedField>> aliasToRefSelection) {
+    private static String createNotFoundAllDerivedFieldMessage(Map<String, Map<String, MutableDerivedField>> aliasToRefSelection) {
         final StringBuilder builder = new StringBuilder()
                 .append("Not found derived field[");
         int count = 0;
-        for (Map<String, RefDerivedField> map : aliasToRefSelection.values()) {
+        for (Map<String, MutableDerivedField> map : aliasToRefSelection.values()) {
             count = appendFoundDerivedFieldsMessage(map, builder, count);
         }
         builder.append(']');
         return builder.toString();
     }
 
-    private static int appendFoundDerivedFieldsMessage(final Map<String, RefDerivedField> map,
+    private static int appendFoundDerivedFieldsMessage(final Map<String, MutableDerivedField> map,
                                                        final StringBuilder builder, int count) {
-        for (RefDerivedField s : map.values()) {
+        for (MutableDerivedField s : map.values()) {
             if (count > 0) {
                 builder.append(_Constant.SPACE_COMMA);
             }
@@ -534,7 +499,7 @@ abstract class CriteriaContexts {
 
         private Map<String, _Cte> cteMap;
 
-        private Map<String, RecursiveCte> recursiveCteMap;
+        private RecursiveCte recursiveCte;
 
         private WithCteContext(boolean recursive) {
             this.recursive = recursive;
@@ -548,8 +513,6 @@ abstract class CriteriaContexts {
         final CriteriaContext outerContext;
 
         private Map<String, VarExpression> varMap;
-
-        private Map<String, RecursiveCte> refCteMap;
 
         private List<Runnable> endListenerList;
 
@@ -588,7 +551,7 @@ abstract class CriteriaContexts {
         public final void addEndEventListener(final Runnable listener) {
             List<Runnable> endListenerList = this.endListenerList;
             if (endListenerList == null) {
-                this.endListenerList = endListenerList = new ArrayList<>();
+                this.endListenerList = endListenerList = _Collections.arrayList();
             }
             endListenerList.add(listener);
         }
@@ -637,10 +600,9 @@ abstract class CriteriaContexts {
             assert withContext != null;
 
             final String currentName = withContext.currentName;
-            assert currentName != null;
             final List<String> columnAliasList = withContext.currentAliasList;
 
-            if (!currentName.equals(cte.name())) {
+            if (currentName == null || !currentName.equals(cte.name())) {
                 throw ContextStack.castCriteriaApi(this);
             } else if (columnAliasList == null) {
                 assert cte.columnAliasList().size() == 0;
@@ -651,13 +613,27 @@ abstract class CriteriaContexts {
             Map<String, _Cte> cteMap = withContext.cteMap;
             List<_Cte> cteList = withContext.cteList;
             if (cteMap == null) {
-                cteMap = new HashMap<>();
+                cteMap = _Collections.hashMap();
                 withContext.cteMap = cteMap;
-                cteList = new ArrayList<>();
+                cteList = _Collections.arrayList();
                 withContext.cteList = cteList;
             } else if (!(cteMap instanceof HashMap)) {
                 // with clause end
                 throw ContextStack.castCriteriaApi(this);
+            }
+
+
+            final RecursiveCte recursiveCte = withContext.recursiveCte;
+
+            if (recursiveCte != null) {
+                if (!recursiveCte.name.equals(currentName)) {
+                    String m = String.format("recursive cte[%s] not end", recursiveCte.name);
+                    throw ContextStack.criteriaError(this, m);
+                }
+                final String errorMsg;
+                if ((errorMsg = recursiveCte.onRecursiveCteEnd(cte)) != null) {
+                    throw ContextStack.criteriaError(this, UnknownDerivedFieldException::new, errorMsg);
+                }
             }
 
             if (cteMap.putIfAbsent(currentName, cte) != null) {
@@ -666,16 +642,8 @@ abstract class CriteriaContexts {
             }
             cteList.add(cte);
 
-            final Map<String, RecursiveCte> recursiveCteMap = withContext.recursiveCteMap;
-            final RecursiveCte recursiveCte;
-            final String errorMsg;
-            if (recursiveCteMap != null
-                    && (recursiveCte = recursiveCteMap.remove(currentName)) != null
-                    && (errorMsg = recursiveCte.onRecursiveCteEnd(cte)) != null) {
-                throw ContextStack.criteriaError(this, UnknownDerivedFieldException::new, errorMsg);
-            }
-
             // clear current for next cte
+            withContext.recursiveCte = null;
             withContext.currentName = null;
             withContext.currentAliasList = null;
 
@@ -708,20 +676,9 @@ abstract class CriteriaContexts {
                 throw ContextStack.criteriaError(this, m);
             }
 
-            final Map<String, RecursiveCte> recursiveCteMap = withContext.recursiveCteMap;
-            if (recursiveCteMap != null && recursiveCteMap.size() > 0) {
-                final StringBuilder builder = new StringBuilder()
-                        .append("recursive ctes[");
-                int count = 0;
-                for (String name : recursiveCteMap.keySet()) {
-                    if (count > 0) {
-                        builder.append(_Constant.SPACE_COMMA_SPACE);
-                    }
-                    builder.append(name);
-                    count++;
-                }
-                builder.append(']');
-                throw ContextStack.criteriaError(this, builder.toString());
+            if (withContext.recursiveCte != null) {
+                String m = String.format("recursive cte[%s] not found.", withContext.recursiveCte.name);
+                throw ContextStack.criteriaError(this, m);
             }
 
             final Map<String, _Cte> cteMap = withContext.cteMap;
@@ -736,7 +693,7 @@ abstract class CriteriaContexts {
             } else if (cteList instanceof ArrayList) {
                 assert cteMap instanceof HashMap;
                 cteList = _Collections.unmodifiableList(cteList);
-                withContext.cteMap = Collections.unmodifiableMap(cteMap);
+                withContext.cteMap = _Collections.unmodifiableMap(cteMap);
             } else {
                 throw ContextStack.castCriteriaApi(this);
             }
@@ -767,12 +724,13 @@ abstract class CriteriaContexts {
                     m = String.format("Non-recursive with clause,cte[%s] couldn't recursive-referencing", cteName);
                     throw ContextStack.criteriaError(this, m);
                 }
-                Map<String, RecursiveCte> recursiveCteMap = withContext.recursiveCteMap;
-                if (recursiveCteMap == null) {
-                    recursiveCteMap = new HashMap<>();
-                    withContext.recursiveCteMap = recursiveCteMap;
+                RecursiveCte recursiveCte = withContext.recursiveCte;
+                if (recursiveCte == null) {
+                    withContext.recursiveCte = recursiveCte = new RecursiveCte(cteName);
+                } else {
+                    assert recursiveCte.name.equals(cteName);
                 }
-                thisLevelCte = recursiveCteMap.computeIfAbsent(cteName, RecursiveCte::new);
+                thisLevelCte = recursiveCte;
             } else {
                 final Map<String, _Cte> cteMap = withContext.cteMap;
                 if (cteMap == null) {
@@ -803,12 +761,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public List<_TabularBlock> endContext() {
-            final Map<String, RecursiveCte> refCteMap = this.refCteMap;
-            if (refCteMap != null) {
-                refCteMap.clear();
-                this.refCteMap = null;
-            }
+        public final List<_TabularBlock> endContext() {
             return this.onEndContext();
         }
 
@@ -885,13 +838,13 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public SimpleExpression refSelection(String selectionAlias) {
+        public Expression refSelection(String selectionAlias) {
             String m = "current context don't support refSelection(selectionAlias)";
             throw ContextStack.criteriaError(this, m);
         }
 
         @Override
-        public SimpleExpression refSelection(int selectionOrdinal) {
+        public Expression refSelection(int selectionOrdinal) {
             String m = "current context don't support refSelection(int selectionOrdinal)";
             throw ContextStack.criteriaError(this, m);
         }
@@ -966,7 +919,7 @@ abstract class CriteriaContexts {
 
         @Override
         public final int hashCode() {
-            return super.hashCode();
+            return System.identityHashCode(this);
         }
 
         @Override
@@ -1021,7 +974,7 @@ abstract class CriteriaContexts {
 
         private Map<String, _TabularBlock> aliasToBlock;
 
-        private Map<String, Map<String, RefDerivedField>> aliasToRefDerivedField;
+        private Map<String, Map<String, MutableDerivedField>> aliasToRefDerivedField;
 
         private Map<String, Map<String, DerivedField>> aliasToDerivedField;
 
@@ -1149,7 +1102,9 @@ abstract class CriteriaContexts {
                 selectionMap = null;
             } else if (block instanceof _AliasDerivedBlock) {
                 selectionMap = (_AliasDerivedBlock) block;
-            } else if ((tabularItem = block.tableItem()) instanceof _SelectionMap) {
+            } else if ((tabularItem = block.tableItem()) instanceof RecursiveCte) {
+                selectionMap = null;
+            } else if (tabularItem instanceof _SelectionMap) {
                 selectionMap = (_SelectionMap) tabularItem;
             } else {
                 throw invalidRef(this, derivedAlias, selectionAlias);
@@ -1158,11 +1113,11 @@ abstract class CriteriaContexts {
             //3. get DerivedField
             final DerivedField field;
             if (selectionMap == null) {
-                field = getRefField(derivedAlias, selectionAlias, true);
+                field = getDelayRefField(derivedAlias, selectionAlias, true);
                 assert field != null;
             } else {
                 final DerivedField temp;
-                temp = getRefField(derivedAlias, selectionAlias, false);
+                temp = getDelayRefField(derivedAlias, selectionAlias, false);
                 if (temp == null) {
                     field = getDerivedField(selectionMap, derivedAlias, selectionAlias);
                 } else {
@@ -1324,7 +1279,7 @@ abstract class CriteriaContexts {
          */
         private void validateDerivedFieldMap() {
             final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
-            final Map<String, Map<String, RefDerivedField>> aliasToRefDerivedField = this.aliasToRefDerivedField;
+            final Map<String, Map<String, MutableDerivedField>> aliasToRefDerivedField = this.aliasToRefDerivedField;
             assert aliasToRefDerivedField != null;
             if (aliasToBlock == null) {
                 throw unknownRestDerivedField(this, aliasToRefDerivedField);
@@ -1332,7 +1287,7 @@ abstract class CriteriaContexts {
 
             _TabularBlock block;
             TabularItem tabularItem;
-            Map<String, RefDerivedField> refFieldMap;
+            Map<String, MutableDerivedField> refFieldMap;
             for (String itemAlias : aliasToRefDerivedField.keySet()) {
                 block = aliasToBlock.get(itemAlias);
                 if (block == null) {
@@ -1543,9 +1498,9 @@ abstract class CriteriaContexts {
                     throw ContextStack.criteriaError(this, NonLateralException::new, m);
                 }
             }
-            final Map<String, Map<String, RefDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
+            final Map<String, Map<String, MutableDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
             if (aliasToRefSelection != null) {
-                final Map<String, RefDerivedField> fieldMap;
+                final Map<String, MutableDerivedField> fieldMap;
                 fieldMap = aliasToRefSelection.remove(alias);
                 if (fieldMap != null) {
                     this.finishRefSelections(derivedTable, alias, fieldMap);
@@ -1567,8 +1522,8 @@ abstract class CriteriaContexts {
          * @see #addNestedItems(_NestedItems)
          */
         private void onAddRecursiveCte(final RecursiveCte cte, final String cteAlias) {
-            final Map<String, Map<String, RefDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
-            final Map<String, RefDerivedField> fieldMap;
+            final Map<String, Map<String, MutableDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
+            final Map<String, MutableDerivedField> fieldMap;
             if (aliasToRefSelection != null && (fieldMap = aliasToRefSelection.remove(cteAlias)) != null) {
                 cte.addRefFields(fieldMap.values());
             }
@@ -1585,7 +1540,7 @@ abstract class CriteriaContexts {
          * @see #onAddDerived(_TabularBlock, _SelectionMap, String)
          */
         private void finishRefSelections(final _SelectionMap derivedTable, final String tableAlias,
-                                         final Map<String, RefDerivedField> fieldMap) {
+                                         final Map<String, MutableDerivedField> fieldMap) {
             assert !(derivedTable instanceof RecursiveCte)
                     && (derivedTable instanceof _DerivedTable || derivedTable instanceof _Cte);
 
@@ -1598,13 +1553,13 @@ abstract class CriteriaContexts {
             derivedFieldMap = aliasToSelection.computeIfAbsent(tableAlias, _Collections::hashMapIgnoreKey);
 
             Selection selection;
-            for (RefDerivedField field : fieldMap.values()) {
+            for (MutableDerivedField field : fieldMap.values()) {
                 selection = derivedTable.refSelection(field.fieldName);
                 if (selection == null) {
                     throw invalidRef(this, tableAlias, field.fieldName);
                 }
-                assert field.expType.selection == null;
-                field.expType.selection = selection;
+                assert field.targetSelection == null;
+                field.targetSelection = selection;
                 derivedFieldMap.putIfAbsent(field.fieldName, field);
             }
 
@@ -1612,21 +1567,21 @@ abstract class CriteriaContexts {
 
 
         @Nullable
-        private RefDerivedField getRefField(final String derivedTableAlias, final String fieldName,
-                                            final boolean create) {
-            Map<String, Map<String, RefDerivedField>> aliasToRefDerivedField = this.aliasToRefDerivedField;
+        private MutableDerivedField getDelayRefField(final String derivedTableAlias, final String fieldName,
+                                                     final boolean create) {
+            Map<String, Map<String, MutableDerivedField>> aliasToRefDerivedField = this.aliasToRefDerivedField;
             if (aliasToRefDerivedField == null && create) {
                 aliasToRefDerivedField = _Collections.hashMap();
                 this.aliasToRefDerivedField = aliasToRefDerivedField;
             }
 
-            final Map<String, RefDerivedField> fieldMap;
-            final RefDerivedField field;
+            final Map<String, MutableDerivedField> fieldMap;
+            final MutableDerivedField field;
             if (aliasToRefDerivedField == null) {
                 field = null;
             } else if (create) {
                 fieldMap = aliasToRefDerivedField.computeIfAbsent(derivedTableAlias, _Collections::hashMapIgnoreKey);
-                field = fieldMap.computeIfAbsent(fieldName, k -> new RefDerivedField(derivedTableAlias, k));
+                field = fieldMap.computeIfAbsent(fieldName, k -> new MutableDerivedField(derivedTableAlias, k));
             } else {
                 fieldMap = aliasToRefDerivedField.get(derivedTableAlias);
                 if (fieldMap == null) {
@@ -1645,7 +1600,6 @@ abstract class CriteriaContexts {
                 aliasToSelection = _Collections.hashMap();
                 this.aliasToDerivedField = aliasToSelection;
             }
-
             return aliasToSelection.computeIfAbsent(tableAlias, _Collections::hashMapIgnoreKey)
                     .computeIfAbsent(fieldName, fieldNameKey -> {
                         final Selection selection;
@@ -1653,7 +1607,14 @@ abstract class CriteriaContexts {
                         if (selection == null) {
                             throw invalidRef(this, tableAlias, fieldNameKey);
                         }
-                        return new DerivedSelection(tableAlias, selection);
+                        final ImmutableDerivedField field;
+                        if (selection instanceof TypeInfer.DelayTypeInfer
+                                && ((TypeInfer.DelayTypeInfer) selection).isDelay()) {
+                            field = new DelayImmutableDerivedField(tableAlias, selection);
+                        } else {
+                            field = new ImmutableDerivedField(tableAlias, selection);
+                        }
+                        return field;
                     });
         }
 
@@ -2039,14 +2000,14 @@ abstract class CriteriaContexts {
 
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketContext#refSelection(String)}
+         * couldn't clear this field,because {@link  SQLs#refSelection(String)} and {@link  BracketContext#refSelection(String)}
          */
         private Map<String, Selection> selectionMap;
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketContext#refSelection(String)}
+         * couldn't clear this field,because {@link  SQLs#refSelection(String)} and {@link  BracketContext#refSelection(String)}
          */
-        private Map<Object, SimpleExpression> refSelectionMap;
+        private Map<Object, SelectionReference> refSelectionMap;
 
         private Map<String, Boolean> windowNameMap;
 
@@ -2128,7 +2089,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final SimpleExpression refSelection(final @Nullable String selectionAlias) {
+        public final Expression refSelection(final @Nullable String selectionAlias) {
             if (selectionAlias == null) {
                 throw ContextStack.nullPointer(this);
             }
@@ -2136,32 +2097,41 @@ abstract class CriteriaContexts {
             if (leftContext != null) {
                 return leftContext.refSelection(selectionAlias);
             }
-            SimpleExpression refSelection;
-            Map<Object, SimpleExpression> refSelectionMap = this.refSelectionMap;
+
+            Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
-                refSelectionMap = new HashMap<>();
+                refSelectionMap = _Collections.hashMap();
                 this.refSelectionMap = refSelectionMap;
             }
-            refSelection = refSelectionMap.get(selectionAlias);
-            if (refSelection != null) {
-                return refSelection;
+            final SelectionReference cacheReference;
+            cacheReference = refSelectionMap.get(selectionAlias);
+            if (cacheReference != null) {
+                return cacheReference;
             }
+            final SelectionReference refSelection;
             if (this.isSelectClauseNotEnd()) {
-                refSelection = new DelayNameRefSelection(selectionAlias);
+                refSelection = new MutableNameRefSelection(selectionAlias);
             } else {
                 final Selection selection;
                 selection = this.getSelectionMap().get(selectionAlias);
                 if (selection == null) {
                     throw CriteriaUtils.unknownSelection(this, selectionAlias);
                 }
-                refSelection = new NameRefSelection(selection);
+                if (selection instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) selection).isDelay()) {
+                    refSelection = new DelayImmutableNameRefSelection(selection);
+                } else {
+                    refSelection = new ImmutableNameRefSelection(selection);
+                }
             }
             refSelectionMap.put(selectionAlias, refSelection);
             return refSelection;
         }
 
+        /**
+         * @param selectionOrdinal based 1 .
+         */
         @Override
-        public final SimpleExpression refSelection(final int selectionOrdinal) {
+        public final Expression refSelection(final int selectionOrdinal) {
             if (selectionOrdinal < 1) {
                 throw CriteriaUtils.unknownSelection(this, selectionOrdinal);
             }
@@ -2169,28 +2139,35 @@ abstract class CriteriaContexts {
             if (leftContext != null) {
                 return leftContext.refSelection(selectionOrdinal);
             }
-            SimpleExpression refSelection;
-            Map<Object, SimpleExpression> refSelectionMap = this.refSelectionMap;
+
+            Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
-                refSelectionMap = new HashMap<>();
+                refSelectionMap = _Collections.hashMap();
                 this.refSelectionMap = refSelectionMap;
             }
-            refSelection = refSelectionMap.get(selectionOrdinal);
-            if (refSelection != null) {
-                return refSelection;
+            final SelectionReference cacheReference;
+            cacheReference = refSelectionMap.get(selectionOrdinal);
+            if (cacheReference != null) {
+                return cacheReference;
             }
-            final int selectionIndex = selectionOrdinal - 1;
+            final SelectionReference refSelection;
             if (this.isSelectClauseNotEnd()) {
-                refSelection = new DelayIndexRefSelection(selectionIndex);
+                refSelection = new MutableOrdinalRefSelection(selectionOrdinal);
             } else {
                 final List<Selection> selectionList = this.flatSelectionList;
                 assert selectionList != null;
                 if (selectionOrdinal > selectionList.size()) {
                     throw CriteriaUtils.unknownSelection(this, selectionOrdinal);
                 }
-                refSelection = new IndexRefSelection(selectionIndex, selectionList.get(selectionIndex));
+                final Selection selection;
+                selection = selectionList.get(selectionOrdinal - 1);
+                if (selection instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) selection).isDelay()) {
+                    refSelection = new DelayImmutableOrdinalRefSelection(selectionOrdinal, selection);
+                } else {
+                    refSelection = new ImmutableOrdinalRefSelection(selectionOrdinal, selection);
+                }
             }
-            refSelectionMap.put(selectionIndex, refSelection);
+            refSelectionMap.put(selectionOrdinal, refSelection);
             return refSelection;
         }
 
@@ -2355,41 +2332,41 @@ abstract class CriteriaContexts {
          * @see #endSelectClauseIfNeed()
          */
         private void validateDelayRefSelection() {
-            final Map<Object, SimpleExpression> refSelectionMap = this.refSelectionMap;
+            final Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
             assert refSelectionMap != null;
             Map<String, Selection> selectionMap = null;
             List<Selection> selectionList = null;
 
             Selection selection;
-            int selectionIndex;
-            for (Expression refSelection : refSelectionMap.values()) {
-                if (!(refSelection instanceof DelayRefSelection)) {
+            int selectionOrdinal;
+            for (SelectionReference refSelection : refSelectionMap.values()) {
+                if (!(refSelection instanceof MutableRefSelection)) {
                     continue;
                 }
-                if (refSelection instanceof DelayNameRefSelection) {
+                if (refSelection instanceof MutableNameRefSelection) {
                     if (selectionMap == null) {
                         selectionMap = this.getSelectionMap();
                     }
-                    selection = selectionMap.get(((DelayNameRefSelection) refSelection).selectionName);
+                    selection = selectionMap.get(((MutableNameRefSelection) refSelection).selectionName);
                 } else {
                     if (selectionList == null) {
                         selectionList = this.flatSelectItems();
                     }
-                    selectionIndex = ((DelayIndexRefSelection) refSelection).selectionIndex;
-                    if (selectionIndex >= 0 && selectionIndex < selectionList.size()) {
-                        selection = selectionList.get(selectionIndex);
+                    // selectionOrdinal based 1
+                    selectionOrdinal = ((MutableOrdinalRefSelection) refSelection).selectionOrdinal;
+                    if (selectionOrdinal > 0 && selectionOrdinal <= selectionList.size()) {
+                        selection = selectionList.get(selectionOrdinal - 1);
                     } else {
                         selection = null;
                     }
                 }
 
                 if (selection != null) {
-                    assert ((DelayRefSelection) refSelection).delaySelection.selection == null;
-                    ((DelayRefSelection) refSelection).delaySelection.selection = selection;
-                } else if (refSelection instanceof DelayNameRefSelection) {
-                    throw CriteriaUtils.unknownSelection(this, ((DelayNameRefSelection) refSelection).selectionName);
+                    ((MutableRefSelection) refSelection).setTargetSelection(selection);
+                } else if (refSelection instanceof MutableNameRefSelection) {
+                    throw CriteriaUtils.unknownSelection(this, ((MutableNameRefSelection) refSelection).selectionName);
                 } else {
-                    throw CriteriaUtils.unknownSelection(this, ((DelayIndexRefSelection) refSelection).selectionIndex + 1);
+                    throw CriteriaUtils.unknownSelection(this, ((MutableOrdinalRefSelection) refSelection).selectionOrdinal);
                 }
 
 
@@ -2506,15 +2483,29 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final SimpleExpression refSelection(final String selectionAlias) {
+        public final Expression refSelection(final String selectionAlias) {
             final CriteriaContext leftContext = this.leftContext, innerContext = this.innerContext;
-            final SimpleExpression selection;
+            final Expression selection;
             if (innerContext == null) {
                 throw ContextStack.castCriteriaApi(this);
             } else if (leftContext == null) {
                 selection = innerContext.refSelection(selectionAlias);
             } else {
                 selection = leftContext.refSelection(selectionAlias);
+            }
+            return selection;
+        }
+
+        @Override
+        public final Expression refSelection(int selectionOrdinal) {
+            final CriteriaContext leftContext = this.leftContext, innerContext = this.innerContext;
+            final Expression selection;
+            if (innerContext == null) {
+                throw ContextStack.castCriteriaApi(this);
+            } else if (leftContext == null) {
+                selection = innerContext.refSelection(selectionOrdinal);
+            } else {
+                selection = leftContext.refSelection(selectionOrdinal);
             }
             return selection;
         }
@@ -2580,19 +2571,19 @@ abstract class CriteriaContexts {
     private static final class ValuesContext extends StatementContext {
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketContext#refSelection(String)}
+         * couldn't clear this field,because {@link  SQLs#refSelection(String)} and {@link  BracketContext#refSelection(String)}
          */
         private List<? extends SelectItem> selectItemList;
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketContext#refSelection(String)}
+         * couldn't clear this field,because {@link  SQLs#refSelection(String)} and {@link  BracketContext#refSelection(String)}
          */
         private Map<String, Selection> selectionMap;
 
         /**
-         * couldn't clear this field,because {@link  SQLs#ref(String)} and {@link  BracketContext#refSelection(String)}
+         * couldn't clear this field,because {@link  SQLs#refSelection(String)} and {@link  BracketContext#refSelection(String)}
          */
-        private Map<String, NameRefSelection> refSelectionMap;
+        private Map<String, ImmutableNameRefSelection> refSelectionMap;
 
         private ValuesContext(@Nullable CriteriaContext outerContext) {
             super(outerContext);
@@ -2601,14 +2592,14 @@ abstract class CriteriaContexts {
 
         @Override
         public SimpleExpression refSelection(final String selectionAlias) {
-            Map<String, NameRefSelection> refSelectionMap = this.refSelectionMap;
+            Map<String, ImmutableNameRefSelection> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
                 this.refSelectionMap = refSelectionMap = new HashMap<>();
             }
             return refSelectionMap.computeIfAbsent(selectionAlias, this::createRefSelection);
         }
 
-        private NameRefSelection createRefSelection(final String selectionAlias) {
+        private ImmutableNameRefSelection createRefSelection(final String selectionAlias) {
             Map<String, Selection> selectionMap = this.selectionMap;
             if (selectionMap == null) {
                 final List<? extends SelectItem> selectItemList = this.selectItemList;
@@ -2622,7 +2613,7 @@ abstract class CriteriaContexts {
             if (selection == null) {
                 throw CriteriaUtils.unknownSelection(this, selectionAlias);
             }
-            return new NameRefSelection(selection);
+            return new ImmutableNameRefSelection(selection);
         }
 
 
@@ -2664,7 +2655,7 @@ abstract class CriteriaContexts {
         /**
          * @see #migrateToQueryContext(SimpleQueryContext, DispatcherContext)
          */
-        private Map<String, Map<String, RefDerivedField>> aliasToRefDerivedField;
+        private Map<String, Map<String, MutableDerivedField>> aliasToRefDerivedField;
 
         /**
          * @see #migrateToQueryContext(SimpleQueryContext, DispatcherContext)
@@ -2679,7 +2670,7 @@ abstract class CriteriaContexts {
         /**
          * @see #migrateToQueryContext(SimpleQueryContext, DispatcherContext)
          */
-        private Map<Object, SimpleExpression> refSelectionMap;
+        private Map<Object, SelectionReference> refSelectionMap;
 
         private boolean refOuter;
 
@@ -2728,13 +2719,13 @@ abstract class CriteriaContexts {
             } else if (this.isInWithClause()) {
                 throw unknownDerivedField(derivedAlias, selectionAlias);
             }
-            Map<String, Map<String, RefDerivedField>> derivedMap = this.aliasToRefDerivedField;
+            Map<String, Map<String, MutableDerivedField>> derivedMap = this.aliasToRefDerivedField;
             if (derivedMap == null) {
                 derivedMap = new HashMap<>();
                 this.aliasToRefDerivedField = derivedMap;
             }
             return derivedMap.computeIfAbsent(derivedAlias, k -> new HashMap<>())
-                    .computeIfAbsent(selectionAlias, k -> new RefDerivedField(derivedAlias, k));
+                    .computeIfAbsent(selectionAlias, k -> new MutableDerivedField(derivedAlias, k));
         }
 
         @Override
@@ -2760,7 +2751,7 @@ abstract class CriteriaContexts {
             }
             Map<String, Boolean> refWindowNameMap = this.refWindowNameMap;
             if (refWindowNameMap == null) {
-                refWindowNameMap = new HashMap<>();
+                refWindowNameMap = _Collections.hashMap();
                 this.refWindowNameMap = refWindowNameMap;
             }
             refWindowNameMap.putIfAbsent(windowName, Boolean.TRUE);
@@ -2775,21 +2766,21 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final SimpleExpression refSelection(final @Nullable String selectionAlias) {
+        public final Expression refSelection(final @Nullable String selectionAlias) {
             if (this.migrated) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (selectionAlias == null) {
                 throw ContextStack.nullPointer(this);
             }
-            Map<Object, SimpleExpression> refSelectionMap = this.refSelectionMap;
+            Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
-                refSelectionMap = new HashMap<>();
+                refSelectionMap = _Collections.hashMap();
                 this.refSelectionMap = refSelectionMap;
             }
-            SimpleExpression refSelection;
+            SelectionReference refSelection;
             refSelection = refSelectionMap.get(selectionAlias);
             if (refSelection == null) {
-                refSelection = new DelayNameRefSelection(selectionAlias);
+                refSelection = new MutableNameRefSelection(selectionAlias);
                 refSelectionMap.put(selectionAlias, refSelection);
             }
             return refSelection;
@@ -2799,23 +2790,22 @@ abstract class CriteriaContexts {
          * @param selectionOrdinal based 1 .
          */
         @Override
-        public final SimpleExpression refSelection(final int selectionOrdinal) {
+        public final Expression refSelection(final int selectionOrdinal) {
             if (this.migrated) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (selectionOrdinal < 1) {
                 throw CriteriaUtils.unknownSelection(this, selectionOrdinal);
             }
-            Map<Object, SimpleExpression> refSelectionMap = this.refSelectionMap;
+            Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
-                refSelectionMap = new HashMap<>();
+                refSelectionMap = _Collections.hashMap();
                 this.refSelectionMap = refSelectionMap;
             }
-            final int selectionIndex = selectionOrdinal - 1;
-            SimpleExpression refSelection;
-            refSelection = refSelectionMap.get(selectionIndex);
+            SelectionReference refSelection;
+            refSelection = refSelectionMap.get(selectionOrdinal);
             if (refSelection == null) {
-                refSelection = new DelayIndexRefSelection(selectionIndex);
-                refSelectionMap.put(selectionIndex, refSelection);
+                refSelection = new MutableOrdinalRefSelection(selectionOrdinal);
+                refSelectionMap.put(selectionOrdinal, refSelection);
             }
             return refSelection;
         }
@@ -2864,53 +2854,54 @@ abstract class CriteriaContexts {
     }//MultiStmtContext
 
 
-    static final class DerivedSelection extends OperationDataField implements _Selection, DerivedField {
+    static class ImmutableDerivedField extends OperationDataField implements DerivedField {
 
         private final String tableName;
 
-        private final Selection selection;
+        final Selection selection;
 
-        private DerivedSelection(String tableName, Selection selection) {
+        private ImmutableDerivedField(String tableName, Selection selection) {
             this.tableName = tableName;
             this.selection = selection;
         }
 
         @Override
-        public TypeMeta typeMeta() {
+        public final TypeMeta typeMeta() {
             return this.selection.typeMeta();
         }
 
         @Override
-        public TableField tableField() {
+        public final TableField tableField() {
             return ((_Selection) this.selection).tableField();
         }
 
         @Override
-        public Expression underlyingExp() {
+        public final Expression underlyingExp() {
             return this;
         }
 
         @Override
-        public String fieldName() {
+        public final String fieldName() {
             return this.selection.alias();
         }
 
         @Override
-        public String tableAlias() {
+        public final String tableAlias() {
             return this.tableName;
         }
 
         @Override
-        public String alias() {
+        public final String alias() {
             return this.selection.alias();
         }
 
 
         @Override
-        public void appendSelectItem(final _SqlContext context) {
+        public final void appendSelectItem(final _SqlContext context) {
             final DialectParser dialect = context.parser();
 
-            final String safeFieldName = dialect.identifier(this.selection.alias());
+            final String safeFieldName;
+            safeFieldName = dialect.identifier(this.selection.alias());
 
             final StringBuilder builder;
             builder = context.sqlBuilder()
@@ -2924,7 +2915,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public final void appendSql(final _SqlContext context) {
             final DialectParser dialect = context.parser();
             final StringBuilder builder;
             builder = context.sqlBuilder()
@@ -2937,19 +2928,19 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public int hashCode() {
+        public final int hashCode() {
             return Objects.hash(this.tableName, this.selection);
         }
 
         @Override
-        public boolean equals(final Object obj) {
+        public final boolean equals(final Object obj) {
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof DerivedSelection) {
-                final DerivedSelection selection = (DerivedSelection) obj;
-                match = selection.tableName.equals(this.tableName)
-                        && selection.selection.equals(this.selection);
+            } else if (obj instanceof ImmutableDerivedField) {
+                final ImmutableDerivedField o = (ImmutableDerivedField) obj;
+                match = o.tableName.equals(this.tableName)
+                        && o.selection.equals(this.selection);
             } else {
                 match = false;
             }
@@ -2957,44 +2948,69 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public String toString() {
-            return String.format(" %s.%s", this.tableName, this.selection.alias());
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.tableName)
+                    .append(_Constant.POINT)
+                    .append(this.selection.alias())
+                    .toString();
         }
 
-    }//DerivedSelection
+    }//ImmutableDerivedField
 
 
-    static final class RefDerivedField extends OperationDataField implements DerivedField, _Selection {
+    private static final class DelayImmutableDerivedField extends ImmutableDerivedField
+            implements TypeInfer.DelayTypeInfer {
+
+        private DelayImmutableDerivedField(String tableName, Selection selection) {
+            super(tableName, selection);
+        }
+
+        @Override
+        public boolean isDelay() {
+            final Selection selection = this.selection;
+            return selection instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) selection).isDelay();
+        }
+
+
+    }//DelayImmutableDerivedField
+
+
+    private static final class MutableDerivedField extends OperationDataField
+            implements DerivedField, TypeInfer.DelayTypeInfer {
 
         final String tableName;
 
         final String fieldName;
 
-        private final DelaySelection expType;
+        private Selection targetSelection;
 
-        private RefDerivedField(String tableName, String fieldName) {
+        private MutableDerivedField(String tableName, String fieldName) {
             this.tableName = tableName;
             this.fieldName = fieldName;
-            this.expType = new DelaySelection();
+        }
+
+        @Override
+        public boolean isDelay() {
+            final Selection selection = this.targetSelection;
+            return selection == null
+                    || (selection instanceof DelayTypeInfer && ((DelayTypeInfer) selection).isDelay());
         }
 
         @Override
         public TypeMeta typeMeta() {
-            return this.expType;
+            return this.getTargetSelection().typeMeta();
         }
 
         @Override
         public TableField tableField() {
-            final Selection selection = this.expType.selection;
-            if (selection == null) {
-                throw new IllegalStateException(String.format("No actual %s", Selection.class.getName()));
-            }
-            return ((_Selection) selection).tableField();
+            return this.getTargetSelection().tableField();
         }
 
         @Override
         public Expression underlyingExp() {
-            return this;
+            return this.getTargetSelection().underlyingExp();
         }
 
         @Override
@@ -3043,231 +3059,272 @@ abstract class CriteriaContexts {
 
         @Override
         public String toString() {
-            return String.format(" %s.%s", this.tableName, this.fieldName);
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.tableName)
+                    .append(_Constant.POINT)
+                    .append(this.fieldName)
+                    .toString();
+        }
+
+        private _Selection getTargetSelection() {
+            final Selection selection = this.targetSelection;
+            if (selection == null) {
+                String m = String.format("%s is delay", this);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            return (_Selection) selection;
         }
 
 
-    }//DerivedFieldImpl
+    }//MutableDerivedField
+
+    /**
+     * <p>
+     * Package interface for {@link OperationExpression#as(String)}
+     * </p>
+     */
+    interface SelectionReference extends Expression {
 
 
-    private static final class DelaySelection implements TypeMeta.Delay {
+    }//SelectionReference
 
-        private Selection selection;
+
+    private static class ImmutableNameRefSelection extends OperationExpression.OperationSimpleExpression
+            implements SelectionReference {
+
+        final Selection selection;
+
+        private ImmutableNameRefSelection(Selection selection) {
+            this.selection = selection;
+        }
 
         @Override
-        public MappingType mappingType() {
+        public final MappingType typeMeta() {
+            return this.selection.typeMeta().mappingType();
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            final StringBuilder builder;
+            builder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+
+            context.parser().identifier(this.selection.alias(), builder);
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.selection.alias())
+                    .toString();
+        }
+
+
+    }// ImmutableNameRefSelection
+
+    private static final class DelayImmutableNameRefSelection extends ImmutableNameRefSelection
+            implements TypeInfer.DelayTypeInfer {
+
+        private DelayImmutableNameRefSelection(Selection selection) {
+            super(selection);
+        }
+
+        @Override
+        public boolean isDelay() {
             final Selection selection = this.selection;
+            return selection instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) selection).isDelay();
+        }
+
+
+    }//DelayImmutableNameRefSelection
+
+    private static class ImmutableOrdinalRefSelection extends NonOperationExpression implements SelectionReference {
+
+        final Selection selection;
+
+        private final int selectionOrdinal;
+
+        /**
+         * @param selectionOrdinal based 1
+         * @see SimpleQueryContext#refSelection(int)
+         * @see DispatcherContext#refSelection(int)
+         */
+        private ImmutableOrdinalRefSelection(int selectionOrdinal, Selection selection) {
+            assert selectionOrdinal > 0;
+            this.selectionOrdinal = selectionOrdinal;
+            this.selection = selection;
+        }
+
+        @Override
+        public final MappingType typeMeta() {
+            // always return IntegerType.INSTANCE not this.targetSelection type.
+            return IntegerType.INSTANCE;
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.selectionOrdinal); //TODO consider support ?
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.selectionOrdinal)
+                    .toString();
+        }
+
+        @Override
+        final String operationErrorMessage() {
+            return String.format("%s is the ordinal number of Selection[%s],don't support operator and function.",
+                    this, this.selection);
+        }
+
+
+    }//ImmutableOrdinalRefSelection
+
+    private static final class DelayImmutableOrdinalRefSelection extends ImmutableOrdinalRefSelection
+            implements TypeInfer.DelayTypeInfer {
+
+        /**
+         * @param selectionOrdinal based 1
+         * @see SimpleQueryContext#refSelection(int)
+         * @see DispatcherContext#refSelection(int)
+         */
+        private DelayImmutableOrdinalRefSelection(int selectionOrdinal, Selection selection) {
+            super(selectionOrdinal, selection);
+        }
+
+        @Override
+        public boolean isDelay() {
+            final Selection selection = this.selection;
+            return selection instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) selection).isDelay();
+        }
+
+
+    }//DelayImmutableOrdinalRefSelection
+
+
+    private interface MutableRefSelection extends SelectionReference {
+
+        void setTargetSelection(Selection selection);
+    }
+
+
+    private static final class MutableNameRefSelection extends OperationExpression.OperationSimpleExpression
+            implements MutableRefSelection, TypeInfer.DelayTypeInfer {
+
+        private final String selectionName;
+
+        private Selection targetSelection;
+
+        /**
+         * @see SimpleQueryContext#refSelection(String)
+         * @see DispatcherContext#refSelection(String)
+         */
+        private MutableNameRefSelection(String selectionName) {
+            this.selectionName = selectionName;
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            final Selection selection = this.targetSelection;
             if (selection == null) {
-                throw new IllegalStateException(String.format("No actual %s", Selection.class.getName()));
+                throw CriteriaUtils.delayTypeInfer(this);
             }
             return selection.typeMeta().mappingType();
         }
 
         @Override
         public boolean isDelay() {
-            return this.selection != null;
-        }
-
-    }//DelaySelection
-
-
-    private static abstract class RefSelection extends OperationExpression.OperationSimpleExpression {
-
-        private final Selection selection;
-
-        private RefSelection(Selection selection) {
-            this.selection = selection;
-        }
-
-        @Override
-        public final TypeMeta typeMeta() {
-            return this.selection.typeMeta();
-        }
-
-
-    }//RefSelection
-
-    static final class NameRefSelection extends RefSelection {
-
-        private NameRefSelection(Selection selection) {
-            super(selection);
-        }
-
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder builder;
-            builder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-
-            context.parser()
-                    .identifier(((RefSelection) this).selection.alias(), builder);
-        }
-
-    }// NameRefSelection
-
-    private static final class IndexRefSelection extends RefSelection {
-
-        private final int selectionIndex;
-
-        /**
-         * @param selectionIndex based 0
-         * @see SimpleQueryContext#refSelection(int)
-         * @see DispatcherContext#refSelection(int)
-         */
-        private IndexRefSelection(int selectionIndex, Selection selection) {
-            super(selection);
-            this.selectionIndex = selectionIndex;
+            final Selection selection = this.targetSelection;
+            return selection == null
+                    || (selection instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) selection).isDelay());
         }
 
         @Override
         public void appendSql(final _SqlContext context) {
-            context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.selectionIndex); //TODO consider support ?
-        }
-
-
-    }//IndexRefSelection
-
-
-    private static abstract class DelayRefSelection extends OperationExpression.OperationSimpleExpression {
-
-        private final DelaySelection delaySelection;
-
-        private DelayRefSelection() {
-            this.delaySelection = new DelaySelection();
-        }
-
-        @Override
-        public final TypeMeta typeMeta() {
-            return this.delaySelection;
-        }
-
-
-    }//DelayRefSelection
-
-    static final class DelayNameRefSelection extends DelayRefSelection {
-
-        private final String selectionName;
-
-        /**
-         * @see SimpleQueryContext#refSelection(String)
-         * @see DispatcherContext#refSelection(String)
-         */
-        private DelayNameRefSelection(String selectionName) {
-            this.selectionName = selectionName;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder builder;
-            builder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-
-            context.parser()
-                    .identifier(this.selectionName, builder);
-        }
-
-
-    }//DelayNameRefSelection
-
-    static final class DelayIndexRefSelection extends DelayRefSelection {
-
-        private final int selectionIndex;
-
-        /**
-         * @param selectionIndex based 0
-         * @see SimpleQueryContext#refSelection(int)
-         * @see DispatcherContext#refSelection(int)
-         */
-        private DelayIndexRefSelection(int selectionIndex) {
-            this.selectionIndex = selectionIndex;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.selectionIndex); //TODO consider support ?
-
-        }
-
-
-    }//DelayIndexRefSelection
-
-
-    /**
-     * @see #createDerivedSelection(DerivedField, String)
-     */
-    private static final class DerivedAliasSelection implements _Selection {
-
-        private final DerivedField field;
-
-        private final String alias;
-
-        private DerivedAliasSelection(DerivedField field, String alias) {
-            this.field = field;
-            this.alias = alias;
-        }
-
-        @Override
-        public TableField tableField() {
-            return ((_Selection) this.field).tableField();
-        }
-
-        @Override
-        public String alias() {
-            return this.alias;
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.field.typeMeta();
-        }
-
-
-        @Override
-        public void appendSelectItem(final _SqlContext context) {
-            ((_SelfDescribed) this.field).appendSql(context);
-            final StringBuilder builder;
-            builder = context.sqlBuilder()
-                    .append(_Constant.SPACE_AS_SPACE);
-
-            context.parser()
-                    .identifier(this.alias, builder);
-        }
-
-        @Override
-        public Expression underlyingExp() {
-            return this.field;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.field, this.alias);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof DerivedAliasSelection) {
-                final DerivedAliasSelection selection = (DerivedAliasSelection) obj;
-                match = selection.field.equals(this.field) && selection.alias.equals(this.alias);
-            } else {
-                match = false;
+            if (this.targetSelection == null) {
+                throw CriteriaUtils.delayTypeInfer(this);
             }
-            return match;
+            final StringBuilder builder;
+            builder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+
+            context.parser().identifier(this.selectionName, builder);
         }
 
         @Override
-        public String toString() {
-            return String.format("%s AS %s", this.field, this.alias);
+        public void setTargetSelection(final @Nullable Selection selection) {
+            assert this.targetSelection == null;
+            assert selection != null;
+            assert this.selectionName.equals(selection.alias());
+            this.targetSelection = selection;
         }
 
-    }//DerivedAliasSelection
+    }//MutableNameRefSelection
+
+    static final class MutableOrdinalRefSelection extends NonOperationExpression
+            implements MutableRefSelection {
+
+        private final int selectionOrdinal;
+
+        private Selection targetSelection;
+
+        /**
+         * @param selectionOrdinal based 1
+         * @see SimpleQueryContext#refSelection(int)
+         * @see DispatcherContext#refSelection(int)
+         */
+        private MutableOrdinalRefSelection(int selectionOrdinal) {
+            assert selectionOrdinal > 0;
+            this.selectionOrdinal = selectionOrdinal;
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            // always return IntegerType.INSTANCE not this.targetSelection type.
+            return IntegerType.INSTANCE;
+        }
+
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            if (this.targetSelection == null) {
+                throw new CriteriaException("targetSelection is null");
+            }
+            context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(this.selectionOrdinal); //TODO consider support ?
+
+        }
+
+        @Override
+        public void setTargetSelection(final @Nullable Selection selection) {
+            assert this.targetSelection == null;
+            assert selection != null;
+            this.targetSelection = selection;
+        }
+
+        @Override
+        String operationErrorMessage() {
+            final String m;
+            if (this.targetSelection == null) {
+                m = String.format("%s is the ordinal number of %s,don't support operator and function.",
+                        this, Selection.class.getName());
+            } else {
+                m = String.format("%s is the ordinal number of Selection[%s],don't support operator and function.",
+                        this, this.targetSelection);
+            }
+            return m;
+        }
+
+
+    }//MutableOrdinalRefSelection
 
 
     static final class RecursiveCte implements _Cte {
@@ -3277,7 +3334,7 @@ abstract class CriteriaContexts {
         /**
          * don't use {@link Map},because field possibly from different level,possibly duplication.
          */
-        private List<RefDerivedField> refFieldList;
+        private List<MutableDerivedField> refFieldList;
 
         private _Cte actualCte;
 
@@ -3327,11 +3384,11 @@ abstract class CriteriaContexts {
          * @see JoinableContext#validateDerivedFieldMap()
          * @see JoinableContext#onAddRecursiveCte(RecursiveCte, String)
          */
-        private void addRefFields(final Collection<RefDerivedField> refFields) {
+        private void addRefFields(final Collection<MutableDerivedField> refFields) {
 
-            List<RefDerivedField> refFieldList = this.refFieldList;
+            List<MutableDerivedField> refFieldList = this.refFieldList;
             if (refFieldList == null) {
-                refFieldList = new ArrayList<>(refFields.size());
+                refFieldList = _Collections.arrayList(refFields.size());
                 this.refFieldList = refFieldList;
             }
             refFieldList.addAll(refFields);
@@ -3344,7 +3401,7 @@ abstract class CriteriaContexts {
         private void addFieldGroup(final DerivedFieldGroup group) {
             List<DerivedFieldGroup> groupList = this.fieldGroupList;
             if (groupList == null) {
-                groupList = new ArrayList<>(1);
+                groupList = _Collections.arrayList();
                 this.fieldGroupList = groupList;
             }
             groupList.add(group);
@@ -3370,27 +3427,27 @@ abstract class CriteriaContexts {
                 this.fieldGroupList = null;
             }
 
-            final List<RefDerivedField> refFieldList = this.refFieldList;
+            final List<MutableDerivedField> refFieldList = this.refFieldList;
             if (refFieldList == null) {
                 return null;
             }
 
             Selection selection;
             StringBuilder builder = null;
-            for (RefDerivedField field : refFieldList) {
+            for (MutableDerivedField field : refFieldList) {
                 selection = cte.refSelection(field.fieldName);
                 if (selection != null) {
-                    assert field.expType.selection == null;
-                    field.expType.selection = selection;
+                    assert field.targetSelection == null;
+                    field.targetSelection = selection;
                     continue;
                 }
 
                 if (builder == null) {
                     builder = new StringBuilder();
-                    builder.append("unknown derived fields[").append(field.fieldName);
+                    builder.append("unknown derived fields[").append(field);
                 } else {
                     builder.append(_Constant.SPACE_COMMA_SPACE)
-                            .append(field.fieldName);
+                            .append(field);
                 }
             }
 

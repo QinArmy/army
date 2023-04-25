@@ -86,12 +86,12 @@ interface CriteriaContext {
     @Deprecated
     void onOrderByStart();
 
-    SimpleExpression refSelection(String selectionAlias);
+    Expression refSelection(String selectionAlias);
 
     /**
      * @param selectionOrdinal based 1 .
      */
-    SimpleExpression refSelection(int selectionOrdinal);
+    Expression refSelection(int selectionOrdinal);
 
     void onSetInnerContext(CriteriaContext innerContext);
 

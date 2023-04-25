@@ -13,8 +13,8 @@ import java.util.function.BiFunction;
  *     <ul>
  *         <li>{@link TableFieldMeta}</li>
  *         <li>{@link QualifiedFieldImpl}</li>
- *         <li>{@link  CriteriaContexts.DerivedSelection}</li>
- *         <li>{@link  CriteriaContexts.RefDerivedField}</li>
+ *         <li>{@link  CriteriaContexts.ImmutableDerivedField}</li>
+ *         <li>{@link  CriteriaContexts.MutableDerivedField}</li>
  *     </ul>
  * </p>
  */

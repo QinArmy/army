@@ -239,7 +239,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         private DelayAnonymousMultiParam(DelayTypeInfer infer, Collection<?> values) {
             super(values);
             this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::typeMeta);
+            ContextStack.peek().addEndEventListener(this::onContextEnd);
         }
 
         @Override
@@ -275,6 +275,17 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
                 match = false;
             }
             return match;
+        }
+
+        private void onContextEnd() {
+            if (!this.infer.isDelay()) {
+                this.typeMeta();
+            } else if (ContextStack.isEmpty()) {
+                throw CriteriaUtils.delayTypeInfer(this.infer);
+            } else {
+                //here, possibly recursive reference in WITH RECURSIVE clause
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            }
         }
 
 
@@ -380,7 +391,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         private DelayNamedMultiParam(DelayTypeInfer infer, String name, int valueSize) {
             super(name, valueSize);
             this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::typeMeta);
+            ContextStack.peek().addEndEventListener(this::onContextEnd);
         }
 
         @Override
@@ -417,6 +428,17 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
                 match = false;
             }
             return match;
+        }
+
+        private void onContextEnd() {
+            if (!this.infer.isDelay()) {
+                this.typeMeta();
+            } else if (ContextStack.isEmpty()) {
+                throw CriteriaUtils.delayTypeInfer(this.infer);
+            } else {
+                //here, possibly recursive reference in WITH RECURSIVE clause
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            }
         }
 
 

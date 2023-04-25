@@ -50,7 +50,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                 .where(ChinaRegion_.id::greaterEqual, SQLs::literal, 10)
                 .and(ChinaRegion_.createTime::between, SQLs::literal, now.minusDays(1), AND, now)
                 .window("w").as(s -> s.partitionBy(ChinaRegion_.regionType).orderBy(ChinaRegion_.id::desc))
-                .orderBy(SQLs.ref("rowNumber")::desc)
+                .orderBy(SQLs.refSelection("rowNumber")::desc)
                 .limit(SQLs::literal, 1)
                 .asQuery();
 
@@ -135,13 +135,13 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
     public void withClauseMigration() {
         final Select stmt;
         stmt = MySQLs.query()
-                .withRecursive("cte").as(s -> s.select(SQLs.literalValue(1)::as, "n")
+                .withRecursive("cte").parens("n").as(s -> s.select(SQLs.literalValue(1)::as, "r")
                         .union()
                         .select(SQLs.refThis("cte", "n").plus(SQLs::literal, 1)::as, "n")
                         .from("cte")
-                        .where(SQLs.ref("n").less(SQLs::literal, 10))
+                        .where(SQLs.refThis("cte", "n").less(SQLs::literal, 10))
                         .asQuery()
-                )
+                )// with As clause end
                 .space()
                 .parens(s -> s.select(SQLs.refThis("cte", "n"))
                         .from("cte")

@@ -369,22 +369,38 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final SortItem asc() {
-        throw unsupportedOperation(this);
+        if (!(this instanceof CriteriaContexts.SelectionReference)) {
+            throw unsupportedOperation(this);
+        }
+        return ArmySortItems.create(this, SQLs.ASC, null);
     }
 
     @Override
     public final SortItem desc() {
-        throw unsupportedOperation(this);
+        if (!(this instanceof CriteriaContexts.SelectionReference)) {
+            throw unsupportedOperation(this);
+        }
+        return ArmySortItems.create(this, SQLs.DESC, null);
     }
 
     @Override
     public final SortItem ascSpace(@Nullable Statement.NullsFirstLast firstLast) {
-        throw unsupportedOperation(this);
+        if (!(this instanceof CriteriaContexts.SelectionReference)) {
+            throw unsupportedOperation(this);
+        }
+        return ArmySortItems.create(this, SQLs.ASC, firstLast);
     }
 
     @Override
     public final SortItem descSpace(@Nullable Statement.NullsFirstLast firstLast) {
-        throw unsupportedOperation(this);
+        if (!(this instanceof CriteriaContexts.SelectionReference)) {
+            throw unsupportedOperation(this);
+        }
+        return ArmySortItems.create(this, SQLs.DESC, firstLast);
+    }
+
+    String operationErrorMessage() {
+        return String.format("%s don't support any operation.", this.getClass().getName());
     }
 
 
@@ -393,7 +409,7 @@ abstract class NonOperationExpression implements ArmyExpression {
         if (expression instanceof MultiValueExpression) {
             m = String.format("%s support only IN(NOT IN) operator.", expression.getClass().getName());
         } else {
-            m = String.format("%s don't support any operation.", expression.getClass().getName());
+            m = expression.operationErrorMessage();
         }
         return ContextStack.clearStackAndCriteriaError(m);
     }

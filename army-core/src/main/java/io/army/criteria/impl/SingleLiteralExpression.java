@@ -204,8 +204,12 @@ abstract class SingleLiteralExpression extends OperationExpression.OperationSimp
             if (type instanceof QualifiedField) {
                 this.type = ((QualifiedField<?>) type).fieldMeta();
             } else {
-                assert type instanceof FieldMeta || type instanceof MappingType;
-                this.type = type;
+                try {
+                    assert type instanceof FieldMeta || type instanceof MappingType;
+                    this.type = type;
+                } catch (Error e) {
+                    throw e;
+                }
             }
         }
 
@@ -270,7 +274,7 @@ abstract class SingleLiteralExpression extends OperationExpression.OperationSimp
         private DelayAnonymousSingleLiteral(TypeInfer.DelayTypeInfer infer, @Nullable Object value) {
             super(value);
             this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::typeMeta);
+            ContextStack.peek().addEndEventListener(this::onContextEnd);
         }
 
 
@@ -310,7 +314,19 @@ abstract class SingleLiteralExpression extends OperationExpression.OperationSimp
         }
 
 
-    }//DelayAnonymousNonNullSingleLiteral
+        private void onContextEnd() {
+            if (!this.infer.isDelay()) {
+                this.typeMeta();
+            } else if (ContextStack.isEmpty()) {
+                throw CriteriaUtils.delayTypeInfer(this.infer);
+            } else {
+                //here, possibly recursive reference in WITH RECURSIVE clause
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            }
+        }
+
+
+    }//DelayAnonymousSingleLiteral
 
 
     private static abstract class NamedSingleLiteral extends SingleLiteralExpression implements NamedLiteral {
@@ -407,7 +423,7 @@ abstract class SingleLiteralExpression extends OperationExpression.OperationSimp
         private DelayNamedSingleLiteral(DelayTypeInfer infer, String name) {
             super(name);
             this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::typeMeta);
+            ContextStack.peek().addEndEventListener(this::onContextEnd);
         }
 
         @Override
@@ -427,6 +443,17 @@ abstract class SingleLiteralExpression extends OperationExpression.OperationSimp
                 this.type = type;
             }
             return type;
+        }
+
+        private void onContextEnd() {
+            if (!this.infer.isDelay()) {
+                this.typeMeta();
+            } else if (ContextStack.isEmpty()) {
+                throw CriteriaUtils.delayTypeInfer(this.infer);
+            } else {
+                //here, possibly recursive reference in WITH RECURSIVE clause
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            }
         }
 
 

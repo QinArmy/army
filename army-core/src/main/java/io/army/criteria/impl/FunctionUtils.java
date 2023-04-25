@@ -940,7 +940,7 @@ abstract class FunctionUtils {
         @Override
         public boolean isDelay() {
             final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.Delay && ((TypeMeta.Delay) returnType).isDelay();
+            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
         }
 
         @Override
@@ -1312,7 +1312,7 @@ abstract class FunctionUtils {
         @Override
         public boolean isDelay() {
             final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.Delay && ((TypeMeta.Delay) returnType).isDelay();
+            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
         }
 
         @Override
@@ -2202,7 +2202,7 @@ abstract class FunctionUtils {
         @Override
         public boolean isDelay() {
             final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.Delay && ((TypeMeta.Delay) returnType).isDelay();
+            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
         }
 
         @Override
@@ -2258,7 +2258,7 @@ abstract class FunctionUtils {
         @Override
         public boolean isDelay() {
             final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.Delay && ((TypeMeta.Delay) returnType).isDelay();
+            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
         }
 
         @Override
@@ -2396,7 +2396,7 @@ abstract class FunctionUtils {
         @Override
         public boolean isDelay() {
             final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.Delay && ((TypeMeta.Delay) returnType).isDelay();
+            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
         }
 
         @Override

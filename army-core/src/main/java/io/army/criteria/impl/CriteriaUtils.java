@@ -692,7 +692,7 @@ abstract class CriteriaUtils {
     }
 
     static CriteriaException delayTypeInfer(TypeInfer.DelayTypeInfer infer) {
-        String m = String.format("%s %s isPrepared() return false", TypeInfer.DelayTypeInfer.class.getName(), infer);
+        String m = String.format("%s %s isPrepared() return true", TypeInfer.DelayTypeInfer.class.getName(), infer);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 

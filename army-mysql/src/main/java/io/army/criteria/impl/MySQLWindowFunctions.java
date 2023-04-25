@@ -675,7 +675,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
         final MappingType returnType;
 
         final TypeMeta paramMeta = expr.typeMeta();
-        if (paramMeta instanceof TypeMeta.Delay) {
+        if (paramMeta instanceof TypeMeta.DelayTypeMeta) {
             returnType = StringType.INSTANCE; //TODO optimize unknown,compatibility
         } else if (!(paramMeta.mappingType() instanceof StringType)) {
             returnType = LongType.INSTANCE;

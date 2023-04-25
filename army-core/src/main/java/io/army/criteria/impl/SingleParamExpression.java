@@ -172,10 +172,12 @@ abstract class SingleParamExpression extends OperationExpression.OperationSimple
         TypeMeta type;
         type = infer.typeMeta();
 
+        if (type instanceof TypeMeta.DelayTypeMeta) {
+            type = type.mappingType();
+        }
         if ((type instanceof TableField && ((TableField) type).codec())) {
             throw SingleParamExpression.typeInferReturnCodecField(encodingMethod);
-        }
-        if (type instanceof QualifiedField) {
+        } else if (type instanceof QualifiedField) {
             type = ((QualifiedField<?>) type).fieldMeta();
         } else {
             assert type instanceof FieldMeta || type instanceof MappingType;
@@ -296,7 +298,7 @@ abstract class SingleParamExpression extends OperationExpression.OperationSimple
         private DelayAnonymousSingleParam(DelayTypeInfer infer, @Nullable Object value) {
             super(value);
             this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::typeMeta);
+            ContextStack.peek().addEndEventListener(this::onContextEnd);
         }
 
         @Override
@@ -312,6 +314,17 @@ abstract class SingleParamExpression extends OperationExpression.OperationSimple
                 this.type = type;
             }
             return type;
+        }
+
+        private void onContextEnd() {
+            if (!this.infer.isDelay()) {
+                this.typeMeta();
+            } else if (ContextStack.isEmpty()) {
+                throw CriteriaUtils.delayTypeInfer(this.infer);
+            } else {
+                //here, possibly recursive reference in WITH RECURSIVE clause
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            }
         }
 
 
@@ -413,7 +426,7 @@ abstract class SingleParamExpression extends OperationExpression.OperationSimple
         private DelayNamedSingleParam(DelayTypeInfer infer, String name) {
             super(name);
             this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::typeMeta);
+            ContextStack.peek().addEndEventListener(this::onContextEnd);
         }
 
         @Override
@@ -433,6 +446,17 @@ abstract class SingleParamExpression extends OperationExpression.OperationSimple
                 this.type = type;
             }
             return type;
+        }
+
+        private void onContextEnd() {
+            if (!this.infer.isDelay()) {
+                this.typeMeta();
+            } else if (ContextStack.isEmpty()) {
+                throw CriteriaUtils.delayTypeInfer(this.infer);
+            } else {
+                //here, possibly recursive reference in WITH RECURSIVE clause
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            }
         }
 
     }//DelayNamedSingleParam

@@ -425,6 +425,10 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
 
     @Override
     public final Selection as(String selectionAlas) {
+        if (this instanceof CriteriaContexts.SelectionReference) {
+            String m = String.format("the reference of %s don't support as() method.", Selection.class.getName());
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
         return ArmySelections.forExp(this, selectionAlas);
     }
 
@@ -788,18 +792,18 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
     }//PredicateExpression
 
 
-     static final class BracketsExpression extends OperationExpression implements ArmySimpleExpression {
+    static final class BracketsExpression extends OperationExpression implements ArmySimpleExpression {
 
-         private final ArmyExpression expression;
+        private final ArmyExpression expression;
 
-         /**
-          * <p>
-          * <strong>Private constructor</strong>
-          * </p>
-          *
-          * @see #bracketExp(Expression)
-          */
-         private BracketsExpression(ArmyExpression expression) {
+        /**
+         * <p>
+         * <strong>Private constructor</strong>
+         * </p>
+         *
+         * @see #bracketExp(Expression)
+         */
+        private BracketsExpression(ArmyExpression expression) {
             this.expression = expression;
         }
 

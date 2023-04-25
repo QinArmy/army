@@ -436,15 +436,15 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public final SelectionSpec mapTo(final @Nullable TypeMeta mapType) {
+        public final SelectionSpec mapTo(final @Nullable TypeMeta typeMeta) {
             if (this.ordinality != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             } else if (this.userDefinedType != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
-            } else if (mapType == null) {
+            } else if (typeMeta == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             }
-            this.userDefinedType = mapType;
+            this.userDefinedType = typeMeta;
             return this;
         }
 

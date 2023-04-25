@@ -603,8 +603,8 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             case WEEK: {
                 final TypeMeta type;
                 type = datetimeExpr.typeMeta();
-                if (type instanceof TypeMeta.Delay) {
-                    returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) type, MySQLTimeFunctions::_timestampAdd);
+                if (type instanceof TypeMeta.DelayTypeMeta) {
+                    returnType = CriteriaSupports.delayWrapper((TypeMeta.DelayTypeMeta) type, MySQLTimeFunctions::_timestampAdd);
                 } else {
                     returnType = _timestampAdd(type.mappingType());
                 }
@@ -1052,9 +1052,9 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
         final TypeMeta formatType;
         formatType = format.typeMeta();
         final TypeMeta returnType;
-        if (formatType instanceof TypeMeta.Delay) {//TODO modify delay implementation
+        if (formatType instanceof TypeMeta.DelayTypeMeta) {//TODO modify delay implementation
             final Function<MappingType, MappingType> function = t -> _strToDateReturnType((ArmyExpression) format, t);
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) formatType, function);
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.DelayTypeMeta) formatType, function);
         } else {
             returnType = _strToDateReturnType((ArmyExpression) format, formatType.mappingType());
         }
@@ -1114,8 +1114,8 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             , final SQLs.WordInterval interval, final Expression expr, final MySQLTimeUnit unit) {
         final TypeMeta type, returnType;
         type = date.typeMeta();
-        if (type instanceof TypeMeta.Delay) {
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.Delay) type, t -> _dateAddSubReturnType(t, unit));
+        if (type instanceof TypeMeta.DelayTypeMeta) {
+            returnType = CriteriaSupports.delayWrapper((TypeMeta.DelayTypeMeta) type, t -> _dateAddSubReturnType(t, unit));
         } else {
             returnType = _dateAddSubReturnType(type.mappingType(), unit);
         }

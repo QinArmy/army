@@ -1032,7 +1032,7 @@ abstract class ArmyParser implements DialectParser {
         _Cte cte;
         List<String> columnAliasList;
         SubQuery subQuery;
-        for (int i = 0; i < cteSize; i++) {
+        for (int i = 0, columnAliasSize; i < cteSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
@@ -1044,15 +1044,15 @@ abstract class ArmyParser implements DialectParser {
             sqlBuilder.append(_Constant.SPACE);
             this.identifier(cte.name(), sqlBuilder);// cte name
 
-            if (columnAliasList.size() > 0) {
+            if ((columnAliasSize = columnAliasList.size()) > 0) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-                int aliasCount = 0;
-                for (String columnAlias : columnAliasList) {
-                    if (aliasCount > 0) {
-                        sqlBuilder.append(_Constant.SPACE_COMMA);
+                for (int aliasIndex = 0; aliasIndex < columnAliasSize; aliasIndex++) {
+                    if (aliasIndex == 0) {
+                        sqlBuilder.append(_Constant.SPACE);
+                    } else {
+                        sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
                     }
-                    this.identifier(columnAlias, sqlBuilder);
-                    aliasCount++;
+                    this.identifier(columnAliasList.get(aliasIndex), sqlBuilder);
                 }
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
