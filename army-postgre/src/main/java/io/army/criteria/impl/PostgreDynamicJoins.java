@@ -23,9 +23,11 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         PostgreStatement._DynamicTableSampleJoinSpec,
         Statement._AsClause<PostgreStatement._DynamicParensJoinSpec>,
         PostgreStatement._DynamicJoinSpec,
+        Void,
         PostgreStatement._DynamicTableSampleOnSpec,
         Statement._AsParensOnClause<PostgreStatement._DynamicJoinSpec>,
         Statement._OnClause<PostgreStatement._DynamicJoinSpec>,
+        Void,
         PostgreStatement._DynamicJoinSpec>
         implements PostgreStatement._DynamicJoinSpec {
 

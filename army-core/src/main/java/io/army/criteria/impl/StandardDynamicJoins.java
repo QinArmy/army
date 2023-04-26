@@ -17,8 +17,10 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         StandardStatement._DynamicJoinSpec,
         Statement._AsClause<StandardStatement._DynamicJoinSpec>,
         Void,
+        Void,
         Statement._OnClause<StandardStatement._DynamicJoinSpec>,
         Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>>,
+        Void,
         Void,
         StandardStatement._DynamicJoinSpec>
         implements StandardStatement._DynamicJoinSpec {

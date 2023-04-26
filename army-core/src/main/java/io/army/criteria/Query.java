@@ -42,34 +42,6 @@ public interface Query extends RowSet {
 
     }
 
-    interface TableModifier extends SQLWords {
-
-    }
-
-    interface DerivedModifier extends SQLWords {
-
-    }
-
-    interface FetchFirstNext {
-
-    }
-
-    interface FetchRow {
-
-    }
-
-    interface FetchOnly {
-
-    }
-
-    interface FetchWithTies {
-
-    }
-
-    interface FetchOnlyWithTies extends FetchOnly, FetchWithTies {
-
-    }
-
 
 
 

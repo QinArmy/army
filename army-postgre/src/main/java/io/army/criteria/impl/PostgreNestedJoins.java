@@ -32,7 +32,8 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         I,
         PostgreStatement._NestedTableSampleJoinSpec<I>,
         Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>>,
-        PostgreStatement._PostgreNestedJoinClause<I>>
+        PostgreStatement._PostgreNestedJoinClause<I>,
+        Void>
         implements PostgreStatement._NestedLeftParenSpec<I> {
 
 
@@ -111,9 +112,11 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             PostgreStatement._NestedTableSampleCrossSpec<I>,
             Statement._AsClause<PostgreStatement._NestedParensCrossSpec<I>>,
             PostgreStatement._NestedJoinSpec<I>,
+            Void,
             PostgreStatement._NestedTableSampleOnSpec<I>,
             Statement._AsClause<PostgreStatement._NestedParensOnSpec<I>>,
             PostgreStatement._NestedOnSpec<I>,
+            Void,
             PostgreStatement._NestedJoinSpec<I>>
             implements PostgreStatement._NestedOnSpec<I> {
 

@@ -33,7 +33,8 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
         I,
         MySQLStatement._NestedIndexHintJoinSpec<I>,
         Statement._AsClause<MySQLStatement._NestedLeftParensJoinSpec<I>>,
-        MySQLStatement._MySQLNestedJoinClause<I>>
+        MySQLStatement._MySQLNestedJoinClause<I>,
+        Void>
         implements MySQLQuery._NestedLeftParenSpec<I> {
 
     static <I extends Item> MySQLQuery._NestedLeftParenSpec<I> nestedItem(
@@ -117,9 +118,11 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
             MySQLQuery._NestedIndexHintCrossSpec<I>,
             Statement._AsClause<MySQLStatement._NestedParenCrossSpec<I>>,
             MySQLQuery._NestedJoinSpec<I>,
+            Void,
             MySQLQuery._NestedIndexHintOnSpec<I>,
             Statement._AsClause<MySQLStatement._NestedParenOnSpec<I>>,
             MySQLQuery._NestedOnSpec<I>,
+            Void,
             MySQLQuery._NestedJoinSpec<I>>
             implements MySQLStatement._NestedOnSpec<I> {
 

@@ -35,7 +35,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT, JS, JC, TR, WR, WA>
-        extends JoinableUpdate<I, FieldMeta<T>, SR, FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
+        extends JoinableUpdate<I, FieldMeta<T>, SR, FT, FS, FC, Void, JT, JS, JC, Void, WR, WA, Object, Object, Object, Object>
         implements PostgreUpdate,
         _PostgreUpdate,
         PostgreStatement._StaticTableSampleClause<TR>,

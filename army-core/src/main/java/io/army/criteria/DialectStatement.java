@@ -124,12 +124,16 @@ public interface DialectStatement extends Statement {
 
         JT straightJoin(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
+        JS straightJoin(DerivedTable derivedTable);
+
         <T extends DerivedTable> JS straightJoin(Supplier<T> supplier);
 
 
     }
 
     interface _StraightJoinModifierTabularClause<JT, JS> extends _StraightJoinClause<JT, JS> {
+
+        JS straightJoin(@Nullable Query.DerivedModifier modifier, DerivedTable derivedTable);
 
         <T extends DerivedTable> JS straightJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
     }

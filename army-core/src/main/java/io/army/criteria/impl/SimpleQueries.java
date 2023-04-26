@@ -27,8 +27,8 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
-        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
+abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+        extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, LR, LO, LF>
         implements Query._SelectDispatcher<W, SR, SD>,
         Query._StaticSelectCommaClause<SR>,
         Query._StaticSelectSpaceClause<SR>,
@@ -799,8 +799,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
-    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
-            extends SimpleQueries<Q, W, SR, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+            extends SimpleQueries<Q, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>,
             ArmyStmtSpec,
             Query._WithSelectDispatcher<B, WE, W, SR, SD> {
@@ -891,8 +891,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     }//WithCteSimpleQueries
 
-    static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
-            extends WithCteSimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, JT, JS, JC, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+    static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, HR, OR, LR, LO, LF, SP>
+            extends WithCteSimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, HR, OR, LR, LO, LF, SP>
             implements _SelectDistinctOnDispatcher<W, SR, SD>,
             _Query._DistinctOnClauseSpec {
 

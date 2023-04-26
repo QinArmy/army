@@ -35,7 +35,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC extends Item, JT, JS, JC extends Item, TR, WR, WA>
-        extends JoinableDelete.WithJoinableDelete<I, PostgreCtes, WE, FT, FS, FC, JT, JS, JC, WR, WA>
+        extends JoinableDelete.WithJoinableDelete<I, PostgreCtes, WE, FT, FS, FC, Void, JT, JS, JC, Void, WR, WA>
         implements PostgreDelete,
         _PostgreDelete,
         PostgreStatement._StaticTableSampleClause<TR>,

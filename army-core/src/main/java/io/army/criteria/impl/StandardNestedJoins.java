@@ -27,7 +27,8 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
         I,
         StandardStatement._StandardNestedJoinClause<I>,
         Statement._AsClause<StandardStatement._StandardNestedJoinClause<I>>,
-        Object>
+        Object,
+        Void>
         implements StandardStatement._NestedLeftParenSpec<I> {
 
     static <I extends Item> StandardStatement._NestedLeftParenSpec<I> nestedJoin(CriteriaContext context
@@ -88,8 +89,10 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
             StandardStatement._NestedJoinSpec<I>,
             Statement._AsClause<StandardStatement._NestedJoinSpec<I>>,
             Void,
+            Void,
             StandardStatement._NestedOnSpec<I>,
             Statement._AsClause<StandardStatement._NestedOnSpec<I>>,
+            Void,
             Void,
             StandardStatement._NestedJoinSpec<I>>
             implements StandardStatement._NestedOnSpec<I> {

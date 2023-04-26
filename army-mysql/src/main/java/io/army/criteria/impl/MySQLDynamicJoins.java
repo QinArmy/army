@@ -23,9 +23,11 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         MySQLStatement._DynamicIndexHintJoinClause,
         Statement._AsClause<MySQLStatement._DynamicJoinSpec>,
         MySQLStatement._DynamicJoinSpec,
+        Void,
         MySQLStatement._DynamicIndexHintOnClause,
         Statement._AsParensOnClause<MySQLStatement._DynamicJoinSpec>,
         Statement._OnClause<MySQLStatement._DynamicJoinSpec>,
+        Void,
         MySQLStatement._DynamicJoinSpec>
         implements MySQLStatement._DynamicJoinSpec {
 

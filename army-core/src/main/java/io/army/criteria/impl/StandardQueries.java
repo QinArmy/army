@@ -36,9 +36,11 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._JoinSpec<I>,// FT
         Statement._AsClause<StandardQuery._JoinSpec<I>>,// FS
         Void,                          //FC
+        Void,
         Statement._OnClause<StandardQuery._JoinSpec<I>>, // JT
         Statement._AsClause<Statement._OnClause<StandardQuery._JoinSpec<I>>>, // JS
         Void,                               // JC
+        Void,
         StandardQuery._GroupBySpec<I>, // WR
         StandardQuery._WhereAndSpec<I>, // AR
         StandardQuery._HavingSpec<I>, // GR

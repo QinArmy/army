@@ -21,8 +21,8 @@ import java.util.function.Consumer;
  * This class is base class of multi-table delete implementation.
  * </p>
  */
-abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
-        extends JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, Object, Object, Object, Object>
+abstract class JoinableDelete<I extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
+        extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, Object, Object, Object, Object>
         implements _Delete,
         _Statement._JoinableStatement,
         Statement._DmlDeleteSpec<I>,
@@ -97,8 +97,8 @@ abstract class JoinableDelete<I extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
     }
 
 
-    static abstract class WithJoinableDelete<I extends Item, B extends CteBuilderSpec, WE extends Item, FT, FS, FC, JT, JS, JC, WR, WA>
-            extends JoinableDelete<I, FT, FS, FC, JT, JS, JC, WR, WA>
+    static abstract class WithJoinableDelete<I extends Item, B extends CteBuilderSpec, WE extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
+            extends JoinableDelete<I, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
             implements DialectStatement._DynamicWithClause<B, WE>,
             _Statement._WithClauseSpec {
 
