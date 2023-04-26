@@ -766,14 +766,14 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         }
 
         @Override
-        public final FT tabular(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String alias) {
+        public final FT space(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String alias) {
             this.checkStart();
             return this.onTable(null, table, alias);
         }
 
         @Override
-        public final FT tabular(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs,
-                                String alias) {
+        public final FT space(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs,
+                              String alias) {
             this.checkStart();
             if (this.isIllegalTableModifier(modifier)) {
                 throw CriteriaUtils.errorModifier(this.context, modifier);
@@ -782,14 +782,14 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         }
 
         @Override
-        public final <T extends DerivedTable> FS tabular(Supplier<T> supplier) {
+        public final <T extends DerivedTable> FS space(Supplier<T> supplier) {
             this.checkStart();
             return this.onDerived(null, this.nonNull(supplier.get()));
         }
 
         @Override
-        public final <T extends DerivedTable> FS tabular(@Nullable Query.DerivedModifier modifier,
-                                                         Supplier<T> supplier) {
+        public final <T extends DerivedTable> FS space(@Nullable Query.DerivedModifier modifier,
+                                                       Supplier<T> supplier) {
             this.checkStart();
             if (this.isIllegalDerivedModifier(modifier)) {
                 throw CriteriaUtils.errorModifier(this.context, modifier);
@@ -798,13 +798,13 @@ abstract class JoinableClause<FT, FS, FC, JT, JS, JC, WR, WA, OR, LR, LO, LF>
         }
 
         @Override
-        public final FC tabular(String cteName) {
+        public final FC space(String cteName) {
             this.checkStart();
             return this.onCte(this.context.refCte(cteName), "");
         }
 
         @Override
-        public final FC tabular(String cteName, SQLsSyntax.WordAs as, String alias) {
+        public final FC space(String cteName, SQLsSyntax.WordAs as, String alias) {
             this.checkStart();
             return this.onCte(this.context.refCte(cteName), alias);
         }

@@ -189,7 +189,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
         @Override
-        public Statement._OnClause<StandardStatement._DynamicJoinSpec> tabular(
+        public Statement._OnClause<StandardStatement._DynamicJoinSpec> space(
                 Function<StandardStatement._NestedLeftParenSpec<Statement._OnClause<StandardStatement._DynamicJoinSpec>>, Statement._OnClause<StandardStatement._DynamicJoinSpec>> function) {
             this.checkStart();
             return function.apply(StandardNestedJoins.nestedJoin(this.context, this.joinType, this::nestedEnd));
@@ -243,7 +243,7 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        public StandardStatement._DynamicJoinSpec tabular(Function<StandardStatement._NestedLeftParenSpec<StandardStatement._DynamicJoinSpec>, StandardStatement._DynamicJoinSpec> function) {
+        public StandardStatement._DynamicJoinSpec space(Function<StandardStatement._NestedLeftParenSpec<StandardStatement._DynamicJoinSpec>, StandardStatement._DynamicJoinSpec> function) {
             this.checkStart();
             return function.apply(StandardNestedJoins.nestedJoin(this.context, this.joinType, this::nestedJoinEnd));
         }

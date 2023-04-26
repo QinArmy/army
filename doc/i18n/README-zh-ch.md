@@ -7,7 +7,7 @@ Army 设计哲学 : Don't create new world,just mapping real world.
 实现愿景的步骤:
 
 1. 发布一个可在生产环境使用的 Java 持久化方案.
-2. Army 成为 GitHub 爱欢迎项目
+2. 让 Army 成为 GitHub 受欢迎项目
 3. 致力于使 Army 成为 Java 持久化方案的更好选择.
 
 初始成员:马军玲(花名:索隆),刘彬(花名:安西教练)

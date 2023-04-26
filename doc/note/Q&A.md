@@ -27,7 +27,8 @@
 
 
 7. 为什么 io.army.criteria.Expression 总要多设计一个 equalLiteral(Object ) 方法 , equal(Object ) 不够用吗?
-    * equalLiteral(Object ) 输出的是 字面量,equal(Object ) 输出的占位任 '?' ,army 不认为在任何场景下 application 开发者都想输出占位符.
+    * equalLiteral(Object ) 输出的是 字面量,equal(Object ) 输出的占位符 '?' ,army 不认为在任何场景下 application
+      开发者都想输出占位符.
     * 从 sql style 的视角,既能输出 '?' 也能输出字面量才够 sql style.
     * 从 driver 的角度 没有字符串这个能产生 sql 注入的类型的场景中,没有 '?' 执行的是 database 的文本协议而不是 prepare 协议,在一部分场景来说是更快的, 尤其是网络效率高.
     * 从jdbc 多语句的角度考虑,没有 '?' 你才能使用多语句的 jdbc api,当然如果使用的是 jdbd 则不关心这个问题.
@@ -89,7 +90,7 @@
     * 因为 standard 将来要支持 with cte 子句.
 
 18. 为什么 with 子句 的 CTE 创建没有采用常规的 static 方法而采用了构造器?
-    * 常规的表态方法在实现层面总是对 CTE 有外部上下文存疑.
+    * 常规的静态方法在实现层面总是对 CTE 有外部上下文存疑.
     * 由于确定了 CTE 的外部上下文能更好的实现 RECURSIVE 引用.
 
 19. 为什么 static with clause 只能出现在 primary statement api 中?
@@ -143,7 +144,7 @@
     * 因为一旦抛出异常就会污染 context stack.
 
 31. 为什么 CteItem 和 _AliasDerivedBlock 不被设计成 DerivedTable?
-    * 因为它们本质上不是,它们拥有 名字 和对 selection 重全名的能力,_AliasDerivedBlock 还有 javaType和 on 子句.
+    * 因为它们本质上不是,它们拥有 名字 和对 selection 重命名的能力,_AliasDerivedBlock 还有 javaType和 on 子句.
     * 但 postgre 要特别处理,因为 postgre cte 可通过 search 和 cycle 子句追加附加字段
 
 32. 为什操作符的右操作数若不是简单表达式就会给右操作数追加外部括号,呈现一种管右不管左的特征?

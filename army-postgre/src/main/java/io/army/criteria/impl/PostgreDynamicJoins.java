@@ -491,7 +491,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
         @Override
-        public Statement._OnClause<PostgreStatement._DynamicJoinSpec> tabular(
+        public Statement._OnClause<PostgreStatement._DynamicJoinSpec> space(
                 Function<PostgreStatement._NestedLeftParenSpec<Statement._OnClause<PostgreStatement._DynamicJoinSpec>>, Statement._OnClause<PostgreStatement._DynamicJoinSpec>> function) {
             this.checkStart();
             return function.apply(PostgreNestedJoins.nestedItem(this.context, this.joinType, this::nestedEnd));
@@ -561,7 +561,7 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        public PostgreStatement._DynamicJoinSpec tabular(
+        public PostgreStatement._DynamicJoinSpec space(
                 Function<PostgreStatement._NestedLeftParenSpec<PostgreStatement._DynamicJoinSpec>, PostgreStatement._DynamicJoinSpec> function) {
             this.checkStart();
             return function.apply(PostgreNestedJoins.nestedItem(this.context, this.joinType, this::nestedEnd));

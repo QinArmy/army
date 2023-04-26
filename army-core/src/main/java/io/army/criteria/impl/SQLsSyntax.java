@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
@@ -927,8 +926,8 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create named non-null multi parameter expression, multi parameter expression will output multi parameter placeholders like below:
-     * ? , ? , ? ...
-     * but as right operand of  IN(or NOT IN) operator, will output (  ? , ? , ? ... )
+     * ? [, ...]
+     * but as the right operand of  IN(or NOT IN) operator, will output (  ? [, ...] )
      * </p>
      * <p>
      * Named multi parameter expression is used in batch update(or delete) and values insert.
@@ -953,8 +952,8 @@ abstract class SQLsSyntax extends Functions {
     /**
      * <p>
      * Create named non-null multi literal expression, multi literal expression will output multi LITERAL like below:
-     * LITERAL , LITERAL , LITERAL ...
-     * but as right operand of  IN(or NOT IN) operator, will output (  LITERAL , LITERAL , LITERAL ... )
+     * LITERAL [, ...]
+     * but as the right operand of  IN(or NOT IN) operator, will output ( LITERAL  [, ...] )
      * </p>
      * <p>
      * This expression can only be used in values insert statement,this method couldn't be used in batch update(delete) statement.
@@ -983,7 +982,7 @@ abstract class SQLsSyntax extends Functions {
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>current statement don't support this method,eg: single-table UPDATE statement</li>
-     *                           <li>qualified field don't exists,here always is defer,because army validate qualified field when statement end.</li>
+     *                           <li>qualified field don't exists,here always is deferred,because army validate qualified field when statement end.</li>
      *                           </ul>
      */
     public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
@@ -1024,7 +1023,7 @@ abstract class SQLsSyntax extends Functions {
      * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link TypeMeta#mappingType()} of {@link Selection#typeMeta()} .
      * @throws CriteriaException then when <ul>
      *                           <li>current statement don't support this method,eg: UPDATE statement</li>
-     *                           <li>the {@link Selection} not exists,here possibly is defer,if you invoke this method before SELECT clause end. eg: postgre DISTINCT ON clause</li>
+     *                           <li>the {@link Selection} not exists,here possibly is deferred,if you invoke this method before SELECT clause end. eg: postgre DISTINCT ON clause</li>
      *                           </ul>
      */
     public static Expression refSelection(String selectionAlias) {
@@ -1041,7 +1040,7 @@ abstract class SQLsSyntax extends Functions {
      * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link io.army.mapping.IntegerType#INSTANCE}
      * @throws CriteriaException throw when<ul>
      *                           <li>selectionOrdinal less than 1</li>
-     *                           <li>the {@link Selection} not exists,here possibly is defer,if you invoke this method before SELECT clause end. eg: postgre DISTINCT ON clause</li>
+     *                           <li>the {@link Selection} not exists,here possibly is deferred,if you invoke this method before SELECT clause end. eg: postgre DISTINCT ON clause</li>
      *                           <li>current statement don't support this method,eg: UPDATE statement</li>
      *                           </ul>
      */
@@ -1049,29 +1048,6 @@ abstract class SQLsSyntax extends Functions {
         return ContextStack.peek().refSelection(selectionOrdinal);
     }
 
-    /**
-     * <p>
-     * Reference session variable.
-     * </p>
-     *
-     * @throws CriteriaException when var not exists
-     */
-    public static VarExpression var(String varName) {
-        return ContextStack.root().var(varName);
-    }
-
-
-    /**
-     * <p>
-     * Create session variable.
-     * </p>
-     *
-     * @throws CriteriaException when var exists.
-     */
-    public static VarExpression createVar(String varName, TypeMeta paramMeta)
-            throws CriteriaException {
-        return ContextStack.root().createVar(varName, paramMeta);
-    }
 
     public static Expression parens(Expression expression) {
         return OperationExpression.bracketExp(expression);

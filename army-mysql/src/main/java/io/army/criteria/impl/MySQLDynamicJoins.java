@@ -422,7 +422,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
         /**
-         * @see MySQLJoinBuilder#tabular(TableMeta, SQLs.WordAs, String)
+         * @see MySQLJoinBuilder#space(TableMeta, SQLs.WordAs, String)
          */
         private FromClauseTableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer,
                                      _JoinType joinType, TableMeta<?> table, String alias) {
@@ -446,7 +446,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
 
         /**
-         * @see MySQLJoinBuilder#tabular(TableMeta, SQLs.WordAs, String)
+         * @see MySQLJoinBuilder#space(TableMeta, SQLs.WordAs, String)
          */
         private JoinClauseTableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer,
                                      _JoinType joinType, TableMeta<?> table, String alias) {
@@ -476,14 +476,14 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        public Statement._OnClause<MySQLQuery._DynamicJoinSpec> tabular(
+        public Statement._OnClause<MySQLQuery._DynamicJoinSpec> space(
                 Function<MySQLStatement._NestedLeftParenSpec<Statement._OnClause<MySQLQuery._DynamicJoinSpec>>, Statement._OnClause<MySQLQuery._DynamicJoinSpec>> function) {
             this.checkStart();
             return function.apply(MySQLNestedJoins.nestedItem(this.context, this.joinType, this::nestedEnd));
         }
 
         @Override
-        public MySQLQuery._DynamicPartitionOnClause tabular(TableMeta<?> table) {
+        public MySQLQuery._DynamicPartitionOnClause space(TableMeta<?> table) {
             this.checkStart();
             return new PartitionOnClause(this.context, this.blockConsumer, this.joinType, table);
         }
@@ -543,14 +543,14 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
-        public MySQLQuery._DynamicJoinSpec tabular(
+        public MySQLQuery._DynamicJoinSpec space(
                 Function<MySQLStatement._NestedLeftParenSpec<MySQLQuery._DynamicJoinSpec>, MySQLQuery._DynamicJoinSpec> function) {
             this.checkStart();
             return function.apply(MySQLNestedJoins.nestedItem(this.context, this.joinType, this::nestedEnd));
         }
 
         @Override
-        public MySQLQuery._DynamicPartitionJoinClause tabular(TableMeta<?> table) {
+        public MySQLQuery._DynamicPartitionJoinClause space(TableMeta<?> table) {
             this.checkStart();
             return new PartitionJoinClause(this.context, this.blockConsumer, this.joinType, table);
         }
@@ -613,7 +613,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
         /**
          * @see MySQLDynamicJoins#crossJoin(TableMeta)
-         * @see MySQLCrossJoinBuilder#tabular(TableMeta)
+         * @see MySQLCrossJoinBuilder#space(TableMeta)
          */
         private PartitionJoinClause(CriteriaContext context, Consumer<_TabularBlock> blockConsumer, _JoinType joinType,
                                     TableMeta<?> table) {

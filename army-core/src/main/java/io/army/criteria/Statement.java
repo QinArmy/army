@@ -66,10 +66,8 @@ public interface Statement extends Item {
     }
 
 
-    @Deprecated
-    interface _AsCteClause<I extends Item> extends Item {
+    interface _UndoneFunction {
 
-        I asCte();
     }
 
 
@@ -224,6 +222,7 @@ public interface Statement extends Item {
 
     }
 
+
     /**
      * <p>
      * This interface representing dialect FROM clause.
@@ -251,6 +250,17 @@ public interface Statement extends Item {
         R from(Query.DerivedModifier modifier, String cteName);
 
         R from(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias);
+    }
+
+
+    interface _FromUndoneFunctionClause<R> {
+
+        R from(_UndoneFunction function);
+    }
+
+    interface _FromModifierUndoneFunctionClause<R> extends _FromUndoneFunctionClause<R> {
+
+        R from(@Nullable Query.DerivedModifier modifier, _UndoneFunction function);
     }
 
 
@@ -323,6 +333,17 @@ public interface Statement extends Item {
     }
 
 
+    interface _UsingUndoneFunctionClause<R> {
+
+        R using(_UndoneFunction function);
+    }
+
+    interface _UsingModifierUndoneFunctionClause<R> extends _UsingUndoneFunctionClause<R> {
+
+        R using(@Nullable Query.DerivedModifier modifier, _UndoneFunction function);
+    }
+
+
     /**
      * <p>
      * This interface representing JOIN clause.
@@ -384,6 +405,30 @@ public interface Statement extends Item {
     }
 
 
+    interface _JoinUndoneFunctionClause<R> {
+
+        R leftJoin(_UndoneFunction func);
+
+        R join(_UndoneFunction func);
+
+        R rightJoin(_UndoneFunction func);
+
+        R fullJoin(_UndoneFunction func);
+    }
+
+    interface _JoinModifierUndoneFunctionClause<R> extends _JoinUndoneFunctionClause<R> {
+
+        R leftJoin(@Nullable Query.DerivedModifier modifier, _UndoneFunction func);
+
+        R join(@Nullable Query.DerivedModifier modifier, _UndoneFunction func);
+
+        R rightJoin(@Nullable Query.DerivedModifier modifier, _UndoneFunction func);
+
+        R fullJoin(@Nullable Query.DerivedModifier modifier, _UndoneFunction func);
+
+    }
+
+
     /**
      * <p>
      * This interface representing CROSS JOIN clause.
@@ -413,6 +458,18 @@ public interface Statement extends Item {
 
         FT crossJoin(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias);
 
+
+    }
+
+    interface _CrossUndoneFunctionClause<R> {
+
+        R crossJoin(_UndoneFunction func);
+    }
+
+
+    interface _CrossModifierUndoneFunctionClause<R> extends _CrossUndoneFunctionClause<R> {
+
+        R crossJoin(@Nullable Query.DerivedModifier modifier, _UndoneFunction func);
 
     }
 
@@ -495,11 +552,59 @@ public interface Statement extends Item {
 
     }
 
+    interface _NestedLeftParenUndoneFunctionClause<R> {
+
+        R leftParen(_UndoneFunction func);
+    }
+
+    interface _NestedLeftParenModifierUndoneFunctionClause<R> extends _NestedLeftParenUndoneFunctionClause<R> {
+
+        R leftParen(@Nullable Query.DerivedModifier modifier, _UndoneFunction func);
+    }
+
 
     interface _NestedTableLeftParenClause<LP> {
 
         LP leftParen(TableMeta<?> table);
 
+    }
+
+
+    interface _DynamicTabularItemClause<FT, FS> {
+
+        FT space(TableMeta<?> table, SQLs.WordAs wordAs, String alias);
+
+        <T extends DerivedTable> FS space(Supplier<T> supplier);
+
+    }
+
+    interface _DynamicTabularDerivedModifierClause<FT, FS> extends _DynamicTabularItemClause<FT, FS> {
+
+
+        <T extends DerivedTable> FS space(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
+
+    }
+
+
+    interface _DynamicTabularModifierClause<FT, FS> extends _DynamicTabularDerivedModifierClause<FT, FS> {
+
+
+        FT space(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String alias);
+
+    }
+
+
+    interface _DynamicTabularCteClause<R extends Item> {
+
+        R space(String cteName);
+
+        R space(String cteName, SQLs.WordAs as, String alias);
+
+    }
+
+    interface _DynamicTabularNestedClause<T extends Item, R extends Item> {
+
+        R space(Function<T, R> function);
     }
 
 
@@ -1259,42 +1364,6 @@ public interface Statement extends Item {
     }
 
 
-    interface _DynamicTabularItemClause<FT, FS> {
-
-        FT tabular(TableMeta<?> table, SQLs.WordAs wordAs, String alias);
-
-        <T extends DerivedTable> FS tabular(Supplier<T> supplier);
-
-    }
-
-    interface _DynamicTabularDerivedModifierClause<FT, FS> extends _DynamicTabularItemClause<FT, FS> {
-
-
-        <T extends DerivedTable> FS tabular(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
-
-    }
-
-
-    interface _DynamicTabularModifierClause<FT, FS> extends _DynamicTabularDerivedModifierClause<FT, FS> {
-
-
-        FT tabular(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String alias);
-
-    }
-
-
-    interface _DynamicTabularCteClause<R extends Item> {
-
-        R tabular(String cteName);
-
-        R tabular(String cteName, SQLs.WordAs as, String alias);
-
-    }
-
-    interface _DynamicTabularNestedClause<T extends Item, R extends Item> {
-
-        R tabular(Function<T, R> function);
-    }
 
 
     interface _DmlInsertClause<I extends Item> extends Item {

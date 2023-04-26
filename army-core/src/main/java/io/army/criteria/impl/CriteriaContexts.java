@@ -237,11 +237,6 @@ abstract class CriteriaContexts {
         return new OtherPrimaryContext();
     }
 
-    static CriteriaContext deriveTableFunctionContext() {
-        return new DerivedTableFunctionContext(ContextStack.peek());
-    }
-
-
     static CriteriaContext dispatcherContext(final @Nullable CriteriaContext outerContext,
                                              final @Nullable CriteriaContext leftContext) {
         final CriteriaContext dispatcherContext;
@@ -317,21 +312,6 @@ abstract class CriteriaContexts {
     private static CriteriaException notFoundOuterContext(CriteriaContext context) {
         String m = String.format("current %s no outer context", context);
         throw ContextStack.criteriaError(context, m);
-    }
-
-    /**
-     * @param spec the stmt that is migrated.
-     * @return get outer context from the dispatcher statement that is migrated for new statement.
-     */
-    @Nullable
-    private static CriteriaContext outerContextFromArmyStmt(@Nullable ArmyStmtSpec spec) {
-        final CriteriaContext outerContext;
-        if (spec == null) {
-            outerContext = null;
-        } else {
-            outerContext = spec.getContext().getOuterContext();
-        }
-        return outerContext;
     }
 
 
@@ -1667,14 +1647,6 @@ abstract class CriteriaContexts {
         }
 
 
-        /**
-         * @see #validateQualifiedFieldMap()
-         */
-        private CriteriaException qualifiedFieldNotMatch(QualifiedField<?> first, QualifiedField<?> field) {
-            String m = String.format("%s table and %s table not match.", first, field);
-            return ContextStack.criteriaError(this, m);
-        }
-
 
     }//JoinableContext
 
@@ -2628,19 +2600,6 @@ abstract class CriteriaContexts {
 
 
     }//OtherPrimaryContext
-
-
-    private static final class DerivedTableFunctionContext extends StatementContext implements SubContext {
-
-        /**
-         * @see #deriveTableFunctionContext()
-         */
-        private DerivedTableFunctionContext(CriteriaContext outerContext) {
-            super(outerContext);
-        }
-
-
-    }//DerivedTableFunctionContext
 
 
     private static abstract class DispatcherContext extends StatementContext {

@@ -11,7 +11,7 @@ public interface MySQLCrosses extends Statement.JoinBuilder,
         MySQLStatement._MySQLDynamicNestedClause<MySQLQuery._DynamicJoinSpec> {
 
 
-    MySQLQuery._DynamicPartitionJoinClause tabular(TableMeta<?> table);
+    MySQLQuery._DynamicPartitionJoinClause space(TableMeta<?> table);
 
 
 }

@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
-import io.army.criteria.RowSet;
 import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
@@ -58,8 +57,8 @@ abstract class ContextStack {
             throw new IllegalArgumentException(m);
         } else if (context.getOuterContext() == null) {
             assert stack.size() == 1;
-            stack.clear();
             HOLDER.remove();
+            stack.clear();
         } else if (stack.removeLast() != currentContext) {
             // Stack no bug,never here
             throw new IllegalStateException("stack state error");
@@ -178,8 +177,8 @@ abstract class ContextStack {
     static NullPointerException clearStackAndNullPointer() {
         final Stack stack = HOLDER.get();
         if (stack != null) {
-            stack.clear();
             HOLDER.remove();
+            stack.clear();
         }
         return new NullPointerException();
     }
@@ -187,32 +186,10 @@ abstract class ContextStack {
     static CriteriaException clearStackAndCriteriaError(String msg) {
         final Stack stack = HOLDER.get();
         if (stack != null) {
-            stack.clear();
             HOLDER.remove();
+            stack.clear();
         }
         return new CriteriaException(msg);
-    }
-
-
-    @Deprecated
-    static RowSet unionQuerySupplier(Supplier<? extends RowSet> supplier) {
-        try {
-            final RowSet rowSet;
-            rowSet = supplier.get();
-            if (rowSet == null) {
-                throw new NullPointerException("supplier return null");
-            }
-            return rowSet;
-        } catch (Throwable e) {
-            final Stack stack = HOLDER.get();
-            if (stack != null) {
-                HOLDER.remove();
-            }
-            if (e instanceof Error) {
-                throw e;
-            }
-            throw new CriteriaException("union query supplier occur error", e);
-        }
     }
 
 
