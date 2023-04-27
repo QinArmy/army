@@ -94,8 +94,8 @@ abstract class Expressions {
     }
 
 
-    static OperationPredicate existsPredicate(UnaryBooleanOperator operator, @Nullable SubQuery subQuery) {
-        if (subQuery == null) {
+    static OperationPredicate existsPredicate(final UnaryBooleanOperator operator, final @Nullable SubQuery operand) {
+        if (operand == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
         switch (operator) {
@@ -105,7 +105,7 @@ abstract class Expressions {
             default:
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new ExistsPredicate(subQuery, operator);
+        return new ExistsPredicate(operator, operand);
     }
 
 
@@ -761,26 +761,26 @@ abstract class Expressions {
 
         private final SubQuery subQuery;
 
-
-        private ExistsPredicate(SubQuery query, UnaryBooleanOperator operator) {
+        /**
+         * @see #existsPredicate(UnaryBooleanOperator, SubQuery)
+         */
+        private ExistsPredicate(UnaryBooleanOperator operator, SubQuery subQuery) {
             this.operator = operator;
-            this.subQuery = query;
+            this.subQuery = subQuery;
         }
 
         @Override
         public void appendSql(final _SqlContext context) {
             switch (this.operator) {
                 case EXISTS:
-                case NOT_EXISTS: {
-                    context.sqlBuilder()
-                            .append(this.operator.spaceOperator);
-                    context.parser().subQuery(this.subQuery, context);
-                }
-                break;
+                case NOT_EXISTS:
+                    break;
                 default:
                     throw _Exceptions.unexpectedEnum(this.operator);
             }
 
+            context.sqlBuilder().append(this.operator.spaceOperator);
+            context.parser().subQuery(this.subQuery, context);
         }
 
         @Override

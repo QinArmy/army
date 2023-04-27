@@ -278,7 +278,9 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _JoinSpec<I extends Item>
             extends _JoinModifierClause<_TableSampleOnSpec<I>, _AsParensOnClause<_JoinSpec<I>>>,
+            _PostgreJoinUndoneFuncClause<_OnClause<_JoinSpec<I>>>,
             _PostgreCrossClause<_TableSampleJoinSpec<I>, _ParensJoinSpec<I>>,
+            _PostgreCrossUndoneFuncClause<_JoinSpec<I>>,
             _JoinCteClause<_OnClause<_JoinSpec<I>>>,
             _CrossJoinCteClause<_JoinSpec<I>>,
             _PostgreJoinNestedClause<_OnClause<_JoinSpec<I>>>,
@@ -305,6 +307,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _FromSpec<I extends Item>
             extends _PostgreFromClause<_TableSampleJoinSpec<I>, _ParensJoinSpec<I>>,
+            _PostgreFromUndoneFuncClause<_JoinSpec<I>>,
             _FromCteClause<_JoinSpec<I>>,
             _PostgreFromNestedClause<_JoinSpec<I>>,
             _UnionSpec<I> {

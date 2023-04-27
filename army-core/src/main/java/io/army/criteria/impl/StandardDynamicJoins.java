@@ -181,7 +181,8 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     private static final class StandardJoinBuilder extends JoinableClause.DynamicBuilderSupport<
             Statement._OnClause<StandardStatement._DynamicJoinSpec>,
             Statement._AsClause<Statement._OnClause<StandardStatement._DynamicJoinSpec>>,
-            Item>
+            Item,
+            Void>
             implements StandardJoins {
 
 
@@ -236,7 +237,8 @@ abstract class StandardDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     private static final class StandardCrossesBuilder extends JoinableClause.DynamicBuilderSupport<
             StandardStatement._DynamicJoinSpec,
             Statement._AsClause<StandardStatement._DynamicJoinSpec>,
-            Item>
+            Item,
+            Void>
             implements StandardCrosses {
 
 

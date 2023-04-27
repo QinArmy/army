@@ -96,11 +96,6 @@ public interface Statement extends Item {
     }
 
 
-    interface _UndoneFunction {
-
-    }
-
-
     /**
      * <p>
      * This interface representing AS clause.
@@ -289,12 +284,12 @@ public interface Statement extends Item {
 
     interface _FromUndoneFunctionClause<R> {
 
-        R from(_UndoneFunction function);
+        R from(UndoneFunction func);
     }
 
     interface _FromModifierUndoneFunctionClause<R> extends _FromUndoneFunctionClause<R> {
 
-        R from(@Nullable DerivedModifier modifier, _UndoneFunction function);
+        R from(@Nullable DerivedModifier modifier, UndoneFunction func);
     }
 
 
@@ -373,12 +368,12 @@ public interface Statement extends Item {
 
     interface _UsingUndoneFunctionClause<R> {
 
-        R using(_UndoneFunction function);
+        R using(UndoneFunction function);
     }
 
     interface _UsingModifierUndoneFunctionClause<R> extends _UsingUndoneFunctionClause<R> {
 
-        R using(@Nullable DerivedModifier modifier, _UndoneFunction function);
+        R using(@Nullable DerivedModifier modifier, UndoneFunction function);
     }
 
 
@@ -461,24 +456,24 @@ public interface Statement extends Item {
 
     interface _JoinUndoneFunctionClause<R> {
 
-        R leftJoin(_UndoneFunction func);
+        R leftJoin(UndoneFunction func);
 
-        R join(_UndoneFunction func);
+        R join(UndoneFunction func);
 
-        R rightJoin(_UndoneFunction func);
+        R rightJoin(UndoneFunction func);
 
-        R fullJoin(_UndoneFunction func);
+        R fullJoin(UndoneFunction func);
     }
 
     interface _JoinModifierUndoneFunctionClause<R> extends _JoinUndoneFunctionClause<R> {
 
-        R leftJoin(@Nullable DerivedModifier modifier, _UndoneFunction func);
+        R leftJoin(@Nullable DerivedModifier modifier, UndoneFunction func);
 
-        R join(@Nullable DerivedModifier modifier, _UndoneFunction func);
+        R join(@Nullable DerivedModifier modifier, UndoneFunction func);
 
-        R rightJoin(@Nullable DerivedModifier modifier, _UndoneFunction func);
+        R rightJoin(@Nullable DerivedModifier modifier, UndoneFunction func);
 
-        R fullJoin(@Nullable DerivedModifier modifier, _UndoneFunction func);
+        R fullJoin(@Nullable DerivedModifier modifier, UndoneFunction func);
 
     }
 
@@ -521,13 +516,13 @@ public interface Statement extends Item {
 
     interface _CrossUndoneFunctionClause<R> {
 
-        R crossJoin(_UndoneFunction func);
+        R crossJoin(UndoneFunction func);
     }
 
 
     interface _CrossModifierUndoneFunctionClause<R> extends _CrossUndoneFunctionClause<R> {
 
-        R crossJoin(@Nullable DerivedModifier modifier, _UndoneFunction func);
+        R crossJoin(@Nullable DerivedModifier modifier, UndoneFunction func);
 
     }
 
@@ -616,12 +611,12 @@ public interface Statement extends Item {
 
     interface _NestedLeftParenUndoneFunctionClause<R> {
 
-        R leftParen(_UndoneFunction func);
+        R leftParen(UndoneFunction func);
     }
 
     interface _NestedLeftParenModifierUndoneFunctionClause<R> extends _NestedLeftParenUndoneFunctionClause<R> {
 
-        R leftParen(@Nullable DerivedModifier modifier, _UndoneFunction func);
+        R leftParen(@Nullable DerivedModifier modifier, UndoneFunction func);
     }
 
 
@@ -660,12 +655,12 @@ public interface Statement extends Item {
 
     interface _DynamicTabularUndoneFunctionClause<R> {
 
-        R space(_UndoneFunction func);
+        R space(UndoneFunction func);
     }
 
     interface _DynamicTabularModifierUndoneFunctionClause<R> extends _DynamicTabularUndoneFunctionClause<R> {
 
-        R space(@Nullable DerivedModifier modifier, _UndoneFunction func);
+        R space(@Nullable DerivedModifier modifier, UndoneFunction func);
     }
 
 
@@ -681,6 +676,7 @@ public interface Statement extends Item {
 
         R space(Function<T, R> function);
     }
+
 
 
     interface _MinWhereClause<WR, WA> {
@@ -721,6 +717,8 @@ public interface Statement extends Item {
         WA where(Function<Expression, IPredicate> expOperator, Expression operand);
 
         WA where(UnaryOperator<IPredicate> expOperator, IPredicate operand);
+
+        WA where(Function<SubQuery, IPredicate> expOperator, SubQuery operand);
 
         <E extends RightOperand> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
@@ -848,6 +846,8 @@ public interface Statement extends Item {
         WA and(Function<Expression, IPredicate> expOperator, Expression operand);
 
         WA and(UnaryOperator<IPredicate> expOperator, IPredicate operand);
+
+        WA and(Function<SubQuery, IPredicate> expOperator, SubQuery operand);
 
         <E extends RightOperand> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 

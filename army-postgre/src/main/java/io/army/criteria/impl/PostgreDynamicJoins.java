@@ -14,6 +14,7 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -23,11 +24,11 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         PostgreStatement._DynamicTableSampleJoinSpec,
         Statement._AsClause<PostgreStatement._DynamicParensJoinSpec>,
         PostgreStatement._DynamicJoinSpec,
-        Void,
+        PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._DynamicJoinSpec>,
         PostgreStatement._DynamicTableSampleOnSpec,
         Statement._AsParensOnClause<PostgreStatement._DynamicJoinSpec>,
         Statement._OnClause<PostgreStatement._DynamicJoinSpec>,
-        Void,
+        PostgreStatement._FuncColumnDefinitionAsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>>,
         PostgreStatement._DynamicJoinSpec>
         implements PostgreStatement._DynamicJoinSpec {
 
@@ -133,6 +134,22 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     @Override
+    PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._DynamicJoinSpec> onFromUndoneFunc(
+            final _JoinType joinType, final @Nullable Statement.DerivedModifier modifier, final UndoneFunction func) {
+        return alias -> {
+            final Function<PostgreUtils.DoneFunc, PostgreStatement._DynamicJoinSpec> function;
+            function = doneFunc -> {
+                final DynamicDoneFuncBlock block;
+                block = new DynamicDoneFuncBlock(this.context, this.blockConsumer, joinType, modifier,
+                        doneFunc, alias);
+                this.blockConsumer.accept(block);
+                return block;
+            };
+            return PostgreUtils.undoneFunc(func, function);
+        };
+    }
+
+    @Override
     final PostgreStatement._DynamicJoinSpec onFromCte(
             _JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
         final PostgreDynamicBlock block;
@@ -158,6 +175,22 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             block = new DynamicDerivedOnBlock(this.context, this.blockConsumer, joinType, modifier, table, alias);
             this.blockConsumer.accept(block);
             return block;
+        };
+    }
+
+    @Override
+    PostgreStatement._FuncColumnDefinitionAsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> onJoinUndoneFunc(
+            final _JoinType joinType, final @Nullable Statement.DerivedModifier modifier, final UndoneFunction func) {
+        return alias -> {
+            final Function<PostgreUtils.DoneFunc, Statement._OnClause<PostgreStatement._DynamicJoinSpec>> function;
+            function = doneFunc -> {
+                final DynamicDoneFuncBlock block;
+                block = new DynamicDoneFuncBlock(this.context, this.blockConsumer, joinType, modifier,
+                        doneFunc, alias);
+                this.blockConsumer.accept(block);
+                return block;
+            };
+            return PostgreUtils.undoneFunc(func, function);
         };
     }
 
@@ -481,10 +514,43 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }//DynamicDerivedOnBlock
 
 
+    private static final class DynamicDoneFuncBlock extends PostgreDynamicBlock implements _DoneFuncBlock {
+
+        private final List<_FunctionField> fieldList;
+
+        private final Map<String, _FunctionField> fieldMap;
+
+        private DynamicDoneFuncBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer, _JoinType joinType,
+                                     @Nullable Statement.DerivedModifier modifier, PostgreUtils.DoneFunc func,
+                                     String alias) {
+            super(context, blockConsumer, joinType, modifier, func.funcItem, alias);
+            this.fieldList = func.fieldList;
+            this.fieldMap = func.fieldMap;
+        }
+
+        @Override
+        public Selection refSelection(String name) {
+            return this.fieldMap.get(name);
+        }
+
+        @Override
+        public List<? extends Selection> refAllSelection() {
+            return this.fieldList;
+        }
+
+        @Override
+        public List<_FunctionField> fieldList() {
+            return this.fieldList;
+        }
+
+    }//DynamicDoneFuncBlock
+
+
     private static final class PostgreJoinBuilder extends JoinableClause.DynamicBuilderSupport<
             PostgreStatement._DynamicTableSampleOnSpec,
             Statement._AsParensOnClause<PostgreStatement._DynamicJoinSpec>,
-            Statement._OnClause<PostgreStatement._DynamicJoinSpec>>
+            Statement._OnClause<PostgreStatement._DynamicJoinSpec>,
+            PostgreStatement._FuncColumnDefinitionAsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>>>
             implements PostgreJoins {
 
         private PostgreJoinBuilder(CriteriaContext context, _JoinType joinTyp, Consumer<_TabularBlock> blockConsumer) {
@@ -531,6 +597,22 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         }
 
         @Override
+        PostgreStatement._FuncColumnDefinitionAsClause<Statement._OnClause<PostgreStatement._DynamicJoinSpec>> onUndoneFunc(
+                final @Nullable Statement.DerivedModifier modifier, final UndoneFunction func) {
+            return alias -> {
+                final Function<PostgreUtils.DoneFunc, Statement._OnClause<PostgreStatement._DynamicJoinSpec>> function;
+                function = doneFunc -> {
+                    final DynamicDoneFuncBlock block;
+                    block = new DynamicDoneFuncBlock(this.context, this.blockConsumer, this.joinType, modifier,
+                            doneFunc, alias);
+                    this.blockConsumer.accept(block);
+                    return block;
+                };
+                return PostgreUtils.undoneFunc(func, function);
+            };
+        }
+
+        @Override
         Statement._OnClause<PostgreStatement._DynamicJoinSpec> onCte(
                 _Cte cteItem, String alias) {
             final PostgreDynamicBlock block;
@@ -555,7 +637,8 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     private static final class PostgreCrossBuilder extends JoinableClause.DynamicBuilderSupport<
             PostgreStatement._DynamicTableSampleJoinSpec,
             Statement._AsClause<PostgreStatement._DynamicJoinSpec>,
-            PostgreStatement._DynamicJoinSpec>
+            PostgreStatement._DynamicJoinSpec,
+            PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._DynamicJoinSpec>>
             implements PostgreCrosses {
 
         private PostgreCrossBuilder(CriteriaContext context, Consumer<_TabularBlock> blockConsumer) {
@@ -610,6 +693,21 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
             return block;
         }
 
+        @Override
+        PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._DynamicJoinSpec> onUndoneFunc(
+                final @Nullable Statement.DerivedModifier modifier, final UndoneFunction func) {
+            return alias -> {
+                final Function<PostgreUtils.DoneFunc, PostgreStatement._DynamicJoinSpec> function;
+                function = doneFunc -> {
+                    final DynamicDoneFuncBlock block;
+                    block = new DynamicDoneFuncBlock(this.context, this.blockConsumer, this.joinType, modifier,
+                            doneFunc, alias);
+                    this.blockConsumer.accept(block);
+                    return block;
+                };
+                return PostgreUtils.undoneFunc(func, function);
+            };
+        }
 
         private PostgreStatement._DynamicJoinSpec nestedEnd(_JoinType joinType, _NestedItems items) {
             final PostgreDynamicBlock block;

@@ -14,6 +14,7 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -33,7 +34,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         PostgreStatement._NestedTableSampleJoinSpec<I>,
         Statement._AsClause<PostgreStatement._NestedParensJoinSpec<I>>,
         PostgreStatement._PostgreNestedJoinClause<I>,
-        Void>
+        PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._PostgreNestedJoinClause<I>>>
         implements PostgreStatement._NestedLeftParenSpec<I> {
 
 
@@ -68,9 +69,9 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     PostgreStatement._NestedTableSampleJoinSpec<I> onLeftTable(
             @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         final NestedTableJoinBlock<I> block;
-        block = new NestedTableJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, modifier, table, tableAlias,
+        block = new NestedTableJoinBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, modifier, table, tableAlias,
                 this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
+        this.onAddTabularBlock(block);
         return block;
     }
 
@@ -79,9 +80,9 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             @Nullable Query.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final NestedDerivedJoinBlock<I> block;
-            block = new NestedDerivedJoinBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, modifier,
+            block = new NestedDerivedJoinBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, modifier,
                     table, alias, this::thisNestedJoinEnd);
-            this.onAddTableBlock(block);
+            this.onAddTabularBlock(block);
             return block;
         };
     }
@@ -89,11 +90,28 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
     @Override
     PostgreStatement._PostgreNestedJoinClause<I> onLeftCte(_Cte cteItem, String alias) {
         final PostgreNestedBlock<I> block;
-        block = new PostgreNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null,
+        block = new PostgreNestedBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, null,
                 cteItem, alias, this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
+        this.onAddTabularBlock(block);
         return block;
     }
+
+    @Override
+    PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._PostgreNestedJoinClause<I>> onLeftUndoneFunc(
+            final @Nullable Statement.DerivedModifier modifier, final UndoneFunction func) {
+        return alias -> {
+            final Function<PostgreUtils.DoneFunc, PostgreStatement._PostgreNestedJoinClause<I>> function;
+            function = doneFunc -> {
+                NestedDoneFuncBlock<I> block;
+                block = new NestedDoneFuncBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, modifier,
+                        doneFunc, alias, this::thisNestedJoinEnd);
+                this.onAddTabularBlock(block);
+                return block;
+            };
+            return PostgreUtils.undoneFunc(func, function);
+        };
+    }
+
 
     private PostgreStatement._PostgreNestedJoinClause<I> nestedNestedJoinEnd(final _JoinType joinType,
                                                                              final _NestedItems nestedItems) {
@@ -101,9 +119,9 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             throw _Exceptions.unexpectedEnum(joinType);
         }
         final PostgreNestedBlock<I> clause;
-        clause = new PostgreNestedBlock<>(this.context, this::onAddTableBlock, joinType, null, nestedItems, "",
+        clause = new PostgreNestedBlock<>(this.context, this::onAddTabularBlock, joinType, null, nestedItems, "",
                 this::thisNestedJoinEnd);
-        this.onAddTableBlock(clause);
+        this.onAddTabularBlock(clause);
         return clause;
     }
 
@@ -112,11 +130,11 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
             PostgreStatement._NestedTableSampleCrossSpec<I>,
             Statement._AsClause<PostgreStatement._NestedParensCrossSpec<I>>,
             PostgreStatement._NestedJoinSpec<I>,
-            Void,
+            PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._NestedJoinSpec<I>>,
             PostgreStatement._NestedTableSampleOnSpec<I>,
             Statement._AsClause<PostgreStatement._NestedParensOnSpec<I>>,
             PostgreStatement._NestedOnSpec<I>,
-            Void,
+            PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._NestedOnSpec<I>>,
             PostgreStatement._NestedJoinSpec<I>>
             implements PostgreStatement._NestedOnSpec<I> {
 
@@ -224,6 +242,23 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
         @Override
+        final PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._NestedJoinSpec<I>> onFromUndoneFunc(
+                final _JoinType joinType, final @Nullable Statement.DerivedModifier modifier,
+                final UndoneFunction func) {
+            return alias -> {
+                final Function<PostgreUtils.DoneFunc, PostgreStatement._NestedJoinSpec<I>> function;
+                function = doneFunc -> {
+                    final NestedDoneFuncBlock<I> block;
+                    block = new NestedDoneFuncBlock<>(this.context, this.blockConsumer, joinType, modifier,
+                            doneFunc, alias, this.ender);
+                    this.blockConsumer.accept(block);
+                    return block;
+                };
+                return PostgreUtils.undoneFunc(func, function);
+            };
+        }
+
+        @Override
         final PostgreStatement._NestedJoinSpec<I> onFromCte(_JoinType joinType,
                                                             @Nullable Query.DerivedModifier modifier,
                                                             _Cte cteItem, String alias) {
@@ -266,6 +301,23 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
                     this.ender);
             this.blockConsumer.accept(block);
             return block;
+        }
+
+        @Override
+        final PostgreStatement._FuncColumnDefinitionAsClause<PostgreStatement._NestedOnSpec<I>> onJoinUndoneFunc(
+                final _JoinType joinType, final @Nullable Statement.DerivedModifier modifier,
+                final UndoneFunction func) {
+            return alias -> {
+                final Function<PostgreUtils.DoneFunc, PostgreStatement._NestedOnSpec<I>> function;
+                function = doneFunc -> {
+                    final NestedDoneFuncBlock<I> block;
+                    block = new NestedDoneFuncBlock<>(this.context, this.blockConsumer, joinType, modifier,
+                            doneFunc, alias, this.ender);
+                    this.blockConsumer.accept(block);
+                    return block;
+                };
+                return PostgreUtils.undoneFunc(func, function);
+            };
         }
 
         /**
@@ -599,6 +651,39 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
         }
 
     }//NestedDerivedOnBlock
+
+    private static final class NestedDoneFuncBlock<I extends Item> extends PostgreNestedBlock<I>
+            implements _DoneFuncBlock {
+
+        private final List<_FunctionField> fieldList;
+
+        private final Map<String, _FunctionField> fieldMap;
+
+        private NestedDoneFuncBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer, _JoinType joinType,
+                                    @Nullable Statement.DerivedModifier modifier, PostgreUtils.DoneFunc func,
+                                    String alias, Supplier<I> ender) {
+            super(context, blockConsumer, joinType, modifier, func.funcItem, alias, ender);
+            this.fieldList = func.fieldList;
+            this.fieldMap = func.fieldMap;
+        }
+
+        @Override
+        public Selection refSelection(String name) {
+            return this.fieldMap.get(name);
+        }
+
+        @Override
+        public List<? extends Selection> refAllSelection() {
+            return this.fieldList;
+        }
+
+        @Override
+        public List<_FunctionField> fieldList() {
+            return this.fieldList;
+        }
+
+
+    }//NestedDoneFuncBlock
 
 
 }

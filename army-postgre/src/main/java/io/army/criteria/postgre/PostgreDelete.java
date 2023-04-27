@@ -76,7 +76,9 @@ public interface PostgreDelete extends PostgreStatement {
 
     interface _SingleJoinSpec<I extends Item, Q extends Item>
             extends _JoinModifierClause<_TableSampleOnSpec<I, Q>, _AsParensOnClause<_SingleJoinSpec<I, Q>>>,
+            _PostgreJoinUndoneFuncClause<_OnClause<_SingleJoinSpec<I, Q>>>,
             _PostgreCrossClause<_TableSampleJoinSpec<I, Q>, _ParensJoinSpec<I, Q>>,
+            _PostgreCrossUndoneFuncClause<_SingleJoinSpec<I, Q>>,
             _JoinCteClause<_OnClause<_SingleJoinSpec<I, Q>>>,
             _CrossJoinCteClause<_SingleJoinSpec<I, Q>>,
             _PostgreJoinNestedClause<_OnClause<_SingleJoinSpec<I, Q>>>,
@@ -105,6 +107,7 @@ public interface PostgreDelete extends PostgreStatement {
 
     interface _SingleUsingSpec<I extends Item, Q extends Item>
             extends _PostgreUsingClause<_TableSampleJoinSpec<I, Q>, _ParensJoinSpec<I, Q>>,
+            _PostgreUsingUndoneFuncClause<_SingleJoinSpec<I, Q>>,
             _UsingCteClause<_SingleJoinSpec<I, Q>>,
             _PostgreUsingNestedClause<_SingleJoinSpec<I, Q>>,
             _SingleWhereClause<I, Q> {
@@ -184,7 +187,9 @@ public interface PostgreDelete extends PostgreStatement {
 
     interface _BatchSingleJoinSpec<I extends Item, Q extends Item>
             extends _JoinModifierClause<_BatchTableSampleOnSpec<I, Q>, _AsParensOnClause<_BatchSingleJoinSpec<I, Q>>>,
+            _PostgreJoinUndoneFuncClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>,
             _PostgreCrossClause<_BatchTableSampleJoinSpec<I, Q>, _BatchParensJoinSpec<I, Q>>,
+            _PostgreCrossUndoneFuncClause<_BatchSingleJoinSpec<I, Q>>,
             _JoinCteClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>,
             _CrossJoinCteClause<_BatchSingleJoinSpec<I, Q>>,
             _PostgreJoinNestedClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>,
@@ -213,6 +218,8 @@ public interface PostgreDelete extends PostgreStatement {
 
     interface _BatchSingleUsingSpec<I extends Item, Q extends Item>
             extends _PostgreUsingClause<_BatchTableSampleJoinSpec<I, Q>, _BatchParensJoinSpec<I, Q>>,
+            _PostgreUsingUndoneFuncClause<_BatchSingleJoinSpec<I, Q>>,
+            _UsingCteClause<_BatchSingleJoinSpec<I, Q>>,
             _PostgreUsingNestedClause<_BatchSingleJoinSpec<I, Q>>,
             _BatchSingleWhereClause<I, Q> {
     }

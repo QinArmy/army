@@ -52,7 +52,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     @SuppressWarnings("unchecked")
     static abstract class PostgreTableOnBlock<TR, RR, OR extends Item>
-            extends TableBlocks.JoinClauseModifierTableBlock<OR>
+            extends TabularBlocks.JoinClauseModifierTableBlock<OR>
             implements _PostgreTableBlock,
             PostgreStatement._StaticTableSampleClause<TR>,
             PostgreStatement._RepeatableClause<RR> {
@@ -201,7 +201,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//PostgreTableOnBlock
 
 
-    static final class FromClauseTableBlock extends TableBlocks.FromClauseModifierTableBlock
+    static final class FromClauseTableBlock extends TabularBlocks.FromClauseModifierTableBlock
             implements _PostgreTableBlock {
 
         private ArmyExpression sampleMethod;

@@ -46,7 +46,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     }
 
     private MySQLDynamicJoins(CriteriaContext context, Consumer<_TabularBlock> blockConsumer,
-                              TableBlocks.BlockParams params) {
+                              TabularBlocks.BlockParams params) {
         super(context, blockConsumer, params);
     }
 
@@ -470,7 +470,8 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     private static final class MySQLJoinBuilder extends JoinableClause.DynamicBuilderSupport<
             MySQLQuery._DynamicIndexHintOnClause,
             Statement._AsClause<Statement._OnClause<MySQLQuery._DynamicJoinSpec>>,
-            Statement._OnClause<MySQLQuery._DynamicJoinSpec>> implements MySQLJoins {
+            Statement._OnClause<MySQLQuery._DynamicJoinSpec>,
+            Void> implements MySQLJoins {
 
 
         private MySQLJoinBuilder(CriteriaContext context, _JoinType joinType, Consumer<_TabularBlock> blockConsumer) {
@@ -538,7 +539,8 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
     private static final class MySQLCrossJoinBuilder extends JoinableClause.DynamicBuilderSupport<
             MySQLQuery._DynamicIndexHintJoinClause,
             Statement._AsClause<MySQLQuery._DynamicJoinSpec>,
-            MySQLQuery._DynamicJoinSpec> implements MySQLCrosses {
+            MySQLQuery._DynamicJoinSpec,
+            Void> implements MySQLCrosses {
 
         private MySQLCrossJoinBuilder(CriteriaContext context, Consumer<_TabularBlock> blockConsumer) {
             super(context, _JoinType.CROSS_JOIN, blockConsumer);

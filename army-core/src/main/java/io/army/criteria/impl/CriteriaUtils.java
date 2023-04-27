@@ -707,6 +707,15 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
+    static CriteriaException funcFieldNameNoText() {
+        return ContextStack.clearStackAndCriteriaError("function field name must have text.");
+    }
+
+    static CriteriaException funcFieldDuplication(String name) {
+        String m = String.format("function field name[%s] duplication.", name);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
 
     static CriteriaException errorModifier(CriteriaContext context, @Nullable Object modifier) {
         String m = String.format("error modifier[%s]", modifier);

@@ -27,6 +27,18 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }
 
 
+    static _FunctionField funcField(final @Nullable String name, final @Nullable MappingType type) {
+        if (name == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (type == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!_StringUtils.hasText(name)) {
+            throw ContextStack.clearStackAndCriteriaError("function field name must have text.");
+        }
+        return new FunctionField(name, type);
+    }
+
+
     static Functions._TabularFunction compositeTabularFunc(String name, List<?> argList, List<? extends Selection> selectionList) {
         return new CompositeTabularFunction(name, argList, selectionList, null);
     }
@@ -770,6 +782,70 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
     }//TwoArgTabularFunction
+
+
+    private static final class FunctionField extends OperationDataField implements _FunctionField {
+
+        private final String name;
+
+        private final MappingType type;
+
+        /**
+         * @see #funcField(String, MappingType)
+         */
+        private FunctionField(String name, MappingType type) {
+            this.name = name;
+            this.type = type;
+        }
+
+        @Override
+        public void appendSelectItem(_SqlContext context) {
+            // no bug,never here
+            throw new UnsupportedOperationException("invoking error");
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+
+            sqlBuilder.append(context.parser().identifier(this.name, sqlBuilder));
+            // here never output type
+        }
+
+        @Override
+        public String fieldName() {
+            return this.name;
+        }
+
+        @Override
+        public String alias() {
+            return this.name;
+        }
+
+        /**
+         * @return function field must return {@link MappingType}, not {@link TableField}
+         */
+        @Override
+        public MappingType typeMeta() {
+            return this.type;
+        }
+
+        @Override
+        public TableField tableField() {
+            // always null
+            return null;
+        }
+
+        @Override
+        public Expression underlyingExp() {
+            // always null
+            return null;
+        }
+
+
+    }//FunctionField
 
 
 }

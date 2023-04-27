@@ -22,7 +22,6 @@ import java.util.function.Function;
 public interface PostgreUpdate extends PostgreStatement {
 
 
-
     interface _StaticReturningCommaSpec<Q extends Item>
             extends _StaticDmlReturningCommaClause<_StaticReturningCommaSpec<Q>>,
             _DqlUpdateSpec<Q> {
@@ -63,7 +62,9 @@ public interface PostgreUpdate extends PostgreStatement {
 
     interface _SingleJoinSpec<I extends Item, Q extends Item>
             extends _JoinModifierClause<_TableSampleOnSpec<I, Q>, _AsParensOnClause<_SingleJoinSpec<I, Q>>>,
+            _PostgreJoinUndoneFuncClause<_OnClause<_SingleJoinSpec<I, Q>>>,
             _PostgreCrossClause<_TableSampleJoinSpec<I, Q>, _ParensJoinSpec<I, Q>>,
+            _PostgreCrossUndoneFuncClause<_SingleJoinSpec<I, Q>>,
             _JoinCteClause<_OnClause<_SingleJoinSpec<I, Q>>>,
             _CrossJoinCteClause<_SingleJoinSpec<I, Q>>,
             _PostgreJoinNestedClause<_OnClause<_SingleJoinSpec<I, Q>>>,
@@ -100,6 +101,7 @@ public interface PostgreUpdate extends PostgreStatement {
 
     interface _SingleFromSpec<I extends Item, Q extends Item>
             extends _PostgreFromClause<_TableSampleJoinSpec<I, Q>, _ParensJoinSpec<I, Q>>,
+            _PostgreFromUndoneFuncClause<_SingleJoinSpec<I, Q>>,
             _FromCteClause<_SingleJoinSpec<I, Q>>,
             _PostgreFromNestedClause<_SingleJoinSpec<I, Q>>,
             _SingleWhereClause<I, Q> {
@@ -195,7 +197,9 @@ public interface PostgreUpdate extends PostgreStatement {
 
     interface _BatchSingleJoinSpec<I extends Item, Q extends Item>
             extends _JoinModifierClause<_BatchTableSampleOnSpec<I, Q>, _AsParensOnClause<_BatchSingleJoinSpec<I, Q>>>,
+            _PostgreJoinUndoneFuncClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>,
             _PostgreCrossClause<_BatchTableSampleJoinSpec<I, Q>, _BatchParensJoinSpec<I, Q>>,
+            _PostgreCrossUndoneFuncClause<_BatchSingleJoinSpec<I, Q>>,
             _JoinCteClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>,
             _CrossJoinCteClause<_BatchSingleJoinSpec<I, Q>>,
             _PostgreJoinNestedClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>,
@@ -224,6 +228,8 @@ public interface PostgreUpdate extends PostgreStatement {
 
     interface _BatchSingleFromClause<I extends Item, Q extends Item>
             extends _PostgreFromClause<_BatchTableSampleJoinSpec<I, Q>, _BatchParensJoinSpec<I, Q>>,
+            _PostgreFromUndoneFuncClause<_BatchSingleJoinSpec<I, Q>>,
+            _FromCteClause<_BatchSingleJoinSpec<I, Q>>,
             _PostgreFromNestedClause<_BatchSingleJoinSpec<I, Q>>,
             _BatchSingleWhereClause<I, Q> {
 

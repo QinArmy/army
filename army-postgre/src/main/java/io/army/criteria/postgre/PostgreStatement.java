@@ -5,35 +5,48 @@ import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.mapping.MappingType;
 
-import java.util.function.BiFunction;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public interface PostgreStatement extends DialectStatement {
 
 
-    @Deprecated
-    interface _PostgreJoinClause<JT, JS> extends _JoinModifierClause<JT, JS>
-            , _JoinCteClause<JS> {
+    interface _FuncColumnDefinitionSpaceClause {
+
+
+        FuncColumnDefCommaClause space(String name, MappingType type);
 
     }
 
-    @Deprecated
-    interface _PostgreCrossJoinClause<FT, FS> extends _CrossJoinModifierClause<FT, FS>
-            , _CrossJoinCteClause<FS> {
+    /**
+     * <p>
+     * This interface not start with underscore, so this interface can present in application developer code.
+     * </p>
+     *
+     * @since 1.0
+     */
+    interface FuncColumnDefCommaClause {
+
+        FuncColumnDefCommaClause comma(String name, MappingType type);
 
     }
+
+
+    interface _FuncColumnDefinitionParensClause<R> {
+
+        R parens(Consumer<_FuncColumnDefinitionSpaceClause> consumer);
+    }
+
+
+    interface _FuncColumnDefinitionAsClause<R> extends _AsClause<_FuncColumnDefinitionParensClause<R>> {
+
+    }
+
 
     interface _PostgreDynamicJoinCrossClause<JD> extends _DynamicJoinClause<PostgreJoins, JD>,
             _DynamicCrossJoinClause<PostgreCrosses, JD> {
 
     }
 
-    @Deprecated
-    interface _PostgreDynamicCrossJoinClause<JD> extends _DynamicCrossJoinClause<PostgreCrosses, JD> {
-
-    }
 
     interface _PostgreCrossClause<FT, FS> extends _CrossJoinModifierClause<FT, _AsClause<FS>> {
 
@@ -61,6 +74,39 @@ public interface PostgreStatement extends DialectStatement {
     }
 
     interface _PostgreUsingClause<FT, FS> extends _UsingModifierClause<FT, _AsClause<FS>> {
+
+    }
+
+    interface _PostgreFromUndoneFuncClause<R extends Item>
+            extends _FromModifierUndoneFunctionClause<_FuncColumnDefinitionAsClause<R>> {
+
+
+    }
+
+    interface _PostgreUsingUndoneFuncClause<R extends Item>
+            extends _UsingModifierUndoneFunctionClause<_FuncColumnDefinitionAsClause<R>> {
+
+
+    }
+
+    interface _PostgreJoinUndoneFuncClause<R extends Item>
+            extends _JoinModifierUndoneFunctionClause<_FuncColumnDefinitionAsClause<R>> {
+
+
+    }
+
+    interface _PostgreCrossUndoneFuncClause<R extends Item>
+            extends _CrossModifierUndoneFunctionClause<_FuncColumnDefinitionAsClause<R>> {
+
+    }
+
+    interface _PostgreNestedLeftParenUndoneFuncClause<R extends Item>
+            extends _NestedLeftParenModifierUndoneFunctionClause<_FuncColumnDefinitionAsClause<R>> {
+
+    }
+
+    interface _PostgreTabularSpaceUndoneFuncClause<R extends Item>
+            extends _DynamicTabularModifierUndoneFunctionClause<_FuncColumnDefinitionAsClause<R>> {
 
     }
 
@@ -130,7 +176,9 @@ public interface PostgreStatement extends DialectStatement {
 
     interface _PostgreNestedJoinClause<I extends Item>
             extends _JoinModifierClause<_NestedTableSampleOnSpec<I>, _AsClause<_NestedParensOnSpec<I>>>,
+            _PostgreJoinUndoneFuncClause<_NestedOnSpec<I>>,
             _PostgreCrossClause<_NestedTableSampleCrossSpec<I>, _NestedParensCrossSpec<I>>,
+            _PostgreCrossUndoneFuncClause<_NestedJoinSpec<I>>,
             _JoinCteClause<_NestedOnSpec<I>>,
             _CrossJoinCteClause<_NestedJoinSpec<I>>,
             _PostgreJoinNestedClause<_NestedOnSpec<I>>,
@@ -195,6 +243,7 @@ public interface PostgreStatement extends DialectStatement {
 
     interface _NestedLeftParenSpec<I extends Item>
             extends _NestedLeftParenModifierClause<_NestedTableSampleJoinSpec<I>, _AsClause<_NestedParensJoinSpec<I>>>,
+            _PostgreNestedLeftParenUndoneFuncClause<_PostgreNestedJoinClause<I>>,
             _LeftParenCteClause<_PostgreNestedJoinClause<I>>,
             _LeftParenNestedClause<_NestedLeftParenSpec<_PostgreNestedJoinClause<I>>, _PostgreNestedJoinClause<I>> {
     }
@@ -212,9 +261,11 @@ public interface PostgreStatement extends DialectStatement {
 
     interface _DynamicJoinSpec
             extends _JoinModifierClause<_DynamicTableSampleOnSpec, _AsParensOnClause<_DynamicJoinSpec>>,
+            _PostgreJoinUndoneFuncClause<_OnClause<_DynamicJoinSpec>>,
             _CrossJoinModifierClause<_DynamicTableSampleJoinSpec, _AsClause<_DynamicParensJoinSpec>>,
             _JoinCteClause<_OnClause<_DynamicJoinSpec>>,
             _CrossJoinCteClause<_DynamicJoinSpec>,
+            _PostgreCrossUndoneFuncClause<_DynamicJoinSpec>,
             _PostgreJoinNestedClause<_OnClause<_DynamicJoinSpec>>,
             _PostgreCrossNestedClause<_DynamicJoinSpec>,
             _PostgreDynamicJoinCrossClause<_DynamicJoinSpec> {

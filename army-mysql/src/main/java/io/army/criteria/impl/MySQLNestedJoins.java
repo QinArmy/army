@@ -51,7 +51,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
     @Override
     public MySQLStatement._NestedPartitionJoinSpec<I> leftParen(TableMeta<?> table) {
-        return new PartitionJoinClause<>(this.context, this::onAddTableBlock, _JoinType.NONE, table,
+        return new PartitionJoinClause<>(this.context, this::onAddTabularBlock, _JoinType.NONE, table,
                 this::thisNestedJoinEnd);
     }
 
@@ -70,9 +70,9 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     MySQLStatement._NestedIndexHintJoinSpec<I> onLeftTable(
             @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         final FromClauseTableBlock<I> block;
-        block = new FromClauseTableBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, table,
+        block = new FromClauseTableBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, table,
                 tableAlias, this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
+        this.onAddTabularBlock(block);
         return block;
     }
 
@@ -83,9 +83,9 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
         return alias -> {
             final FromClauseDerivedBlock<I> block;
-            block = new FromClauseDerivedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, modifier, table, alias,
+            block = new FromClauseDerivedBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, modifier, table, alias,
                     this::thisNestedJoinEnd);
-            this.onAddTableBlock(block);
+            this.onAddTabularBlock(block);
             return block;
         };
     }
@@ -93,9 +93,9 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
     @Override
     MySQLStatement._MySQLNestedJoinClause<I> onLeftCte(_Cte cteItem, String alias) {
         final MySQLNestedBlock<I> block;
-        block = new MySQLNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, null,
+        block = new MySQLNestedBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, null,
                 cteItem, alias, this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
+        this.onAddTabularBlock(block);
         return block;
     }
 
@@ -105,10 +105,10 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
             throw _Exceptions.unexpectedEnum(joinType);
         }
         final MySQLNestedBlock<I> block;
-        block = new MySQLNestedBlock<>(this.context, this::onAddTableBlock, joinType, null, nestedItems, "",
+        block = new MySQLNestedBlock<>(this.context, this::onAddTabularBlock, joinType, null, nestedItems, "",
                 this::thisNestedJoinEnd);
 
-        this.onAddTableBlock(block);
+        this.onAddTabularBlock(block);
         return block;
     }
 

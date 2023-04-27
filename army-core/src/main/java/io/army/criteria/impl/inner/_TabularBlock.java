@@ -13,6 +13,7 @@ import java.util.List;
  *     <ul>
  *         <li>{@link _ModifierTabularBlock}</li>
  *         <li>{@link _AliasDerivedBlock}</li>
+ *         <li>{@link _DoneFuncBlock}</li>
  *     </ul>
  * </p>
  *

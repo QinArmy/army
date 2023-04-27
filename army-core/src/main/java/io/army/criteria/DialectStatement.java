@@ -138,9 +138,17 @@ public interface DialectStatement extends Statement {
         <T extends DerivedTable> JS straightJoin(@Nullable Query.DerivedModifier modifier, Supplier<T> supplier);
     }
 
+    interface _StraightJoinUndoneFunctionClause<R> {
 
+        R straightJoin(UndoneFunction func);
 
+    }
 
+    interface _StraightJoinModifierUndoneFunctionClause<R> extends _StraightJoinUndoneFunctionClause<R> {
+
+        R straightJoin(@Nullable Query.DerivedModifier modifier, UndoneFunction func);
+
+    }
 
 
     /**

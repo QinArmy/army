@@ -101,7 +101,7 @@ abstract class MySQLSupports extends CriteriaSupports {
     }//MySQLCteBuilder
 
 
-    interface MySQLBlockParams extends TableBlocks.DialectBlockParams {
+    interface MySQLBlockParams extends TabularBlocks.DialectBlockParams {
 
         List<String> partitionList();
 
@@ -109,7 +109,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     private static abstract class MySQLFromClauseTableBlock<R extends Item>
-            extends TableBlocks.FromClauseTableBlock
+            extends TabularBlocks.FromClauseTableBlock
             implements _MySQLTableBlock,
             MySQLStatement._QueryIndexHintSpec<R> {
 
@@ -280,7 +280,7 @@ abstract class MySQLSupports extends CriteriaSupports {
      * @param <OR> sub interface of {@link MySQLQuery._MySQLJoinClause}
      */
     static abstract class MySQLJoinClauseBlock<T extends Item, RR extends Item, OR extends Item>
-            extends TableBlocks.JoinClauseTableBlock<OR>
+            extends TabularBlocks.JoinClauseTableBlock<OR>
             implements _MySQLTableBlock,
             MySQLStatement._QueryIndexHintSpec<RR>,
             MySQLStatement._DynamicIndexHintClause<T, RR> {

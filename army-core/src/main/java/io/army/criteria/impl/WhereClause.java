@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Statement;
 import io.army.dialect.Dialect;
@@ -67,6 +68,11 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
 
     @Override
     public final WA where(UnaryOperator<IPredicate> expOperator, IPredicate operand) {
+        return this.and(expOperator.apply(operand));
+    }
+
+    @Override
+    public final WA where(Function<SubQuery, IPredicate> expOperator, SubQuery operand) {
         return this.and(expOperator.apply(operand));
     }
 
@@ -223,6 +229,11 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
 
     @Override
     public final WA and(UnaryOperator<IPredicate> expOperator, IPredicate operand) {
+        return this.and(expOperator.apply(operand));
+    }
+
+    @Override
+    public final WA and(Function<SubQuery, IPredicate> expOperator, SubQuery operand) {
         return this.and(expOperator.apply(operand));
     }
 

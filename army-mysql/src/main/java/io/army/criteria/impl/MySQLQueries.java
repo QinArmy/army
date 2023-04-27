@@ -507,8 +507,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     final _AsClause<_ParensJoinSpec<I>> onFromDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
                                                       DerivedTable table) {
         return alias -> {
-            final TableBlocks.FromClauseAliasDerivedBlock block;
-            block = TableBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
+            final TabularBlocks.FromClauseAliasDerivedBlock block;
+            block = TabularBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
             this.blockConsumer.accept(block);
             this.fromCrossBlock = block;
             return this;
@@ -520,7 +520,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     final _JoinSpec<I> onFromCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem,
                                  String alias) {
         final _TabularBlock block;
-        block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
+        block = TabularBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return this;
@@ -539,8 +539,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     final _AsParensOnClause<_JoinSpec<I>> onJoinDerived(_JoinType joinType, @Nullable DerivedModifier modifier,
                                                         DerivedTable table) {
         return alias -> {
-            final TableBlocks.JoinClauseAliasDerivedBlock<_JoinSpec<I>> block;
-            block = TableBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
+            final TabularBlocks.JoinClauseAliasDerivedBlock<_JoinSpec<I>> block;
+            block = TabularBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
             this.blockConsumer.accept(block);
             return block;
         };
@@ -549,8 +549,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     @Override
     final _OnClause<_JoinSpec<I>> onJoinCte(_JoinType joinType, @Nullable DerivedModifier modifier, _Cte cteItem,
                                             String alias) {
-        final TableBlocks.JoinClauseCteBlock<_JoinSpec<I>> block;
-        block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
+        final TabularBlocks.JoinClauseCteBlock<_JoinSpec<I>> block;
+        block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -569,7 +569,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      */
     private _JoinSpec<I> fromNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
         final _TabularBlock block;
-        block = TableBlocks.fromNestedBlock(joinType, nestedItems);
+        block = TabularBlocks.fromNestedBlock(joinType, nestedItems);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return this;
@@ -584,8 +584,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      */
     private _OnClause<_JoinSpec<I>> joinNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
 
-        final TableBlocks.JoinClauseNestedBlock<_JoinSpec<I>> block;
-        block = TableBlocks.joinNestedBlock(joinType, nestedItems, this);
+        final TabularBlocks.JoinClauseNestedBlock<_JoinSpec<I>> block;
+        block = TabularBlocks.joinNestedBlock(joinType, nestedItems, this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -611,12 +611,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #parens(Consumer)
      * @see #ifParens(Consumer)
      */
-    private TableBlocks.FromClauseAliasDerivedBlock getFromClauseDerived() {
+    private TabularBlocks.FromClauseAliasDerivedBlock getFromClauseDerived() {
         final _TabularBlock block = this.fromCrossBlock;
-        if (block != this.context.lastBlock() || !(block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
+        if (block != this.context.lastBlock() || !(block instanceof TabularBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (TableBlocks.FromClauseAliasDerivedBlock) block;
+        return (TabularBlocks.FromClauseAliasDerivedBlock) block;
     }
 
     /**

@@ -34,8 +34,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT, JS, JC, TR, WR, WA>
-        extends JoinableUpdate<I, FieldMeta<T>, SR, FT, FS, FC, Void, JT, JS, JC, Void, WR, WA, Object, Object, Object, Object>
+abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF, JT, JS, JC, JF, TR, WR, WA>
+        extends JoinableUpdate<I, FieldMeta<T>, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, Object, Object, Object, Object>
         implements PostgreUpdate,
         _PostgreUpdate,
         PostgreStatement._StaticTableSampleClause<TR>,
@@ -387,22 +387,22 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     @Override
     final FC onFromCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier, _Cte cteItem, String alias) {
         final _TabularBlock block;
-        block = TableBlocks.fromCteBlock(joinType, cteItem, alias);
+        block = TabularBlocks.fromCteBlock(joinType, cteItem, alias);
         this.blockConsumer.accept(block);
         this.fromCrossBlock = block;
         return (FC) this;
     }
 
     final FC fromNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
-        this.blockConsumer.accept(TableBlocks.fromNestedBlock(joinType, nestedItems));
+        this.blockConsumer.accept(TabularBlocks.fromNestedBlock(joinType, nestedItems));
         return (FC) this;
     }
 
 
     final _OnClause<FC> joinNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
 
-        final TableBlocks.JoinClauseNestedBlock<FC> block;
-        block = TableBlocks.joinNestedBlock(joinType, nestedItems, (FC) this);
+        final TabularBlocks.JoinClauseNestedBlock<FC> block;
+        block = TabularBlocks.joinNestedBlock(joinType, nestedItems, (FC) this);
         this.blockConsumer.accept(block);
         return block;
     }
@@ -419,12 +419,12 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
     }
 
 
-    final TableBlocks.FromClauseAliasDerivedBlock getFromDerived() {
+    final TabularBlocks.FromClauseAliasDerivedBlock getFromDerived() {
         final _TabularBlock block = this.fromCrossBlock;
-        if (!(this.context.lastBlock() == block && block instanceof TableBlocks.FromClauseAliasDerivedBlock)) {
+        if (!(this.context.lastBlock() == block && block instanceof TabularBlocks.FromClauseAliasDerivedBlock)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (TableBlocks.FromClauseAliasDerivedBlock) block;
+        return (TabularBlocks.FromClauseAliasDerivedBlock) block;
     }
 
 
@@ -436,9 +436,11 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             PostgreUpdate._TableSampleJoinSpec<I, Q>,
             Statement._AsClause<PostgreUpdate._ParensJoinSpec<I, Q>>,
             PostgreUpdate._SingleJoinSpec<I, Q>,
+            PostgreStatement._FuncColumnDefinitionAsClause<PostgreUpdate._SingleJoinSpec<I, Q>>,
             PostgreUpdate._TableSampleOnSpec<I, Q>,
             Statement._AsParensOnClause<PostgreUpdate._SingleJoinSpec<I, Q>>,
             Statement._OnClause<PostgreUpdate._SingleJoinSpec<I, Q>>,
+            PostgreStatement._FuncColumnDefinitionAsClause<Statement._OnClause<PostgreUpdate._SingleJoinSpec<I, Q>>>,
             PostgreUpdate._RepeatableJoinClause<I, Q>,
             PostgreUpdate._ReturningSpec<I, Q>,
             PostgreUpdate._SingleWhereAndSpec<I, Q>>
@@ -690,13 +692,20 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                                                              @Nullable Query.DerivedModifier modifier,
                                                              DerivedTable table) {
             return alias -> {
-                final TableBlocks.FromClauseAliasDerivedBlock block;
-                block = TableBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
+                final TabularBlocks.FromClauseAliasDerivedBlock block;
+                block = TabularBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 this.fromCrossBlock = block;
                 return this;
             };
         }
+
+        @Override
+        final _FuncColumnDefinitionAsClause<_SingleJoinSpec<I, Q>> onFromUndoneFunc(
+                final _JoinType joinType, final @Nullable DerivedModifier modifier, final UndoneFunction func) {
+            return alias -> PostgreBlocks.fromUndoneFunc(joinType, modifier, func, alias, this, this.blockConsumer);
+        }
+
 
         @Override
         final _TableSampleOnSpec<I, Q> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
@@ -712,8 +721,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         final _AsParensOnClause<_SingleJoinSpec<I, Q>> onJoinDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                                      DerivedTable table) {
             return alias -> {
-                final TableBlocks.JoinClauseAliasDerivedBlock<_SingleJoinSpec<I, Q>> block;
-                block = TableBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
+                final TabularBlocks.JoinClauseAliasDerivedBlock<_SingleJoinSpec<I, Q>> block;
+                block = TabularBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
                 this.blockConsumer.accept(block);
                 return block;
             };
@@ -722,10 +731,16 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         @Override
         final _OnClause<_SingleJoinSpec<I, Q>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                          _Cte cteItem, String alias) {
-            final TableBlocks.JoinClauseCteBlock<_SingleJoinSpec<I, Q>> block;
-            block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
+            final TabularBlocks.JoinClauseCteBlock<_SingleJoinSpec<I, Q>> block;
+            block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
             this.blockConsumer.accept(block);
             return block;
+        }
+
+        @Override
+        final _FuncColumnDefinitionAsClause<_OnClause<_SingleJoinSpec<I, Q>>> onJoinUndoneFunc(
+                final _JoinType joinType, final @Nullable DerivedModifier modifier, final UndoneFunction func) {
+            return alias -> PostgreBlocks.joinUndoneFunc(joinType, modifier, func, alias, this, this.blockConsumer);
         }
 
         @Override
@@ -850,9 +865,11 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
             PostgreUpdate._BatchTableSampleJoinSpec<BatchUpdate, BatchReturningUpdate>,
             Statement._AsClause<PostgreUpdate._BatchParensJoinSpec<BatchUpdate, BatchReturningUpdate>>,
             PostgreUpdate._BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>,
+            PostgreStatement._FuncColumnDefinitionAsClause<PostgreUpdate._BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>>,
             PostgreUpdate._BatchTableSampleOnSpec<BatchUpdate, BatchReturningUpdate>,
             Statement._AsParensOnClause<PostgreUpdate._BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>>,
             Statement._OnClause<PostgreUpdate._BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>>,
+            PostgreStatement._FuncColumnDefinitionAsClause<Statement._OnClause<PostgreUpdate._BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>>>,
             PostgreUpdate._BatchRepeatableJoinClause<BatchUpdate, BatchReturningUpdate>,
             PostgreUpdate._BatchReturningSpec<BatchUpdate, BatchReturningUpdate>,
             PostgreUpdate._BatchSingleWhereAndSpec<BatchUpdate, BatchReturningUpdate>>
@@ -981,7 +998,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         @Override
         public List<? extends _Selection> returningList() {
-            //use wrapper,never here
+            //use wrapper,no bug,never here
             throw new UnsupportedOperationException();
         }
 
@@ -1042,14 +1059,19 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
         _AsClause<_BatchParensJoinSpec<BatchUpdate, BatchReturningUpdate>> onFromDerived(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                                                          DerivedTable table) {
             return alias -> {
-                final TableBlocks.FromClauseAliasDerivedBlock block;
-                block = TableBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
+                final TabularBlocks.FromClauseAliasDerivedBlock block;
+                block = TabularBlocks.fromAliasDerivedBlock(joinType, modifier, table, alias);
                 this.blockConsumer.accept(block);
                 this.fromCrossBlock = block;
                 return this;
             };
         }
 
+        @Override
+        _FuncColumnDefinitionAsClause<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> onFromUndoneFunc(
+                final _JoinType joinType, final @Nullable DerivedModifier modifier, final UndoneFunction func) {
+            return alias -> PostgreBlocks.fromUndoneFunc(joinType, modifier, func, alias, this, this.blockConsumer);
+        }
 
         @Override
         _BatchTableSampleOnSpec<BatchUpdate, BatchReturningUpdate> onJoinTable(_JoinType joinType, @Nullable Query.TableModifier modifier,
@@ -1065,18 +1087,24 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
                                                                                                  @Nullable Query.DerivedModifier modifier,
                                                                                                  DerivedTable table) {
             return alias -> {
-                final TableBlocks.JoinClauseAliasDerivedBlock<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> block;
-                block = TableBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
+                final TabularBlocks.JoinClauseAliasDerivedBlock<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> block;
+                block = TabularBlocks.joinAliasDerivedBlock(joinType, modifier, table, alias, this);
                 this.blockConsumer.accept(block);
                 return block;
             };
         }
 
         @Override
+        _FuncColumnDefinitionAsClause<_OnClause<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>>> onJoinUndoneFunc(
+                final _JoinType joinType, final @Nullable DerivedModifier modifier, final UndoneFunction func) {
+            return alias -> PostgreBlocks.joinUndoneFunc(joinType, modifier, func, alias, this, this.blockConsumer);
+        }
+
+        @Override
         _OnClause<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> onJoinCte(_JoinType joinType, @Nullable Query.DerivedModifier modifier,
                                                                                      _Cte cteItem, String alias) {
-            final TableBlocks.JoinClauseCteBlock<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> block;
-            block = TableBlocks.joinCteBlock(joinType, cteItem, alias, this);
+            final TabularBlocks.JoinClauseCteBlock<_BatchSingleJoinSpec<BatchUpdate, BatchReturningUpdate>> block;
+            block = TabularBlocks.joinCteBlock(joinType, cteItem, alias, this);
             this.blockConsumer.accept(block);
             return block;
         }
@@ -1493,7 +1521,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, JT
 
         private Boolean prepared = Boolean.TRUE;
 
-        private PostgreReturningUpdateWrapper(PostgreUpdates<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> stmt) {
+        private PostgreReturningUpdateWrapper(PostgreUpdates<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> stmt) {
             super(stmt.context);
             this.recursive = stmt.recursive;
             this.cteList = stmt.cteList;

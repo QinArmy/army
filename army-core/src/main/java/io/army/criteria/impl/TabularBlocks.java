@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-abstract class TableBlocks {
+abstract class TabularBlocks {
 
-    private TableBlocks() {
+    private TabularBlocks() {
         throw new UnsupportedOperationException();
     }
 

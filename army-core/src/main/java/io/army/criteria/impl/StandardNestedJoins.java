@@ -46,9 +46,9 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
     StandardStatement._StandardNestedJoinClause<I> onLeftTable(
             @Nullable Query.TableModifier modifier, TableMeta<?> table, String tableAlias) {
         final StandardNestedBlock<I> block;
-        block = new StandardNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, table, tableAlias,
+        block = new StandardNestedBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, table, tableAlias,
                 this::thisNestedJoinEnd);
-        this.onAddTableBlock(block);
+        this.onAddTabularBlock(block);
         return block;
     }
 
@@ -57,9 +57,9 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
             @Nullable Query.DerivedModifier modifier, DerivedTable table) {
         return alias -> {
             final StandardNestedBlock<I> block;
-            block = new StandardNestedBlock<>(this.context, this::onAddTableBlock, _JoinType.NONE, table, alias,
+            block = new StandardNestedBlock<>(this.context, this::onAddTabularBlock, _JoinType.NONE, table, alias,
                     this::thisNestedJoinEnd);
-            this.onAddTableBlock(block);
+            this.onAddTabularBlock(block);
             return block;
         };
     }
@@ -78,9 +78,9 @@ final class StandardNestedJoins<I extends Item> extends JoinableClause.NestedLef
     private StandardStatement._StandardNestedJoinClause<I> nestedNestedJoinEnd(final _JoinType joinType,
                                                                                final _NestedItems nestedItems) {
         final StandardNestedBlock<I> clause;
-        clause = new StandardNestedBlock<>(this.context, this::onAddTableBlock
+        clause = new StandardNestedBlock<>(this.context, this::onAddTabularBlock
                 , joinType, nestedItems, "", this::thisNestedJoinEnd);
-        this.onAddTableBlock(clause);
+        this.onAddTabularBlock(clause);
         return clause;
     }
 

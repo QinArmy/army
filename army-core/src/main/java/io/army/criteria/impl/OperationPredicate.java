@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
@@ -284,6 +285,11 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
     @Override
     public final IPredicate and(Function<Expression, IPredicate> expOperator, Expression operand) {
+        return this.and(expOperator.apply(operand));
+    }
+
+    @Override
+    public final IPredicate and(Function<SubQuery, IPredicate> expOperator, SubQuery operand) {
         return this.and(expOperator.apply(operand));
     }
 
