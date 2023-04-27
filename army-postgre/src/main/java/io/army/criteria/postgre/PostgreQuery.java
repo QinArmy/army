@@ -484,16 +484,12 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _DynamicCteAsClause {
-
-        _DynamicCteSearchSpec as(Function<_WithSpec<_DynamicCteSearchSpec>, _DynamicCteSearchSpec> function);
-
-        _DynamicCteSearchSpec as(@Nullable Postgres.WordMaterialized materialized,
-                                 Function<_WithSpec<_DynamicCteSearchSpec>, _DynamicCteSearchSpec> function);
+    interface _QueryDynamicCteAsClause
+            extends _PostgreDynamicCteAsClause<_WithSpec<_DynamicCteSearchSpec>, _DynamicCteSearchSpec> {
 
     }
 
-    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_QueryDynamicCteAsClause>, _QueryDynamicCteAsClause {
 
     }
 

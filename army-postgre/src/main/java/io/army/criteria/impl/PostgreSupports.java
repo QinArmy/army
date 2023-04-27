@@ -975,7 +975,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//DynamicCteCycleSpec
 
 
-    private static final class DynamicCteInsertParensSpec extends CteParensClause<PostgreInsert._DynamicCteAsClause>
+    private static final class DynamicCteInsertParensSpec extends CteParensClause<PostgreInsert._InsertDynamicCteAsClause>
             implements PostgreInsert._DynamicCteParensSpec {
 
         private final PostgreCteBuilder builder;
@@ -1013,7 +1013,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//DynamicCteInsertParensSpec
 
 
-    private static final class DynamicUpdateParensClause extends CteParensClause<PostgreUpdate._DynamicCteAsClause>
+    private static final class DynamicUpdateParensClause extends CteParensClause<PostgreUpdate._UpdateDynamicCteAsClause>
             implements PostgreUpdate._DynamicCteParensSpec {
 
         private final PostgreCteBuilder builder;
@@ -1051,7 +1051,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     }//DynamicUpdateParensClause
 
-    private static final class DynamicDeleteParensClause extends CteParensClause<PostgreDelete._DynamicCteAsClause>
+    private static final class DynamicDeleteParensClause extends CteParensClause<PostgreDelete._DeleteDynamicCteAsClause>
             implements PostgreDelete._DynamicCteParensSpec {
 
         private final PostgreCteBuilder builder;
@@ -1089,7 +1089,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//DynamicDeleteParensClause
 
 
-    private static final class DynamicQueryParensClause extends CteParensClause<PostgreQuery._DynamicCteAsClause>
+    private static final class DynamicQueryParensClause extends CteParensClause<PostgreQuery._QueryDynamicCteAsClause>
             implements PostgreQuery._DynamicCteParensSpec {
 
         private final PostgreCteBuilder builder;
@@ -1149,7 +1149,7 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//DynamicQueryParensClause
 
 
-    private static final class DynamicValuesParensClause extends CteParensClause<PostgreValues._DynamicCteAsClause>
+    private static final class DynamicValuesParensClause extends CteParensClause<PostgreValues._ValuesDynamicCteAsClause>
             implements PostgreValues._DynamicCteParensSpec {
 
         private final PostgreCteBuilder builder;

@@ -1,15 +1,11 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.DialectStatement;
 import io.army.criteria.Item;
 import io.army.criteria.UpdateStatement;
-import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-
-import java.util.function.Function;
 
 /**
  * <p>
@@ -136,16 +132,13 @@ public interface PostgreUpdate extends PostgreStatement {
     }
 
 
-    interface _DynamicCteAsClause {
-
-        DialectStatement._CommaClause<PostgreCtes> as(Function<_SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function);
-
-        DialectStatement._CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
-                                                      Function<_SingleWithSpec<DialectStatement._CommaClause<PostgreCtes>, DialectStatement._CommaClause<PostgreCtes>>, DialectStatement._CommaClause<PostgreCtes>> function);
+    interface _UpdateDynamicCteAsClause
+            extends _PostgreDynamicCteAsClause<_SingleWithSpec<_CommaClause<PostgreCtes>, _CommaClause<PostgreCtes>>,
+            _CommaClause<PostgreCtes>> {
 
     }
 
-    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_UpdateDynamicCteAsClause>, _UpdateDynamicCteAsClause {
 
     }
 

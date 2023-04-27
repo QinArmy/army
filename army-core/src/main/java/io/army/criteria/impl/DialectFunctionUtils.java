@@ -1,19 +1,19 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.Selection;
-import io.army.criteria.SelectionSpec;
-import io.army.criteria.TableField;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SelfDescribed;
+import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.optional.CompositeTypeField;
+import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
+import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -27,16 +27,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }
 
 
-    static _FunctionField funcField(final @Nullable String name, final @Nullable MappingType type) {
-        if (name == null) {
-            throw ContextStack.clearStackAndNullPointer();
-        } else if (type == null) {
-            throw ContextStack.clearStackAndNullPointer();
-        } else if (!_StringUtils.hasText(name)) {
-            throw ContextStack.clearStackAndCriteriaError("function field name must have text.");
-        }
-        return new FunctionField(name, type);
-    }
+
 
 
     static Functions._TabularFunction compositeTabularFunc(String name, List<?> argList, List<? extends Selection> selectionList) {
@@ -136,6 +127,33 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
         return selectionList;
     }
+
+    /**
+     * <p>
+     * For {@link UndoneFunction}
+     * </p>
+     */
+    static _FunctionField funcField(final @Nullable String name, final @Nullable MappingType type,
+                                    final Class<? extends SqlType> sqlTypeClass) {
+        if (name == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (type == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!_StringUtils.hasText(name)) {
+            throw ContextStack.clearStackAndCriteriaError("function field name must have text.");
+        }
+        return new FunctionField(name, type, sqlTypeClass);
+    }
+
+    static UndoneFunction oneArgUndoneFunc(final String name, final Expression one) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        }
+        return new OneArgUndoneFunction(name, one);
+    }
+
+
+    /*-------------------below inner class -------------------*/
 
     /**
      * <p>
@@ -783,19 +801,100 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
     }//TwoArgTabularFunction
 
+    private static abstract class TabularUndoneFunction implements UndoneFunction, _SelfDescribed {
 
+        private final String name;
+
+        private TabularUndoneFunction(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+
+            if (context.isLowerFunctionName()) {
+                sqlBuilder.append(this.name.toLowerCase(Locale.ROOT));
+            } else {
+                sqlBuilder.append(this.name);
+            }
+
+            sqlBuilder.append(_Constant.LEFT_PAREN);
+
+            this.appendArg(context);
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        }
+
+        abstract void appendArg(_SqlContext context);
+
+        abstract void argToString(StringBuilder builder);
+
+
+        @Override
+        public final String toString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.LEFT_PAREN);
+            this.argToString(builder);
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
+            return builder.toString();
+        }
+
+
+    }//TabularUndoneFunction
+
+
+    private static final class OneArgUndoneFunction extends TabularUndoneFunction {
+
+        private final ArmyExpression one;
+
+        /**
+         * @see #oneArgUndoneFunc(String, Expression)
+         */
+        private OneArgUndoneFunction(String name, Expression one) {
+            super(name);
+            this.one = (ArmyExpression) one;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            this.one.appendSql(context);
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            builder.append(this.one);
+        }
+
+
+    }//OneArgUndoneFunction
+
+
+    /**
+     * <p>
+     * For {@link UndoneFunction}
+     * </p>
+     */
     private static final class FunctionField extends OperationDataField implements _FunctionField {
 
         private final String name;
 
         private final MappingType type;
 
+        private final Class<? extends SqlType> sqlTypeClass;
+
         /**
-         * @see #funcField(String, MappingType)
+         * @see #funcField(String, MappingType, Class)
          */
-        private FunctionField(String name, MappingType type) {
+        private FunctionField(String name, MappingType type, Class<? extends SqlType> sqlTypeClass) {
             this.name = name;
             this.type = type;
+            this.sqlTypeClass = sqlTypeClass;
         }
 
         @Override
@@ -810,8 +909,32 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE);
 
-            sqlBuilder.append(context.parser().identifier(this.name, sqlBuilder));
-            // here never output type
+            final DialectParser parser;
+            parser = context.parser();
+            parser.identifier(this.name, sqlBuilder)
+                    .append(_Constant.SPACE);
+
+            final MappingType type = this.type;
+
+            final ServerMeta serverMeta;
+            serverMeta = parser.serverMeta();
+            final SqlType sqlType;
+            sqlType = type.map(serverMeta);
+            if (!this.sqlTypeClass.isInstance(sqlType)) {
+                String m = String.format(" %s of map result of %s isn't instance of %s", sqlType, type,
+                        this.sqlTypeClass.getName());
+                throw new CriteriaException(m);
+            }
+
+
+            if (!sqlType.isUserDefined()) {
+                sqlType.sqlTypeName(type, sqlBuilder);
+            } else if (type instanceof MappingType.SqlUserDefinedType) {
+                parser.identifier(((MappingType.SqlUserDefinedType) type).sqlTypeName(serverMeta), sqlBuilder);
+            } else {
+                throw _Exceptions.notUserDefinedType(type, sqlType);
+            }
+
         }
 
         @Override
@@ -842,6 +965,16 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         public Expression underlyingExp() {
             // always null
             return null;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE)
+                    .append(this.name)
+                    .append(_Constant.SPACE)
+                    .append(this.type)
+                    .toString();
         }
 
 

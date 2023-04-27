@@ -3,9 +3,14 @@ package io.army.criteria.postgre;
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
+import io.army.criteria.impl.Postgres;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface PostgreStatement extends DialectStatement {
 
@@ -163,16 +168,6 @@ public interface PostgreStatement extends DialectStatement {
     }
 
 
-    interface _CteMaterializedClause<R> {
-
-        R materialized();
-
-        R notMaterialized();
-
-        R ifMaterialized(BooleanSupplier predicate);
-
-        R ifNotMaterialized(BooleanSupplier predicate);
-    }
 
     interface _PostgreNestedJoinClause<I extends Item>
             extends _JoinModifierClause<_NestedTableSampleOnSpec<I>, _AsClause<_NestedParensOnSpec<I>>>,
@@ -292,6 +287,13 @@ public interface PostgreStatement extends DialectStatement {
 
 
     interface _PostgreDynamicWithClause<WE extends Item> extends _DynamicWithClause<PostgreCtes, WE> {
+
+    }
+
+
+    interface _PostgreDynamicCteAsClause<T extends Item, R extends Item> extends _DynamicCteAsClause<T, R> {
+
+        R as(@Nullable Postgres.WordMaterialized modifier, Function<T, R> function);
 
     }
 

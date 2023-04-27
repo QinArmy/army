@@ -2,12 +2,9 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.ReturningInsert;
-import io.army.criteria.impl.Postgres;
-import io.army.lang.Nullable;
 import io.army.meta.*;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -359,16 +356,12 @@ public interface PostgreInsert extends PostgreStatement {
     }
 
 
-    interface _DynamicCteAsClause {
-
-        _CommaClause<PostgreCtes> as(Function<_DynamicSubOptionSpec<_CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
-
-        _CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
-                                     Function<_DynamicSubOptionSpec<_CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
+    interface _InsertDynamicCteAsClause extends _PostgreDynamicCteAsClause<_DynamicSubOptionSpec<_CommaClause<PostgreCtes>>,
+            _CommaClause<PostgreCtes>> {
 
     }
 
-    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_InsertDynamicCteAsClause>, _InsertDynamicCteAsClause {
 
     }
 

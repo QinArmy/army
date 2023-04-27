@@ -3342,6 +3342,247 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     }
 
 
+    /**
+     * <pre><br/>
+     * Expands the top-level JSON object to a row having the composite type defined by an AS clause.
+     * (As with all functions returning record, the calling query must explicitly define the structure of the record
+     * with an AS clause.) The output record is filled from fields of the JSON object, in the same way as described
+     * above for json[b]_populate_record. Since there is no input record value, unmatched columns are always filled
+     * with nulls.
+     *
+     * create type myrowtype as (a int, b text);
+     *
+     * select * from json_to_record('{"a":1,"b":[1,2,3],"c":[1,2,3],"e":"bar","r": {"a": 123, "b": "a b c"}}') as x(a int, b text, c int[], d text, r myrowtype) →
+     *
+     *  a |    b    |    c    | d |       r
+     * ---+---------+---------+---+---------------
+     *  1 | [1,2,3] | {1,2,3} |   | (123,"a b c")
+     * </pre>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonType#TEXT}.
+     * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     * @see #jsonToRecord(Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_to_record ( json ) → record<br/>
+     *
+     * </a>
+     */
+    public static <T> UndoneFunction jsonToRecord(BiFunction<MappingType, T, Expression> funcRef, final T value) {
+        return jsonToRecord(funcRef.apply(JsonType.TEXT, value));
+    }
+
+    /**
+     * <pre><br/>
+     * Expands the top-level JSON object to a row having the composite type defined by an AS clause.
+     * (As with all functions returning record, the calling query must explicitly define the structure of the record
+     * with an AS clause.) The output record is filled from fields of the JSON object, in the same way as described
+     * above for json[b]_populate_record. Since there is no input record value, unmatched columns are always filled
+     * with nulls.
+     *
+     * create type myrowtype as (a int, b text);
+     *
+     * select * from json_to_record('{"a":1,"b":[1,2,3],"c":[1,2,3],"e":"bar","r": {"a": 123, "b": "a b c"}}') as x(a int, b text, c int[], d text, r myrowtype) →
+     *
+     *  a |    b    |    c    | d |       r
+     * ---+---------+---------+---+---------------
+     *  1 | [1,2,3] | {1,2,3} |   | (123,"a b c")
+     * </pre>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_to_record ( json ) → record<br/>
+     *
+     * </a>
+     */
+    public static UndoneFunction jsonToRecord(final Expression json) {
+        return DialectFunctionUtils.oneArgUndoneFunc("JSON_TO_RECORD", json);
+    }
+
+    /**
+     * <pre><br/>
+     * Expands the top-level JSON object to a row having the composite type defined by an AS clause.
+     * (As with all functions returning record, the calling query must explicitly define the structure of the record
+     * with an AS clause.) The output record is filled from fields of the JSON object, in the same way as described
+     * above for json[b]_populate_record. Since there is no input record value, unmatched columns are always filled
+     * with nulls.
+     *
+     * create type myrowtype as (a int, b text);
+     *
+     * select * from json_to_record('{"a":1,"b":[1,2,3],"c":[1,2,3],"e":"bar","r": {"a": 123, "b": "a b c"}}') as x(a int, b text, c int[], d text, r myrowtype) →
+     *
+     *  a |    b    |    c    | d |       r
+     * ---+---------+---------+---+---------------
+     *  1 | [1,2,3] | {1,2,3} |   | (123,"a b c")
+     * </pre>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonbType#TEXT}.
+     * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     * @see #jsonbToRecord(Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_to_record ( jsonb ) → record<br/>
+     *
+     * </a>
+     */
+    public static <T> UndoneFunction jsonbToRecord(BiFunction<MappingType, T, Expression> funcRef, final T value) {
+        return jsonbToRecord(funcRef.apply(JsonbType.TEXT, value));
+    }
+
+
+    /**
+     * <pre><br/>
+     * Expands the top-level JSON object to a row having the composite type defined by an AS clause.
+     * (As with all functions returning record, the calling query must explicitly define the structure of the record
+     * with an AS clause.) The output record is filled from fields of the JSON object, in the same way as described
+     * above for json[b]_populate_record. Since there is no input record value, unmatched columns are always filled
+     * with nulls.
+     *
+     * create type myrowtype as (a int, b text);
+     *
+     * select * from json_to_record('{"a":1,"b":[1,2,3],"c":[1,2,3],"e":"bar","r": {"a": 123, "b": "a b c"}}') as x(a int, b text, c int[], d text, r myrowtype) →
+     *
+     *  a |    b    |    c    | d |       r
+     * ---+---------+---------+---+---------------
+     *  1 | [1,2,3] | {1,2,3} |   | (123,"a b c")
+     * </pre>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_to_record ( jsonb ) → record<br/>
+     *
+     * </a>
+     */
+    public static UndoneFunction jsonbToRecord(final Expression json) {
+        return DialectFunctionUtils.oneArgUndoneFunc("JSONB_TO_RECORD", json);
+    }
+
+
+    /**
+     * <pre><br/>
+     * Expands the top-level JSON array of objects to a set of rows having the composite type defined by an AS clause.
+     * (As with all functions returning record, the calling query must explicitly define the structure of the record
+     * with an AS clause.) Each element of the JSON array is processed as described above for json[b]_populate_record.
+     *
+     * select * from json_to_recordset('[{"a":1,"b":"foo"}, {"a":"2","c":"bar"}]') as x(a int, b text) →
+     *
+     *  a |  b
+     * ---+-----
+     *  1 | foo
+     *  2 |
+     * </pre>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonType#TEXT}.
+     * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     * @see #jsonToRecordSet(Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_to_recordset ( json ) → setof record<br/>
+     *
+     * </a>
+     */
+    public static <T> UndoneFunction jsonToRecordSet(BiFunction<MappingType, T, Expression> funcRef, final T value) {
+        return jsonToRecordSet(funcRef.apply(JsonType.TEXT, value));
+    }
+
+    /**
+     * <pre><br/>
+     * Expands the top-level JSON array of objects to a set of rows having the composite type defined by an AS clause.
+     * (As with all functions returning record, the calling query must explicitly define the structure of the record
+     * with an AS clause.) Each element of the JSON array is processed as described above for json[b]_populate_record.
+     *
+     * select * from json_to_recordset('[{"a":1,"b":"foo"}, {"a":"2","c":"bar"}]') as x(a int, b text) →
+     *
+     *  a |  b
+     * ---+-----
+     *  1 | foo
+     *  2 |
+     * </pre>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_to_recordset ( json ) → setof record<br/>
+     *
+     * </a>
+     */
+    public static UndoneFunction jsonToRecordSet(final Expression json) {
+        return DialectFunctionUtils.oneArgUndoneFunc("JSON_TO_RECORDSET", json);
+    }
+
+    /**
+     * <pre><br/>
+     * Expands the top-level JSON array of objects to a set of rows having the composite type defined by an AS clause.
+     * (As with all functions returning record, the calling query must explicitly define the structure of the record
+     * with an AS clause.) Each element of the JSON array is processed as described above for json[b]_populate_record.
+     *
+     * select * from json_to_recordset('[{"a":1,"b":"foo"}, {"a":"2","c":"bar"}]') as x(a int, b text) →
+     *
+     *  a |  b
+     * ---+-----
+     *  1 | foo
+     *  2 |
+     * </pre>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonbType#TEXT}.
+     * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     * @see #jsonbToRecordSet(Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_to_recordset ( jsonb ) → setof record<br/>
+     *
+     * </a>
+     */
+    public static <T> UndoneFunction jsonbToRecordSet(BiFunction<MappingType, T, Expression> funcRef, final T value) {
+        return jsonbToRecordSet(funcRef.apply(JsonbType.TEXT, value));
+    }
+
+
+    /**
+     * <pre><br/>
+     * Expands the top-level JSON array of objects to a set of rows having the composite type defined by an AS clause.
+     * (As with all functions returning record, the calling query must explicitly define the structure of the record
+     * with an AS clause.) Each element of the JSON array is processed as described above for json[b]_populate_record.
+     *
+     * select * from json_to_recordset('[{"a":1,"b":"foo"}, {"a":"2","c":"bar"}]') as x(a int, b text) →
+     *
+     *  a |  b
+     * ---+-----
+     *  1 | foo
+     *  2 |
+     * </pre>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_to_recordset ( jsonb ) → setof record<br/>
+     *
+     * </a>
+     */
+    public static UndoneFunction jsonbToRecordSet(final Expression json) {
+        return DialectFunctionUtils.oneArgUndoneFunc("JSONB_TO_RECORDSET", json);
+    }
+
+
+
 
 
 

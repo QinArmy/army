@@ -376,6 +376,11 @@ public interface DialectStatement extends Statement {
 
     }
 
+    interface _DynamicCteAsClause<T extends Item, R extends Item> {
+
+        R as(Function<T, R> function);
+    }
+
     interface _CteCommaItem extends Item {
 
     }

@@ -279,13 +279,13 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _DynamicCteAsClause {
+    interface _QueryDynamicCteAsClause extends _DynamicCteAsClause<_WithSpec<_CommaClause<MySQLCtes>>,
+            _CommaClause<MySQLCtes>> {
 
-        _CommaClause<MySQLCtes> as(Function<_WithSpec<_CommaClause<MySQLCtes>>, _CommaClause<MySQLCtes>> function);
     }
 
-    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>,
-            _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_QueryDynamicCteAsClause>,
+            _QueryDynamicCteAsClause {
 
     }
 

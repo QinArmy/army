@@ -2,12 +2,9 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.Item;
 import io.army.criteria.UpdateStatement;
-import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-
-import java.util.function.Function;
 
 /**
  * <p>
@@ -126,16 +123,14 @@ public interface PostgreDelete extends PostgreStatement {
     }
 
 
-    interface _DynamicCteAsClause {
+    interface _DeleteDynamicCteAsClause
+            extends _PostgreDynamicCteAsClause<_SingleWithSpec<_CommaClause<PostgreCtes>, _CommaClause<PostgreCtes>>,
+            _CommaClause<PostgreCtes>> {
 
-        _CommaClause<PostgreCtes> as(Function<_SingleWithSpec<_CommaClause<PostgreCtes>, _CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
-
-        _CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
-                                     Function<_SingleWithSpec<_CommaClause<PostgreCtes>, _CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
 
     }
 
-    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DeleteDynamicCteAsClause>, _DeleteDynamicCteAsClause {
 
     }
 

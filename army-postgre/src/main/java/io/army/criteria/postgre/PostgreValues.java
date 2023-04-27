@@ -3,10 +3,6 @@ package io.army.criteria.postgre;
 import io.army.criteria.Item;
 import io.army.criteria.Values;
 import io.army.criteria.ValuesQuery;
-import io.army.criteria.impl.Postgres;
-import io.army.lang.Nullable;
-
-import java.util.function.Function;
 
 public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
@@ -86,16 +82,12 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     }
 
-    interface _DynamicCteAsClause {
-
-        _CommaClause<PostgreCtes> as(Function<_WithSpec<_CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
-
-        _CommaClause<PostgreCtes> as(@Nullable Postgres.WordMaterialized modifier,
-                                     Function<_WithSpec<_CommaClause<PostgreCtes>>, _CommaClause<PostgreCtes>> function);
+    interface _ValuesDynamicCteAsClause extends _PostgreDynamicCteAsClause<_WithSpec<_CommaClause<PostgreCtes>>,
+            _CommaClause<PostgreCtes>> {
 
     }
 
-    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_DynamicCteAsClause>, _DynamicCteAsClause {
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_ValuesDynamicCteAsClause>, _ValuesDynamicCteAsClause {
 
     }
 

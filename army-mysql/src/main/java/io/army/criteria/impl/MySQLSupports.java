@@ -39,7 +39,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     private static final class DynamicCteQueryParensSpec
-            extends CteParensClause<MySQLQuery._DynamicCteAsClause>
+            extends CteParensClause<MySQLQuery._QueryDynamicCteAsClause>
             implements MySQLQuery._DynamicCteParensSpec {
 
         private final MySQLCteBuilder builder;
