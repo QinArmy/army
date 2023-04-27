@@ -3581,6 +3581,122 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         return DialectFunctionUtils.oneArgUndoneFunc("JSONB_TO_RECORDSET", json);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param funcRefForPath  the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                        <ul>
+     *                            <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                            <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                            <li>developer custom method</li>
+     *                        </ul>.
+     *                        The first argument of funcRefForPath always is {@link TextArrayType#LINEAR}.
+     * @param paths           non-null nad non-empty,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @param funcRefForValue the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                        <ul>
+     *                            <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                            <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                            <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                            <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                            <li>developer custom method</li>
+     *                        </ul>.
+     *                        The first argument of funcRefForValue always is {@link JsonbType#TEXT}.
+     * @param newValue        non-null,it will be passed to funcRefForValue as the second argument of funcRefForValue
+     * @param createIfMissing in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbSet(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_set ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean ] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static <T> SimpleExpression jsonbSet(Expression jsonb, BiFunction<MappingType, String[], Expression> funcRefForPath,
+                                                String[] paths, BiFunction<MappingType, T, Expression> funcRefForValue,
+                                                T newValue, Expression createIfMissing) {
+        if (paths.length == 0) {
+            throw CriteriaUtils.funcArgError("JSONB_SET", paths);
+        }
+        return jsonbSet(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
+                funcRefForValue.apply(JsonbType.TEXT, newValue),
+                createIfMissing
+        );
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param createIfMissing in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_set ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean ] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbSet(Expression jsonb, Expression path, Expression newValue,
+                                            Expression createIfMissing) {
+        return FunctionUtils.fourArgFunc("JSONB_SET", jsonb, path, newValue, createIfMissing, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param funcRefForPath  the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                        <ul>
+     *                            <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                            <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                            <li>developer custom method</li>
+     *                        </ul>.
+     *                        The first argument of funcRefForPath always is {@link TextArrayType#LINEAR}.
+     * @param paths           non-null nad non-empty,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @param funcRefForValue the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                        <ul>
+     *                            <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                            <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                            <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                            <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                            <li>developer custom method</li>
+     *                        </ul>.
+     *                        The first argument of funcRefForValue always is {@link JsonbType#TEXT}.
+     * @param newValue        non-null,it will be passed to funcRefForValue as the second argument of funcRefForValue
+     * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbSet(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_set ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean ] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static <T> SimpleExpression jsonbSet(Expression jsonb, BiFunction<MappingType, String[], Expression> funcRefForPath,
+                                                String[] paths, BiFunction<MappingType, T, Expression> funcRefForValue,
+                                                T newValue) {
+        if (paths.length == 0) {
+            throw CriteriaUtils.funcArgError("JSONB_SET", paths);
+        }
+        return jsonbSet(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
+                funcRefForValue.apply(JsonbType.TEXT, newValue)
+        );
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @see #jsonbSet(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_set ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean ] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbSet(Expression jsonb, Expression path, Expression newValue) {
+        return FunctionUtils.threeArgFunc("JSONB_SET", jsonb, path, newValue, JsonbType.TEXT);
+    }
+
+
 
 
 
