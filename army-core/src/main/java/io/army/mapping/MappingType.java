@@ -367,6 +367,10 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
 
     }
 
+    public interface SqlJsonPathType {
+
+    }
+
     public interface SqlTimeValueType {
 
     }

@@ -67,6 +67,7 @@ public enum PgSqlType implements SqlType {
 
     JSON,
     JSONB,
+    JSONPATH,
     MACADDR,
     MACADDR8,
     INET,
@@ -182,6 +183,7 @@ public enum PgSqlType implements SqlType {
             case TEXT:
             case JSON:
             case JSONB:
+            case JSONPATH:
             case BYTEA:
             case BIT:
             case VARBIT:

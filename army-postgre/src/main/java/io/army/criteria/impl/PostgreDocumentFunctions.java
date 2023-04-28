@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.dialect._DialectUtils;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
+import io.army.mapping.optional.JsonPathType;
 import io.army.mapping.optional.ShortArrayType;
 import io.army.mapping.optional.TextArrayType;
 import io.army.mapping.optional.XmlArrayType;
@@ -4064,7 +4065,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
@@ -4075,7 +4076,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimplePredicate jsonbPathExists(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                   String path) {
-        return jsonbPathExists(target, funcRefForPath.apply(TextType.INSTANCE, path));
+        return jsonbPathExists(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
     }
 
     /**
@@ -4106,7 +4107,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
@@ -4117,7 +4118,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimplePredicate jsonbPathExists(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                   String path, Expression vars) {
-        return jsonbPathExists(target, funcRefForPath.apply(TextType.INSTANCE, path), vars);
+        return jsonbPathExists(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
     }
 
     /**
@@ -4148,7 +4149,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
@@ -4160,7 +4161,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimplePredicate jsonbPathExists(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                   String path, Expression vars, Expression silent) {
-        return jsonbPathExists(target, funcRefForPath.apply(TextType.INSTANCE, path), vars, silent);
+        return jsonbPathExists(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
     }
 
     /**
@@ -4194,7 +4195,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
@@ -4205,7 +4206,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimplePredicate jsonbPathMatch(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                  String path) {
-        return jsonbPathMatch(target, funcRefForPath.apply(TextType.INSTANCE, path));
+        return jsonbPathMatch(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
     }
 
     /**
@@ -4236,7 +4237,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
@@ -4247,7 +4248,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimplePredicate jsonbPathMatch(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                  String path, Expression vars) {
-        return jsonbPathMatch(target, funcRefForPath.apply(TextType.INSTANCE, path), vars);
+        return jsonbPathMatch(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
     }
 
     /**
@@ -4278,7 +4279,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
@@ -4290,7 +4291,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimplePredicate jsonbPathMatch(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                  String path, Expression vars, Expression silent) {
-        return jsonbPathMatch(target, funcRefForPath.apply(TextType.INSTANCE, path), vars, silent);
+        return jsonbPathMatch(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
     }
 
     /**
@@ -4339,7 +4340,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
@@ -4350,7 +4351,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static _ColumnWithOrdinalityFunction jsonbPathQuery(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                                String path) {
-        return jsonbPathQuery(target, funcRefForPath.apply(TextType.INSTANCE, path));
+        return jsonbPathQuery(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
     }
 
     /**
@@ -4414,7 +4415,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
@@ -4425,7 +4426,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static _ColumnWithOrdinalityFunction jsonbPathQuery(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                                String path, Expression vars) {
-        return jsonbPathQuery(target, funcRefForPath.apply(TextType.INSTANCE, path), vars);
+        return jsonbPathQuery(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
     }
 
     /**
@@ -4490,7 +4491,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
@@ -4502,7 +4503,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static _ColumnWithOrdinalityFunction jsonbPathQuery(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                                String path, Expression vars, Expression silent) {
-        return jsonbPathQuery(target, funcRefForPath.apply(TextType.INSTANCE, path), vars, silent);
+        return jsonbPathQuery(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
     }
 
     /**
@@ -4555,7 +4556,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
@@ -4566,7 +4567,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression jsonbPathQueryArray(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                        String path) {
-        return jsonbPathQueryArray(target, funcRefForPath.apply(TextType.INSTANCE, path));
+        return jsonbPathQueryArray(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
     }
 
     /**
@@ -4597,7 +4598,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
@@ -4608,7 +4609,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression jsonbPathQueryArray(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                        String path, Expression vars) {
-        return jsonbPathQueryArray(target, funcRefForPath.apply(TextType.INSTANCE, path), vars);
+        return jsonbPathQueryArray(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
     }
 
     /**
@@ -4639,7 +4640,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
@@ -4651,7 +4652,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression jsonbPathQueryArray(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                        String path, Expression vars, Expression silent) {
-        return jsonbPathQueryArray(target, funcRefForPath.apply(TextType.INSTANCE, path), vars, silent);
+        return jsonbPathQueryArray(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
     }
 
     /**
@@ -4686,7 +4687,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
@@ -4697,7 +4698,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                        String path) {
-        return jsonbPathQueryFirst(target, funcRefForPath.apply(TextType.INSTANCE, path));
+        return jsonbPathQueryFirst(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
     }
 
     /**
@@ -4728,7 +4729,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
@@ -4739,7 +4740,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                        String path, Expression vars) {
-        return jsonbPathQueryFirst(target, funcRefForPath.apply(TextType.INSTANCE, path), vars);
+        return jsonbPathQueryFirst(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
     }
 
     /**
@@ -4770,7 +4771,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
-     *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
@@ -4782,7 +4783,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression jsonbPathQueryFirst(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
                                                        String path, Expression vars, Expression silent) {
-        return jsonbPathQueryFirst(target, funcRefForPath.apply(TextType.INSTANCE, path), vars, silent);
+        return jsonbPathQueryFirst(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
     }
 
     /**
@@ -4797,9 +4798,811 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static SimpleExpression jsonbPathQueryFirst(Expression target, Expression path, Expression vars, Expression silent) {
+    public static SimpleExpression jsonbPathQueryFirst(Expression target, Expression path, Expression vars,
+                                                       Expression silent) {
         return FunctionUtils.fourArgFunc("JSONB_PATH_QUERY_FIRST", target, path, vars, silent, JsonbType.TEXT);
     }
+
+    /*-------------------below jsonb_path_exists_tz-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonPathType#INSTANCE}.
+     * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathExistsTz(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathExistsTz(Expression target, BiFunction<MappingType, String, Expression> funcRef, String path) {
+        return jsonbPathExistsTz(target, funcRef.apply(JsonPathType.INSTANCE, path));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathExistsTz(Expression target, Expression path) {
+        return FunctionUtils.twoArgPredicateFunc("JSONB_PATH_EXISTS_TZ", target, path);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonPathType#INSTANCE}.
+     * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathExistsTz(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathExistsTz(Expression target, BiFunction<MappingType, String, Expression> funcRef,
+                                                    String path, Expression vars) {
+        return jsonbPathExistsTz(target, funcRef.apply(JsonPathType.INSTANCE, path), vars);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathExistsTz(Expression target, Expression path, Expression vars) {
+        return FunctionUtils.threeArgPredicateFunc("JSONB_PATH_EXISTS_TZ", target, path, vars);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonPathType#INSTANCE}.
+     * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
+     * @param silent  in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathExistsTz(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathExistsTz(Expression target, BiFunction<MappingType, String, Expression> funcRef,
+                                                    String path, Expression vars, Expression silent) {
+        return jsonbPathExistsTz(target, funcRef.apply(JsonPathType.INSTANCE, path), vars, silent);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathExistsTz(Expression target, Expression path, Expression vars,
+                                                    Expression silent) {
+        return FunctionUtils.fourArgPredicateFunc("JSONB_PATH_EXISTS_TZ", target, path, vars, silent);
+    }
+
+    /*-------------------below jsonb_path_match_tz-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonPathType#INSTANCE}.
+     * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathMatchTz(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathMatchTz(Expression target, BiFunction<MappingType, String, Expression> funcRef, String path) {
+        return jsonbPathMatchTz(target, funcRef.apply(JsonPathType.INSTANCE, path));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathMatchTz(Expression target, Expression path) {
+        return FunctionUtils.twoArgPredicateFunc("JSONB_PATH_MATCH_TZ", target, path);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonPathType#INSTANCE}.
+     * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathMatchTz(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathMatchTz(Expression target, BiFunction<MappingType, String, Expression> funcRef,
+                                                   String path, Expression vars) {
+        return jsonbPathMatchTz(target, funcRef.apply(JsonPathType.INSTANCE, path), vars);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathMatchTz(Expression target, Expression path, Expression vars) {
+        return FunctionUtils.threeArgPredicateFunc("JSONB_PATH_MATCH_TZ", target, path, vars);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonPathType#INSTANCE}.
+     * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
+     * @param silent  in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathMatchTz(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathMatchTz(Expression target, BiFunction<MappingType, String, Expression> funcRef,
+                                                   String path, Expression vars, Expression silent) {
+        return jsonbPathMatchTz(target, funcRef.apply(JsonPathType.INSTANCE, path), vars, silent);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType}.
+     * </p>
+     *
+     * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
+     *
+     * </a>
+     */
+    public static SimplePredicate jsonbPathMatchTz(Expression target, Expression path, Expression vars,
+                                                   Expression silent) {
+        return FunctionUtils.fourArgPredicateFunc("JSONB_PATH_MATCH_TZ", target, path, vars, silent);
+    }
+
+    /*-------------------below jsonb_path_query_tz-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * Default Selection alias is 'jsonb_path_query'.
+     * </p>
+     * <pre><br/>
+     * jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb
+     *
+     * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
+     * and silent arguments act the same as for jsonb_path_exists.
+     *
+     * select * from jsonb_path_query_tz('{"a":[1,2,3,4,5]}', '$.a[*] ? (@ >= $min && @ <= $max)', '{"min":2, "max":4}') →
+     *
+     *  jsonb_path_query_tz
+     * ------------------
+     *  2
+     *  3
+     *  4
+     * </pre>
+     *
+     * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                       <ul>
+     *                           <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                           <li>developer custom method</li>
+     *                       </ul>.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
+     * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathQueryTz(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
+     *
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction jsonbPathQueryTz(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
+                                                                 String path) {
+        return jsonbPathQueryTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * Default Selection alias is 'jsonb_path_query'.
+     * </p>
+     * <pre><br/>
+     * jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb
+     *
+     * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
+     * and silent arguments act the same as for jsonb_path_exists.
+     *
+     * select * from jsonb_path_query_tz('{"a":[1,2,3,4,5]}', '$.a[*] ? (@ >= $min && @ <= $max)', '{"min":2, "max":4}') →
+     *
+     *  jsonb_path_query_tz
+     * ------------------
+     *  2
+     *  3
+     *  4
+     * </pre>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
+     *
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction jsonbPathQueryTz(Expression target, Expression path) {
+        final String name = "JSONB_PATH_QUERY_TZ";
+        return DialectFunctionUtils.twoArgColumnFunction(name, target, path,
+                name.toLowerCase(Locale.ROOT), JsonbType.TEXT
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * Default Selection alias is 'jsonb_path_query'.
+     * </p>
+     * <pre><br/>
+     * jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb
+     *
+     * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
+     * and silent arguments act the same as for jsonb_path_exists.
+     *
+     * select * from jsonb_path_query_tz('{"a":[1,2,3,4,5]}', '$.a[*] ? (@ >= $min && @ <= $max)', '{"min":2, "max":4}') →
+     *
+     *  jsonb_path_query_tz
+     * ------------------
+     *  2
+     *  3
+     *  4
+     * </pre>
+     *
+     * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                       <ul>
+     *                           <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                           <li>developer custom method</li>
+     *                       </ul>.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
+     * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathQueryTz(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
+     *
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction jsonbPathQueryTz(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
+                                                                 String path, Expression vars) {
+        return jsonbPathQueryTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * Default Selection alias is 'jsonb_path_query'.
+     * </p>
+     * <pre><br/>
+     * jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb
+     *
+     * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
+     * and silent arguments act the same as for jsonb_path_exists.
+     *
+     * select * from jsonb_path_query_tz('{"a":[1,2,3,4,5]}', '$.a[*] ? (@ >= $min && @ <= $max)', '{"min":2, "max":4}') →
+     *
+     *  jsonb_path_query_tz
+     * ------------------
+     *  2
+     *  3
+     *  4
+     * </pre>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
+     *
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction jsonbPathQueryTz(Expression target, Expression path, Expression vars) {
+        final String name = "JSONB_PATH_QUERY_TZ";
+        return DialectFunctionUtils.threeArgColumnFunction(name, target, path, vars,
+                name.toLowerCase(Locale.ROOT), JsonbType.TEXT
+        );
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * Default Selection alias is 'jsonb_path_query'.
+     * </p>
+     * <pre><br/>
+     * jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb
+     *
+     * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
+     * and silent arguments act the same as for jsonb_path_exists.
+     *
+     * select * from jsonb_path_query_tz('{"a":[1,2,3,4,5]}', '$.a[*] ? (@ >= $min && @ <= $max)', '{"min":2, "max":4}') →
+     *
+     *  jsonb_path_query_tz
+     * ------------------
+     *  2
+     *  3
+     *  4
+     * </pre>
+     *
+     * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                       <ul>
+     *                           <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                           <li>developer custom method</li>
+     *                       </ul>.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
+     * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathQueryTz(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
+     *
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction jsonbPathQueryTz(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
+                                                                 String path, Expression vars, Expression silent) {
+        return jsonbPathQueryTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * Default Selection alias is 'jsonb_path_query'.
+     * </p>
+     * <pre><br/>
+     * jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb
+     *
+     * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
+     * and silent arguments act the same as for jsonb_path_exists.
+     *
+     * select * from jsonb_path_query_tz('{"a":[1,2,3,4,5]}', '$.a[*] ? (@ >= $min && @ <= $max)', '{"min":2, "max":4}') →
+     *
+     *  jsonb_path_query_tz
+     * ------------------
+     *  2
+     *  3
+     *  4
+     * </pre>
+     *
+     * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
+     *
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction jsonbPathQueryTz(Expression target, Expression path, Expression vars,
+                                                                 Expression silent) {
+        final String name = "JSONB_PATH_QUERY_TZ";
+        return DialectFunctionUtils.fourArgColumnFunction(name, target, path, vars, silent,
+                name.toLowerCase(Locale.ROOT), JsonbType.TEXT
+        );
+    }
+
+    /*-------------------below jsonb_path_query_array_tz-------------------*/
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                       <ul>
+     *                           <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                           <li>developer custom method</li>
+     *                       </ul>.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
+     * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathQueryArrayTz(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
+                                                         String path) {
+        return jsonbPathQueryArrayTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryArrayTz(Expression target, Expression path) {
+        return FunctionUtils.twoArgFunc("JSONB_PATH_QUERY_ARRAY_TZ", target, path, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                       <ul>
+     *                           <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                           <li>developer custom method</li>
+     *                       </ul>.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
+     * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathQueryArrayTz(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
+                                                         String path, Expression vars) {
+        return jsonbPathQueryArrayTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryArrayTz(Expression target, Expression path, Expression vars) {
+        return FunctionUtils.threeArgFunc("JSONB_PATH_QUERY_ARRAY_TZ", target, path, vars, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                       <ul>
+     *                           <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                           <li>developer custom method</li>
+     *                       </ul>.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
+     * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathQueryArrayTz(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryArrayTz(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
+                                                         String path, Expression vars, Expression silent) {
+        return jsonbPathQueryArrayTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryArrayTz(Expression target, Expression path, Expression vars, Expression silent) {
+        return FunctionUtils.fourArgFunc("JSONB_PATH_QUERY_ARRAY_TZ", target, path, vars, silent, JsonbType.TEXT);
+    }
+
+
+    /*-------------------below jsonb_path_query_first_tz-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                       <ul>
+     *                           <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                           <li>developer custom method</li>
+     *                       </ul>.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
+     * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathQueryFirstTz(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
+                                                         String path) {
+        return jsonbPathQueryFirstTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryFirstTz(Expression target, Expression path) {
+        return FunctionUtils.twoArgFunc("JSONB_PATH_QUERY_FIRST_TZ", target, path, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                       <ul>
+     *                           <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                           <li>developer custom method</li>
+     *                       </ul>.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
+     * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathQueryFirstTz(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
+                                                         String path, Expression vars) {
+        return jsonbPathQueryFirstTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryFirstTz(Expression target, Expression path, Expression vars) {
+        return FunctionUtils.threeArgFunc("JSONB_PATH_QUERY_FIRST_TZ", target, path, vars, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                       <ul>
+     *                           <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                           <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                           <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                           <li>developer custom method</li>
+     *                       </ul>.
+     *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
+     * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
+     * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see #jsonbPathQueryFirstTz(Expression, Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryFirstTz(Expression target, BiFunction<MappingType, String, Expression> funcRefForPath,
+                                                         String path, Expression vars, Expression silent) {
+        return jsonbPathQueryFirstTz(target, funcRefForPath.apply(JsonPathType.INSTANCE, path), vars, silent);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * </p>
+     *
+     * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPathQueryFirstTz(Expression target, Expression path, Expression vars,
+                                                         Expression silent) {
+        return FunctionUtils.fourArgFunc("JSONB_PATH_QUERY_FIRST_TZ", target, path, vars, silent, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link TextType}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_pretty ( jsonb ) → text<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbPretty(Expression jsonb) {
+        return FunctionUtils.oneArgFunc("JSONB_PRETTY", jsonb, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link TextType}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_typeof ( json ) → text<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonTypeOf(Expression json) {
+        return FunctionUtils.oneArgFunc("JSON_TYPEOF", json, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link TextType}.
+     * </p>
+     *
+     * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_typeof ( json ) → text<br/>
+     *
+     * </a>
+     */
+    public static SimpleExpression jsonbTypeOf(Expression json) {
+        return FunctionUtils.oneArgFunc("JSONB_TYPEOF", json, TextType.INSTANCE);
+    }
+
+
 
 
 
