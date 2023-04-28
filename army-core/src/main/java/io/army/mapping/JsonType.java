@@ -65,7 +65,11 @@ public final class JsonType extends _ArmyInnerMapping implements MappingType.Sql
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return StringType.beforeBind(type, nonNull);
+        if (nonNull instanceof String) {
+            return (String) nonNull;
+        }
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override

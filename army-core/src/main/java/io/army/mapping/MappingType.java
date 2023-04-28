@@ -359,11 +359,24 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
 
     }
 
-    public interface SqlJsonType {
+    /**
+     * <p>
+     * This interface is base interface of below:
+     *     <ul>
+     *         <li>{@link SqlJsonType}</li>
+     *         <li>{@link SqlJsonbType}</li>
+     *     </ul>
+     * </p>
+     */
+    public interface SqlJsonDocumentType {
 
     }
 
-    public interface SqlJsonbType {
+    public interface SqlJsonType extends SqlJsonDocumentType {
+
+    }
+
+    public interface SqlJsonbType extends SqlJsonDocumentType {
 
     }
 

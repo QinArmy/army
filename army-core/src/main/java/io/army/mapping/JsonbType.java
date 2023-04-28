@@ -2,7 +2,6 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLType;
 import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
@@ -41,18 +40,14 @@ public final class JsonbType extends _ArmyInnerMapping implements MappingType.Sq
     public SqlType map(final ServerMeta meta) {
         final SqlType sqlDataType;
         switch (meta.dialectDatabase()) {
-            case MySQL:
-                sqlDataType = MySQLType.JSON;
-                break;
             case PostgreSQL:
-                sqlDataType = PgSqlType.JSON;
+                sqlDataType = PgSqlType.JSONB;
                 break;
+            case MySQL:
             case Oracle:
-
             case H2:
             default:
-                throw noMappingError(meta);
-
+                throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return sqlDataType;
     }
@@ -65,7 +60,11 @@ public final class JsonbType extends _ArmyInnerMapping implements MappingType.Sq
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
-        return StringType.beforeBind(type, nonNull);
+        if (nonNull instanceof String) {
+            return (String) nonNull;
+        }
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override

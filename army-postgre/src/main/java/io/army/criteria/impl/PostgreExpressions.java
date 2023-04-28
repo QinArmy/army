@@ -276,11 +276,12 @@ abstract class PostgreExpressions {
         return returnType;
     }
 
+    /**
+     * @see Postgres#hyphenGt(Expression, Expression)
+     */
     static MappingType hyphenGtType(final MappingType left, final MappingType right) {
-        final boolean leftJsonType;
-        leftJsonType = (left instanceof MappingType.SqlJsonType || left instanceof MappingType.SqlJsonbType);
         final MappingType returnType;
-        if (leftJsonType && (right instanceof MappingType.SqlNumberOrStringType)) {
+        if (left instanceof MappingType.SqlJsonDocumentType && (right instanceof MappingType.SqlNumberOrStringType)) {
             returnType = left;
         } else {
             returnType = StringType.INSTANCE;
@@ -330,7 +331,7 @@ abstract class PostgreExpressions {
      */
     static MappingType poundGtGtType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if ((left instanceof MappingType.SqlJsonType || left instanceof MappingType.SqlJsonbType)
+        if (left instanceof MappingType.SqlJsonDocumentType
                 && (right instanceof MappingType.SqlArrayType && right instanceof MappingType.SqlStringType)) {
             returnType = TextType.INSTANCE;
         } else {

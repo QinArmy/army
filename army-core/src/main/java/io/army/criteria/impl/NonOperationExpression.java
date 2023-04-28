@@ -497,7 +497,9 @@ abstract class NonOperationExpression implements ArmyExpression {
             if (!sqlType.isUserDefined()) {
                 sqlType.sqlTypeName(type, sqlBuilder);
             } else if (type instanceof MappingType.SqlUserDefinedType) {
-                parser.identifier(((MappingType.SqlUserDefinedType) type).sqlTypeName(serverMeta), sqlBuilder);
+                final String typeName;
+                typeName = ((MappingType.SqlUserDefinedType) type).sqlTypeName(serverMeta);
+                parser.identifier(typeName, sqlBuilder);
             } else {
                 throw _Exceptions.notUserDefinedType(type, sqlType);
             }

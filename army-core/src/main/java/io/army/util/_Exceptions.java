@@ -440,6 +440,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(String.format("unknown %s type.", query.getClass().getName()));
     }
 
+    public static CriteriaException literalDontSupport(SqlType sqlType) {
+        return new CriteriaException(String.format("literal don't support %s", sqlType));
+    }
+
 
     public static CriteriaException selfJoinNonQualifiedField(FieldMeta<?> field) {
         return new CriteriaException(String.format("%s self join but %s don't use %s."

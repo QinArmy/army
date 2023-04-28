@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
+import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.ServerMeta;
@@ -169,25 +170,45 @@ abstract class PostgreParser extends _ArmyDialectParser {
                         .append("::SMALLINT");
             }
             break;
-            case CHAR: {
-                sqlBuilder.append("CHAR "); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
-            }
-            break;
-            case VARCHAR: {
-                sqlBuilder.append("VARCHAR "); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
-            }
-            break;
-            case TEXT: {
-                sqlBuilder.append("TEXT "); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
-            }
-            break;
+            case CHAR:
+            case VARCHAR:
+            case TEXT:
             case JSON:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::JSON");
-                break;
+            case JSONB:
+            case JSONPATH:
+            case XML:
+                // Geometric Types
+            case POINT:
+            case LINE:
+            case LSEG:
+            case BOX:
+            case PATH:
+            case POLYGON:
+            case CIRCLE:
+                // Network Address Types
+            case CIDR:
+            case INET:
+            case MACADDR:
+            case MACADDR8:
+                //
+            case UUID:
+            case MONEY:
+            case TSQUERY:
+            case TSVECTOR:
+                // Range Types
+            case INT4RANGE:
+            case INT8RANGE:
+            case NUMRANGE:
+            case TSRANGE:
+            case TSTZRANGE:
+            case DATERANGE:
+            case INTERVAL:
+            case REF_CURSOR: {
+                sqlBuilder.append(type.name())
+                        .append(_Constant.SPACE); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+            }
+            break;
             case BYTEA: {
                 if (!(value instanceof byte[])) {//TODO think long binary
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -199,119 +220,29 @@ abstract class PostgreParser extends _ArmyDialectParser {
                         .append(_Constant.QUOTE);
             }
             break;
-            case BIT:
-                PostgreLiterals.postgreBitString(typeMeta, type, value, sqlBuilder)
-                        .append("::BIT");
-                break;
             case VARBIT:
-                PostgreLiterals.postgreBitString(typeMeta, type, value, sqlBuilder)
-                        .append("::BIT VARYING");
-                break;
-            case JSONB:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::JSONB");
-                break;
-            case XML: {
-                sqlBuilder.append("XML "); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+            case BIT: {
+                sqlBuilder.append(type.name())
+                        .append(_Constant.SPACE); //use type 'string' syntax not 'string'::type syntax,because XMLEXISTS function not work, see PostgreSQL 15.1 on x86_64-apple-darwin20.6.0, compiled by Apple clang version 12.0.0 (clang-1200.0.32.29), 64-bit
+                PostgreLiterals.postgreBitString(typeMeta, type, value, sqlBuilder);
+            }
+            break;
+            case USER_DEFINED: {
+                if (!(value instanceof String)) {
+                    throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
+                }
+                final MappingType mappingType;
+                mappingType = typeMeta.mappingType();
+                if (!(mappingType instanceof MappingType.SqlUserDefinedType)) {
+                    throw _Exceptions.notUserDefinedType(mappingType, type);
+                }
+                final String typeName;
+                typeName = ((MappingType.SqlUserDefinedType) mappingType).sqlTypeName(this.serverMeta);
+                this.identifier(typeName, sqlBuilder)
+                        .append(_Constant.SPACE);
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
             }
             break;
-            // Geometric Types
-            case POINT:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::POINT");
-                break;
-            case LINE:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::LINE");
-                break;
-            case LSEG:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::LSEG");
-                break;
-            case BOX:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::BOX");
-                break;
-            case PATH:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::PATH");
-                break;
-            case POLYGON:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::POLYGON");
-                break;
-            case CIRCLE:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::CIRCLES");
-                break;
-            // Network Address Types
-            case CIDR:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::CIDR");
-                break;
-            case INET:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::INET");
-                break;
-            case MACADDR:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::MACADDR");
-                break;
-            case MACADDR8:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::MACADDR8");
-                break;
-            //
-            case UUID:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::UUID");
-                break;
-            case MONEY:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::MONEY");
-                break;
-            case TSQUERY:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::TSQUERY");
-                break;
-            case TSVECTOR:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::TSVECTOR");
-                break;
-            // Range Types
-            case INT4RANGE:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::INT4RANGE");
-                break;
-            case INT8RANGE:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::INT8RANGE");
-                break;
-            case NUMRANGE:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::NUMRANGE");
-                break;
-            case TSRANGE:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::TSRANGE");
-                break;
-            case TSTZRANGE:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::TSTZRANGE");
-                break;
-            case DATERANGE:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::DATERANGE");
-                break;
-            case INTERVAL:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::INTERVAL");
-                break;
-            case REF_CURSOR:
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::REF_CURSOR");
-                break;
             // below array
             case BOX_ARRAY:
             case OID_ARRAY:
@@ -325,10 +256,18 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case LINE_ARRAY:
             case PATH_ARRAY:
             case REAL_ARRAY:
-            case TEXT_ARRAY:
+            case TEXT_ARRAY: {
+                final MappingType mappingType;
+                if (typeMeta instanceof MappingType) {
+                    mappingType = (MappingType) typeMeta;
+                } else {
+                    mappingType = typeMeta.mappingType();
+                }
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::TEXT[][]");
-                break;
+                        .append("::");
+                type.sqlTypeName(mappingType, sqlBuilder);
+            }
+            break;
             case TIME_ARRAY:
             case UUID_ARRAY:
             case BYTEA_ARRAY:
@@ -363,6 +302,8 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 //TODO check array syntax
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
                 break;
+            case UNKNOWN:
+                throw _Exceptions.literalDontSupport(type);
             default:
                 throw _Exceptions.unexpectedEnum((PgSqlType) type);
 
