@@ -1,5 +1,10 @@
 package io.army.criteria.impl;
 
+import io.army.dialect._Constant;
+import io.army.dialect._SqlContext;
+import io.army.mapping.StringType;
+import io.army.meta.TypeMeta;
+
 abstract class PostgreWords {
 
     private PostgreWords() {
@@ -284,7 +289,7 @@ abstract class PostgreWords {
 
     }//KeyWordMaterialized
 
-    enum FromNormalizedWord implements SQLsSyntax.BooleanTestWord {
+    enum FromNormalizedWord implements SQLsSyntax.BooleanTestWord, SqlSyntax.ArmyKeyWord {
         FROM_NORMALIZED(" FROM NORMALIZED"),
         NORMALIZED(" NORMALIZED");
 
@@ -307,4 +312,42 @@ abstract class PostgreWords {
 
 
     }//FromNormalizedWord
+
+    static final class NullTreatModeExpression extends NonOperationExpression
+            implements PostgreDocumentFunctions.NullTreatMode,
+            FunctionArg.SingleFunctionArg {
+
+        static final NullTreatModeExpression RAISE_EXCEPTION = new NullTreatModeExpression(" 'raise_exception'");
+
+        static final NullTreatModeExpression USE_JSON_NULL = new NullTreatModeExpression(" 'use_json_null'");
+
+        static final NullTreatModeExpression DELETE_KEY = new NullTreatModeExpression(" 'delete_key'");
+
+        static final NullTreatModeExpression RETURN_TARGET = new NullTreatModeExpression(" 'return_target'");
+
+        private final String spaceLiteral;
+
+        /**
+         * private constructor
+         */
+        private NullTreatModeExpression(final String spaceLiteral) {
+            assert spaceLiteral.charAt(0) == _Constant.SPACE;
+            assert spaceLiteral.charAt(1) == _Constant.QUOTE;
+            assert spaceLiteral.charAt(spaceLiteral.length() - 1) == _Constant.QUOTE;
+            this.spaceLiteral = spaceLiteral;
+        }
+
+        @Override
+        public TypeMeta typeMeta() {
+            return StringType.INSTANCE;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(this.spaceLiteral);
+        }
+
+
+    }//NullTreatModeLiteral
+
 }

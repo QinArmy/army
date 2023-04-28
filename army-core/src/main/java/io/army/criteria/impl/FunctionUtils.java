@@ -45,7 +45,7 @@ abstract class FunctionUtils {
         if (!(expr instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, expr);
         }
-        return new OneArgFunction(name, (ArmyExpression) expr, returnType);
+        return new OneArgFunction(name, expr, returnType);
     }
 
 
@@ -255,8 +255,8 @@ abstract class FunctionUtils {
         return new MultiArgFuncPredicate(name, null, twoExpList(name, one, two));
     }
 
-    static SimplePredicate threeArgPredicateFunc(final String name, final Expression one, final Expression two
-            , final Expression three) {
+    static SimplePredicate threeArgPredicateFunc(final String name, final Expression one, final Expression two,
+                                                 final Expression three) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -265,6 +265,26 @@ abstract class FunctionUtils {
             throw CriteriaUtils.funcArgError(name, three);
         }
         return new MultiArgFuncPredicate(name, null, threeExpList(name, one, two, three));
+    }
+
+    static SimplePredicate fourArgPredicateFunc(final String name, final Expression one, final Expression two,
+                                                final Expression three, final Expression four) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, three);
+        } else if (!(four instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, four);
+        }
+        final List<ArmyExpression> argList = _Collections.arrayList(4);
+
+        argList.add((ArmyExpression) one);
+        argList.add((ArmyExpression) two);
+        argList.add((ArmyExpression) three);
+        argList.add((ArmyExpression) four);
+        return new MultiArgFuncPredicate(name, null, argList);
     }
 
 

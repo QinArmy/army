@@ -53,6 +53,14 @@ public abstract class Postgres extends PostgreSyntax {
 
     public static final WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
 
+    public static final NullTreatMode RAISE_EXCEPTION = PostgreWords.NullTreatModeExpression.RAISE_EXCEPTION;
+
+    public static final NullTreatMode USE_JSON_NULL = PostgreWords.NullTreatModeExpression.USE_JSON_NULL;
+
+    public static final NullTreatMode DELETE_KEY = PostgreWords.NullTreatModeExpression.DELETE_KEY;
+
+    public static final NullTreatMode RETURN_TARGET = PostgreWords.NullTreatModeExpression.RETURN_TARGET;
+
 
     /**
      * <p>

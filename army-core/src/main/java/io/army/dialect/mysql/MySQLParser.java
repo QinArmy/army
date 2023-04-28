@@ -15,6 +15,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
@@ -24,7 +25,6 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -55,15 +55,13 @@ abstract class MySQLParser extends _ArmyDialectParser {
         } else {
             startStmt = "START TRANSACTION READ WRITE";
         }
-        List<String> stmtList;
+        final List<String> stmtList;
         if (isolation == Isolation.DEFAULT) {
             stmtList = Collections.singletonList(startStmt);
         } else {
-            stmtList = new ArrayList<>(2);
-            // no key word 'SESSION' or 'GLOBAL',so Next transaction only
-            stmtList.add("SET TRANSACTION ISOLATION LEVEL " + isolation.command);
-            stmtList.add(startStmt);
-            stmtList = Collections.unmodifiableList(stmtList);
+            stmtList = _ArrayUtils.asUnmodifiableList(
+                    "SET TRANSACTION ISOLATION LEVEL " + isolation.command,  // no key word 'SESSION' or 'GLOBAL',so Next transaction only
+                    startStmt);
         }
         return stmtList;
     }
@@ -153,19 +151,19 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 } else {
                     throw _Exceptions.outRangeOfSqlType(MySQLType.DATETIME, value);
                 }
-                sqlBuilder.append(" TIMESTAMP")
+                sqlBuilder.append("TIMESTAMP")
                         .append(_Constant.QUOTE)
                         .append(timeText)
                         .append(_Constant.QUOTE);
             }
             break;
             case DATE: {
-                sqlBuilder.append(" DATE");
+                sqlBuilder.append("DATE");
                 _Literals.bindLocalDate(typeMeta, type, value, sqlBuilder);
             }
             break;
             case TIME: {
-                sqlBuilder.append(" TIME");
+                sqlBuilder.append("TIME");
                 _Literals.bindLocalTime(typeMeta, type, value, sqlBuilder);
             }
             break;

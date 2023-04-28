@@ -24,10 +24,10 @@ public interface TypeMeta extends Meta {
      */
     MappingType mappingType();
 
-    @Deprecated
+
     interface DelayTypeMeta extends TypeMeta {
 
-        @Deprecated
+
         boolean isDelay();
     }
 

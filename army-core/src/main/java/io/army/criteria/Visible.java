@@ -14,8 +14,8 @@ public enum Visible {
         this.value = value;
     }
 
-    public static Visible resolve(@Nullable Boolean visible) {
-        Visible visibleEnm;
+    public static Visible from(final @Nullable Boolean visible) {
+        final Visible visibleEnm;
         if (visible == null) {
             visibleEnm = Visible.BOTH;
         } else if (visible) {

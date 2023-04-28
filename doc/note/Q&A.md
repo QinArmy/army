@@ -168,6 +168,8 @@
     * 因为不像语句有明确的开始和结束时间
     * push 到 stack 容易,但却没有 pop 的时机
     * SQL.refOut() 应用困难,因为引用发生在 context 创建之前.
+37. 为什么 DerivedField typeMeta() 不能返回 io.army.meta.TypeMeta.DelayTypeMeta ?
+    * 因为 这会影响 codec field 的解码
 
     
 
