@@ -205,6 +205,8 @@ public abstract class _MappingFactory {
         map.put(OffsetDateTime.class, OffsetDateTimeType::from);
         map.put(OffsetTime.class, OffsetTimeType::from);
         map.put(BitSet.class, BitSetType::from);
+
+        map.put(Character.class, CharacterType::from);
         return Collections.unmodifiableMap(map);
     }
 

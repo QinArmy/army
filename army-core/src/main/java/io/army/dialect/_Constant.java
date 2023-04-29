@@ -8,6 +8,8 @@ public interface _Constant {
 
     String SPACE_NULL = " NULL";
 
+    String LOWER_NULL = "null";
+
     String SPACE_DEFAULT = " DEFAULT";
 
     String SPACE_NOT_NULL = " NOT NULL";

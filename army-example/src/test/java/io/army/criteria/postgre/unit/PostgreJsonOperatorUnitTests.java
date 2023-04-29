@@ -4,9 +4,11 @@ import io.army.criteria.Expression;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
+import io.army.mapping.IntegerType;
 import io.army.mapping.JsonType;
 import io.army.mapping.JsonbType;
 import io.army.mapping.TextType;
+import io.army.mapping.optional.JsonPathType;
 import io.army.mapping.optional.TextArrayType;
 import io.army.meta.TypeMeta;
 import org.slf4j.Logger;
@@ -149,6 +151,195 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
                 .asQuery();
 
         printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#question(Expression, Expression)
+     */
+    @Test
+    public void question() {
+        final String jsonb = "{\"a\":1, \"b\":2, \"c\":3}";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(SQLs.literal(JsonbType.TEXT, jsonb)
+                        .test(Postgres::question, SQLs.literal(TextType.INSTANCE, "b"))::as, "match"
+                )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#questionVertical(Expression, Expression)
+     */
+    @Test
+    public void questionVertical() {
+        final String jsonb = "{\"a\":1, \"b\":2, \"c\":3}";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(SQLs.literal(JsonbType.TEXT, jsonb)
+                        .test(Postgres::questionVertical, SQLs.literal(TextArrayType.LINEAR, "{b,d}"))::as, "match"
+                )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#questionAmp(Expression, Expression)
+     */
+    @Test
+    public void questionAmp() {
+        final String jsonb = "{\"a\":1, \"b\":2, \"c\":3}";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(SQLs.literal(JsonbType.TEXT, jsonb)
+                        .test(Postgres::questionAmp, SQLs.literal(TextArrayType.LINEAR, "{a,b}"))::as, "match"
+                )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#doubleVertical(Expression, Expression)
+     */
+    @Test
+    public void doubleVertical() {
+        final String leftArray, rightArray, leftObject, rightObject;
+        leftArray = "[\"a\", \"b\"]";
+        rightArray = "[\"a\", \"d\"]";
+        leftObject = "{\"a\": \"b\"}";
+        rightObject = "{\"c\": \"d\"}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(SQLs.literal(JsonbType.TEXT, leftArray)
+                        .apply(Postgres::doubleVertical, SQLs::literal, rightArray)::as, "concatArray"
+                ).comma(SQLs.literal(JsonbType.TEXT, leftObject)
+                        .apply(Postgres::doubleVertical, SQLs::literal, rightObject)::as, "concatObject"
+                )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
+        TypeMeta expType;
+        expType = SQLs.literal(JsonbType.TEXT, leftArray)
+                .apply(Postgres::doubleVertical, SQLs::literal, rightArray)
+                .typeMeta();
+
+        Assert.assertSame(expType, JsonbType.TEXT);
+
+        expType = SQLs.literal(JsonbType.TEXT, leftObject)
+                .apply(Postgres::doubleVertical, SQLs::literal, rightObject)
+                .typeMeta();
+
+        Assert.assertSame(expType, JsonbType.TEXT);
+
+    }
+
+    /**
+     * @see Postgres#minus(Expression, Expression)
+     */
+    @Test
+    public void minus() {
+        final String leftArray, leftObject;
+        leftArray = "[\"a\", \"b\", \"c\", \"b\"]";
+        leftObject = "{\"a\": \"b\", \"c\": \"d\"}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(SQLs.literal(JsonbType.TEXT, leftArray)
+                        .apply(Postgres::minus, SQLs.literal(TextType.INSTANCE, "a"))::as, "minusArrayElement"
+                ).comma(SQLs.literal(JsonbType.TEXT, leftObject)
+                        .apply(Postgres::minus, SQLs.literal(TextType.INSTANCE, "b"))::as, "minusObjectKey"
+                ).comma(SQLs.literal(JsonbType.TEXT, leftArray)
+                        .apply(Postgres::minus, SQLs.literal(IntegerType.INSTANCE, 1))::as, "minusNumberElement"
+                )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
+        TypeMeta expType;
+        expType = SQLs.literal(JsonbType.TEXT, leftArray)
+                .apply(Postgres::minus, SQLs.literal(TextType.INSTANCE, "a"))
+                .typeMeta();
+
+        Assert.assertSame(expType, JsonbType.TEXT);
+
+
+        expType = SQLs.literal(JsonbType.TEXT, leftObject)
+                .apply(Postgres::minus, SQLs.literal(TextType.INSTANCE, "b"))
+                .typeMeta();
+
+        Assert.assertSame(expType, JsonbType.TEXT);
+
+        expType = SQLs.literal(JsonbType.TEXT, leftArray)
+                .apply(Postgres::minus, SQLs.literal(IntegerType.INSTANCE, 1))
+                .typeMeta();
+
+        Assert.assertSame(expType, JsonbType.TEXT);
+
+    }
+
+    /**
+     * @see Postgres#poundHyphen(Expression, Expression)
+     */
+    @Test
+    public void poundHyphen() {
+        final String jsonbArray;
+        jsonbArray = "[\"a\", {\"b\":1}]";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(SQLs.literal(JsonbType.TEXT, jsonbArray)
+                        .apply(Postgres::poundHyphen, SQLs.literal(TextArrayType.LINEAR, "{1,b}"))::as, "minusArrayElement"
+                )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
+        TypeMeta expType;
+        expType = SQLs.literal(JsonbType.TEXT, jsonbArray)
+                .apply(Postgres::poundHyphen, SQLs.literal(TextArrayType.LINEAR, "{1,b}"))
+                .typeMeta();
+
+        Assert.assertSame(expType, JsonbType.TEXT);
+    }
+
+    /**
+     * @see Postgres#atQuestion(Expression, Expression)
+     */
+    @Test
+    public void atQuestion() {
+        final String json;
+        json = "{\"a\":[1,2,3,4,5]}";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(SQLs.literal(JsonbType.TEXT, json)
+                        .test(Postgres::atQuestion, SQLs.literal(JsonPathType.INSTANCE, "$.a[*] ? (@ > 2)"))::as, "match"
+                )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
+    }
+
+    /**
+     * @see Postgres#doubleAt(Expression, Expression)
+     */
+    @Test
+    public void doubleAt() {
+        final String json;
+        json = "{\"a\":[1,2,3,4,5]}";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(SQLs.literal(JsonbType.TEXT, json)
+                        .test(Postgres::doubleAt, SQLs.literal(JsonPathType.INSTANCE, "$.a[*] > 2"))::as, "match"
+                )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
     }
 
 

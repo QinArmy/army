@@ -10,10 +10,7 @@ import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
-import io.army.mapping.BooleanType;
-import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
-import io.army.mapping.TextType;
+import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
@@ -591,7 +588,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
         public final <T> IPredicate like(BiFunction<MappingType, T, Expression> funcRef, T value,
                                          SqlSyntax.WordEscape escape, char escapeChar) {
             return Expressions.likePredicate(this, DualBooleanOperator.LIKE, funcRef.apply(TextType.INSTANCE, value),
-                    escape, SQLs.literal(StringType.INSTANCE, escapeChar)
+                    escape, SQLs.literal(CharacterType.INSTANCE, escapeChar)
             );
         }
 
@@ -606,7 +603,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
         public final <T> IPredicate notLike(BiFunction<MappingType, T, Expression> funcRef, T value,
                                             SqlSyntax.WordEscape escape, char escapeChar) {
             return Expressions.likePredicate(this, DualBooleanOperator.NOT_LIKE, funcRef.apply(TextType.INSTANCE, value),
-                    escape, SQLs.literal(StringType.INSTANCE, escapeChar)
+                    escape, SQLs.literal(CharacterType.INSTANCE, escapeChar)
             );
         }
 
@@ -689,12 +686,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
         public final <M extends SQLWords, T> Expression apply(
                 OptionalClauseOperator<M, Expression, Expression> operator, BiFunction<Expression, T, Expression> funcRef,
                 T value, M modifier, char escapeChar) {
-            final Expression result;
-            result = operator.apply(this, funcRef.apply(this, value), modifier, SQLs.literal(StringType.INSTANCE, escapeChar));
-            if (result == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            }
-            return result;
+            return this.apply(operator, funcRef, value, modifier, SQLs.literal(CharacterType.INSTANCE, escapeChar));
         }
 
         @Override
@@ -713,7 +705,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
                 OptionalClauseOperator<M, Expression, IPredicate> operator,
                 BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, Expression optionalExp) {
             final IPredicate result;
-            result = operator.apply(this, funcRef.apply(StringType.INSTANCE, value), modifier, optionalExp);
+            result = operator.apply(this, funcRef.apply(TextType.INSTANCE, value), modifier, optionalExp);
             if (result == null) {
                 throw ContextStack.clearStackAndNullPointer();
             }
@@ -724,13 +716,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
         public final <M extends SQLWords, T> IPredicate test(
                 OptionalClauseOperator<M, Expression, IPredicate> operator,
                 BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, char escapeChar) {
-            final IPredicate result;
-            result = operator.apply(this, funcRef.apply(StringType.INSTANCE, value),
-                    modifier, SQLs.literal(StringType.INSTANCE, escapeChar));
-            if (result == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            }
-            return result;
+            return this.test(operator, funcRef, value, modifier, SQLs.literal(CharacterType.INSTANCE, escapeChar));
         }
 
 

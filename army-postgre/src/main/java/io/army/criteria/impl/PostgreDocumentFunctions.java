@@ -2089,6 +2089,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /*-------------------below JSON function -------------------*/
 
+
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
@@ -2099,6 +2100,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     public static SimpleExpression toJson(Expression exp) {
         return FunctionUtils.oneArgFunc("TO_JSON", exp, JsonType.TEXT);
     }
+
 
     /**
      * <p>
@@ -2116,6 +2118,21 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      *
+     * @see #arrayToJson(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">array_to_json ( anyarray [, boolean ] ) → json<br/>
+     * Converts an SQL array to a JSON array. The behavior is the same as to_json except that line feeds will be added between top-level array elements if the optional boolean parameter is true.
+     * </a>
+     */
+    public static SimpleExpression arrayToJson(Expression array) {
+        return FunctionUtils.oneArgFunc("ARRAY_TO_JSON", array, JsonType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * </p>
+     *
+     * @param lineFeed in most case ,{@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">array_to_json ( anyarray [, boolean ] ) → json<br/>
      * Converts an SQL array to a JSON array. The behavior is the same as to_json except that line feeds will be added between top-level array elements if the optional boolean parameter is true.
      * </a>
@@ -3617,12 +3634,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbSet(Expression jsonb, BiFunction<MappingType, String[], Expression> funcRefForPath,
-                                                String[] paths, BiFunction<MappingType, T, Expression> funcRefForValue,
-                                                T newValue, Expression createIfMissing) {
-        if (paths.length == 0) {
-            throw CriteriaUtils.funcArgError("JSONB_SET", paths);
-        }
+    public static <T, U> SimpleExpression jsonbSet(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+                                                   T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
+                                                   U newValue, Expression createIfMissing) {
         return jsonbSet(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
                 funcRefForValue.apply(JsonbType.TEXT, newValue),
                 createIfMissing
@@ -3675,12 +3689,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbSet(Expression jsonb, BiFunction<MappingType, String[], Expression> funcRefForPath,
-                                                String[] paths, BiFunction<MappingType, T, Expression> funcRefForValue,
-                                                T newValue) {
-        if (paths.length == 0) {
-            throw CriteriaUtils.funcArgError("JSONB_SET", paths);
-        }
+    public static <T, U> SimpleExpression jsonbSet(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+                                                   T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
+                                                   U newValue) {
         return jsonbSet(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
                 funcRefForValue.apply(JsonbType.TEXT, newValue)
         );
@@ -3734,12 +3745,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbSetLax(Expression jsonb, BiFunction<MappingType, String[], Expression> funcRefForPath,
-                                                   String[] paths, BiFunction<MappingType, T, Expression> funcRefForValue,
-                                                   T newValue, Expression createIfMissing) {
-        if (paths.length == 0) {
-            throw CriteriaUtils.funcArgError("JSONB_SET_LAX", paths);
-        }
+    public static <T, U> SimpleExpression jsonbSetLax(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+                                                      T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
+                                                      U newValue, Expression createIfMissing) {
         return jsonbSetLax(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
                 funcRefForValue.apply(JsonbType.TEXT, newValue),
                 createIfMissing
@@ -3792,12 +3800,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbSetLax(Expression jsonb, BiFunction<MappingType, String[], Expression> funcRefForPath,
-                                                   String[] paths, BiFunction<MappingType, T, Expression> funcRefForValue,
-                                                   T newValue) {
-        if (paths.length == 0) {
-            throw CriteriaUtils.funcArgError("JSONB_SET_LAX", paths);
-        }
+    public static <T, U> SimpleExpression jsonbSetLax(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+                                                      T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
+                                                      U newValue) {
         return jsonbSetLax(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
                 funcRefForValue.apply(JsonbType.TEXT, newValue)
         );
@@ -3855,12 +3860,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbSetLax(Expression jsonb, BiFunction<MappingType, String[], Expression> funcRefForPath,
-                                                   String[] paths, BiFunction<MappingType, T, Expression> funcRefForValue,
-                                                   T newValue, Expression createIfMissing, NullTreatMode nullTreatMode) {
-        if (paths.length == 0) {
-            throw CriteriaUtils.funcArgError("JSONB_SET_LAX", paths);
-        }
+    public static <T, U> SimpleExpression jsonbSetLax(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+                                                      T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
+                                                      U newValue, Expression createIfMissing, NullTreatMode nullTreatMode) {
         return jsonbSetLax(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
                 funcRefForValue.apply(JsonbType.TEXT, newValue), createIfMissing,
                 nullTreatMode
@@ -3932,12 +3934,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbInsert(Expression jsonb, BiFunction<MappingType, String[], Expression> funcRefForPath,
-                                                   String[] paths, BiFunction<MappingType, T, Expression> funcRefForValue,
-                                                   T newValue, Expression insertAfter) {
-        if (paths.length == 0) {
-            throw CriteriaUtils.funcArgError("JSONB_INSERT", paths);
-        }
+    public static <T, U> SimpleExpression jsonbInsert(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+                                                      T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
+                                                      U newValue, Expression insertAfter) {
         return jsonbInsert(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
                 funcRefForValue.apply(JsonbType.TEXT, newValue),
                 insertAfter
@@ -3990,12 +3989,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * </a>
      */
-    public static <T> SimpleExpression jsonbInsert(Expression jsonb, BiFunction<MappingType, String[], Expression> funcRefForPath,
-                                                   String[] paths, BiFunction<MappingType, T, Expression> funcRefForValue,
-                                                   T newValue) {
-        if (paths.length == 0) {
-            throw CriteriaUtils.funcArgError("JSONB_INSERT", paths);
-        }
+    public static <T, U> SimpleExpression jsonbInsert(Expression jsonb, BiFunction<MappingType, T, Expression> funcRefForPath,
+                                                      T paths, BiFunction<MappingType, U, Expression> funcRefForValue,
+                                                      U newValue) {
         return jsonbInsert(jsonb, funcRefForPath.apply(TextArrayType.LINEAR, paths),
                 funcRefForValue.apply(JsonbType.TEXT, newValue)
         );
