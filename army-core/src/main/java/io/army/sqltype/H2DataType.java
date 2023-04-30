@@ -22,5 +22,10 @@ public enum H2DataType implements SqlType {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public boolean isUnknown() {
+        throw new UnsupportedOperationException();
+    }
+
 
 }

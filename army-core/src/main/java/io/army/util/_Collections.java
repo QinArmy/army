@@ -4,7 +4,75 @@ import io.army.lang.Nullable;
 
 import java.util.*;
 
-public abstract class _Collections extends io.qinarmy.util.CollectionUtils {
+public abstract class _Collections {
+
+    private _Collections() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static <T> List<T> unmodifiableList(List<T> list) {
+        switch (list.size()) {
+            case 0:
+                list = Collections.emptyList();
+                break;
+            case 1:
+                list = Collections.singletonList(list.get(0));
+                break;
+            default:
+                list = Collections.unmodifiableList(list);
+        }
+        return list;
+
+    }
+
+    public static <K, V> Map<K, V> unmodifiableMap(Map<K, V> map) {
+        switch (map.size()) {
+            case 0:
+                map = Collections.emptyMap();
+                break;
+            case 1: {
+                for (Map.Entry<K, V> e : map.entrySet()) {
+                    map = Collections.singletonMap(e.getKey(), e.getValue());
+                    break;
+                }
+            }
+            break;
+            default:
+                map = Collections.unmodifiableMap(map);
+        }
+        return map;
+    }
+
+    public static <T> Set<T> unmodifiableSet(Set<T> set) {
+        switch (set.size()) {
+            case 0:
+                set = Collections.emptySet();
+                break;
+            case 1: {
+                for (T t : set) {
+                    set = Collections.singleton(t);
+                    break;
+                }
+            }
+            break;
+            default:
+                set = Collections.unmodifiableSet(set);
+        }
+        return set;
+    }
+
+
+    public static boolean isEmpty(@io.qinarmy.lang.Nullable Collection<?> collection) {
+        return collection == null || collection.isEmpty();
+    }
+
+    public static boolean isEmpty(@io.qinarmy.lang.Nullable Map<?, ?> map) {
+        return map == null || map.isEmpty();
+    }
+
+    public static <E> List<E> singletonList(E e) {
+        return Collections.singletonList(e);
+    }
 
 
     public static <K, V> HashMap<K, V> hashMap() {

@@ -9,6 +9,8 @@ import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
+import io.army.mapping._ArmyInnerMapping;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.ServerMeta;
@@ -253,35 +255,47 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case DATE_ARRAY:
             case INET_ARRAY:
             case JSON_ARRAY:
+            case JSONB_ARRAY:
             case LINE_ARRAY:
             case PATH_ARRAY:
+            case TEXT_ARRAY:
+            case USER_DEFINED_ARRAY:
+                this.unsafeArray(typeMeta, type, value, sqlBuilder, _Literals::stringArrayElement);
+                break;
+            case BOOLEAN_ARRAY:
+                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::booleanArrayElement);
+                break;
+            case SMALLINT_ARRAY:
+                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::shortArrayElement);
+                break;
+            case INTEGER_ARRAY:
+                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::integerArrayElement);
+                break;
+            case BIGINT_ARRAY:
+                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::longArrayElement);
+                break;
+            case DECIMAL_ARRAY:
+                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::bigDecimalArrayElement);
+                break;
+            case DOUBLE_ARRAY:
+                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::doubleArrayElement);
+                break;
             case REAL_ARRAY:
-            case TEXT_ARRAY: {
-                final MappingType mappingType;
-                if (typeMeta instanceof MappingType) {
-                    mappingType = (MappingType) typeMeta;
-                } else {
-                    mappingType = typeMeta.mappingType();
-                }
-                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder)
-                        .append("::");
-                type.sqlTypeName(mappingType, sqlBuilder);
-            }
-            break;
+                this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::floatArrayElement);
+                break;
             case TIME_ARRAY:
+            case TIMETZ_ARRAY:
+            case TIMESTAMP_ARRAY:
+            case TIMESTAMPTZ_ARRAY:
+
+
             case UUID_ARRAY:
             case BYTEA_ARRAY:
-            case JSONB_ARRAY:
             case MONEY_ARRAY:
             case POINT_ARRAY:
-            case BIGINT_ARRAY:
-            case DOUBLE_ARRAY:
-            case TIMETZ_ARRAY:
+
             case VARBIT_ARRAY:
-            case BOOLEAN_ARRAY:
             case CIRCLES_ARRAY:
-            case DECIMAL_ARRAY:
-            case INTEGER_ARRAY:
             case MACADDR_ARRAY:
             case POLYGON_ARRAY:
             case TSQUERY_ARRAY:
@@ -289,15 +303,14 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case VARCHAR_ARRAY:
             case INTERVAL_ARRAY:
             case MACADDR8_ARRAY:
-            case NUMRANGE_ARRAY:
-            case SMALLINT_ARRAY:
+
             case TSVECTOR_ARRAY:
             case DATERANGE_ARRAY:
+            case NUMRANGE_ARRAY:
             case INT4RANGE_ARRAY:
             case INT8RANGE_ARRAY:
-            case TIMESTAMP_ARRAY:
             case TSTZRANGE_ARRAY:
-            case TIMESTAMPTZ_ARRAY:
+
             case LSEG_ARRAY:
                 //TODO check array syntax
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
@@ -311,6 +324,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
 
     }
+
 
     @Override
     protected final PostgreDdl createDdlDialect() {
@@ -824,6 +838,89 @@ abstract class PostgreParser extends _ArmyDialectParser {
     protected final void parseMultiDelete(_MultiDelete delete, _MultiDeleteContext context) {
         // Postgre don't support multi-table DELETE syntax
         throw _Exceptions.unexpectedStatement((Statement) delete);
+    }
+
+    /**
+     * @see #bindLiteral(TypeMeta, SqlType, Object, StringBuilder)
+     */
+    private void safeArray(final TypeMeta typeMeta, final SqlType type, final Object value,
+                           final StringBuilder sqlBuilder,
+                           final _Literals.ArrayElementHandler handler) {
+        final MappingType mappingType;
+        if (typeMeta instanceof MappingType) {
+            mappingType = (MappingType) typeMeta;
+        } else {
+            mappingType = typeMeta.mappingType();
+        }
+        assert !(mappingType instanceof _ArmyInnerMapping) || mappingType instanceof _ArmyNoInjectionMapping;
+
+        if (value instanceof String) {
+            arrayForStringValue(typeMeta, type, (String) value, sqlBuilder);
+        } else if (value.getClass().isArray()) {
+            sqlBuilder.append(_Constant.QUOTE);
+            PostgreLiterals.appendSimpleTypeArray(mappingType, type, value, sqlBuilder, handler);
+            sqlBuilder.append(_Constant.QUOTE);
+        } else {
+            throw _Exceptions.valueOutRange(type, value);
+        }
+        appendArrayCastSuffix(typeMeta, type, sqlBuilder);
+    }
+
+    /**
+     * @see #bindLiteral(TypeMeta, SqlType, Object, StringBuilder)
+     */
+    private void unsafeArray(final TypeMeta typeMeta, final SqlType type, final Object value,
+                             final StringBuilder sqlBuilder,
+                             final _Literals.ArrayElementHandler handler) {
+        final MappingType mappingType;
+        if (typeMeta instanceof MappingType) {
+            mappingType = (MappingType) typeMeta;
+        } else {
+            mappingType = typeMeta.mappingType();
+        }
+        assert !(mappingType instanceof _ArmyNoInjectionMapping);
+        if (value instanceof String) {
+            arrayForStringValue(typeMeta, type, (String) value, sqlBuilder);
+        } else if (value.getClass().isArray()) {
+
+            final StringBuilder tempBuilder = new StringBuilder();
+            PostgreLiterals.appendSimpleTypeArray(mappingType, type, value, tempBuilder, handler);
+
+            PostgreLiterals.postgreBackslashEscapes(typeMeta, type, tempBuilder.toString(), sqlBuilder);
+        } else {
+            throw _Exceptions.valueOutRange(type, value);
+        }
+        appendArrayCastSuffix(typeMeta, type, sqlBuilder);
+    }
+
+    /**
+     * @see #bindLiteral(TypeMeta, SqlType, Object, StringBuilder)
+     * @see #safeArray(TypeMeta, SqlType, Object, StringBuilder, _Literals.ArrayElementHandler)
+     */
+    private void arrayForStringValue(final TypeMeta typeMeta, final SqlType type, final String value,
+                                     final StringBuilder sqlBuilder) {
+        final int length;
+        length = value.length();
+        if (length < 2
+                || value.charAt(0) != _Constant.LEFT_BRACE
+                || value.charAt(length - 1) != _Constant.RIGHT_BRACE) {
+            throw _Exceptions.valueOutRange(type, value);
+        }
+        PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+    }
+
+    private void appendArrayCastSuffix(final TypeMeta typeMeta, final SqlType type, final StringBuilder sqlBuilder) {
+        sqlBuilder.append("::");
+        final MappingType mappingType = typeMeta.mappingType();
+        if (mappingType instanceof MappingType.SqlUserDefinedType) {
+            final String typeName;
+            typeName = ((MappingType.SqlUserDefinedType) mappingType).sqlTypeName(this.serverMeta);
+            this.identifier(typeName, sqlBuilder);
+        } else if (type.isUserDefined()) {
+            throw _Exceptions.notUserDefinedType(mappingType, type);
+        } else {
+            type.sqlTypeName(mappingType, sqlBuilder);
+        }
     }
 
 

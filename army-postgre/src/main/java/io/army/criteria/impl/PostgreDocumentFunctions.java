@@ -2146,12 +2146,33 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      *
+     * @param record row expression or  composite expression; see<ul>
+     *               <li> {@link Postgres#row(Expression, Expression...)} </li>
+     *               <li>{@link Postgres#row(Consumer)}</li>
+     *               </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
      * Converts an SQL composite value to a JSON object. The behavior is the same as to_json except that line feeds will be added between top-level elements if the optional boolean parameter is true.
      * </a>
      */
-    public static SimpleExpression rowToJson(Expression array, Expression lineFeed) {
-        return FunctionUtils.twoArgFunc("ROW_TO_JSON", array, lineFeed, JsonType.TEXT);
+    public static SimpleExpression rowToJson(ExpressionElement record) {
+        return FunctionUtils.complexArgFunc("ROW_TO_JSON", JsonType.TEXT, record);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * </p>
+     *
+     * @param record row expression or  composite expression; see<ul>
+     *               <li> {@link Postgres#row(Expression, Expression...)} </li>
+     *               <li>{@link Postgres#row(Consumer)}</li>
+     *               </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
+     * Converts an SQL composite value to a JSON object. The behavior is the same as to_json except that line feeds will be added between top-level elements if the optional boolean parameter is true.
+     * </a>
+     */
+    public static SimpleExpression rowToJson(ExpressionElement record, Expression lineFeed) {
+        return FunctionUtils.complexArgFunc("ROW_TO_JSON", JsonType.TEXT, record, FuncWord.COMMA, lineFeed);
     }
 
 
@@ -2189,7 +2210,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(Consumer<Consumer<Expression>> consumer) {
+    public static SimpleExpression jsonBuildArray(Consumer<Statement._ExpressionSpaceClause> consumer) {
         return FunctionUtils.varargsFunc("JSON_BUILD_ARRAY", consumer, JsonType.TEXT);
     }
 
@@ -2227,7 +2248,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(Consumer<Consumer<Expression>> consumer) {
+    public static SimpleExpression jsonbBuildArray(Consumer<Statement._ExpressionSpaceClause> consumer) {
         return FunctionUtils.varargsFunc("JSONB_BUILD_ARRAY", consumer, JsonbType.TEXT);
     }
 
@@ -2272,7 +2293,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildObject(Consumer<Consumer<Expression>> consumer) {
+    public static SimpleExpression jsonBuildObject(Consumer<Statement._ExpressionSpaceClause> consumer) {
         return FunctionUtils.varargsFunc("JSON_BUILD_OBJECT", consumer, JsonType.TEXT);
     }
 
@@ -2316,7 +2337,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(Consumer<Consumer<Expression>> consumer) {
+    public static SimpleExpression jsonbBuildObject(Consumer<Statement._ExpressionSpaceClause> consumer) {
         return FunctionUtils.varargsFunc("JSONB_BUILD_OBJECT", consumer, JsonbType.TEXT);
     }
 

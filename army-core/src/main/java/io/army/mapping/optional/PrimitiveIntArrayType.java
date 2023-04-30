@@ -7,7 +7,6 @@ import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
 
@@ -15,12 +14,13 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class IntegerArrayType extends _ArmyNoInjectionMapping
+public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
         implements MappingType.SqlIntegerType,
         MappingType.SqlArrayType {
 
-    public static IntegerArrayType from(final Class<?> javaType) {
-        final IntegerArrayType instance;
+
+    public static PrimitiveIntArrayType from(final Class<?> javaType) {
+        final PrimitiveIntArrayType instance;
         if (List.class.isAssignableFrom(javaType)) {
             instance = LIST;
         } else if (javaType == Integer[].class) {
@@ -28,29 +28,28 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
         } else if (javaType == Object.class) {
             instance = UNLIMITED;
         } else if (javaType.isArray()) {
-            instance = INSTANCE_MAP.computeIfAbsent(javaType, IntegerArrayType::new);
+            instance = INSTANCE_MAP.computeIfAbsent(javaType, PrimitiveIntArrayType::new);
         } else {
-            throw errorJavaType(IntegerArrayType.class, javaType);
+            throw errorJavaType(PrimitiveIntArrayType.class, javaType);
         }
         return instance;
     }
 
-    public static final IntegerArrayType UNLIMITED = new IntegerArrayType(Object.class);
-    public static final IntegerArrayType LINEAR = new IntegerArrayType(Integer[].class);
+    public static final PrimitiveIntArrayType UNLIMITED = new PrimitiveIntArrayType(Object.class);
+    public static final PrimitiveIntArrayType LINEAR = new PrimitiveIntArrayType(int[].class);
 
-    public static final IntegerArrayType LIST = new IntegerArrayType(List.class);
+    public static final PrimitiveIntArrayType LIST = new PrimitiveIntArrayType(List.class);
 
-    private static final ConcurrentMap<Class<?>, IntegerArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, PrimitiveIntArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
 
     private final Class<?> javaType;
 
-
-    private IntegerArrayType(final Class<?> javaType) {
+    private PrimitiveIntArrayType(final Class<?> javaType) {
         this.javaType = javaType;
         if (javaType != Object.class
                 && !List.class.isAssignableFrom(javaType)
-                && _ArrayUtils.underlyingComponent(javaType) != Integer.class) {
+                && _ArrayUtils.underlyingComponent(javaType) != int.class) {
             throw errorJavaType(IntegerArrayType.class, javaType);
         }
     }
@@ -63,7 +62,7 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
 
     @Override
     public Class<?> underlyingComponentType() {
-        return Integer.class;
+        return int.class;
     }
 
     @Override
@@ -73,7 +72,7 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
 
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        return mapSqlType(this, meta);
+        return IntegerArrayType.mapSqlType(this, meta);
     }
 
     @Override
@@ -84,7 +83,9 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
 
     @Override
     public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        if (nonNull instanceof String || nonNull instanceof int[] || nonNull instanceof Integer[]) {
+        if (nonNull instanceof String
+                || nonNull instanceof int[]
+                || _ArrayUtils.underlyingComponent(nonNull.getClass()) == int.class) {
             return nonNull;
         }
         // TODO
@@ -96,21 +97,4 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
         // TODO
         throw new UnsupportedOperationException();
     }
-
-    static SqlType mapSqlType(final MappingType mappingType, final ServerMeta meta) {
-        final SqlType type;
-        switch (meta.dialectDatabase()) {
-            case PostgreSQL:
-                type = PgSqlType.INTEGER_ARRAY;
-                break;
-            case Oracle:
-            case H2:
-            case MySQL:
-            default:
-                throw MAP_ERROR_HANDLER.apply(mappingType, meta);
-        }
-        return type;
-    }
-
-
 }

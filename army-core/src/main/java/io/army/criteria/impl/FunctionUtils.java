@@ -348,8 +348,14 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, expList(name, argList), returnType);
     }
 
-    static SimpleExpression varargsFunc(String name, Consumer<Consumer<Expression>> consumer, TypeMeta returnType) {
-        return new MultiArgFunctionExpression(name, varargsArgs(name, consumer), returnType);
+    static SimpleExpression varargsFunc(String name, Consumer<Statement._ExpressionSpaceClause> consumer,
+                                        TypeMeta returnType) {
+        final List<ArmyExpression> argList = _Collections.arrayList();
+        final CriteriaSupports.ExpressionConsumerImpl expConsumer;
+        expConsumer = CriteriaSupports.expressionConsumer(true, argList::add);
+        consumer.accept(expConsumer);
+        expConsumer.endConsumer();
+        return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
     static SimpleExpression varargsFunc(final String name, final TypeMeta returnType, final Expression first,
@@ -545,8 +551,13 @@ abstract class FunctionUtils {
     }
 
     static SimpleExpression complexArgFunc(String name, TypeMeta returnType, Object... args) {
-        final List<Object> argList = new ArrayList<>(args.length);
-        Collections.addAll(argList, args);
+        final List<Object> argList;
+        if (args.length == 1) {
+            argList = _Collections.singletonList(args[0]);
+        } else {
+            argList = _Collections.arrayList(args.length);
+            Collections.addAll(argList, args);
+        }
         return new ComplexArgFuncExpression(name, argList, returnType);
     }
 
@@ -694,6 +705,12 @@ abstract class FunctionUtils {
                 parser.identifier(((SQLIdentifier) o).render(), sqlBuilder);
             } else if (o instanceof ArmyFuncClause) {
                 ((ArmyFuncClause) o).appendSql(context);
+            } else if (o instanceof RowExpression) {
+                if (!(o instanceof CriteriaSupports.RowExpressionImpl)) {
+                    throw new CriteriaException(String.format("%s non-army row expression", o));
+                }
+                // must cast to CriteriaSupports.RowExpressionImpl
+                ((CriteriaSupports.RowExpressionImpl) o).appendSql(context);
             } else {
                 //no bug,never here
                 throw new IllegalArgumentException();
@@ -718,6 +735,8 @@ abstract class FunctionUtils {
                 builder.append(_Constant.SPACE)
                         .append(o);
             } else if (o instanceof ArmyFuncClause) {
+                builder.append(o);
+            } else if (o instanceof RowExpression) {
                 builder.append(o);
             } else {
                 //no bug,never here

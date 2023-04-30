@@ -95,6 +95,16 @@ public interface Statement extends Item {
 
     }
 
+    interface _ExpressionSpaceClause {
+
+        ExpressionConsumer space(Expression exp);
+    }
+
+    interface _ExpressionElementSpaceClause {
+
+        ExpressionElementConsumer space(ExpressionElement exp);
+    }
+
 
     /**
      * <p>

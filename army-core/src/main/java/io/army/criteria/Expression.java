@@ -21,8 +21,8 @@ import static io.army.dialect.Database.PostgreSQL;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression extends TypeInfer, TypeInfer.TypeUpdateSpec, SortItem, RightOperand, AssignmentItem,
-        SelectionSpec {
+public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.TypeUpdateSpec, SortItem, RightOperand,
+        AssignmentItem, SelectionSpec {
 
 
     /**

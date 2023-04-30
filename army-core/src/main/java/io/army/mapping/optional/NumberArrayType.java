@@ -88,7 +88,7 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
                 }
                 component = Array.get(array, index);
                 if (component == null) {
-                    builder.append(_Constant.LOWER_NULL);
+                    builder.append(_Constant.NULL);
                 } else if (valueHandler.test(component, builder)) {
                     throw PARAM_ERROR_HANDLER.apply(this, type, array);
                 }
@@ -109,7 +109,7 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
             }
             element = array[i];
             if (element == null) {
-                builder.append(_Constant.LOWER_NULL);
+                builder.append(_Constant.NULL);
             } else if (element instanceof BigDecimal) {
                 builder.append(((BigDecimal) element).toPlainString());
             } else {
@@ -130,7 +130,7 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
                 builder.append(_Constant.SPACE);
             }
             if (element == null) {
-                builder.append(_Constant.LOWER_NULL);
+                builder.append(_Constant.NULL);
             } else if (!numberClass.isInstance(element)) {
                 throw PARAM_ERROR_HANDLER.apply(this, type, list);
             } else if (element instanceof BigDecimal) {

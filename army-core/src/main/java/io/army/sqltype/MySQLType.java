@@ -74,6 +74,11 @@ public enum MySQLType implements SqlType, SQLWords {
         return false;
     }
 
+    @Override
+    public boolean isUnknown() {
+        throw new UnsupportedOperationException();
+    }
+
 
     @Override
     public final boolean isNoPrecision() {

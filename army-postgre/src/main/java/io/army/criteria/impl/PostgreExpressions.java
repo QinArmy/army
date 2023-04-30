@@ -246,7 +246,7 @@ abstract class PostgreExpressions {
         } else if (left instanceof MappingType.SqlStringType || right instanceof MappingType.SqlStringType) {
             returnType = TextType.INSTANCE;
         } else if (left instanceof MappingType.SqlBinaryType && right instanceof MappingType.SqlBinaryType) {
-            returnType = PrimitiveByteArrayType.INSTANCE;
+            returnType = BinaryType.INSTANCE;
         } else if (left instanceof MappingType.SqlBitType && right instanceof MappingType.SqlBitType) {
             returnType = BitSetType.INSTANCE;
         } else if (left instanceof MappingType.SqlJsonbType && right instanceof MappingType.SqlJsonbType) {

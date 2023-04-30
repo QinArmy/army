@@ -5,9 +5,9 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Dialect;
-import io.army.dialect.DialectParser;
-import io.army.dialect._MockDialects;
+import io.army.dialect.*;
+import io.army.function.ExpressionConsumer;
+import io.army.function.ExpressionElementConsumer;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
@@ -46,6 +46,48 @@ abstract class CriteriaSupports {
             , Function<List<ArmySortItem>, OR> function) {
         throw new UnsupportedOperationException();
     }
+
+    static RowExpression rowExp(final Expression first, final Expression... rest) {
+        if (!(first instanceof FunctionArg)) {
+            throw CriteriaUtils.funcArgError("ROW", first);
+        }
+        List<ArmyExpression> columnList;
+        if (rest.length == 0) {
+            columnList = _Collections.singletonList((ArmyExpression) first);
+        } else {
+            columnList = _Collections.arrayList(1 + rest.length);
+            columnList.add((ArmyExpression) first);
+            for (Expression exp : rest) {
+                if (!(exp instanceof FunctionArg)) {
+                    throw CriteriaUtils.funcArgError("ROW", exp);
+                }
+                columnList.add((ArmyExpression) exp);
+            }
+            columnList = _Collections.unmodifiableList(columnList);
+        }
+        return new RowExpressionImpl(columnList);
+    }
+
+    static RowExpression rowExp(final Consumer<Statement._ExpressionSpaceClause> consumer) {
+        final List<ArmyExpression> columnList = _Collections.arrayList();
+        final ExpressionConsumerImpl expConsumer;
+        expConsumer = expressionConsumer(true, columnList::add);
+
+        consumer.accept(expConsumer);
+
+        expConsumer.endConsumer();
+        return new RowExpressionImpl(_Collections.unmodifiableList(columnList));
+    }
+
+    static ExpressionConsumerImpl expressionConsumer(boolean required, Consumer<? super ArmyExpression> consumer) {
+        return new ExpressionConsumerImpl(required, consumer);
+    }
+
+    static ExpressionElementConsumerImpl expressionElementConsumer(boolean required,
+                                                                   Consumer<? super ArmyExpressionElement> consumer) {
+        return new ExpressionElementConsumerImpl(required, consumer);
+    }
+
 
     static Returnings returningBuilder(Consumer<_SelectItem> consumer) {
         return new ReturningBuilderImpl(consumer);
@@ -976,6 +1018,168 @@ abstract class CriteriaSupports {
         }
 
     }//ReturningBuilderImpl
+
+
+    static final class RowExpressionImpl implements RowExpression, ArmyExpressionElement, _SelfDescribed {
+
+        private final List<? extends ArmyExpression> columnList;
+
+        private RowExpressionImpl(List<? extends ArmyExpression> columnList) {
+            assert columnList.size() > 0;
+            this.columnList = columnList;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(" ROW(");
+
+            final List<? extends ArmyExpression> columnList = this.columnList;
+            final int size;
+            size = columnList.size();
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                columnList.get(i).appendSql(context);
+            }
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder()
+                    .append(" ROW(");
+
+            final List<? extends ArmyExpression> columnList = this.columnList;
+            final int size;
+            size = columnList.size();
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                sqlBuilder.append(columnList.get(i));
+            }
+            return sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+
+    }//RowExpressionImpl
+
+
+    static final class ExpressionConsumerImpl implements Statement._ExpressionSpaceClause,
+            ExpressionConsumer {
+
+        private final boolean required;
+        private final Consumer<? super ArmyExpression> consumer;
+
+        private Boolean state;
+
+        /**
+         * <p>
+         * private constructor and must be private constructor
+         * </p>
+         *
+         * @see #expressionConsumer(boolean, Consumer)
+         */
+        private ExpressionConsumerImpl(boolean required, Consumer<? super ArmyExpression> consumer) {
+            this.required = required;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public ExpressionConsumer space(final Expression exp) {
+            if (this.state != null) {
+                throw ContextStack.clearStackAndCriteriaError("You can ony invoke space method for first expression.");
+            }
+            this.state = Boolean.TRUE;
+            return this.comma(exp);
+        }
+
+        @Override
+        public ExpressionConsumer comma(final @Nullable Expression exp) {
+            if (this.state != Boolean.TRUE) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (exp == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (!(exp instanceof FunctionArg)) {
+                throw ContextStack.clearStackAndCriteriaError("not army expression");
+            }
+            this.consumer.accept((ArmyExpression) exp);
+            return this;
+        }
+
+
+        void endConsumer() {
+            if (this.state == null && this.required) {
+                throw ContextStack.clearStackAndCriteriaError("You don't add any expression.");
+            }
+            this.state = Boolean.FALSE;
+        }
+
+
+    }//ExpressionConsumerImpl
+
+    static final class ExpressionElementConsumerImpl implements Statement._ExpressionElementSpaceClause,
+            ExpressionElementConsumer {
+
+        private final boolean required;
+        private final Consumer<? super ArmyExpressionElement> consumer;
+
+        private Boolean state;
+
+        /**
+         * <p>
+         * private constructor and must be private constructor
+         * </p>
+         *
+         * @see #expressionElementConsumer(boolean, Consumer)
+         */
+        private ExpressionElementConsumerImpl(boolean required, Consumer<? super ArmyExpressionElement> consumer) {
+            this.required = required;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public ExpressionElementConsumer space(final ExpressionElement exp) {
+            if (this.state != null) {
+                throw ContextStack.clearStackAndCriteriaError("You can ony invoke space method for first expression.");
+            }
+            this.state = Boolean.TRUE;
+            return this.comma(exp);
+        }
+
+        @Override
+        public ExpressionElementConsumer comma(final @Nullable ExpressionElement exp) {
+            if (this.state != Boolean.TRUE) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (exp == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (exp instanceof RowExpression) {
+                if (!(exp instanceof RowExpressionImpl)) {
+                    throw ContextStack.clearStackAndCriteriaError("not army row expression");
+                }
+            } else if (!(exp instanceof FunctionArg)) {
+                throw ContextStack.clearStackAndCriteriaError("not army expression");
+            }
+            this.consumer.accept((ArmyExpressionElement) exp);
+            return this;
+        }
+
+
+        void endConsumer() {
+            if (this.state == null && this.required) {
+                throw ContextStack.clearStackAndCriteriaError("You don't add any expression.");
+            }
+            this.state = Boolean.FALSE;
+        }
+
+
+    }//ExpressionElementConsumerImpl
 
 
 }

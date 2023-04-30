@@ -106,6 +106,11 @@ public final class TextArrayType extends _ArmyInnerMapping implements MappingTyp
     }
 
     @Override
+    public Class<?> underlyingComponentType() {
+        return String.class;
+    }
+
+    @Override
     public LengthType lengthType() {
         return LengthType.DEFAULT;
     }

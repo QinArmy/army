@@ -177,7 +177,7 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
     protected static IllegalArgumentException errorJavaType(
             Class<? extends MappingType> mappingMetaClass, Class<?> javaType) {
         return new IllegalArgumentException(
-                String.format("%s not support java type[%s].", mappingMetaClass.getName(), javaType.getName()));
+                String.format("%s don't support java type[%s].", mappingMetaClass.getName(), javaType.getName()));
     }
 
     protected static IllegalArgumentException valueOutOfMapping(final Object nonNull
@@ -441,6 +441,8 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
     }
 
     public interface SqlArrayType {
+
+        Class<?> underlyingComponentType();
 
     }
 

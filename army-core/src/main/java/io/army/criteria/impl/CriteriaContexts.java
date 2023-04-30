@@ -1080,8 +1080,8 @@ abstract class CriteriaContexts {
                 throw ContextStack.castCriteriaApi(this);
             } else if ((block = aliasToBlock.get(derivedAlias)) == null) {
                 selectionMap = null;
-            } else if (block instanceof _AliasDerivedBlock) {
-                selectionMap = (_AliasDerivedBlock) block;
+            } else if (block instanceof _SelectionMap) {
+                selectionMap = (_SelectionMap) block;
             } else if ((tabularItem = block.tableItem()) instanceof RecursiveCte) {
                 selectionMap = null;
             } else if (tabularItem instanceof _SelectionMap) {

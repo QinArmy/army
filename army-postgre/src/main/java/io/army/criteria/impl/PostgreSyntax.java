@@ -9,6 +9,7 @@ import io.army.util._StringUtils;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -95,6 +96,15 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
         return FunctionUtils.namedNotation(name, valueOperator.apply(value));
     }
 
+
+    public static RowExpression row(Expression first, Expression... rest) {
+        return CriteriaSupports.rowExp(first, rest);
+    }
+
+
+    public static RowExpression row(Consumer<Statement._ExpressionSpaceClause> consumer) {
+        return CriteriaSupports.rowExp(consumer);
+    }
 
 
 

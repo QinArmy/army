@@ -36,7 +36,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      *      <ul>
-     *          <li>If type is {@link MySQLCastType#BINARY }then {@link PrimitiveByteArrayType}</li>
+     *          <li>If type is {@link MySQLCastType#BINARY }then {@link BinaryType}</li>
      *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
@@ -50,13 +50,13 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Point }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link PrimitiveByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Point }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link BinaryType}</li>
      *      </ul>
      * </p>
      *
@@ -81,7 +81,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      *      <ul>
-     *          <li>If type is {@link MySQLCastType#BINARY }then {@link PrimitiveByteArrayType}</li>
+     *          <li>If type is {@link MySQLCastType#BINARY }then {@link BinaryType}</li>
      *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
@@ -95,13 +95,13 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Point }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link PrimitiveByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Point }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link BinaryType}</li>
      *      </ul>
      * </p>
      *
@@ -280,7 +280,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      *      <ul>
-     *          <li>If type is {@link MySQLCastType#BINARY }then {@link PrimitiveByteArrayType}</li>
+     *          <li>If type is {@link MySQLCastType#BINARY }then {@link BinaryType}</li>
      *          <li>Else if type is {@link MySQLCastType#CHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#NCHAR }then {@link StringType}</li>
      *          <li>Else if type is {@link MySQLCastType#TIME }then {@link LocalTimeType}</li>
@@ -294,18 +294,18 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
      *          <li>Else if type is {@link MySQLCastType#REAL }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#DOUBLE }then {@link DoubleType}</li>
      *          <li>Else if type is {@link MySQLCastType#JSON }then {@link StringType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Point }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link PrimitiveByteArrayType}</li>
-     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link PrimitiveByteArrayType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Point }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPoint }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiLineString }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#LineString }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#Polygon }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#MultiPolygon }then {@link BinaryType}</li>
+     *          <li>Else if type is {@link MySQLCastType#GeometryCollection }then {@link BinaryType}</li>
      *      </ul>
      * </p>
      *
      * @param exp             non-null   {@link Expression}
-     * @param using {@link MySQLs#USING}
+     * @param using           {@link MySQLs#USING}
      * @param transcodingName non-null
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_convert">CONVERT(expr USING transcoding_name)</a>
@@ -477,7 +477,7 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
             case Polygon:
             case MultiPolygon:
             case GeometryCollection:
-                returnType = PrimitiveByteArrayType.INSTANCE;
+                returnType = BinaryType.INSTANCE;
                 break;
             case CHAR:
             case NCHAR:

@@ -149,6 +149,8 @@ public enum PgSqlType implements SqlType {
 
     USER_DEFINED,
 
+    USER_DEFINED_ARRAY,
+
     UNKNOWN;
 
 
@@ -159,7 +161,13 @@ public enum PgSqlType implements SqlType {
 
     @Override
     public final boolean isUserDefined() {
-        return this == USER_DEFINED;
+        return this == USER_DEFINED
+                || this == USER_DEFINED_ARRAY;
+    }
+
+    @Override
+    public final boolean isUnknown() {
+        return this == UNKNOWN;
     }
 
 

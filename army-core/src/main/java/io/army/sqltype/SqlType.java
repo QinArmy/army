@@ -15,6 +15,8 @@ public interface SqlType {
 
     boolean isUserDefined();
 
+    boolean isUnknown();
+
     default boolean isNoPrecision() {
         throw new UnsupportedOperationException();
     }

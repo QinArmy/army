@@ -2,10 +2,14 @@ package io.army.dialect.postgre;
 
 import io.army.dialect._Constant;
 import io.army.dialect._Literals;
+import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.SqlType;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
+
+import java.lang.reflect.Array;
 
 abstract class PostgreLiterals extends _Literals {
 
@@ -94,6 +98,35 @@ abstract class PostgreLiterals extends _Literals {
                 .append(_Constant.QUOTE)
                 .append(value)
                 .append(_Constant.QUOTE);
+
+    }
+
+
+    static void appendSimpleTypeArray(final MappingType mappingType, final SqlType type, final Object array,
+                                      final StringBuilder sqlBuilder,
+                                      final ArrayElementHandler handler) {
+
+        final int length, dimension;
+        dimension = _ArrayUtils.dimensionOf(array.getClass());
+        length = Array.getLength(array);
+
+
+        sqlBuilder.append(_Constant.LEFT_BRACE);
+        Object component;
+        for (int i = 0; i < length; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.COMMA);
+            }
+            component = Array.get(array, i);
+            if (component == null) {
+                sqlBuilder.append(_Constant.NULL);
+            } else if (dimension > 1) {
+                appendSimpleTypeArray(mappingType, type, component, sqlBuilder, handler);
+            } else {
+                handler.appendElement(mappingType, type, component, sqlBuilder);
+            }
+        }
+        sqlBuilder.append(_Constant.RIGHT_BRACE);
 
     }
 

@@ -8,7 +8,7 @@ public interface _Constant {
 
     String SPACE_NULL = " NULL";
 
-    String LOWER_NULL = "null";
+    String NULL = "NULL";
 
     String SPACE_DEFAULT = " DEFAULT";
 
@@ -139,6 +139,10 @@ public interface _Constant {
 
     String SPACE_RIGHT_PAREN = " )";
 
+    String SPACE_LEFT_BRACE = " {";
+
+    String SPACE_RIGHT_BRACE = " }";
+
     String PARENS = "()";
 
     String SPACE_FOR_UPDATE = " FOR UPDATE";
@@ -162,6 +166,10 @@ public interface _Constant {
     char LEFT_PAREN = '(';
 
     char RIGHT_PAREN = ')';
+
+    char LEFT_BRACE = '{';
+
+    char RIGHT_BRACE = '}';
 
     char SPACE = ' ';
 

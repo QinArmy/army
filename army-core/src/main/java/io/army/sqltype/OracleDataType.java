@@ -22,5 +22,10 @@ public enum OracleDataType implements SqlType {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public boolean isUnknown() {
+        throw new UnsupportedOperationException();
+    }
+
 
 }

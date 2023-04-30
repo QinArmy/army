@@ -11,18 +11,18 @@ import io.army.sqltype.*;
  *
  * @since 1.0
  */
-public final class PrimitiveByteArrayType extends _ArmyInnerMapping implements MappingType.SqlBinaryType {
+public final class BinaryType extends _ArmyInnerMapping implements MappingType.SqlBinaryType {
 
-    public static final PrimitiveByteArrayType INSTANCE = new PrimitiveByteArrayType();
+    public static final BinaryType INSTANCE = new BinaryType();
 
-    public static PrimitiveByteArrayType from(final Class<?> fieldType) {
+    public static BinaryType from(final Class<?> fieldType) {
         if (fieldType != byte[].class) {
-            throw errorJavaType(PrimitiveByteArrayType.class, fieldType);
+            throw errorJavaType(BinaryType.class, fieldType);
         }
         return INSTANCE;
     }
 
-    private PrimitiveByteArrayType() {
+    private BinaryType() {
     }
 
     @Override
