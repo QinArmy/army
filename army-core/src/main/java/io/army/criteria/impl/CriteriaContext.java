@@ -26,7 +26,7 @@ interface CriteriaContext {
 
     CriteriaContext getNonNullLeftContext();
 
-    CriteriaContext onBeforeWithClause(boolean recursive);
+    void onBeforeWithClause(boolean recursive);
 
     void onStartCte(String name);
 
@@ -156,7 +156,11 @@ interface CriteriaContext {
 
     Expression insertValueField(FieldMeta<?> field, Function<FieldMeta<?>, Expression> function);
 
-    void insertColumnList(List<FieldMeta<?>> columnlist);
+    void insertColumnList(List<FieldMeta<?>> columnList);
 
+
+    ArmyRowExpression row(String alias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+    ArmyRowExpression row(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
 
 }

@@ -2097,7 +2097,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_json ( anyelement ) → json</a>
      */
-    public static SimpleExpression toJson(Expression exp) {
+    public static SimpleExpression toJson(ExpressionElement exp) {
         return FunctionUtils.oneArgFunc("TO_JSON", exp, JsonType.TEXT);
     }
 
@@ -2109,7 +2109,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_jsonb ( anyelement ) → jsonb</a>
      */
-    public static SimpleExpression toJsonb(Expression exp) {
+    public static SimpleExpression toJsonb(ExpressionElement exp) {
         return FunctionUtils.oneArgFunc("TO_JSONB", exp, JsonbType.TEXT);
     }
 
@@ -2181,18 +2181,18 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      *
-     * @param rest here,<ul>
-     *             <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *             <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *             <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *             <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
-     *             </ul> is allowed.
+     * @param variadic here,<ul>
+     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 </ul> is allowed.
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(Expression first, Expression... rest) {
-        return FunctionUtils.varargsFunc("JSON_BUILD_ARRAY", JsonType.TEXT, first, rest);
+    public static SimpleExpression jsonBuildArray(ExpressionElement... variadic) {
+        return FunctionUtils.varargsElementFunc("JSON_BUILD_ARRAY", JsonType.TEXT, variadic);
     }
 
     /**
@@ -2210,8 +2210,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(Consumer<Statement._ExpressionSpaceClause> consumer) {
-        return FunctionUtils.varargsFunc("JSON_BUILD_ARRAY", consumer, JsonType.TEXT);
+    public static SimpleExpression jsonBuildArray(Consumer<Statement._ExpressionElementSpaceClause> consumer) {
+        return FunctionUtils.varargsElementFunc("JSON_BUILD_ARRAY", false, consumer, JsonType.TEXT);
     }
 
     /**
@@ -2219,18 +2219,18 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
      *
-     * @param rest here,<ul>
-     *             <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *             <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *             <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *             <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
-     *             </ul> is allowed.
+     * @param variadic here,<ul>
+     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 </ul> is allowed.
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(Expression first, Expression... rest) {
-        return FunctionUtils.varargsFunc("JSONB_BUILD_ARRAY", JsonbType.TEXT, first, rest);
+    public static SimpleExpression jsonbBuildArray(ExpressionElement... variadic) {
+        return FunctionUtils.varargsElementFunc("JSONB_BUILD_ARRAY", JsonbType.TEXT, variadic);
     }
 
     /**
@@ -2248,8 +2248,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(Consumer<Statement._ExpressionSpaceClause> consumer) {
-        return FunctionUtils.varargsFunc("JSONB_BUILD_ARRAY", consumer, JsonbType.TEXT);
+    public static SimpleExpression jsonbBuildArray(Consumer<Statement._ExpressionElementSpaceClause> consumer) {
+        return FunctionUtils.varargsElementFunc("JSONB_BUILD_ARRAY", false, consumer, JsonbType.TEXT);
     }
 
 
@@ -2258,24 +2258,18 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      *
-     * @param first here,<ul>
-     *              <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *              <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *              <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *              <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
-     *              </ul> is allowed.
-     * @param rest  here,<ul>
-     *              <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *              <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *              <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *              <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
-     *              </ul> is allowed.
+     * @param variadic here,<ul>
+     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 </ul> is allowed.
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildObject(Expression first, Expression... rest) {
-        return FunctionUtils.varargsFunc("JSON_BUILD_OBJECT", JsonType.TEXT, first, rest);
+    public static SimpleExpression jsonBuildObject(ExpressionElement... variadic) {
+        return FunctionUtils.varargsElementFunc("JSON_BUILD_OBJECT", JsonType.TEXT, variadic);
     }
 
     /**
@@ -2293,8 +2287,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildObject(Consumer<Statement._ExpressionSpaceClause> consumer) {
-        return FunctionUtils.varargsFunc("JSON_BUILD_OBJECT", consumer, JsonType.TEXT);
+    public static SimpleExpression jsonBuildObject(Consumer<Statement._ExpressionElementSpaceClause> consumer) {
+        return FunctionUtils.varargsElementFunc("JSON_BUILD_OBJECT", false, consumer, JsonType.TEXT);
     }
 
     /**
@@ -2302,24 +2296,18 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
      *
-     * @param first here,<ul>
-     *              <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *              <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *              <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *              <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
-     *              </ul> is allowed.
-     * @param rest  here,<ul>
-     *              <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *              <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *              <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *              <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
-     *              </ul> is allowed.
+     * @param variadic here,<ul>
+     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 </ul> is allowed.
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → jsonb<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(Expression first, Expression... rest) {
-        return FunctionUtils.varargsFunc("JSONB_BUILD_OBJECT", JsonbType.TEXT, first, rest);
+    public static SimpleExpression jsonbBuildObject(ExpressionElement... variadic) {
+        return FunctionUtils.varargsElementFunc("JSONB_BUILD_OBJECT", JsonbType.TEXT, variadic);
     }
 
     /**
@@ -2337,8 +2325,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(Consumer<Statement._ExpressionSpaceClause> consumer) {
-        return FunctionUtils.varargsFunc("JSONB_BUILD_OBJECT", consumer, JsonbType.TEXT);
+    public static SimpleExpression jsonbBuildObject(Consumer<Statement._ExpressionElementSpaceClause> consumer) {
+        return FunctionUtils.varargsElementFunc("JSONB_BUILD_OBJECT", false,consumer, JsonbType.TEXT);
     }
 
     /**

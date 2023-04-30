@@ -13,7 +13,7 @@ package io.army.criteria.impl;
  *
  * @since 1.0
  */
-interface FunctionArg extends ArmyExpression {
+interface FunctionArg extends ArmyExpressionElement {
 
     /**
      * <p>
@@ -22,6 +22,7 @@ interface FunctionArg extends ArmyExpression {
      *     <ul>
      *         <li>{@link OperationExpression}</li>
      *         <li>{@link SQLs#_ASTERISK_EXP}</li>
+     *         <li>{@link ArmyRowExpression}</li>
      *     </ul>
      * </p>
      *

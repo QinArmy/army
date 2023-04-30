@@ -77,6 +77,29 @@ abstract class SelectionGroups {
         }
     }
 
+    private static void appendDerivedRow(final String derivedAlias, final List<? extends Selection> selectionList,
+                                         final _SqlContext context) {
+        final StringBuilder builder = context.sqlBuilder();
+
+        final DialectParser dialect = context.parser();
+        final String safeDerivedAlias = dialect.identifier(derivedAlias);
+        final int size = selectionList.size();
+        assert size > 0;
+
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(_Constant.SPACE_COMMA);
+            }
+            builder.append(_Constant.SPACE)
+                    .append(safeDerivedAlias)
+                    .append(_Constant.POINT);
+
+            dialect.identifier(selectionList.get(i).alias(), builder);
+
+        }
+
+    }
+
 
     /*################################## blow static inner class  ##################################*/
 
@@ -84,7 +107,7 @@ abstract class SelectionGroups {
     /**
      * for RETURNING clause
      */
-    private static final class InsertTableGroup<T> implements _SelectionGroup._TableFieldGroup {
+    private static final class InsertTableGroup<T> implements _SelectionGroup._TableFieldGroup, ArmyRowExpression {
 
         private final TableMeta<T> insertTable;
 
@@ -127,6 +150,27 @@ abstract class SelectionGroups {
         }
 
         @Override
+        public void appendSql(final _SqlContext context) {
+            final List<FieldMeta<T>> fieldList;
+            fieldList = this.insertTable.fieldList();
+
+            final int fieldSize;
+            fieldSize = fieldList.size();
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            for (int i = 0; i < fieldSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                context.appendField(fieldList.get(i));
+
+            }
+
+        }
+
+        @Override
         public List<? extends Selection> selectionList() {
             return this.insertTable.fieldList();
         }
@@ -140,7 +184,7 @@ abstract class SelectionGroups {
     }//InsertTableGroup
 
 
-    static final class TableFieldGroupImpl<T> implements _SelectionGroup._TableFieldGroup {
+    static final class TableFieldGroupImpl<T> implements _SelectionGroup._TableFieldGroup, ArmyRowExpression {
 
         private final String tableAlias;
 
@@ -204,6 +248,22 @@ abstract class SelectionGroups {
         }
 
         @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder builder = context.sqlBuilder();
+            final String tableAlias = this.tableAlias;
+
+            final List<FieldMeta<T>> fieldList = this.fieldList;
+            final int size = fieldList.size();
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                context.appendField(tableAlias, fieldList.get(i));
+            }
+
+        }
+
+        @Override
         public String toString() {
             final StringBuilder builder = new StringBuilder();
 
@@ -226,7 +286,7 @@ abstract class SelectionGroups {
     }//TableFieldGroup
 
 
-    private static final class DerivedSelectionGroup implements _SelectionGroup {
+    private static final class DerivedSelectionGroup implements _SelectionGroup, ArmyRowExpression {
 
         private final String derivedAlias;
 
@@ -243,6 +303,11 @@ abstract class SelectionGroups {
         }
 
         @Override
+        public void appendSql(final _SqlContext context) {
+            appendDerivedRow(this.derivedAlias, this.selectionList, context);
+        }
+
+        @Override
         public String tableAlias() {
             return this.derivedAlias;
         }
@@ -255,7 +320,7 @@ abstract class SelectionGroups {
     }//DerivedSelectionGroup
 
 
-    private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup {
+    private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup, ArmyRowExpression {
 
         private final String derivedAlias;
 
@@ -304,6 +369,16 @@ abstract class SelectionGroups {
             appendDerivedFieldGroup(this.derivedAlias, selectionList, context);
 
         }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final List<? extends Selection> selectionList = this.selectionList;
+            if (selectionList == null || selectionList.size() == 0) {
+                throw new CriteriaException("DerivedSelectionGroup no selection.");
+            }
+            appendDerivedRow(this.derivedAlias, selectionList, context);
+        }
+
 
     }// SubQuerySelectionGroupImpl
 

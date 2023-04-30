@@ -192,6 +192,15 @@ abstract class ContextStack {
         return new CriteriaException(msg);
     }
 
+    static CriteriaException clearStackAndNonArmyExpression() {
+        final Stack stack = HOLDER.get();
+        if (stack != null) {
+            HOLDER.remove();
+            stack.clear();
+        }
+        return new CriteriaException("non-army expression");
+    }
+
 
     static <T> CriteriaException clearStackAndCriteriaError(Function<T, CriteriaException> function, T input) {
         final Stack stack = HOLDER.get();

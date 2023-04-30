@@ -21,15 +21,17 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
 
     /**
-     * @see Postgres#toJson(Expression)
-     * @see Postgres#toJsonb(Expression)
+     * @see Postgres#toJson(ExpressionElement)
+     * @see Postgres#toJsonb(ExpressionElement)
      */
     @Test
     public void toJsonFunc() {
         final Select stmt;
         stmt = Postgres.query()
                 .select(toJson(SQLs.literalValue("Fred said \"Hi.\""))::as, "json1")
-                .comma(toJsonb(SQLs.literalValue("Fred said \"Hi.\""))::as, "json3")
+                .comma(toJsonb(SQLs.literalValue("Fred said \"Hi.\""))::as, "json2")
+                .comma(toJson(row(SQLs.literalValue(1), SQLs.literalValue(2), row(SQLs.literalValue(randomPerson()))))::as, "json3")
+                .comma(toJsonb(row(SQLs.literalValue(1), SQLs.literalValue(2), row(SQLs.literalValue(randomPerson()))))::as, "json4")
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -83,9 +85,9 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
     }
 
     /**
-     * @see Postgres#jsonBuildArray(Expression, Expression...)
+     * @see Postgres#jsonBuildArray(ExpressionElement...)
      * @see Postgres#jsonBuildArray(Consumer)
-     * @see Postgres#jsonbBuildArray(Expression, Expression...)
+     * @see Postgres#jsonbBuildArray(ExpressionElement...)
      * @see Postgres#jsonbBuildArray(Consumer)
      */
     @Test

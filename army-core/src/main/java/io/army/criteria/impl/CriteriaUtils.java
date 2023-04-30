@@ -740,6 +740,9 @@ abstract class CriteriaUtils {
         return unknownWords(ContextStack.peek(), word);
     }
 
+    static CriteriaException spaceMethodNotFirst() {
+        return ContextStack.clearStackAndCriteriaError("space method can invoke ony at first time.");
+    }
 
     static CriteriaException returningListIsEmpty(CriteriaContext context) {
         return ContextStack.criteriaError(context, "RETURNING list is empty");

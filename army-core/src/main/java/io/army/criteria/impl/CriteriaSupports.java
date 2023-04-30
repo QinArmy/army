@@ -7,7 +7,6 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.function.ExpressionConsumer;
-import io.army.function.ExpressionElementConsumer;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
@@ -47,36 +46,29 @@ abstract class CriteriaSupports {
         throw new UnsupportedOperationException();
     }
 
-    static RowExpression rowExp(final Expression first, final Expression... rest) {
-        if (!(first instanceof FunctionArg)) {
-            throw CriteriaUtils.funcArgError("ROW", first);
-        }
-        List<ArmyExpression> columnList;
-        if (rest.length == 0) {
-            columnList = _Collections.singletonList((ArmyExpression) first);
-        } else {
-            columnList = _Collections.arrayList(1 + rest.length);
-            columnList.add((ArmyExpression) first);
-            for (Expression exp : rest) {
-                if (!(exp instanceof FunctionArg)) {
-                    throw CriteriaUtils.funcArgError("ROW", exp);
-                }
-                columnList.add((ArmyExpression) exp);
+    static RowExpression rowExp(final ExpressionElement... columns) {
+
+        final List<ArmyExpressionElement> columnList;
+        columnList = _Collections.arrayList(columns.length);
+        for (ExpressionElement exp : columns) {
+            if (!(exp instanceof ArmyExpressionElement)) {
+                throw CriteriaUtils.funcArgError("ROW", exp);
             }
-            columnList = _Collections.unmodifiableList(columnList);
+            columnList.add((ArmyExpressionElement) exp);
         }
         return new RowExpressionImpl(columnList);
     }
 
-    static RowExpression rowExp(final Consumer<Statement._ExpressionSpaceClause> consumer) {
-        final List<ArmyExpression> columnList = _Collections.arrayList();
-        final ExpressionConsumerImpl expConsumer;
-        expConsumer = expressionConsumer(true, columnList::add);
+    static RowExpression rowExp(final boolean required,
+                                final Consumer<Statement._ExpressionElementSpaceClause> consumer) {
+        final List<ArmyExpressionElement> columnList = _Collections.arrayList();
+        final ExpressionElementConsumerImpl expConsumer;
+        expConsumer = expressionElementConsumer(required, columnList::add);
 
         consumer.accept(expConsumer);
 
         expConsumer.endConsumer();
-        return new RowExpressionImpl(_Collections.unmodifiableList(columnList));
+        return new RowExpressionImpl(columnList);
     }
 
     static ExpressionConsumerImpl expressionConsumer(boolean required, Consumer<? super ArmyExpression> consumer) {
@@ -1020,11 +1012,11 @@ abstract class CriteriaSupports {
     }//ReturningBuilderImpl
 
 
-    static final class RowExpressionImpl implements RowExpression, ArmyExpressionElement, _SelfDescribed {
+    static final class RowExpressionImpl implements ArmyRowExpression, FunctionArg.SingleFunctionArg {
 
-        private final List<? extends ArmyExpression> columnList;
+        private final List<ArmyExpressionElement> columnList;
 
-        private RowExpressionImpl(List<? extends ArmyExpression> columnList) {
+        private RowExpressionImpl(List<ArmyExpressionElement> columnList) {
             assert columnList.size() > 0;
             this.columnList = columnList;
         }
@@ -1035,7 +1027,7 @@ abstract class CriteriaSupports {
             sqlBuilder = context.sqlBuilder()
                     .append(" ROW(");
 
-            final List<? extends ArmyExpression> columnList = this.columnList;
+            final List<ArmyExpressionElement> columnList = this.columnList;
             final int size;
             size = columnList.size();
             for (int i = 0; i < size; i++) {
@@ -1054,7 +1046,7 @@ abstract class CriteriaSupports {
             sqlBuilder = new StringBuilder()
                     .append(" ROW(");
 
-            final List<? extends ArmyExpression> columnList = this.columnList;
+            final List<ArmyExpressionElement> columnList = this.columnList;
             final int size;
             size = columnList.size();
             for (int i = 0; i < size; i++) {
@@ -1147,11 +1139,30 @@ abstract class CriteriaSupports {
         @Override
         public ExpressionElementConsumer space(final ExpressionElement exp) {
             if (this.state != null) {
-                throw ContextStack.clearStackAndCriteriaError("You can ony invoke space method for first expression.");
+                throw CriteriaUtils.spaceMethodNotFirst();
             }
             this.state = Boolean.TRUE;
             return this.comma(exp);
         }
+
+        @Override
+        public ExpressionElementConsumer space(String alias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.comma(alias, period, table);
+        }
+
+        @Override
+        public ExpressionElementConsumer space(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.comma(alias, period, asterisk);
+        }
+
 
         @Override
         public ExpressionElementConsumer comma(final @Nullable ExpressionElement exp) {
@@ -1159,17 +1170,31 @@ abstract class CriteriaSupports {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (exp == null) {
                 throw ContextStack.clearStackAndNullPointer();
+            } else if (!(exp instanceof ArmyExpressionElement)) {
+                throw ContextStack.clearStackAndNonArmyExpression();
             } else if (exp instanceof RowExpression) {
-                if (!(exp instanceof RowExpressionImpl)) {
-                    throw ContextStack.clearStackAndCriteriaError("not army row expression");
+                if (!(exp instanceof ArmyRowExpression)) {
+                    throw ContextStack.clearStackAndNonArmyExpression();
                 }
-            } else if (!(exp instanceof FunctionArg)) {
-                throw ContextStack.clearStackAndCriteriaError("not army expression");
+            } else if (exp instanceof Expression) {
+                if (!(exp instanceof FunctionArg)) {
+                    String m = String.format("don't support %s.", exp.getClass().getName());
+                    throw ContextStack.clearStackAndCriteriaError(m);
+                }
             }
             this.consumer.accept((ArmyExpressionElement) exp);
             return this;
         }
 
+        @Override
+        public ExpressionElementConsumer comma(String alias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+            return this.comma(ContextStack.peek().row(alias, period, table));
+        }
+
+        @Override
+        public ExpressionElementConsumer comma(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
+            return this.comma(ContextStack.peek().row(alias, period, asterisk));
+        }
 
         void endConsumer() {
             if (this.state == null && this.required) {

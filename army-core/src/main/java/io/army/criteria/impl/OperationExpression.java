@@ -22,7 +22,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-abstract class OperationExpression implements FunctionArg.SingleFunctionArg {
+abstract class OperationExpression implements FunctionArg.SingleFunctionArg, ArmyExpression {
 
 
     /**

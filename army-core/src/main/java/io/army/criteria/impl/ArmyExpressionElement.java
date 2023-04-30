@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.ExpressionElement;
+import io.army.criteria.impl.inner._SelfDescribed;
 
 /**
  * <p>
@@ -9,7 +10,7 @@ import io.army.criteria.ExpressionElement;
  *
  * @since 1.0
  */
-interface ArmyExpressionElement extends ExpressionElement {
+interface ArmyExpressionElement extends ExpressionElement, _SelfDescribed {
 
 
 }

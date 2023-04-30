@@ -328,7 +328,6 @@ abstract class CriteriaContexts {
     }
 
 
-
     /**
      * @see JoinableContext#validateQualifiedFieldMap()
      * @see StatementContext#validateFieldFromSubContext(QualifiedField)
@@ -538,12 +537,11 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final CriteriaContext onBeforeWithClause(final boolean recursive) {
+        public final void onBeforeWithClause(final boolean recursive) {
             if (this.withCteContext != null) {
                 throw ContextStack.castCriteriaApi(this);
             }
             this.withCteContext = new WithCteContext(recursive);
-            return this;
         }
 
         @Override
@@ -892,8 +890,20 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public void insertColumnList(List<FieldMeta<?>> columnlist) {
-            String m = "current context don't support insertColumnList(List<FieldMeta<?>> columnlist)";
+        public void insertColumnList(List<FieldMeta<?>> columnList) {
+            String m = "current context don't support insertColumnList(List<FieldMeta<?>> columnList)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
+        public ArmyRowExpression row(String alias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+            String m = "current context don't support row(String alias, SQLs.SymbolPeriod period, TableMeta<?> table)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
+        public ArmyRowExpression row(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
+            String m = "current context don't support row(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk";
             throw ContextStack.criteriaError(this, m);
         }
 
@@ -1647,7 +1657,6 @@ abstract class CriteriaContexts {
         }
 
 
-
     }//JoinableContext
 
 
@@ -1713,11 +1722,11 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void insertColumnList(final List<FieldMeta<?>> columnlist) {
+        public final void insertColumnList(final List<FieldMeta<?>> columnList) {
             if (this.columnlist != null) {
                 throw ContextStack.castCriteriaApi(this);
             }
-            this.columnlist = columnlist;
+            this.columnlist = columnList;
         }
 
         @SuppressWarnings("unchecked")
@@ -2037,7 +2046,7 @@ abstract class CriteriaContexts {
             if (selectItem instanceof _SelectionGroup) {
                 Map<String, _SelectionGroup> map = this.selectionGroupMap;
                 if (map == null) {
-                    map = new HashMap<>();
+                    map = _Collections.hashMap();
                     this.selectionGroupMap = map;
                 }
                 final _SelectionGroup group = (_SelectionGroup) selectItem;
@@ -2051,6 +2060,53 @@ abstract class CriteriaContexts {
             return this;
         }
 
+        @Override
+        public final ArmyRowExpression row(final @Nullable String alias, SQLs.SymbolPeriod period,
+                                           final @Nullable TableMeta<?> table) {
+            if (this.isSelectClauseEnd()) {
+                throw ContextStack.criteriaError(this, "Error,SELECT clause have ended.");
+            } else if (alias == null || table == null) {
+                throw ContextStack.nullPointer(this);
+            }
+            final Map<String, _SelectionGroup> map;
+            map = this.getOrCreateSelectionGroupMap();
+            _SelectionGroup group;
+            group = map.get(alias);
+            if (group == null) {
+                group = SelectionGroups.singleGroup(table, alias);
+                map.put(alias, group);
+            } else if (!(group instanceof _SelectionGroup._TableFieldGroup)
+                    || !((_SelectionGroup._TableFieldGroup) group).isLegalGroup(table)) {
+                String m = String.format("error,please check table alias[%s] in statement.", alias);
+                throw ContextStack.criteriaError(this, m);
+            }
+            return (ArmyRowExpression) group;
+        }
+
+
+        @Override
+        public final ArmyRowExpression row(final @Nullable String alias, SQLs.SymbolPeriod period,
+                                           SQLs.SymbolAsterisk asterisk) {
+            if (this.isSelectClauseEnd()) {
+                throw ContextStack.criteriaError(this, "Error,SELECT clause have ended.");
+            } else if (alias == null) {
+                throw ContextStack.nullPointer(this);
+            }
+
+            final Map<String, _SelectionGroup> map;
+            map = this.getOrCreateSelectionGroupMap();
+            _SelectionGroup group;
+            group = map.get(alias);
+            if (group == null) {
+                group = SelectionGroups.derivedGroup(alias);
+                map.put(alias, group);
+            } else if (!(group instanceof DerivedFieldGroup)
+                    || !alias.equals(group.tableAlias())) {
+                String m = String.format("error,please check derived alias[%s] in statement.", alias);
+                throw ContextStack.criteriaError(this, m);
+            }
+            return (ArmyRowExpression) group;
+        }
 
         @Override
         public final void onOrderByStart() {
@@ -2081,9 +2137,7 @@ abstract class CriteriaContexts {
                 return cacheReference;
             }
             final SelectionReference refSelection;
-            if (this.isSelectClauseNotEnd()) {
-                refSelection = new MutableNameRefSelection(selectionAlias);
-            } else {
+            if (this.isSelectClauseEnd()) {
                 final Selection selection;
                 selection = this.getSelectionMap().get(selectionAlias);
                 if (selection == null) {
@@ -2094,6 +2148,8 @@ abstract class CriteriaContexts {
                 } else {
                     refSelection = new ImmutableNameRefSelection(selection);
                 }
+            } else {
+                refSelection = new MutableNameRefSelection(selectionAlias);
             }
             refSelectionMap.put(selectionAlias, refSelection);
             return refSelection;
@@ -2123,9 +2179,7 @@ abstract class CriteriaContexts {
                 return cacheReference;
             }
             final SelectionReference refSelection;
-            if (this.isSelectClauseNotEnd()) {
-                refSelection = new MutableOrdinalRefSelection(selectionOrdinal);
-            } else {
+            if (this.isSelectClauseEnd()) {
                 final List<Selection> selectionList = this.flatSelectionList;
                 assert selectionList != null;
                 if (selectionOrdinal > selectionList.size()) {
@@ -2138,6 +2192,8 @@ abstract class CriteriaContexts {
                 } else {
                     refSelection = new ImmutableOrdinalRefSelection(selectionOrdinal, selection);
                 }
+            } else {
+                refSelection = new MutableOrdinalRefSelection(selectionOrdinal);
             }
             refSelectionMap.put(selectionOrdinal, refSelection);
             return refSelection;
@@ -2346,10 +2402,19 @@ abstract class CriteriaContexts {
 
         }
 
+        private Map<String, _SelectionGroup> getOrCreateSelectionGroupMap() {
+            Map<String, _SelectionGroup> map = this.selectionGroupMap;
+            if (map == null) {
+                map = _Collections.hashMap();
+                this.selectionGroupMap = map;
+            }
+            return map;
+        }
 
-        private boolean isSelectClauseNotEnd() {
+
+        private boolean isSelectClauseEnd() {
             final List<_SelectItem> selectItemList = this.selectItemList;
-            return selectItemList == null || selectItemList instanceof ArrayList;
+            return selectItemList != null && !(selectItemList instanceof ArrayList);
         }
 
 

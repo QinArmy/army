@@ -41,15 +41,16 @@ abstract class FunctionUtils {
     }
 
 
-    static SimpleExpression oneArgFunc(String name, Expression expr, TypeMeta returnType) {
-        if (!(expr instanceof FunctionArg.SingleFunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, expr);
+    static SimpleExpression oneArgFunc(String name, ExpressionElement one, TypeMeta returnType) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
         }
-        return new OneArgFunction(name, expr, returnType);
+        return new OneArgFunction(name, one, returnType);
     }
 
 
-    static SimpleExpression twoArgFunc(final String name, final Expression one, final Expression two, TypeMeta returnType) {
+    static SimpleExpression twoArgFunc(final String name, final ExpressionElement one,
+                                       final ExpressionElement two, TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -58,8 +59,8 @@ abstract class FunctionUtils {
         return new TwoArgFunction(name, one, two, returnType);
     }
 
-    static SimpleExpression threeArgFunc(final String name, final Expression one, final Expression two,
-                                         final Expression three, TypeMeta returnType) {
+    static SimpleExpression threeArgFunc(final String name, final ExpressionElement one, final ExpressionElement two,
+                                         final ExpressionElement three, TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -70,8 +71,9 @@ abstract class FunctionUtils {
         return new ThreeArgFunction(name, one, two, three, returnType);
     }
 
-    static SimpleExpression fourArgFunc(final String name, final Expression one, final Expression two,
-                                        final Expression three, final Expression four, final TypeMeta returnType) {
+    static SimpleExpression fourArgFunc(final String name, final ExpressionElement one, final ExpressionElement two,
+                                        final ExpressionElement three, final ExpressionElement four,
+                                        final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -84,9 +86,9 @@ abstract class FunctionUtils {
         return new FourArgFunction(name, one, two, three, four, returnType);
     }
 
-    static SimpleExpression fiveArgFunc(final String name, final Expression one, final Expression two,
-                                        final Expression three, final Expression four, final Expression five,
-                                        final TypeMeta returnType) {
+    static SimpleExpression fiveArgFunc(final String name, final ExpressionElement one, final ExpressionElement two,
+                                        final ExpressionElement three, final ExpressionElement four,
+                                        final ExpressionElement five, final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -101,9 +103,10 @@ abstract class FunctionUtils {
         return new FiveArgFunction(name, one, two, three, four, five, returnType);
     }
 
-    static SimpleExpression sixArgFunc(final String name, final Expression one, final Expression two,
-                                       final Expression three, final Expression four, final Expression five,
-                                       final Expression six, final TypeMeta returnType) {
+    static SimpleExpression sixArgFunc(final String name, final ExpressionElement one, final ExpressionElement two,
+                                       final ExpressionElement three, final ExpressionElement four,
+                                       final ExpressionElement five, final ExpressionElement six,
+                                       final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -120,9 +123,10 @@ abstract class FunctionUtils {
         return new SixArgFunction(name, one, two, three, four, five, six, returnType);
     }
 
-    static SimpleExpression sevenArgFunc(final String name, final Expression one, final Expression two,
-                                         final Expression three, final Expression four, final Expression five,
-                                         final Expression six, final Expression seven, final TypeMeta returnType) {
+    static SimpleExpression sevenArgFunc(final String name, final ExpressionElement one, final ExpressionElement two,
+                                         final ExpressionElement three, final ExpressionElement four,
+                                         final ExpressionElement five, final ExpressionElement six,
+                                         final ExpressionElement seven, final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -352,25 +356,37 @@ abstract class FunctionUtils {
                                         TypeMeta returnType) {
         final List<ArmyExpression> argList = _Collections.arrayList();
         final CriteriaSupports.ExpressionConsumerImpl expConsumer;
-        expConsumer = CriteriaSupports.expressionConsumer(true, argList::add);
+        expConsumer = CriteriaSupports.expressionConsumer(false, argList::add);
         consumer.accept(expConsumer);
         expConsumer.endConsumer();
         return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
-    static SimpleExpression varargsFunc(final String name, final TypeMeta returnType, final Expression first,
-                                        final @Nullable Expression... rest) {
-        if (!(first instanceof FunctionArg)) {
-            throw CriteriaUtils.funcArgError(name, first);
-        }
+    static SimpleExpression varargsElementFunc(String name, final boolean required,
+                                               Consumer<Statement._ExpressionElementSpaceClause> consumer,
+                                               TypeMeta returnType) {
+        final List<ArmyExpressionElement> argList = _Collections.arrayList();
+        final CriteriaSupports.ExpressionElementConsumerImpl expConsumer;
+        expConsumer = CriteriaSupports.expressionElementConsumer(required, argList::add);
+        consumer.accept(expConsumer);
+        expConsumer.endConsumer();
+        return new MultiArgFunctionExpression(name, argList, returnType);
+    }
+
+    static SimpleExpression varargsElementFunc(final String name, final TypeMeta returnType,
+                                               final ExpressionElement... variadic) {
+
         final SimpleExpression func;
-        if (rest == null || rest.length == 0) {
-            func = new OneArgFunction(name, first, returnType);
+        if (variadic.length == 0) {
+            func = zeroArgFunc(name, returnType);
         } else {
-            final List<FunctionArg> argList;
-            argList = _Collections.arrayList(1 + rest.length);
-            argList.add((FunctionArg) first);
-            appendRestVarargsArgs(name, argList, rest);
+            final List<ArmyExpressionElement> argList = _Collections.arrayList(variadic.length);
+            for (ExpressionElement exp : variadic) {
+                if (!(exp instanceof ArmyExpressionElement)) {
+                    throw CriteriaUtils.funcArgError(name, exp);
+                }
+                argList.add((ArmyExpressionElement) exp);
+            }
             func = new MultiArgFunctionExpression(name, argList, returnType);
         }
         return func;
@@ -575,15 +591,15 @@ abstract class FunctionUtils {
     }
 
     /**
-     * @see #varargsFunc(String, TypeMeta, Expression, Expression...)
+     * @see #varargsFunc(String, TypeMeta, ExpressionElement, ExpressionElement...)
      */
-    static void appendRestVarargsArgs(final String name, final List<? super FunctionArg> argList,
-                                      final Expression... rest) {
-        for (Expression exp : rest) {
+    static void appendRestVarargsArgs(final String name, final List<ArmyExpressionElement> argList,
+                                      final ExpressionElement... rest) {
+        for (ExpressionElement exp : rest) {
             if (!(exp instanceof FunctionArg)) {
                 throw CriteriaUtils.funcArgError(name, exp);
             }
-            argList.add((FunctionArg) exp);
+            argList.add((ArmyExpressionElement) exp);
         }
 
     }
@@ -637,7 +653,7 @@ abstract class FunctionUtils {
     }
 
 
-    static void appendArguments(final @Nullable SQLWords option, final List<? extends ArmyExpression> argList,
+    static void appendArguments(final @Nullable SQLWords option, final List<? extends ArmyExpressionElement> argList,
                                 final _SqlContext context) {
 
         final StringBuilder sqlBuilder;
@@ -661,7 +677,7 @@ abstract class FunctionUtils {
 
     }
 
-    static void argumentsToString(final @Nullable SQLWords option, final List<? extends ArmyExpression> argList
+    static void argumentsToString(final @Nullable SQLWords option, final List<? extends ArmyExpressionElement> argList
             , final StringBuilder builder) {
 
         if (option != null) {
@@ -706,11 +722,10 @@ abstract class FunctionUtils {
             } else if (o instanceof ArmyFuncClause) {
                 ((ArmyFuncClause) o).appendSql(context);
             } else if (o instanceof RowExpression) {
-                if (!(o instanceof CriteriaSupports.RowExpressionImpl)) {
+                if (!(o instanceof ArmyRowExpression)) {
                     throw new CriteriaException(String.format("%s non-army row expression", o));
                 }
-                // must cast to CriteriaSupports.RowExpressionImpl
-                ((CriteriaSupports.RowExpressionImpl) o).appendSql(context);
+                ((ArmyRowExpression) o).appendSql(context);
             } else {
                 //no bug,never here
                 throw new IllegalArgumentException();
@@ -747,12 +762,12 @@ abstract class FunctionUtils {
     }
 
 
-    static void addRestExp(final String name, final List<? super FunctionArg> expList, final Expression... rest) {
+    static void addRestExp(final String name, final List<ArmyExpression> expList, final Expression... rest) {
         for (Expression exp : rest) {
             if (!(exp instanceof FunctionArg)) {
                 throw CriteriaUtils.funcArgError(name, exp);
             }
-            expList.add((FunctionArg) exp);
+            expList.add((ArmyExpression) exp);
         }
     }
 
@@ -1395,11 +1410,11 @@ abstract class FunctionUtils {
 
     private static final class OneArgFunction extends FunctionExpression {
 
-        private final ArmyExpression argument;
+        private final ArmyExpressionElement argument;
 
-        private OneArgFunction(String name, Expression argument, TypeMeta returnType) {
+        private OneArgFunction(String name, ExpressionElement argument, TypeMeta returnType) {
             super(name, returnType);
-            this.argument = (ArmyExpression) argument;
+            this.argument = (ArmyExpressionElement) argument;
         }
 
         @Override
@@ -1438,17 +1453,17 @@ abstract class FunctionUtils {
 
     private static final class TwoArgFunction extends FunctionExpression {
 
-        private final ArmyExpression one;
+        private final ArmyExpressionElement one;
 
-        private final ArmyExpression two;
+        private final ArmyExpressionElement two;
 
         /**
-         * @see #twoArgFunc(String, Expression, Expression, TypeMeta)
+         * @see #twoArgFunc(String, ExpressionElement, ExpressionElement, TypeMeta)
          */
-        private TwoArgFunction(String name, Expression one, Expression two, TypeMeta returnType) {
+        private TwoArgFunction(String name, ExpressionElement one, ExpressionElement two, TypeMeta returnType) {
             super(name, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
+            this.one = (ArmyExpressionElement) one;
+            this.two = (ArmyExpressionElement) two;
         }
 
         @Override
@@ -1494,21 +1509,21 @@ abstract class FunctionUtils {
 
     private static final class ThreeArgFunction extends FunctionExpression {
 
-        private final ArmyExpression one;
+        private final ArmyExpressionElement one;
 
-        private final ArmyExpression two;
+        private final ArmyExpressionElement two;
 
-        private final ArmyExpression three;
+        private final ArmyExpressionElement three;
 
         /**
-         * @see #threeArgFunc(String, Expression, Expression, Expression, TypeMeta)
+         * @see #threeArgFunc(String, ExpressionElement, ExpressionElement, ExpressionElement, TypeMeta)
          */
-        private ThreeArgFunction(String name, Expression one, Expression two, Expression three,
+        private ThreeArgFunction(String name, ExpressionElement one, ExpressionElement two, ExpressionElement three,
                                  TypeMeta returnType) {
             super(name, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
-            this.three = (ArmyExpression) three;
+            this.one = (ArmyExpressionElement) one;
+            this.two = (ArmyExpressionElement) two;
+            this.three = (ArmyExpressionElement) three;
         }
 
         @Override
@@ -1563,24 +1578,24 @@ abstract class FunctionUtils {
 
     private static final class FourArgFunction extends FunctionExpression {
 
-        private final ArmyExpression one;
+        private final ArmyExpressionElement one;
 
-        private final ArmyExpression two;
+        private final ArmyExpressionElement two;
 
-        private final ArmyExpression three;
+        private final ArmyExpressionElement three;
 
-        private final ArmyExpression four;
+        private final ArmyExpressionElement four;
 
         /**
-         * @see #fourArgFunc(String, Expression, Expression, Expression, Expression, TypeMeta)
+         * @see #fourArgFunc(String, ExpressionElement, ExpressionElement, ExpressionElement, ExpressionElement, TypeMeta)
          */
-        private FourArgFunction(String name, Expression one, Expression two, Expression three, Expression four,
-                                TypeMeta returnType) {
+        private FourArgFunction(String name, ExpressionElement one, ExpressionElement two, ExpressionElement three,
+                                ExpressionElement four, TypeMeta returnType) {
             super(name, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
-            this.three = (ArmyExpression) three;
-            this.four = (ArmyExpression) four;
+            this.one = (ArmyExpressionElement) one;
+            this.two = (ArmyExpressionElement) two;
+            this.three = (ArmyExpressionElement) three;
+            this.four = (ArmyExpressionElement) four;
         }
 
         @Override
@@ -1641,28 +1656,28 @@ abstract class FunctionUtils {
 
     private static final class FiveArgFunction extends FunctionExpression {
 
-        private final ArmyExpression one;
+        private final ArmyExpressionElement one;
 
-        private final ArmyExpression two;
+        private final ArmyExpressionElement two;
 
-        private final ArmyExpression three;
+        private final ArmyExpressionElement three;
 
-        private final ArmyExpression four;
+        private final ArmyExpressionElement four;
 
-        private final ArmyExpression five;
+        private final ArmyExpressionElement five;
 
 
         /**
-         * @see #fiveArgFunc(String, Expression, Expression, Expression, Expression, Expression, TypeMeta)
+         * @see #fiveArgFunc(String, ExpressionElement, ExpressionElement, ExpressionElement, ExpressionElement, ExpressionElement, TypeMeta)
          */
-        private FiveArgFunction(String name, Expression one, Expression two, Expression three, Expression four,
-                                Expression five, TypeMeta returnType) {
+        private FiveArgFunction(String name, ExpressionElement one, ExpressionElement two, ExpressionElement three,
+                                ExpressionElement four, ExpressionElement five, TypeMeta returnType) {
             super(name, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
-            this.three = (ArmyExpression) three;
-            this.four = (ArmyExpression) four;
-            this.five = (ArmyExpression) five;
+            this.one = (ArmyExpressionElement) one;
+            this.two = (ArmyExpressionElement) two;
+            this.three = (ArmyExpressionElement) three;
+            this.four = (ArmyExpressionElement) four;
+            this.five = (ArmyExpressionElement) five;
         }
 
         @Override
@@ -1730,32 +1745,33 @@ abstract class FunctionUtils {
 
     private static final class SixArgFunction extends FunctionExpression {
 
-        private final ArmyExpression one;
+        private final ArmyExpressionElement one;
 
-        private final ArmyExpression two;
+        private final ArmyExpressionElement two;
 
-        private final ArmyExpression three;
+        private final ArmyExpressionElement three;
 
-        private final ArmyExpression four;
+        private final ArmyExpressionElement four;
 
-        private final ArmyExpression five;
+        private final ArmyExpressionElement five;
 
-        private final ArmyExpression six;
+        private final ArmyExpressionElement six;
 
 
         /**
-         * @see #sixArgFunc(String, Expression, Expression, Expression, Expression, Expression, Expression, TypeMeta)
+         * @see #sixArgFunc(String, ExpressionElement, ExpressionElement, ExpressionElement, ExpressionElement, ExpressionElement, ExpressionElement, TypeMeta)
          */
-        private SixArgFunction(String name, Expression one, Expression two, Expression three, Expression four,
-                               Expression five, Expression six, TypeMeta returnType) {
+        private SixArgFunction(String name, ExpressionElement one, ExpressionElement two, ExpressionElement three,
+                               ExpressionElement four, ExpressionElement five, ExpressionElement six,
+                               TypeMeta returnType) {
             super(name, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
-            this.three = (ArmyExpression) three;
-            this.four = (ArmyExpression) four;
+            this.one = (ArmyExpressionElement) one;
+            this.two = (ArmyExpressionElement) two;
+            this.three = (ArmyExpressionElement) three;
+            this.four = (ArmyExpressionElement) four;
 
-            this.five = (ArmyExpression) five;
-            this.six = (ArmyExpression) six;
+            this.five = (ArmyExpressionElement) five;
+            this.six = (ArmyExpressionElement) six;
         }
 
         @Override
@@ -1829,35 +1845,36 @@ abstract class FunctionUtils {
 
     private static final class SevenArgFunction extends FunctionExpression {
 
-        private final ArmyExpression one;
+        private final ArmyExpressionElement one;
 
-        private final ArmyExpression two;
+        private final ArmyExpressionElement two;
 
-        private final ArmyExpression three;
+        private final ArmyExpressionElement three;
 
-        private final ArmyExpression four;
+        private final ArmyExpressionElement four;
 
-        private final ArmyExpression five;
+        private final ArmyExpressionElement five;
 
-        private final ArmyExpression six;
+        private final ArmyExpressionElement six;
 
-        private final ArmyExpression seven;
+        private final ArmyExpressionElement seven;
 
 
         /**
-         * @see #sevenArgFunc(String, Expression, Expression, Expression, Expression, Expression, Expression, Expression, TypeMeta)
+         * @see #sevenArgFunc(String, ExpressionElement, ExpressionElement, ExpressionElement, ExpressionElement, ExpressionElement, ExpressionElement, ExpressionElement, TypeMeta)
          */
-        private SevenArgFunction(String name, Expression one, Expression two, Expression three, Expression four,
-                                 Expression five, Expression six, Expression seven, TypeMeta returnType) {
+        private SevenArgFunction(String name, ExpressionElement one, ExpressionElement two, ExpressionElement three,
+                                 ExpressionElement four, ExpressionElement five, ExpressionElement six,
+                                 ExpressionElement seven, TypeMeta returnType) {
             super(name, returnType);
-            this.one = (ArmyExpression) one;
-            this.two = (ArmyExpression) two;
-            this.three = (ArmyExpression) three;
-            this.four = (ArmyExpression) four;
+            this.one = (ArmyExpressionElement) one;
+            this.two = (ArmyExpressionElement) two;
+            this.three = (ArmyExpressionElement) three;
+            this.four = (ArmyExpressionElement) four;
 
-            this.five = (ArmyExpression) five;
-            this.six = (ArmyExpression) six;
-            this.seven = (ArmyExpression) seven;
+            this.five = (ArmyExpressionElement) five;
+            this.six = (ArmyExpressionElement) six;
+            this.seven = (ArmyExpressionElement) seven;
         }
 
         @Override
@@ -1939,9 +1956,9 @@ abstract class FunctionUtils {
     private static final class MultiArgFunctionExpression extends FunctionExpression {
 
 
-        private final List<? extends ArmyExpression> argList;
+        private final List<? extends ArmyExpressionElement> argList;
 
-        private MultiArgFunctionExpression(String name, List<? extends ArmyExpression> argList, TypeMeta returnType) {
+        private MultiArgFunctionExpression(String name, List<? extends ArmyExpressionElement> argList, TypeMeta returnType) {
             super(name, returnType);
             assert argList.size() > 0;
             this.argList = argList;

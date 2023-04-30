@@ -103,6 +103,11 @@ public interface Statement extends Item {
     interface _ExpressionElementSpaceClause {
 
         ExpressionElementConsumer space(ExpressionElement exp);
+
+        ExpressionElementConsumer space(String alias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        ExpressionElementConsumer space(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+
     }
 
 

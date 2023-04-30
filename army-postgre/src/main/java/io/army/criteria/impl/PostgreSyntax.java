@@ -97,13 +97,13 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
 
-    public static RowExpression row(Expression first, Expression... rest) {
-        return CriteriaSupports.rowExp(first, rest);
+    public static RowExpression row(ExpressionElement... column) {
+        return CriteriaSupports.rowExp(column);
     }
 
 
-    public static RowExpression row(Consumer<Statement._ExpressionSpaceClause> consumer) {
-        return CriteriaSupports.rowExp(consumer);
+    public static RowExpression row(Consumer<Statement._ExpressionElementSpaceClause> consumer) {
+        return CriteriaSupports.rowExp(false, consumer);
     }
 
 
