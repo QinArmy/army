@@ -9,9 +9,12 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -224,7 +227,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
     private static <T> List<FieldMeta<T>> createFieldList(final Class<T> domainClass
             , final Map<String, FieldMeta<T>> fieldNameToField) {
 
-        final List<FieldMeta<T>> fieldList = new ArrayList<>(fieldNameToField.size());
+        final List<FieldMeta<T>> fieldList = _Collections.arrayList(fieldNameToField.size());
 
         for (String fieldName : _MetaBridge.RESERVED_FIELDS) {
             final FieldMeta<T> reservedField;
@@ -257,7 +260,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
         if (fieldList.size() != fieldNameToField.size()) {
             throw new IllegalStateException("field count not match.");
         }
-        return Collections.unmodifiableList(fieldList);
+        return _Collections.unmodifiableList(fieldList);
     }
 
 

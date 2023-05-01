@@ -23,6 +23,13 @@ public abstract class _DialectUtils {
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings("unchecked")
+    public static List<FieldMeta<?>> castFieldList(final TableMeta<?> table) {
+        final List<?> list;
+        list = table.fieldList();
+        return (List<FieldMeta<?>>) list;
+    }
+
 
     public static boolean isOnConflictDoNothing(final _Insert stmt) {
         return stmt instanceof _Insert._SupportConflictClauseSpec
@@ -376,6 +383,7 @@ public abstract class _DialectUtils {
         map.put("DELETE", Boolean.TRUE);
         return map;
     }
+
 
 
     /*################################## blow private static innner class ##################################*/

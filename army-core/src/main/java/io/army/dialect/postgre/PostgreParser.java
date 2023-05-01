@@ -211,6 +211,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
             }
             break;
+            case NO_CAST_TEXT:
+                PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
+                break;
             case BYTEA: {
                 if (!(value instanceof byte[])) {//TODO think long binary
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);

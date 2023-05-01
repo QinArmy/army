@@ -553,6 +553,12 @@ abstract class CriteriaUtils {
     }
 
 
+    static CriteriaException nonEvenArgs(String name) {
+        String m = String.format("function[%s] the number of argument  must be even.", name);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
+
     static CriteriaException subDmlNoReturningClause(String cteName) {
         String m = String.format("cte[%s] no RETURNING clause,couldn't exists alias clause.", cteName);
         throw ContextStack.clearStackAndCriteriaError(m);

@@ -49,6 +49,8 @@ public enum PgSqlType implements SqlType {
     MONEY,
     TEXT,
 
+    NO_CAST_TEXT,
+
     TSVECTOR,
     TSQUERY,
 
@@ -219,6 +221,9 @@ public enum PgSqlType implements SqlType {
             case TSTZRANGE:
             case MACADDR:
                 builder.append(this.name());
+                break;
+            case NO_CAST_TEXT:
+                builder.append(TEXT.name());
                 break;
             case BOX_ARRAY:
             case OID_ARRAY:

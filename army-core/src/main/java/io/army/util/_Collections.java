@@ -10,6 +10,11 @@ public abstract class _Collections {
         throw new UnsupportedOperationException();
     }
 
+
+    public static <E> List<E> emptyList() {
+        return Collections.emptyList();
+    }
+
     public static <T> List<T> unmodifiableList(List<T> list) {
         switch (list.size()) {
             case 0:

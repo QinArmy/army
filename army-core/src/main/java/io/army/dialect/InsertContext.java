@@ -139,7 +139,7 @@ abstract class InsertContext extends StatementContext
             this.fieldList = createNonChildFieldList((SingleTableMeta<?>) this.insertTable, fieldMap::containsKey);
         } else {
             assert !(targetStmt instanceof _Insert._QueryInsert);
-            this.fieldList = castFieldList(this.insertTable);
+            this.fieldList = _DialectUtils.castFieldList(this.insertTable);
         }
 
         final PrimaryFieldMeta<?> idField = this.insertTable.id();
@@ -245,7 +245,7 @@ abstract class InsertContext extends StatementContext
             this.fieldList = createChildFieldList((ChildTableMeta<?>) this.insertTable);
         } else {
             assert !(stmt instanceof _Insert._QueryInsert);
-            this.fieldList = castFieldList(this.insertTable);
+            this.fieldList = _DialectUtils.castFieldList(this.insertTable);
         }
 
         if (stmt instanceof _ReturningDml) {
@@ -635,14 +635,6 @@ abstract class InsertContext extends StatementContext
                 throw _Exceptions.unexpectedEnum(mode);
         }
 
-    }
-
-
-    @SuppressWarnings("unchecked")
-    private static List<FieldMeta<?>> castFieldList(final TableMeta<?> table) {
-        final List<?> list;
-        list = table.fieldList();
-        return (List<FieldMeta<?>>) list;
     }
 
 

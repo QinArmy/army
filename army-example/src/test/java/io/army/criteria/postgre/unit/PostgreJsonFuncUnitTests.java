@@ -5,6 +5,7 @@ import io.army.criteria.ExpressionElement;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
+import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.mapping.optional.PrimitiveIntArrayType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ import org.testng.annotations.Test;
 import java.util.function.Consumer;
 
 import static io.army.criteria.impl.Postgres.*;
-import static io.army.criteria.impl.SQLs.TRUE;
+import static io.army.criteria.impl.SQLs.*;
 
 public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
@@ -104,7 +105,15 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 ).comma(jsonbBuildArray(c -> c.space(SQLs.literalValue(randomPerson()))
                                 .comma(SQLs.literalValue(randomPerson()))
                         ).as("json4")
-                )
+                ).comma(jsonBuildArray(c -> c.space("c", PERIOD, ChinaRegion_.T))::as, "json5")
+                .comma(jsonbBuildArray(c -> c.space("c", PERIOD, ChinaRegion_.T))::as, "json6")
+                .comma(jsonBuildArray(c -> c.space("b", PERIOD, ASTERISK))::as, "json7")
+                .comma(jsonbBuildArray(c -> c.space("b", PERIOD, ASTERISK))::as, "json8")
+                .from(ChinaRegion_.T, AS, "c")
+                .join(Postgres.subQuery()
+                        .select(SQLs.literalValue(5)::as, "id")
+                        .asQuery()
+                ).as("b").on(SQLs.refThis("b", "id")::equal, ChinaRegion_.id)
                 .asQuery();
 
         printStmt(LOG, stmt);

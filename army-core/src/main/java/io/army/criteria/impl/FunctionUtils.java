@@ -362,6 +362,31 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
+    static SimpleExpression varargsElementFunc(final String name, final boolean even,
+                                               final List<? extends ExpressionElement> argList,
+                                               final TypeMeta returnType) {
+        final int argSize;
+        argSize = argList.size();
+        if (even && (argSize & 1) != 0) {
+            throw CriteriaUtils.nonEvenArgs(name);
+        }
+
+        final SimpleExpression func;
+        if (argSize == 0) {
+            func = zeroArgFunc(name, returnType);
+        } else {
+            final List<ArmyExpressionElement> list = _Collections.arrayList(argSize);
+            for (ExpressionElement exp : argList) {
+                if (!(exp instanceof ArmyExpressionElement)) {
+                    throw CriteriaUtils.funcArgError(name, exp);
+                }
+                list.add((ArmyExpressionElement) exp);
+            }
+            func = new MultiArgFunctionExpression(name, list, returnType);
+        }
+        return func;
+    }
+
     static SimpleExpression varargsElementFunc(String name, final boolean required,
                                                Consumer<Statement._ExpressionElementSpaceClause> consumer,
                                                TypeMeta returnType) {
@@ -373,8 +398,11 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
-    static SimpleExpression varargsElementFunc(final String name, final TypeMeta returnType,
+    static SimpleExpression varargsElementFunc(final String name, final boolean even, final TypeMeta returnType,
                                                final ExpressionElement... variadic) {
+        if (even && (variadic.length & 1) != 0) {
+            throw CriteriaUtils.nonEvenArgs(name);
+        }
 
         final SimpleExpression func;
         if (variadic.length == 0) {
@@ -590,38 +618,7 @@ abstract class FunctionUtils {
         return new JsonObjectFunc(name, expMap, returnType);
     }
 
-    /**
-     * @see #varargsFunc(String, TypeMeta, ExpressionElement, ExpressionElement...)
-     */
-    static void appendRestVarargsArgs(final String name, final List<ArmyExpressionElement> argList,
-                                      final ExpressionElement... rest) {
-        for (ExpressionElement exp : rest) {
-            if (!(exp instanceof FunctionArg)) {
-                throw CriteriaUtils.funcArgError(name, exp);
-            }
-            argList.add((ArmyExpressionElement) exp);
-        }
 
-    }
-
-    /**
-     * @see #varargsFunc(String, Consumer, TypeMeta)
-     */
-    static List<FunctionArg> varargsArgs(final String name, final Consumer<Consumer<Expression>> consumer) {
-        final List<FunctionArg> list;
-        list = _Collections.arrayList();
-
-        consumer.accept(e -> {
-            if (!(e instanceof FunctionArg)) {
-                throw CriteriaUtils.funcArgError(name, e);
-            }
-            list.add((FunctionArg) e);
-        });
-        if (list.size() == 0) {
-            throw CriteriaUtils.funcArgListIsEmpty(name);
-        }
-        return list;
-    }
 
     /**
      * @param name function name
