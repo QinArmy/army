@@ -2,13 +2,10 @@ package io.army.criteria.postgre;
 
 import io.army.criteria.DialectStatement;
 import io.army.criteria.Expression;
-import io.army.criteria.ExpressionElement;
 import io.army.criteria.Item;
 import io.army.criteria.impl.Postgres;
-import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.meta.TableMeta;
 
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -301,21 +298,4 @@ public interface PostgreStatement extends DialectStatement {
     }
 
 
-    interface _PgExpObjectSpaceClause {
-
-        _PgExpObjectValueClause space(String keName);
-
-        _PgExpObjectValueClause space(Expression keyExp);
-
-    }
-
-    interface _PgExpObjectValueClause {
-
-        PgObjectConsumer comma(ExpressionElement valueExp);
-
-        PgObjectConsumer comma(String alias, SQLs.SymbolPeriod period, TableMeta<?> table);
-
-        PgObjectConsumer comma(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
-
-    }
 }

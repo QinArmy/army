@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._TableNameElement;
 import io.army.criteria.postgre.PostgreQuery;
-import io.army.criteria.postgre.PostgreStatement;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
@@ -25,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract class PostgreFunctionUtils extends DialectFunctionUtils {
@@ -55,20 +53,6 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             throw ContextStack.clearStackAndNullPointer();
         }
         return new TableNameExpression(table);
-    }
-
-    static SimpleExpression pgJsonObjectFunc(final String name, Consumer<PostgreStatement._PgExpObjectSpaceClause> consumer,
-                                             MappingType returnType) {
-        List<ArmyExpressionElement> argList = _Collections.arrayList();
-        final PostgreSupports.PgExpressionObjectConsumer expConsumer;
-        expConsumer = PostgreSupports.pgObjectConsumer(argList::add, name, returnType);
-        consumer.accept(expConsumer);
-        expConsumer.endConsumer();
-
-        if (argList.size() == 0) {
-            argList = _Collections.emptyList();
-        }
-        return FunctionUtils.varargsElementFunc(name, true, argList, returnType);
     }
 
 

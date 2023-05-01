@@ -70,6 +70,8 @@ public abstract class SQLs extends SQLsSyntax {
 
     public static final SymbolPeriod PERIOD = SQLSymbolPeriod.PERIOD;
 
+    public static final SymbolSpace SPACE = SqlWords.SymbolSpaceEnum.SPACE;
+
     public static final WordBooleans TRUE = OperationPredicate.booleanWord(true);
 
     public static final WordBooleans FALSE = OperationPredicate.booleanWord(false);

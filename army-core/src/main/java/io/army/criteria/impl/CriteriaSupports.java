@@ -6,9 +6,9 @@ import io.army.criteria.dialect.Returnings;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
-import io.army.function.ExpressionConsumer;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.mapping.NoCastTextType;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.Stmt;
@@ -46,7 +46,40 @@ abstract class CriteriaSupports {
         throw new UnsupportedOperationException();
     }
 
-    static RowExpression rowExp(final ExpressionElement... columns) {
+    static ArmyExpressionElement derivedAsterisk(String derivedAlias, SQLs.SymbolPeriod period,
+                                                 SQLs.SymbolAsterisk asterisk) {
+        return new DerivedAsterisk(derivedAlias, period, asterisk);
+    }
+
+    static ExpressionConsumer expressionConsumer(boolean required, Consumer<? super ArmyExpression> consumer) {
+        return new ExpressionConsumer(required, consumer);
+    }
+
+    static ExpressionSpaceClause expressionSpaceClause(boolean required, Consumer<? super ArmyExpression> consumer) {
+        return new ExpressionSpaceClause(required, consumer);
+    }
+
+
+    static ElementSpaceClause elementSpaceClause(boolean required, Consumer<? super ArmyExpressionElement> consumer) {
+        return new ElementSpaceClause(required, consumer);
+    }
+
+    static ElementConsumer elementConsumer(boolean required, Consumer<? super ArmyExpressionElement> consumer) {
+        return new ElementConsumer(required, consumer);
+    }
+
+    static ElementObjectSpaceClause elementObjectSpaceClause(Consumer<? super ArmyExpressionElement> consumer) {
+        return new ElementObjectSpaceClause(consumer);
+    }
+
+    static ElementObjectConsumer elementObjectConsumer(Consumer<? super ArmyExpressionElement> consumer) {
+        return new ElementObjectConsumer(consumer);
+    }
+
+    static RowExpression rowElement(final boolean required, final ExpressionElement... columns) {
+        if (required && columns.length == 0) {
+            throw CriteriaUtils.dontAddAnyItem();
+        }
 
         final List<ArmyExpressionElement> columnList;
         columnList = _Collections.arrayList(columns.length);
@@ -59,26 +92,33 @@ abstract class CriteriaSupports {
         return new RowExpressionImpl(columnList);
     }
 
-    static RowExpression rowExp(final boolean required,
-                                final Consumer<Statement._ExpressionElementSpaceClause> consumer) {
+
+    static RowExpression staticRowElement(final boolean required,
+                                          final Consumer<Statement._ElementSpaceClause> consumer) {
         final List<ArmyExpressionElement> columnList = _Collections.arrayList();
-        final ExpressionElementConsumerImpl expConsumer;
-        expConsumer = expressionElementConsumer(required, columnList::add);
+        final ElementSpaceClause clause;
+        clause = elementSpaceClause(required, columnList::add);
 
-        consumer.accept(expConsumer);
+        consumer.accept(clause);
 
-        expConsumer.endConsumer();
+        clause.endClause();
         return new RowExpressionImpl(columnList);
     }
 
-    static ExpressionConsumerImpl expressionConsumer(boolean required, Consumer<? super ArmyExpression> consumer) {
-        return new ExpressionConsumerImpl(required, consumer);
+    static RowExpression dynamicRowElement(final boolean required,
+                                           final Consumer<Statement._ElementConsumer> consumer) {
+        final List<ArmyExpressionElement> columnList = _Collections.arrayList();
+        final ElementConsumer clause;
+        clause = elementConsumer(required, columnList::add);
+
+        consumer.accept(clause);
+
+        clause.endConsumer();
+        return new RowExpressionImpl(columnList);
     }
 
-    static ExpressionElementConsumerImpl expressionElementConsumer(boolean required,
-                                                                   Consumer<? super ArmyExpressionElement> consumer) {
-        return new ExpressionElementConsumerImpl(required, consumer);
-    }
+
+
 
 
     static Returnings returningBuilder(Consumer<_SelectItem> consumer) {
@@ -1063,8 +1103,8 @@ abstract class CriteriaSupports {
     }//RowExpressionImpl
 
 
-    static final class ExpressionConsumerImpl implements Statement._ExpressionSpaceClause,
-            ExpressionConsumer {
+    static final class ExpressionSpaceClause implements Statement._ExpressionSpaceClause,
+            Statement._ExpressionCommaClause {
 
         private final boolean required;
         private final Consumer<? super ArmyExpression> consumer;
@@ -1078,13 +1118,13 @@ abstract class CriteriaSupports {
          *
          * @see #expressionConsumer(boolean, Consumer)
          */
-        private ExpressionConsumerImpl(boolean required, Consumer<? super ArmyExpression> consumer) {
+        private ExpressionSpaceClause(boolean required, Consumer<? super ArmyExpression> consumer) {
             this.required = required;
             this.consumer = consumer;
         }
 
         @Override
-        public ExpressionConsumer space(final Expression exp) {
+        public Statement._ExpressionCommaClause space(final Expression exp) {
             if (this.state != null) {
                 throw ContextStack.clearStackAndCriteriaError("You can ony invoke space method for first expression.");
             }
@@ -1093,7 +1133,7 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public ExpressionConsumer comma(final @Nullable Expression exp) {
+        public Statement._ExpressionCommaClause comma(final @Nullable Expression exp) {
             if (this.state != Boolean.TRUE) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (exp == null) {
@@ -1108,36 +1148,72 @@ abstract class CriteriaSupports {
 
         void endConsumer() {
             if (this.state == null && this.required) {
-                throw ContextStack.clearStackAndCriteriaError("You don't add any expression.");
+                throw CriteriaUtils.dontAddAnyItem();
             }
             this.state = Boolean.FALSE;
         }
 
 
-    }//ExpressionConsumerImpl
+    }//ExpressionSpaceClause
 
-    static final class ExpressionElementConsumerImpl implements Statement._ExpressionElementSpaceClause,
-            ExpressionElementConsumer {
+    static final class ExpressionConsumer implements Statement._ExpressionConsumer {
 
         private final boolean required;
-        private final Consumer<? super ArmyExpressionElement> consumer;
+
+        private final Consumer<? super ArmyExpression> consumer;
 
         private Boolean state;
 
-        /**
-         * <p>
-         * private constructor and must be private constructor
-         * </p>
-         *
-         * @see #expressionElementConsumer(boolean, Consumer)
-         */
-        private ExpressionElementConsumerImpl(boolean required, Consumer<? super ArmyExpressionElement> consumer) {
+        private ExpressionConsumer(boolean required, Consumer<? super ArmyExpression> consumer) {
             this.required = required;
             this.consumer = consumer;
         }
 
         @Override
-        public ExpressionElementConsumer space(final ExpressionElement exp) {
+        public Statement._ExpressionConsumer accept(final @Nullable Expression exp) {
+            final Boolean state = this.state;
+            if (state == null) {
+                this.state = Boolean.TRUE;
+            }
+            if (state == Boolean.FALSE) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (exp == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (!(exp instanceof FunctionArg)) {
+                String m = String.format("don't support %s", exp.getClass().getName());
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            this.consumer.accept((ArmyExpression) exp);
+            return this;
+        }
+
+        void endConsumer() {
+            if (this.required && this.state == null) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            this.state = Boolean.FALSE;
+        }
+
+
+    }//ExpressionConsumer
+
+
+    static final class ElementSpaceClause implements Statement._ElementSpaceClause,
+            Statement._ElementCommaClause {
+
+        private final boolean required;
+
+        private final Consumer<? super ArmyExpressionElement> consumer;
+
+        private Boolean state;
+
+        private ElementSpaceClause(boolean required, Consumer<? super ArmyExpressionElement> consumer) {
+            this.required = required;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public Statement._ElementCommaClause space(ExpressionElement exp) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1146,65 +1222,298 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public ExpressionElementConsumer space(String alias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+        public Statement._ElementCommaClause space(String tableAlias, SQLs.SymbolPeriod period,
+                                                   TableMeta<?> table) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
             this.state = Boolean.TRUE;
-            return this.comma(alias, period, table);
+            return this.comma(ContextStack.peek().row(tableAlias, period, table));
         }
 
         @Override
-        public ExpressionElementConsumer space(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
+        public Statement._ElementCommaClause space(String derivedAlias, SQLs.SymbolPeriod period,
+                                                   SQLs.SymbolAsterisk asterisk) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
             this.state = Boolean.TRUE;
-            return this.comma(alias, period, asterisk);
+            return this.comma(derivedAsterisk(derivedAlias, period, asterisk));
         }
 
-
         @Override
-        public ExpressionElementConsumer comma(final @Nullable ExpressionElement exp) {
+        public Statement._ElementCommaClause comma(final @Nullable ExpressionElement exp) {
             if (this.state != Boolean.TRUE) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (exp == null) {
                 throw ContextStack.clearStackAndNullPointer();
             } else if (!(exp instanceof ArmyExpressionElement)) {
                 throw ContextStack.clearStackAndNonArmyExpression();
-            } else if (exp instanceof RowExpression) {
-                if (!(exp instanceof ArmyRowExpression)) {
-                    throw ContextStack.clearStackAndNonArmyExpression();
-                }
-            } else if (exp instanceof Expression) {
-                if (!(exp instanceof FunctionArg)) {
-                    String m = String.format("don't support %s.", exp.getClass().getName());
-                    throw ContextStack.clearStackAndCriteriaError(m);
-                }
             }
             this.consumer.accept((ArmyExpressionElement) exp);
             return this;
         }
 
         @Override
-        public ExpressionElementConsumer comma(String alias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-            return this.comma(ContextStack.peek().row(alias, period, table));
+        public Statement._ElementCommaClause comma(String tableAlias, SQLs.SymbolPeriod period,
+                                                   TableMeta<?> table) {
+            return this.comma(ContextStack.peek().row(tableAlias, period, table));
         }
 
         @Override
-        public ExpressionElementConsumer comma(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
-            return this.comma(ContextStack.peek().row(alias, period, asterisk));
+        public Statement._ElementCommaClause comma(String derivedAlias, SQLs.SymbolPeriod period,
+                                                   SQLs.SymbolAsterisk asterisk) {
+            return this.comma(derivedAsterisk(derivedAlias, period, asterisk));
         }
 
-        void endConsumer() {
-            if (this.state == null && this.required) {
-                throw ContextStack.clearStackAndCriteriaError("You don't add any expression.");
+
+        void endClause() {
+            if (this.required && this.state == null) {
+                throw CriteriaUtils.dontAddAnyItem();
             }
             this.state = Boolean.FALSE;
         }
 
 
-    }//ExpressionElementConsumerImpl
+    }//ElementSpaceClause
+
+    static final class ElementConsumer implements Statement._ElementConsumer {
+
+        private final boolean required;
+
+        private final Consumer<? super ArmyExpressionElement> consumer;
+
+        private Boolean state;
+
+        private ElementConsumer(boolean required, Consumer<? super ArmyExpressionElement> consumer) {
+            this.required = required;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public Statement._ElementConsumer accept(final @Nullable ExpressionElement exp) {
+            final Boolean state = this.state;
+            if (state == null) {
+                this.state = Boolean.TRUE;
+            }
+            if (state == Boolean.FALSE) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (exp == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (!(exp instanceof ArmyExpressionElement)) {
+                throw ContextStack.clearStackAndNonArmyExpression();
+            }
+            this.consumer.accept((ArmyExpressionElement) exp);
+            return this;
+        }
+
+        @Override
+        public Statement._ElementConsumer accept(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+            return this.accept(ContextStack.peek().row(tableAlias, period, table));
+        }
+
+        @Override
+        public Statement._ElementConsumer accept(String derivedAlias, SQLs.SymbolPeriod period,
+                                                 SQLs.SymbolAsterisk asterisk) {
+            return this.accept(derivedAsterisk(derivedAlias, period, asterisk));
+        }
+
+        void endConsumer() {
+            if (this.state == null && this.required) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            this.state = Boolean.FALSE;
+        }
+
+    }//ElementConsumer
+
+
+    static final class ElementObjectSpaceClause implements Statement._ElementObjectSpaceClause,
+            Statement._ElementObjectCommaClause {
+
+        private final Consumer<? super ArmyExpressionElement> consumer;
+
+        private Boolean state;
+
+        private ElementObjectSpaceClause(Consumer<? super ArmyExpressionElement> consumer) {
+            this.consumer = consumer;
+        }
+
+        @Override
+        public Statement._ElementObjectCommaClause space(String keName, ExpressionElement exp) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.comma(SQLs.literal(NoCastTextType.INSTANCE, keName), exp);
+        }
+
+        @Override
+        public Statement._ElementObjectCommaClause space(Expression key, ExpressionElement exp) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.comma(key, exp);
+        }
+
+        @Override
+        public Statement._ElementObjectCommaClause space(String keName, String derivedAlias, SQLs.SymbolPeriod period,
+                                                         SQLs.SymbolAsterisk asterisk) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.comma(SQLs.literal(NoCastTextType.INSTANCE, keName),
+                    derivedAsterisk(derivedAlias, period, asterisk)
+            );
+        }
+
+        @Override
+        public Statement._ElementObjectCommaClause space(Expression key, String derivedAlias, SQLs.SymbolPeriod period,
+                                                         SQLs.SymbolAsterisk asterisk) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.comma(key, derivedAsterisk(derivedAlias, period, asterisk));
+        }
+
+        @Override
+        public Statement._ElementObjectCommaClause comma(String keName, ExpressionElement exp) {
+            return this.comma(SQLs.literal(NoCastTextType.INSTANCE, keName), exp);
+        }
+
+        @Override
+        public Statement._ElementObjectCommaClause comma(final @Nullable Expression key,
+                                                         final @Nullable ExpressionElement exp) {
+            if (this.state != Boolean.TRUE) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (key == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (exp == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (!(key instanceof OperationExpression)) {
+                String m = String.format("don't support %s", key.getClass().getName());
+                throw ContextStack.clearStackAndCriteriaError(m);
+            } else if (!(exp instanceof ArmyExpressionElement)) {
+                throw ContextStack.clearStackAndNonArmyExpression();
+            } else if (exp instanceof _SelectionGroup._TableFieldGroup) {
+                String m = "error,don't support tableAlias.* ,you should use appropriate jsonObject method.";
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            this.consumer.accept((ArmyExpression) key);
+            this.consumer.accept((ArmyExpressionElement) exp);
+            return this;
+        }
+
+        @Override
+        public Statement._ElementObjectCommaClause comma(String keName, String derivedAlias, SQLs.SymbolPeriod period,
+                                                         SQLs.SymbolAsterisk asterisk) {
+            return this.comma(SQLs.literal(NoCastTextType.INSTANCE, keName),
+                    derivedAsterisk(derivedAlias, period, asterisk)
+            );
+        }
+
+        @Override
+        public Statement._ElementObjectCommaClause comma(Expression key, String derivedAlias, SQLs.SymbolPeriod period,
+                                                         SQLs.SymbolAsterisk asterisk) {
+            return this.comma(key, derivedAsterisk(derivedAlias, period, asterisk));
+        }
+
+        void endClause() {
+            this.state = Boolean.FALSE;
+        }
+
+
+    }//ElementObjectSpaceClause
+
+
+    static final class ElementObjectConsumer implements Statement._ElementObjectConsumer {
+
+        private final Consumer<? super ArmyExpressionElement> consumer;
+
+        private boolean state;
+
+        private ElementObjectConsumer(Consumer<? super ArmyExpressionElement> consumer) {
+            this.consumer = consumer;
+        }
+
+        @Override
+        public Statement._ElementObjectConsumer accept(String keName, ExpressionElement value) {
+            return this.accept(SQLs.literal(NoCastTextType.INSTANCE, keName), value);
+        }
+
+        @Override
+        public Statement._ElementObjectConsumer accept(final @Nullable Expression key,
+                                                       final @Nullable ExpressionElement value) {
+            if (this.state) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (key == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (value == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (!(key instanceof OperationExpression)) {
+                String m = String.format("don't support %s", key.getClass().getName());
+                throw ContextStack.clearStackAndCriteriaError(m);
+            } else if (!(value instanceof ArmyExpressionElement)) {
+                String m = String.format("don't support %s", value.getClass().getName());
+                throw ContextStack.clearStackAndCriteriaError(m);
+            } else if (value instanceof _SelectionGroup._TableFieldGroup) {
+                String m = "error,don't support tableAlias.* ,you should use appropriate jsonObject method.";
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            this.consumer.accept((ArmyExpression) key);
+            this.consumer.accept((ArmyExpressionElement) value);
+            return this;
+        }
+
+        @Override
+        public Statement._ElementObjectConsumer accept(String keName, String derivedAlias, SQLs.SymbolPeriod period,
+                                                       SQLs.SymbolAsterisk asterisk) {
+            return this.accept(SQLs.literal(NoCastTextType.INSTANCE, keName),
+                    derivedAsterisk(derivedAlias, period, asterisk)
+            );
+        }
+
+        @Override
+        public Statement._ElementObjectConsumer accept(Expression key, String derivedAlias, SQLs.SymbolPeriod period,
+                                                       SQLs.SymbolAsterisk asterisk) {
+            return this.accept(key, derivedAsterisk(derivedAlias, period, asterisk));
+        }
+
+
+        void endConsumer() {
+            this.state = true;
+        }
+
+
+    }//ElementObjectConsumer
+
+
+    private static final class DerivedAsterisk implements ArmyExpressionElement {
+
+        private final String derivedAlias;
+
+        /**
+         * @see #derivedAsterisk(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)
+         */
+        private DerivedAsterisk(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
+            ContextStack.peek().row(derivedAlias, period, asterisk);
+            this.derivedAlias = derivedAlias;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+            context.parser().identifier(this.derivedAlias, sqlBuilder)
+                    .append(_Constant.POINT)
+                    .append('*');
+        }
+
+    }//DerivedAsterisk
 
 
 }

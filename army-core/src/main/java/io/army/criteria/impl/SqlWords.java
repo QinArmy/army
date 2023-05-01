@@ -8,6 +8,14 @@ abstract class SqlWords {
         throw new UnsupportedOperationException();
     }
 
+
+    enum SymbolSpaceEnum implements SqlSyntax.SymbolSpace {
+
+        SPACE;
+
+
+    }//SymbolSpaceEnum
+
     enum KeyWordNotNull implements SqlSyntax.NullOption, SqlSyntax.ArmyKeyWord {
 
         NOT_NULL(" NOT NULL");

@@ -552,9 +552,41 @@ abstract class CriteriaUtils {
 
     }
 
+    static List<ArmyExpressionElement> asExpElementList(final String name,
+                                                        final List<? extends ExpressionElement> columnList) {
+        final int columnSize;
+        columnSize = columnList.size();
+        final List<ArmyExpressionElement> list;
+
+        switch (columnSize) {
+            case 0:
+                list = _Collections.emptyList();
+                break;
+            case 1: {
+                final ExpressionElement exp;
+                exp = columnList.get(0);
+                if (!(exp instanceof ArmyExpressionElement)) {
+                    throw CriteriaUtils.funcArgError(name, exp);
+                }
+                list = _Collections.singletonList((ArmyExpressionElement) exp);
+            }
+            break;
+            default: {
+                list = _Collections.arrayList(columnSize);
+                for (ExpressionElement exp : columnList) {
+                    if (!(exp instanceof ArmyExpressionElement)) {
+                        throw CriteriaUtils.funcArgError(name, exp);
+                    }
+                    list.add((ArmyExpressionElement) exp);
+                }
+            }
+        }
+        return list;
+    }
+
 
     static CriteriaException nonEvenArgs(String name) {
-        String m = String.format("function[%s] the number of argument  must be even.", name);
+        String m = String.format("function[%s] the number of argument must be even.", name);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
@@ -632,6 +664,14 @@ abstract class CriteriaUtils {
 
     static CriteriaException cteListIsEmpty(CriteriaContext context) {
         return ContextStack.criteriaError(context, "WITH clause couldn't be empty.");
+    }
+
+    static CriteriaException dontAddAnyItem() {
+        return ContextStack.clearStackAndCriteriaError("You don't add any item.");
+    }
+
+    static CriteriaException errorSymbol(@Nullable Object symbol) {
+        return ContextStack.clearStackAndCriteriaError(String.format("error symbol %s", symbol));
     }
 
     static CriteriaException childParentDomainListNotMatch(CriteriaContext context, ChildTableMeta<?> child) {

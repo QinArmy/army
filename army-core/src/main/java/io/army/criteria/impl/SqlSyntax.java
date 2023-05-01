@@ -39,6 +39,10 @@ abstract class SqlSyntax {
 
     }
 
+    public interface SymbolSpace {
+
+    }
+
     public interface NullOption {
 
     }

@@ -95,18 +95,85 @@ public interface Statement extends Item {
 
     }
 
-    interface _ExpressionSpaceClause {
+    interface _ExpressionCommaClause {
 
-        ExpressionConsumer space(Expression exp);
+        _ExpressionCommaClause comma(Expression exp);
+
     }
 
-    interface _ExpressionElementSpaceClause {
+    interface _ExpressionSpaceClause {
 
-        ExpressionElementConsumer space(ExpressionElement exp);
+        _ExpressionCommaClause space(Expression exp);
+    }
 
-        ExpressionElementConsumer space(String alias, SQLs.SymbolPeriod period, TableMeta<?> table);
+    interface _ExpressionConsumer {
 
-        ExpressionElementConsumer space(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+        _ExpressionConsumer accept(Expression exp);
+
+    }
+
+
+    interface _ElementCommaClause {
+
+        _ElementCommaClause comma(ExpressionElement exp);
+
+        _ElementCommaClause comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        _ElementCommaClause comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+
+    }
+
+    interface _ElementSpaceClause {
+
+        _ElementCommaClause space(ExpressionElement exp);
+
+        _ElementCommaClause space(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        _ElementCommaClause space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+
+    }
+
+    interface _ElementConsumer {
+
+        _ElementConsumer accept(ExpressionElement exp);
+
+        _ElementConsumer accept(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+
+        _ElementConsumer accept(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+
+    }
+
+    interface _ElementObjectCommaClause {
+
+        _ElementObjectCommaClause comma(String keName, ExpressionElement exp);
+
+        _ElementObjectCommaClause comma(Expression key, ExpressionElement exp);
+
+        _ElementObjectCommaClause comma(String keName, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+
+        _ElementObjectCommaClause comma(Expression key, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+    }
+
+    interface _ElementObjectSpaceClause {
+
+        _ElementObjectCommaClause space(String keName, ExpressionElement exp);
+
+        _ElementObjectCommaClause space(Expression key, ExpressionElement exp);
+
+        _ElementObjectCommaClause space(String keName, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+
+        _ElementObjectCommaClause space(Expression key, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+    }
+
+    interface _ElementObjectConsumer {
+
+        _ElementObjectConsumer accept(String keName, ExpressionElement value);
+
+        _ElementObjectConsumer accept(Expression key, ExpressionElement value);
+
+        _ElementObjectConsumer accept(String keName, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+
+        _ElementObjectConsumer accept(Expression key, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
 
     }
 
@@ -1552,5 +1619,6 @@ public interface Statement extends Item {
     interface DqlInsert extends Item {
 
     }
+
 
 }

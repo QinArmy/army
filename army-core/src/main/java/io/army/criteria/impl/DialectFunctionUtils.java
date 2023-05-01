@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._DerivedTable;
 import io.army.criteria.impl.inner._Selection;
+import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
@@ -10,7 +11,9 @@ import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
+import io.army.mapping.NoCastTextType;
 import io.army.mapping.optional.CompositeTypeField;
+import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.SqlType;
@@ -27,7 +30,10 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }
 
 
-
+    static SimpleExpression jsonTableRowFunc(String name, _SelectionGroup._TableFieldGroup group,
+                                             MappingType returnType) {
+        return new JsonObjectTableRowFunc(name, group, returnType);
+    }
 
 
     static Functions._TabularFunction compositeTabularFunc(String name, List<?> argList, List<? extends Selection> selectionList) {
@@ -979,6 +985,76 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
     }//FunctionField
+
+
+    private static final class JsonObjectTableRowFunc extends FunctionUtils.FunctionExpression {
+
+        private final _SelectionGroup._TableFieldGroup group;
+
+        private JsonObjectTableRowFunc(String name, _SelectionGroup._TableFieldGroup group,
+                                       MappingType returnType) {
+            super(name, returnType);
+            this.group = group;
+        }
+
+        @Override
+        void appendArg(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+            final String tableAlias;
+            tableAlias = this.group.tableAlias();
+
+            final List<? extends Selection> selectionList;
+            selectionList = this.group.selectionList();
+            final int selectionSize;
+            selectionSize = selectionList.size();
+            FieldMeta<?> field;
+            for (int i = 0; i < selectionSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+                } else {
+                    sqlBuilder.append(_Constant.SPACE);
+                }
+                field = (FieldMeta<?>) selectionList.get(i);
+
+                context.appendLiteral(NoCastTextType.INSTANCE, field.columnName()); // here use column name not field name
+                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+                context.appendField(tableAlias, field);
+            }
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            final String tableAlias;
+            tableAlias = this.group.tableAlias();
+
+            final List<? extends Selection> selectionList;
+            selectionList = this.group.selectionList();
+
+            final int selectionSize;
+            selectionSize = selectionList.size();
+
+            FieldMeta<?> field;
+            for (int i = 0; i < selectionSize; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA_SPACE);
+                } else {
+                    builder.append(_Constant.SPACE);
+                }
+                field = (FieldMeta<?>) selectionList.get(i);
+
+                builder.append(_Constant.QUOTE)
+                        .append(field.columnName()) // here use column name not field name
+                        .append(_Constant.QUOTE)
+                        .append(_Constant.SPACE_COMMA_SPACE)
+                        .append(tableAlias)
+                        .append(_Constant.POINT)
+                        .append(field.columnName());
+            }
+
+        }
+
+    }//JsonObjectTableFunc
 
 
 }

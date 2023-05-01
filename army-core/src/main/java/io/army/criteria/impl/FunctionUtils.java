@@ -348,34 +348,11 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, twoAndMultiExpList(name, exp1, exp2, expList), returnType);
     }
 
-    static SimpleExpression multiArgFunc(String name, List<Expression> argList, TypeMeta returnType) {
-        return new MultiArgFunctionExpression(name, expList(name, argList), returnType);
-    }
-
-    static SimpleExpression varargsFunc(String name, Consumer<Statement._ExpressionSpaceClause> consumer,
-                                        TypeMeta returnType) {
-        final List<ArmyExpression> argList = _Collections.arrayList();
-        final CriteriaSupports.ExpressionConsumerImpl expConsumer;
-        expConsumer = CriteriaSupports.expressionConsumer(false, argList::add);
-        consumer.accept(expConsumer);
-        expConsumer.endConsumer();
-        return new MultiArgFunctionExpression(name, argList, returnType);
-    }
-
-    static SimpleExpression varargsElementFunc(final String name, final boolean even,
-                                               final List<? extends ExpressionElement> argList,
-                                               final TypeMeta returnType) {
-        final int argSize;
-        argSize = argList.size();
-        if (even && (argSize & 1) != 0) {
-            throw CriteriaUtils.nonEvenArgs(name);
-        }
-
+    static SimpleExpression multiArgFunc(final String name, final boolean required,
+                                         final List<? extends ExpressionElement> argList, final TypeMeta returnType) {
         final SimpleExpression func;
-        if (argSize == 0) {
-            func = zeroArgFunc(name, returnType);
-        } else {
-            final List<ArmyExpressionElement> list = _Collections.arrayList(argSize);
+        if (argList.size() > 0) {
+            final List<ArmyExpressionElement> list = _Collections.arrayList(argList.size());
             for (ExpressionElement exp : argList) {
                 if (!(exp instanceof ArmyExpressionElement)) {
                     throw CriteriaUtils.funcArgError(name, exp);
@@ -383,19 +360,97 @@ abstract class FunctionUtils {
                 list.add((ArmyExpressionElement) exp);
             }
             func = new MultiArgFunctionExpression(name, list, returnType);
+        } else if (required) {
+            throw ContextStack.clearStackAndCriteriaError("You don't add any expression.");
+        } else {
+            func = zeroArgFunc(name, returnType);
+        }
+
+        return func;
+    }
+
+    static SimpleExpression multiArgFunc(String name, List<Expression> argList, TypeMeta returnType) {
+        return new MultiArgFunctionExpression(name, expList(name, argList), returnType);
+    }
+
+
+    static SimpleExpression staticVarargsElementFunc(String name, final boolean required,
+                                                     Consumer<Statement._ElementSpaceClause> consumer,
+                                                     TypeMeta returnType) {
+        final List<ArmyExpressionElement> argList = _Collections.arrayList();
+        final CriteriaSupports.ElementSpaceClause clause;
+        clause = CriteriaSupports.elementSpaceClause(required, argList::add);
+        consumer.accept(clause);
+        clause.endClause();
+
+        final SimpleExpression func;
+        if (argList.size() == 0) {
+            func = new ZeroArgFunction(name, returnType);
+        } else {
+            func = new MultiArgFunctionExpression(name, argList, returnType);
         }
         return func;
     }
 
-    static SimpleExpression varargsElementFunc(String name, final boolean required,
-                                               Consumer<Statement._ExpressionElementSpaceClause> consumer,
-                                               TypeMeta returnType) {
+    static SimpleExpression dynamicVarargsElementFunc(String name, SqlSyntax.SymbolSpace space, final boolean required,
+                                                      Consumer<Statement._ElementConsumer> consumer,
+                                                      TypeMeta returnType) {
+        if (space != SQLs.SPACE) {
+            throw CriteriaUtils.errorSymbol(space);
+        }
         final List<ArmyExpressionElement> argList = _Collections.arrayList();
-        final CriteriaSupports.ExpressionElementConsumerImpl expConsumer;
-        expConsumer = CriteriaSupports.expressionElementConsumer(required, argList::add);
-        consumer.accept(expConsumer);
-        expConsumer.endConsumer();
-        return new MultiArgFunctionExpression(name, argList, returnType);
+
+        final CriteriaSupports.ElementConsumer elementConsumer;
+        elementConsumer = CriteriaSupports.elementConsumer(required, argList::add);
+        consumer.accept(elementConsumer);
+        elementConsumer.endConsumer();
+
+        final SimpleExpression func;
+        if (argList.size() == 0) {
+            func = new ZeroArgFunction(name, returnType);
+        } else {
+            func = new MultiArgFunctionExpression(name, argList, returnType);
+        }
+        return func;
+    }
+
+    static SimpleExpression staticObjectElementFunc(String name, Consumer<Statement._ElementObjectSpaceClause> consumer,
+                                                    TypeMeta returnType) {
+        final List<ArmyExpressionElement> argList = _Collections.arrayList();
+        final CriteriaSupports.ElementObjectSpaceClause clause;
+        clause = CriteriaSupports.elementObjectSpaceClause(argList::add);
+        consumer.accept(clause);
+        clause.endClause();
+
+        final SimpleExpression func;
+        if (argList.size() == 0) {
+            func = new ZeroArgFunction(name, returnType);
+        } else {
+            func = new MultiArgFunctionExpression(name, argList, returnType);
+        }
+        return func;
+    }
+
+    static SimpleExpression dynamicObjectElementFunc(String name, SqlSyntax.SymbolSpace space,
+                                                     Consumer<Statement._ElementObjectConsumer> consumer,
+                                                     TypeMeta returnType) {
+        if (space != SQLs.SPACE) {
+            throw CriteriaUtils.errorSymbol(space);
+        }
+
+        final List<ArmyExpressionElement> argList = _Collections.arrayList();
+        final CriteriaSupports.ElementObjectConsumer clause;
+        clause = CriteriaSupports.elementObjectConsumer(argList::add);
+        consumer.accept(clause);
+        clause.endConsumer();
+
+        final SimpleExpression func;
+        if (argList.size() == 0) {
+            func = new ZeroArgFunction(name, returnType);
+        } else {
+            func = new MultiArgFunctionExpression(name, argList, returnType);
+        }
+        return func;
     }
 
     static SimpleExpression varargsElementFunc(final String name, final boolean even, final TypeMeta returnType,
@@ -617,7 +672,6 @@ abstract class FunctionUtils {
     static SimpleExpression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
         return new JsonObjectFunc(name, expMap, returnType);
     }
-
 
 
     /**

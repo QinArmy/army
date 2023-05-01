@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.postgre.PostgreStatement;
+import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.dialect._DialectUtils;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
@@ -2148,7 +2148,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param record row expression or  composite expression; see<ul>
-     *               <li> {@link Postgres#row(Expression, Expression...)} </li>
+     *               <li> {@link Postgres#row(ExpressionElement...)} </li>
      *               <li>{@link Postgres#row(Consumer)}</li>
      *               </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
@@ -2165,7 +2165,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param record row expression or  composite expression; see<ul>
-     *               <li> {@link Postgres#row(Expression, Expression...)} </li>
+     *               <li> {@link Postgres#row(ExpressionElement...)} </li>
      *               <li>{@link Postgres#row(Consumer)}</li>
      *               </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
@@ -2188,6 +2188,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2196,6 +2200,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         return FunctionUtils.varargsElementFunc("JSON_BUILD_ARRAY", false, JsonType.TEXT, variadic);
     }
 
+
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
@@ -2207,12 +2212,40 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(Consumer<Statement._ExpressionElementSpaceClause> consumer) {
-        return FunctionUtils.varargsElementFunc("JSON_BUILD_ARRAY", false, consumer, JsonType.TEXT);
+    public static SimpleExpression jsonBuildArray(Consumer<Statement._ElementSpaceClause> consumer) {
+        return FunctionUtils.staticVarargsElementFunc("JSON_BUILD_ARRAY", false, consumer, JsonType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * </p>
+     *
+     * @param space    see {@link SQLs#SPACE}
+     * @param consumer here,<ul>
+     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonBuildArray(SymbolSpace space, Consumer<Statement._ElementConsumer> consumer) {
+        return FunctionUtils.dynamicVarargsElementFunc("JSON_BUILD_ARRAY", space, false, consumer, JsonType.TEXT);
     }
 
     /**
@@ -2226,6 +2259,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2234,6 +2271,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         return FunctionUtils.varargsElementFunc("JSONB_BUILD_ARRAY", false, JsonbType.TEXT, variadic);
     }
 
+
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
@@ -2245,12 +2283,40 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(Consumer<Statement._ExpressionElementSpaceClause> consumer) {
-        return FunctionUtils.varargsElementFunc("JSONB_BUILD_ARRAY", false, consumer, JsonbType.TEXT);
+    public static SimpleExpression jsonbBuildArray(Consumer<Statement._ElementSpaceClause> consumer) {
+        return FunctionUtils.staticVarargsElementFunc("JSONB_BUILD_ARRAY", false, consumer, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
+     * </p>
+     *
+     * @param space    see {@link SQLs#SPACE}
+     * @param consumer here,<ul>
+     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonbBuildArray(SymbolSpace space, Consumer<Statement._ElementConsumer> consumer) {
+        return FunctionUtils.dynamicVarargsElementFunc("JSONB_BUILD_ARRAY", space, false, consumer, JsonbType.TEXT);
     }
 
 
@@ -2265,31 +2331,16 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
     public static SimpleExpression jsonBuildObject(ExpressionElement... variadic) {
-        return FunctionUtils.varargsElementFunc("JSON_BUILD_OBJECT", false, JsonType.TEXT, variadic);
-    }
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
-     * </p>
-     *
-     * @param argList here,<ul>
-     *                <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
-     *                </ul> is allowed.
-     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
-     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
-     * </a>
-     */
-    public static SimpleExpression jsonBuildObject(List<? extends ExpressionElement> argList) {
-        return FunctionUtils.varargsElementFunc("JSON_BUILD_OBJECT", true, argList, JsonType.TEXT);
+        return FunctionUtils.varargsElementFunc("JSON_BUILD_OBJECT", true, JsonType.TEXT, variadic);
     }
 
 
@@ -2304,13 +2355,60 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildObject(Consumer<PostgreStatement._PgExpObjectSpaceClause> consumer) {
-        return PostgreFunctionUtils.pgJsonObjectFunc("JSON_BUILD_OBJECT", consumer, JsonType.TEXT);
+    public static SimpleExpression jsonBuildObject(Consumer<Statement._ElementObjectSpaceClause> consumer) {
+        return PostgreFunctionUtils.staticObjectElementFunc("JSON_BUILD_OBJECT", consumer, JsonType.TEXT);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * </p>
+     *
+     * @param consumer here,<ul>
+     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonBuildObject(SymbolSpace space, Consumer<Statement._ElementObjectConsumer> consumer) {
+        return PostgreFunctionUtils.dynamicObjectElementFunc("JSON_BUILD_OBJECT", space, consumer, JsonType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * </p>
+     *
+     * @param period see {@link SQLs#PERIOD}
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonBuildObject(String tableAlias, SqlSyntax.SymbolPeriod period, TableMeta<?> table) {
+        return DialectFunctionUtils.jsonTableRowFunc("JSON_BUILD_OBJECT",
+                (_SelectionGroup._TableFieldGroup) ContextStack.peek().row(tableAlias, period, table), JsonType.TEXT
+        );
+    }
+
 
     /**
      * <p>
@@ -2323,6 +2421,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → jsonb<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2331,23 +2433,28 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         return FunctionUtils.varargsElementFunc("JSONB_BUILD_OBJECT", true, JsonbType.TEXT, variadic);
     }
 
+
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
      *
-     * @param argList here,<ul>
-     *                <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
-     *                </ul> is allowed.
-     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → json<br/>
+     * @param consumer here,<ul>
+     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 </ul> is allowed.
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(List<? extends ExpressionElement> argList) {
-        return FunctionUtils.varargsElementFunc("JSONB_BUILD_OBJECT", true, argList, JsonbType.TEXT);
+    public static SimpleExpression jsonbBuildObject(Consumer<Statement._ElementObjectSpaceClause> consumer) {
+        return FunctionUtils.staticObjectElementFunc("JSONB_BUILD_OBJECT", consumer, JsonbType.TEXT);
     }
 
     /**
@@ -2361,12 +2468,35 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(Consumer<PostgreStatement._PgExpObjectSpaceClause> consumer) {
-        return PostgreFunctionUtils.pgJsonObjectFunc("JSONB_BUILD_OBJECT", consumer, JsonbType.TEXT);
+    public static SimpleExpression jsonbBuildObject(SymbolSpace space, Consumer<Statement._ElementObjectConsumer> consumer) {
+        return PostgreFunctionUtils.dynamicObjectElementFunc("JSONB_BUILD_OBJECT", space, consumer, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
+     * </p>
+     *
+     * @param period see {@link SQLs#PERIOD}
+     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonbBuildObject(String tableAlias, SqlSyntax.SymbolPeriod period, TableMeta<?> table) {
+        return DialectFunctionUtils.jsonTableRowFunc("JSONB_BUILD_OBJECT",
+                (_SelectionGroup._TableFieldGroup) ContextStack.peek().row(tableAlias, period, table), JsonbType.TEXT
+        );
     }
 
     /**

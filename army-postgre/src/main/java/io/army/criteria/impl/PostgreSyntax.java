@@ -3,8 +3,10 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.dialect._Constant;
+import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 import io.army.util._StringUtils;
 
 import java.util.Collection;
@@ -98,13 +100,35 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
 
 
     public static RowExpression row(ExpressionElement... column) {
-        return CriteriaSupports.rowExp(column);
+        return CriteriaSupports.rowElement(false, column);
+    }
+
+    public static RowExpression row(Consumer<Statement._ElementSpaceClause> consumer) {
+        return CriteriaSupports.staticRowElement(false, consumer);
+    }
+
+    /**
+     * @param space see {@link SQLs#SPACE}
+     */
+    public static RowExpression row(SymbolSpace space, Consumer<Statement._ElementConsumer> consumer) {
+        if (space != SQLs.SPACE) {
+            throw CriteriaUtils.errorSymbol(space);
+        }
+        return CriteriaSupports.dynamicRowElement(false, consumer);
     }
 
 
-    public static RowExpression row(Consumer<Statement._ExpressionElementSpaceClause> consumer) {
-        return CriteriaSupports.rowExp(false, consumer);
+    public static ExpressionElement space(String derivedAlias, SqlSyntax.SymbolPeriod period,
+                                          SqlSyntax.SymbolAsterisk asterisk) {
+        ContextStack.peek().row(derivedAlias, period, asterisk); // register derived row
+        return new DerivedTableRow(derivedAlias);
     }
+
+    public static ExpressionElement space(String tableAlias, SqlSyntax.SymbolPeriod period, TableMeta<?> table) {
+        return ContextStack.peek().row(tableAlias, period, table); // register derived row
+    }
+
+
 
 
 
@@ -928,6 +952,30 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
         }
         return returnType;
     }
+
+    private static final class DerivedTableRow implements ArmyExpressionElement {
+
+        private final String derivedAlias;
+
+        /**
+         * @see #space(String, SymbolPeriod, SymbolAsterisk)
+         */
+        private DerivedTableRow(String derivedAlias) {
+            this.derivedAlias = derivedAlias;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+            context.parser().identifier(this.derivedAlias, sqlBuilder);
+            sqlBuilder.append(_Constant.POINT)
+                    .append('*');
+        }
+
+
+    }//DerivedTableRow
 
 
 }
