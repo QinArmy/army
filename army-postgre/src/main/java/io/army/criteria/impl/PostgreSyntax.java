@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -120,8 +119,7 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
 
     public static ExpressionElement space(String derivedAlias, SqlSyntax.SymbolPeriod period,
                                           SqlSyntax.SymbolAsterisk asterisk) {
-        ContextStack.peek().row(derivedAlias, period, asterisk); // register derived row
-        return new DerivedTableRow(derivedAlias);
+        return CriteriaSupports.derivedAsterisk(derivedAlias, period, asterisk);
     }
 
     public static ExpressionElement space(String tableAlias, SqlSyntax.SymbolPeriod period, TableMeta<?> table) {
@@ -952,30 +950,6 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
         }
         return returnType;
     }
-
-    private static final class DerivedTableRow implements ArmyExpressionElement {
-
-        private final String derivedAlias;
-
-        /**
-         * @see #space(String, SymbolPeriod, SymbolAsterisk)
-         */
-        private DerivedTableRow(String derivedAlias) {
-            this.derivedAlias = derivedAlias;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-            context.parser().identifier(this.derivedAlias, sqlBuilder);
-            sqlBuilder.append(_Constant.POINT)
-                    .append('*');
-        }
-
-
-    }//DerivedTableRow
 
 
 }

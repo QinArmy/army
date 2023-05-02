@@ -15,6 +15,7 @@ import io.army.stmt.Stmt;
 import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +51,15 @@ abstract class CriteriaSupports {
                                                  SQLs.SymbolAsterisk asterisk) {
         return new DerivedAsterisk(derivedAlias, period, asterisk);
     }
+
+    static StringObjectSpaceClause stringObjectSpace(boolean required, Consumer<String> consumer) {
+        return new StringObjectSpaceClause(required, consumer);
+    }
+
+    static StringObjectConsumer stringObjectConsumer(boolean required, Consumer<String> consumer) {
+        return new StringObjectConsumer(required, consumer);
+    }
+
 
     static ExpressionConsumer expressionConsumer(boolean required, Consumer<? super ArmyExpression> consumer) {
         return new ExpressionConsumer(required, consumer);
@@ -116,9 +126,6 @@ abstract class CriteriaSupports {
         clause.endConsumer();
         return new RowExpressionImpl(columnList);
     }
-
-
-
 
 
     static Returnings returningBuilder(Consumer<_SelectItem> consumer) {
@@ -1491,7 +1498,94 @@ abstract class CriteriaSupports {
     }//ElementObjectConsumer
 
 
-    private static final class DerivedAsterisk implements ArmyExpressionElement {
+    static final class StringObjectSpaceClause implements Statement._StringObjectSpaceClause,
+            Statement._StringObjectCommaClause {
+
+        private final boolean required;
+
+        private final Consumer<String> consumer;
+
+        private Boolean state;
+
+        private StringObjectSpaceClause(boolean required, Consumer<String> consumer) {
+            this.required = required;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public Statement._StringObjectCommaClause space(String key, String value) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.comma(key, value);
+        }
+
+        @Override
+        public Statement._StringObjectCommaClause comma(final @Nullable String key, final String value) {
+            if (key == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (!_StringUtils.hasText(key)) {
+                throw ContextStack.clearStackAndCriteriaError("key must have text.");
+            }
+            this.consumer.accept(key);
+            this.consumer.accept(value);
+            return this;
+        }
+
+        void endClause() {
+            if (this.required && this.state == null) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            this.state = Boolean.FALSE;
+        }
+
+
+    }//StringObjectSpaceClause
+
+    static final class StringObjectConsumer implements Statement._StringObjectConsumer {
+
+        private final boolean required;
+
+        private final Consumer<String> consumer;
+
+        private Boolean state;
+
+        private StringObjectConsumer(boolean required, Consumer<String> consumer) {
+            this.required = required;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public Statement._StringObjectConsumer accept(final @Nullable String key, String value) {
+            final Boolean state = this.state;
+            if (state == null) {
+                this.state = Boolean.TRUE;
+            } else if (state == Boolean.FALSE) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+
+            if (key == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (!_StringUtils.hasText(key)) {
+                throw ContextStack.clearStackAndCriteriaError("key must have text.");
+            }
+            this.consumer.accept(key);
+            this.consumer.accept(value);
+            return this;
+        }
+
+        void endConsumer() {
+            if (this.required && this.state == null) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            this.state = Boolean.FALSE;
+        }
+
+    }//StringObjectConsumer
+
+
+    private static final class DerivedAsterisk implements ArmyExpressionElement, FunctionArg.SingleFunctionArg {
 
         private final String derivedAlias;
 

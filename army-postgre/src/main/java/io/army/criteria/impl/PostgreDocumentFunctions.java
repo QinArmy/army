@@ -19,8 +19,6 @@ import io.army.util._Collections;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -2096,10 +2094,19 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      *
+     * @throws CriteriaException throw when<ul>
+     *                           <li>exp is not operable expression,eg: {@link SQLs#DEFAULT}</li>
+     *                           <li>exp is multi value expression,eg:{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>exp is {@link Postgres#space(String, SymbolPeriod, TableMeta)},should use {@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_json ( anyelement ) → json</a>
      */
     public static SimpleExpression toJson(ExpressionElement exp) {
-        return FunctionUtils.oneArgFunc("TO_JSON", exp, JsonType.TEXT);
+        final String name = "TO_JSON";
+        if (exp instanceof _SelectionGroup._TableFieldGroup) {
+            throw CriteriaUtils.funcArgError(name, exp);
+        }
+        return FunctionUtils.oneArgFunc(name, exp, JsonType.TEXT);
     }
 
 
@@ -2108,10 +2115,19 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
      *
+     * @throws CriteriaException throw when<ul>
+     *                           <li>exp is not operable expression,eg: {@link SQLs#DEFAULT}</li>
+     *                           <li>exp is multi value expression,eg:{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>exp is {@link Postgres#space(String, SymbolPeriod, TableMeta)},should use {@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_jsonb ( anyelement ) → jsonb</a>
      */
     public static SimpleExpression toJsonb(ExpressionElement exp) {
-        return FunctionUtils.oneArgFunc("TO_JSONB", exp, JsonbType.TEXT);
+        final String name = "TO_JSONB";
+        if (exp instanceof _SelectionGroup._TableFieldGroup) {
+            throw CriteriaUtils.funcArgError(name, exp);
+        }
+        return FunctionUtils.oneArgFunc(name, exp, JsonbType.TEXT);
     }
 
     /**
@@ -2332,7 +2348,6 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
@@ -2356,7 +2371,6 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
@@ -2525,8 +2539,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
      *                    <li>developer custom method</li>
      *                </ul>.
-     *                The first argument of funcRef always is {@link TextArrayType#LIST}.
-     * @param map     non-null and non-empty,it will be wrapped to unmodified list that will be  passed to funcRef as the second argument of funcRef
+     *                The first argument of funcRef always is {@link TextArrayType#LINEAR}.
      * @see #jsonObject(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_object ( text[] ) → json<br/>
      * Builds a JSON object out of a text array. The array must have either exactly one dimension with an even number of members, in which case they are taken<br/>
@@ -2534,10 +2547,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonObject(final BiFunction<MappingType, List<String>, Expression> funcRef,
-                                              final Map<String, String> map) {
-        final String name = "JSON_OBJECT";
-        return FunctionUtils.oneArgFunc(name, funcRef.apply(TextArrayType.LIST, FunctionUtils.pairMapToList(name, map)),
+    public static SimpleExpression jsonObject(BiFunction<MappingType, String[], Expression> funcRef,
+                                              Consumer<Statement._StringObjectSpaceClause> consumer) {
+        return FunctionUtils.staticStringObjectStringFunc("JSON_OBJECT", false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonType.TEXT);
     }
 
@@ -2552,7 +2564,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
      *                    <li>developer custom method</li>
      *                </ul>.
-     *                The first argument of funcRef always is {@link TextArrayType#LIST}.
+     *                The first argument of funcRef always is {@link TextArrayType#LINEAR}.
      * @see #jsonObject(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_object ( text[] ) → json<br/>
      * Builds a JSON object out of a text array. The array must have either exactly one dimension with an even number of members, in which case they are taken<br/>
@@ -2560,9 +2572,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonObject(final BiFunction<MappingType, List<String>, Expression> funcRef,
-                                              final Consumer<BiConsumer<String, String>> consumer) {
-        return jsonObject(funcRef.apply(TextArrayType.LIST, FunctionUtils.pairConsumerToList(consumer)));
+    public static SimpleExpression jsonObject(SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
+                                              final Consumer<Statement._StringObjectConsumer> consumer) {
+        return FunctionUtils.dynamicStringObjectStringFunc("JSON_OBJECT", space, false, funcRef, TextArrayType.LINEAR, consumer,
+                JsonType.TEXT);
     }
 
 
@@ -2592,8 +2605,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
      *                    <li>developer custom method</li>
      *                </ul>.
-     *                The first argument of funcRef always is {@link TextArrayType#LIST}.
-     * @param map     non-null and non-empty,it will be wrapped to unmodified list that will be  passed to funcRef as the second argument of funcRef
+     *                The first argument of funcRef always is {@link TextArrayType#LINEAR}.
      * @see #jsonbObject(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_object ( text[] ) → json<br/>
      * Builds a JSON object out of a text array. The array must have either exactly one dimension with an even number of members, in which case they are taken<br/>
@@ -2601,10 +2613,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonbObject(final BiFunction<MappingType, List<String>, Expression> funcRef,
-                                               final Map<String, String> map) {
-        final String name = "JSONB_OBJECT";
-        return FunctionUtils.oneArgFunc(name, funcRef.apply(TextArrayType.LIST, FunctionUtils.pairMapToList(name, map)),
+    public static SimpleExpression jsonbObject(BiFunction<MappingType, String[], Expression> funcRef,
+                                               Consumer<Statement._StringObjectSpaceClause> consumer) {
+        return FunctionUtils.staticStringObjectStringFunc("JSONB_OBJECT", false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonbType.TEXT);
     }
 
@@ -2619,7 +2630,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
      *                    <li>developer custom method</li>
      *                </ul>.
-     *                The first argument of funcRef always is {@link TextArrayType#LIST}.
+     *                The first argument of funcRef always is {@link TextArrayType#LINEAR}.
      * @see #jsonbObject(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_object ( text[] ) → json<br/>
      * Builds a JSON object out of a text array. The array must have either exactly one dimension with an even number of members, in which case they are taken<br/>
@@ -2627,9 +2638,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonbObject(final BiFunction<MappingType, List<String>, Expression> funcRef,
-                                               final Consumer<BiConsumer<String, String>> consumer) {
-        return jsonbObject(funcRef.apply(TextArrayType.LIST, FunctionUtils.pairConsumerToList(consumer)));
+    public static SimpleExpression jsonbObject(SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
+                                               final Consumer<Statement._StringObjectConsumer> consumer) {
+        return FunctionUtils.dynamicStringObjectStringFunc("JSONB_OBJECT", space, false, funcRef, TextArrayType.LINEAR, consumer,
+                JsonbType.TEXT);
     }
 
 
@@ -2676,6 +2688,40 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *    [2,false]
      * </pre>
      *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonType#TEXT}.
+     * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
+     * @see #jsonArrayElements(Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_array_elements ( json ) → setof json<br/>
+     * Expands the top-level JSON array into a set of JSON values.<br/>
+     * </a>
+     */
+    public static <T> _ColumnWithOrdinalityFunction jsonArrayElements(final BiFunction<MappingType, T, Expression> funcRef, T value) {
+        return jsonArrayElements(funcRef.apply(JsonType.TEXT, value));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}.
+     * Default Selection alias is 'value'.
+     * </p>
+     * <pre><br/>
+     *   select * from json_array_elements('[1,true, [2,false]]') →
+     *
+     *      value
+     *   -----------
+     *    1
+     *    true
+     *    [2,false]
+     * </pre>
+     *
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_array_elements ( json ) → setof json<br/>
      * Expands the top-level JSON array into a set of JSON values.<br/>
      * </a>
@@ -2690,7 +2736,41 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Default Selection alias is 'value'.
      * </p>
      * <pre><br/>
-     *   select * from json_array_elements('[1,true, [2,false]]') →
+     *   select * from jsonb_array_elements('[1,true, [2,false]]') →
+     *
+     *      value
+     *   -----------
+     *    1
+     *    true
+     *    [2,false]
+     * </pre>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonbType#TEXT}.
+     * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
+     * @see #jsonbArrayElements(Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_array_elements ( json ) → setof json<br/>
+     * Expands the top-level JSON array into a set of JSON values.<br/>
+     * </a>
+     */
+    public static <T> _ColumnWithOrdinalityFunction jsonbArrayElements(final BiFunction<MappingType, T, Expression> funcRef, T value) {
+        return jsonbArrayElements(funcRef.apply(JsonbType.TEXT, value));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * Default Selection alias is 'value'.
+     * </p>
+     * <pre><br/>
+     *   select * from jsonb_array_elements('[1,true, [2,false]]') →
      *
      *      value
      *   -----------
@@ -2707,10 +2787,43 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         return DialectFunctionUtils.oneArgColumnFunction("JSONB_ARRAY_ELEMENTS", json, "value", JsonbType.TEXT);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link TextType#INSTANCE}.
+     * Default Selection alias is 'value'.
+     * </p>
+     * <pre><br/>
+     *   select * from json_array_elements_text('["foo", "bar"]') →
+     *
+     *      value
+     *   -----------
+     *    foo
+     *    bar
+     * </pre>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonType#TEXT}.
+     * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
+     * @see #jsonArrayElementsText(Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_array_elements_text ( json ) → setof text<br/>
+     * Expands the top-level JSON array into a set of JSON values.<br/>
+     * </a>
+     */
+    public static <T> _ColumnWithOrdinalityFunction jsonArrayElementsText(final BiFunction<MappingType, T, Expression> funcRef, T value) {
+        return jsonArrayElementsText(funcRef.apply(JsonType.TEXT, value));
+    }
+
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link JsonType#TEXT}.
+     * The {@link MappingType} of function return type: {@link TextType#INSTANCE}.
      * Default Selection alias is 'value'.
      * </p>
      * <pre><br/>
@@ -2727,16 +2840,49 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static _ColumnWithOrdinalityFunction jsonArrayElementsText(final Expression json) {
-        return DialectFunctionUtils.oneArgColumnFunction("JSON_ARRAY_ELEMENTS_TEXT", json, "value", JsonType.TEXT);
+        return DialectFunctionUtils.oneArgColumnFunction("JSON_ARRAY_ELEMENTS_TEXT", json, "value", TextType.INSTANCE);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}.
+     * The {@link MappingType} of function return type: {@link TextType#INSTANCE}.
      * Default Selection alias is 'value'.
      * </p>
      * <pre><br/>
-     *   select * from json_array_elements_text('["foo", "bar"]') →
+     *   select * from jsonb_array_elements_text('["foo", "bar"]') →
+     *
+     *      value
+     *   -----------
+     *    foo
+     *    bar
+     * </pre>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is {@link JsonbType#TEXT}.
+     * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
+     * @see #jsonbArrayElementsText(Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_array_elements_text ( json ) → setof text<br/>
+     * Expands the top-level JSON array into a set of JSON values.<br/>
+     * </a>
+     */
+    public static <T> _ColumnWithOrdinalityFunction jsonbArrayElementsText(final BiFunction<MappingType, T, Expression> funcRef, T value) {
+        return jsonbArrayElementsText(funcRef.apply(JsonbType.TEXT, value));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link TextType#INSTANCE}.
+     * Default Selection alias is 'value'.
+     * </p>
+     * <pre><br/>
+     *   select * from jsonb_array_elements_text('["foo", "bar"]') →
      *
      *      value
      *   -----------
@@ -2749,7 +2895,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static _ColumnWithOrdinalityFunction jsonbArrayElementsText(final Expression json) {
-        return DialectFunctionUtils.oneArgColumnFunction("JSONB_ARRAY_ELEMENTS_TEXT", json, "value", JsonbType.TEXT);
+        return DialectFunctionUtils.oneArgColumnFunction("JSONB_ARRAY_ELEMENTS_TEXT", json, "value", TextType.INSTANCE);
     }
 
     /**
@@ -2782,7 +2928,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     /**
      * <p>
      * The {@link MappingType} of fields of derived table :<li>
-     * <li>key : {@link StringType}</li>
+     * <li>key : {@link TextType}</li>
      * <li>value : {@link JsonType#TEXT}</li>
      * <li>ordinality (optioinal) : {@link IntegerType}. see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </li>
@@ -2819,7 +2965,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     /**
      * <p>
      * The {@link MappingType} of fields of derived table :<li>
-     * <li>key : {@link StringType}</li>
+     * <li>key : {@link TextType}</li>
      * <li>value : {@link JsonType#TEXT}</li>
      * <li>ordinality (optioinal) : {@link IntegerType}. see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </li>
@@ -2840,7 +2986,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static _TabularWithOrdinalityFunction jsonEach(final Expression json) {
         final List<Selection> fieldList = _Collections.arrayList(2);
-        fieldList.add(ArmySelections.forName("key", StringType.INSTANCE));
+        fieldList.add(ArmySelections.forName("key", TextType.INSTANCE));
         fieldList.add(ArmySelections.forName("value", JsonType.TEXT));
         return DialectFunctionUtils.oneArgTabularFunc("JSON_EACH", json, fieldList);
     }
@@ -2848,7 +2994,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     /**
      * <p>
      * The {@link MappingType} of fields of derived table :<li>
-     * <li>key : {@link StringType}</li>
+     * <li>key : {@link TextType}</li>
      * <li>value : {@link JsonbType#TEXT}</li>
      * <li>ordinality (optioinal) : {@link IntegerType}. see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </li>
@@ -2872,7 +3018,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                </ul>.
      *                The first argument of funcRef always is {@link JsonbType#TEXT}.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
-     * @see #jsonEach(Expression)
+     * @see #jsonbEach(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_each ( json ) → setof record ( key text, value json )<br/>
      * Expands the top-level JSON object into a set of key/value pairs.<br/>
      * </a>
@@ -2906,7 +3052,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static _TabularWithOrdinalityFunction jsonbEach(final Expression json) {
         final List<Selection> fieldList = _Collections.arrayList(2);
-        fieldList.add(ArmySelections.forName("key", StringType.INSTANCE));
+        fieldList.add(ArmySelections.forName("key", TextType.INSTANCE));
         fieldList.add(ArmySelections.forName("value", JsonbType.TEXT));
         return DialectFunctionUtils.oneArgTabularFunc("JSONB_EACH", json, fieldList);
     }
@@ -2915,7 +3061,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     /**
      * <p>
      * The {@link MappingType} of fields of derived table :<li>
-     * <li>key : {@link StringType}</li>
+     * <li>key : {@link TextType}</li>
      * <li>value : {@link TextType}</li>
      * <li>ordinality (optioinal) : {@link IntegerType}. see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </li>
@@ -2952,7 +3098,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     /**
      * <p>
      * The {@link MappingType} of fields of derived table :<li>
-     * <li>key : {@link StringType}</li>
+     * <li>key : {@link TextType}</li>
      * <li>value : {@link TextType}</li>
      * <li>ordinality (optioinal) : {@link IntegerType}. see {@link _WithOrdinalityClause#withOrdinality()}</li>
      * </li>
@@ -2973,7 +3119,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static _TabularWithOrdinalityFunction jsonEachText(final Expression json) {
         final List<Selection> fieldList = _Collections.arrayList(2);
-        fieldList.add(ArmySelections.forName("key", StringType.INSTANCE));
+        fieldList.add(ArmySelections.forName("key", TextType.INSTANCE));
         fieldList.add(ArmySelections.forName("value", TextType.INSTANCE));
         return DialectFunctionUtils.oneArgTabularFunc("JSON_EACH_TEXT", json, fieldList);
     }
@@ -3039,7 +3185,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static _TabularWithOrdinalityFunction jsonbEachText(final Expression json) {
         final List<Selection> fieldList = _Collections.arrayList(2);
-        fieldList.add(ArmySelections.forName("key", StringType.INSTANCE));
+        fieldList.add(ArmySelections.forName("key", TextType.INSTANCE));
         fieldList.add(ArmySelections.forName("value", TextType.INSTANCE));
         return DialectFunctionUtils.oneArgTabularFunc("JSONB_EACH_TEXT", json, fieldList);
     }

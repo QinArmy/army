@@ -177,6 +177,21 @@ public interface Statement extends Item {
 
     }
 
+    interface _StringObjectCommaClause {
+
+        _StringObjectCommaClause comma(String key, String value);
+    }
+
+    interface _StringObjectSpaceClause {
+
+        _StringObjectCommaClause space(String key, String value);
+    }
+
+    interface _StringObjectConsumer {
+
+        _StringObjectConsumer accept(String key, String value);
+    }
+
 
     /**
      * <p>
@@ -758,7 +773,6 @@ public interface Statement extends Item {
 
         R space(Function<T, R> function);
     }
-
 
 
     interface _MinWhereClause<WR, WA> {

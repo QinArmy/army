@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
+import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.criteria.impl.inner._Window;
 import io.army.criteria.standard.SQLFunction;
@@ -467,10 +468,68 @@ abstract class FunctionUtils {
             for (ExpressionElement exp : variadic) {
                 if (!(exp instanceof ArmyExpressionElement)) {
                     throw CriteriaUtils.funcArgError(name, exp);
+                } else if (even && exp instanceof _SelectionGroup._TableFieldGroup) {
+                    throw CriteriaUtils.funcArgError(name, exp);
                 }
                 argList.add((ArmyExpressionElement) exp);
             }
             func = new MultiArgFunctionExpression(name, argList, returnType);
+        }
+        return func;
+    }
+
+    static SimpleExpression staticStringObjectStringFunc(final String name, final boolean required,
+                                                         final BiFunction<MappingType, String[], Expression> funcRef,
+                                                         final MappingType paramType,
+                                                         final Consumer<Statement._StringObjectSpaceClause> consumer,
+                                                         final TypeMeta returnType) {
+
+        final List<String> pairList = _Collections.arrayList();
+        final CriteriaSupports.StringObjectSpaceClause clause;
+        clause = CriteriaSupports.stringObjectSpace(required, pairList::add);
+        consumer.accept(clause);
+        clause.endClause();
+
+        final SimpleExpression func;
+        if (pairList.size() == 0) {
+            func = new ZeroArgFunction(name, returnType);
+        } else {
+            final Expression arg;
+            arg = funcRef.apply(paramType, pairList.toArray(new String[0]));
+            if (!(arg instanceof FunctionArg.SingleFunctionArg)) {
+                throw CriteriaUtils.funcArgError(name, arg);
+            }
+            func = new OneArgFunction(name, arg, returnType);
+        }
+        return func;
+    }
+
+    static SimpleExpression dynamicStringObjectStringFunc(final String name, final SqlSyntax.SymbolSpace space,
+                                                          final boolean required,
+                                                          final BiFunction<MappingType, String[], Expression> funcRef,
+                                                          final MappingType paramType,
+                                                          final Consumer<Statement._StringObjectConsumer> consumer,
+                                                          final TypeMeta returnType) {
+        if (space != SQLs.SPACE) {
+            throw CriteriaUtils.errorSymbol(space);
+        }
+
+        final List<String> pairList = _Collections.arrayList();
+        final CriteriaSupports.StringObjectConsumer clause;
+        clause = CriteriaSupports.stringObjectConsumer(required, pairList::add);
+        consumer.accept(clause);
+        clause.endConsumer();
+
+        final SimpleExpression func;
+        if (pairList.size() == 0) {
+            func = new ZeroArgFunction(name, returnType);
+        } else {
+            final Expression arg;
+            arg = funcRef.apply(paramType, pairList.toArray(new String[0]));
+            if (!(arg instanceof FunctionArg.SingleFunctionArg)) {
+                throw CriteriaUtils.funcArgError(name, arg);
+            }
+            func = new OneArgFunction(name, arg, returnType);
         }
         return func;
     }

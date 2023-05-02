@@ -131,11 +131,16 @@ public final class TextArrayType extends _ArmyInnerMapping implements MappingTyp
 
     @Override
     public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        if (nonNull instanceof String) {
-            return nonNull;
+        final Object value;
+        if (nonNull instanceof String || nonNull.getClass().isArray()) {
+            value = nonNull;
+        } else if (nonNull instanceof List) {
+            value = listToArray(type, (List<?>) nonNull);
+        } else {
+            // TODO
+            throw new UnsupportedOperationException();
         }
-        // TODO
-        throw new UnsupportedOperationException();
+        return value;
     }
 
     @Override
@@ -150,6 +155,22 @@ public final class TextArrayType extends _ArmyInnerMapping implements MappingTyp
             INSTANCE_MAP.remove(this.source);
         }
 
+    }
+
+    private String[] listToArray(final SqlType type, final List<?> list) {
+        final String[] array = new String[list.size()];
+        Object element;
+        for (int i = 0; i < array.length; i++) {
+            element = list.get(i);
+            if (element == null) {
+                array[i] = null;
+            } else if (element instanceof String) {
+                array[i] = (String) element;
+            } else {
+                throw PARAM_ERROR_HANDLER.apply(this, type, list);
+            }
+        }
+        return array;
     }
 
 

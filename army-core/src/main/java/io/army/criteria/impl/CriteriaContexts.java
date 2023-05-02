@@ -2318,6 +2318,9 @@ abstract class CriteriaContexts {
 
             this.endSelectClauseIfNeed();
 
+            if (this.refSelectionMap != null) {
+                this.validateDelayRefSelection();
+            }
             this.selectionGroupMap = null;
             this.refWindowNameMap = null;
             this.windowNameMap = null;
@@ -2351,9 +2354,6 @@ abstract class CriteriaContexts {
                 this.selectItemList = Collections.singletonList(selectItem);
             }
 
-            if (this.refSelectionMap != null) {
-                this.validateDelayRefSelection();
-            }
         }
 
         /**

@@ -324,7 +324,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             super(columnFunction);
             this.columnFunction = columnFunction;
             final List<Selection> fieldList = _Collections.arrayList(2);
-            fieldList.add(ArmySelections.forName(columnFunction.name.toLowerCase(Locale.ROOT), columnFunction.returnType));
+            fieldList.add(ArmySelections.forName(columnFunction.alias(), columnFunction.returnType));
             fieldList.add(ArmySelections.forName(ORDINALITY, LongType.INSTANCE));
 
             this.funcFieldList = Collections.unmodifiableList(fieldList);
