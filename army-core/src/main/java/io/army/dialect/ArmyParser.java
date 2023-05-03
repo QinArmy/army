@@ -25,6 +25,7 @@ import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -588,13 +589,20 @@ abstract class ArmyParser implements DialectParser {
             if (!sqlType.isUserDefined()) {
                 throw _Exceptions.notUserDefinedType(type, sqlType);
             }
-            final String userDefinedTypeName;
+            final String userDefinedTypeName, safeTypeName;
             userDefinedTypeName = ((MappingType.SqlUserDefinedType) type).sqlTypeName(this.serverMeta);
             if (this.keyWordMap.containsKey(userDefinedTypeName.toUpperCase(Locale.ROOT))
                     || !_DialectUtils.isSimpleIdentifier(userDefinedTypeName)) {
-                this.identifier(userDefinedTypeName, sqlBuilder);
+                safeTypeName = this.identifier(userDefinedTypeName);
             } else {
-                sqlBuilder.append(userDefinedTypeName);
+                safeTypeName = userDefinedTypeName;
+            }
+            if (!sqlType.isArray()) {
+                sqlBuilder.append(safeTypeName);
+            } else if (!(type instanceof MappingType.SqlArrayType)) {
+                throw _Exceptions.nonArrayType(type, sqlType);
+            } else {
+                this.arrayTypeName(safeTypeName, _ArrayUtils.dimensionOfType(type), sqlBuilder);
             }
         } else if (sqlType.isUserDefined()) {
             throw _Exceptions.notUserDefinedType(type, sqlType);
@@ -603,6 +611,8 @@ abstract class ArmyParser implements DialectParser {
         }
 
     }
+
+    protected abstract void arrayTypeName(String safeTypeNme, int dimension, StringBuilder sqlBuilder);
 
     protected abstract void buildInTypeName(SqlType sqlType, MappingType type, StringBuilder sqlBuilder);
 

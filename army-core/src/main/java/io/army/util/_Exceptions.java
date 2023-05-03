@@ -939,6 +939,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new MetaException(m);
     }
 
+    public static MetaException nonArrayType(MappingType type, SqlType sqlType) {
+        String m = String.format("%s return %s but don't implements %s .", type, sqlType,
+                MappingType.SqlArrayType.class.getName());
+        return new MetaException(m);
+    }
+
     public static MetaException javaTypeMethodNotArray(MappingType type) {
         String m = String.format("%s javaType() don't return array type or List", type);
         return new MetaException(m);

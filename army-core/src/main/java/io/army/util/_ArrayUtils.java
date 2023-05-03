@@ -2,6 +2,7 @@ package io.army.util;
 
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 
 import java.util.*;
 
@@ -173,6 +174,21 @@ public abstract class _ArrayUtils {
         while (componentType.isArray()) {
             componentType = componentType.getComponentType();
             dimension++;
+        }
+        return dimension;
+    }
+
+    public static int dimensionOfType(final MappingType type) {
+        final Class<?> clazz;
+        clazz = type.javaType();
+        final int dimension;
+        if (List.class.isAssignableFrom(clazz)) {
+            dimension = 1;
+        } else if (clazz.isArray()) {
+            dimension = dimensionOf(clazz);
+        } else {
+            String m = String.format("unknown array dimension of %s .", type);
+            throw new ClassCastException(m);
         }
         return dimension;
     }

@@ -12,7 +12,6 @@ import io.army.mapping.optional.XmlArrayType;
 import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.postgre.PostgreTsVectorType;
 import io.army.meta.TableMeta;
-import io.army.sqltype.PgSqlType;
 import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 
@@ -1066,9 +1065,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         } else if (as != SQLs.AS) {
             throw CriteriaUtils.funcArgError(name, as);
         }
-        return FunctionUtils.complexArgFunc(name, XmlType.TEXT_INSTANCE, option, value, as,
-                NonOperationExpression.sqlTypeNameExp(type, PgSqlType.class)
-        );
+        return FunctionUtils.complexArgFunc(name, XmlType.TEXT_INSTANCE, option, value, as, type);
     }
 
 

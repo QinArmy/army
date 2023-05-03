@@ -3,16 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.standard.SQLFunction;
-import io.army.dialect.DialectParser;
-import io.army.dialect._Constant;
-import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
-import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
-import io.army.sqltype.SqlType;
-import io.army.util._Exceptions;
 
 import java.util.function.BiFunction;
 
@@ -427,13 +420,6 @@ abstract class NonOperationExpression implements ArmyExpression {
         return e;
     }
 
-    static Expression sqlTypeNameExp(final @Nullable MappingType type, final Class<? extends SqlType> sqlTypeClass) {
-        if (type == null) {
-            throw ContextStack.clearStackAndNullPointer();
-        }
-        return new SqlTypeNameExpression(type, sqlTypeClass);
-    }
-
 
     /**
      * <p>
@@ -459,56 +445,6 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     }//NonOperationFunction
 
-    static final class SqlTypeNameExpression extends NonOperationExpression implements FunctionArg.SingleFunctionArg {
-
-        private final MappingType type;
-
-        private final Class<? extends SqlType> sqlTypeClass;
-
-        private SqlTypeNameExpression(MappingType type, Class<? extends SqlType> sqlTypeClass) {
-            this.type = type;
-            this.sqlTypeClass = sqlTypeClass;
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            throw unsupportedOperation(this);
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final MappingType type = this.type;
-            final DialectParser parser;
-            parser = context.parser();
-
-            final ServerMeta serverMeta;
-            serverMeta = parser.serverMeta();
-            final SqlType sqlType;
-            sqlType = type.map(serverMeta);
-            if (!this.sqlTypeClass.isInstance(sqlType)) {
-                String m = String.format(" %s of map result of %s isn't instance of %s", sqlType, type,
-                        this.sqlTypeClass.getName());
-                throw new CriteriaException(m);
-            }
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-
-            if (!sqlType.isUserDefined()) {
-                sqlType.sqlTypeName(type, sqlBuilder);
-            } else if (type instanceof MappingType.SqlUserDefinedType) {
-                final String typeName;
-                typeName = ((MappingType.SqlUserDefinedType) type).sqlTypeName(serverMeta);
-                parser.identifier(typeName, sqlBuilder);
-            } else {
-                throw _Exceptions.notUserDefinedType(type, sqlType);
-            }
-
-
-        }
-
-
-    }//SqlTypeNameExpression
 
 
 }

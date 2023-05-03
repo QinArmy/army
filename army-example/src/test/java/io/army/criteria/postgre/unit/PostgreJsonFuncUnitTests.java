@@ -6,6 +6,7 @@ import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.postgre.mapping.MyRowType;
+import io.army.criteria.postgre.mapping.TwoIntType;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.mapping.JsonType;
 import io.army.mapping.JsonbType;
@@ -535,10 +536,40 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .as("d")
                 .crossJoin(jsonPopulateRecord(SQLs.literal(MyRowType.INSTANCE, null), SQLs.literal(JsonType.TEXT, json))::withOrdinality)
                 .as("w")
+                .crossJoin(jsonbPopulateRecord(SQLs.literal(MyRowType.INSTANCE, null), SQLs.literal(JsonbType.TEXT, json)))
+                .as("db")
+                .crossJoin(jsonbPopulateRecord(SQLs.literal(MyRowType.INSTANCE, null), SQLs.literal(JsonbType.TEXT, json))::withOrdinality)
+                .as("wb")
                 .asQuery();
 
         printStmt(LOG, stmt);
 
+    }
+
+    /**
+     * @see Postgres#jsonPopulateRecordSet(Expression, Expression)
+     * @see Postgres#jsonbPopulateRecordSet(Expression, Expression)
+     */
+    @Test
+    public void jsonPopulateRecordSetFunc() {
+        final String json;
+        json = "[{\"a\":1,\"b\":2}, {\"a\":3,\"b\":4}]";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select("d", PERIOD, ASTERISK)
+                .comma("w", PERIOD, ASTERISK)
+                .from(jsonPopulateRecordSet(SQLs.literal(TwoIntType.INSTANCE, null), SQLs.literal(JsonType.TEXT, json)))
+                .as("d")
+                .crossJoin(jsonPopulateRecordSet(SQLs.literal(TwoIntType.INSTANCE, null), SQLs.literal(JsonType.TEXT, json))::withOrdinality)
+                .as("w")
+                .crossJoin(jsonbPopulateRecordSet(SQLs.literal(TwoIntType.INSTANCE, null), SQLs.literal(JsonbType.TEXT, json)))
+                .as("db")
+                .crossJoin(jsonbPopulateRecordSet(SQLs.literal(TwoIntType.INSTANCE, null), SQLs.literal(JsonbType.TEXT, json))::withOrdinality)
+                .as("wb")
+                .asQuery();
+
+        printStmt(LOG, stmt);
     }
 
 

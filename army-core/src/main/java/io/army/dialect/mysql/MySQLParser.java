@@ -99,7 +99,14 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     protected final void buildInTypeName(SqlType sqlType, MappingType type, StringBuilder sqlBuilder) {
+        //TODO
+        throw new UnsupportedOperationException();
+    }
 
+    @Override
+    protected final void arrayTypeName(String safeTypeNme, int dimension, StringBuilder sqlBuilder) {
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override

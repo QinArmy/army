@@ -172,6 +172,11 @@ public enum PgSqlType implements SqlType {
         return this == UNKNOWN;
     }
 
+    @Override
+    public final boolean isArray() {
+        return this.name().contains("_ARRAY");
+    }
+
 
     @Override
     public final void sqlTypeName(final MappingType type, final StringBuilder builder) {

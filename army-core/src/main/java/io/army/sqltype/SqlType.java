@@ -17,6 +17,10 @@ public interface SqlType {
 
     boolean isUnknown();
 
+    default boolean isArray() {
+        throw new UnsupportedOperationException();
+    }
+
     default boolean isNoPrecision() {
         throw new UnsupportedOperationException();
     }
@@ -38,6 +42,7 @@ public interface SqlType {
         throw new UnsupportedOperationException();
     }
 
+    @Deprecated
     default void sqlTypeName(MappingType type, StringBuilder builder) {
         throw new UnsupportedOperationException();
     }

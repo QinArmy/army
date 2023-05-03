@@ -842,8 +842,11 @@ abstract class FunctionUtils {
         sqlBuilder = context.sqlBuilder();
         final DialectParser parser = context.parser();
         for (Object o : argumentList) {
-            if (o instanceof Expression) {
-                ((ArmyExpression) o).appendSql(context); // convert to ArmyExpression to avoid non-army expression
+            if (o instanceof ExpressionElement) {
+                if (!(o instanceof ArmyExpressionElement)) {
+                    throw new CriteriaException(String.format("%s non-army row expression", o));
+                }
+                ((ArmyExpressionElement) o).appendSql(context); // convert to ArmyExpression to avoid non-army expression
             } else if (o == Functions.FuncWord.LEFT_PAREN) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
             } else if (o instanceof SQLWords) {
@@ -859,11 +862,9 @@ abstract class FunctionUtils {
                 parser.identifier(((SQLIdentifier) o).render(), sqlBuilder);
             } else if (o instanceof ArmyFuncClause) {
                 ((ArmyFuncClause) o).appendSql(context);
-            } else if (o instanceof RowExpression) {
-                if (!(o instanceof ArmyRowExpression)) {
-                    throw new CriteriaException(String.format("%s non-army row expression", o));
-                }
-                ((ArmyRowExpression) o).appendSql(context);
+            } else if (o instanceof MappingType) {
+                sqlBuilder.append(_Constant.SPACE);
+                parser.typeName((MappingType) o, sqlBuilder);
             } else {
                 //no bug,never here
                 throw new IllegalArgumentException();
@@ -875,7 +876,7 @@ abstract class FunctionUtils {
 
     static void complexArgToString(final List<?> argumentList, final StringBuilder builder) {
         for (Object o : argumentList) {
-            if (o instanceof Expression) {
+            if (o instanceof ExpressionElement) {
                 builder.append(o);
             } else if (o == Functions.FuncWord.LEFT_PAREN) {
                 builder.append(((SQLWords) o).spaceRender());
@@ -889,8 +890,9 @@ abstract class FunctionUtils {
                         .append(o);
             } else if (o instanceof ArmyFuncClause) {
                 builder.append(o);
-            } else if (o instanceof RowExpression) {
-                builder.append(o);
+            } else if (o instanceof MappingType) {
+                builder.append(_Constant.SPACE)
+                        .append(o);
             } else {
                 //no bug,never here
                 throw new IllegalArgumentException();

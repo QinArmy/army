@@ -179,26 +179,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case TSTZRANGE_ARRAY:
             case TIMESTAMPTZ_ARRAY:
             case LSEG_ARRAY: {
-                final int dimension;
-                final Class<?> javaType;
-                javaType = type.javaType();
-                if (javaType == Object.class) {
-                    throw _Exceptions.unknownArrayDimension(sqlType, type);
-                } else if (List.class.isAssignableFrom(javaType)) {
-                    dimension = 1;
-                } else if (javaType.isArray()) {
-                    dimension = _ArrayUtils.dimensionOf(javaType);
-                } else {
-                    throw _Exceptions.javaTypeMethodNotArray(type);
-                }
-                String name;
+                final String name, typeName;
                 name = sqlType.name();
-                name = name.substring(0, name.indexOf("_ARRAY"));
-                sqlBuilder.append(name);
-
-                for (int i = 0; i < dimension; i++) {
-                    sqlBuilder.append("[]");
-                }
+                typeName = name.substring(0, name.indexOf("_ARRAY"));
+                this.arrayTypeName(typeName, _ArrayUtils.dimensionOfType(type), sqlBuilder);
             }
             break;
             case UNKNOWN:
@@ -206,6 +190,17 @@ abstract class PostgreParser extends _ArmyDialectParser {
             default:
                 // no bug,never here
                 throw _Exceptions.unexpectedEnum((PgSqlType) sqlType);
+        }
+
+    }
+
+    @Override
+    protected final void arrayTypeName(final String safeTypeNme, final int dimension,
+                                       final StringBuilder sqlBuilder) {
+        assert dimension > 1;
+        sqlBuilder.append(safeTypeNme);
+        for (int i = 0; i < dimension; i++) {
+            sqlBuilder.append("[]");
         }
 
     }
