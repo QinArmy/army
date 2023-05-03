@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
+import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.schema._SchemaResult;
 import io.army.stmt.SimpleStmt;
@@ -63,6 +64,8 @@ public interface DialectParser {
 
 
     String identifier(String identifier);
+
+    void typeName(MappingType type, StringBuilder sqlBuilder);
 
 
     Dialect dialect();

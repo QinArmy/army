@@ -344,6 +344,34 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
+    static SimpleExpression oneAndConsumer(final String name, final boolean required, final Expression one,
+                                           final Consumer<Consumer<Expression>> consumer,
+                                           TypeMeta returnType) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        }
+        final List<ArmyExpression> argList = _Collections.arrayList(2);
+        argList.add((ArmyExpression) one);
+
+        consumer.accept(exp -> {
+            if (!(exp instanceof FunctionArg)) {
+                throw CriteriaUtils.funcArgError(name, exp);
+            }
+            argList.add((ArmyExpression) exp);
+        });
+
+        final SimpleExpression func;
+        if (argList.size() == 1) {
+            if (required) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            func = new OneArgFunction(name, one, returnType);
+        } else {
+            func = new MultiArgFunctionExpression(name, argList, returnType);
+        }
+        return func;
+    }
+
     static SimpleExpression twoAndMultiArgFunc(final String name, final Expression exp1, Expression exp2,
                                                final List<Expression> expList, final TypeMeta returnType) {
         return new MultiArgFunctionExpression(name, twoAndMultiExpList(name, exp1, exp2, expList), returnType);

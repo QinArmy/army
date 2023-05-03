@@ -70,18 +70,7 @@ public final class TextType extends _ArmyInnerMapping implements MappingType.Sql
 
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        final SqlType type;
-        switch (meta.dialectDatabase()) {
-            case MySQL:
-                type = MySQLType.TEXT;
-                break;
-            case PostgreSQL:
-                type = PgSqlType.NO_CAST_TEXT;
-                break;
-            default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
-        }
-        return type;
+       return mapSqlType(this, meta);
     }
 
 
@@ -98,6 +87,22 @@ public final class TextType extends _ArmyInnerMapping implements MappingType.Sql
     @Override
     public String afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return StringType._convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
+    }
+
+
+    static SqlType mapSqlType(final MappingType type, final ServerMeta meta) {
+        final SqlType sqlType;
+        switch (meta.dialectDatabase()) {
+            case MySQL:
+                sqlType = MySQLType.TEXT;
+                break;
+            case PostgreSQL:
+                sqlType = PgSqlType.TEXT;
+                break;
+            default:
+                throw MAP_ERROR_HANDLER.apply(type, meta);
+        }
+        return sqlType;
     }
 
 

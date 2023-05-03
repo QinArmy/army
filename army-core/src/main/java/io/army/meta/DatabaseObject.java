@@ -1,5 +1,7 @@
 package io.army.meta;
 
+import io.army.criteria.SQLElement;
+
 /**
  * <p>
  * This interface representing database object ,this interface is base interface of below:
@@ -11,7 +13,7 @@ package io.army.meta;
  *
  * @since 1.0
  */
-public interface DatabaseObject {
+public interface DatabaseObject extends SQLElement {
 
     /**
      * @see TableMeta#tableName()

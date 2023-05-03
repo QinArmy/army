@@ -40,7 +40,7 @@ abstract class CriteriaUtils {
 
     @Deprecated
     static List<String> columnAliasList(final boolean required, Consumer<Consumer<String>> consumer) {
-        List<String> list = new ArrayList<>();
+        List<String> list = _Collections.arrayList();
         consumer.accept(list::add);
         if (list.size() > 0) {
             list = _Collections.unmodifiableList(list);
@@ -52,28 +52,37 @@ abstract class CriteriaUtils {
         return list;
     }
 
-    static List<String> stringList(CriteriaContext ctx, final boolean required, Consumer<Consumer<String>> consumer) {
-        List<String> list = new ArrayList<>();
+    static List<String> stringList(final @Nullable CriteriaContext ctx, final boolean required,
+                                   final Consumer<Consumer<String>> consumer) {
+        List<String> list = _Collections.arrayList();
         consumer.accept(list::add);
         if (list.size() > 0) {
             list = _Collections.unmodifiableList(list);
-        } else if (required) {
-            throw ContextStack.criteriaError(ctx, "you don't add any string");
-        } else {
+        } else if (!required) {
             list = Collections.emptyList();
+
+        } else if (ctx == null) {
+            throw ContextStack.clearStackAnd(CriteriaUtils::dontAddAnyItem);
+        } else {
+            throw ContextStack.criteriaError(ctx, CriteriaUtils::dontAddAnyItem);
         }
         return list;
     }
 
 
-    static List<_Expression> expressionList(CriteriaContext ctx, final boolean required, Consumer<Consumer<Expression>> consumer) {
-        final List<_Expression> list = new ArrayList<>();
+    static List<_Expression> expressionList(final @Nullable CriteriaContext ctx, final boolean required,
+                                            final Consumer<Consumer<Expression>> consumer) {
+        final List<_Expression> list = _Collections.arrayList();
         consumer.accept(e -> list.add((ArmyExpression) e));
         final List<_Expression> expressionList;
         switch (list.size()) {
             case 0: {
                 if (required) {
-                    throw ContextStack.criteriaError(ctx, "you don't add any expression");
+                    if (ctx == null) {
+                        throw ContextStack.clearStackAnd(CriteriaUtils::dontAddAnyItem);
+                    } else {
+                        throw ContextStack.criteriaError(ctx, CriteriaUtils::dontAddAnyItem);
+                    }
                 }
                 expressionList = Collections.emptyList();
             }

@@ -4,7 +4,6 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.MySQLType;
 import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
@@ -38,14 +37,14 @@ public final class NoCastTextType extends _ArmyInnerMapping implements MappingTy
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         final SqlType type;
         switch (meta.dialectDatabase()) {
-            case MySQL:
-                type = MySQLType.TEXT;
-                break;
             case PostgreSQL:
-                type = PgSqlType.TEXT;
+                type = PgSqlType.NO_CAST_TEXT;
                 break;
+            case MySQL:
+            case Oracle:
+            case H2:
             default:
-                throw MAP_ERROR_HANDLER.apply(this, meta);
+                type = TextType.mapSqlType(this, meta);
         }
         return type;
     }

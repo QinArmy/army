@@ -19,6 +19,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
+import io.army.util._ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -82,9 +83,148 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final void bindLiteralNull(final SqlType type, final StringBuilder sqlBuilder) {
-        //TODO convert
-        sqlBuilder.append(_Constant.SPACE_NULL);
+    protected final void buildInTypeName(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
+        switch ((PgSqlType) sqlType) {
+            case BOOLEAN:
+            case SMALLINT:
+            case INTEGER:
+            case BIGINT:
+            case DECIMAL:
+            case DOUBLE:
+            case REAL:
+            case TIME:
+            case DATE:
+            case TIMESTAMP:
+            case TIMETZ:
+            case TIMESTAMPTZ:
+            case CHAR:
+            case VARCHAR:
+            case TEXT:
+            case JSON:
+            case JSONB:
+            case JSONPATH:
+            case BYTEA:
+            case BIT:
+            case VARBIT:
+            case XML:
+            case CIDR:
+            case INET:
+            case LINE:
+            case PATH:
+            case UUID:
+            case MONEY:
+            case MACADDR8:
+            case POINT:
+            case BOX:
+            case POLYGON:
+            case CIRCLE:
+            case TSQUERY:
+            case TSVECTOR:
+            case LSEG:
+            case TSRANGE:
+            case INTERVAL:
+            case NUMRANGE:
+            case DATERANGE:
+            case INT4RANGE:
+            case INT8RANGE:
+            case TSTZRANGE:
+            case MACADDR:
+                sqlBuilder.append(sqlType.name());
+                break;
+            case NO_CAST_TEXT:
+                sqlBuilder.append(PgSqlType.TEXT.name());
+                break;
+            case BOX_ARRAY:
+            case OID_ARRAY:
+            case BIT_ARRAY:
+            case XML_ARRAY:
+            case CHAR_ARRAY:
+            case CIDR_ARRAY:
+            case DATE_ARRAY:
+            case INET_ARRAY:
+            case JSON_ARRAY:
+            case LINE_ARRAY:
+            case PATH_ARRAY:
+            case REAL_ARRAY:
+            case REF_CURSOR:
+            case TEXT_ARRAY:
+            case TIME_ARRAY:
+            case UUID_ARRAY:
+            case BYTEA_ARRAY:
+            case JSONB_ARRAY:
+            case MONEY_ARRAY:
+            case POINT_ARRAY:
+            case BIGINT_ARRAY:
+            case DOUBLE_ARRAY:
+            case TIMETZ_ARRAY:
+            case VARBIT_ARRAY:
+            case BOOLEAN_ARRAY:
+            case CIRCLES_ARRAY:
+            case DECIMAL_ARRAY:
+            case INTEGER_ARRAY:
+            case MACADDR_ARRAY:
+            case POLYGON_ARRAY:
+            case TSQUERY_ARRAY:
+            case TSRANGE_ARRAY:
+            case VARCHAR_ARRAY:
+            case INTERVAL_ARRAY:
+            case MACADDR8_ARRAY:
+            case NUMRANGE_ARRAY:
+            case SMALLINT_ARRAY:
+            case TSVECTOR_ARRAY:
+            case DATERANGE_ARRAY:
+            case INT4RANGE_ARRAY:
+            case INT8RANGE_ARRAY:
+            case TIMESTAMP_ARRAY:
+            case TSTZRANGE_ARRAY:
+            case TIMESTAMPTZ_ARRAY:
+            case LSEG_ARRAY: {
+                final int dimension;
+                final Class<?> javaType;
+                javaType = type.javaType();
+                if (javaType == Object.class) {
+                    throw _Exceptions.unknownArrayDimension(sqlType, type);
+                } else if (List.class.isAssignableFrom(javaType)) {
+                    dimension = 1;
+                } else if (javaType.isArray()) {
+                    dimension = _ArrayUtils.dimensionOf(javaType);
+                } else {
+                    throw _Exceptions.javaTypeMethodNotArray(type);
+                }
+                String name;
+                name = sqlType.name();
+                name = name.substring(0, name.indexOf("_ARRAY"));
+                sqlBuilder.append(name);
+
+                for (int i = 0; i < dimension; i++) {
+                    sqlBuilder.append("[]");
+                }
+            }
+            break;
+            case UNKNOWN:
+                throw _Exceptions.mapMethodError(type, PgSqlType.class);
+            default:
+                // no bug,never here
+                throw _Exceptions.unexpectedEnum((PgSqlType) sqlType);
+        }
+
+    }
+
+    @Override
+    protected final void bindLiteralNull(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
+        switch ((PgSqlType) sqlType) {
+            case UNKNOWN:
+                throw _Exceptions.mapMethodError(type, PgSqlType.class);
+            case NO_CAST_TEXT:
+                sqlBuilder.append(_Constant.NULL);
+                break;
+            default: {
+                sqlBuilder.append(_Constant.NULL)
+                        .append("::");
+                this.typeName(type, sqlBuilder);
+            }
+
+        }//switch
 
     }
 

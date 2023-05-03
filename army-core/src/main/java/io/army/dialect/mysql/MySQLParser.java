@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.ServerMeta;
@@ -96,9 +97,13 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 && (nonNull instanceof OffsetDateTime || nonNull instanceof ZonedDateTime));
     }
 
+    @Override
+    protected final void buildInTypeName(SqlType sqlType, MappingType type, StringBuilder sqlBuilder) {
+
+    }
 
     @Override
-    protected final void bindLiteralNull(final SqlType type, final StringBuilder sqlBuilder) {
+    protected final void bindLiteralNull(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
         //TODO convert
         sqlBuilder.append(_Constant.SPACE_NULL);
     }

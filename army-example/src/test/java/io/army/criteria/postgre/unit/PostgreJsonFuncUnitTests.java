@@ -5,9 +5,11 @@ import io.army.criteria.ExpressionElement;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
+import io.army.criteria.postgre.mapping.MyRowType;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.mapping.JsonType;
 import io.army.mapping.JsonbType;
+import io.army.mapping.NoCastTextType;
 import io.army.mapping.optional.PrimitiveIntArrayType;
 import io.army.mapping.optional.TextArrayType;
 import io.army.meta.TableMeta;
@@ -46,7 +48,7 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                         .select(ChinaRegion_.id, ChinaRegion_.name)
                         .from(ChinaRegion_.T, AS, "c")
                         .limit(SQLs::literal, 10)
-                        .asQuery()
+                        ::asQuery
                 ).as("b")
                 .asQuery();
 
@@ -103,33 +105,20 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
     /**
      * @see Postgres#jsonBuildArray(ExpressionElement...)
      * @see Postgres#jsonBuildArray(Consumer)
-     * @see Postgres#jsonBuildArray(SymbolSpace, Consumer)
      * @see Postgres#jsonbBuildArray(ExpressionElement...)
      * @see Postgres#jsonbBuildArray(Consumer)
-     * @see Postgres#jsonbBuildArray(SymbolSpace, Consumer)
      */
     @Test
     public void jsonBuildArrayFunc() {
 
         final Select stmt;
         stmt = Postgres.query()
-                .select(jsonBuildArray(SQLs.literalValue(1), SQLs.literalValue("zoro"))::as, "json1"
-                ).comma(jsonBuildArray(c -> c.space(SQLs.literalValue(randomPerson()))
-                                .comma(SQLs.literalValue(randomPerson()))
-                        ).as("json2")
-                )
-                .comma(jsonbBuildArray(SQLs.literalValue(2), SQLs.literalValue("zoro"))::as, "json3"
-                ).comma(jsonbBuildArray(c -> c.space(SQLs.literalValue(randomPerson()))
-                                .comma(SQLs.literalValue(randomPerson()))
-                        ).as("json4")
-                ).comma(jsonBuildArray(c -> c.space("c", PERIOD, ChinaRegion_.T))::as, "json5")
-                .comma(jsonbBuildArray(c -> c.space("c", PERIOD, ChinaRegion_.T))::as, "json6")
-                .comma(jsonBuildArray(c -> c.space("b", PERIOD, ASTERISK))::as, "json7")
-                .comma(jsonbBuildArray(c -> c.space("b", PERIOD, ASTERISK))::as, "json8")
-                .comma(jsonBuildArray(SPACE, c -> c.accept("c", PERIOD, ChinaRegion_.T))::as, "json9")
-                .comma(jsonBuildArray(SPACE, c -> c.accept("b", PERIOD, ASTERISK))::as, "json10")
-                .comma(jsonbBuildArray(SPACE, c -> c.accept("c", PERIOD, ChinaRegion_.T))::as, "json11")
-                .comma(jsonbBuildArray(SPACE, c -> c.accept("b", PERIOD, ASTERISK))::as, "json12")
+                .select(jsonBuildArray(SQLs.literalValue(1), SQLs.literalValue("zoro"))::as, "json1")
+                .comma(jsonbBuildArray(SQLs.literalValue(2), SQLs.literalValue("zoro"))::as, "json3")
+                .comma(jsonBuildArray(c -> c.accept("c", PERIOD, ChinaRegion_.T))::as, "json9")
+                .comma(jsonBuildArray(c -> c.accept("b", PERIOD, ASTERISK))::as, "json10")
+                .comma(jsonbBuildArray(c -> c.accept("c", PERIOD, ChinaRegion_.T))::as, "json11")
+                .comma(jsonbBuildArray(c -> c.accept("b", PERIOD, ASTERISK))::as, "json12")
                 .from(ChinaRegion_.T, AS, "c")
                 .join(Postgres.subQuery()
                         .select(SQLs.literalValue(5)::as, "id")
@@ -187,7 +176,7 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .from(ChinaRegion_.T, AS, "c")
                 .join(Postgres.subQuery()
                         .select(SQLs.literalValue(5)::as, "id")
-                        .asQuery()
+                        ::asQuery
                 ).as("b").on(SQLs.refThis("b", "id")::equal, ChinaRegion_.id)
                 .asQuery();
 
@@ -360,6 +349,196 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .asQuery();
 
         printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonEach(Expression)
+     * @see Postgres#jsonEach(BiFunction, Object)
+     * @see Postgres#jsonbEach(Expression)
+     * @see Postgres#jsonbEach(BiFunction, Object)
+     */
+    @Test
+    public void jsonEachFunc() {
+        final String json;
+        json = "{\"a\":\"foo\", \"b\":\"bar\"}";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select("json", PERIOD, ASTERISK)
+                .comma("jsonOrdinal", PERIOD, ASTERISK)
+                .comma("jsonb", PERIOD, ASTERISK)
+                .comma("jsonbOrdinal", PERIOD, ASTERISK)
+                .from(jsonEach(SQLs::literal, json)).as("json")
+                .crossJoin(jsonEach(SQLs::literal, json).withOrdinality()).as("jsonOrdinal")
+                .crossJoin(jsonbEach(SQLs::literal, json)).as("jsonb")
+                .crossJoin(jsonbEach(SQLs::literal, json).withOrdinality()).as("jsonbOrdinal")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonEachText(Expression)
+     * @see Postgres#jsonEachText(BiFunction, Object)
+     * @see Postgres#jsonbEachText(Expression)
+     * @see Postgres#jsonbEachText(BiFunction, Object)
+     */
+    @Test
+    public void jsonEachTextFunc() {
+        final String json;
+        json = "{\"a\":\"foo\", \"b\":\"bar\"}";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select("json", PERIOD, ASTERISK)
+                .comma("jsonOrdinal", PERIOD, ASTERISK)
+                .comma("jsonb", PERIOD, ASTERISK)
+                .comma("jsonbOrdinal", PERIOD, ASTERISK)
+                .from(jsonEachText(SQLs::literal, json)).as("json")
+                .crossJoin(jsonEachText(SQLs::literal, json).withOrdinality()).as("jsonOrdinal")
+                .crossJoin(jsonbEachText(SQLs::literal, json)).as("jsonb")
+                .crossJoin(jsonbEachText(SQLs::literal, json)::withOrdinality).as("jsonbOrdinal")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonExtractPath(Expression, Expression, Expression...)
+     * @see Postgres#jsonExtractPath(Expression, BiFunction, String, String...)
+     * @see Postgres#jsonExtractPath(Expression, Consumer)
+     * @see Postgres#jsonExtractPath(Expression, BiFunction, Consumer)
+     * @see Postgres#jsonExtractPath(BiFunction, Object, BiFunction, String, String...)
+     * @see Postgres#jsonbExtractPath(Expression, Expression, Expression...)
+     * @see Postgres#jsonbExtractPath(Expression, BiFunction, String, String...)
+     * @see Postgres#jsonbExtractPath(Expression, Consumer)
+     * @see Postgres#jsonbExtractPath(Expression, BiFunction, Consumer)
+     * @see Postgres#jsonbExtractPath(BiFunction, Object, BiFunction, String, String...)
+     */
+    @Test
+    public void jsonExtractPathFunc() {
+        final String json;
+        json = "{\"f2\":{\"f3\":1},\"f4\":{\"f5\":99,\"f6\":\"foo\"}}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonExtractPath(SQLs.literal(JsonType.TEXT, json), SQLs.literal(NoCastTextType.INSTANCE, "f4"), SQLs.literal(NoCastTextType.INSTANCE, "f6"))::as, "json1")
+                .comma(jsonExtractPath(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json2")
+                .comma(jsonExtractPath(SQLs.literal(JsonType.TEXT, json), c -> {
+                            c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f4"));
+                            c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f6"));
+                        })::as, "json3"
+                ).comma(jsonExtractPath(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, c -> {
+                            c.accept("f4");
+                            c.accept("f6");
+                        })::as, "json4"
+                ).comma(jsonExtractPath(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json5")
+                .comma(jsonbExtractPath(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(NoCastTextType.INSTANCE, "f4"), SQLs.literal(NoCastTextType.INSTANCE, "f6"))::as, "json6")
+                .comma(jsonbExtractPath(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json7")
+                .comma(jsonbExtractPath(SQLs.literal(JsonbType.TEXT, json), c -> {
+                            c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f4"));
+                            c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f6"));
+                        })::as, "json8"
+                ).comma(jsonbExtractPath(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, c -> {
+                            c.accept("f4");
+                            c.accept("f6");
+                        })::as, "json9"
+                ).comma(jsonbExtractPath(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json10")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonExtractPathText(Expression, Expression, Expression...)
+     * @see Postgres#jsonExtractPathText(Expression, BiFunction, String, String...)
+     * @see Postgres#jsonExtractPathText(Expression, Consumer)
+     * @see Postgres#jsonExtractPathText(Expression, BiFunction, Consumer)
+     * @see Postgres#jsonExtractPathText(BiFunction, Object, BiFunction, String, String...)
+     * @see Postgres#jsonbExtractPathText(Expression, Expression, Expression...)
+     * @see Postgres#jsonbExtractPathText(Expression, BiFunction, String, String...)
+     * @see Postgres#jsonbExtractPathText(Expression, Consumer)
+     * @see Postgres#jsonbExtractPathText(Expression, BiFunction, Consumer)
+     * @see Postgres#jsonbExtractPathText(BiFunction, Object, BiFunction, String, String...)
+     */
+    @Test
+    public void jsonExtractPathTextFunc() {
+        final String json;
+        json = "{\"f2\":{\"f3\":1},\"f4\":{\"f5\":99,\"f6\":\"foo\"}}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonExtractPathText(SQLs.literal(JsonType.TEXT, json), SQLs.literal(NoCastTextType.INSTANCE, "f4"), SQLs.literal(NoCastTextType.INSTANCE, "f6"))::as, "json1")
+                .comma(jsonExtractPathText(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json2")
+                .comma(jsonExtractPathText(SQLs.literal(JsonType.TEXT, json), c -> {
+                            c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f4"));
+                            c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f6"));
+                        })::as, "json3"
+                ).comma(jsonExtractPathText(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, c -> {
+                            c.accept("f4");
+                            c.accept("f6");
+                        })::as, "json4"
+                ).comma(jsonExtractPathText(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json5")
+
+                .comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(NoCastTextType.INSTANCE, "f4"), SQLs.literal(NoCastTextType.INSTANCE, "f6"))::as, "json6")
+                .comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json7")
+                .comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), c -> {
+                            c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f4"));
+                            c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f6"));
+                        })::as, "json8"
+                ).comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, c -> {
+                            c.accept("f4");
+                            c.accept("f6");
+                        })::as, "json9"
+                ).comma(jsonbExtractPathText(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json10")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+
+    /**
+     * @see Postgres#jsonObjectKeys(Expression)
+     * @see Postgres#jsonObjectKeys(BiFunction, Object)
+     * @see Postgres#jsonbObjectKeys(Expression)
+     * @see Postgres#jsonbObjectKeys(BiFunction, Object)
+     */
+    @Test
+    public void jsonObjectKeysFunc() {
+        final String json;
+        json = "{\"f1\":\"abc\",\"f2\":{\"f3\":\"a\", \"f4\":\"b\"}}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonObjectKeys(SQLs.literal(JsonType.TEXT, json))::as, "json1")
+                .comma(jsonObjectKeys(SQLs::literal, json)::as, "json2")
+                .comma(jsonbObjectKeys(SQLs.literal(JsonbType.TEXT, json))::as, "json3")
+                .comma(jsonbObjectKeys(SQLs::literal, json)::as, "json4")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
+    }
+
+    /**
+     * @see Postgres#jsonPopulateRecord(Expression, Expression)
+     * @see Postgres#jsonbPopulateRecord(Expression, Expression)
+     */
+    @Test
+    public void jsonPopulateRecordFunc() {
+        final String json;
+        json = "{\"a\": 1, \"b\": [\"2\", \"a b\"], \"c\": {\"d\": 4, \"e\": \"a b c\"}, \"x\": \"foo\"}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select("d", PERIOD, ASTERISK)
+                .comma("w", PERIOD, ASTERISK)
+                .from(jsonPopulateRecord(SQLs.literal(MyRowType.INSTANCE, null), SQLs.literal(JsonType.TEXT, json)))
+                .as("d")
+                .crossJoin(jsonPopulateRecord(SQLs.literal(MyRowType.INSTANCE, null), SQLs.literal(JsonType.TEXT, json))::withOrdinality)
+                .as("w")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
     }
 
 

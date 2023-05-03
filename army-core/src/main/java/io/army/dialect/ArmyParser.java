@@ -580,9 +580,36 @@ abstract class ArmyParser implements DialectParser {
         return builder;
     }
 
+    @Override
+    public final void typeName(final MappingType type, final StringBuilder sqlBuilder) {
+        final SqlType sqlType;
+        sqlType = type.map(this.serverMeta);
+        if (type instanceof MappingType.SqlUserDefinedType) {
+            if (!sqlType.isUserDefined()) {
+                throw _Exceptions.notUserDefinedType(type, sqlType);
+            }
+            final String userDefinedTypeName;
+            userDefinedTypeName = ((MappingType.SqlUserDefinedType) type).sqlTypeName(this.serverMeta);
+            if (this.keyWordMap.containsKey(userDefinedTypeName.toUpperCase(Locale.ROOT))
+                    || !_DialectUtils.isSimpleIdentifier(userDefinedTypeName)) {
+                this.identifier(userDefinedTypeName, sqlBuilder);
+            } else {
+                sqlBuilder.append(userDefinedTypeName);
+            }
+        } else if (sqlType.isUserDefined()) {
+            throw _Exceptions.notUserDefinedType(type, sqlType);
+        } else {
+            this.buildInTypeName(sqlType, type, sqlBuilder);
+        }
+
+    }
+
+    protected abstract void buildInTypeName(SqlType sqlType, MappingType type, StringBuilder sqlBuilder);
+
+
     protected abstract boolean isNeedConvert(SqlType type, Object nonNull);
 
-    protected abstract void bindLiteralNull(SqlType type, StringBuilder sqlBuilder);
+    protected abstract void bindLiteralNull(SqlType sqlType, MappingType type, StringBuilder sqlBuilder);
 
     protected abstract void bindLiteral(TypeMeta typeMeta, SqlType type, Object value, StringBuilder sqlBuilder);
 
@@ -759,7 +786,7 @@ abstract class ArmyParser implements DialectParser {
         sqlType = type.map(this.serverMeta);
 
         if (value == null) {
-            this.bindLiteralNull(sqlType, sqlBuilder);
+            this.bindLiteralNull(sqlType, type, sqlBuilder);
             return;
         }
         final Object convertedValue;

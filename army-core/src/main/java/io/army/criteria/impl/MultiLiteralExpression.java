@@ -184,8 +184,6 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
             for (int i = 0; i < valueSize; i++) {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
-                } else {
-                    sqlBuilder.append(_Constant.SPACE);
                 }
                 context.appendLiteral(type, valueList.get(i));
             }

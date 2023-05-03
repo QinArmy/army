@@ -875,7 +875,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
         @Override
         public TypeMeta typeMeta() {
-            return StringType.INSTANCE;
+            return NoCastTextType.INSTANCE;
         }
 
         @Override

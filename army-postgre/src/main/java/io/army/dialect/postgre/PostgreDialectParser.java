@@ -52,6 +52,7 @@ final class PostgreDialectParser extends PostgreParser {
         if (!(element instanceof _TableNameElement)) {
             throw _Exceptions.castCriteriaApi();
         }
+        //TODO
         return this.safeObjectName(((_TableNameElement) element).tableMeta());
     }
 
