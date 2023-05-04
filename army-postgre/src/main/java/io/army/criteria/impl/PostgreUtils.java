@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.Item;
 import io.army.criteria.UndoneFunction;
 import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.impl.inner._FunctionField;
 import io.army.criteria.impl.inner._ParensRowSet;
 import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.postgre.PostgreStatement;
@@ -56,11 +57,17 @@ abstract class PostgreUtils extends CriteriaUtils {
 
         private Map<String, _FunctionField> fieldMap = _Collections.hashMap();
 
+        private Boolean state;
+
         private FuncColumnDefinitionClause() {
         }
 
         @Override
         public PostgreStatement.FuncColumnDefCommaClause space(String name, MappingType type) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
             return this.comma(name, type);
         }
 
@@ -68,7 +75,7 @@ abstract class PostgreUtils extends CriteriaUtils {
         public PostgreStatement.FuncColumnDefCommaClause comma(final @Nullable String name,
                                                                @Nullable final MappingType type) {
             final List<_FunctionField> fieldList = this.fieldList;
-            if (!(fieldList instanceof ArrayList)) {
+            if (this.state != Boolean.TRUE || !(fieldList instanceof ArrayList)) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (name == null) {
                 throw ContextStack.clearStackAndNullPointer();
@@ -98,6 +105,7 @@ abstract class PostgreUtils extends CriteriaUtils {
             }
             this.fieldList = _Collections.unmodifiableList(fieldList);
             this.fieldMap = _Collections.unmodifiableMap(this.fieldMap);
+            this.state = Boolean.FALSE;
         }
 
     }//FuncColumnDefinitionClause

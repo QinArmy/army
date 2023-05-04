@@ -6,11 +6,12 @@ import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.postgre.mapping.MyRowType;
+import io.army.criteria.postgre.mapping.MySubRowType;
 import io.army.criteria.postgre.mapping.TwoIntType;
 import io.army.example.bank.domain.user.ChinaRegion_;
-import io.army.mapping.JsonType;
-import io.army.mapping.JsonbType;
-import io.army.mapping.NoCastTextType;
+import io.army.mapping.*;
+import io.army.mapping.optional.IntegerArrayType;
+import io.army.mapping.optional.JsonPathType;
 import io.army.mapping.optional.PrimitiveIntArrayType;
 import io.army.mapping.optional.TextArrayType;
 import io.army.meta.TableMeta;
@@ -513,6 +514,8 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .comma(jsonObjectKeys(SQLs::literal, json)::as, "json2")
                 .comma(jsonbObjectKeys(SQLs.literal(JsonbType.TEXT, json))::as, "json3")
                 .comma(jsonbObjectKeys(SQLs::literal, json)::as, "json4")
+                .comma("jt", PERIOD, ASTERISK)
+                .from(jsonObjectKeys(SQLs.literal(JsonType.TEXT, json))).as("jt")
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -567,6 +570,205 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .as("db")
                 .crossJoin(jsonbPopulateRecordSet(SQLs.literal(TwoIntType.INSTANCE, null), SQLs.literal(JsonbType.TEXT, json))::withOrdinality)
                 .as("wb")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonToRecord(Expression)
+     * @see Postgres#jsonToRecord(BiFunction, Object)
+     * @see Postgres#jsonbToRecord(Expression)
+     * @see Postgres#jsonbToRecord(BiFunction, Object)
+     */
+    @Test//(invocationCount = 10000)
+    public void jsonToRecordFunc() {
+        final String json;
+        json = "{\"a\":1,\"b\":[1,2,3],\"c\":[1,2,3],\"e\":\"bar\",\"r\": {\"d\": 123, \"e\": \"a b c\"}}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select("json1", PERIOD, ASTERISK)
+                .comma("json2", PERIOD, ASTERISK)
+                .comma("jsonb1", PERIOD, ASTERISK)
+                .comma("jsonb2", PERIOD, ASTERISK)
+                .from(jsonToRecord(SQLs.literal(JsonType.TEXT, json)))
+                .as("json1").parens(c -> c.space("a", IntegerType.INSTANCE)
+                        .comma("b", TextType.INSTANCE)
+                        .comma("c", IntegerArrayType.LINEAR)
+                        .comma("d", TextType.INSTANCE)
+                        .comma("r", MySubRowType.INSTANCE)
+                ).crossJoin(jsonToRecord(SQLs::literal, json))
+                .as("json2").parens(c -> c.space("a", IntegerType.INSTANCE)
+                        .comma("b", TextType.INSTANCE)
+                        .comma("c", IntegerArrayType.LINEAR)
+                        .comma("d", TextType.INSTANCE)
+                        .comma("r", MySubRowType.INSTANCE)
+                ).crossJoin(jsonbToRecord(SQLs.literal(JsonbType.TEXT, json)))
+                .as("jsonb1").parens(c -> c.space("a", IntegerType.INSTANCE)
+                        .comma("b", TextType.INSTANCE)
+                        .comma("c", IntegerArrayType.LINEAR)
+                        .comma("d", TextType.INSTANCE)
+                        .comma("r", MySubRowType.INSTANCE)
+                ).crossJoin(jsonbToRecord(SQLs::literal, json))
+                .as("jsonb2").parens(c -> c.space("a", IntegerType.INSTANCE)
+                        .comma("b", TextType.INSTANCE)
+                        .comma("c", IntegerArrayType.LINEAR)
+                        .comma("d", TextType.INSTANCE)
+                        .comma("r", MySubRowType.INSTANCE)
+                )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonToRecordSet(Expression)
+     * @see Postgres#jsonToRecordSet(BiFunction, Object)
+     * @see Postgres#jsonbToRecordSet(Expression)
+     * @see Postgres#jsonbToRecordSet(BiFunction, Object)
+     */
+    @Test
+    public void jsonToRecordSetFunc() {
+        final String json;
+        json = "[{\"a\":1,\"b\":\"foo\"}, {\"a\":\"2\",\"c\":\"bar\"}]";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select("json1", PERIOD, ASTERISK)
+                .comma("json2", PERIOD, ASTERISK)
+                .comma("jsonb1", PERIOD, ASTERISK)
+                .comma("jsonb2", PERIOD, ASTERISK)
+                .from(jsonToRecordSet(SQLs.literal(JsonType.TEXT, json)))
+                .as("json1").parens(c -> c.space("a", IntegerType.INSTANCE)
+                        .comma("b", TextType.INSTANCE)
+                ).crossJoin(jsonToRecordSet(SQLs::literal, json))
+                .as("json2").parens(c -> c.space("a", IntegerType.INSTANCE)
+                        .comma("b", TextType.INSTANCE)
+                ).crossJoin(jsonbToRecordSet(SQLs.literal(JsonbType.TEXT, json)))
+                .as("jsonb1").parens(c -> c.space("a", IntegerType.INSTANCE)
+                        .comma("b", TextType.INSTANCE)
+                ).crossJoin(jsonbToRecordSet(SQLs::literal, json))
+                .as("jsonb2").parens(c -> c.space("a", IntegerType.INSTANCE)
+                        .comma("b", TextType.INSTANCE)
+                )
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+
+    /**
+     * @see Postgres#jsonbPathExists(Expression, Expression)
+     * @see Postgres#jsonbPathExists(Expression, Expression, Expression)
+     * @see Postgres#jsonbPathExists(Expression, Expression, Expression, Expression)
+     * @see Postgres#jsonbPathExists(Expression, BiFunction, Object)
+     * @see Postgres#jsonbPathExists(Expression, BiFunction, Object, Expression)
+     * @see Postgres#jsonbPathExists(Expression, BiFunction, Object, Expression, Expression)
+     * @see Postgres#jsonbPathExists(Expression, BiFunction, Object, BiFunction, Object, Expression)
+     */
+    @Test
+    public void jsonbPathExistsFunc() {
+        final String json, path, varPath, vars;
+        json = "{\"a\":[1,2,3,4,5]}";
+        path = "$.a[*] ? (@ >= 2 && @ <= 4)";
+        varPath = "$.a[*] ? (@ >= $min && @ <= $max)";
+        vars = "{\"min\":2, \"max\":4}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPathExists(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .comma(jsonbPathExists(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathExists(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathExists(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathExists(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathExists(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonbPathMatch(Expression, Expression)
+     * @see Postgres#jsonbPathMatch(Expression, Expression, Expression)
+     * @see Postgres#jsonbPathMatch(Expression, Expression, Expression, Expression)
+     * @see Postgres#jsonbPathMatch(Expression, BiFunction, Object)
+     * @see Postgres#jsonbPathMatch(Expression, BiFunction, Object, Expression)
+     * @see Postgres#jsonbPathMatch(Expression, BiFunction, Object, Expression, Expression)
+     * @see Postgres#jsonbPathMatch(Expression, BiFunction, Object, BiFunction, Object, Expression)
+     */
+    @Test
+    public void jsonbPathMatchFunc() {
+        final String json, path, varPath, vars;
+        json = "{\"a\":[1,2,3,4,5]}";
+        path = "exists($.a[*] ? (@ >= 2 && @ <= 4))";
+        varPath = "exists($.a[*] ? (@ >= $min && @ <= $max))";
+        vars = "{\"min\":2, \"max\":4}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPathMatch(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .comma(jsonbPathMatch(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathMatch(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathMatch(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathMatch(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathMatch(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonbPathQuery(Expression, Expression)
+     * @see Postgres#jsonbPathQuery(Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQuery(Expression, Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQuery(Expression, BiFunction, Object)
+     * @see Postgres#jsonbPathQuery(Expression, BiFunction, Object, Expression)
+     * @see Postgres#jsonbPathQuery(Expression, BiFunction, Object, Expression, Expression)
+     * @see Postgres#jsonbPathQuery(Expression, BiFunction, Object, BiFunction, Object, Expression)
+     */
+    @Test
+    public void jsonbPathQueryFunc() {
+        final String json, path, varPath, vars;
+        json = "{\"a\":[1,2,3,4,5]}";
+        path = "$.a[*] ? (@ >= 2 && @ <= 4)";
+        varPath = "$.a[*] ? (@ >= $min && @ <= $max)";
+        vars = "{\"min\":2, \"max\":4}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .comma(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .comma("jt1", PERIOD, ASTERISK)
+                .comma("jt2", PERIOD, ASTERISK)
+                .comma("jt3", PERIOD, ASTERISK)
+                .comma("jt4", PERIOD, ASTERISK)
+                .comma("jt5", PERIOD, ASTERISK)
+                .comma("jt6", PERIOD, ASTERISK)
+                .comma("jt7", PERIOD, ASTERISK)
+                .comma("jt8", PERIOD, ASTERISK)
+                .comma("jt9", PERIOD, ASTERISK)
+                .comma("jt10", PERIOD, ASTERISK)
+                .comma("jt11", PERIOD, ASTERISK)
+                .comma("jt12", PERIOD, ASTERISK)
+
+                .from(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, path))).as("jt1")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, path))::withOrdinality).as("jt2")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path)).as("jt3")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path)::withOrdinality).as("jt4")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))).as("jt5")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::withOrdinality).as("jt6")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars)).as("jt7")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars)::withOrdinality).as("jt8")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)).as("jt9")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::withOrdinality).as("jt10")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars, TRUE)).as("jt11")
+                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars, TRUE)::withOrdinality).as("jt12")
+
                 .asQuery();
 
         printStmt(LOG, stmt);

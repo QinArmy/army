@@ -994,9 +994,8 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_like ( string text, pattern text [, flags text ] ) → boolean</a>
      */
     public static _ColumnWithOrdinalityFunction regexpMatches(Expression string, Expression pattern) {
-        final String name = "REGEXP_MATCHES";
-        return DialectFunctionUtils.twoArgColumnFunction(name, string, pattern,
-                name.toLowerCase(Locale.ROOT), TextArrayType.from(String[].class));
+        return DialectFunctionUtils.twoArgColumnFunction("REGEXP_MATCHES", string, pattern,
+                null, TextArrayType.from(String[].class));
     }
 
     /**
@@ -1093,9 +1092,8 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_split_to_table ( string text, pattern text [, flags text ] ) → setof text</a>
      */
     public static _ColumnWithOrdinalityFunction regexpSplitToTable(Expression string, Expression pattern) {
-        final String name = "REGEXP_SPLIT_TO_TABLE";
-        return DialectFunctionUtils.twoArgColumnFunction(name, string, pattern,
-                name.toLowerCase(Locale.ROOT), TextType.INSTANCE);
+        return DialectFunctionUtils.twoArgColumnFunction("REGEXP_SPLIT_TO_TABLE", string, pattern,
+                null, TextType.INSTANCE);
     }
 
     /**
@@ -1301,9 +1299,8 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_table ( string text, delimiter text [, null_string text ] ) → setof text</a>
      */
     public static _ColumnWithOrdinalityFunction stringToTable(Expression string, Expression delimiter) {
-        final String name = "STRING_TO_TABLE";
         return DialectFunctionUtils.twoArgColumnFunction("STRING_TO_TABLE", string, delimiter,
-                name.toLowerCase(Locale.ROOT), TextType.INSTANCE
+                null, TextType.INSTANCE
         );
     }
 
@@ -1316,9 +1313,8 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">string_to_table ( string text, delimiter text [, null_string text ] ) → setof text</a>
      */
     public static _ColumnWithOrdinalityFunction stringToTable(Expression string, Expression delimiter, Expression nullString) {
-        final String name = "STRING_TO_TABLE";
         return DialectFunctionUtils.threeArgColumnFunction("STRING_TO_TABLE", string, delimiter, nullString,
-                name.toLowerCase(Locale.ROOT), TextType.INSTANCE);
+                null, TextType.INSTANCE);
     }
 
     /**

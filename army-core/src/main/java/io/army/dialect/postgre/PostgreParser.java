@@ -197,7 +197,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
     @Override
     protected final void arrayTypeName(final String safeTypeNme, final int dimension,
                                        final StringBuilder sqlBuilder) {
-        assert dimension > 1;
+        assert dimension > 0;
         sqlBuilder.append(safeTypeNme);
         for (int i = 0; i < dimension; i++) {
             sqlBuilder.append("[]");
@@ -1001,7 +1001,8 @@ abstract class PostgreParser extends _ArmyDialectParser {
         } else {
             throw _Exceptions.valueOutRange(type, value);
         }
-        appendArrayCastSuffix(typeMeta, type, sqlBuilder);
+        sqlBuilder.append("::");
+        this.typeName(mappingType, sqlBuilder);
     }
 
     /**
@@ -1028,7 +1029,8 @@ abstract class PostgreParser extends _ArmyDialectParser {
         } else {
             throw _Exceptions.valueOutRange(type, value);
         }
-        appendArrayCastSuffix(typeMeta, type, sqlBuilder);
+        sqlBuilder.append("::");
+        this.typeName(mappingType, sqlBuilder);
     }
 
     /**
@@ -1047,19 +1049,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
         PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
     }
 
-    private void appendArrayCastSuffix(final TypeMeta typeMeta, final SqlType type, final StringBuilder sqlBuilder) {
-        sqlBuilder.append("::");
-        final MappingType mappingType = typeMeta.mappingType();
-        if (mappingType instanceof MappingType.SqlUserDefinedType) {
-            final String typeName;
-            typeName = ((MappingType.SqlUserDefinedType) mappingType).sqlTypeName(this.serverMeta);
-            this.identifier(typeName, sqlBuilder);
-        } else if (type.isUserDefined()) {
-            throw _Exceptions.notUserDefinedType(mappingType, type);
-        } else {
-            type.sqlTypeName(mappingType, sqlBuilder);
-        }
-    }
 
 
     private static final class Standard extends PostgreParser {

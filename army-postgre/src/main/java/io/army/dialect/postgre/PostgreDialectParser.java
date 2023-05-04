@@ -394,6 +394,28 @@ final class PostgreDialectParser extends PostgreParser {
                 } else if (!"".equals(alias)) {
                     throw _Exceptions.tableItemAliasNoText(tabularItem);
                 }
+            } else if (tabularItem instanceof UndoneFunction) {
+                final _DoneFuncBlock funcBlock = (_DoneFuncBlock) block;
+                if ((modifier = funcBlock.modifier()) != null) {
+                    assert modifier == SQLs.LATERAL;
+                    sqlBuilder.append(modifier.spaceRender());
+                }
+                // undone function
+                ((_SelfDescribed) tabularItem).appendSql(context);
+
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+                this.identifier(alias, sqlBuilder);
+
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+                final List<_FunctionField> fieldList = funcBlock.fieldList();
+                final int fieldSize = fieldList.size();
+                for (int fieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
+                    if (fieldIndex > 0) {
+                        sqlBuilder.append(_Constant.SPACE_COMMA);
+                    }
+                    fieldList.get(fieldIndex).appendSql(context);
+                }
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             } else {
                 throw _Exceptions.dontSupportTableItem(tabularItem, alias, this.dialect);
             }

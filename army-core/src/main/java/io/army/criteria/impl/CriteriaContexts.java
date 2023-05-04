@@ -405,7 +405,7 @@ abstract class CriteriaContexts {
     private static UnknownFieldGroupException unknownFieldDerivedGroups(final CriteriaContext currentContext,
                                                                         final Collection<? extends _SelectionGroup> groupList) {
         final StringBuilder builder = new StringBuilder()
-                .append("Not found ")
+                .append("Not found derived table")
                 .append('[');
         int count = 0;
         for (_SelectionGroup group : groupList) {
@@ -1417,11 +1417,20 @@ abstract class CriteriaContexts {
                 throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
             } else if (tableItem instanceof RecursiveCte) {
                 this.onAddRecursiveCte((RecursiveCte) tableItem, alias);
-            } else if (tableItem instanceof DerivedTable || tableItem instanceof _Cte) {
+            } else if (tableItem instanceof DerivedTable) {
+                if (tableItem instanceof UndoneColumnFunc) {
+                    ((UndoneColumnFunc) tableItem).derivedAlias(alias);
+                }
+                this.onAddDerived(block, (_SelectionMap) tableItem, alias);
+            } else if (tableItem instanceof _Cte) {
                 this.onAddDerived(block, (_SelectionMap) tableItem, alias);
             } else if (tableItem instanceof TableMeta) {
                 if (this instanceof SimpleQueryContext) {
                     ((SimpleQueryContext) this).onAddTabularItem(tableItem, alias);
+                }
+            } else if (tableItem instanceof UndoneFunction) {
+                if (this instanceof SimpleQueryContext) {
+                    ((SimpleQueryContext) this).onAddUndoneFunction((_DoneFuncBlock) block);
                 }
             }
 
@@ -1642,12 +1651,20 @@ abstract class CriteriaContexts {
                     throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
                 } else if (tableItem instanceof RecursiveCte) {
                     this.onAddRecursiveCte((RecursiveCte) tableItem, alias);
-                } else if (tableItem instanceof DerivedTable || tableItem instanceof _Cte) {
-                    // note ,no tableBlockList.
+                } else if (tableItem instanceof DerivedTable) {
+                    if (tableItem instanceof UndoneColumnFunc) {
+                        ((UndoneColumnFunc) tableItem).derivedAlias(alias);
+                    }
+                    this.onAddDerived(block, (_SelectionMap) tableItem, alias);
+                } else if (tableItem instanceof _Cte) {
                     this.onAddDerived(block, (_SelectionMap) tableItem, alias);
                 } else if (tableItem instanceof TableMeta) {
                     if (this instanceof SimpleQueryContext) {
                         ((SimpleQueryContext) this).onAddTabularItem(tableItem, alias);
+                    }
+                } else if (tableItem instanceof UndoneFunction) {
+                    if (this instanceof SimpleQueryContext) {
+                        ((SimpleQueryContext) this).onAddUndoneFunction((_DoneFuncBlock) block);
                     }
                 }
 
@@ -2299,6 +2316,22 @@ abstract class CriteriaContexts {
             } else {
                 throw CriteriaUtils.unknownFieldDerivedGroup(this, alias);
             }
+
+        }
+
+        private void onAddUndoneFunction(final _DoneFuncBlock block) {
+            final String alias;
+            alias = block.alias();
+            final Map<String, _SelectionGroup> groupMap = this.selectionGroupMap;
+            final _SelectionGroup group;
+            if (groupMap == null || (group = groupMap.remove(alias)) == null) {
+                return;
+            }
+            if (!(group instanceof DerivedFieldGroup)) {
+                throw CriteriaUtils.unknownFieldDerivedGroup(this, alias);
+            }
+
+            ((DerivedFieldGroup) group).finish(block, alias);
 
         }
 

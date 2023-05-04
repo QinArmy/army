@@ -42,9 +42,5 @@ public interface SqlType {
         throw new UnsupportedOperationException();
     }
 
-    @Deprecated
-    default void sqlTypeName(MappingType type, StringBuilder builder) {
-        throw new UnsupportedOperationException();
-    }
 
 }

@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Selection;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -11,6 +12,7 @@ import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 abstract class ArmySelections implements _Selection {
 
@@ -56,6 +58,14 @@ abstract class ArmySelections implements _Selection {
             selection = new ImmutableSelectionForName(alias, typeMeta.mappingType());
         }
         return selection;
+    }
+
+    static Selection forColumnFunc(Functions._ColumnFunction func, String alias) {
+        return new ColumnFuncSelection(func, alias);
+    }
+
+    static Selection forAliasSupplier(Supplier<String> supplier, TypeMeta type) {
+        return null;
     }
 
 
@@ -397,6 +407,66 @@ abstract class ArmySelections implements _Selection {
 
 
     }//DelaySelectionForName
+
+    private static final class ColumnFuncSelection extends ArmySelections {
+
+        private final Functions._ColumnFunction func;
+
+        private ColumnFuncSelection(Functions._ColumnFunction func, String alias) {
+            super(alias);
+            this.func = func;
+
+        }
+
+        @Override
+        public void appendSelectItem(final _SqlContext context) {
+
+            ((_SelfDescribed) this.func).appendSql(context);
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_AS_SPACE);
+
+            context.parser().identifier(this.alias, sqlBuilder);
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            final TypeMeta typeMeta;
+            typeMeta = this.func.typeMeta();
+            final MappingType type;
+            if (typeMeta instanceof MappingType) {
+                type = (MappingType) typeMeta;
+            } else {
+                type = typeMeta.mappingType();
+            }
+            return type;
+        }
+
+
+        @Override
+        public TableField tableField() {
+            //always null
+            return null;
+        }
+
+        @Override
+        public Expression underlyingExp() {
+            //always null
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(this.func)
+                    .append(_Constant.SPACE_AS_SPACE)
+                    .append(this.alias)
+                    .toString();
+        }
+
+
+    }//ColumnFuncSelection
 
 
 }
