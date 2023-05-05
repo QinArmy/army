@@ -344,6 +344,42 @@ abstract class FunctionUtils {
         return new MultiArgFunctionExpression(name, argList, returnType);
     }
 
+    static SimpleExpression consumerAndFirstTypeFunc(final String name, final Consumer<Consumer<Expression>> consumer) {
+        final List<ArmyExpression> argList = _Collections.arrayList();
+        consumer.accept(exp -> {
+            if (!(exp instanceof FunctionArg)) {
+                throw CriteriaUtils.funcArgError(name, exp);
+            }
+            argList.add((ArmyExpression) exp);
+        });
+        final int argSize;
+        argSize = argList.size();
+        if (argSize == 0) {
+            throw CriteriaUtils.dontAddAnyItem();
+        }
+        final TypeMeta returnType;
+        returnType = Functions._returnType(argList.get(0), Expressions::identityType);
+        final SimpleExpression func;
+        switch (argSize) {
+            case 1:
+                func = new OneArgFunction(name, argList.get(0), returnType);
+                break;
+            case 2:
+                func = new TwoArgFunction(name, argList.get(0), argList.get(1), returnType);
+                break;
+            case 3:
+                func = new ThreeArgFunction(name, argList.get(0), argList.get(1), argList.get(2), returnType);
+                break;
+            case 4:
+                func = new FourArgFunction(name, argList.get(0), argList.get(1), argList.get(2), argList.get(3),
+                        returnType);
+                break;
+            default:
+                func = new MultiArgFunctionExpression(name, argList, returnType);
+        }
+        return func;
+    }
+
     static SimpleExpression oneAndConsumer(final String name, final boolean required, final Expression one,
                                            final Consumer<Consumer<Expression>> consumer,
                                            TypeMeta returnType) {
@@ -564,11 +600,11 @@ abstract class FunctionUtils {
 
 
     static SimpleExpression oneAndRestFunc(String name, TypeMeta returnType, Expression first, Expression... rest) {
-        if (first instanceof SqlValueParam.MultiValue) {
+        if (!(first instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, first);
         }
         final SimpleExpression func;
-        if (rest.length > 0) {
+        if (rest.length == 0) {
             func = new OneArgFunction(name, first, returnType);
         } else {
             final List<ArmyExpression> argList = _Collections.arrayList(1 + rest.length);

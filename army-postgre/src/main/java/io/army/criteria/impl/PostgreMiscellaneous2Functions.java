@@ -1,14 +1,15 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.Selection;
-import io.army.criteria.SimpleExpression;
+import io.army.criteria.*;
+import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.TextArrayType;
 import io.army.util._Collections;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFunctions {
 
@@ -203,6 +204,168 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         return FunctionUtils.zeroArgFunc("GEN_RANDOM_UUID", UUIDType.INSTANCE);
     }
 
+    /*-------------------below Sequence Manipulation Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">nextval ( regclass ) → bigint</a>
+     */
+    public static SimpleExpression nextVal(Expression exp) {
+        return FunctionUtils.oneArgFunc("NEXTVAL", exp, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType}
+     * </p>
+     *
+     * @see #setVal(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">setval ( regclass, bigint [, boolean ] ) → bigint/a>
+     */
+    public static SimpleExpression setVal(Expression regClass, Expression value) {
+        return FunctionUtils.twoArgFunc("SETVAL", regClass, value, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType}
+     * </p>
+     *
+     * @param isCalled in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
+     * @see #setVal(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">setval ( regclass, bigint [, boolean ] ) → bigint</a>
+     */
+    public static SimpleExpression setVal(Expression regClass, Expression value, Expression isCalled) {
+        return FunctionUtils.threeArgFunc("SETVAL", regClass, value, isCalled, LongType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">currval ( regclass ) → bigint</a>
+     */
+    public static SimpleExpression currVal(Expression exp) {
+        return FunctionUtils.oneArgFunc("CURRVAL", exp, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-sequence.html">lastval ( regclass ) → bigint</a>
+     */
+    public static SimpleExpression lastVal(Expression exp) {
+        return FunctionUtils.oneArgFunc("LASTVAL", exp, LongType.INSTANCE);
+    }
+
+    /*-------------------below Conditional Expressions-------------------*/
+
+    public static SQLFunction._CaseFuncWhenClause cases(Expression exp) {
+        return FunctionUtils.caseFunction(exp);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of firstValue
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><firstValue isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           <li>firstValue is multi value {@link Expression},eg: {@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li><the element of rest isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-COALESCE-NVL-IFNULL">COALESCE(value [, ...])</a>
+     */
+    public static SimpleExpression coalesce(Expression firstValue, Expression... rest) {
+        return FunctionUtils.oneAndRestFunc("COALESCE", _returnType(firstValue, Expressions::identityType),
+                firstValue, rest
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of fist argument
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-COALESCE-NVL-IFNULL">COALESCE(value [, ...])</a>
+     */
+    public static SimpleExpression coalesce(Consumer<Consumer<Expression>> consumer) {
+        return FunctionUtils.consumerAndFirstTypeFunc("COALESCE", consumer);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of firstValue
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><firstValue isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           <li>firstValue is multi value {@link Expression},eg: {@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li><the element of rest isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-GREATEST-LEAST">GREATEST(value [, ...])</a>
+     */
+    public static SimpleExpression greatest(Expression firstValue, Expression... rest) {
+        return FunctionUtils.oneAndRestFunc("GREATEST", _returnType(firstValue, Expressions::identityType),
+                firstValue, rest
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of fist argument
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-GREATEST-LEAST">GREATEST(value [, ...])</a>
+     */
+    public static SimpleExpression greatest(Consumer<Consumer<Expression>> consumer) {
+        return FunctionUtils.consumerAndFirstTypeFunc("GREATEST", consumer);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of firstValue
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><firstValue isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           <li>firstValue is multi value {@link Expression},eg: {@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li><the element of rest isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-GREATEST-LEAST">LEAST(value [, ...])</a>
+     */
+    public static SimpleExpression least(Expression firstValue, Expression... rest) {
+        return FunctionUtils.oneAndRestFunc("LEAST", _returnType(firstValue, Expressions::identityType),
+                firstValue, rest
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of fist argument
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-GREATEST-LEAST">LEAST(value [, ...])</a>
+     */
+    public static SimpleExpression least(Consumer<Consumer<Expression>> consumer) {
+        return FunctionUtils.consumerAndFirstTypeFunc("LEAST", consumer);
+    }
 
 
     /*-------------------below private method -------------------*/

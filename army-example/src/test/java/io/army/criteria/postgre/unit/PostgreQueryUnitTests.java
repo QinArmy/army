@@ -26,7 +26,7 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
         printStmt(LOG, stmt);
     }
 
-    @Test
+    @Test//(invocationCount = 100)
     public void dynamicWindow() {
         final Select stmt;
         stmt = Postgres.query()

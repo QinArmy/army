@@ -567,10 +567,11 @@ abstract class Functions extends SqlSyntax {
      * </p>
      *
      * @throws CriteriaException throw when any arg is multi-value expression
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_ifnull">IFNULL(expr1,expr2)</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html#function_nullif">NULLIF(expr1,expr2)</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-NULLIF">NULLIF(expr1,expr2)</a>
      */
     public static SimpleExpression nullIf(final Expression expr1, final Expression expr2) {
-        return FunctionUtils.twoArgFunc("NULLIF", expr1, expr2, expr1.typeMeta());
+        return FunctionUtils.twoArgFunc("NULLIF", expr1, expr2, _returnType(expr1, Expressions::identityType));
     }
 
     /**

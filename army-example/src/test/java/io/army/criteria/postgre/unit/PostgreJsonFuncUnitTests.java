@@ -1049,5 +1049,53 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         printStmt(LOG, stmt);
     }
 
+    /**
+     * @see Postgres#jsonbPretty(Expression)
+     */
+    @Test
+    public void jsonbPrettyFunc() {
+        final String json;
+        json = "[{\"f1\":1,\"f2\":null}, 2]";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPretty(SQLs.literal(JsonbType.TEXT, json))::as, "json")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
+    }
+
+    /**
+     * @see Postgres#jsonTypeOf(Expression)
+     */
+    @Test
+    public void jsonTypeOfFunc() {
+        final String json;
+        json = "[{\"f1\":1,\"f2\":null}, 2]";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonTypeOf(SQLs.literal(JsonType.TEXT, json))::as, "json")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
+    }
+
+    /**
+     * @see Postgres#jsonbTypeOf(Expression)
+     */
+    @Test
+    public void jsonbTypeOfFunc() {
+        final String json;
+        json = "[{\"f1\":1,\"f2\":null}, 2]";
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbTypeOf(SQLs.literal(JsonbType.TEXT, json))::as, "json")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
+    }
+
 
 }
