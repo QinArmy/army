@@ -774,5 +774,280 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         printStmt(LOG, stmt);
     }
 
+    /**
+     * @see Postgres#jsonbPathQueryArray(Expression, Expression)
+     * @see Postgres#jsonbPathQueryArray(Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQueryArray(Expression, Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQueryArray(Expression, BiFunction, Object)
+     * @see Postgres#jsonbPathQueryArray(Expression, BiFunction, Object, Expression)
+     * @see Postgres#jsonbPathQueryArray(Expression, BiFunction, Object, Expression, Expression)
+     * @see Postgres#jsonbPathQueryArray(Expression, BiFunction, Object, BiFunction, Object, Expression)
+     */
+    @Test
+    public void jsonbPathQueryArrayFunc() {
+        final String json, path, varPath, vars;
+        json = "{\"a\":[1,2,3,4,5]}";
+        path = "$.a[*] ? (@ >= 2 && @ <= 4)";
+        varPath = "$.a[*] ? (@ >= $min && @ <= $max)";
+        vars = "{\"min\":2, \"max\":4}";
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .comma(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonbPathQueryFirst(Expression, Expression)
+     * @see Postgres#jsonbPathQueryFirst(Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQueryFirst(Expression, Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQueryFirst(Expression, BiFunction, Object)
+     * @see Postgres#jsonbPathQueryFirst(Expression, BiFunction, Object, Expression)
+     * @see Postgres#jsonbPathQueryFirst(Expression, BiFunction, Object, Expression, Expression)
+     * @see Postgres#jsonbPathQueryFirst(Expression, BiFunction, Object, BiFunction, Object, Expression)
+     */
+    @Test
+    public void jsonbPathQueryFirstFunc() {
+        final String json, path, varPath, vars;
+        json = "{\"a\":[1,2,3,4,5]}";
+        path = "$.a[*] ? (@ >= 2 && @ <= 4)";
+        varPath = "$.a[*] ? (@ >= $min && @ <= $max)";
+        vars = "{\"min\":2, \"max\":4}";
+
+        final Expression jsonField;
+        jsonField = SQLs.literal(JsonbType.TEXT, json);
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPathQueryFirst(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .comma(jsonbPathQueryFirst(jsonField, SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathQueryFirst(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathQueryFirst(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathQueryFirst(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathQueryFirst(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+
+    }
+
+    /**
+     * @see Postgres#jsonbPathExistsTz(Expression, Expression)
+     * @see Postgres#jsonbPathExistsTz(Expression, Expression, Expression)
+     * @see Postgres#jsonbPathExistsTz(Expression, Expression, Expression, Expression)
+     * @see Postgres#jsonbPathExistsTz(Expression, BiFunction, Object)
+     * @see Postgres#jsonbPathExistsTz(Expression, BiFunction, Object, Expression)
+     * @see Postgres#jsonbPathExistsTz(Expression, BiFunction, Object, Expression, Expression)
+     * @see Postgres#jsonbPathExistsTz(Expression, BiFunction, Object, BiFunction, Object, Expression)
+     */
+    @Test
+    public void jsonbPathExistsTzFunc() {
+        final String json, path, varPath, vars;
+        json = "[\"2015-08-01 12:00:00-05\"]";
+        path = "$[*] ? (@.datetime() < \"2015-08-02\".datetime())";
+        varPath = "$[*] ? (@.datetime() < $d.datetime())";
+        vars = "{\"d\":\"2015-08-02\"}";
+
+        final Expression jsonField;
+        jsonField = SQLs.literal(JsonbType.TEXT, json);
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPathExistsTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .comma(jsonbPathExistsTz(jsonField, SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathExistsTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathExistsTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathExistsTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathExistsTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonbPathMatchTz(Expression, Expression)
+     * @see Postgres#jsonbPathMatchTz(Expression, Expression, Expression)
+     * @see Postgres#jsonbPathMatchTz(Expression, Expression, Expression, Expression)
+     * @see Postgres#jsonbPathMatchTz(Expression, BiFunction, Object)
+     * @see Postgres#jsonbPathMatchTz(Expression, BiFunction, Object, Expression)
+     * @see Postgres#jsonbPathMatchTz(Expression, BiFunction, Object, Expression, Expression)
+     * @see Postgres#jsonbPathMatchTz(Expression, BiFunction, Object, BiFunction, Object, Expression)
+     */
+    @Test
+    public void jsonbPathMatchTzFunc() {
+        final String json, path, varPath, vars;
+        json = "[\"2015-08-01 12:00:00-05\"]";
+        path = "exists($[*] ? (@.datetime() < \"2015-08-02\".datetime()))";
+        varPath = "exists($[*] ? (@.datetime() < $d.datetime()))";
+        vars = "{\"d\":\"2015-08-02\"}";
+
+        final Expression jsonField;
+        jsonField = SQLs.literal(JsonbType.TEXT, json);
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPathMatchTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .comma(jsonbPathMatchTz(jsonField, SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathMatchTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathMatchTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathMatchTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathMatchTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#jsonbPathQueryTz(Expression, Expression)
+     * @see Postgres#jsonbPathQueryTz(Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQueryTz(Expression, Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQueryTz(Expression, BiFunction, Object)
+     * @see Postgres#jsonbPathQueryTz(Expression, BiFunction, Object, Expression)
+     * @see Postgres#jsonbPathQueryTz(Expression, BiFunction, Object, Expression, Expression)
+     * @see Postgres#jsonbPathQuery(Expression, BiFunction, Object, BiFunction, Object, Expression)
+     */
+    @Test
+    public void jsonbPathQueryTzFunc() {
+        final String json, path, varPath, vars;
+        json = "{\n" +
+                "  \"a\": [\n" +
+                "    \"2015-08-01 12:00:00-05\",\n" +
+                "    \"2015-08-02 12:00:00-05\",\n" +
+                "    \"2015-08-03 12:00:00-05\",\n" +
+                "    \"2015-08-04 12:00:00-05\",\n" +
+                "    \"2015-08-05 12:00:00-05\"\n" +
+                "  ]\n" +
+                "}";
+        path = "$.a[*] ? (@.datetime() < \"2015-08-05\".datetime())";
+        varPath = "$.a[*] ? (@.datetime() < $d.datetime())";
+        vars = "{\"d\":\"2015-08-05\"}";
+
+        final Expression jsonField;
+        jsonField = SQLs.literal(JsonbType.TEXT, json);
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .comma(jsonbPathQueryTz(jsonField, SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .comma("jt1", PERIOD, ASTERISK)
+                .comma("jt2", PERIOD, ASTERISK)
+                .comma("jt3", PERIOD, ASTERISK)
+                .comma("jt4", PERIOD, ASTERISK)
+                .comma("jt5", PERIOD, ASTERISK)
+                .comma("jt6", PERIOD, ASTERISK)
+                .comma("jt7", PERIOD, ASTERISK)
+                .comma("jt8", PERIOD, ASTERISK)
+                .comma("jt9", PERIOD, ASTERISK)
+                .comma("jt10", PERIOD, ASTERISK)
+                .comma("jt11", PERIOD, ASTERISK)
+                .comma("jt12", PERIOD, ASTERISK)
+
+                .from(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))).as("jt1")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))::withOrdinality).as("jt2")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, path)).as("jt3")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, path)::withOrdinality).as("jt4")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))).as("jt5")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::withOrdinality).as("jt6")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)).as("jt7")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::withOrdinality).as("jt8")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)).as("jt9")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::withOrdinality).as("jt10")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)).as("jt11")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::withOrdinality).as("jt12")
+
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+
+    /**
+     * @see Postgres#jsonbPathQueryArrayTz(Expression, Expression)
+     * @see Postgres#jsonbPathQueryArrayTz(Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQueryArrayTz(Expression, Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQueryArrayTz(Expression, BiFunction, Object)
+     * @see Postgres#jsonbPathQueryArrayTz(Expression, BiFunction, Object, Expression)
+     * @see Postgres#jsonbPathQueryArrayTz(Expression, BiFunction, Object, Expression, Expression)
+     * @see Postgres#jsonbPathQueryArrayTz(Expression, BiFunction, Object, BiFunction, Object, Expression)
+     */
+    @Test
+    public void jsonbPathQueryArrayTzFunc() {
+        final String json, path, varPath, vars;
+        json = "{\n" +
+                "  \"a\": [\n" +
+                "    \"2015-08-01 12:00:00-05\",\n" +
+                "    \"2015-08-02 12:00:00-05\",\n" +
+                "    \"2015-08-03 12:00:00-05\",\n" +
+                "    \"2015-08-04 12:00:00-05\",\n" +
+                "    \"2015-08-05 12:00:00-05\"\n" +
+                "  ]\n" +
+                "}";
+        path = "$.a[*] ? (@.datetime() < \"2015-08-05\".datetime())";
+        varPath = "$.a[*] ? (@.datetime() < $d.datetime())";
+        vars = "{\"d\":\"2015-08-05\"}";
+        final Expression jsonField;
+        jsonField = SQLs.literal(JsonbType.TEXT, json);
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPathQueryArrayTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .comma(jsonbPathQueryArrayTz(jsonField, SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathQueryArrayTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathQueryArrayTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathQueryArrayTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathQueryArrayTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+
+    /**
+     * @see Postgres#jsonbPathQueryFirstTz(Expression, Expression)
+     * @see Postgres#jsonbPathQueryFirstTz(Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQueryFirstTz(Expression, Expression, Expression, Expression)
+     * @see Postgres#jsonbPathQueryFirstTz(Expression, BiFunction, Object)
+     * @see Postgres#jsonbPathQueryFirstTz(Expression, BiFunction, Object, Expression)
+     * @see Postgres#jsonbPathQueryFirstTz(Expression, BiFunction, Object, Expression, Expression)
+     * @see Postgres#jsonbPathQueryFirstTz(Expression, BiFunction, Object, BiFunction, Object, Expression)
+     */
+    @Test
+    public void jsonbPathQueryFirstTzFunc() {
+        final String json, path, varPath, vars;
+        json = "{\n" +
+                "  \"a\": [\n" +
+                "    \"2015-08-01 12:00:00-05\",\n" +
+                "    \"2015-08-02 12:00:00-05\",\n" +
+                "    \"2015-08-03 12:00:00-05\",\n" +
+                "    \"2015-08-04 12:00:00-05\",\n" +
+                "    \"2015-08-05 12:00:00-05\"\n" +
+                "  ]\n" +
+                "}";
+        path = "$.a[*] ? (@.datetime() < \"2015-08-05\".datetime())";
+        varPath = "$.a[*] ? (@.datetime() < $d.datetime())";
+        vars = "{\"d\":\"2015-08-05\"}";
+        final Expression jsonField;
+        jsonField = SQLs.literal(JsonbType.TEXT, json);
+
+        final Select stmt;
+        stmt = Postgres.query()
+                .select(jsonbPathQueryFirstTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .comma(jsonbPathQueryFirstTz(jsonField, SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathQueryFirstTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathQueryFirstTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathQueryFirstTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathQueryFirstTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
 
 }
