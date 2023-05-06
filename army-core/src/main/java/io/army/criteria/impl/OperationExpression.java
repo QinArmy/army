@@ -729,10 +729,18 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
     static abstract class SqlFunctionExpression extends OperationSimpleExpression
             implements SQLFunction, TypeInfer.DelayTypeInfer {
 
+        final String name;
+
         /**
          * package constructor
          */
-        SqlFunctionExpression() {
+        SqlFunctionExpression(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public final String name() {
+            return this.name;
         }
 
         /**

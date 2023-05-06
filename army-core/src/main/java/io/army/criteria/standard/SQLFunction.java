@@ -11,6 +11,8 @@ import java.util.function.*;
 
 public interface SQLFunction {
 
+    String name();
+
     interface AggregateFunction {
 
     }

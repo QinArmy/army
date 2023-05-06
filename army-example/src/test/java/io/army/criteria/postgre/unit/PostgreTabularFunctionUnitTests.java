@@ -25,8 +25,8 @@ public class PostgreTabularFunctionUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select("a", PERIOD, ASTERISK)
-                .from(() -> unnest(SQLs.literal(PostgreTsVectorType.INSTANCE, "cat:3 fat:2,4 rat:5A"))
-                        .withOrdinality()
+                .from(unnest(SQLs.literal(PostgreTsVectorType.INSTANCE, "cat:3 fat:2,4 rat:5A"))
+                        ::withOrdinality
                 )
                 .as("a")
                 .where(SQLs.refThis("a", "lexeme")::equal, SQLs::literal, "cat")

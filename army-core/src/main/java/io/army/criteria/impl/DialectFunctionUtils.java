@@ -1,7 +1,10 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._DerivedTable;
+import io.army.criteria.impl.inner._FunctionField;
+import io.army.criteria.impl.inner._SelectionGroup;
+import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -13,6 +16,7 @@ import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.SqlType;
+import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -183,6 +187,11 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
+        public String name() {
+            return this.name;
+        }
+
+        @Override
         public void appendSql(final _SqlContext context) {
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
@@ -235,6 +244,10 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             this.name = columnFunction.name;
         }
 
+        @Override
+        public final String name() {
+            return this.name;
+        }
 
         @Override
         public final void appendSql(final _SqlContext context) {
@@ -307,60 +320,27 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//TabularSqlFunction
 
     private static final class ColumnTabularFunctionWrapper extends TabularSqlFunction
-            implements _Selection, UndoneColumnFunc {
+            implements UndoneColumnFunc {
 
         private final ColumnFunction columnFunction;
 
         private final List<Selection> funcFieldList;
-
-        private String fieldName;
 
         private Map<String, Selection> selectionMap;
 
         private ColumnTabularFunctionWrapper(ColumnFunction columnFunction) {
             super(columnFunction);
             this.columnFunction = columnFunction;
-            final List<Selection> fieldList = _Collections.arrayList(2);
-            final Selection field = columnFunction.field;
-            if (field == null) {
-                fieldList.add(this);
-            } else {
-                this.fieldName = field.alias();
-                fieldList.add(field);
-            }
-            fieldList.add(ArmySelections.forName(ORDINALITY, LongType.INSTANCE));
-            this.funcFieldList = Collections.unmodifiableList(fieldList);
+            this.funcFieldList = _ArrayUtils.asUnmodifiableList(columnFunction.field,
+                    ArmySelections.forName(ORDINALITY, LongType.INSTANCE)
+            );
         }
 
         @Override
-        public void appendSelectItem(_SqlContext context) {
-            //no bug,never here
-            throw new UnsupportedOperationException();
+        public boolean isNoNameField() {
+            return this.columnFunction.isNoNameField();
         }
 
-        @Override
-        public TypeMeta typeMeta() {
-            return this.columnFunction.returnType;
-        }
-
-        @Override
-        public void derivedAlias(final @Nullable String alias) {
-            if (this.fieldName == null) {
-                if (alias == null) {
-                    throw ContextStack.nullPointer(this.outerContext);
-                }
-                this.fieldName = alias;
-            }
-        }
-
-        @Override
-        public String alias() {
-            final String fieldName = this.fieldName;
-            if (fieldName == null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            return fieldName;
-        }
 
         @Override
         public Selection refSelection(final @Nullable String name) {
@@ -381,18 +361,6 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public TableField tableField() {
-            //always null
-            return null;
-        }
-
-        @Override
-        public Expression underlyingExp() {
-            //always null
-            return null;
-        }
-
-        @Override
         void appendArg(_SqlContext context) {
             this.columnFunction.appendArg(context);
         }
@@ -406,11 +374,12 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//ColumnTabularFunctionWrapper
 
     private static abstract class ColumnFunction extends TabularSqlFunction
-            implements UndoneColumnFunc, Functions._ColumnWithOrdinalityFunction {
+            implements UndoneColumnFunc, Functions._ColumnWithOrdinalityFunction,
+            Selection {
 
         private final TypeMeta returnType;
 
-        private Selection field;
+        private final Selection field;
 
         private String userDefinedAlias;
 
@@ -418,22 +387,19 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         private ColumnFunction(String name, @Nullable String fieldName, TypeMeta returnType) {
             super(name);
-            if (fieldName != null) {
+            if (fieldName == null) {
+                this.field = this;
+            } else {
                 this.field = ArmySelections.forName(fieldName, returnType);
             }
             this.returnType = returnType;
         }
 
-        @Override
-        public void derivedAlias(final @Nullable String alias) {
-            if (this.field == null) {
-                if (alias == null) {
-                    throw ContextStack.nullPointer(this.outerContext);
-                }
-                this.field = ArmySelections.forName(alias, returnType);
-            }
-        }
 
+        @Override
+        public final boolean isNoNameField() {
+            return this.field == this;
+        }
 
         @Override
         public final Selection as(final @Nullable String selectionAlas) {
@@ -444,18 +410,22 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             } else if (!_StringUtils.hasText(selectionAlas)) {
                 throw ContextStack.criteriaError(this.outerContext, _Exceptions::selectionAliasNoText);
             }
-            this.typeMeta(); // init type
             this.userDefinedAlias = selectionAlas;
             return ArmySelections.forColumnFunc(this, selectionAlas);
         }
 
+        @Override
+        public final String alias() {
+            //no bug,never here
+            throw new UnsupportedOperationException();
+        }
 
         @Override
         public final Functions._TabularFunction withOrdinality() {
             if (this.userDefinedType != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
-            this.typeMeta(); // init type
+            this.userDefinedType = this.returnType;
             return new ColumnTabularFunctionWrapper(this);
         }
 
@@ -464,25 +434,28 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             if (this.userDefinedType != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
-            this.typeMeta(); // init type.
             final Functions._TabularFunction function;
             if (predicate.getAsBoolean()) {
                 function = new ColumnTabularFunctionWrapper(this);
             } else {
                 function = this;
             }
+            this.userDefinedType = this.returnType;
             return function;
         }
 
         @Override
         public final Selection refSelection(final @Nullable String name) {
             final Selection field = this.field, selection;
-            if (field == null || this.userDefinedAlias != null) {
+            if (field == this) {
+                //no bug,never here
+                throw new UnsupportedOperationException();
+            } else if (this.userDefinedAlias != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             } else if (name == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             } else if (name.equals(field.alias())) {
-                selection = field;
+                selection = this;
             } else {
                 selection = null;
             }
@@ -491,21 +464,15 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         @Override
         public final List<? extends Selection> refAllSelection() {
-            final Selection field = this.field;
-            if (field == null || this.userDefinedAlias != null) {
+            if (this.userDefinedAlias != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
-            return _Collections.singletonList(field);
+            return _Collections.singletonList(this.field);
         }
 
         @Override
         public final TypeMeta typeMeta() {
-            TypeMeta type = this.userDefinedType;
-            if (type == null) {
-                type = this.returnType;
-                this.userDefinedType = type;
-            }
-            return type;
+            return this.returnType;
         }
 
         @Override
@@ -518,6 +485,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             this.userDefinedType = typeMeta;
             return this;
         }
+
 
     }//ScalarTabularFunction
 
@@ -829,6 +797,11 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         private TabularUndoneFunction(String name) {
             this.name = name;
+        }
+
+        @Override
+        public final String name() {
+            return this.name;
         }
 
         @Override

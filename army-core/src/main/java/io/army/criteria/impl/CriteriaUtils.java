@@ -480,61 +480,15 @@ abstract class CriteriaUtils {
                 .toString();
     }
 
-    @Deprecated
-    static _Pair<List<Selection>, Map<String, Selection>> forColumnAlias(final List<String> columnAliasList,
-                                                                         final _DerivedTable table) {
-        final List<? extends Selection> refSelectionList;
-        refSelectionList = table.refAllSelection();
-        final int selectionSize;
-        selectionSize = refSelectionList.size();
-        if (columnAliasList.size() != selectionSize) {
-            throw CriteriaUtils.derivedColumnAliasSizeNotMatch(selectionSize, columnAliasList.size());
-        }
-        if (selectionSize == 1) {
-            final Selection selection;
-            selection = ArmySelections.renameSelection(refSelectionList.get(0), columnAliasList.get(0));
-            return _Pair.create(
-                    Collections.singletonList(selection),
-                    Collections.singletonMap(selection.alias(), selection)
-            );
-        }
-        final List<Selection> selectionList = new ArrayList<>(selectionSize);
-        final Map<String, Selection> selectionMap = new HashMap<>((int) (selectionSize / 0.75f));
-        Selection selection;
-        String columnAlias;
-        for (int i = 0; i < selectionSize; i++) {
-            columnAlias = columnAliasList.get(i);
-            if (columnAlias == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            }
-            selection = ArmySelections.renameSelection(refSelectionList.get(i), columnAlias);
-            if (selectionMap.putIfAbsent(columnAlias, selection) != null) {
-                throw CriteriaUtils.duplicateColumnAlias(columnAlias);
-            }
-            selectionList.add(selection);
-        }
-        assert selectionList.size() == selectionMap.size();
-        return _Pair.create(
-                Collections.unmodifiableList(selectionList),
-                Collections.unmodifiableMap(selectionMap)
-        );
-    }
-
     static _SelectionMap createAliasSelectionMap(final List<String> columnAliasList,
-                                                 final _DerivedTable table, final @Nullable String tableAlias) {
-        if (table instanceof UndoneColumnFunc) {
-            if (tableAlias == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            }
-            ((UndoneColumnFunc) table).derivedAlias(tableAlias);
-        }
+                                                 final _DerivedTable table, final String cteOrDerivedAlias) {
 
         final List<? extends Selection> refSelectionList;
         refSelectionList = table.refAllSelection();
         final int selectionSize;
         selectionSize = refSelectionList.size();
         if (columnAliasList.size() != selectionSize) {
-            throw CriteriaUtils.derivedColumnAliasSizeNotMatch(selectionSize, columnAliasList.size());
+            throw CriteriaUtils.derivedColumnAliasSizeNotMatch(cteOrDerivedAlias, selectionSize, columnAliasList.size());
         }
         if (selectionSize == 1) {
             final Selection selection;
@@ -544,8 +498,8 @@ abstract class CriteriaUtils {
                     _Collections.singletonMap(selection.alias(), selection)
             );
         }
-        final List<Selection> selectionList = new ArrayList<>(selectionSize);
-        final Map<String, Selection> selectionMap = new HashMap<>((int) (selectionSize / 0.75f));
+        final List<Selection> selectionList = _Collections.arrayList(selectionSize);
+        final Map<String, Selection> selectionMap = _Collections.hashMap((int) (selectionSize / 0.75f));
         Selection selection;
         String columnAlias;
         for (int i = 0; i < selectionSize; i++) {
@@ -561,8 +515,8 @@ abstract class CriteriaUtils {
         }
         assert selectionList.size() == selectionMap.size();
         return new SelectionMap(
-                Collections.unmodifiableList(selectionList),
-                Collections.unmodifiableMap(selectionMap)
+                _Collections.unmodifiableList(selectionList),
+                _Collections.unmodifiableMap(selectionMap)
         );
 
 
@@ -658,8 +612,13 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException derivedColumnAliasSizeNotMatch(int selectionSize, int aliasSize) {
-        return ContextStack.clearStackAnd(_Exceptions::derivedColumnAliasSizeNotMatch, selectionSize, aliasSize);
+    static CriteriaException derivedColumnAliasSizeNotMatch(String tableAlias, int selectionSize,
+                                                            int aliasSize) {
+
+        String m;
+        m = String.format("cte/derived[%s] column alias list size[%s] and selection list size[%s] not match.",
+                tableAlias, aliasSize, selectionSize);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
     static CriteriaException operandError(final Enum<?> operator, final @Nullable Expression operand) {

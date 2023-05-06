@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.impl.inner._DerivedTable;
+import io.army.criteria.standard.SQLFunction;
 
 /**
  * <p>
@@ -9,9 +10,10 @@ import io.army.criteria.impl.inner._DerivedTable;
  *
  * @since 1.0
  */
-interface UndoneColumnFunc extends _DerivedTable {
+interface UndoneColumnFunc extends _DerivedTable, SQLFunction {
 
-    void derivedAlias(String alias);
+
+    boolean isNoNameField();
 
 
 }

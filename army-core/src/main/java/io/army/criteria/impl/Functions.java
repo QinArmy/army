@@ -959,6 +959,7 @@ abstract class Functions extends SqlSyntax {
         private static final CountAsteriskFunction INSTANCE = new CountAsteriskFunction();
 
         private CountAsteriskFunction() {
+            super("COUNT");
         }
 
         @Override

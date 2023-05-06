@@ -633,6 +633,11 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             this.name = name;
         }
 
+        @Override
+        public final String name() {
+            return this.name;
+        }
+
 
     }//SqlFunctionPredicate
 

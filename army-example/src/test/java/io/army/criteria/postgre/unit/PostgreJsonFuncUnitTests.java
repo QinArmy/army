@@ -265,13 +265,13 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         json = "[1,true, [2,false]]";
         final Select stmt;
         stmt = Postgres.query()
-                .selectDistinctOn(SQLs.refSelection("ordinality"))
+                .selectDistinctOn(SQLs.refSelection("ordinal"))
                 .space("json", PERIOD, ASTERISK)
                 .comma("jsonOrdinal", PERIOD, ASTERISK)
-                .from(jsonArrayElements(SQLs::literal, json)).as("json")
-                .crossJoin(jsonArrayElements(SQLs::literal, json).withOrdinality()).as("jsonOrdinal")
-                .crossJoin(jsonbArrayElements(SQLs::literal, json)).as("jsonb")
-                .crossJoin(jsonbArrayElements(SQLs::literal, json).withOrdinality()).as("jsonbOrdinal")
+                .from(jsonArrayElements(SQLs::literal, json)).as("json").parens("value")
+                .crossJoin(jsonArrayElements(SQLs::literal, json).withOrdinality()).as("jsonOrdinal").parens("value", "ordinal")
+                .crossJoin(jsonbArrayElements(SQLs::literal, json)).as("jsonb").parens("value")
+                .crossJoin(jsonbArrayElements(SQLs::literal, json).withOrdinality()).as("jsonbOrdinal").parens("value", "ordinal")
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -323,13 +323,13 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         json = "[\"foo\", \"bar\"]";
         final Select stmt;
         stmt = Postgres.query()
-                .selectDistinctOn(SQLs.refSelection("ordinality"))
+                .selectDistinctOn(SQLs.refSelection("ordinal"))
                 .space("json", PERIOD, ASTERISK)
                 .comma("jsonOrdinal", PERIOD, ASTERISK)
-                .from(jsonArrayElementsText(SQLs::literal, json)).as("json")
-                .crossJoin(jsonArrayElementsText(SQLs::literal, json).withOrdinality()).as("jsonOrdinal")
-                .crossJoin(jsonbArrayElementsText(SQLs::literal, json)).as("jsonb")
-                .crossJoin(jsonbArrayElementsText(SQLs::literal, json).withOrdinality()).as("jsonbOrdinal")
+                .from(jsonArrayElementsText(SQLs::literal, json)).as("json").parens("value")
+                .crossJoin(jsonArrayElementsText(SQLs::literal, json).withOrdinality()).as("jsonOrdinal").parens("value", "ordinal")
+                .crossJoin(jsonbArrayElementsText(SQLs::literal, json)).as("jsonb").parens("value")
+                .crossJoin(jsonbArrayElementsText(SQLs::literal, json).withOrdinality()).as("jsonbOrdinal").parens("value", "ordinal")
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -515,7 +515,7 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .comma(jsonbObjectKeys(SQLs.literal(JsonbType.TEXT, json))::as, "json3")
                 .comma(jsonbObjectKeys(SQLs::literal, json)::as, "json4")
                 .comma("jt", PERIOD, ASTERISK)
-                .from(jsonObjectKeys(SQLs.literal(JsonType.TEXT, json))).as("jt")
+                .from(jsonObjectKeys(SQLs.literal(JsonType.TEXT, json))).as("jt").parens("value")
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -727,7 +727,7 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
      * @see Postgres#jsonbPathQuery(Expression, BiFunction, Object, Expression, Expression)
      * @see Postgres#jsonbPathQuery(Expression, BiFunction, Object, BiFunction, Object, Expression)
      */
-    @Test
+    @Test(invocationCount = 1000)
     public void jsonbPathQueryFunc() {
         final String json, path, varPath, vars;
         json = "{\"a\":[1,2,3,4,5]}";
@@ -735,14 +735,20 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         varPath = "$.a[*] ? (@ >= $min && @ <= $max)";
         vars = "{\"min\":2, \"max\":4}";
 
+        final Expression jsonField, pathExp, varPathExp, varExp;
+        jsonField = SQLs.literal(JsonbType.TEXT, json);
+        pathExp = SQLs.literal(JsonPathType.INSTANCE, path);
+        varPathExp = SQLs.literal(JsonPathType.INSTANCE, varPath);
+        varExp = SQLs.literal(JsonbType.TEXT, vars);
+
         final Select stmt;
         stmt = Postgres.query()
-                .select(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
-                .comma(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path)::as, "json2")
-                .comma(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
-                .comma(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
-                .comma(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
-                .comma(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .select(jsonbPathQuery(jsonField, pathExp)::as, "json1")
+                .comma(jsonbPathQuery(jsonField, SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathQuery(jsonField, varPathExp, varExp)::as, "json3")
+                .comma(jsonbPathQuery(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathQuery(jsonField, varPathExp, varExp, TRUE)::as, "json5")
+                .comma(jsonbPathQuery(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
                 .comma("jt1", PERIOD, ASTERISK)
                 .comma("jt2", PERIOD, ASTERISK)
                 .comma("jt3", PERIOD, ASTERISK)
@@ -756,18 +762,18 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .comma("jt11", PERIOD, ASTERISK)
                 .comma("jt12", PERIOD, ASTERISK)
 
-                .from(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, path))).as("jt1")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, path))::withOrdinality).as("jt2")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path)).as("jt3")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path)::withOrdinality).as("jt4")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))).as("jt5")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::withOrdinality).as("jt6")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars)).as("jt7")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars)::withOrdinality).as("jt8")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)).as("jt9")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::withOrdinality).as("jt10")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars, TRUE)).as("jt11")
-                .crossJoin(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars, TRUE)::withOrdinality).as("jt12")
+                .from(jsonbPathQuery(jsonField, pathExp)).as("jt1").parens("value")
+                .crossJoin(jsonbPathQuery(jsonField, pathExp)::withOrdinality).as("jt2").parens("value", "ordinal")
+                .crossJoin(jsonbPathQuery(jsonField, SQLs::literal, path)).as("jt3").parens("value")
+                .crossJoin(jsonbPathQuery(jsonField, SQLs::literal, path)::withOrdinality).as("jt4").parens("value", "ordinal")
+                .crossJoin(jsonbPathQuery(jsonField, varPathExp, varExp)).as("jt5").parens("value")
+                .crossJoin(jsonbPathQuery(jsonField, varPathExp, varExp)::withOrdinality).as("jt6").parens("value", "ordinal")
+                .crossJoin(jsonbPathQuery(jsonField, SQLs::literal, varPath, SQLs::literal, vars)).as("jt7").parens("value")
+                .crossJoin(jsonbPathQuery(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::withOrdinality).as("jt8").parens("value", "ordinal")
+                .crossJoin(jsonbPathQuery(jsonField, varPathExp, varExp, TRUE)).as("jt9").parens("value")
+                .crossJoin(jsonbPathQuery(jsonField, varPathExp, varExp, TRUE)::withOrdinality).as("jt10").parens("value", "ordinal")
+                .crossJoin(jsonbPathQuery(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)).as("jt11").parens("value")
+                .crossJoin(jsonbPathQuery(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::withOrdinality).as("jt12").parens("value", "ordinal")
 
                 .asQuery();
 
@@ -791,14 +797,20 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         varPath = "$.a[*] ? (@ >= $min && @ <= $max)";
         vars = "{\"min\":2, \"max\":4}";
 
+        final Expression jsonField, pathExp, varPathExp, varExp;
+        jsonField = SQLs.literal(JsonbType.TEXT, json);
+        pathExp = SQLs.literal(JsonPathType.INSTANCE, path);
+        varPathExp = SQLs.literal(JsonPathType.INSTANCE, varPath);
+        varExp = SQLs.literal(JsonbType.TEXT, vars);
+
         final Select stmt;
         stmt = Postgres.query()
-                .select(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
-                .comma(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path)::as, "json2")
-                .comma(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
-                .comma(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
-                .comma(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
-                .comma(jsonbPathQueryArray(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                .select(jsonbPathQueryArray(jsonField, pathExp)::as, "json1")
+                .comma(jsonbPathQueryArray(jsonField, SQLs::literal, path)::as, "json2")
+                .comma(jsonbPathQueryArray(jsonField, varPathExp, varExp)::as, "json3")
+                .comma(jsonbPathQueryArray(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                .comma(jsonbPathQueryArray(jsonField, varPathExp, varExp, TRUE)::as, "json5")
+                .comma(jsonbPathQueryArray(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -926,15 +938,19 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         varPath = "$.a[*] ? (@.datetime() < $d.datetime())";
         vars = "{\"d\":\"2015-08-05\"}";
 
-        final Expression jsonField;
+        final Expression jsonField, pathExp, varPathExp, varExp;
         jsonField = SQLs.literal(JsonbType.TEXT, json);
+        pathExp = SQLs.literal(JsonPathType.INSTANCE, path);
+        varPathExp = SQLs.literal(JsonPathType.INSTANCE, varPath);
+        varExp = SQLs.literal(JsonbType.TEXT, vars);
+
         final Select stmt;
         stmt = Postgres.query()
-                .select(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))::as, "json1")
+                .select(jsonbPathQueryTz(jsonField, pathExp)::as, "json1")
                 .comma(jsonbPathQueryTz(jsonField, SQLs::literal, path)::as, "json2")
-                .comma(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::as, "json3")
+                .comma(jsonbPathQueryTz(jsonField, varPathExp, varExp)::as, "json3")
                 .comma(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
-                .comma(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::as, "json5")
+                .comma(jsonbPathQueryTz(jsonField, varPathExp, varExp, TRUE)::as, "json5")
                 .comma(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
                 .comma("jt1", PERIOD, ASTERISK)
                 .comma("jt2", PERIOD, ASTERISK)
@@ -949,18 +965,18 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .comma("jt11", PERIOD, ASTERISK)
                 .comma("jt12", PERIOD, ASTERISK)
 
-                .from(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))).as("jt1").parens("value")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))::withOrdinality).as("jt2")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, path)).as("jt3")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, path)::withOrdinality).as("jt4")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))).as("jt5")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars))::withOrdinality).as("jt6")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)).as("jt7")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::withOrdinality).as("jt8")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)).as("jt9")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, varPath), SQLs.literal(JsonbType.TEXT, vars), TRUE)::withOrdinality).as("jt10")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)).as("jt11")
-                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::withOrdinality).as("jt12")
+                .from(jsonbPathQueryTz(jsonField, pathExp)).as("jt1").parens("value")
+                .crossJoin(jsonbPathQueryTz(jsonField, pathExp)::withOrdinality).as("jt2").parens("value", "ordinal")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, path)).as("jt3").parens("value")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, path)::withOrdinality).as("jt4").parens("value", "ordinal")
+                .crossJoin(jsonbPathQueryTz(jsonField, varPathExp, varExp)).as("jt5").parens("value")
+                .crossJoin(jsonbPathQueryTz(jsonField, varPathExp, varExp)::withOrdinality).as("jt6").parens("value", "ordinal")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)).as("jt7").parens("value")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::withOrdinality).as("jt8").parens("value", "ordinal")
+                .crossJoin(jsonbPathQueryTz(jsonField, varPathExp, varExp, TRUE)).as("jt9").parens("value")
+                .crossJoin(jsonbPathQueryTz(jsonField, varPathExp, varExp, TRUE)::withOrdinality).as("jt10").parens("value", "ordinal")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)).as("jt11").parens("value")
+                .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::withOrdinality).as("jt12").parens("value", "ordinal")
 
                 .asQuery();
 

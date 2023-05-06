@@ -1453,9 +1453,7 @@ abstract class ArmyParser implements DialectParser {
             return;
         }
         if (((_DerivedTable) block.tableItem()).refAllSelection().size() != columnAliasSize) {
-            throw _Exceptions.derivedColumnAliasSizeNotMatch(
-                    ((_DerivedTable) block.tableItem()).refAllSelection().size(), columnAliasSize
-            );
+            throw _Exceptions.derivedColumnAliasSizeNotMatch(block);
         }
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder()

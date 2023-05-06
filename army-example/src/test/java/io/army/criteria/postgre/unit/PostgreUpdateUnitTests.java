@@ -33,11 +33,11 @@ public class PostgreUpdateUnitTests extends PostgreUnitTests {
                 .update(ChinaRegion_.T, AS, "c")
                 .set(ChinaRegion_.name, SQLs::param, this::randomCity)
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::literal, new BigDecimal("100.00"))
-                .set(ChinaRegion_.regionGdp, ChinaRegion_.population, () -> Postgres.subQuery()
+                .set(ChinaRegion_.regionGdp, ChinaRegion_.population, Postgres.subQuery()
                         .select(HistoryChinaRegion_.regionGdp, HistoryChinaRegion_.population)
                         .from(HistoryChinaRegion_.T, AS, "h")
                         .where(HistoryChinaRegion_.id::equal, SQLs::literal, 1)
-                        .asQuery()
+                        ::asQuery
                 )
                 .from(HistoryChinaRegion_.T, AS, "hc")
                 .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)

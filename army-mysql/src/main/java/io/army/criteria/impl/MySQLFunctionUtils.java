@@ -2073,6 +2073,11 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
+        public String name() {
+            return "JSON_TABLE";
+        }
+
+        @Override
         public _JsonTableColumnsClause<R> leftParen(final Expression expr, final Expression path) {
             if (this.expr != null || this.path != null) {
                 throw ContextStack.castCriteriaApi(this.context);

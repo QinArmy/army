@@ -467,7 +467,8 @@ public abstract class SQLs extends SQLsSyntax {
             } else if (this.columnNameList.size() == 0) {
                 this.selectionMap = (_DerivedTable) subStatement;
             } else {
-                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnNameList, (_DerivedTable) subStatement, null);
+                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnNameList,
+                        (_DerivedTable) subStatement, name);
             }
 
         }

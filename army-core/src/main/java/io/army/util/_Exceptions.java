@@ -9,10 +9,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
-import io.army.criteria.impl.inner._DialectStatement;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TabularBlock;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
@@ -385,9 +382,9 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException derivedColumnAliasSizeNotMatch(int selectionSize, int aliasSize) {
-        String m = String.format("derived column alias list size[%s] and selection list size[%s] not match.",
-                aliasSize, selectionSize);
+    public static CriteriaException derivedColumnAliasSizeNotMatch(_AliasDerivedBlock block) {
+        String m = String.format("derived table[%s] column alias list size[%s] and selection list size[%s] not match.",
+                block.alias(), block.columnAliasList().size(), block.refAllSelection().size());
         return new CriteriaException(m);
     }
 

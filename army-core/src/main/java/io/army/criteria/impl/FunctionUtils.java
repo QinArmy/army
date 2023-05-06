@@ -1153,8 +1153,6 @@ abstract class FunctionUtils {
 
         final CriteriaContext context;
 
-        final String name;
-
         final TypeMeta returnType;
 
         private String existingWindowName;
@@ -1162,8 +1160,8 @@ abstract class FunctionUtils {
         private _Window anonymousWindow;
 
         WindowFunction(String name, TypeMeta returnType) {
+            super(name);
             this.context = ContextStack.peek();
-            this.name = name;
             this.returnType = returnType;
         }
 
@@ -1316,7 +1314,7 @@ abstract class FunctionUtils {
     }//AggregateOverClause
 
 
-    static final class NamedNotation extends NonOperationExpression.NonOperationFunction {
+    static final class NamedNotation extends NonOperationExpression {
 
         final String name;
 
@@ -1398,7 +1396,6 @@ abstract class FunctionUtils {
 
     private static final class NoParensFunction extends OperationExpression.SqlFunctionExpression {
 
-        private final String name;
 
         private final TypeMeta returnType;
 
@@ -1406,9 +1403,10 @@ abstract class FunctionUtils {
          * @see #noParensFunc(String, TypeMeta)
          */
         private NoParensFunction(String name, TypeMeta returnType) {
-            this.name = name;
+            super(name);
             this.returnType = returnType;
         }
+
 
         @Override
         public boolean isDelay() {
@@ -1464,7 +1462,6 @@ abstract class FunctionUtils {
 
     private static final class ZeroArgFunction extends OperationExpression.SqlFunctionExpression {
 
-        private final String name;
 
         private final TypeMeta returnType;
 
@@ -1472,7 +1469,7 @@ abstract class FunctionUtils {
          * @see #zeroArgFunc(String, TypeMeta)
          */
         private ZeroArgFunction(String name, TypeMeta returnType) {
-            this.name = name;
+            super(name);
             this.returnType = returnType;
         }
 
@@ -1530,14 +1527,14 @@ abstract class FunctionUtils {
 
     static abstract class FunctionExpression extends OperationExpression.SqlFunctionExpression {
 
-        final String name;
 
         final TypeMeta returnType;
 
         FunctionExpression(String name, TypeMeta returnType) {
-            this.name = name;
+            super(name);
             this.returnType = returnType;
         }
+
 
         @Override
         public boolean isDelay() {
@@ -2173,6 +2170,7 @@ abstract class FunctionUtils {
         }
 
 
+
         @Override
         public final void appendSql(final _SqlContext context) {
             final StringBuilder sqlBuilder;
@@ -2321,12 +2319,10 @@ abstract class FunctionUtils {
 
     private static final class MultiArgVoidFunction extends NonOperationExpression.NonOperationFunction {
 
-        private final String name;
-
         private final List<? extends Expression> argList;
 
         private MultiArgVoidFunction(String name, List<? extends Expression> argList) {
-            this.name = name;
+            super(name);
             this.argList = argList;
         }
 
@@ -2415,8 +2411,6 @@ abstract class FunctionUtils {
      * @see ComplexArgFuncPredicate
      */
     private static class ComplexArgFuncExpression extends OperationExpression.SqlFunctionExpression {
-
-        private final String name;
         private final List<?> argList;
 
         private final TypeMeta returnType;
@@ -2425,8 +2419,8 @@ abstract class FunctionUtils {
          * @see #complexArgFunc(String, TypeMeta, Object...)
          */
         private ComplexArgFuncExpression(String name, List<?> argList, TypeMeta returnType) {
+            super(name);
             assert argList.size() > 0;
-            this.name = name;
             this.argList = argList;
             this.returnType = returnType;
         }
@@ -2474,15 +2468,13 @@ abstract class FunctionUtils {
 
     private static final class JsonObjectFunc extends OperationExpression.SqlFunctionExpression {
 
-        private final String name;
-
         private final Map<String, Expression> expMap;
 
         private final TypeMeta returnType;
 
         private JsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
+            super(name);
             assert expMap.size() > 0;
-            this.name = name;
             this.expMap = new HashMap<>(expMap);
             this.returnType = returnType;
         }
@@ -2599,13 +2591,12 @@ abstract class FunctionUtils {
             SQLFunction._CaseFuncWhenClause,
             SQLFunction._StaticCaseThenClause,
             SQLFunction._CaseElseClause,
-            CriteriaContextSpec,
             CaseWhens,
             SQLFunction._DynamicCaseThenClause {
 
         private final ArmyExpression caseValue;
 
-        private final CriteriaContext context;
+        private final CriteriaContext outerContext;
 
         private List<_Pair<ArmyExpression, ArmyExpression>> expPairList;
 
@@ -2616,13 +2607,9 @@ abstract class FunctionUtils {
         private MappingType returnType = StringType.INSTANCE;
 
         private CaseFunction(@Nullable ArmyExpression caseValue) {
+            super("CASE");
             this.caseValue = caseValue;
-            this.context = ContextStack.peek();
-        }
-
-        @Override
-        public CriteriaContext getContext() {
-            return this.context;
+            this.outerContext = ContextStack.peek();
         }
 
         @Override
@@ -2641,7 +2628,7 @@ abstract class FunctionUtils {
             final int pairSize;
             final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
             if (expPairList == null || (pairSize = expPairList.size()) == 0) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.outerContext);
             }
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
@@ -2709,9 +2696,9 @@ abstract class FunctionUtils {
         @Override
         public CaseFunction when(final @Nullable Expression expression) {
             if (this.whenExpression != null) {
-                throw ContextStack.criteriaError(this.context, "last when clause not end.");
+                throw ContextStack.criteriaError(this.outerContext, "last when clause not end.");
             } else if (expression == null) {
-                throw ContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.outerContext);
             }
             this.whenExpression = (ArmyExpression) expression;
             return this;
@@ -2912,7 +2899,7 @@ abstract class FunctionUtils {
             final ArmyExpression whenExpression = this.whenExpression;
             if (whenExpression != null) {
                 if (expression == null) {
-                    throw ContextStack.nullPointer(this.context);
+                    throw ContextStack.nullPointer(this.outerContext);
                 }
                 this.whenExpression = null; //clear for next when clause
                 List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
@@ -2920,7 +2907,7 @@ abstract class FunctionUtils {
                     expPairList = new ArrayList<>();
                     this.expPairList = expPairList;
                 } else if (!(expPairList instanceof ArrayList)) {
-                    throw ContextStack.castCriteriaApi(this.context);
+                    throw ContextStack.castCriteriaApi(this.outerContext);
                 }
                 expPairList.add(_Pair.create(whenExpression, (ArmyExpression) expression));
             }
@@ -3014,9 +3001,9 @@ abstract class FunctionUtils {
             } else if (this.whenExpression != null) {
                 throw lastWhenClauseNotEnd();
             } else if (this.elseExpression != null) {
-                throw ContextStack.criteriaError(this.context, "duplicate else clause.");
+                throw ContextStack.criteriaError(this.outerContext, "duplicate else clause.");
             } else if (expression == null) {
-                throw ContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.outerContext);
             }
             this.elseExpression = (ArmyExpression) expression;
             return this;
@@ -3143,7 +3130,7 @@ abstract class FunctionUtils {
             this.endCaseFunction();
 
             if (type == null) {
-                throw ContextStack.nullPointer(this.context);
+                throw ContextStack.nullPointer(this.outerContext);
             }
             if (type instanceof MappingType) {
                 this.returnType = (MappingType) type;
@@ -3163,16 +3150,16 @@ abstract class FunctionUtils {
             } else if (expPairList instanceof ArrayList) {
                 this.expPairList = _Collections.unmodifiableList(expPairList);
             } else {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.outerContext);
             }
         }
 
         private CriteriaException noWhenClause() {
-            return ContextStack.criteriaError(this.context, "Not found any when clause.");
+            return ContextStack.criteriaError(this.outerContext, "Not found any when clause.");
         }
 
         private CriteriaException lastWhenClauseNotEnd() {
-            return ContextStack.criteriaError(this.context, "current when clause not end");
+            return ContextStack.criteriaError(this.outerContext, "current when clause not end");
         }
 
 

@@ -440,7 +440,15 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     static abstract class NonOperationFunction extends NonOperationExpression implements SQLFunction {
 
-        NonOperationFunction() {
+        final String name;
+
+        NonOperationFunction(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public final String name() {
+            return this.name;
         }
 
     }//NonOperationFunction

@@ -315,9 +315,9 @@ abstract class CriteriaContexts {
     }
 
 
-    private static CriteriaException invalidRef(CriteriaContext context, String derivedAlias, String fieldName) {
+    private static UnknownDerivedFieldException invalidRef(CriteriaContext context, String derivedAlias, String fieldName) {
         String m = String.format("ref of %s.%s is invalid.", derivedAlias, fieldName);
-        return ContextStack.criteriaError(context, m);
+        return ContextStack.criteriaError(context, UnknownDerivedFieldException::new, m);
     }
 
 
@@ -456,6 +456,15 @@ abstract class CriteriaContexts {
             index++;
         }
         return ContextStack.criteriaError(context, builder.toString());
+    }
+
+    private static NoColumnFuncFieldAliasException noSpecifiedColumnFuncFieldAlias(_TabularBlock block) {
+        String m;
+        m = String.format("You should specified function field alias for column function[%s ; alias(%s)] in column alias clause.",
+                ((UndoneColumnFunc) block.tableItem()).name(),
+                block.alias()
+        );
+        throw new NoColumnFuncFieldAliasException(m);
     }
 
     private interface PrimaryContext {
@@ -1416,10 +1425,14 @@ abstract class CriteriaContexts {
             } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
                 throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
             } else if (tableItem instanceof RecursiveCte) {
-                this.onAddRecursiveCte((RecursiveCte) tableItem, alias);
+                if (this instanceof SimpleQueryContext) {
+                    ((SimpleQueryContext) this).onAddSelectionMap((RecursiveCte) tableItem, alias);
+                }
             } else if (tableItem instanceof DerivedTable) {
-                if (tableItem instanceof UndoneColumnFunc) {
-                    ((UndoneColumnFunc) tableItem).derivedAlias(alias);
+                if (tableItem instanceof UndoneColumnFunc
+                        && ((UndoneColumnFunc) tableItem).isNoNameField()
+                        && ((_AliasDerivedBlock) block).columnAliasList().size() == 0) {
+                    throw noSpecifiedColumnFuncFieldAlias(block);
                 }
                 this.onAddDerived(block, (_SelectionMap) tableItem, alias);
             } else if (tableItem instanceof _Cte) {
@@ -1502,11 +1515,12 @@ abstract class CriteriaContexts {
                 final Map<String, MutableDerivedField> fieldMap;
                 fieldMap = aliasToRefSelection.remove(alias);
                 if (fieldMap != null) {
-                    this.finishRefSelections(derivedTable, alias, fieldMap);
+                    if (block instanceof _SelectionMap) {
+                        this.finishRefSelections((_SelectionMap) block, alias, fieldMap);
+                    } else {
+                        this.finishRefSelections(derivedTable, alias, fieldMap);
+                    }
                     fieldMap.clear();
-                }
-                if (aliasToRefSelection.size() == 0) {
-                    this.aliasToRefDerivedField = null;
                 }
             }
 
@@ -1521,23 +1535,6 @@ abstract class CriteriaContexts {
 
         }
 
-        /**
-         * @see #addTableBlock(_TabularBlock)
-         * @see #addNestedItems(_NestedItems)
-         */
-        private void onAddRecursiveCte(final RecursiveCte cte, final String cteAlias) {
-            final Map<String, Map<String, MutableDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
-            final Map<String, MutableDerivedField> fieldMap;
-            if (aliasToRefSelection != null && (fieldMap = aliasToRefSelection.remove(cteAlias)) != null) {
-                cte.addRefFields(fieldMap.values());
-            }
-
-            if (this instanceof SimpleQueryContext) {
-                ((SimpleQueryContext) this).onAddSelectionMap(cte, cteAlias);
-            }
-
-        }
-
 
         /**
          * @param derivedTable {@link _DerivedTable} or {@link _Cte},but not {@link RecursiveCte}
@@ -1545,8 +1542,7 @@ abstract class CriteriaContexts {
          */
         private void finishRefSelections(final _SelectionMap derivedTable, final String tableAlias,
                                          final Map<String, MutableDerivedField> fieldMap) {
-            assert !(derivedTable instanceof RecursiveCte)
-                    && (derivedTable instanceof _DerivedTable || derivedTable instanceof _Cte);
+            assert !(derivedTable instanceof RecursiveCte);
 
             Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             if (aliasToSelection == null) {
@@ -1655,10 +1651,14 @@ abstract class CriteriaContexts {
                 } else if (aliasToBlock.putIfAbsent(alias, block) != null) {
                     throw ContextStack.criteriaError(this, _Exceptions::tableAliasDuplication, alias);
                 } else if (tableItem instanceof RecursiveCte) {
-                    this.onAddRecursiveCte((RecursiveCte) tableItem, alias);
+                    if (this instanceof SimpleQueryContext) {
+                        ((SimpleQueryContext) this).onAddSelectionMap((RecursiveCte) tableItem, alias);
+                    }
                 } else if (tableItem instanceof DerivedTable) {
-                    if (tableItem instanceof UndoneColumnFunc) {
-                        ((UndoneColumnFunc) tableItem).derivedAlias(alias);
+                    if (tableItem instanceof UndoneColumnFunc
+                            && ((UndoneColumnFunc) tableItem).isNoNameField()
+                            && ((_AliasDerivedBlock) block).columnAliasList().size() == 0) {
+                        throw noSpecifiedColumnFuncFieldAlias(block);
                     }
                     this.onAddDerived(block, (_SelectionMap) tableItem, alias);
                 } else if (tableItem instanceof _Cte) {
@@ -3436,7 +3436,6 @@ abstract class CriteriaContexts {
 
         /**
          * @see JoinableContext#validateDerivedFieldMap()
-         * @see JoinableContext#onAddRecursiveCte(RecursiveCte, String)
          */
         private void addRefFields(final Collection<MutableDerivedField> refFields) {
 

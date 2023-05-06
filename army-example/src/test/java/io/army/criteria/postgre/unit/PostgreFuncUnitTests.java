@@ -1,16 +1,21 @@
 package io.army.criteria.postgre.unit;
 
 import io.army.criteria.Expression;
+import io.army.criteria.NoColumnFuncFieldAliasException;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
+import io.army.mapping.JsonbType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.function.Consumer;
 
 import static io.army.criteria.impl.Postgres.*;
+import static io.army.criteria.impl.SQLs.ASTERISK;
+import static io.army.criteria.impl.SQLs.PERIOD;
 
 public class PostgreFuncUnitTests extends PostgreUnitTests {
 
@@ -98,6 +103,25 @@ public class PostgreFuncUnitTests extends PostgreUnitTests {
                 .asQuery();
 
         printStmt(LOG, stmt);
+    }
+
+    @Test(expectedExceptions = NoColumnFuncFieldAliasException.class)
+    public void noColumnFuncFieldAliasError() {
+        final String json, path;
+        json = "{\"a\":[1,2,3,4,5]}";
+        path = "$.a[*] ? (@ >= 2 && @ <= 4)";
+
+        try {
+            Postgres.query()
+                    .select("func", PERIOD, ASTERISK)
+                    .from(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path))
+                    .as("func") // here no specified jsonbPathQuery function field alias
+                    .asQuery();
+            Assert.fail();
+        } catch (NoColumnFuncFieldAliasException e) {
+            LOG.debug("{}", e.getMessage());
+            throw e;
+        }
     }
 
 

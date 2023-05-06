@@ -12,7 +12,6 @@ import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
 import java.util.Objects;
-import java.util.function.Supplier;
 
 abstract class ArmySelections implements _Selection {
 
@@ -34,10 +33,10 @@ abstract class ArmySelections implements _Selection {
 
     static Selection renameSelection(Selection selection, String alias) {
         final Selection s;
-        if (selection.alias().equals(alias)) {
-            s = selection;
-        } else {
+        if (selection instanceof UndoneColumnFunc || !selection.alias().equals(alias)) {
             s = new RenameSelection(selection, alias);
+        } else {
+            s = selection;
         }
         return s;
     }
@@ -62,10 +61,6 @@ abstract class ArmySelections implements _Selection {
 
     static Selection forColumnFunc(Functions._ColumnFunction func, String alias) {
         return new ColumnFuncSelection(func, alias);
-    }
-
-    static Selection forAliasSupplier(Supplier<String> supplier, TypeMeta type) {
-        return null;
     }
 
 
@@ -230,64 +225,14 @@ abstract class ArmySelections implements _Selection {
     }//FieldSelectionImpl
 
 
-    private static final class FuncSelection extends ArmySelections {
-
-        private final FunctionUtils.FunctionSpec func;
-
-        private final String alias;
-
-        private final TypeMeta returnType;
-
-        private FuncSelection(FunctionUtils.FunctionSpec func, String alias) {
-            super(alias);
-            this.func = func;
-            this.alias = alias;
-            this.returnType = func.typeMeta();
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            TypeMeta paramMeta = this.returnType;
-            if (paramMeta instanceof TableField) {
-                // FuncSelection couldn't return io.army.criteria.TableField ,avoid to statement executor
-                // decode selection .
-                paramMeta = paramMeta.mappingType();
-            }
-            return paramMeta;
-        }
-
-        @Override
-        public void appendSelectItem(final _SqlContext context) {
-            this.func.appendSql(context);
-
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_AS_SPACE);
-
-            context.parser().identifier(this.alias, sqlBuilder);
-        }
-
-        @Override
-        public Expression underlyingExp() {
-            return (Expression) this.func;
-        }
-
-        @Override
-        public TableField tableField() {
-            //always null
-            return null;
-        }
-
-
-    }//FuncSelection
 
     private static final class RenameSelection extends ArmySelections {
 
-        private final _Selection selection;
+        private final Selection selection;
 
         private RenameSelection(Selection selection, String alias) {
             super(alias);
-            this.selection = (_Selection) selection;
+            this.selection = selection;
         }
 
         @Override
@@ -303,12 +248,28 @@ abstract class ArmySelections implements _Selection {
 
         @Override
         public TableField tableField() {
-            return this.selection.tableField();
+            final Selection selection = this.selection;
+            final TableField field;
+            if (selection instanceof _Selection) {
+                field = ((_Selection) selection).tableField();
+            } else {
+                // probably UndoneColumnFunc
+                field = null;
+            }
+            return field;
         }
 
         @Override
         public Expression underlyingExp() {
-            return this.selection.underlyingExp();
+            final Selection selection = this.selection;
+            final Expression expression;
+            if (selection instanceof _Selection) {
+                expression = ((_Selection) selection).underlyingExp();
+            } else {
+                // probably UndoneColumnFunc
+                expression = null;
+            }
+            return expression;
         }
 
 
