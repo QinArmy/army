@@ -174,7 +174,7 @@ abstract class TabularBlocks {
 
     static abstract class FromClauseDerivedBlock extends FromClauseBlock {
 
-        private final String alias;
+         final String alias;
 
         FromClauseDerivedBlock(_JoinType joinType, DerivedTable table, String alias) {
             super(joinType, table);
@@ -248,8 +248,8 @@ abstract class TabularBlocks {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             this.columnAliasList = columnAliasList;
-
-            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.table);
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.table,
+                    this.alias);
         }
 
 
@@ -412,7 +412,7 @@ abstract class TabularBlocks {
 
         final DerivedTable table;
 
-        private final String alias;
+        final String alias;
 
         JoinClauseDerivedBlock(_JoinType joinType, DerivedTable table, String alias, R clause) {
             super(joinType, clause);
@@ -514,7 +514,8 @@ abstract class TabularBlocks {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
             this.columnAliasList = columnAliasList;
-            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.table);
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.table,
+                    this.alias);
             return this;
         }
 

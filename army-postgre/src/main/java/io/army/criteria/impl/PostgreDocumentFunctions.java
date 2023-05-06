@@ -6104,7 +6104,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
      * and silent arguments act the same as for jsonb_path_exists.
      *
-     * select tz.tz from jsonb_path_query_tz(JSONB E'{
+     * select tz.value from jsonb_path_query_tz(JSONB E'{
      *   "a": [
      *     "2015-08-01 12:00:00-05",
      *     "2015-08-02 12:00:00-05",
@@ -6112,7 +6112,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *     "2015-08-04 12:00:00-05",
      *     "2015-08-05 12:00:00-05"
      *   ]
-     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS tz →
+     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS(value) tz →
      *
      *  tz
      * ------------------
@@ -6155,7 +6155,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
      * and silent arguments act the same as for jsonb_path_exists.
      *
-     * select tz.tz from jsonb_path_query_tz(JSONB E'{
+     * select tz.value from jsonb_path_query_tz(JSONB E'{
      *   "a": [
      *     "2015-08-01 12:00:00-05",
      *     "2015-08-02 12:00:00-05",
@@ -6163,7 +6163,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *     "2015-08-04 12:00:00-05",
      *     "2015-08-05 12:00:00-05"
      *   ]
-     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS tz →
+     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS(value) tz →
      *
      *  tz
      * ------------------
@@ -6196,7 +6196,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
      * and silent arguments act the same as for jsonb_path_exists.
      *
-     * select tz.tz from jsonb_path_query_tz(JSONB E'{
+     * select tz.value from jsonb_path_query_tz(JSONB E'{
      *   "a": [
      *     "2015-08-01 12:00:00-05",
      *     "2015-08-02 12:00:00-05",
@@ -6204,7 +6204,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *     "2015-08-04 12:00:00-05",
      *     "2015-08-05 12:00:00-05"
      *   ]
-     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS tz →
+     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS(value) tz →
      *
      *  tz
      * ------------------
@@ -6247,7 +6247,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
      * and silent arguments act the same as for jsonb_path_exists.
      *
-     * select tz.tz from jsonb_path_query_tz(JSONB E'{
+     * select tz.value from jsonb_path_query_tz(JSONB E'{
      *   "a": [
      *     "2015-08-01 12:00:00-05",
      *     "2015-08-02 12:00:00-05",
@@ -6255,7 +6255,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *     "2015-08-04 12:00:00-05",
      *     "2015-08-05 12:00:00-05"
      *   ]
-     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS tz →
+     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS(value) tz →
      *
      *  tz
      * ------------------
@@ -6300,7 +6300,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
      * and silent arguments act the same as for jsonb_path_exists.
      *
-     * select tz.tz from jsonb_path_query_tz(JSONB E'{
+     * select tz.value from jsonb_path_query_tz(JSONB E'{
      *   "a": [
      *     "2015-08-01 12:00:00-05",
      *     "2015-08-02 12:00:00-05",
@@ -6308,7 +6308,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *     "2015-08-04 12:00:00-05",
      *     "2015-08-05 12:00:00-05"
      *   ]
-     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS tz →
+     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS(value) tz →
      *
      *  tz
      * ------------------
@@ -6342,7 +6342,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
      * and silent arguments act the same as for jsonb_path_exists.
      *
-     * select tz.tz from jsonb_path_query_tz(JSONB E'{
+     * select tz.value from jsonb_path_query_tz(JSONB E'{
      *   "a": [
      *     "2015-08-01 12:00:00-05",
      *     "2015-08-02 12:00:00-05",
@@ -6350,7 +6350,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *     "2015-08-04 12:00:00-05",
      *     "2015-08-05 12:00:00-05"
      *   ]
-     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS tz →
+     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS(value) tz →
      *
      *  tz
      * ------------------
@@ -6394,7 +6394,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
      * and silent arguments act the same as for jsonb_path_exists.
      *
-     * select tz.tz from jsonb_path_query_tz(JSONB E'{
+     * select tz.value from jsonb_path_query_tz(JSONB E'{
      *   "a": [
      *     "2015-08-01 12:00:00-05",
      *     "2015-08-02 12:00:00-05",
@@ -6402,7 +6402,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *     "2015-08-04 12:00:00-05",
      *     "2015-08-05 12:00:00-05"
      *   ]
-     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS tz →
+     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS(value) tz →
      *
      *  tz
      * ------------------
@@ -6448,7 +6448,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Returns all JSON items returned by the JSON path for the specified JSON value. The optional vars
      * and silent arguments act the same as for jsonb_path_exists.
      *
-     * select tz.tz from jsonb_path_query_tz(JSONB E'{
+     * select tz.value from jsonb_path_query_tz(JSONB E'{
      *   "a": [
      *     "2015-08-01 12:00:00-05",
      *     "2015-08-02 12:00:00-05",
@@ -6456,7 +6456,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *     "2015-08-04 12:00:00-05",
      *     "2015-08-05 12:00:00-05"
      *   ]
-     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS tz →
+     * }', JSONPATH '$.a[*] ? (@.datetime() &lt; "2015-08-05".datetime())') AS(value) tz →
      *
      *  tz
      * ------------------

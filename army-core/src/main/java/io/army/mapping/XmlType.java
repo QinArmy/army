@@ -9,7 +9,7 @@ import io.army.sqltype.SqlType;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class XmlType extends _ArmyInnerMapping {
+public final class XmlType extends _ArmyBuildInMapping {
 
 
     public static final XmlType TEXT_INSTANCE = new XmlType(String.class);

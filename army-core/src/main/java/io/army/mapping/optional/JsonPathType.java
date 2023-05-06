@@ -4,13 +4,13 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyInnerMapping;
+import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
-public final class JsonPathType extends _ArmyInnerMapping implements MappingType.SqlJsonPathType {
+public final class JsonPathType extends _ArmyBuildInMapping implements MappingType.SqlJsonPathType {
 
     public static final JsonPathType INSTANCE = new JsonPathType();
 

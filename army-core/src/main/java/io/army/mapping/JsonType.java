@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
-public final class JsonType extends _ArmyInnerMapping implements MappingType.SqlJsonType {
+public final class JsonType extends _ArmyBuildInMapping implements MappingType.SqlJsonType {
 
     public static final JsonType TEXT = new JsonType(String.class);
 

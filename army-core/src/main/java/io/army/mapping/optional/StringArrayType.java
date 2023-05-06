@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
-import io.army.mapping._ArmyInnerMapping;
+import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PgSqlType;
@@ -14,7 +14,7 @@ import io.army.util._ArrayUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class StringArrayType extends _ArmyInnerMapping {
+public final class StringArrayType extends _ArmyBuildInMapping {
 
     public static StringArrayType from(final Class<?> javaType) {
         if (!javaType.isArray()) {

@@ -14,7 +14,7 @@ import io.army.sqltype.*;
  * @see BlobType
  * @since 1.0
  */
-public final class MediumBlobType extends _ArmyInnerMapping {
+public final class MediumBlobType extends _ArmyBuildInMapping {
 
 
     public static final MediumBlobType INSTANCE = new MediumBlobType();

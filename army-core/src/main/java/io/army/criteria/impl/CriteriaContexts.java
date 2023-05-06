@@ -1090,10 +1090,10 @@ abstract class CriteriaContexts {
                 throw ContextStack.castCriteriaApi(this);
             } else if ((block = aliasToBlock.get(derivedAlias)) == null) {
                 selectionMap = null;
-            } else if (block instanceof _SelectionMap) {
-                selectionMap = (_SelectionMap) block;
             } else if ((tabularItem = block.tableItem()) instanceof RecursiveCte) {
                 selectionMap = null;
+            } else if (block instanceof _SelectionMap) {
+                selectionMap = (_SelectionMap) block;
             } else if (tabularItem instanceof _SelectionMap) {
                 selectionMap = (_SelectionMap) tabularItem;
             } else {
@@ -1426,11 +1426,11 @@ abstract class CriteriaContexts {
                 this.onAddDerived(block, (_SelectionMap) tableItem, alias);
             } else if (tableItem instanceof TableMeta) {
                 if (this instanceof SimpleQueryContext) {
-                    ((SimpleQueryContext) this).onAddTabularItem(tableItem, alias);
+                    ((SimpleQueryContext) this).onAddTable((TableMeta<?>) tableItem, alias);
                 }
             } else if (tableItem instanceof UndoneFunction) {
                 if (this instanceof SimpleQueryContext) {
-                    ((SimpleQueryContext) this).onAddUndoneFunction((_DoneFuncBlock) block);
+                    ((SimpleQueryContext) this).onAddSelectionMap((_DoneFuncBlock) block, alias);
                 }
             }
 
@@ -1511,7 +1511,12 @@ abstract class CriteriaContexts {
             }
 
             if (this instanceof SimpleQueryContext) {
-                ((SimpleQueryContext) this).onAddTabularItem((TabularItem) derivedTable, alias);
+                if (block instanceof _SelectionMap) {
+                    ((SimpleQueryContext) this).onAddSelectionMap((_SelectionMap) block, alias);
+                } else {
+                    ((SimpleQueryContext) this).onAddSelectionMap(derivedTable, alias);
+                }
+
             }
 
         }
@@ -1528,7 +1533,7 @@ abstract class CriteriaContexts {
             }
 
             if (this instanceof SimpleQueryContext) {
-                ((SimpleQueryContext) this).onAddTabularItem(cte, cteAlias);
+                ((SimpleQueryContext) this).onAddSelectionMap(cte, cteAlias);
             }
 
         }
@@ -1660,11 +1665,11 @@ abstract class CriteriaContexts {
                     this.onAddDerived(block, (_SelectionMap) tableItem, alias);
                 } else if (tableItem instanceof TableMeta) {
                     if (this instanceof SimpleQueryContext) {
-                        ((SimpleQueryContext) this).onAddTabularItem(tableItem, alias);
+                        ((SimpleQueryContext) this).onAddTable((TableMeta<?>) tableItem, alias);
                     }
                 } else if (tableItem instanceof UndoneFunction) {
                     if (this instanceof SimpleQueryContext) {
-                        ((SimpleQueryContext) this).onAddUndoneFunction((_DoneFuncBlock) block);
+                        ((SimpleQueryContext) this).onAddSelectionMap((_DoneFuncBlock) block, alias);
                     }
                 }
 
@@ -2293,7 +2298,7 @@ abstract class CriteriaContexts {
             refWindowNameMap.putIfAbsent(windowName, Boolean.TRUE);
         }
 
-        private void onAddTabularItem(final TabularItem table, final String alias) {
+        private void onAddSelectionMap(final _SelectionMap selectionMap, final String alias) {
             final Map<String, _SelectionGroup> groupMap = this.selectionGroupMap;
 
             final _SelectionGroup group;
@@ -2301,37 +2306,29 @@ abstract class CriteriaContexts {
                 return;
             }
 
-            if (group instanceof _SelectionGroup._TableFieldGroup) {
-                if (!(table instanceof TableMeta)) {
-                    throw CriteriaUtils.unknownFieldDerivedGroup(this, alias);
-                } else if (!((_SelectionGroup._TableFieldGroup) group).isLegalGroup((TableMeta<?>) table)) {
-                    throw CriteriaUtils.unknownTableFieldGroup(this, (_SelectionGroup._TableFieldGroup) group);
-                }
-            } else if (!(group instanceof DerivedFieldGroup)) {
+            if (!(group instanceof DerivedFieldGroup)) {
                 throw CriteriaUtils.unknownFieldDerivedGroup(this, alias);
-            } else if (table instanceof RecursiveCte) {
-                ((RecursiveCte) table).addFieldGroup((DerivedFieldGroup) group);
-            } else if (table instanceof DerivedTable || table instanceof _Cte) {
-                ((DerivedFieldGroup) group).finish((_SelectionMap) table, alias);
+            } else if (selectionMap instanceof RecursiveCte) {
+                ((RecursiveCte) selectionMap).addFieldGroup((DerivedFieldGroup) group);
             } else {
-                throw CriteriaUtils.unknownFieldDerivedGroup(this, alias);
+                ((DerivedFieldGroup) group).finish(selectionMap, alias);
             }
 
         }
 
-        private void onAddUndoneFunction(final _DoneFuncBlock block) {
-            final String alias;
-            alias = block.alias();
+        private void onAddTable(final TableMeta<?> table, final String alias) {
             final Map<String, _SelectionGroup> groupMap = this.selectionGroupMap;
+
             final _SelectionGroup group;
             if (groupMap == null || (group = groupMap.remove(alias)) == null) {
                 return;
             }
-            if (!(group instanceof DerivedFieldGroup)) {
-                throw CriteriaUtils.unknownFieldDerivedGroup(this, alias);
-            }
 
-            ((DerivedFieldGroup) group).finish(block, alias);
+            if (!(group instanceof _SelectionGroup._TableFieldGroup)) {
+                throw CriteriaUtils.unknownFieldDerivedGroup(this, alias);
+            } else if (!((_SelectionGroup._TableFieldGroup) group).isLegalGroup(table)) {
+                throw CriteriaUtils.unknownTableFieldGroup(this, (_SelectionGroup._TableFieldGroup) group);
+            }
 
         }
 
@@ -3453,7 +3450,7 @@ abstract class CriteriaContexts {
         }
 
         /**
-         * @see SimpleQueryContext#onAddTabularItem(TabularItem, String)
+         * @see SimpleQueryContext#onAddSelectionMap(_SelectionMap, String)
          */
         private void addFieldGroup(final DerivedFieldGroup group) {
             List<DerivedFieldGroup> groupList = this.fieldGroupList;

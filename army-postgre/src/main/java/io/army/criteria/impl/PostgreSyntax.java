@@ -361,6 +361,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery || tsquery → tsquery</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE">tsquery || tsquery → tsquery</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb || jsonb → jsonb</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html">anycompatiblearray || anycompatiblearray → anycompatiblearray</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html">anycompatible || anycompatiblearray → anycompatiblearray</a>
      */
     public static Expression doubleVertical(final Expression left, final Expression right) {
         return Expressions.dialectDualExp(left, DualExpOperator.DOUBLE_VERTICAL, right, PostgreExpressions::doubleVerticalType);
@@ -434,6 +436,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
      * </a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb @> jsonb → boolean<br/>
      * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html">anyarray @> anyarray → boolean<br/>
+     * </a>
      */
     public static IPredicate atGt(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.AT_GT, right);
@@ -461,6 +465,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
      * </a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb <@ jsonb → boolean<br/>
      * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html">anyarray <@ anyarray → boolean<br/>
+     * </a>
      */
     public static IPredicate ltAt(Expression left, Expression right) {
         return PostgreExpressions.dualPredicate(left, PostgreDualBooleanOperator.LT_AT, right);
@@ -475,6 +481,8 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
      * Does either subnet contain or equal the other?<br/>
      * inet '192.168.1/24' &amp;&amp; inet '192.168.1.80/28' → t<br/>
      * inet '192.168.1/24' &amp;&amp; inet '192.168.2.0/28' → f
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html">anyarray && anyarray → boolean<br/>
      * </a>
      */
     public static IPredicate doubleAmp(Expression left, Expression right) {

@@ -7,7 +7,7 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
-public final class NoCastTextType extends _ArmyInnerMapping implements MappingType.SqlTextType {
+public final class NoCastTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
 
 
     public static final NoCastTextType INSTANCE = new NoCastTextType();

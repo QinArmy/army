@@ -13,7 +13,7 @@ import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
-import io.army.mapping._ArmyInnerMapping;
+import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
@@ -467,7 +467,7 @@ public abstract class SQLs extends SQLsSyntax {
             } else if (this.columnNameList.size() == 0) {
                 this.selectionMap = (_DerivedTable) subStatement;
             } else {
-                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnNameList, (_DerivedTable) subStatement);
+                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnNameList, (_DerivedTable) subStatement, null);
             }
 
         }
@@ -669,7 +669,7 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     @Deprecated
-    static final class _NullType extends _ArmyInnerMapping {
+    static final class _NullType extends _ArmyBuildInMapping {
 
         public static final _NullType INSTANCE = new _NullType();
 

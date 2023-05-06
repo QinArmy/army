@@ -7,7 +7,7 @@ import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PgSqlType;
 import io.army.sqltype.SqlType;
 
-public final class SQLCharType extends _ArmyInnerMapping implements MappingType.SqlStringType {
+public final class SQLCharType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
 
     public static final SQLCharType INSTANCE = new SQLCharType();
 

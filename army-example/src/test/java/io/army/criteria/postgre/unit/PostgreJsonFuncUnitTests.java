@@ -949,7 +949,7 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .comma("jt11", PERIOD, ASTERISK)
                 .comma("jt12", PERIOD, ASTERISK)
 
-                .from(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))).as("jt1")
+                .from(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))).as("jt1").parens("value")
                 .crossJoin(jsonbPathQueryTz(jsonField, SQLs.literal(JsonPathType.INSTANCE, path))::withOrdinality).as("jt2")
                 .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, path)).as("jt3")
                 .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, path)::withOrdinality).as("jt4")

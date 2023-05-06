@@ -2,17 +2,17 @@ package io.army.criteria.impl;
 
 import io.army.dialect.Database;
 
-enum DualExpOperator implements Operator.SqlDualExpressionOperator {
+ enum DualExpOperator implements Operator.SqlDualExpressionOperator {
 
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
-     * double precision ^ double precision → double precision <br/>
-     * Exponentiation</a>
-     * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-lexical.html#SQL-PRECEDENCE-TABLE">Operator Precedence (highest to lowest) </a>
-     */
-    EXPONENTIATION(" ^", 90),// postgre only
+     /**
+      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-OP-TABLE">numeric ^ numeric → numeric <br/>
+      * double precision ^ double precision → double precision <br/>
+      * Exponentiation</a>
+      * @see <a href="https://www.postgresql.org/docs/15/sql-syntax-lexical.html#SQL-PRECEDENCE-TABLE">Operator Precedence (highest to lowest) </a>
+      */
+     EXPONENTIATION(" ^", 90),// postgre only
 
-    BITWISE_XOR(" ^", 85),  // for MySQL , BITWISE_XOR > TIMES
+     BITWISE_XOR(" ^", 85),  // for MySQL , BITWISE_XOR > TIMES
 
     MOD(" %", 80),
     TIMES(" *", 80),

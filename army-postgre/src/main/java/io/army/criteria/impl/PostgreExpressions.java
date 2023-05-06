@@ -234,6 +234,9 @@ abstract class PostgreExpressions {
      *         <li>text || anynonarray → text </li>
      *         <li>tsvector || tsvector → tsvector</li>
      *         <li>tsquery || tsquery → tsquery</li>
+     *         <li>anycompatiblearray || anycompatiblearray → anycompatiblearray</li>
+     *         <li>anycompatible || anycompatiblearray → anycompatiblearray</li>
+     *         <li>anycompatiblearray || anycompatible → anycompatiblearray</li>
      *     </ul>
      * </p>
      *
@@ -243,7 +246,7 @@ abstract class PostgreExpressions {
         final MappingType returnType;
         if (left.getClass() == right.getClass()) {
             returnType = left;
-        } else if (left instanceof MappingType.SqlStringType || right instanceof MappingType.SqlStringType) {
+        } else if (left instanceof MappingType.SqlStringType && right instanceof MappingType.SqlStringType) {
             returnType = TextType.INSTANCE;
         } else if (left instanceof MappingType.SqlBinaryType && right instanceof MappingType.SqlBinaryType) {
             returnType = BinaryType.INSTANCE;
@@ -251,6 +254,14 @@ abstract class PostgreExpressions {
             returnType = BitSetType.INSTANCE;
         } else if (left instanceof MappingType.SqlJsonbType && right instanceof MappingType.SqlJsonbType) {
             returnType = left;
+        } else if (left instanceof MappingType.SqlArrayType) {
+            returnType = left;
+        } else if (right instanceof MappingType.SqlArrayType) {
+            returnType = right;
+        } else if (left instanceof MappingType.SqlStringType) {
+            returnType = left;
+        } else if (right instanceof MappingType.SqlStringType) {
+            returnType = right;
         } else {
             returnType = TextType.INSTANCE;
         }

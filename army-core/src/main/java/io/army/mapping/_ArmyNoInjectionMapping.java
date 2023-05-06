@@ -1,6 +1,6 @@
 package io.army.mapping;
 
-public abstract class _ArmyNoInjectionMapping extends _ArmyInnerMapping {
+public abstract class _ArmyNoInjectionMapping extends _ArmyBuildInMapping {
 
 
     protected _ArmyNoInjectionMapping() {

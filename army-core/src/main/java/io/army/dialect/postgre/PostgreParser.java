@@ -9,7 +9,7 @@ import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyInnerMapping;
+import io.army.mapping._ArmyBuildInMapping;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
@@ -990,7 +990,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
         } else {
             mappingType = typeMeta.mappingType();
         }
-        assert !(mappingType instanceof _ArmyInnerMapping) || mappingType instanceof _ArmyNoInjectionMapping;
+        assert !(mappingType instanceof _ArmyBuildInMapping) || mappingType instanceof _ArmyNoInjectionMapping;
 
         if (value instanceof String) {
             arrayForStringValue(typeMeta, type, (String) value, sqlBuilder);

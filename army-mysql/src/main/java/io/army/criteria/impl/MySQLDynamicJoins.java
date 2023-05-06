@@ -310,7 +310,8 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.columnAliasList = columnAliasList;
-            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.tabularItem);
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.tabularItem,
+                    this.alias);
             return this;
         }
 

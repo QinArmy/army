@@ -1,10 +1,11 @@
 package io.army.mapping;
 
+
 import java.lang.ref.SoftReference;
 
-public abstract class _ArmyInnerMapping extends MappingType {
+public abstract class _ArmyBuildInMapping extends MappingType {
 
-    protected _ArmyInnerMapping() {
+    protected _ArmyBuildInMapping() {
         final Class<?> thisClass = this.getClass();
         if (!thisClass.getName().startsWith("io.army.mapping.")) {
             String m = String.format("Non army class couldn't extend %s .", thisClass.getName());

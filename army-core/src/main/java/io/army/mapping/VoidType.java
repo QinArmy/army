@@ -11,7 +11,7 @@ import io.army.sqltype.SqlType;
  *
  * @see Void
  */
-public final class VoidType extends _ArmyInnerMapping {
+public final class VoidType extends _ArmyBuildInMapping {
 
     public static final VoidType INSTANCE = new VoidType();
 

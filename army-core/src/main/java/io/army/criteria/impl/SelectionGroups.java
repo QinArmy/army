@@ -2,7 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Selection;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._SelectionGroup;
+import io.army.criteria.impl.inner._SelectionMap;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -329,7 +330,6 @@ abstract class SelectionGroups {
 
         @Override
         public void finish(final _SelectionMap table, final String alias) {
-            assert table instanceof _DerivedTable || table instanceof _Cte || table instanceof _DoneFuncBlock;
             if (this.selectionList != null) {
                 throw new IllegalStateException("duplication");
             }

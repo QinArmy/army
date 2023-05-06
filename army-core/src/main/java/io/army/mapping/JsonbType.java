@@ -8,7 +8,7 @@ import io.army.sqltype.SqlType;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class JsonbType extends _ArmyInnerMapping implements MappingType.SqlJsonbType {
+public final class JsonbType extends _ArmyBuildInMapping implements MappingType.SqlJsonbType {
 
 
     public static final JsonbType TEXT = new JsonbType(String.class);

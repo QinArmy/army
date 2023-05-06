@@ -297,7 +297,8 @@ abstract class PostgreSupports extends CriteriaSupports {
             } else if (this.columnAliasList.size() == 0) {
                 this.selectionMap = (_SelectionMap) subStatement;
             } else {
-                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList, (_DerivedTable) subStatement);
+                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList,
+                        (_DerivedTable) subStatement, null);
             }
 
         }

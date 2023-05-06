@@ -49,6 +49,7 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
         return this;
     }
 
+
     public abstract Class<?> javaType();
 
 

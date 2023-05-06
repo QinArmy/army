@@ -79,6 +79,10 @@ public abstract class _Collections {
         return Collections.singletonList(e);
     }
 
+    public static <K, V> Map<K, V> singletonMap(K key, V value) {
+        return Collections.singletonMap(key, value);
+    }
+
 
     public static <K, V> HashMap<K, V> hashMap() {
         return new FinalHashMap<>();

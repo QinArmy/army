@@ -902,7 +902,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, LR, LO
 
         final TabularItem tabularItem;
 
-        private final String alias;
+         final String alias;
 
         private List<_Predicate> onPredicateList;
 

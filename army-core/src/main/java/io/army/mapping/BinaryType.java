@@ -11,7 +11,7 @@ import io.army.sqltype.*;
  *
  * @since 1.0
  */
-public final class BinaryType extends _ArmyInnerMapping implements MappingType.SqlBinaryType {
+public final class BinaryType extends _ArmyBuildInMapping implements MappingType.SqlBinaryType {
 
     public static final BinaryType INSTANCE = new BinaryType();
 

@@ -6,7 +6,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyInnerMapping;
+import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PgSqlType;
@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
-public final class TextArrayType extends _ArmyInnerMapping implements MappingType.SqlArrayType,
+public final class TextArrayType extends _ArmyBuildInMapping implements MappingType.SqlArrayType,
         MappingType.SqlStringType {
 
 

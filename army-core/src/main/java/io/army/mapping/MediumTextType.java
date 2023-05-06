@@ -42,7 +42,7 @@ import java.time.*;
  * @see TextType
  * @since 1.0
  */
-public final class MediumTextType extends _ArmyInnerMapping implements MappingType.SqlTextType {
+public final class MediumTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
 
     public static final MediumTextType INSTANCE = new MediumTextType();
 

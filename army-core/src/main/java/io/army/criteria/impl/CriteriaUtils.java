@@ -521,7 +521,14 @@ abstract class CriteriaUtils {
     }
 
     static _SelectionMap createAliasSelectionMap(final List<String> columnAliasList,
-                                                 final _DerivedTable table) {
+                                                 final _DerivedTable table, final @Nullable String tableAlias) {
+        if (table instanceof UndoneColumnFunc) {
+            if (tableAlias == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            ((UndoneColumnFunc) table).derivedAlias(tableAlias);
+        }
+
         final List<? extends Selection> refSelectionList;
         refSelectionList = table.refAllSelection();
         final int selectionSize;
@@ -533,8 +540,8 @@ abstract class CriteriaUtils {
             final Selection selection;
             selection = ArmySelections.renameSelection(refSelectionList.get(0), columnAliasList.get(0));
             return new SelectionMap(
-                    Collections.singletonList(selection),
-                    Collections.singletonMap(selection.alias(), selection)
+                    _Collections.singletonList(selection),
+                    _Collections.singletonMap(selection.alias(), selection)
             );
         }
         final List<Selection> selectionList = new ArrayList<>(selectionSize);

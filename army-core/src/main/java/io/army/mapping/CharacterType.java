@@ -11,7 +11,7 @@ import io.army.sqltype.SqlType;
 import java.math.BigDecimal;
 import java.util.BitSet;
 
-public final class CharacterType extends _ArmyInnerMapping implements MappingType.SqlStringType {
+public final class CharacterType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
 
 
     public static final CharacterType INSTANCE = new CharacterType();
