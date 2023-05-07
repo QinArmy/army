@@ -717,6 +717,7 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
+
     static CriteriaException nonCollectionValue(String keyName) {
         String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
         return ContextStack.clearStackAndCriteriaError(m);

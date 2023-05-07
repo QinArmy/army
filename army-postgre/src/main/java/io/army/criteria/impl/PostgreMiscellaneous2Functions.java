@@ -4,11 +4,13 @@ import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
+import io.army.mapping.optional.IntegerArrayType;
 import io.army.mapping.optional.TextArrayType;
 import io.army.util._Collections;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFunctions {
@@ -367,6 +369,147 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         return FunctionUtils.consumerAndFirstTypeFunc("LEAST", consumer);
     }
 
+    /*-------------------below  Array Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of fist anyCompatibleArray
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_append ( anycompatiblearray, anycompatible ) → anycompatiblearray</a>
+     */
+    public static SimpleExpression arrayAppend(Expression anyCompatibleArray, Expression anyCompatible) {
+        return FunctionUtils.twoArgFunc("ARRAY_APPEND", anyCompatibleArray, anyCompatible,
+                _returnType(anyCompatibleArray, Expressions::identityType)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of fist anyCompatibleArray1
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_cat ( anycompatiblearray, anycompatiblearray ) → anycompatiblearray</a>
+     */
+    public static SimpleExpression arrayCat(Expression anyCompatibleArray1, Expression anyCompatibleArray2) {
+        return FunctionUtils.twoArgFunc("ARRAY_CAT", anyCompatibleArray1, anyCompatibleArray2,
+                _returnType(anyCompatibleArray1, Expressions::identityType)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_dims ( anyarray ) → text</a>
+     */
+    public static SimpleExpression arrayDims(Expression anyArray) {
+        return FunctionUtils.oneArgFunc("ARRAY_DIMS", anyArray, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the array type of {@link MappingType} of anyElement.
+     * </p>
+     *
+     * @param funcRefForDimension the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                            <ul>
+     *                                <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                                <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                                <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                                <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                                <li>developer custom method</li>
+     *                            </ul>.
+     *                            The first argument of funcRefForDimension always is {@link IntegerArrayType#LINEAR}.
+     * @param dimensions          non-null,it will be passed to funcRefForDimension as the second argument of funcRefForDimension
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_dims ( anyarray ) → text</a>
+     */
+    public static <T> SimpleExpression arrayFill(Expression anyElement, BiFunction<MappingType, T, Expression> funcRefForDimension,
+                                                 T dimensions) {
+        return _arrayFill(anyElement, funcRefForDimension.apply(IntegerArrayType.LINEAR, dimensions), null);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the array type of {@link MappingType} of anyElement.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_dims ( anyarray ) → text</a>
+     */
+    public static SimpleExpression arrayFill(Expression anyElement, Expression dimensions) {
+        return _arrayFill(anyElement, dimensions, null);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the array type of {@link MappingType} of anyElement.
+     * </p>
+     *
+     * @param funcRefForDimension the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                            <ul>
+     *                                <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                                <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                                <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                                <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                                <li>developer custom method</li>
+     *                            </ul>.
+     *                            The first argument of funcRefForDimension always is {@link IntegerArrayType#LINEAR}.
+     * @param dimensions          non-null,it will be passed to funcRefForDimension as the second argument of funcRefForDimension
+     * @param funcRefForBound     the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                            <ul>
+     *                                <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                                <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                                <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                                <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                                <li>developer custom method</li>
+     *                            </ul>.
+     *                            The first argument of funcRefForBound always is {@link IntegerArrayType#LINEAR}.
+     * @param bounds              non-null,it will be passed to funcRefForBound as the second argument of funcRefForBound
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_dims ( anyarray ) → text</a>
+     */
+    public static <T, U> SimpleExpression arrayFill(Expression anyElement, BiFunction<MappingType, T, Expression> funcRefForDimension,
+                                                    T dimensions, BiFunction<MappingType, U, Expression> funcRefForBound, U bounds) {
+        return _arrayFill(anyElement, funcRefForDimension.apply(IntegerArrayType.LINEAR, dimensions),
+                funcRefForBound.apply(IntegerArrayType.LINEAR, bounds)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the array type of {@link MappingType} of anyElement.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_dims ( anyarray ) → text</a>
+     */
+    public static SimpleExpression arrayFill(Expression anyElement, Expression dimensions, Expression bounds) {
+        ContextStack.assertNonNull(bounds);
+        return _arrayFill(anyElement, dimensions, bounds);
+    }
+
+
+
 
     /*-------------------below private method -------------------*/
 
@@ -426,6 +569,28 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
             func = DialectFunctionUtils.oneArgTabularFunc(name, sqlQuery, fieldList);
         } else {
             func = DialectFunctionUtils.twoArgTabularFunc(name, sqlQuery, weights, fieldList);
+        }
+        return func;
+    }
+
+
+    /**
+     * @see #arrayFill(Expression, Expression)
+     * @see #arrayFill(Expression, Expression, Expression)
+     */
+    private static SimpleExpression _arrayFill(final Expression anyElement, final Expression dimensions,
+                                               final @Nullable Expression bounds) {
+
+        final String name = "ARRAY_FILL";
+        final SimpleExpression func;
+        if (bounds == null) {
+            func = FunctionUtils.twoArgFunc(name, anyElement, dimensions,
+                    _returnType(anyElement, MappingType::arrayTypeOfThis)
+            );
+        } else {
+            func = FunctionUtils.threeArgFunc(name, anyElement, dimensions, bounds,
+                    _returnType(anyElement, MappingType::arrayTypeOfThis)
+            );
         }
         return func;
     }

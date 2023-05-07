@@ -141,6 +141,11 @@ abstract class CriteriaSupports {
         return new UnaryDelayInferWrapper(infer, function);
     }
 
+    static TypeMeta dualInfer(TypeInfer leftInfer, TypeInfer rightInfer,
+                              BinaryOperator<MappingType> function) {
+        return new DualDelayInferWrapper(leftInfer, rightInfer, function);
+    }
+
 
     static TypeMeta biDelayWrapper(TypeMeta type1, TypeMeta type2,
                                    BiFunction<MappingType, MappingType, MappingType> function) {
@@ -634,6 +639,74 @@ abstract class CriteriaSupports {
 
 
     }//DelayInferWrapper
+
+
+    private static final class DualDelayInferWrapper implements TypeMeta.DelayTypeMeta {
+
+        private final TypeInfer leftInfer;
+
+        private final TypeInfer rightInfer;
+
+        private final BinaryOperator<MappingType> function;
+
+        private MappingType type;
+
+        /**
+         * @see #dualInfer(TypeInfer, TypeInfer, BinaryOperator)
+         */
+        private DualDelayInferWrapper(TypeInfer leftInfer, TypeInfer rightInfer,
+                                      BinaryOperator<MappingType> function) {
+            this.leftInfer = leftInfer;
+            this.rightInfer = rightInfer;
+            this.function = function;
+            ContextStack.peek().addEndEventListener(this::onContextEnd);
+        }
+
+        @Override
+        public MappingType mappingType() {
+            MappingType type = this.type;
+            if (type == null) {
+                type = this.function.apply(this.leftInfer.typeMeta().mappingType(),
+                        this.rightInfer.typeMeta().mappingType());
+                this.type = type;
+            }
+            return type;
+        }
+
+        @Override
+        public boolean isDelay() {
+            final TypeInfer leftInfer = this.leftInfer, rightInfer = this.rightInfer;
+            return (leftInfer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) leftInfer).isDelay())
+                    || (rightInfer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) rightInfer).isDelay());
+        }
+
+        private void onContextEnd() {
+            MappingType type = this.type;
+            if (type != null) {
+                return;
+            }
+            final TypeInfer leftInfer = this.leftInfer, rightInfer = this.rightInfer;
+            final boolean leftDelay, rightDelay;
+
+            leftDelay = leftInfer instanceof TypeInfer.DelayTypeInfer
+                    && ((TypeInfer.DelayTypeInfer) leftInfer).isDelay();
+            rightDelay = rightInfer instanceof TypeInfer.DelayTypeInfer
+                    && ((TypeInfer.DelayTypeInfer) rightInfer).isDelay();
+            if (!(leftDelay || rightDelay)) {
+                this.mappingType();
+            } else if (!ContextStack.isEmpty()) {
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            } else if (leftDelay) {
+                throw CriteriaUtils.delayTypeInfer((TypeInfer.DelayTypeInfer) leftInfer);
+            } else {
+                throw CriteriaUtils.delayTypeInfer((TypeInfer.DelayTypeInfer) rightInfer);
+            }
+
+
+        }
+
+
+    }//DualDelayInferWrapper
 
     private static final class BiDelayTypeWrapper implements TypeMeta.DelayTypeMeta {
 

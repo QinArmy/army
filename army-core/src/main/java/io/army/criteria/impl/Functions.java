@@ -10,7 +10,7 @@ import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.BooleanSupplier;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
@@ -690,16 +690,13 @@ abstract class Functions extends SqlSyntax {
 
 
     static TypeMeta _returnType(final Expression left, final Expression right,
-                                BiFunction<MappingType, MappingType, MappingType> function) {
-        final TypeMeta leftType, rightType;
-        leftType = left.typeMeta();
-        rightType = right.typeMeta();
+                                BinaryOperator<MappingType> function) {
         final TypeMeta returnType;
-        if ((leftType instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) leftType).isDelay())
-                || (rightType instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) rightType).isDelay())) {
-            returnType = CriteriaSupports.biDelayWrapper(leftType, rightType, function);
+        if ((left instanceof TypeInfer.DelayTypeInfer && !((TypeInfer.DelayTypeInfer) left).isDelay())
+                || (right instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) right).isDelay())) {
+            returnType = CriteriaSupports.dualInfer(left, right, function);
         } else {
-            returnType = function.apply(leftType.mappingType(), rightType.mappingType());
+            returnType = function.apply(left.typeMeta().mappingType(), right.typeMeta().mappingType());
         }
         return returnType;
     }

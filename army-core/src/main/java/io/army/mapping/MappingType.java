@@ -50,6 +50,11 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
     }
 
 
+    public MappingType arrayTypeOfThis() {
+        throw new UnsupportedOperationException();
+    }
+
+
     public abstract Class<?> javaType();
 
 
