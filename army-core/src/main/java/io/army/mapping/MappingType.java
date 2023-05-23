@@ -448,7 +448,7 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
 
     public interface SqlArrayType {
 
-        Class<?> underlyingComponentType();
+      MappingType elementType();
 
     }
 

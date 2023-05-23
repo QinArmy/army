@@ -63,7 +63,7 @@ abstract class Functions extends SqlSyntax {
     }
 
 
-    public interface _ColumnWithOrdinalityFunction extends _ColumnFunction, _WithOrdinalityClause {
+    public interface _ColumnWithOrdinalityFunction extends _ColumnFunction, _TabularWithOrdinalityFunction {
 
     }
 

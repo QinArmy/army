@@ -21,6 +21,8 @@ public interface _SqlContext {
 
     Database database();
 
+    Dialect dialect();
+
     boolean isLowerFunctionName();
 
 

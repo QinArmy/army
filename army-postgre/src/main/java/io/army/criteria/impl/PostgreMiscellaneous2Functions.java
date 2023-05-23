@@ -5,7 +5,9 @@ import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.IntegerArrayType;
+import io.army.mapping.optional.ShortArrayType;
 import io.army.mapping.optional.TextArrayType;
+import io.army.mapping.postgre.PostgreTsVectorType;
 import io.army.util._Collections;
 
 import java.util.Collection;
@@ -435,7 +437,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @throws CriteriaException throw when<ul>
      *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
      *                           </ul>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_dims ( anyarray ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_fill ( anyelement, integer[] [, integer[] ] ) → anyarray</a>
      */
     public static <T> SimpleExpression arrayFill(Expression anyElement, BiFunction<MappingType, T, Expression> funcRefForDimension,
                                                  T dimensions) {
@@ -450,7 +452,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @throws CriteriaException throw when<ul>
      *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
      *                           </ul>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_dims ( anyarray ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_fill ( anyelement, integer[] [, integer[] ] ) → anyarray</a>
      */
     public static SimpleExpression arrayFill(Expression anyElement, Expression dimensions) {
         return _arrayFill(anyElement, dimensions, null);
@@ -484,7 +486,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @throws CriteriaException throw when<ul>
      *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
      *                           </ul>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_dims ( anyarray ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_fill ( anyelement, integer[] [, integer[] ] ) → anyarray</a>
      */
     public static <T, U> SimpleExpression arrayFill(Expression anyElement, BiFunction<MappingType, T, Expression> funcRefForDimension,
                                                     T dimensions, BiFunction<MappingType, U, Expression> funcRefForBound, U bounds) {
@@ -501,14 +503,348 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @throws CriteriaException throw when<ul>
      *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
      *                           </ul>
-     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_dims ( anyarray ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_fill ( anyelement, integer[] [, integer[] ] ) → anyarray</a>
      */
     public static SimpleExpression arrayFill(Expression anyElement, Expression dimensions, Expression bounds) {
         ContextStack.assertNonNull(bounds);
         return _arrayFill(anyElement, dimensions, bounds);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @param funcRef   the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                  <ul>
+     *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                      <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                      <li>developer custom method</li>
+     *                  </ul>.
+     *                  The first argument of funcRef always is {@link IntegerType#INSTANCE}.
+     * @param dimension non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see #arrayLength(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_length ( anyarray, integer ) → integer</a>
+     */
+    public static <T> SimpleExpression arrayLength(Expression anyArray, BiFunction<MappingType, T, Expression> funcRef,
+                                                   T dimension) {
+        return arrayLength(anyArray, funcRef.apply(IntegerType.INSTANCE, dimension));
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_length ( anyarray, integer ) → integer</a>
+     */
+    public static SimpleExpression arrayLength(Expression anyArray, Expression dimension) {
+        return FunctionUtils.twoArgFunc("ARRAY_LENGTH", anyArray, dimension, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see #arrayUpper(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_lower ( anyarray, integer ) → integer</a>
+     */
+    public static SimpleExpression arrayLower(Expression anyArray, Expression dimension) {
+        return FunctionUtils.twoArgFunc("ARRAY_LOWER", anyArray, dimension, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_ndims ( anyarray ) → integer</a>
+     */
+    public static SimpleExpression arrayNDims(Expression anyArray) {
+        return FunctionUtils.oneArgFunc("ARRAY_NDIMS", anyArray, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see #arrayPosition(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_position ( anycompatiblearray, anycompatible [, integer ] ) → integer</a>
+     */
+    public static SimpleExpression arrayPosition(Expression anyCompatibleArray, Expression anyCompatible) {
+        return FunctionUtils.twoArgFunc("ARRAY_POSITION", anyCompatibleArray, anyCompatible, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @param funcRef   the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                  <ul>
+     *                      <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                      <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                      <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                      <li>{@link SQLs#encodingParam(TypeInfer, Object)},used when only <strong>this</strong> is instance of {@link TableField} and {@link TableField#codec()} is true</li>
+     *                      <li>{@link SQLs#encodingLiteral(TypeInfer, Object)},used when only <strong>this</strong> is instance of {@link TableField} and {@link TableField#codec()} is true</li>
+     *                      <li>{@link SQLs#encodingNamedParam(TypeInfer, String)} ,used when only <strong>this</strong> is instance of {@link TableField} and {@link TableField#codec()} is true
+     *                      and in INSERT( or batch update/delete ) syntax</li>
+     *                      <li>{@link SQLs#encodingNamedLiteral(TypeInfer, String)} ,used when only <strong>this</strong> is instance of {@link TableField} and {@link TableField#codec()} is true
+     *                      and in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                      <li>developer custom method</li>
+     *                  </ul>.
+     *                  The first argument of funcRef always is {@link IntegerType#INSTANCE}.
+     * @param subscript non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see #arrayPosition(Expression, Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_position ( anycompatiblearray, anycompatible [, integer ] ) → integer</a>
+     */
+    public static <T> SimpleExpression arrayPosition(Expression anyCompatibleArray, Expression anyCompatible,
+                                                     BiFunction<MappingType, T, Expression> funcRef, T subscript) {
+        return arrayPosition(anyCompatibleArray, anyCompatible, funcRef.apply(IntegerType.INSTANCE, subscript));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_position ( anycompatiblearray, anycompatible [, integer ] ) → integer</a>
+     */
+    public static SimpleExpression arrayPosition(Expression anyCompatibleArray, Expression anyCompatible,
+                                                 Expression subscript) {
+        return FunctionUtils.threeArgFunc("ARRAY_POSITION", anyCompatibleArray, anyCompatible, subscript,
+                IntegerType.INSTANCE
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerArrayType#LINEAR}
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_positions ( anycompatiblearray, anycompatible ) → integer[]</a>
+     */
+    public static SimpleExpression arrayPositions(Expression anyCompatibleArray, Expression anyCompatible) {
+        return FunctionUtils.twoArgFunc("ARRAY_POSITIONS", anyCompatibleArray, anyCompatible, IntegerArrayType.LINEAR);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of anyCompatibleArray.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_prepend ( anycompatible, anycompatiblearray ) → anycompatiblearray</a>
+     */
+    public static SimpleExpression arrayPrepend(Expression anyCompatible, Expression anyCompatibleArray) {
+        return FunctionUtils.twoArgFunc("ARRAY_PREPEND", anyCompatible, anyCompatibleArray,
+                _returnType(anyCompatibleArray, Expressions::identityType)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of anyCompatibleArray.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_remove ( anycompatiblearray, anycompatible ) → anycompatiblearray</a>
+     */
+    public static SimpleExpression arrayRemove(Expression anyCompatibleArray, Expression anyCompatible) {
+        return FunctionUtils.twoArgFunc("ARRAY_REMOVE", anyCompatibleArray, anyCompatible,
+                _returnType(anyCompatibleArray, Expressions::identityType)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of anyCompatibleArray.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_replace ( anycompatiblearray, anycompatible, anycompatible ) → anycompatiblearray</a>
+     */
+    public static SimpleExpression arrayReplace(Expression anyCompatibleArray, Expression anyCompatible,
+                                                Expression replacement) {
+        return FunctionUtils.threeArgFunc("ARRAY_REPLACE", anyCompatibleArray, anyCompatible, replacement,
+                _returnType(anyCompatibleArray, Expressions::identityType)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link TextType#INSTANCE}.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_to_string ( array anyarray, delimiter text [, null_string text ] ) → text</a>
+     */
+    public static SimpleExpression arrayToString(Expression array, Expression delimiter, Expression nullString) {
+        return FunctionUtils.threeArgFunc("ARRAY_TO_STRING", array, delimiter, nullString, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see #arrayLower(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">array_upper ( anyarray, integer ) → integer</a>
+     */
+    public static SimpleExpression arrayUpper(Expression anyArray, Expression dimension) {
+        return FunctionUtils.twoArgFunc("ARRAY_UPPER", anyArray, dimension, IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link IntegerType#INSTANCE}.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see #arrayLower(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">cardinality ( anyarray ) → integer</a>
+     */
+    public static SimpleExpression cardinality(Expression anyArray) {
+        return FunctionUtils.oneArgFunc("CARDINALITY", anyArray, IntegerType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of array.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see #arrayLower(Expression, Expression)
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">trim_array ( array anyarray, n integer ) → anyarray</a>
+     */
+    public static SimpleExpression trimArray(Expression array, Expression n) {
+        return FunctionUtils.twoArgFunc("TRIM_ARRAY", array, n, _returnType(array, Expressions::identityType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function returned fields type:<ol>
+     * <li>lexeme {@link TextType}</li>
+     * <li>positions {@link ShortArrayType} with one dimension</li>
+     * <li>weights {@link TextType}</li>
+     * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
+     * </ol>
+     * </p>
+     * <p>
+     * <pre>
+     *          select * from unnest('cat:3 fat:2,4 rat:5A'::tsvector) →
+     *
+     *          lexeme | positions | weights
+     *          --------+-----------+---------
+     *          cat    | {3}       | {D}
+     *          fat    | {2,4}     | {D,D}
+     *          rat    | {5}       | {A}
+     *     </pre>
+     * </p>
+     *
+     * <p>
+     * If exp is array,then the {@link MappingType} of function returned is the {@link MappingType} of the element.
+     * <pre><br/>
+     * unnest ( anyarray ) → setof anyelement
+     *
+     * Expands an array into a set of rows. The array's elements are read out in storage order.
+     *
+     * unnest(ARRAY[1,2]) →
+     *
+     *  1
+     *  2
+     * unnest(ARRAY[['foo','bar'],['baz','quux']]) →
+     *
+     *  foo
+     *  bar
+     *  baz
+     *  quux
+     *     </pre>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">unnest ( tsvector ) → setof record ( lexeme text, positions smallint[], weights text ) <br/>
+     * Expands a tsvector into a set of rows, one per lexeme
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest ( anyarray ) → setof anyelement<br/>
+     * Expands an array into a set of rows. The array's elements are read out in storage order.
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction unnest(final Expression exp) {
+        final String name = "UNNEST";
+        if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
+            // probably exp is any array
+            throw CriteriaUtils.tabularFuncErrorPosition(name);
+        }
+
+        final MappingType type;
+        type = exp.typeMeta().mappingType();
+        final _TabularWithOrdinalityFunction func;
+        if (type instanceof MappingType.SqlArrayType) {
+            func = DialectFunctionUtils.oneArgColumnFunction(name, exp, null,
+                    ((MappingType.SqlArrayType) type).elementType());
+        } else if (type instanceof PostgreTsVectorType) {
+            final List<Selection> fieldList = _Collections.arrayList(3);
+
+            fieldList.add(ArmySelections.forName("lexeme", TextType.INSTANCE));
+            fieldList.add(ArmySelections.forName("positions", ShortArrayType.from(Short[].class)));
+            fieldList.add(ArmySelections.forName("weights", TextType.INSTANCE));
+
+            func = DialectFunctionUtils.oneArgTabularFunc(name, exp, fieldList);
+        } else {
+            throw CriteriaUtils.funcArgError(name, exp);
+        }
+        return func;
+    }
+
+    public static _TabularWithOrdinalityFunction unnest(Expression array1, Expression array2) {
+        return null;
+    }
 
 
     /*-------------------below private method -------------------*/

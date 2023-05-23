@@ -8,7 +8,7 @@ import io.army.util._StringUtils;
 /**
  * @see <a href="https://www.postgresql.org/docs/11/datatype.html">Postgre Data Types</a>
  */
-public enum PgSqlType implements SqlType {
+public enum PostgreDataType implements SqlType {
 
 
     /**
@@ -23,6 +23,7 @@ public enum PgSqlType implements SqlType {
 
     SMALLINT,
     INTEGER,
+    NO_CAST_INTEGER,
     BIGINT,
     DECIMAL,
 

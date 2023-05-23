@@ -22,7 +22,7 @@ import static io.army.dialect.Database.PostgreSQL;
  */
 @SuppressWarnings("unused")
 public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.TypeUpdateSpec, SortItem, RightOperand,
-        AssignmentItem, SelectionSpec {
+        AssignmentItem, SelectionSpec, ArraySubscript {
 
 
     /**

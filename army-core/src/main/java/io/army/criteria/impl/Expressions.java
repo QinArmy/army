@@ -4,15 +4,19 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._DerivedTable;
 import io.army.dialect.Database;
+import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
+import io.army.mapping.optional.JsonPathType;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
@@ -232,6 +236,124 @@ abstract class Expressions {
     }
 
 
+    static SimpleExpression arrayElementExp(OperationExpression arrayExp, int index) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new OneDimensionArrayElementExpression(arrayExp, index);
+    }
+
+    static SimpleExpression arrayElementExp(OperationExpression arrayExp, int index1, int index2) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new TwoDimensionArrayElementExpression(arrayExp, index1, index2);
+    }
+
+    static SimpleExpression arrayElementExp(OperationExpression arrayExp, int index1, int index2, int index3, int[] restIndex) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new ThreeDimensionIndexArrayElementExpression(arrayExp, index1, index2, index3, restIndex);
+    }
+
+    static SimpleExpression arrayElementExp(OperationExpression arrayExp, Expression index) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new OneDimensionArrayElementExpression(arrayExp, index);
+    }
+
+    static SimpleExpression arrayElementExp(OperationExpression arrayExp, Expression index1, Expression index2) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new TwoDimensionArrayElementExpression(arrayExp, index1, index2);
+    }
+
+    static SimpleExpression arrayElementExp(OperationExpression arrayExp, Expression index1, Expression index2,
+                                            Expression index3, Expression[] restIndex) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new ThreeDimensionArrayElementExpression(arrayExp, index1, index2, index3, restIndex);
+    }
+
+    /*-------------------below array element array expression -------------------*/
+
+
+    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, int index) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new OneDimensionArrayElementArrayExpression(arrayExp, index);
+    }
+
+    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, int index1, int index2) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new TwoDimensionArrayElementArrayExpression(arrayExp, index1, index2);
+    }
+
+    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, int index1, int index2, int index3, int[] restIndex) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new ThreeDimensionIndexArrayElementArrayExpression(arrayExp, index1, index2, index3, restIndex);
+    }
+
+    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, ArraySubscript index) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new OneDimensionArrayElementArrayExpression(arrayExp, index);
+    }
+
+    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, ArraySubscript index1, ArraySubscript index2) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new TwoDimensionArrayElementArrayExpression(arrayExp, index1, index2);
+    }
+
+    static ArrayExpression arrayElementArrayExp(OperationExpression arrayExp, ArraySubscript index1, ArraySubscript index2,
+                                                ArraySubscript index3, ArraySubscript[] restIndex) {
+        if (!(arrayExp instanceof ArmyArrayExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new ThreeDimensionArrayElementArrayExpression(arrayExp, index1, index2, index3, restIndex);
+    }
+
+    static JsonExpression jsonArrayElement(OperationExpression json, int index) {
+        if (!(json instanceof JsonExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new JsonArrayElementExpression(json, index);
+    }
+
+    static JsonExpression jsonObjectAttr(OperationExpression json, String keyName) {
+        if (!(json instanceof JsonExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new JsonObjectAttrExpression(json, keyName);
+    }
+
+    static JsonExpression jsonPathExtract(OperationExpression json, String jsonPath) {
+        if (!(json instanceof JsonExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new JsonPathExtractExpression(json, jsonPath);
+    }
+
+    static JsonExpression jsonPathExtract(OperationExpression json, Expression jsonPath) {
+        if (!(json instanceof JsonExpression)) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+        return new JsonPathExtractExpression(json, jsonPath);
+    }
+
+
     /**
      * @see #compareQueryPredicate(OperationExpression, DualBooleanOperator, QueryOperator, SubQuery)
      * @see #inOperator(OperationExpression, DualBooleanOperator, SubQuery)
@@ -329,6 +451,7 @@ abstract class Expressions {
         }
         return returnType;
     }
+
 
     private static CriteriaException unsupportedOperator(Operator operator, Database database) {
         String m = String.format("%s isn't supported by %s", operator, database);
@@ -1477,6 +1600,609 @@ abstract class Expressions {
 
 
     }//IsComparisonPredicates
+
+
+    private static abstract class ArrayElementExpression extends OperationExpression.OperationSimpleExpression {
+
+        private final ArmyArrayExpression arrayExp;
+
+
+        private final TypeMeta type;
+
+        private ArrayElementExpression(final OperationExpression arrayExp) {
+            this.arrayExp = (ArmyArrayExpression) arrayExp;
+            final TypeMeta arrayType;
+            if (arrayExp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) arrayExp).isDelay()) {
+                arrayType = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) arrayExp, Expressions::identityType);
+            } else {
+                arrayType = arrayExp.typeMeta();
+            }
+
+            if (this instanceof ArrayExpression) {
+                if (arrayType instanceof MappingType || arrayType instanceof TypeMeta.DelayTypeMeta) {
+                    this.type = arrayType;
+                } else {
+                    // avoid to field codec
+                    this.type = arrayType.mappingType();
+                }
+            } else if (arrayType instanceof TypeMeta.DelayTypeMeta) {
+                this.type = arrayType;
+            } else if (arrayType instanceof MappingType) {
+                this.type = ((MappingType.SqlArrayType) arrayType).elementType();
+            } else {
+                // avoid to field codec
+                this.type = ((MappingType.SqlArrayType) arrayType.mappingType()).elementType();
+            }
+        }
+
+        @Override
+        public final TypeMeta typeMeta() {
+            return this.type;
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            final boolean outerParens;
+            outerParens = !(this.arrayExp instanceof SimpleArrayExpression);
+
+            if (outerParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+
+            this.arrayExp.appendSql(context);
+
+            if (outerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
+            this.appendSubscripts(sqlBuilder, context);
+        }
+
+        @Override
+        public final String toString() {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder();
+
+            final boolean outerParens;
+            outerParens = this.arrayExp instanceof SimpleArrayExpression;
+
+            if (outerParens) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            }
+
+            sqlBuilder.append(this.arrayExp);
+
+            if (outerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+            this.subscriptsToString(sqlBuilder);
+            return sqlBuilder.toString();
+        }
+
+
+        abstract void appendSubscripts(StringBuilder sqlBuilder, _SqlContext context);
+
+        abstract void subscriptsToString(StringBuilder builder);
+
+
+        static void appendSubscript(final Object index, final StringBuilder sqlBuilder,
+                                    final _SqlContext context) {
+            sqlBuilder.append(_Constant.LEFT_SQUARE_BRACKET);
+            if (index instanceof Integer) {
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(index);
+            } else {
+                ((ArmyArraySubscript) index).appendSql(context);
+            }
+            sqlBuilder.append(_Constant.SPACE_RIGHT_SQUARE_BRACKET);
+        }
+
+        static void subscriptToString(final Object index, final StringBuilder builder) {
+            builder.append(_Constant.LEFT_SQUARE_BRACKET);
+            if (index instanceof Integer) {
+                builder.append(_Constant.SPACE);
+            }
+            builder.append(index);
+            builder.append(_Constant.SPACE_RIGHT_SQUARE_BRACKET);
+        }
+
+
+    }//ArrayElementExpression
+
+    private static class OneDimensionArrayElementExpression extends ArrayElementExpression {
+
+        private final Object index;
+
+        private OneDimensionArrayElementExpression(OperationExpression arrayExp, Object index) {
+            super(arrayExp);
+            assert index instanceof Integer || index instanceof ArmyArraySubscript;
+            this.index = index;
+        }
+
+        @Override
+        final void appendSubscripts(StringBuilder sqlBuilder, _SqlContext context) {
+            appendSubscript(this.index, sqlBuilder, context);
+        }
+
+        @Override
+        final void subscriptsToString(StringBuilder builder) {
+            subscriptToString(this.index, builder);
+        }
+
+    }//OneDimensionArrayElementExpression
+
+
+    private static class TwoDimensionArrayElementExpression extends ArrayElementExpression {
+
+        private final Object index1;
+
+        private final Object index2;
+
+        private TwoDimensionArrayElementExpression(OperationExpression arrayExp, Object index1, Object index2) {
+            super(arrayExp);
+            assert index1 instanceof Integer || index1 instanceof ArmyArraySubscript;
+            assert index2 instanceof Integer || index2 instanceof ArmyArraySubscript;
+            this.index1 = index1;
+            this.index2 = index2;
+        }
+
+        @Override
+        final void appendSubscripts(StringBuilder sqlBuilder, _SqlContext context) {
+            appendSubscript(this.index1, sqlBuilder, context);
+            appendSubscript(this.index2, sqlBuilder, context);
+        }
+
+        @Override
+        final void subscriptsToString(StringBuilder builder) {
+            subscriptToString(this.index1, builder);
+            subscriptToString(this.index2, builder);
+        }
+
+    }//TwoDimensionArrayElementExpression
+
+    private static class ThreeDimensionIndexArrayElementExpression extends ArrayElementExpression {
+
+        private final int index1;
+
+        private final int index2;
+
+        private final int index3;
+
+        private final int[] restIndex;
+
+        private ThreeDimensionIndexArrayElementExpression(OperationExpression arrayExp, int index1, int index2,
+                                                          int index3, int[] restIndex) {
+            super(arrayExp);
+
+            this.index1 = index1;
+            this.index2 = index2;
+            this.index3 = index3;
+            this.restIndex = restIndex;
+        }
+
+        @Override
+        final void appendSubscripts(StringBuilder sqlBuilder, _SqlContext context) {
+            appendSubscript(this.index1, sqlBuilder, context);
+            appendSubscript(this.index2, sqlBuilder, context);
+            appendSubscript(this.index3, sqlBuilder, context);
+
+            for (int index : this.restIndex) {
+                appendSubscript(index, sqlBuilder, context);
+            }
+
+        }
+
+        @Override
+        final void subscriptsToString(StringBuilder builder) {
+            subscriptToString(this.index1, builder);
+            subscriptToString(this.index2, builder);
+            subscriptToString(this.index3, builder);
+
+            for (int index : this.restIndex) {
+                subscriptToString(index, builder);
+            }
+        }
+
+
+    }//ThreeDimensionIndexArrayElementExpression
+
+
+    private static class ThreeDimensionArrayElementExpression extends ArrayElementExpression {
+
+        private final ArmyArraySubscript index1;
+
+        private final ArmyArraySubscript index2;
+
+        private final ArmyArraySubscript index3;
+
+        private final ArraySubscript[] restIndex;
+
+        private ThreeDimensionArrayElementExpression(OperationExpression arrayExp, ArraySubscript index1,
+                                                     ArraySubscript index2, ArraySubscript index3,
+                                                     ArraySubscript[] restIndex) {
+            super(arrayExp);
+            this.index1 = (ArmyArraySubscript) index1;
+            this.index2 = (ArmyArraySubscript) index2;
+            this.index3 = (ArmyArraySubscript) index3;
+            this.restIndex = restIndex;
+        }
+
+        @Override
+        void appendSubscripts(StringBuilder sqlBuilder, _SqlContext context) {
+            appendSubscript(this.index1, sqlBuilder, context);
+            appendSubscript(this.index2, sqlBuilder, context);
+            appendSubscript(this.index3, sqlBuilder, context);
+
+            for (ArraySubscript index : this.restIndex) {
+                if (!(index instanceof ArmyArraySubscript)) {
+                    String m = String.format("%s isn't %s", index, ArmyArraySubscript.class.getName());
+                    throw new CriteriaException(m);
+                }
+                appendSubscript(index, sqlBuilder, context);
+            }
+        }
+
+        @Override
+        void subscriptsToString(StringBuilder builder) {
+            subscriptToString(this.index1, builder);
+            subscriptToString(this.index2, builder);
+            subscriptToString(this.index3, builder);
+
+            for (ArraySubscript index : this.restIndex) {
+                subscriptToString(index, builder);
+            }
+
+        }
+
+
+    }//ThreeDimensionArrayElementExpression
+
+
+    private static final class OneDimensionArrayElementArrayExpression extends OneDimensionArrayElementExpression
+            implements ArmyArrayExpression {
+
+        private OneDimensionArrayElementArrayExpression(OperationExpression arrayExp, Object index) {
+            super(arrayExp, index);
+        }
+
+
+    }//OneDimensionArrayElementArrayExpression
+
+    private static final class TwoDimensionArrayElementArrayExpression extends TwoDimensionArrayElementExpression
+            implements ArmyArrayExpression {
+
+        private TwoDimensionArrayElementArrayExpression(OperationExpression arrayExp, Object index1, Object index2) {
+            super(arrayExp, index1, index2);
+        }
+
+    }//TwoDimensionArrayElementArrayExpression
+
+
+    private static final class ThreeDimensionIndexArrayElementArrayExpression
+            extends ThreeDimensionIndexArrayElementExpression
+            implements ArmyArrayExpression {
+
+        private ThreeDimensionIndexArrayElementArrayExpression(OperationExpression arrayExp, int index1, int index2,
+                                                               int index3, int[] restIndex) {
+            super(arrayExp, index1, index2, index3, restIndex);
+        }
+
+
+    }//ThreeDimensionIndexArrayElementArrayExpression
+
+
+    private static final class ThreeDimensionArrayElementArrayExpression extends ThreeDimensionArrayElementExpression
+            implements ArmyArrayExpression {
+
+        private ThreeDimensionArrayElementArrayExpression(OperationExpression arrayExp, ArraySubscript index1,
+                                                          ArraySubscript index2, ArraySubscript index3,
+                                                          ArraySubscript[] restIndex) {
+            super(arrayExp, index1, index2, index3, restIndex);
+        }
+
+    }//ThreeDimensionArrayElementArrayExpression
+
+    static MappingType jsonIdentityType(final MappingType type) {
+        final MappingType returnType;
+        if (type instanceof MappingType.SqlJsonType) {
+            returnType = JsonType.TEXT;
+        } else if (type instanceof MappingType.SqlJsonbType) {
+            returnType = JsonbType.TEXT;
+        } else {
+            String m = String.format("%s isn't json document type", type);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        return returnType;
+    }
+
+
+    private static abstract class JsonOperatorExpression extends OperationExpression.OperationSimpleExpression {
+
+        final ArmyJsonExpression json;
+
+        final TypeMeta type;
+
+        private JsonOperatorExpression(final OperationExpression json) {
+            this.json = (ArmyJsonExpression) json;
+
+            final TypeMeta jsonType;
+            if (json instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) json).isDelay()) {
+                jsonType = CriteriaSupports.unaryInfer((DelayTypeInfer) json, Expressions::jsonIdentityType);
+            } else {
+                jsonType = json.typeMeta();
+            }
+
+            if (jsonType instanceof MappingType || jsonType instanceof TypeMeta.DelayTypeMeta) {
+                this.type = jsonType;
+            } else {
+                this.type = jsonType.mappingType();
+            }
+        }
+
+        @Override
+        public final TypeMeta typeMeta() {
+            return this.type;
+        }
+
+        final void jsonToString(StringBuilder builder) {
+
+            final boolean outerParens;
+            outerParens = !(this.json instanceof SimpleJsonExpression);
+
+            if (outerParens) {
+                builder.append(_Constant.LEFT_PAREN);
+            }
+            builder.append(this.json);
+            if (outerParens) {
+                builder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
+        }
+
+        final void appendJson(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            final boolean outerParens;
+            outerParens = !(this.json instanceof SimpleJsonExpression);
+
+            if (outerParens) {
+                sqlBuilder.append(_Constant.LEFT_PAREN);
+            }
+            this.json.appendSql(context);
+            if (outerParens) {
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+        }
+
+
+    }//JsonOperatorExpression
+
+    private static final class JsonObjectAttrExpression extends JsonOperatorExpression implements ArmyJsonExpression {
+
+        private final String key;
+
+        private JsonObjectAttrExpression(OperationExpression json, String key) {
+            super(json);
+            this.key = key;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            this.appendJson(sqlBuilder, context);
+
+            switch (context.database()) {
+                case MySQL: {
+                    if (context.dialect().version() < MySQLDialect.MySQL80.version()) {
+                        throw dontSupportJsonObjectAttrError(context.dialect());
+                    }
+                    sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator);
+                    context.appendLiteral(NoCastTextType.INSTANCE, "$." + this.key);
+                }
+                break;
+                case PostgreSQL: {
+                    sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator);
+                    context.appendLiteral(NoCastTextType.INSTANCE, this.key);
+                }
+                break;
+                case Oracle:
+                case H2:
+                default: {
+                    //TODO add for new dialect
+                    throw dontSupportJsonObjectAttrError(context.dialect());
+                }
+
+            }//switch
+
+
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder();
+
+            this.jsonToString(sqlBuilder);
+
+            return sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator)
+                    .append(_Constant.SPACE)
+                    .append(_Constant.QUOTE)
+                    .append(this.key)
+                    .append(_Constant.QUOTE)
+                    .toString();
+        }
+
+
+        private static CriteriaException dontSupportJsonObjectAttrError(Dialect dialect) {
+            String m = String.format("%s don't support json object access.", dialect);
+            return new CriteriaException(m);
+        }
+
+
+    }//JsonObjectAttrExpression
+
+
+    private static final class JsonArrayElementExpression extends JsonOperatorExpression implements ArmyJsonExpression {
+
+        private final int index;
+
+        private JsonArrayElementExpression(OperationExpression json, int index) {
+            super(json);
+            this.index = index;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            this.appendJson(sqlBuilder, context);
+
+            switch (context.database()) {
+                case MySQL: {
+                    if (context.dialect().version() < MySQLDialect.MySQL80.version()) {
+                        throw dontSupportJsonArrayError(context.dialect());
+                    }
+                    sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator)
+                            .append(" '$.[")
+                            .append(this.index)
+                            .append("]'");
+                }
+                break;
+                case PostgreSQL:
+                    sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator)
+                            .append(this.index);
+                    break;
+                case Oracle:
+                case H2:
+                default: {
+                    //TODO add for new dialect
+                    throw dontSupportJsonArrayError(context.dialect());
+                }
+
+            }//switch
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder();
+
+            this.jsonToString(sqlBuilder);
+            return sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator)
+                    .append(_Constant.SPACE)
+                    .append(this.index)
+                    .toString();
+        }
+
+        private static CriteriaException dontSupportJsonArrayError(Dialect dialect) {
+            String m = String.format("%s don't support json array access.", dialect);
+            return new CriteriaException(m);
+        }
+
+
+    }//JsonArrayElementExpression
+
+
+    private static final class JsonPathExtractExpression extends JsonOperatorExpression implements ArmyJsonExpression {
+
+        private final Object jsonPath;
+
+        private JsonPathExtractExpression(OperationExpression json, Object jsonPath) {
+            super(json);
+            assert jsonPath instanceof String || jsonPath instanceof ArmyExpression;
+            this.jsonPath = jsonPath;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+
+            switch (context.database()) {
+                case MySQL: {
+                    if (context.dialect().version() < MySQLDialect.MySQL80.version()) {
+                        throw dontSupportJsonPathError(context.dialect());
+                    }
+                    this.appendJson(sqlBuilder, context);
+                    sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator);
+                    if (this.jsonPath instanceof String) {
+                        context.appendLiteral(JsonPathType.INSTANCE, this.jsonPath);
+                    } else {
+                        ((ArmyExpression) this.jsonPath).appendSql(context);
+                    }
+                }
+                break;
+                case PostgreSQL: {
+                    final String funcName;
+                    if (this.type.mappingType() instanceof MappingType.SqlJsonType) {
+                        funcName = "JSON_PATH_QUERY";
+                    } else {
+                        funcName = "JSONB_PATH_QUERY";
+                    }
+
+                    sqlBuilder.append(_Constant.SPACE);
+                    if (context.isLowerFunctionName()) {
+                        sqlBuilder.append(funcName.toLowerCase(Locale.ROOT));
+                    } else {
+                        sqlBuilder.append(funcName);
+                    }
+                    sqlBuilder.append(_Constant.LEFT_PAREN);
+                    this.json.appendSql(context);
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                    if (this.jsonPath instanceof String) {
+                        context.appendLiteral(JsonPathType.INSTANCE, this.jsonPath);
+                    } else {
+                        ((ArmyExpression) this.jsonPath).appendSql(context);
+                    }
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                }
+                break;
+                case Oracle:
+                case H2:
+                default: {
+                    //TODO add for new dialect
+                    throw dontSupportJsonPathError(context.dialect());
+                }
+
+            }//switch
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder();
+
+            this.jsonToString(sqlBuilder);
+
+            sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator);
+            sqlBuilder.append(_Constant.SPACE);
+
+            if (this.jsonPath instanceof SingleParamExpression) {
+                sqlBuilder.append(this.jsonPath);
+            } else {
+                sqlBuilder.append(_Constant.QUOTE)
+                        .append(this.jsonPath)
+                        .append(_Constant.QUOTE);
+            }
+            return sqlBuilder.toString();
+        }
+
+        private static CriteriaException dontSupportJsonPathError(Dialect dialect) {
+            String m = String.format("%s don't support json path.", dialect);
+            return new CriteriaException(m);
+        }
+
+
+    }//JsonPathExtractExpression
 
 
 }

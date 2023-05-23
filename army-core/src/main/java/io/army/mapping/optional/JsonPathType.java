@@ -7,7 +7,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PgSqlType;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 
 public final class JsonPathType extends _ArmyBuildInMapping implements MappingType.SqlJsonPathType {
@@ -34,7 +34,7 @@ public final class JsonPathType extends _ArmyBuildInMapping implements MappingTy
         final SqlType type;
         switch (meta.dialectDatabase()) {
             case PostgreSQL:
-                type = PgSqlType.JSONPATH;
+                type = PostgreDataType.JSONPATH;
                 break;
             case MySQL: //TODO
             case Oracle:

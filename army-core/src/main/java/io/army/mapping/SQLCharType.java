@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PgSqlType;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 
 public final class SQLCharType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
@@ -39,7 +39,7 @@ public final class SQLCharType extends _ArmyBuildInMapping implements MappingTyp
                 type = MySQLType.CHAR;
                 break;
             case PostgreSQL:
-                type = PgSqlType.CHAR;
+                type = PostgreDataType.CHAR;
                 break;
             case Oracle:
                 type = OracleDataType.CHAR;

@@ -6,10 +6,11 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.mapping.TextType;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PgSqlType;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
 
@@ -106,8 +107,8 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public Class<?> underlyingComponentType() {
-        return String.class;
+    public MappingType elementType() {
+        return TextType.INSTANCE;
     }
 
     @Override
@@ -120,7 +121,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PgSqlType.TEXT_ARRAY;
+        return PostgreDataType.TEXT_ARRAY;
     }
 
     @Override

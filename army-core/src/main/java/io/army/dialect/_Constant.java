@@ -143,6 +143,8 @@ public interface _Constant {
 
     String SPACE_RIGHT_BRACE = " }";
 
+    String SPACE_RIGHT_SQUARE_BRACKET = " ]";
+
     String PARENS = "()";
 
     String SPACE_FOR_UPDATE = " FOR UPDATE";
@@ -166,6 +168,10 @@ public interface _Constant {
     char LEFT_PAREN = '(';
 
     char RIGHT_PAREN = ')';
+
+    char LEFT_SQUARE_BRACKET = '[';
+
+    char RIGHT_SQUARE_BRACKET = ']';
 
     char LEFT_BRACE = '{';
 

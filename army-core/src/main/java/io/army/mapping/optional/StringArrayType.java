@@ -7,7 +7,7 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PgSqlType;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
 
@@ -56,7 +56,7 @@ public final class StringArrayType extends _ArmyBuildInMapping {
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PgSqlType.VARCHAR_ARRAY;
+        return PostgreDataType.VARCHAR_ARRAY;
     }
 
     @Override

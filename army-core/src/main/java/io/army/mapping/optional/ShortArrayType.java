@@ -7,7 +7,7 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PgSqlType;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
 
@@ -57,7 +57,7 @@ public final class ShortArrayType extends _ArmyNoInjectionMapping {
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PgSqlType.VARCHAR_ARRAY;
+        return PostgreDataType.VARCHAR_ARRAY;
     }
 
     @Override

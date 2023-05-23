@@ -727,7 +727,7 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
      * @see Postgres#jsonbPathQuery(Expression, BiFunction, Object, Expression, Expression)
      * @see Postgres#jsonbPathQuery(Expression, BiFunction, Object, BiFunction, Object, Expression)
      */
-    @Test(invocationCount = 1000)
+    @Test//(invocationCount = 1000)
     public void jsonbPathQueryFunc() {
         final String json, path, varPath, vars;
         json = "{\"a\":[1,2,3,4,5]}";

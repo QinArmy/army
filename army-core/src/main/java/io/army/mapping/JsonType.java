@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PgSqlType;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +45,7 @@ public final class JsonType extends _ArmyBuildInMapping implements MappingType.S
                 sqlDataType = MySQLType.JSON;
                 break;
             case PostgreSQL:
-                sqlDataType = PgSqlType.JSON;
+                sqlDataType = PostgreDataType.JSON;
                 break;
             case Oracle:
 

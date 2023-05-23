@@ -1634,5 +1634,70 @@ public interface Statement extends Item {
 
     }
 
+    interface _ArrayExpOperator {
+
+        SimpleExpression atElement(int index);
+
+        SimpleExpression atElement(int index1, int index2);
+
+        SimpleExpression atElement(int index1, int index2, int index3, int... restIndex);
+
+        <T> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef, T value);
+
+        <T> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2);
+
+        <T> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2, T value3);
+
+        <T, U> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2);
+
+        <T, U, V> SimpleExpression atElement(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2, BiFunction<MappingType, V, Expression> funcRef3, V value3);
+
+
+        SimpleExpression atElement(Expression index);
+
+        SimpleExpression atElement(Expression index1, Expression index2);
+
+        SimpleExpression atElement(Expression index1, Expression index2, Expression index3, Expression... restIndex);
+
+        ArrayExpression atArray(int index);
+
+        ArrayExpression atArray(int index1, int index2);
+
+        ArrayExpression atArray(int index1, int index2, int index3, int... restIndex);
+
+        ArrayExpression atArray(ArraySubscript index);
+
+        ArrayExpression atArray(ArraySubscript index1, ArraySubscript index2);
+
+        ArrayExpression atArray(ArraySubscript index1, ArraySubscript index2, ArraySubscript index3, ArraySubscript... restIndex);
+
+        <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value);
+
+        <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2);
+
+        <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2, T value3);
+
+        <T, U> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2);
+
+        <T, U, V> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2, BiFunction<MappingType, V, Expression> funcRef3, V value3);
+
+
+    }
+
+
+    interface _JsonExpOperator {
+
+        JsonExpression arrayElement(int index);
+
+        JsonExpression objectAttr(String keyName);
+
+        JsonExpression atPath(String jsonPath);
+
+        JsonExpression atPath(Expression jsonPath);
+
+        <T> JsonExpression atPath(BiFunction<MappingType, T, Expression> funcRef, T jsonPath);
+
+    }
+
 
 }

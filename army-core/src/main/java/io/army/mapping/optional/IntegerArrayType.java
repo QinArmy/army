@@ -2,12 +2,13 @@ package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
+import io.army.mapping.IntegerType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PgSqlType;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
 
@@ -62,8 +63,8 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Class<?> underlyingComponentType() {
-        return Integer.class;
+    public MappingType elementType() {
+        return IntegerType.INSTANCE;
     }
 
     @Override
@@ -101,7 +102,7 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
         final SqlType type;
         switch (meta.dialectDatabase()) {
             case PostgreSQL:
-                type = PgSqlType.INTEGER_ARRAY;
+                type = PostgreDataType.INTEGER_ARRAY;
                 break;
             case Oracle:
             case H2:

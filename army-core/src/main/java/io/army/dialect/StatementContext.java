@@ -86,6 +86,11 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
     }
 
     @Override
+    public final Dialect dialect() {
+        return this.parser.dialect;
+    }
+
+    @Override
     public final boolean isLowerFunctionName() {
         //TODO
         return false;

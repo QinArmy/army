@@ -44,7 +44,7 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
                 type = MySQLType.MEDIUMBLOB;
                 break;
             case PostgreSQL:
-                type = PgSqlType.BYTEA;
+                type = PostgreDataType.BYTEA;
                 break;
             case Oracle:
                 type = OracleDataType.BLOB;

@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PgSqlType;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
@@ -129,7 +129,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
                 sqlType = MySQLType.DATETIME;
                 break;
             case PostgreSQL:
-                sqlType = PgSqlType.TIMESTAMPTZ;
+                sqlType = PostgreDataType.TIMESTAMPTZ;
                 break;
             case Oracle:
                 sqlType = OracleDataType.TIMESTAMPTZ;

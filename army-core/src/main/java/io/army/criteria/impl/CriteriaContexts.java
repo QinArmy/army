@@ -459,10 +459,12 @@ abstract class CriteriaContexts {
     }
 
     private static NoColumnFuncFieldAliasException noSpecifiedColumnFuncFieldAlias(_TabularBlock block) {
-        String m;
-        m = String.format("You should specified function field alias for column function[%s ; alias(%s)] in column alias clause.",
-                ((UndoneColumnFunc) block.tableItem()).name(),
-                block.alias()
+        final String m, funcName;
+        funcName = ((UndoneColumnFunc) block.tableItem()).name();
+        m = String.format("You should specified function field alias for column function[%s ; alias(%s)] in column alias clause,Because the function[%s] no explicit field name.",
+                funcName,
+                block.alias(),
+                funcName
         );
         throw new NoColumnFuncFieldAliasException(m);
     }

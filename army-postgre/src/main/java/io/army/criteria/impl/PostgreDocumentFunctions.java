@@ -6,7 +6,6 @@ import io.army.dialect._DialectUtils;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonPathType;
-import io.army.mapping.optional.ShortArrayType;
 import io.army.mapping.optional.TextArrayType;
 import io.army.mapping.optional.XmlArrayType;
 import io.army.mapping.postgre.PostgreTsQueryType;
@@ -973,44 +972,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         return FunctionUtils.oneArgFunc("TSVECTOR_TO_ARRAY", tsVector, TextArrayType.from(String[].class));
     }
 
-    /**
-     * <p>
-     * The {@link MappingType} of function returned fields type:<ol>
-     * <li>lexeme {@link TextType}</li>
-     * <li>positions {@link ShortArrayType} with one dimension</li>
-     * <li>weights {@link TextType}</li>
-     * <li>ordinality (this is optional) {@link LongType},see {@link _WithOrdinalityClause#withOrdinality()}</li>
-     * </ol>
-     * </p>
-     * <p>
-     * <pre>
-     *          select * from unnest('cat:3 fat:2,4 rat:5A'::tsvector) →
-     *
-     *          lexeme | positions | weights
-     *          --------+-----------+---------
-     *          cat    | {3}       | {D}
-     *          fat    | {2,4}     | {D,D}
-     *          rat    | {5}       | {A}
-     *     </pre>
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE">unnest ( tsvector ) → setof record ( lexeme text, positions smallint[], weights text ) <br/>
-     * Expands a tsvector into a set of rows, one per lexeme
-     * </a>
-     */
-    public static _TabularWithOrdinalityFunction unnest(final Expression exp) {
-        final String name = "UNNEST";
-        if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
-            throw CriteriaUtils.tabularFuncErrorPosition(name);
-        }
-        final List<Selection> fieldList = _Collections.arrayList(3);
 
-        fieldList.add(ArmySelections.forName("lexeme", TextType.INSTANCE));
-        fieldList.add(ArmySelections.forName("positions", ShortArrayType.from(Short[].class)));
-        fieldList.add(ArmySelections.forName("weights", TextType.INSTANCE));
-
-        return DialectFunctionUtils.oneArgTabularFunc(name, exp, fieldList);
-    }
 
     /*-------------------below XML function -------------------*/
 

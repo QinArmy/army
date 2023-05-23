@@ -26,6 +26,7 @@ public enum H2Dialect implements Dialect {
         return this.version;
     }
 
+
     @Override
     public final String toString() {
         return String.format("%s.%s", H2Dialect.class.getSimpleName(), this.name());

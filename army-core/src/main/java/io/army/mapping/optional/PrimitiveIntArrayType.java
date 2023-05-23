@@ -2,6 +2,7 @@ package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
+import io.army.mapping.IntegerType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
@@ -61,8 +62,8 @@ public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Class<?> underlyingComponentType() {
-        return int.class;
+    public MappingType elementType() {
+        return IntegerType.INSTANCE;
     }
 
     @Override

@@ -5,7 +5,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PgSqlType;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
@@ -76,7 +76,7 @@ public final class MediumTextType extends _ArmyBuildInMapping implements Mapping
                 type = MySQLType.MEDIUMTEXT;
                 break;
             case PostgreSQL:
-                type = PgSqlType.TEXT;
+                type = PostgreDataType.TEXT;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);
