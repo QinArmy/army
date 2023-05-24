@@ -818,7 +818,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     public static _TabularWithOrdinalityFunction unnest(final Expression exp) {
         final String name = "UNNEST";
         if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
-            // probably exp is any array
             throw CriteriaUtils.tabularFuncErrorPosition(name);
         }
 
@@ -826,8 +825,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         type = exp.typeMeta().mappingType();
         final _TabularWithOrdinalityFunction func;
         if (type instanceof MappingType.SqlArrayType) {
-            func = DialectFunctionUtils.oneArgColumnFunction(name, exp, null,
-                    ((MappingType.SqlArrayType) type).elementType());
+            func = DialectFunctionUtils.oneArgColumnFunction(name, exp, null, CriteriaUtils.arrayUnderlyingType(type));
         } else if (type instanceof PostgreTsVectorType) {
             final List<Selection> fieldList = _Collections.arrayList(3);
 
@@ -842,8 +840,166 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         return func;
     }
 
-    public static _TabularWithOrdinalityFunction unnest(Expression array1, Expression array2) {
-        return null;
+    /**
+     * <p>
+     * If exp is array,then the {@link MappingType} of function returned is the {@link MappingType} of the element.
+     * <pre><br/>
+     * unnest ( anyarray ) → setof anyelement
+     *
+     * Expands an array into a set of rows. The array's elements are read out in storage order.
+     *
+     * unnest(ARRAY[1,2]) →
+     *
+     *  1
+     *  2
+     * unnest(ARRAY[['foo','bar'],['baz','quux']]) →
+     *
+     *  foo
+     *  bar
+     *  baz
+     *  quux
+     *     </pre>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest ( anyarray ) → setof anyelement<br/>
+     * Expands an array into a set of rows. The array's elements are read out in storage order.
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction unnest(final ArrayExpression exp) {
+        final String name = "UNNEST";
+        if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
+            throw CriteriaUtils.tabularFuncErrorPosition(name);
+        }
+        return DialectFunctionUtils.oneArgColumnFunction(name, exp, null,
+                CriteriaUtils.arrayUnderlyingType(exp.typeMeta().mappingType())
+        );
+    }
+
+    /**
+     * <p>
+     * If exp is array,then the {@link MappingType} of function returned is the {@link MappingType} of the element.
+     * <pre><br/>
+     * select * from unnest(ARRAY[1,2], ARRAY['foo','bar','baz']) as x(a,b) →
+     *
+     *  a |  b
+     * ---+-----
+     *  1 | foo
+     *  2 | bar
+     *    | baz
+     *
+     *     </pre>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest ( anyarray, anyarray [, ... ] ) → setof anyelement, anyelement [, ... ]<br/>
+     * Expands multiple arrays (possibly of different data types) into a set of rows. If the arrays are not all the same length then the shorter ones are padded with NULLs. This form is only allowed in a query's FROM clause;
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction unnest(ArrayExpression array1, ArrayExpression array2) {
+        final String name = "UNNEST";
+        if (array1 instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array1).isDelay()) {
+            throw CriteriaUtils.tabularFuncErrorPosition(name);
+        } else if (array2 instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array2).isDelay()) {
+            throw CriteriaUtils.tabularFuncErrorPosition(name);
+        }
+        final List<Selection> fieldList = _Collections.arrayList(2);
+
+        fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(array1.typeMeta())));
+        fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(array2.typeMeta())));
+        return DialectFunctionUtils.twoArgTabularFunc(name, array1, array2, fieldList);
+    }
+
+    /**
+     * <p>
+     * If exp is array,then the {@link MappingType} of function returned is the {@link MappingType} of the element.
+     * <pre><br/>
+     * select * from unnest(ARRAY[1,2], ARRAY['foo','bar','baz']) as x(a,b) →
+     *
+     *  a |  b
+     * ---+-----
+     *  1 | foo
+     *  2 | bar
+     *    | baz
+     *
+     *     </pre>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest ( anyarray, anyarray [, ... ] ) → setof anyelement, anyelement [, ... ]<br/>
+     * Expands multiple arrays (possibly of different data types) into a set of rows. If the arrays are not all the same length then the shorter ones are padded with NULLs. This form is only allowed in a query's FROM clause;
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction unnest(ArrayExpression array1, ArrayExpression array2,
+                                                        ArrayExpression array3, ArrayExpression... restArray) {
+        final String name = "UNNEST";
+        if (array1 instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array1).isDelay()) {
+            throw CriteriaUtils.tabularFuncErrorPosition(name);
+        } else if (array2 instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array2).isDelay()) {
+            throw CriteriaUtils.tabularFuncErrorPosition(name);
+        } else if (array3 instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array3).isDelay()) {
+            throw CriteriaUtils.tabularFuncErrorPosition(name);
+        }
+
+        final List<Selection> fieldList = _Collections.arrayList(3 + restArray.length);
+        fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(array1.typeMeta())));
+        fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(array2.typeMeta())));
+        fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(array3.typeMeta())));
+
+
+        final _TabularWithOrdinalityFunction func;
+        if (restArray.length == 0) {
+            func = DialectFunctionUtils.threeArgTabularFunc(name, array1, array2, array3, fieldList);
+        } else {
+            final List<ArmyExpression> argList = _Collections.arrayList(3 + restArray.length);
+            argList.add((ArmyExpression) array1);
+            argList.add((ArmyExpression) array2);
+            argList.add((ArmyExpression) array3);
+
+            for (ArrayExpression array : restArray) {
+                if (array instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array).isDelay()) {
+                    throw CriteriaUtils.tabularFuncErrorPosition(name);
+                }
+                argList.add((ArmyExpression) array);
+                fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(array.typeMeta())));
+            }
+            func = DialectFunctionUtils.multiArgTabularFunc(name, argList, fieldList);
+        }
+        return func;
+    }
+
+    /**
+     * <p>
+     * If exp is array,then the {@link MappingType} of function returned is the {@link MappingType} of the element.
+     * <pre><br/>
+     * select * from unnest(ARRAY[1,2], ARRAY['foo','bar','baz']) as x(a,b) →
+     *
+     *  a |  b
+     * ---+-----
+     *  1 | foo
+     *  2 | bar
+     *    | baz
+     *
+     *     </pre>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest ( anyarray, anyarray [, ... ] ) → setof anyelement, anyelement [, ... ]<br/>
+     * Expands multiple arrays (possibly of different data types) into a set of rows. If the arrays are not all the same length then the shorter ones are padded with NULLs. This form is only allowed in a query's FROM clause;
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction unnest(final Consumer<Consumer<ArrayExpression>> consumer) {
+        final String name = "UNNEST";
+        final List<ArmyExpression> argList = _Collections.arrayList();
+        final List<Selection> fieldList = _Collections.arrayList();
+        consumer.accept(exp -> {
+            if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
+                throw CriteriaUtils.tabularFuncErrorPosition(name);
+            }
+            argList.add((ArmyExpression) exp);
+            fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(exp.typeMeta())));
+        });
+
+        if (argList.size() == 0) {
+            throw CriteriaUtils.dontAddAnyItem();
+        }
+        return DialectFunctionUtils.multiArgTabularFunc(name, argList, fieldList);
     }
 
 

@@ -1,8 +1,10 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.ArrayExpression;
 import io.army.criteria.Expression;
 import io.army.criteria.SQLWords;
 import io.army.criteria.SimplePredicate;
+import io.army.mapping.MappingType;
 
 /**
  * package class,this class is base class of below
@@ -95,6 +97,12 @@ abstract class SqlSyntax {
      * package interface,this interface only is implemented by class or enum,couldn't is extended by interface.
      */
     interface ArmyKeyWord extends SQLWords {
+
+    }
+
+    public interface _ArrayConstructorClause {
+
+        ArrayExpression castTo(MappingType type);
 
     }
 

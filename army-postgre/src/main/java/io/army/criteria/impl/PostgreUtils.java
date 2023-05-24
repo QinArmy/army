@@ -9,7 +9,6 @@ import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.postgre.PostgreStatement;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.sqltype.PostgreDataType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -87,7 +86,7 @@ abstract class PostgreUtils extends CriteriaUtils {
             final Map<String, _FunctionField> fieldMap = this.fieldMap;
 
             final _FunctionField field;
-            field = DialectFunctionUtils.funcField(name, type, PostgreDataType.class);
+            field = DialectFunctionUtils.funcField(name, type);
             if (fieldMap.putIfAbsent(name, field) != null) {
                 throw CriteriaUtils.funcFieldDuplication(name);
             }

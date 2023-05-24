@@ -33,7 +33,7 @@ abstract class ArmySelections implements _Selection {
 
     static Selection renameSelection(Selection selection, String alias) {
         final Selection s;
-        if (selection instanceof UndoneColumnFunc || !selection.alias().equals(alias)) {
+        if (selection instanceof AnonymousSelection || !selection.alias().equals(alias)) {
             s = new RenameSelection(selection, alias);
         } else {
             s = selection;
@@ -57,6 +57,10 @@ abstract class ArmySelections implements _Selection {
             selection = new ImmutableSelectionForName(alias, typeMeta.mappingType());
         }
         return selection;
+    }
+
+    static Selection forAnonymous(TypeMeta type) {
+        return new AnonymousSelectionImpl(type);
     }
 
     static Selection forColumnFunc(Functions._ColumnFunction func, String alias) {
@@ -428,6 +432,30 @@ abstract class ArmySelections implements _Selection {
 
 
     }//ColumnFuncSelection
+
+
+    private static final class AnonymousSelectionImpl implements AnonymousSelection {
+
+        private final TypeMeta type;
+
+        private AnonymousSelectionImpl(TypeMeta type) {
+            this.type = type;
+        }
+
+
+        @Override
+        public TypeMeta typeMeta() {
+            return this.type;
+        }
+
+        @Override
+        public String alias() {
+            // no bug,never here
+            throw new UnsupportedOperationException();
+        }
+
+
+    }//AnonymousSelectionImpl
 
 
 }

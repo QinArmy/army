@@ -12,13 +12,17 @@ import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonPathType;
 import io.army.meta.TypeMeta;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 abstract class Expressions {
@@ -2203,6 +2207,126 @@ abstract class Expressions {
 
 
     }//JsonPathExtractExpression
+
+
+    static SqlSyntax._ArrayConstructorClause array(final Object... elements) {
+        return type -> {
+            if (!(type instanceof MappingType.SqlArrayType)) {
+                String m = String.format("%s isn't %s type.", type, MappingType.SqlArrayType.class.getName());
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            return new ArrayConstructor(Arrays.asList(elements), type);
+        };
+    }
+
+    static SqlSyntax._ArrayConstructorClause array(final Consumer<Consumer<Object>> consumer) {
+        return type -> {
+            if (!(type instanceof MappingType.SqlArrayType)) {
+                String m = String.format("%s isn't %s type.", type, MappingType.SqlArrayType.class.getName());
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            final List<Object> list = _Collections.arrayList();
+            consumer.accept(list::add);
+            return new ArrayConstructor(list, type);
+        };
+    }
+
+
+    private static final class ArrayConstructor extends OperationExpression.OperationSimpleExpression
+            implements ArmyArrayExpression {
+
+        private final List<Object> elementList;
+
+        private final MappingType type;
+
+        private ArrayConstructor(List<Object> elementList, MappingType type) {
+            this.elementList = elementList;
+            this.type = type;
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            return this.type;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(" ARRAY[");
+
+            final List<Object> elementList = this.elementList;
+            final int elementSize = elementList.size();
+            Object element;
+            MappingType elementType;
+            for (int i = 0; i < elementSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.COMMA);
+                }
+                element = elementList.get(i);
+                if (element == null) {
+                    sqlBuilder.append(_Constant.SPACE_NULL);
+                } else if (element instanceof Expression) {
+                    ((ArmyExpression) element).appendSql(context);
+                } else if (element instanceof String) {
+                    context.appendLiteral(NoCastTextType.INSTANCE, element);
+                } else if (element instanceof Integer
+                        || element instanceof Long
+                        || element instanceof Short
+                        || element instanceof Byte
+                        || element instanceof BigInteger) {
+                    sqlBuilder.append(element);
+                } else if ((elementType = _MappingFactory.getDefaultIfMatch(element.getClass())) == null) {
+                    String m = String.format("Not found %s for %s", MappingType.class.getName(),
+                            element.getClass().getName());
+                    throw new CriteriaException(m);
+                } else {
+                    context.appendLiteral(elementType, element);
+                }
+            }
+
+            sqlBuilder.append(_Constant.RIGHT_SQUARE_BRACKET);
+
+
+            switch (context.database()) {
+                case PostgreSQL: {
+                    sqlBuilder.append("::");
+                    context.parser().typeName(this.type, sqlBuilder);
+                }
+                break;
+                case H2:
+                case MySQL:
+                default: {
+                    String m = String.format("%s don't support array constructor expression.", context.database());
+                    throw new CriteriaException(m);
+                }
+
+            }//switch
+
+
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder()
+                    .append(" ARRAY[");
+
+            final List<Object> elementList = this.elementList;
+            final int elementSize = elementList.size();
+            for (int i = 0; i < elementSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.COMMA);
+                }
+                sqlBuilder.append(elementList.get(i));
+            }
+            return sqlBuilder.append(_Constant.RIGHT_SQUARE_BRACKET)
+                    .toString();
+        }
+
+
+    }//ArrayConstructor
 
 
 }

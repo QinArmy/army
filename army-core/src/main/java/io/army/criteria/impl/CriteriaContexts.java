@@ -460,7 +460,7 @@ abstract class CriteriaContexts {
 
     private static NoColumnFuncFieldAliasException noSpecifiedColumnFuncFieldAlias(_TabularBlock block) {
         final String m, funcName;
-        funcName = ((UndoneColumnFunc) block.tableItem()).name();
+        funcName = ((ArmyTabularFunction) block.tableItem()).name();
         m = String.format("You should specified function field alias for column function[%s ; alias(%s)] in column alias clause,Because the function[%s] no explicit field name.",
                 funcName,
                 block.alias(),
@@ -1431,8 +1431,8 @@ abstract class CriteriaContexts {
                     ((SimpleQueryContext) this).onAddSelectionMap((RecursiveCte) tableItem, alias);
                 }
             } else if (tableItem instanceof DerivedTable) {
-                if (tableItem instanceof UndoneColumnFunc
-                        && ((UndoneColumnFunc) tableItem).isNoNameField()
+                if (tableItem instanceof ArmyTabularFunction
+                        && ((ArmyTabularFunction) tableItem).hasAnonymousField()
                         && ((_AliasDerivedBlock) block).columnAliasList().size() == 0) {
                     throw noSpecifiedColumnFuncFieldAlias(block);
                 }
@@ -1657,8 +1657,8 @@ abstract class CriteriaContexts {
                         ((SimpleQueryContext) this).onAddSelectionMap((RecursiveCte) tableItem, alias);
                     }
                 } else if (tableItem instanceof DerivedTable) {
-                    if (tableItem instanceof UndoneColumnFunc
-                            && ((UndoneColumnFunc) tableItem).isNoNameField()
+                    if (tableItem instanceof ArmyTabularFunction
+                            && ((ArmyTabularFunction) tableItem).hasAnonymousField()
                             && ((_AliasDerivedBlock) block).columnAliasList().size() == 0) {
                         throw noSpecifiedColumnFuncFieldAlias(block);
                     }

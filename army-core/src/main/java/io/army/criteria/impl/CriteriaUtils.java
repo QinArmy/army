@@ -12,6 +12,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
+import io.army.meta.TypeMeta;
 import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
@@ -552,6 +553,20 @@ abstract class CriteriaUtils {
             }
         }
         return list;
+    }
+
+
+    static MappingType arrayUnderlyingType(final TypeMeta typeMeta) {
+        MappingType type;
+        if (typeMeta instanceof MappingType) {
+            type = (MappingType) typeMeta;
+        } else {
+            type = typeMeta.mappingType();
+        }
+        while (type instanceof MappingType.SqlArrayType) {
+            type = ((MappingType.SqlArrayType) type).elementType();
+        }
+        return type;
     }
 
 

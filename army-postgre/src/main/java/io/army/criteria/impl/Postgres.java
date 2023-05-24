@@ -17,12 +17,18 @@ import java.util.function.BiFunction;
  */
 public abstract class Postgres extends PostgreSyntax {
 
-
     /**
      * private constructor
      */
     private Postgres() {
     }
+
+    public static final Modifier ALL = PostgreWords.SelectModifier.ALL;
+    public static final WordDistinct DISTINCT = PostgreWords.KeyWordDistinct.DISTINCT;
+    public static final WordMaterialized MATERIALIZED = PostgreWords.KeyWordMaterialized.MATERIALIZED;
+    public static final WordMaterialized NOT_MATERIALIZED = PostgreWords.KeyWordMaterialized.NOT_MATERIALIZED;
+    public static final BooleanTestWord FROM_NORMALIZED = PostgreWords.FromNormalizedWord.FROM_NORMALIZED;
+    public static final BooleanTestWord NORMALIZED = PostgreWords.FromNormalizedWord.NORMALIZED;
 
 
     public static final WordName NAME = PostgreWords.KeyWordName.NAME;

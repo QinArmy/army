@@ -15,7 +15,6 @@ import io.army.mapping.NoCastTextType;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
-import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -63,6 +62,27 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
         return new TwoArgTabularFunction(name, one, two, funcFieldList);
     }
+
+    static Functions._TabularWithOrdinalityFunction threeArgTabularFunc(final String name, final Expression one,
+                                                                        final Expression two, final Expression three,
+                                                                        final List<Selection> funcFieldList) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
+        return new ThreeArgTabularFunction(name, one, two, three, funcFieldList);
+    }
+
+
+    static Functions._TabularWithOrdinalityFunction multiArgTabularFunc(final String name,
+                                                                        final List<ArmyExpression> argList,
+                                                                        final List<Selection> funcFieldList) {
+        return new MultiArgTabularFunction(name, argList, funcFieldList);
+    }
+
 
     static Functions._ColumnWithOrdinalityFunction oneArgColumnFunction(final String name, final Expression one,
                                                                         final @Nullable String fieldName,
@@ -139,8 +159,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
      * For {@link UndoneFunction}
      * </p>
      */
-    static _FunctionField funcField(final @Nullable String name, final @Nullable MappingType type,
-                                    final Class<? extends SqlType> sqlTypeClass) {
+    static _FunctionField funcField(final @Nullable String name, final @Nullable MappingType type) {
         if (name == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (type == null) {
@@ -148,7 +167,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         } else if (!_StringUtils.hasText(name)) {
             throw ContextStack.clearStackAndCriteriaError("function field name must have text.");
         }
-        return new FunctionField(name, type, sqlTypeClass);
+        return new FunctionField(name, type);
     }
 
     static UndoneFunction oneArgUndoneFunc(final String name, final Expression one) {
@@ -223,8 +242,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//CompositeTabularFunction
 
 
-    private static abstract class TabularSqlFunction implements _DerivedTable,
-            Functions._TabularFunction, _SelfDescribed {
+    private static abstract class TabularSqlFunction implements ArmyTabularFunction {
 
         static final String ORDINALITY = "ordinality";
 
@@ -262,7 +280,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             }
             sqlBuilder.append(_Constant.LEFT_PAREN);
 
-            appendArg(context);
+            appendArg(sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
@@ -296,7 +314,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             return builder.toString();
         }
 
-        abstract void appendArg(_SqlContext context);
+        abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
 
         abstract void argToString(StringBuilder builder);
 
@@ -320,7 +338,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//TabularSqlFunction
 
     private static final class ColumnTabularFunctionWrapper extends TabularSqlFunction
-            implements UndoneColumnFunc {
+            implements ArmyTabularFunction {
 
         private final ColumnFunction columnFunction;
 
@@ -328,7 +346,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         private Map<String, Selection> selectionMap;
 
-        private ColumnTabularFunctionWrapper(ColumnFunction columnFunction) {
+        private ColumnTabularFunctionWrapper(final ColumnFunction columnFunction) {
             super(columnFunction);
             this.columnFunction = columnFunction;
             this.funcFieldList = _ArrayUtils.asUnmodifiableList(columnFunction.field,
@@ -337,8 +355,8 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public boolean isNoNameField() {
-            return this.columnFunction.isNoNameField();
+        public boolean hasAnonymousField() {
+            return this.columnFunction.hasAnonymousField();
         }
 
 
@@ -361,8 +379,8 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        void appendArg(_SqlContext context) {
-            this.columnFunction.appendArg(context);
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.columnFunction.appendArg(sqlBuilder, context);
         }
 
         @Override
@@ -374,8 +392,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//ColumnTabularFunctionWrapper
 
     private static abstract class ColumnFunction extends TabularSqlFunction
-            implements UndoneColumnFunc, Functions._ColumnWithOrdinalityFunction,
-            Selection {
+            implements ArmyTabularFunction, Functions._ColumnWithOrdinalityFunction {
 
         private final TypeMeta returnType;
 
@@ -388,7 +405,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         private ColumnFunction(String name, @Nullable String fieldName, TypeMeta returnType) {
             super(name);
             if (fieldName == null) {
-                this.field = this;
+                this.field = ArmySelections.forAnonymous(returnType);
             } else {
                 this.field = ArmySelections.forName(fieldName, returnType);
             }
@@ -397,8 +414,8 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
         @Override
-        public final boolean isNoNameField() {
-            return this.field == this;
+        public final boolean hasAnonymousField() {
+            return this.field instanceof AnonymousSelection;
         }
 
         @Override
@@ -411,14 +428,10 @@ abstract class DialectFunctionUtils extends FunctionUtils {
                 throw ContextStack.criteriaError(this.outerContext, _Exceptions::selectionAliasNoText);
             }
             this.userDefinedAlias = selectionAlas;
+            this.typeMeta();
             return ArmySelections.forColumnFunc(this, selectionAlas);
         }
 
-        @Override
-        public final String alias() {
-            //no bug,never here
-            throw new UnsupportedOperationException();
-        }
 
         @Override
         public final Functions._TabularFunction withOrdinality() {
@@ -447,7 +460,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         public final Selection refSelection(final @Nullable String name) {
             final Selection field = this.field, selection;
-            if (field == this) {
+            if (field instanceof AnonymousSelection) {
                 //no bug,never here
                 throw new UnsupportedOperationException();
             } else if (this.userDefinedAlias != null) {
@@ -455,7 +468,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             } else if (name == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             } else if (name.equals(field.alias())) {
-                selection = this;
+                selection = field;
             } else {
                 selection = null;
             }
@@ -472,7 +485,12 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         @Override
         public final TypeMeta typeMeta() {
-            return this.returnType;
+            TypeMeta type = this.userDefinedType;
+            if (type == null) {
+                type = this.returnType;
+                this.userDefinedType = type;
+            }
+            return type;
         }
 
         @Override
@@ -503,7 +521,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
         @Override
-        void appendArg(final _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.one.appendSql(context);
         }
 
@@ -530,9 +548,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
         @Override
-        void appendArg(final _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.one.appendSql(context);
-            context.sqlBuilder().append(_Constant.SPACE_COMMA);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
             this.two.appendSql(context);
         }
 
@@ -564,9 +582,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
         @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -614,9 +630,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
         @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -663,6 +677,19 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             assert funcFieldList.size() > 0;
             this.funcFieldList = Collections.unmodifiableList(funcFieldList);
             this.actualFuncFieldList = this.funcFieldList;
+        }
+
+
+        @Override
+        public final boolean hasAnonymousField() {
+            boolean match = false;
+            for (Selection field : this.funcFieldList) {
+                if (field instanceof AnonymousSelection) {
+                    match = true;
+                    break;
+                }
+            }
+            return match;
         }
 
         @Override
@@ -746,7 +773,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
         @Override
-        void appendArg(_SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.one.appendSql(context);
         }
 
@@ -775,9 +802,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
         @Override
-        void appendArg(_SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.one.appendSql(context);
-            context.sqlBuilder().append(_Constant.SPACE_COMMA);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
             this.two.appendSql(context);
         }
 
@@ -790,6 +817,89 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
 
     }//TwoArgTabularFunction
+
+
+    private static final class ThreeArgTabularFunction extends MultiFieldTabularFunction {
+
+        private final FunctionArg one;
+
+        private final FunctionArg two;
+
+        private final FunctionArg three;
+
+        /**
+         * @see DialectFunctionUtils#twoArgTabularFunc(String, Expression, Expression, List)
+         */
+        private ThreeArgTabularFunction(String name, Expression one, Expression two, Expression three,
+                                        List<Selection> funcFieldList) {
+            super(name, funcFieldList);
+            this.one = (FunctionArg) one;
+            this.two = (FunctionArg) two;
+            this.three = (FunctionArg) three;
+        }
+
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            this.two.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            this.three.appendSql(context);
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.three);
+        }
+
+
+    }//ThreeArgTabularFunction
+
+
+    private static final class MultiArgTabularFunction extends MultiFieldTabularFunction {
+
+        private final List<? extends ArmyExpression> argList;
+
+        private MultiArgTabularFunction(String name, List<? extends ArmyExpression> argList,
+                                        List<Selection> funcFieldList) {
+            super(name, funcFieldList);
+            assert argList.size() > 0;
+            this.argList = argList;
+        }
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final List<? extends ArmyExpression> argList = this.argList;
+            final int argSize;
+            argSize = argList.size();
+            for (int i = 0; i < argSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                this.argList.get(i).appendSql(context);
+            }
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            final List<? extends ArmyExpression> argList = this.argList;
+            final int argSize;
+            argSize = argList.size();
+            for (int i = 0; i < argSize; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                builder.append(argList.get(i));
+            }
+        }
+
+    }//MultiArgTabularFunction
 
     private static abstract class TabularUndoneFunction implements UndoneFunction, _SelfDescribed {
 
@@ -881,15 +991,12 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         private final MappingType type;
 
-        private final Class<? extends SqlType> sqlTypeClass;
-
         /**
-         * @see #funcField(String, MappingType, Class)
+         * @see #funcField(String, MappingType)
          */
-        private FunctionField(String name, MappingType type, Class<? extends SqlType> sqlTypeClass) {
+        private FunctionField(String name, MappingType type) {
             this.name = name;
             this.type = type;
-            this.sqlTypeClass = sqlTypeClass;
         }
 
         @Override

@@ -59,17 +59,13 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     }
 
 
-    public static final Modifier ALL = PostgreWords.SelectModifier.ALL;
+    public static _ArrayConstructorClause array(Object... elements) {
+        return Expressions.array(elements);
+    }
 
-    public static final WordDistinct DISTINCT = PostgreWords.KeyWordDistinct.DISTINCT;
-
-    public static final WordMaterialized MATERIALIZED = PostgreWords.KeyWordMaterialized.MATERIALIZED;
-
-    public static final WordMaterialized NOT_MATERIALIZED = PostgreWords.KeyWordMaterialized.NOT_MATERIALIZED;
-
-    public static final BooleanTestWord FROM_NORMALIZED = PostgreWords.FromNormalizedWord.FROM_NORMALIZED;
-
-    public static final BooleanTestWord NORMALIZED = PostgreWords.FromNormalizedWord.NORMALIZED;
+    public static _ArrayConstructorClause array(Consumer<Consumer<Object>> consumer) {
+        return Expressions.array(consumer);
+    }
 
 
     public static Expression excluded(FieldMeta<?> field) {
