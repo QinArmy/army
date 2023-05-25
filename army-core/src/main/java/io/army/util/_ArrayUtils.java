@@ -193,5 +193,44 @@ public abstract class _ArrayUtils {
         return dimension;
     }
 
+    public static Class<?> arrayClassOf(final Class<?> elementType) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append('[');
+        if (elementType.isArray()) {
+            builder.append(elementType.getName());
+        } else if (elementType.isAnonymousClass()) {
+            throw new IllegalArgumentException("don't support anonymous class");
+        } else if (!(elementType.isPrimitive())) {
+            builder.append('L')
+                    .append(elementType.getName())
+                    .append(';');
+        } else if (elementType == int.class) {
+            builder.append('I');
+        } else if (elementType == long.class) {
+            builder.append('J');
+        } else if (elementType == boolean.class) {
+            builder.append('Z');
+        } else if (elementType == byte.class) {
+            builder.append('B');
+        } else if (elementType == char.class) {
+            builder.append('C');
+        } else if (elementType == double.class) {
+            builder.append('D');
+        } else if (elementType == float.class) {
+            builder.append('F');
+        } else if (elementType == short.class) {
+            builder.append('S');
+        } else {
+            String m = String.format("don't support %s", elementType.getName());
+            throw new IllegalArgumentException(m);
+        }
+        try {
+            return Class.forName(builder.toString());
+        } catch (ClassNotFoundException e) {
+            //no bug, never here
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }

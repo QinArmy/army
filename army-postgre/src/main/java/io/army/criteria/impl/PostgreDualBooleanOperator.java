@@ -91,6 +91,13 @@ enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
      * Does first object not extend to the right of second? Available for box, polygon, circle.</a>
      */
     AMP_LT(" &<"),
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&gt; geometric_type → boolean<br/>
+     * Does first object not extend to the left of second? Available for box, polygon, circle.</a>
+     */
+    AMP_GT(" &>"),
+
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &lt;&lt;| geometric_type → boolean<br/>
      * Is first object strictly below second? Available for point, box, polygon, circle.</a>
@@ -184,6 +191,14 @@ enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
     TILDE_EQUAL(" ~="),
 
     /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-range.html#RANGE-OPERATORS-TABLE">anyrange -|- anyrange → boolean<br/>
+     * Are the ranges adjacent?.<br/>
+     * numrange(1.1,2.2) -|- numrange(2.2,3.3) → t
+     * </a>
+     */
+    HYPHEN_VERTICAL_HYPHEN(" -|-"),
+
+    /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSONB-OP-TABLE">jsonb @? jsonpath → boolean<br/>
      * Does JSON path return any item for the specified JSON value?<br/>
      * '{"a":[1,2,3,4,5]}'::jsonb @? '$.a[*] ? (@ > 2)' → t
@@ -204,13 +219,7 @@ enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
      * tsquery @@@ tsvector → boolean<br/>
      * </a>
      */
-    TRIPLE_AT(" @@@"),
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE">geometric_type &amp;&gt; geometric_type → boolean<br/>
-     * Does first object not extend to the left of second? Available for box, polygon, circle.</a>
-     */
-    AMP_GT(" &>");
+    TRIPLE_AT(" @@@");
     private final String spaceOperator;
 
     PostgreDualBooleanOperator(String spaceOperator) {
