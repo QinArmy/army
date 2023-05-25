@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
+import io.army.mapping.optional.TextArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.MySQLType;
@@ -69,8 +70,13 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
     }
 
     @Override
+    public MappingType arrayTypeOfThis() {
+        return TextArrayType.LINEAR;
+    }
+
+    @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-       return mapSqlType(this, meta);
+        return mapSqlType(this, meta);
     }
 
 

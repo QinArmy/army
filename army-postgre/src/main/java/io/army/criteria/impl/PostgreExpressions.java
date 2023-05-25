@@ -10,10 +10,12 @@ import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.spatial.postgre.PostgreBoxType;
 import io.army.mapping.spatial.postgre.PostgreGeometricType;
 import io.army.mapping.spatial.postgre.PostgrePointType;
+import io.army.meta.TypeMeta;
 import io.army.type.Interval;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
@@ -422,6 +424,28 @@ abstract class PostgreExpressions {
         }
         return returnType;
     }
+
+
+    private static final class DelayArrayConstructorType implements TypeMeta.DelayTypeMeta {
+
+        private final List<Object> elementList;
+
+        private DelayArrayConstructorType(List<Object> elementList) {
+            this.elementList = elementList;
+        }
+
+        @Override
+        public MappingType mappingType() {
+            return null;
+        }
+
+        @Override
+        public boolean isDelay() {
+            return false;
+        }
+
+
+    }//DelayArrayConstructorType
 
 
 

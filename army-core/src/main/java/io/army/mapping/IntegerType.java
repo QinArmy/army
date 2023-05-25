@@ -2,6 +2,7 @@ package io.army.mapping;
 
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
+import io.army.mapping.optional.IntegerArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreDataType;
@@ -55,6 +56,11 @@ public final class IntegerType extends _NumericType._IntegerType {
     @Override
     public LengthType lengthType() {
         return LengthType.DEFAULT;
+    }
+
+    @Override
+    public MappingType arrayTypeOfThis() {
+        return IntegerArrayType.LINEAR;
     }
 
     @Override

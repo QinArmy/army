@@ -12,7 +12,6 @@ public abstract class _ArmyBuildInMapping extends MappingType {
             throw new UnsupportedOperationException(m);
         }
 
-
     }
 
 

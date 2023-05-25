@@ -2,13 +2,16 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.SubQuery;
 import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.util._ArrayUtils;
 import io.army.util._StringUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -58,13 +61,93 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
 
     }
 
-
-    public static _ArrayConstructorClause array(Object... elements) {
-        return Expressions.array(elements);
+    /**
+     * <p>
+     * Static array constructor, array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
+     */
+    public static _ArrayConstructorSpec array() {
+        return Expressions.array();
     }
 
-    public static _ArrayConstructorClause array(Consumer<Consumer<Object>> consumer) {
-        return Expressions.array(consumer);
+    /**
+     * <p>
+     * Static array constructor
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
+     */
+    public static _ArrayConstructorSpec array(Object element) {
+        _ArrayConstructorSpec array;
+        if (element instanceof SubQuery) {
+            array = Expressions.array((SubQuery) element);
+        } else {
+            array = Expressions.array(Expressions::nonNullFirstArrayType, Collections.singletonList(element));
+        }
+        return array;
+    }
+
+
+    /**
+     * <p>
+     * Static array constructor, array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
+     */
+    public static _ArrayConstructorSpec array(Object one, Object two) {
+        return Expressions.array(Expressions::nonNullFirstArrayType, _ArrayUtils.asUnmodifiableList(one, two));
+    }
+
+    /**
+     * <p>
+     * Static array constructor, array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
+     */
+    public static _ArrayConstructorSpec array(Object one, Object two, Object three) {
+        return Expressions.array(Expressions::nonNullFirstArrayType, _ArrayUtils.asUnmodifiableList(one, two, three));
+    }
+
+    /**
+     * <p>
+     * Static array constructor, array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
+     */
+    public static _ArrayConstructorSpec array(Object one, Object two, Object three, Object four) {
+        return Expressions.array(Expressions::nonNullFirstArrayType,
+                _ArrayUtils.asUnmodifiableList(one, two, three, four)
+        );
+    }
+
+    /**
+     * <p>
+     * Static array constructor, array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
+     */
+    public static _ArrayConstructorSpec array(Object one, Object two, Object three, Object four, Object five,
+                                              Object... rest) {
+        return Expressions.array(Expressions::nonNullFirstArrayType,
+                _ArrayUtils.asUnmodifiableList(one, two, three, four, five, rest)
+        );
+    }
+
+    /**
+     * <p>
+     * Dynamic array constructor, if empty,then array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
+     */
+    public static _ArrayConstructorSpec array(Consumer<Consumer<Object>> consumer) {
+        return Expressions.array(Expressions::nonNullFirstArrayType, consumer);
     }
 
 

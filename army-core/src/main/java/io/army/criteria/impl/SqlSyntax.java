@@ -100,7 +100,7 @@ abstract class SqlSyntax {
 
     }
 
-    public interface _ArrayConstructorClause {
+    public interface _ArrayConstructorSpec extends ArrayExpression {
 
         ArrayExpression castTo(MappingType type);
 

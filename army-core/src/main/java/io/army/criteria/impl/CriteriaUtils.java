@@ -660,6 +660,12 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError("You don't add any item.");
     }
 
+    static CriteriaException nonDefaultType(@Nullable Object value) {
+        String m = String.format("Not found default %s for %s.", MappingType.class.getName(),
+                _ClassUtils.safeClassName(value));
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
     static CriteriaException errorSymbol(@Nullable Object symbol) {
         return ContextStack.clearStackAndCriteriaError(String.format("error symbol %s", symbol));
     }

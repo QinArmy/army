@@ -11,18 +11,19 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonPathType;
+import io.army.mapping.optional.TextArrayType;
 import io.army.meta.TypeMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.math.BigInteger;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 abstract class Expressions {
@@ -93,14 +94,8 @@ abstract class Expressions {
     }
 
     static Expression scalarExpression(final SubQuery subQuery) {
-        final List<? extends Selection> selectionList;
-        selectionList = ((_DerivedTable) subQuery).refAllSelection();
-        if (selectionList.size() != 1) {
-            throw ContextStack.clearStackAnd(_Exceptions::nonScalarSubQuery, subQuery);
-        }
-        return new ScalarExpression(selectionList.get(0).typeMeta(), subQuery);
+        return new ScalarExpression(validateScalarSubQuery(subQuery), subQuery);
     }
-
 
     static OperationPredicate existsPredicate(final UnaryBooleanOperator operator, final @Nullable SubQuery operand) {
         if (operand == null) {
@@ -358,24 +353,73 @@ abstract class Expressions {
     }
 
 
-    /**
-     * @see #compareQueryPredicate(OperationExpression, DualBooleanOperator, QueryOperator, SubQuery)
-     * @see #inOperator(OperationExpression, DualBooleanOperator, SubQuery)
-     */
-    private static void assertColumnSubQuery(final DualBooleanOperator operator
-            , final @Nullable QueryOperator queryOperator, final SubQuery subQuery) {
-        if (((_DerivedTable) subQuery).refAllSelection().size() != 1) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("Operator ")
-                    .append(operator.name());
-            if (queryOperator != null) {
-                builder.append(_Constant.SPACE)
-                        .append(queryOperator.name());
+    static TypeMeta nonNullFirstArrayType(final List<Object> elementList) {
+        assert elementList.size() > 0;
+        TypeMeta type = null;
+        for (Object element : elementList) {
+            if (element == null || element == SQLs.NULL) {
+                continue;
             }
-            builder.append(" only support column sub query.");
-            throw ContextStack.clearStackAndCriteriaError(builder.toString());
+            if (!(element instanceof Expression)) {
+                type = _MappingFactory.getDefaultIfMatch(element.getClass());
+                if (type == null) {
+                    throw CriteriaUtils.nonDefaultType(element);
+                }
+            } else if (element instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) element).isDelay()) {
+                type = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) element, MappingType::arrayTypeOfThis);
+            } else {
+                type = ((Expression) element).typeMeta();
+            }
+
+            break;
         }
 
+        if (type == null) {
+            type = TextArrayType.LINEAR;
+        } else if (!(type instanceof TypeMeta.DelayTypeMeta)) {
+            if (type instanceof MappingType) {
+                type = ((MappingType) type).arrayTypeOfThis();
+            } else {
+                type = type.mappingType().arrayTypeOfThis();
+            }
+        }
+        return type;
+    }
+
+
+    static SqlSyntax._ArrayConstructorSpec array() {
+        return new SimpleArrayConstructor(Collections.emptyList(), TextArrayType.LINEAR);
+    }
+
+
+    static SqlSyntax._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
+                                                 List<Object> elementList) {
+        final TypeMeta type;
+        if (elementList.size() == 0) {
+            elementList = Collections.emptyList();
+            type = TextArrayType.LINEAR;
+        } else {
+            type = inferFunc.apply(elementList);
+        }
+        return new SimpleArrayConstructor(elementList, type);
+    }
+
+    static SqlSyntax._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
+                                                 final Consumer<Consumer<Object>> consumer) {
+        List<Object> elementList = _Collections.arrayList();
+        consumer.accept(elementList::add);
+        final TypeMeta type;
+        if (elementList.size() == 0) {
+            elementList = Collections.emptyList();
+            type = TextArrayType.LINEAR;
+        } else {
+            type = inferFunc.apply(elementList);
+        }
+        return new SimpleArrayConstructor(elementList, type);
+    }
+
+    static SqlSyntax._ArrayConstructorSpec array(final SubQuery subQuery) {
+        return new SubQueryArrayConstructor(subQuery, validateScalarSubQuery(subQuery));
     }
 
 
@@ -454,6 +498,48 @@ abstract class Expressions {
             returnType = right;
         }
         return returnType;
+    }
+
+    /**
+     * @see #scalarExpression(SubQuery)
+     * @see #array(SubQuery)
+     */
+    private static MappingType validateScalarSubQuery(final SubQuery subQuery) {
+        if (((CriteriaContextSpec) subQuery).getContext().getOuterContext() != ContextStack.peek()) {
+            String m = String.format("outer context of %s don't match.", subQuery);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        final List<? extends Selection> selectionList;
+        selectionList = ((_DerivedTable) subQuery).refAllSelection();
+        if (selectionList.size() != 1) {
+            throw ContextStack.clearStackAnd(_Exceptions::nonScalarSubQuery, subQuery);
+        }
+        TypeMeta typeMeta;
+        typeMeta = selectionList.get(0).typeMeta();
+        if (!(typeMeta instanceof MappingType)) {
+            typeMeta = typeMeta.mappingType();
+        }
+        return (MappingType) typeMeta;
+    }
+
+    /**
+     * @see #compareQueryPredicate(OperationExpression, DualBooleanOperator, QueryOperator, SubQuery)
+     * @see #inOperator(OperationExpression, DualBooleanOperator, SubQuery)
+     */
+    private static void assertColumnSubQuery(final DualBooleanOperator operator
+            , final @Nullable QueryOperator queryOperator, final SubQuery subQuery) {
+        if (((_DerivedTable) subQuery).refAllSelection().size() != 1) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("Operator ")
+                    .append(operator.name());
+            if (queryOperator != null) {
+                builder.append(_Constant.SPACE)
+                        .append(queryOperator.name());
+            }
+            builder.append(" only support column sub query.");
+            throw ContextStack.clearStackAndCriteriaError(builder.toString());
+        }
+
     }
 
 
@@ -2209,60 +2295,85 @@ abstract class Expressions {
     }//JsonPathExtractExpression
 
 
-    static SqlSyntax._ArrayConstructorClause array(final Object... elements) {
-        return type -> {
-            if (!(type instanceof MappingType.SqlArrayType)) {
+    /**
+     * <p>
+     * This class is base class of below:
+     *     <ul>
+     *         <li>{@link SimpleArrayConstructor}</li>
+     *         <li>{@link SubQueryArrayConstructor}</li>
+     *     </ul>
+     * </p>
+     */
+    private static abstract class ArrayConstructor extends OperationExpression.OperationSimpleExpression
+            implements ArmyArrayExpression, SqlSyntax._ArrayConstructorSpec {
+
+        final TypeMeta inferType;
+
+        private ArrayConstructor(TypeMeta inferType) {
+            this.inferType = inferType;
+        }
+
+        private MappingType castType;
+
+        @Override
+        public final MappingType typeMeta() {
+            MappingType userDefinedType = this.castType;
+            if (userDefinedType == null) {
+                if (this.inferType instanceof MappingType) {
+                    userDefinedType = (MappingType) this.inferType;
+                } else {
+                    //avoid field codec
+                    userDefinedType = this.inferType.mappingType();
+                }
+            }
+            return userDefinedType;
+        }
+
+        @Override
+        public final ArrayExpression castTo(final @Nullable MappingType type) {
+            if (this.castType != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (type == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            } else if (!(type instanceof MappingType.SqlArrayType)) {
                 String m = String.format("%s isn't %s type.", type, MappingType.SqlArrayType.class.getName());
                 throw ContextStack.clearStackAndCriteriaError(m);
             }
-            return new ArrayConstructor(Arrays.asList(elements), type);
-        };
-    }
+            this.castType = type;
+            return this;
+        }
 
-    static SqlSyntax._ArrayConstructorClause array(final Consumer<Consumer<Object>> consumer) {
-        return type -> {
-            if (!(type instanceof MappingType.SqlArrayType)) {
-                String m = String.format("%s isn't %s type.", type, MappingType.SqlArrayType.class.getName());
-                throw ContextStack.clearStackAndCriteriaError(m);
-            }
-            final List<Object> list = _Collections.arrayList();
-            consumer.accept(list::add);
-            return new ArrayConstructor(list, type);
-        };
-    }
+    }//ArrayConstructor
 
 
-    private static final class ArrayConstructor extends OperationExpression.OperationSimpleExpression
-            implements ArmyArrayExpression {
+    private static final class SimpleArrayConstructor extends ArrayConstructor {
 
         private final List<Object> elementList;
 
-        private final MappingType type;
-
-        private ArrayConstructor(List<Object> elementList, MappingType type) {
+        /**
+         * @see #array(Function, Object...)
+         * @see #array(Function, Consumer)
+         */
+        private SimpleArrayConstructor(List<Object> elementList, TypeMeta inferType) {
+            super(inferType);
             this.elementList = elementList;
-            this.type = type;
         }
 
-        @Override
-        public MappingType typeMeta() {
-            return this.type;
-        }
 
         @Override
         public void appendSql(final _SqlContext context) {
+            final List<Object> elementList = this.elementList;
+            final int elementSize = elementList.size();
 
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
                     .append(" ARRAY[");
 
-            final List<Object> elementList = this.elementList;
-            final int elementSize = elementList.size();
             Object element;
             MappingType elementType;
             for (int i = 0; i < elementSize; i++) {
                 if (i > 0) {
-                    sqlBuilder.append(_Constant.COMMA);
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
                 element = elementList.get(i);
                 if (element == null) {
@@ -2271,12 +2382,9 @@ abstract class Expressions {
                     ((ArmyExpression) element).appendSql(context);
                 } else if (element instanceof String) {
                     context.appendLiteral(NoCastTextType.INSTANCE, element);
-                } else if (element instanceof Integer
-                        || element instanceof Long
-                        || element instanceof Short
-                        || element instanceof Byte
-                        || element instanceof BigInteger) {
-                    sqlBuilder.append(element);
+                } else if (element instanceof Integer) {
+                    sqlBuilder.append(_Constant.SPACE)
+                            .append(element);
                 } else if ((elementType = _MappingFactory.getDefaultIfMatch(element.getClass())) == null) {
                     String m = String.format("Not found %s for %s", MappingType.class.getName(),
                             element.getClass().getName());
@@ -2286,13 +2394,19 @@ abstract class Expressions {
                 }
             }
 
-            sqlBuilder.append(_Constant.RIGHT_SQUARE_BRACKET);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_SQUARE_BRACKET);
 
 
+            final MappingType castType = ((ArrayConstructor) this).castType;
             switch (context.database()) {
                 case PostgreSQL: {
-                    sqlBuilder.append("::");
-                    context.parser().typeName(this.type, sqlBuilder);
+                    if (castType != null) {
+                        sqlBuilder.append(_Constant.DOUBLE_COLON);
+                        context.parser().typeName(castType, sqlBuilder);
+                    } else if (elementSize == 0) {
+                        sqlBuilder.append(_Constant.DOUBLE_COLON);
+                        context.parser().typeName(this.inferType.mappingType(), sqlBuilder);
+                    }
                 }
                 break;
                 case H2:
@@ -2315,18 +2429,58 @@ abstract class Expressions {
 
             final List<Object> elementList = this.elementList;
             final int elementSize = elementList.size();
+            Object element;
             for (int i = 0; i < elementSize; i++) {
                 if (i > 0) {
-                    sqlBuilder.append(_Constant.COMMA);
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                sqlBuilder.append(elementList.get(i));
+                element = elementList.get(i);
+                if (!(element instanceof Expression)) {
+                    sqlBuilder.append(_Constant.SPACE);
+                }
+                sqlBuilder.append(element);
             }
-            return sqlBuilder.append(_Constant.RIGHT_SQUARE_BRACKET)
+            return sqlBuilder.append(_Constant.SPACE_RIGHT_SQUARE_BRACKET)
                     .toString();
         }
 
 
-    }//ArrayConstructor
+    }//SimpleArrayConstructor
+
+
+    private static final class SubQueryArrayConstructor extends ArrayConstructor {
+
+        private final SubQuery query;
+
+        /**
+         * @see #array(SubQuery)
+         */
+        private SubQueryArrayConstructor(SubQuery query, MappingType type) {
+            super(type);
+            this.query = query;
+        }
+
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(" ARRAY[");
+            context.parser().subQuery(this.query, context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_SQUARE_BRACKET);
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(" ARRAY[")
+                    .append(this.query)
+                    .append(_Constant.SPACE_RIGHT_SQUARE_BRACKET)
+                    .toString();
+        }
+
+
+    }//SubQueryArrayConstructor
 
 
 }

@@ -26,6 +26,8 @@ public final class StringArrayType extends _ArmyBuildInMapping {
 
     public static final StringArrayType UNLIMITED = new StringArrayType();
 
+    public static final StringArrayType LINEAR = new StringArrayType(String[].class);
+
     private static final ConcurrentMap<Class<?>, StringArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
 

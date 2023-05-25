@@ -165,6 +165,8 @@ public interface _Constant {
 
     String SPACE_ZERO = " 0";
 
+    String DOUBLE_COLON = "::";
+
     char LEFT_PAREN = '(';
 
     char RIGHT_PAREN = ')';
