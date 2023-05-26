@@ -34,7 +34,7 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
 
     protected static final ErrorHandler PARAM_ERROR_HANDLER = MappingType::paramError;
 
-    protected static final ErrorHandler DATA_ACCESS_ERROR_HANDLER = MappingType::dataAccessError;
+    protected static final ErrorHandler ACCESS_ERROR_HANDLER = MappingType::dataAccessError;
 
     protected MappingType() {
     }

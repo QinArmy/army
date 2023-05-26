@@ -51,7 +51,7 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
             }
             value = rangeToText(nonNull, elementType, function, new StringBuilder())
                     .toString();
-        } else if (EMPTY.equals(nonNull)) {
+        } else if (EMPTY.equalsIgnoreCase((String) nonNull)) {
             value = EMPTY;
         } else if ((text = (String) nonNull).length() < 5) {
             throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
@@ -65,43 +65,83 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
         return value;
     }
 
-    final <T> Object textToRange(final String text, final _RangeFunction<T, ?> rangeFunc,
+    final <T> Object textToRange(final String text, final int offset, final _RangeFunction<T, ?> rangeFunc,
                                  final Function<String, T> function, final SqlType type, final ErrorHandler handler) {
         final int length = text.length();
+        assert offset < length;
         Boolean includeLowerBound = null, includeUpperBound = null;
         T lowerBound = null, upperBound = null;
+        boolean inQuote = false;
         char ch;
-        for (int i = 0, offset; i < length; i++) {
+        for (int i = offset, statIndex = -1, nextIndex; i < length; i++) {
             ch = text.charAt(i);
+            if (includeLowerBound == null) {
+                if (ch == _Constant.LEFT_SQUARE_BRACKET) {
+                    includeLowerBound = Boolean.TRUE;
+                } else if (ch == _Constant.LEFT_PAREN) {
+                    includeLowerBound = Boolean.FALSE;
+                } else if (!Character.isWhitespace(ch)) {
+                    throw handler.apply(this, type, text);
+                }
+            } else if (statIndex < 0) {
+                if (ch == _Constant.DOUBLE_QUOTE) {
+                    inQuote = true;
+                    statIndex = i;
+                } else if (!Character.isWhitespace(ch)) {
+                    statIndex = i;
+                }
+            } else if (inQuote) {
+                if (ch == _Constant.DOUBLE_QUOTE) {
+                    nextIndex = i + 1;
+                    inQuote = nextIndex < length && text.charAt(nextIndex) == _Constant.DOUBLE_QUOTE;
+                }
+            } else if (lowerBound == null) {
+                if (ch == _Constant.COMMA || Character.isWhitespace(ch)) {
+                    try {
+                        lowerBound = function.apply(text.substring(statIndex, i));
+                    } catch (Exception e) {
+                        throw handler.apply(this, type, text);
+                    }
+                    statIndex = -1;
+                }
+            } else if (includeUpperBound == null) {
+                if (ch == _Constant.LEFT_SQUARE_BRACKET) {
+                    includeUpperBound = Boolean.TRUE;
+                } else if (ch == _Constant.LEFT_PAREN) {
+                    includeUpperBound = Boolean.FALSE;
+                } else if (!Character.isWhitespace(ch)) {
+                    throw handler.apply(this, type, text);
+                }
+                if (upperBound != null) {
+                    continue;
+                }
+                try {
+                    upperBound = function.apply(text.substring(statIndex, i));
+                } catch (Exception e) {
+                    throw handler.apply(this, type, text);
+                }
+            } else {
+                break;
+            }
 
+
+        }// for
+
+        if (lowerBound == null || includeLowerBound == null || upperBound == null || includeUpperBound) {
+            throw handler.apply(this, type, text);
         }
-
-        throw new UnsupportedOperationException();
+        return rangeFunc.apply(lowerBound, includeLowerBound, upperBound, includeUpperBound);
     }
 
-
+    /**
+     * @param methodName public static factory method name,for example : com.my.Factory#create
+     * @throws io.army.meta.MetaException throw when factory method name error.
+     */
     static <T> _RangeFunction<T, ?> createRangeFunction(final Class<?> javaType, final Class<T> elementType,
-                                                        final Method method) {
-        final int modifier;
-        modifier = method.getModifiers();
-        final Class<?>[] paramTypes;
+                                                        final String methodName) {
 
-        if (!(Modifier.isStatic(modifier) && Modifier.isPublic(modifier))) {
-            String m = String.format("%s isn't public static method", method);
-            throw new MetaException(m);
-        } else if (!javaType.isAssignableFrom(method.getReturnType())) {
-            String m = String.format("%s return type isn't %s", method, elementType.getName());
-            throw new MetaException(m);
-        } else if ((paramTypes = method.getParameterTypes()).length != 4) {
-            String m = String.format("%s parameter count isn't 4.", method);
-            throw new MetaException(m);
-        } else if (!(elementType == paramTypes[0]
-                && boolean.class.isAssignableFrom(paramTypes[1])
-                && elementType == paramTypes[2]
-                && boolean.class.isAssignableFrom(paramTypes[3]))) {
-            String m = String.format("%s parameter list error", method);
-            throw new MetaException(m);
-        }
+        final Method method;
+        method = loadFactoryMethod(javaType, methodName, elementType);
         return (lower, includeLower, upper, includeUpper) -> {
             try {
                 final Object result;
@@ -117,32 +157,48 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
     }
 
 
+    @SuppressWarnings("unchecked")
     static <T> StringBuilder rangeToText(final Object nonNull, final Class<T> rangeType, final Function<T, String> function,
                                          final StringBuilder builder) {
-        final Class<?> javaType = nonNull.getClass();
-        if (rangeBeanFunc(javaType, "isEmptyRange", Boolean.TYPE).apply(nonNull)) {
-            return builder.append(EMPTY);
-        }
 
-        final T lowerBound, upperBound;
-
-        lowerBound = rangeBeanFunc(javaType, "getLowerBound", rangeType).apply(nonNull);
-        upperBound = rangeBeanFunc(javaType, "getUpperBound", rangeType).apply(nonNull);
-
-        if (rangeBeanFunc(javaType, "isIncludeLowerBound", Boolean.TYPE).apply(nonNull)) {
-            builder.append(_Constant.LEFT_SQUARE_BRACKET);
+        if (!(nonNull instanceof ArmyPostgreRange)) {
+            rangeToTextByReflection(nonNull, rangeType, function, builder);
+        } else if (((ArmyPostgreRange) nonNull).isEmpty()) {
+            builder.append(EMPTY);
         } else {
-            builder.append(_Constant.LEFT_PAREN);
-        }
+            if (((ArmyPostgreRange) nonNull).isIncludeLowerBound()) {
+                builder.append(_Constant.LEFT_SQUARE_BRACKET);
+            } else {
+                builder.append(_Constant.LEFT_PAREN);
+            }
 
-        builder.append(function.apply(lowerBound))
-                .append(_Constant.COMMA)
-                .append(function.apply(upperBound));
+            final Object lowerBound, upperBound;
+            if (nonNull instanceof ArmyPostgreObjectRange) {
+                final ArmyPostgreObjectRange<?> range = (ArmyPostgreObjectRange<?>) nonNull;
+                lowerBound = range.getLowerBound();
+                upperBound = range.getUpperBound();
+            } else if (nonNull instanceof ArmyPostgreInt4Range) {
+                final ArmyPostgreInt4Range range = (ArmyPostgreInt4Range) nonNull;
+                lowerBound = range.getLowerBound();
+                upperBound = range.getUpperBound();
+            } else if (nonNull instanceof ArmyPostgreInt8Range) {
+                final ArmyPostgreInt8Range range = (ArmyPostgreInt8Range) nonNull;
+                lowerBound = range.getLowerBound();
+                upperBound = range.getUpperBound();
+            } else {
+                String m = String.format("unknown %s type.", ArmyPostgreRange.class.getName());
+                throw new MetaException(m);
+            }
 
-        if (rangeBeanFunc(javaType, "isIncludeUpperBound", Boolean.TYPE).apply(nonNull)) {
-            builder.append(_Constant.LEFT_SQUARE_BRACKET);
-        } else {
-            builder.append(_Constant.LEFT_PAREN);
+            builder.append(function.apply((T) lowerBound))
+                    .append(_Constant.COMMA)
+                    .append(function.apply((T) upperBound));
+
+            if (((ArmyPostgreRange) nonNull).isIncludeUpperBound()) {
+                builder.append(_Constant.LEFT_SQUARE_BRACKET);
+            } else {
+                builder.append(_Constant.LEFT_PAREN);
+            }
         }
         return builder;
     }
@@ -193,6 +249,66 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
             };
         } catch (NoSuchMethodException e) {
             throw new MetaException(e.getMessage(), e);
+        }
+    }
+
+    private static Method loadFactoryMethod(final Class<?> javaType, final String methodName,
+                                            final Class<?> elementType) {
+        try {
+            final int poundIndex, modifier;
+            poundIndex = methodName.indexOf('#');
+            if (poundIndex < 1 || poundIndex + 1 >= methodName.length()) {
+                String m = String.format("%s isn't method name", methodName);
+                throw new MetaException(m);
+            }
+            final Class<?> methodClass;
+            methodClass = Class.forName(methodName.substring(0, poundIndex));
+            final Method method;
+            method = methodClass.getMethod(methodName.substring(poundIndex + 1),
+                    elementType, boolean.class, elementType, boolean.class);
+            modifier = method.getModifiers();
+            if (!(Modifier.isPublic(modifier)
+                    && Modifier.isStatic(modifier)
+                    && javaType.isAssignableFrom(method.getReturnType()))) {
+                String m = String.format("%s isn't public static factory method.", methodName);
+                throw new MetaException(m);
+            }
+            return method;
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            throw new MetaException(e.getMessage(), e);
+        }
+    }
+
+
+    /**
+     * @see #rangeToText(Object, Class, Function, StringBuilder)
+     */
+    private static <T> void rangeToTextByReflection(final Object nonNull, final Class<T> rangeType,
+                                                    final Function<T, String> function, final StringBuilder builder) {
+        final Class<?> javaType = nonNull.getClass();
+        if (rangeBeanFunc(javaType, "isEmptyRange", Boolean.TYPE).apply(nonNull)) {
+            builder.append(EMPTY);
+            return;
+        }
+        final T lowerBound, upperBound;
+
+        lowerBound = rangeBeanFunc(javaType, "getLowerBound", rangeType).apply(nonNull);
+        upperBound = rangeBeanFunc(javaType, "getUpperBound", rangeType).apply(nonNull);
+
+        if (rangeBeanFunc(javaType, "isIncludeLowerBound", Boolean.TYPE).apply(nonNull)) {
+            builder.append(_Constant.LEFT_SQUARE_BRACKET);
+        } else {
+            builder.append(_Constant.LEFT_PAREN);
+        }
+
+        builder.append(function.apply(lowerBound))
+                .append(_Constant.COMMA)
+                .append(function.apply(upperBound));
+
+        if (rangeBeanFunc(javaType, "isIncludeUpperBound", Boolean.TYPE).apply(nonNull)) {
+            builder.append(_Constant.LEFT_SQUARE_BRACKET);
+        } else {
+            builder.append(_Constant.LEFT_PAREN);
         }
     }
 

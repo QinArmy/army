@@ -1,16 +1,19 @@
 package io.army.mapping.postgre;
 
 import io.army.criteria.CriteriaException;
+import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
+import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
 
-import java.lang.reflect.Method;
 import java.util.Objects;
 
 
@@ -21,7 +24,7 @@ import java.util.Objects;
  *
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">int4range</a>
  */
-public final class PostgreInt4RangeArrayType extends PostgreRangeType {
+public final class PostgreInt4RangeArrayType extends _ArmyNoInjectionMapping implements MappingType.SqlArrayType {
 
 
     public static PostgreInt4RangeArrayType from(final Class<?> javaType) {
@@ -36,8 +39,8 @@ public final class PostgreInt4RangeArrayType extends PostgreRangeType {
         return instance;
     }
 
-    public static PostgreInt4RangeArrayType func(final Class<?> javaType,
-                                                 final _RangeFunction<Integer, ?> function) {
+    public static PostgreInt4RangeArrayType fromFunc(final Class<?> javaType,
+                                                     final _RangeFunction<Integer, ?> function) {
         if (javaType.isPrimitive() || !javaType.isArray()) {
             throw errorJavaType(PostgreInt4RangeArrayType.class, javaType);
         }
@@ -45,21 +48,33 @@ public final class PostgreInt4RangeArrayType extends PostgreRangeType {
         return new PostgreInt4RangeArrayType(javaType, function);
     }
 
-    public static PostgreInt4RangeArrayType method(final Class<?> javaType, final Method method) {
+    /**
+     * <p>
+     * <pre><bre/>
+     *    public static MyInt4Range create(int lowerBound,boolean includeLowerBound,int upperBound,boolean includeUpperBound){
+     *        // do something
+     *    }
+     *     </pre>
+     * </p>
+     *
+     * @param methodName public static factory method name,for example : com.my.Factory#create
+     * @throws io.army.meta.MetaException throw when factory method name error.
+     */
+    public static PostgreInt4RangeArrayType fromMethod(final Class<?> javaType, final String methodName) {
         if (javaType.isPrimitive() || !javaType.isArray()) {
             throw errorJavaType(PostgreInt4RangeArrayType.class, javaType);
         }
 
         return new PostgreInt4RangeArrayType(javaType,
-                createRangeFunction(_ArrayUtils.underlyingComponent(javaType), Integer.TYPE, method)
+                PostgreRangeType.createRangeFunction(_ArrayUtils.underlyingComponent(javaType), Integer.TYPE, methodName)
         );
     }
 
     public static final PostgreInt4RangeArrayType LINEAR = new PostgreInt4RangeArrayType(String[].class, null);
 
-    private final Class<?> javaType;
+    final Class<?> javaType;
 
-    private final _RangeFunction<Integer, ?> function;
+    final _RangeFunction<Integer, ?> function;
 
     private PostgreInt4RangeArrayType(final Class<?> javaType, final @Nullable _RangeFunction<Integer, ?> function) {
         assert function != null
@@ -76,22 +91,79 @@ public final class PostgreInt4RangeArrayType extends PostgreRangeType {
 
     @Override
     public MappingType arrayTypeOfThis() {
-        return super.arrayTypeOfThis();
+        return fromFunc(_ArrayUtils.arrayClassOf(this.javaType), this.function);
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
-        return null;
+    public MappingType elementType() {
+        final Class<?> javaType = this.javaType;
+        final _RangeFunction<Integer, ?> function = this.function;
+
+        final int dimension;
+        dimension = _ArrayUtils.dimensionOf(javaType);
+        final MappingType type;
+        if (dimension > 1) {
+            assert function != null;
+            type = fromFunc(javaType.getComponentType(), function);
+        } else if (function == null) {
+            assert javaType == String.class;
+            type = PostgreInt4RangeType.TEXT;
+        } else {
+            type = PostgreInt4RangeType.fromArrayType(this);
+        }
+        return type;
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return null;
+    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+        if (meta.dialectDatabase() != Database.PostgreSQL) {
+            throw MAP_ERROR_HANDLER.apply(this, meta);
+        }
+        return PostgreDataType.INT4RANGE_ARRAY;
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        return null;
+    public Object convert(MappingEnv env, final Object nonNull) throws CriteriaException {
+        final Object value;
+        final String text;
+        final int length;
+        if (!(nonNull instanceof String)) {
+            if (!this.javaType.isInstance(nonNull)) {
+                throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), nonNull);
+            }
+            value = nonNull;
+        } else if ((length = (text = (String) nonNull).length()) < 7) {
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), nonNull);
+        } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), nonNull);
+        } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
+            throw PARAM_ERROR_HANDLER.apply(this, map(env.serverMeta()), nonNull);
+        } else {
+            value = text;
+        }
+        return value;
+    }
+
+    @Override
+    public Object beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
+        final Object value;
+        final String text;
+        final int length;
+        if (!(nonNull instanceof String)) {
+            if (!(this.javaType.isInstance(nonNull))) {
+                throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+            }
+            value = nonNull;
+        } else if ((length = (text = (String) nonNull).length()) < 7) {
+            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+        } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
+            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+        } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
+            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+        } else {
+            value = text;
+        }
+        return value;
     }
 
     @Override
