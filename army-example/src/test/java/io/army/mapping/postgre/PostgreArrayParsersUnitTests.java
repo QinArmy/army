@@ -4,6 +4,8 @@ import io.army.dialect._Constant;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.Map;
+
 /**
  * <p>
  * This class unit test class of {@link PostgreArrayParsers}.
@@ -118,6 +120,10 @@ public class PostgreArrayParsersUnitTests {
         array = PostgreArrayParsers.parseArrayText(javaType, text, _Constant.COMMA, this::parseInt);
         Assert.assertEquals(array, new int[][]{{1, 2}, {3, 4}});
 
+        text = "[-1:0][-2:-1]={{1 , 2} , { 3, 4}}";
+        array = PostgreArrayParsers.parseArrayText(javaType, text, _Constant.COMMA, this::parseInt);
+        Assert.assertEquals(array, new int[][]{{1, 2}, {3, 4}});
+
 
         text = "{}";
         javaType = String[].class;
@@ -144,6 +150,35 @@ public class PostgreArrayParsersUnitTests {
         text = "{{\"I love \\\"army\\\"\"} , {\"My Name is zoro.\"} }";
         array = PostgreArrayParsers.parseArrayText(javaType, text, _Constant.COMMA, String::substring);
         Assert.assertEquals(array, new String[][]{{"I love \\\"army\\\""}, {"My Name is zoro."}});
+    }
+
+    @Test
+    public void parseArrayLengthMap() {
+        String text;
+        Map<Class<?>, Integer> map;
+
+        text = "[1:1]";
+        map = PostgreArrayParsers.parseArrayLengthMap(int[].class, text, 0, text.length());
+        Assert.assertEquals(map.size(), 1);
+        Assert.assertEquals(map.get(int[].class), Integer.valueOf(1));
+
+        text = " [ 1 : 1 ]";
+        map = PostgreArrayParsers.parseArrayLengthMap(int[].class, text, 0, text.length());
+        Assert.assertEquals(map.size(), 1);
+        Assert.assertEquals(map.get(int[].class), Integer.valueOf(1));
+
+        text = "[1:1][-2:-1]";
+        map = PostgreArrayParsers.parseArrayLengthMap(int[][].class, text, 0, text.length());
+        Assert.assertEquals(map.size(), 2);
+        Assert.assertEquals(map.get(int[][].class), Integer.valueOf(1));
+        Assert.assertEquals(map.get(int[].class), Integer.valueOf(2));
+
+        text = " [ 1 : 1 ] [-2:-1 ]";
+        map = PostgreArrayParsers.parseArrayLengthMap(int[][].class, text, 0, text.length());
+        Assert.assertEquals(map.size(), 2);
+        Assert.assertEquals(map.get(int[][].class), Integer.valueOf(1));
+        Assert.assertEquals(map.get(int[].class), Integer.valueOf(2));
+
     }
 
 

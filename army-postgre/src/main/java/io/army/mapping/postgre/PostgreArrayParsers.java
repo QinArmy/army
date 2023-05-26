@@ -1,6 +1,7 @@
 package io.army.mapping.postgre;
 
 import io.army.dialect._Constant;
+import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 
 import java.lang.reflect.Array;
@@ -47,7 +48,7 @@ public abstract class PostgreArrayParsers {
             if (index < offset || index >= length) {
                 throw new IllegalArgumentException("postgre array format error.");
             }
-            lengthMap = parseArrayLengths(text, offset, index);
+            lengthMap = parseArrayLengthMap(javaType, text, offset, index);
             offset = index + 1;
         } else {
             lengthMap = EMPTY_LENGTHS;
@@ -107,12 +108,17 @@ public abstract class PostgreArrayParsers {
         return length;
     }
 
-    static Map<Class<?>, Integer> parseArrayLengths(final String text, final int offset, final int end) {
-        boolean inBracket = false;
-
+    static Map<Class<?>, Integer> parseArrayLengthMap(final Class<?> javaType, final String text, final int offset,
+                                                      final int end) {
+        final char colon = ':';
         final Map<Class<?>, Integer> map = _Collections.hashMap();
+
+        Class<?> componentType;
+        componentType = javaType;
+
+        boolean inBracket = false, afterColon = false;
         char ch;
-        for (int i = offset; i < end; i++) {
+        for (int i = offset, lowerIndex = -1, upperIndex = -1, lower = 0, length; i < end; i++) {
             ch = text.charAt(i);
             if (!inBracket) {
                 if (ch == _Constant.LEFT_SQUARE_BRACKET) {
@@ -120,13 +126,61 @@ public abstract class PostgreArrayParsers {
                 } else if (!Character.isWhitespace(ch)) {
                     throw isNotWhitespaceError(i);
                 }
-                continue;
-            } else if (Character.isWhitespace(ch)) {
-                continue;
+            } else if (lowerIndex < 0) {
+                if (!Character.isWhitespace(ch)) {
+                    lowerIndex = i;
+                }
+            } else if (lowerIndex > 0) {
+                if (ch == colon || Character.isWhitespace(ch)) {
+                    lower = Integer.parseInt(text.substring(lowerIndex, i));
+                    lowerIndex = 0;
+                }
+                if (ch == colon) {
+                    afterColon = true;
+                }
+            } else if (!afterColon) {
+                if (ch == colon) {
+                    afterColon = true;
+                } else if (!Character.isWhitespace(ch)) {
+                    throw lengthOfDimensionError(text.substring(offset, end));
+                }
+            } else if (upperIndex < 0) {
+                if (!Character.isWhitespace(ch)) {
+                    upperIndex = i;
+                }
+            } else if (upperIndex == 0) {
+                if (ch == _Constant.RIGHT_SQUARE_BRACKET) {
+                    inBracket = false;
+                    lowerIndex = upperIndex = -1;
+                } else if (!Character.isWhitespace(ch)) {
+                    throw lengthOfDimensionError(text.substring(offset, end));
+                }
+            } else if (ch == _Constant.RIGHT_SQUARE_BRACKET || Character.isWhitespace(ch)) {
+                length = Integer.parseInt(text.substring(upperIndex, i)) - lower + 1;
+                if (length < 0) {
+                    throw lengthOfDimensionError(text.substring(offset, end));
+                }
+                upperIndex = 0;
+                if (map.putIfAbsent(componentType, length) != null) {
+                    String m = String.format("postgre bound decoration %s and %s not match.",
+                            text.substring(offset, end), javaType.getName());
+                    throw new IllegalArgumentException(m);
+                }
+                if (componentType.isArray()) {
+                    componentType = componentType.getComponentType();
+                }
+                if (ch == _Constant.RIGHT_SQUARE_BRACKET) {
+                    inBracket = false;
+                    lowerIndex = upperIndex = -1;
+                }
             }
 
 
         }//for
+
+        if (inBracket || map.size() != _ArrayUtils.dimensionOf(javaType)) {
+            throw lengthOfDimensionError(text.substring(offset, end));
+        }
         return _Collections.unmodifiableMap(map);
     }
 
@@ -233,6 +287,12 @@ public abstract class PostgreArrayParsers {
             throw noRightBrace(end);
         }
         return array;
+    }
+
+
+    private static IllegalArgumentException lengthOfDimensionError(String lengths) {
+        String m = String.format("postgre bound decoration %s error.", lengths);
+        return new IllegalArgumentException(m);
     }
 
 
