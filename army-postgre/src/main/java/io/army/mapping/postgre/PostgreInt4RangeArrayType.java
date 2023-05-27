@@ -186,7 +186,7 @@ public class PostgreInt4RangeArrayType extends _ArmyNoInjectionMapping implement
 
 
     private Object parseInt4RangeArray(final String text, final int offset, final int end) {
-        return PostgreRangeType.textToRange(text, offset, end, this.function, Integer::parseInt);
+        return PostgreRangeType.textToNonEmptyRange(text, offset, end, this.function, Integer::parseInt);
     }
 
     private Object textToRangeArray(final String text, final SqlType type, final ErrorHandler handler) {

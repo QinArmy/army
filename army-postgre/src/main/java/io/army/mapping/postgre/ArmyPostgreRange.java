@@ -14,7 +14,7 @@ import io.army.type.DaoLayer;
  *       <li>Your class must declare the methods of this interface,but your class possibly isn't the subclass of this interface.</li>
  *   </ul>
  * </p>
- *
+ * @see RangeFunction
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html">Range Types</a>
  * @since 1.0
  */

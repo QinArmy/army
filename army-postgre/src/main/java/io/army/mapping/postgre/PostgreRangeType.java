@@ -22,10 +22,9 @@ import java.util.function.Function;
  */
 public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
 
+    public static final String INFINITY = "infinity";
+
     static final String EMPTY = "empty";
-
-
-    private static final String INFINITY = "infinity";
 
     private static final Object INFINITY_BOUND = new Object();
 
@@ -70,14 +69,27 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
         return value;
     }
 
+    /**
+     * @param function <ul>
+     *                 <li>argument of function possibly with any leading and trailing whitespace.</li>
+     *                 <li>argument of function possibly is notion 'infinity',see {@link #INFINITY}</li>
+     *                 <li>function must return null when argument is notion 'infinity' and support it,see {@link #INFINITY}</li>
+     *                 <li>function must throw {@link IllegalArgumentException} when argument is notion 'infinity' and don't support it,see {@link #INFINITY}</li>
+     *                 </ul>
+     * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html">Range Types</a>
+     */
     @SuppressWarnings("unchecked")
-    public static <T> Object textToRange(final String text, final int offset, final int end,
-                                         final RangeFunction<T, ?> rangeFunc, final Function<String, T> function) {
-        assert offset < end && end <= text.length();
-        final int infinityLength = INFINITY.length();
+    public static <T, R> R textToNonEmptyRange(final String text, final int offset, final int end,
+                                               final RangeFunction<T, R> rangeFunc, final Function<String, T> function) {
+        if (!(offset < end && end <= text.length())) {
+            throw new IllegalArgumentException("offset or end error");
+        }
+        if (text.regionMatches(true, offset, EMPTY, 0, EMPTY.length())) {
+            throw new IllegalArgumentException("range must non-empty.");
+        }
         Boolean includeLowerBound = null, includeUpperBound = null;
         Object lowerBound = null, upperBound = null;
-        boolean inQuote = false, isInfinity = false, findComma = true;
+        boolean inQuote = false, findComma = true;
         char ch;
         for (int i = offset, lowerIndex = -1, upperIndex = -1, nextIndex; i < end; i++) {
             ch = text.charAt(i);
@@ -98,36 +110,41 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
                 } else if ((nextIndex = i + 1) < end && text.charAt(nextIndex) == _Constant.DOUBLE_QUOTE) {
                     continue;
                 } else if (lowerBound == null) {
+                    inQuote = false;
                     assert lowerIndex > 0;
                     lowerBound = function.apply(text.substring(lowerIndex, i));
+                    if (lowerBound == null) {
+                        lowerBound = INFINITY_BOUND;
+                    }
                 } else {
+                    inQuote = false;
                     assert upperBound == null && upperIndex > 0;
                     upperBound = function.apply(text.substring(upperIndex, i));
+                    if (upperBound == null) {
+                        upperBound = INFINITY_BOUND;
+                    }
                 }
                 continue;
-            }
-
-            if ((lowerIndex < 0 || upperIndex < 0)
-                    && (ch == 'i' || ch == 'I')
-                    && (end - i) >= infinityLength
-                    && text.regionMatches(true, i, INFINITY, 0, infinityLength)) {
-                isInfinity = true;
             }
 
             if (lowerIndex < 0) {
                 if (ch == _Constant.DOUBLE_QUOTE) {
                     inQuote = true;
                     lowerIndex = i + 1;
-                } else if (ch == _Constant.COMMA || isInfinity) {
+                } else if (ch == _Constant.COMMA) {
                     lowerBound = INFINITY_BOUND;
                     lowerIndex = 0;
-                    findComma = ch != _Constant.COMMA;
+                    findComma = false;
                 } else if (!Character.isWhitespace(ch)) {
                     lowerIndex = i;
                 }
             } else if (lowerBound == null) {
                 if (ch == _Constant.COMMA) {
+                    findComma = false;
                     lowerBound = function.apply(text.substring(lowerIndex, i));
+                    if (lowerBound == null) {
+                        lowerBound = INFINITY_BOUND;
+                    }
                 }
             } else if (findComma) {
                 if (ch == _Constant.COMMA) {
@@ -147,9 +164,6 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
                     includeUpperBound = Boolean.FALSE;
                     upperBound = INFINITY_BOUND;
                     upperIndex = 0;
-                } else if (isInfinity) {
-                    upperBound = INFINITY_BOUND;
-                    upperIndex = 0;
                 } else if (!Character.isWhitespace(ch)) {
                     upperIndex = i;
                 }
@@ -161,6 +175,9 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
                 }
                 if (includeUpperBound != null) {
                     upperBound = function.apply(text.substring(upperIndex, i));
+                    if (upperBound == null) {
+                        upperBound = INFINITY_BOUND;
+                    }
                 }
             } else if (includeUpperBound != null) {
                 break;
@@ -355,7 +372,7 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
 
 
     private static IllegalArgumentException nearbyError(String text) {
-        return new IllegalArgumentException(String.format("%s nearby error.", text));
+        return new IllegalArgumentException(String.format("'%s' nearby error.", text));
     }
 
 

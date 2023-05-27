@@ -134,8 +134,9 @@ public final class PostgreInt4RangeType extends PostgreRangeType {
             value = emptyRange(this.javaType);
         } else {
             try {
-                value = textToRange((String) nonNull, 0, ((String) nonNull).length(), function, Integer::parseInt);
-            } catch (Exception e) {
+                value = textToNonEmptyRange((String) nonNull, 0, ((String) nonNull).length(), function,
+                        PostgreInt4RangeType::parseInt);
+            } catch (Throwable e) {
                 throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, e);
             }
         }
@@ -161,12 +162,22 @@ public final class PostgreInt4RangeType extends PostgreRangeType {
             value = emptyRange(this.javaType);
         } else {
             try {
-                value = textToRange((String) nonNull, 0, ((String) nonNull).length(), function, Integer::parseInt);
+                value = textToNonEmptyRange((String) nonNull, 0, ((String) nonNull).length(), function,
+                        PostgreInt4RangeType::parseInt);
             } catch (Exception e) {
                 throw ACCESS_ERROR_HANDLER.apply(this, type, nonNull, e);
             }
         }
         return value;
+    }
+
+    static int parseInt(final String text) {
+        final String safeText = text.trim();
+        if (INFINITY.equalsIgnoreCase(safeText)) {
+            String m = String.format("postgre int4range don't support notion '%s'", INFINITY);
+            throw new IllegalArgumentException(m);
+        }
+        return Integer.parseInt(safeText);
     }
 
 
