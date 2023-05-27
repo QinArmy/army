@@ -8,6 +8,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -51,9 +52,14 @@ public final class TwoIntType extends MappingType
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public TwoInt convert(MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof TwoInt)) {
-            throw PARAM_ERROR_HANDLER.apply(this, this.map(env.serverMeta()), nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, this.map(env.serverMeta()), nonNull, null);
         }
         return (TwoInt) nonNull;
     }
@@ -64,7 +70,7 @@ public final class TwoIntType extends MappingType
     @Override
     public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof TwoInt)) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
         }
         final TwoInt row = (TwoInt) nonNull;
         final StringBuilder builder;

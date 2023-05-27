@@ -57,6 +57,11 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public ZonedDateTime convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return this.convertBeforeBind(this.map(env.serverMeta()), nonNull);
     }

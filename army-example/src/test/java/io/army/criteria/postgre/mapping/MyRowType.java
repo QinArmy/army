@@ -8,6 +8,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.mapping.optional.TextArrayType;
 import io.army.meta.ServerMeta;
@@ -53,12 +54,18 @@ public final class MyRowType extends MappingType
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public MyRow convert(MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof MyRow)) {
-            throw PARAM_ERROR_HANDLER.apply(this, this.map(env.serverMeta()), nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, this.map(env.serverMeta()), nonNull, null);
         }
         return (MyRow) nonNull;
     }
+
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6">Constructing Composite Values</a>
@@ -66,7 +73,7 @@ public final class MyRowType extends MappingType
     @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof MyRow)) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
         }
         final MyRow row = (MyRow) nonNull;
         final StringBuilder builder;

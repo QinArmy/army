@@ -72,6 +72,11 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Boolean convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return convertToBoolean(this, nonNull, PARAM_ERROR_HANDLER_0);
     }

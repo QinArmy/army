@@ -52,6 +52,10 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
         return LocalDateType.mapToSqlType(this, meta);
     }
 
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
 
     @Override
     public YearMonth convert(MappingEnv env, Object nonNull) throws CriteriaException {

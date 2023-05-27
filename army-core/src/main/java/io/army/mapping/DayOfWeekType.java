@@ -55,12 +55,18 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public DayOfWeek convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
         return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
+    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull)
+            throws CriteriaException {
         return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER_0)
                 .name();
     }

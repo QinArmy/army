@@ -1,10 +1,13 @@
 package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
+import io.army.dialect.NotSupportDialectException;
 import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
@@ -53,6 +56,21 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
+    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
+        return null;
+    }
+
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
+    public MappingType elementType() {
+        return null;
+    }
+
+    @Override
     public final Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return null;
     }
@@ -90,7 +108,7 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
                 if (component == null) {
                     builder.append(_Constant.NULL);
                 } else if (valueHandler.test(component, builder)) {
-                    throw PARAM_ERROR_HANDLER.apply(this, type, array);
+                    throw PARAM_ERROR_HANDLER.apply(this, type, array, null);
                 }
             }
         }
@@ -132,7 +150,7 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
             if (element == null) {
                 builder.append(_Constant.NULL);
             } else if (!numberClass.isInstance(element)) {
-                throw PARAM_ERROR_HANDLER.apply(this, type, list);
+                throw PARAM_ERROR_HANDLER.apply(this, type, list, null);
             } else if (element instanceof BigDecimal) {
                 builder.append(((BigDecimal) element).toPlainString());
             } else if (element instanceof Number) {

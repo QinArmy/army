@@ -70,6 +70,11 @@ public final class MediumIntType extends _NumericType {
 
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return IntegerType._convertToInt(this, nonNull, MIN_VALUE, MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }

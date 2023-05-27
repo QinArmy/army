@@ -69,6 +69,11 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return IntegerType._convertToInt(this, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER_0);
     }

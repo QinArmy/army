@@ -25,6 +25,11 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
     static final String EMPTY = "empty";
 
 
+    private static final String INFINITY = "infinity";
+
+    private static final Object INFINITY_BOUND = new Object();
+
+
     final Class<?> javaType;
 
     /**
@@ -47,33 +52,34 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
         char boundChar;
         if (!(nonNull instanceof String)) {
             if (!this.javaType.isInstance(nonNull)) {
-                throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+                throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
             }
             value = rangeToText(nonNull, elementType, function, new StringBuilder())
                     .toString();
         } else if (EMPTY.equalsIgnoreCase((String) nonNull)) {
             value = EMPTY;
         } else if ((text = (String) nonNull).length() < 5) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
         } else if ((boundChar = text.charAt(0)) != '[' && boundChar != ')') {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
         } else if ((boundChar = text.charAt(text.length() - 1)) != '[' && boundChar != ')') {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
         } else {
             value = text;
         }
         return value;
     }
 
-    final <T> Object textToRange(final String text, final int offset, final _RangeFunction<T, ?> rangeFunc,
-                                 final Function<String, T> function, final SqlType type, final ErrorHandler handler) {
-        final int length = text.length();
-        assert offset < length;
+    @SuppressWarnings("unchecked")
+    public static <T> Object textToRange(final String text, final int offset, final int end,
+                                         final RangeFunction<T, ?> rangeFunc, final Function<String, T> function) {
+        assert offset < end && end <= text.length();
+        final int infinityLength = INFINITY.length();
         Boolean includeLowerBound = null, includeUpperBound = null;
-        T lowerBound = null, upperBound = null;
-        boolean inQuote = false;
+        Object lowerBound = null, upperBound = null;
+        boolean inQuote = false, isInfinity = false, findComma = true;
         char ch;
-        for (int i = offset, statIndex = -1, nextIndex; i < length; i++) {
+        for (int i = offset, lowerIndex = -1, upperIndex = -1, nextIndex; i < end; i++) {
             ch = text.charAt(i);
             if (includeLowerBound == null) {
                 if (ch == _Constant.LEFT_SQUARE_BRACKET) {
@@ -81,64 +87,110 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
                 } else if (ch == _Constant.LEFT_PAREN) {
                     includeLowerBound = Boolean.FALSE;
                 } else if (!Character.isWhitespace(ch)) {
-                    throw handler.apply(this, type, text);
+                    throw nearbyError(text.substring(offset, i));
                 }
-            } else if (statIndex < 0) {
+                continue;
+            } else if (inQuote) {
+                if (ch == _Constant.BACK_SLASH) {
+                    i++;
+                } else if (ch != _Constant.DOUBLE_QUOTE) {
+                    continue;
+                } else if ((nextIndex = i + 1) < end && text.charAt(nextIndex) == _Constant.DOUBLE_QUOTE) {
+                    continue;
+                } else if (lowerBound == null) {
+                    assert lowerIndex > 0;
+                    lowerBound = function.apply(text.substring(lowerIndex, i));
+                } else {
+                    assert upperBound == null && upperIndex > 0;
+                    upperBound = function.apply(text.substring(upperIndex, i));
+                }
+                continue;
+            }
+
+            if ((lowerIndex < 0 || upperIndex < 0)
+                    && (ch == 'i' || ch == 'I')
+                    && (end - i) >= infinityLength
+                    && text.regionMatches(true, i, INFINITY, 0, infinityLength)) {
+                isInfinity = true;
+            }
+
+            if (lowerIndex < 0) {
                 if (ch == _Constant.DOUBLE_QUOTE) {
                     inQuote = true;
-                    statIndex = i;
+                    lowerIndex = i + 1;
+                } else if (ch == _Constant.COMMA || isInfinity) {
+                    lowerBound = INFINITY_BOUND;
+                    lowerIndex = 0;
+                    findComma = ch != _Constant.COMMA;
                 } else if (!Character.isWhitespace(ch)) {
-                    statIndex = i;
-                }
-            } else if (inQuote) {
-                if (ch == _Constant.DOUBLE_QUOTE) {
-                    nextIndex = i + 1;
-                    inQuote = nextIndex < length && text.charAt(nextIndex) == _Constant.DOUBLE_QUOTE;
+                    lowerIndex = i;
                 }
             } else if (lowerBound == null) {
-                if (ch == _Constant.COMMA || Character.isWhitespace(ch)) {
-                    try {
-                        lowerBound = function.apply(text.substring(statIndex, i));
-                    } catch (Exception e) {
-                        throw handler.apply(this, type, text);
-                    }
-                    statIndex = -1;
+                if (ch == _Constant.COMMA) {
+                    lowerBound = function.apply(text.substring(lowerIndex, i));
                 }
-            } else if (includeUpperBound == null) {
-                if (ch == _Constant.LEFT_SQUARE_BRACKET) {
-                    includeUpperBound = Boolean.TRUE;
-                } else if (ch == _Constant.LEFT_PAREN) {
-                    includeUpperBound = Boolean.FALSE;
+            } else if (findComma) {
+                if (ch == _Constant.COMMA) {
+                    findComma = false;
                 } else if (!Character.isWhitespace(ch)) {
-                    throw handler.apply(this, type, text);
+                    throw nearbyError(text.substring(lowerIndex, i + 1));
                 }
-                if (upperBound != null) {
-                    continue;
+            } else if (upperIndex < 0) {
+                if (ch == _Constant.DOUBLE_QUOTE) {
+                    inQuote = true;
+                    upperIndex = i + 1;
+                } else if (ch == _Constant.RIGHT_SQUARE_BRACKET) {
+                    includeUpperBound = Boolean.TRUE;
+                    upperBound = INFINITY_BOUND;
+                    upperIndex = 0;
+                } else if (ch == _Constant.RIGHT_PAREN) {
+                    includeUpperBound = Boolean.FALSE;
+                    upperBound = INFINITY_BOUND;
+                    upperIndex = 0;
+                } else if (isInfinity) {
+                    upperBound = INFINITY_BOUND;
+                    upperIndex = 0;
+                } else if (!Character.isWhitespace(ch)) {
+                    upperIndex = i;
                 }
-                try {
-                    upperBound = function.apply(text.substring(statIndex, i));
-                } catch (Exception e) {
-                    throw handler.apply(this, type, text);
+            } else if (upperBound == null) {
+                if (ch == _Constant.RIGHT_SQUARE_BRACKET) {
+                    includeUpperBound = Boolean.TRUE;
+                } else if (ch == _Constant.RIGHT_PAREN) {
+                    includeUpperBound = Boolean.FALSE;
                 }
-            } else {
+                if (includeUpperBound != null) {
+                    upperBound = function.apply(text.substring(upperIndex, i));
+                }
+            } else if (includeUpperBound != null) {
                 break;
+            } else if (ch == _Constant.RIGHT_SQUARE_BRACKET) {
+                includeUpperBound = Boolean.TRUE;
+            } else if (ch == _Constant.RIGHT_PAREN) {
+                includeUpperBound = Boolean.FALSE;
             }
 
 
         }// for
 
-        if (lowerBound == null || includeLowerBound == null || upperBound == null || includeUpperBound) {
-            throw handler.apply(this, type, text);
+        if (lowerBound == null || includeLowerBound == null || upperBound == null || includeUpperBound == null) {
+            throw new IllegalArgumentException("postgre range format error.");
         }
-        return rangeFunc.apply(lowerBound, includeLowerBound, upperBound, includeUpperBound);
+        if (lowerBound == INFINITY_BOUND) {
+            lowerBound = null;
+        }
+        if (upperBound == INFINITY_BOUND) {
+            upperBound = null;
+        }
+        return rangeFunc.apply((T) lowerBound, includeLowerBound, (T) upperBound, includeUpperBound);
     }
 
     /**
      * @param methodName public static factory method name,for example : com.my.Factory#create
      * @throws io.army.meta.MetaException throw when factory method name error.
      */
-    static <T> _RangeFunction<T, ?> createRangeFunction(final Class<?> javaType, final Class<T> elementType,
-                                                        final String methodName) {
+    static <T> RangeFunction<T, ?> createRangeFunction(final Class<?> javaType, final Class<T> elementType,
+                                                       final String methodName) {
 
         final Method method;
         method = loadFactoryMethod(javaType, methodName, elementType);
@@ -160,44 +212,33 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
     @SuppressWarnings("unchecked")
     static <T> StringBuilder rangeToText(final Object nonNull, final Class<T> rangeType, final Function<T, String> function,
                                          final StringBuilder builder) {
-
+        final ArmyPostgreRange<T> range;
         if (!(nonNull instanceof ArmyPostgreRange)) {
             rangeToTextByReflection(nonNull, rangeType, function, builder);
-        } else if (((ArmyPostgreRange) nonNull).isEmpty()) {
+        } else if ((range = (ArmyPostgreRange<T>) nonNull).isEmpty()) {
             builder.append(EMPTY);
         } else {
-            if (((ArmyPostgreRange) nonNull).isIncludeLowerBound()) {
+            if (range.isIncludeLowerBound()) {
                 builder.append(_Constant.LEFT_SQUARE_BRACKET);
             } else {
                 builder.append(_Constant.LEFT_PAREN);
             }
+            final T lowerBound, upperBound;
+            lowerBound = range.getLowerBound();
+            upperBound = range.getUpperBound();
 
-            final Object lowerBound, upperBound;
-            if (nonNull instanceof ArmyPostgreObjectRange) {
-                final ArmyPostgreObjectRange<?> range = (ArmyPostgreObjectRange<?>) nonNull;
-                lowerBound = range.getLowerBound();
-                upperBound = range.getUpperBound();
-            } else if (nonNull instanceof ArmyPostgreInt4Range) {
-                final ArmyPostgreInt4Range range = (ArmyPostgreInt4Range) nonNull;
-                lowerBound = range.getLowerBound();
-                upperBound = range.getUpperBound();
-            } else if (nonNull instanceof ArmyPostgreInt8Range) {
-                final ArmyPostgreInt8Range range = (ArmyPostgreInt8Range) nonNull;
-                lowerBound = range.getLowerBound();
-                upperBound = range.getUpperBound();
-            } else {
-                String m = String.format("unknown %s type.", ArmyPostgreRange.class.getName());
-                throw new MetaException(m);
+            if (lowerBound != null) {
+                builder.append(function.apply(lowerBound));
+            }
+            builder.append(_Constant.COMMA);
+            if (upperBound != null) {
+                builder.append(function.apply(upperBound));
             }
 
-            builder.append(function.apply((T) lowerBound))
-                    .append(_Constant.COMMA)
-                    .append(function.apply((T) upperBound));
-
-            if (((ArmyPostgreRange) nonNull).isIncludeUpperBound()) {
-                builder.append(_Constant.LEFT_SQUARE_BRACKET);
+            if (range.isIncludeUpperBound()) {
+                builder.append(_Constant.RIGHT_SQUARE_BRACKET);
             } else {
-                builder.append(_Constant.LEFT_PAREN);
+                builder.append(_Constant.RIGHT_PAREN);
             }
         }
         return builder;
@@ -207,7 +248,7 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
     static Object emptyRange(final Class<?> javaType) {
         final Object empty;
         if (javaType == String.class) {
-            empty = "empty";
+            empty = EMPTY;
         } else {
             try {
                 final Method method;
@@ -310,6 +351,11 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
         } else {
             builder.append(_Constant.LEFT_PAREN);
         }
+    }
+
+
+    private static IllegalArgumentException nearbyError(String text) {
+        return new IllegalArgumentException(String.format("%s nearby error.", text));
     }
 
 

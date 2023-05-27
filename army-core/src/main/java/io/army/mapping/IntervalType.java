@@ -31,6 +31,11 @@ public final class IntervalType extends _ArmyNoInjectionMapping implements Mappi
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();

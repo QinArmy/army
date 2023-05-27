@@ -36,6 +36,11 @@ public final class UUIDType extends _ArmyNoInjectionMapping {
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
         //TODO
         throw new UnsupportedOperationException();

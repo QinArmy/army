@@ -2,10 +2,7 @@ package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
-import io.army.mapping.IntegerType;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
@@ -75,6 +72,11 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         return mapSqlType(this, meta);
+    }
+
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
     }
 
     @Override

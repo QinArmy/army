@@ -68,6 +68,10 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
         return type;
     }
 
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
 
     @Override
     public LocalTime convert(MappingEnv env, Object nonNull) throws CriteriaException {

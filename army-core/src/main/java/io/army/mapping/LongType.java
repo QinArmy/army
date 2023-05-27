@@ -72,6 +72,10 @@ public final class LongType extends _NumericType._IntegerType {
         return type;
     }
 
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
 
     @Override
     public Long convert(MappingEnv env, Object nonNull) throws CriteriaException {

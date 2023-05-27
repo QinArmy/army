@@ -60,6 +60,10 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
 
     public abstract SqlType map(ServerMeta meta) throws NotSupportDialectException;
 
+
+    public abstract MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException;
+
+
     /**
      * @return the instance of {@link #javaType()}.
      */
@@ -197,12 +201,26 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
         return new CriteriaException(createConvertErrorMessage(type, nonNull));
     }
 
-    private static CriteriaException paramError(final MappingType type, SqlType sqlType, final @Nullable Object nonNull) {
-        return new CriteriaException(createConvertErrorMessage(type, nonNull));
+    private static CriteriaException paramError(final MappingType type, SqlType sqlType,
+                                                final Object nonNull, final @Nullable Throwable cause) {
+        final CriteriaException e;
+        if (cause == null) {
+            e = new CriteriaException(createConvertErrorMessage(type, nonNull));
+        } else {
+            e = new CriteriaException(createConvertErrorMessage(type, nonNull), cause);
+        }
+        return e;
     }
 
-    private static DataAccessException dataAccessError(final MappingType type, SqlType sqlType, final @Nullable Object nonNull) {
-        return new DataAccessException(createConvertErrorMessage(type, nonNull));
+    private static DataAccessException dataAccessError(final MappingType type, SqlType sqlType,
+                                                       final Object nonNull, final @Nullable Throwable cause) {
+        final DataAccessException e;
+        if (cause == null) {
+            e = new DataAccessException(createConvertErrorMessage(type, nonNull));
+        } else {
+            e = new DataAccessException(createConvertErrorMessage(type, nonNull), cause);
+        }
+        return e;
     }
 
     private static DataAccessException dataAccessError0(final MappingType type, final Object nonNull) {
@@ -536,7 +554,7 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
 
     protected interface ErrorHandler {
 
-        ArmyException apply(MappingType type, SqlType sqlType, @Nullable Object value);
+        ArmyException apply(MappingType type, SqlType sqlType, Object value, @Nullable Throwable e);
 
     }
 

@@ -69,6 +69,11 @@ public final class ShortType extends _NumericType._IntegerType {
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Short convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return (short) IntegerType._convertToInt(this, nonNull, Short.MIN_VALUE, Short.MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }

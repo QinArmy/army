@@ -85,6 +85,11 @@ public final class MediumTextType extends _ArmyBuildInMapping implements Mapping
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return StringType._convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER_0);
     }

@@ -26,6 +26,12 @@ public final class JsonMapType extends MappingType {
         throw new UnsupportedOperationException();
     }
 
+
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
     @Override
     public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return null;

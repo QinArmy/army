@@ -4,6 +4,8 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -60,6 +62,11 @@ public final class XmlArrayType extends _ArmyBuildInMapping {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return PostgreDataType.VARCHAR_ARRAY;
+    }
+
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
     }
 
     @Override

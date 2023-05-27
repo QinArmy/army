@@ -56,6 +56,12 @@ public final class TextEnumType extends MappingType {
         return NameEnumType.mapToSqlEnumType(this, meta);
     }
 
+
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
     @Override
     public TextEnum convert(MappingEnv env, Object nonNull) throws CriteriaException {
         if (!this.javaType.isInstance(nonNull)) {

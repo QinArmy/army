@@ -40,6 +40,11 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public ZoneId convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return convertToZoneId(this, nonNull, PARAM_ERROR_HANDLER_0);
     }

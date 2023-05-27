@@ -4,10 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.TextType;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
@@ -125,6 +122,11 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
         // TODO
         throw new UnsupportedOperationException();
@@ -168,7 +170,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
             } else if (element instanceof String) {
                 array[i] = (String) element;
             } else {
-                throw PARAM_ERROR_HANDLER.apply(this, type, list);
+                throw PARAM_ERROR_HANDLER.apply(this, type, list, null);
             }
         }
         return array;

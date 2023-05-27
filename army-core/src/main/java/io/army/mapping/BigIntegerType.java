@@ -59,6 +59,10 @@ public final class BigIntegerType extends _NumericType._IntegerType {
         return BigDecimalType.mapToDecimal(this, meta);
     }
 
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
 
     @Override
     public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {

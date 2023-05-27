@@ -54,6 +54,11 @@ public final class MonthType extends _ArmyNoInjectionMapping implements MappingT
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Month convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return convertToMoth(this, nonNull, PARAM_ERROR_HANDLER_0);
     }

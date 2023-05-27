@@ -56,6 +56,11 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
         return mapToDecimal(this, meta);
     }
 
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        throw new UnsupportedOperationException();
+    }
+
 
     @Override
     public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {

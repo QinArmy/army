@@ -5,10 +5,7 @@ import io.army.criteria.postgre.type.MySubRow;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.dialect._Constant;
-import io.army.mapping.IntegerType;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.TextType;
+import io.army.mapping.*;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -53,9 +50,14 @@ public final class MySubRowType extends MappingType
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public MySubRow convert(MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof MySubRow)) {
-            throw PARAM_ERROR_HANDLER.apply(this, this.map(env.serverMeta()), nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, this.map(env.serverMeta()), nonNull, null);
         }
         return (MySubRow) nonNull;
     }
@@ -66,7 +68,7 @@ public final class MySubRowType extends MappingType
     @Override
     public String beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof MySubRow)) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull);
+            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
         }
         final MySubRow row = (MySubRow) nonNull;
         final StringBuilder builder;

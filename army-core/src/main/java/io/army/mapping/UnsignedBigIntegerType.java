@@ -46,6 +46,11 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public BigInteger convert(MappingEnv env, Object nonNull) throws CriteriaException {
         final BigInteger value;
         value = BigIntegerType._convertToBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);

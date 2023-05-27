@@ -60,6 +60,11 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public byte[] convert(MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof byte[])) {
             throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);

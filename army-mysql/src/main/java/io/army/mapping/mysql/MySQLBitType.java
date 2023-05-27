@@ -3,6 +3,8 @@ package io.army.mapping.mysql;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
@@ -39,6 +41,11 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
             throw noMappingError(meta);
         }
         return MySQLType.BIT;
+    }
+
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
     }
 
     @Override

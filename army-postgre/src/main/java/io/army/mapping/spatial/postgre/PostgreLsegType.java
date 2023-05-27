@@ -4,6 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
@@ -40,6 +41,11 @@ public final class PostgreLsegType extends PostgreGeometricType implements Mappi
     public SqlType map(ServerMeta meta) throws NotSupportDialectException {
         //TODO
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
     }
 
     @Override

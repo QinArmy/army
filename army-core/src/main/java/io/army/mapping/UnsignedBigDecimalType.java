@@ -41,6 +41,10 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
         return mapToSqlType(this, meta);
     }
 
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
 
     @Override
     public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {

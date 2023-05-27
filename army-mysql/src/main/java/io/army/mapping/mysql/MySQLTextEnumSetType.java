@@ -3,10 +3,7 @@ package io.army.mapping.mysql;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
-import io.army.mapping.ElementMappingType;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.TextEnumType;
+import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
@@ -58,6 +55,11 @@ public final class MySQLTextEnumSetType extends MappingType implements ElementMa
             throw noMappingError(meta);
         }
         return MySQLType.SET;
+    }
+
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
     }
 
     @Override

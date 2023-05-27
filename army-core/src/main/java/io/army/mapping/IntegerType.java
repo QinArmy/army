@@ -69,6 +69,11 @@ public final class IntegerType extends _NumericType._IntegerType {
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return _convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }

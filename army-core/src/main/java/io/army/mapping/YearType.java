@@ -68,6 +68,11 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Year convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER_0);
     }

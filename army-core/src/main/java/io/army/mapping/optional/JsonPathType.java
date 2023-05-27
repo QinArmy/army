@@ -4,6 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
@@ -43,6 +44,11 @@ public final class JsonPathType extends _ArmyBuildInMapping implements MappingTy
                 throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return type;
+    }
+
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
     }
 
     @Override

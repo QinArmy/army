@@ -55,6 +55,11 @@ public final class SQLCharType extends _ArmyBuildInMapping implements MappingTyp
 
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return StringType._convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER_0);
     }

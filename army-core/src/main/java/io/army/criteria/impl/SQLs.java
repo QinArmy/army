@@ -13,6 +13,8 @@ import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
@@ -697,6 +699,11 @@ public abstract class SQLs extends SQLsSyntax {
                     throw MAP_ERROR_HANDLER.apply(this, meta);
             }
             return sqlType;
+        }
+
+        @Override
+        public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+            return null;
         }
 
         @Override

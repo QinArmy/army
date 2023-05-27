@@ -60,6 +60,11 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public CodeEnum convert(MappingEnv env, final Object nonNull) throws CriteriaException {
         if (!this.enumClass.isInstance(nonNull)) {
             throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);

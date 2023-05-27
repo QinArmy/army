@@ -70,6 +70,11 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
     }
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public OffsetTime convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return this.convertBeforeBind(this.map(env.serverMeta()), nonNull);
     }

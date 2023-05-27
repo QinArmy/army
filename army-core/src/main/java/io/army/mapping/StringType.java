@@ -87,6 +87,11 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
 
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public String convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return _convertToString(this, this.map(env.serverMeta()), nonNull, PARAM_ERROR_HANDLER_0);
     }

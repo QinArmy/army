@@ -11,6 +11,7 @@ import io.army.sqltype.SqlType;
  *
  * @see Void
  */
+@Deprecated
 public final class VoidType extends _ArmyBuildInMapping {
 
     public static final VoidType INSTANCE = new VoidType();
@@ -28,6 +29,11 @@ public final class VoidType extends _ArmyBuildInMapping {
     @Override
     public SqlType map(ServerMeta meta) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
     }
 
     @Override

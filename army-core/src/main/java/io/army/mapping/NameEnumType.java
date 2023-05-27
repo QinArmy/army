@@ -61,6 +61,11 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
 
 
     @Override
+    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+        return null;
+    }
+
+    @Override
     public Enum<?> convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return this.convertToEnum(nonNull);
     }

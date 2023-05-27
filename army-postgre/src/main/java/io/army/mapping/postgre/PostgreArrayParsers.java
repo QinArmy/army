@@ -1,12 +1,15 @@
 package io.army.mapping.postgre;
 
 import io.army.dialect._Constant;
+import io.army.type.ImmutableSpec;
 import io.army.util._ArrayUtils;
 import io.army.util._Collections;
 
 import java.lang.reflect.Array;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public abstract class PostgreArrayParsers {
 
@@ -162,9 +165,7 @@ public abstract class PostgreArrayParsers {
                 }
                 upperIndex = 0;
                 if (map.putIfAbsent(componentType, length) != null) {
-                    String m = String.format("postgre bound decoration %s and %s not match.",
-                            text.substring(offset, end), javaType.getName());
-                    throw new IllegalArgumentException(m);
+                    throw boundDecorationNotMatch(javaType, text.substring(offset, end));
                 }
                 if (componentType.isArray()) {
                     componentType = componentType.getComponentType();
@@ -178,10 +179,35 @@ public abstract class PostgreArrayParsers {
 
         }//for
 
-        if (inBracket || map.size() != _ArrayUtils.dimensionOf(javaType)) {
+        if (inBracket) {
             throw lengthOfDimensionError(text.substring(offset, end));
+        } else if (map.size() != _ArrayUtils.dimensionOf(javaType)) {
+            throw boundDecorationNotMatch(javaType, text.substring(offset, end));
         }
         return _Collections.unmodifiableMap(map);
+    }
+
+    static List<Object> linearToList(final Object array, final Supplier<List<Object>> supplier) {
+        List<Object> list;
+        list = supplier.get();
+        final int arrayLength;
+        arrayLength = Array.getLength(array);
+        for (int i = 0; i < arrayLength; i++) {
+            list.add(Array.get(array, i));
+        }
+        if (list instanceof ImmutableSpec) {
+            switch (arrayLength) {
+                case 0:
+                    list = _Collections.emptyList();
+                    break;
+                case 1:
+                    list = _Collections.singletonList(Array.get(array, 0));
+                    break;
+                default:
+                    list = _Collections.unmodifiableList(list);
+            }
+        }
+        return list;
     }
 
 
@@ -287,6 +313,11 @@ public abstract class PostgreArrayParsers {
             throw noRightBrace(end);
         }
         return array;
+    }
+
+    private static IllegalArgumentException boundDecorationNotMatch(Class<?> javaType, String decoration) {
+        String m = String.format("postgre bound decoration %s and %s not match.", decoration, javaType.getName());
+        return new IllegalArgumentException(m);
     }
 
 
