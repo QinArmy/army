@@ -32,7 +32,7 @@ abstract class Expressions {
         throw new UnsupportedOperationException();
     }
 
-    static OperationExpression dualExp(final Expression left, final DualExpOperator operator, final Expression right) {
+    static CompoundExpression dualExp(final Expression left, final DualExpOperator operator, final Expression right) {
         final BinaryOperator<MappingType> inferFunc;
         switch (operator) {
             case PLUS:
@@ -57,14 +57,14 @@ abstract class Expressions {
         return dialectDualExp(left, operator, right, inferFunc);
     }
 
-    static OperationExpression dialectDualExp(final Expression left, final DualExpOperator operator,
-                                              final Expression right, final BinaryOperator<MappingType> inferFunc) {
+    static CompoundExpression dialectDualExp(final Expression left, final DualExpOperator operator,
+                                             final Expression right, final BinaryOperator<MappingType> inferFunc) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
         } else if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
         }
-        final DualExpression result;
+        final CompoundExpression result;
         if ((left instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) left).isDelay())
                 || (right instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) right).isDelay())) {
             result = new DelayDualExpression(left, operator, right, inferFunc);
@@ -112,8 +112,8 @@ abstract class Expressions {
     }
 
 
-    static OperationPredicate booleanTestPredicate(final OperationExpression expression,
-                                                   boolean not, SQLsSyntax.BooleanTestWord operand) {
+    static CompoundPredicate booleanTestPredicate(final OperationExpression expression,
+                                                  boolean not, SQLsSyntax.BooleanTestWord operand) {
         if (!(operand == SQLs.NULL
                 || operand == SQLs.TRUE
                 || operand == SQLs.FALSE
@@ -125,8 +125,8 @@ abstract class Expressions {
         return new BooleanTestPredicate(expression, not, operand);
     }
 
-    static OperationPredicate isComparisonPredicate(final OperationExpression left, boolean not,
-                                                    SQLsSyntax.IsComparisonWord operator, Expression right) {
+    static CompoundPredicate isComparisonPredicate(final OperationExpression left, boolean not,
+                                                   SQLsSyntax.IsComparisonWord operator, Expression right) {
         if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
         }
@@ -135,7 +135,7 @@ abstract class Expressions {
     }
 
 
-    static OperationPredicate dualPredicate(final Expression left, final DualBooleanOperator operator, final Expression right) {
+    static CompoundPredicate dualPredicate(final Expression left, final DualBooleanOperator operator, final Expression right) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
         }
@@ -158,9 +158,9 @@ abstract class Expressions {
         return new StandardDualPredicate(left, operator, right);
     }
 
-    static OperationPredicate likePredicate(final Expression left, final DualBooleanOperator operator,
-                                            final @Nullable Expression right, SqlSyntax.WordEscape escape,
-                                            @Nullable final Expression escapeChar) {
+    static CompoundPredicate likePredicate(final Expression left, final DualBooleanOperator operator,
+                                           final @Nullable Expression right, SqlSyntax.WordEscape escape,
+                                           @Nullable final Expression escapeChar) {
         switch (operator) {
             case LIKE:
             case NOT_LIKE:
@@ -182,9 +182,9 @@ abstract class Expressions {
     }
 
 
-    static OperationPredicate betweenPredicate(OperationExpression left, boolean not,
-                                               @Nullable SQLsSyntax.BetweenModifier modifier,
-                                               Expression center, Expression right) {
+    static CompoundPredicate betweenPredicate(OperationExpression left, boolean not,
+                                              @Nullable SQLsSyntax.BetweenModifier modifier,
+                                              Expression center, Expression right) {
         if (!(center instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(center);
         } else if (!(right instanceof OperationExpression)) {
@@ -194,7 +194,7 @@ abstract class Expressions {
         return new BetweenPredicate(left, not, modifier, center, right);
     }
 
-    static OperationPredicate compareQueryPredicate(OperationExpression left
+    static CompoundPredicate compareQueryPredicate(OperationExpression left
             , DualBooleanOperator operator, QueryOperator queryOperator, SubQuery subQuery) {
         switch (operator) {
             case LESS:
@@ -220,8 +220,8 @@ abstract class Expressions {
         return new SubQueryPredicate(left, operator, queryOperator, subQuery);
     }
 
-    static OperationPredicate inOperator(final OperationExpression left, final DualBooleanOperator operator,
-                                         final SubQuery subQuery) {
+    static CompoundPredicate inOperator(final OperationExpression left, final DualBooleanOperator operator,
+                                        final SubQuery subQuery) {
         switch (operator) {
             case IN:
             case NOT_IN:
@@ -440,43 +440,56 @@ abstract class Expressions {
         } else if (!(right instanceof MappingType.SqlNumberOrStringType) && left instanceof MappingType.SqlNumberType) {
             returnType = right;
         } else if (!(left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType)) {
-            if (left.getClass() == right.getClass()) {
+            if (left.isSameType(right)) {
                 returnType = left;
             } else {
-                returnType = StringType.INSTANCE;
+                returnType = TextType.INSTANCE;
             }
         } else if (left instanceof MappingType.SqlFloatType || right instanceof MappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
         } else if (left instanceof MappingType.SqlDecimalType || right instanceof MappingType.SqlDecimalType) {
             returnType = BigDecimalType.INSTANCE;
-        } else if (!(left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType)) {
-            returnType = left;
-        } else if (((MappingType.SqlIntegerType) left).lengthType()
-                .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
+        } else if (left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType) {
+            if (((MappingType.SqlIntegerType) left).lengthType()
+                    .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
+                returnType = left;
+            } else {
+                returnType = right;
+            }
+        } else if (left.isSameType(right)) {
             returnType = left;
         } else {
-            returnType = right;
+            returnType = TextType.INSTANCE;
         }
         return returnType;
     }
 
+
     static MappingType mathExpType(final MappingType left, final MappingType right) {
         final MappingType returnType;
-        if (left.getClass() == right.getClass()) {
+        if (left == right) {
             returnType = left;
         } else if (!(left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType)) {
-            returnType = StringType.INSTANCE;
+            if (left.isSameType(right)) {
+                returnType = left;
+            } else {
+                returnType = TextType.INSTANCE;
+            }
         } else if (left instanceof MappingType.SqlFloatType || right instanceof MappingType.SqlFloatType) {
             returnType = DoubleType.INSTANCE;
         } else if (left instanceof MappingType.SqlDecimalType || right instanceof MappingType.SqlDecimalType) {
             returnType = BigDecimalType.INSTANCE;
-        } else if (!(left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType)) {
-            returnType = left;
-        } else if (((MappingType.SqlIntegerType) left).lengthType()
-                .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
+        } else if (left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType) {
+            if (((MappingType.SqlIntegerType) left).lengthType()
+                    .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
+                returnType = left;
+            } else {
+                returnType = right;
+            }
+        } else if (left.isSameType(right)) {
             returnType = left;
         } else {
-            returnType = right;
+            returnType = TextType.INSTANCE;
         }
         return returnType;
     }
@@ -555,7 +568,7 @@ abstract class Expressions {
      *
      * @since 1.0
      */
-    private static class DualExpression extends OperationExpression.CompoundExpression {
+    private static class DualExpression extends OperationExpression.OperationCompoundExpression {
 
         final ArmyExpression left;
 
@@ -620,7 +633,7 @@ abstract class Expressions {
             sqlBuilder = context.sqlBuilder();
             final ArmyExpression left = this.left, right = this.right;
             final boolean leftOuterParens, rightOuterParens;
-            leftOuterParens = left instanceof OperationPredicate.CompoundPredicate; // if CompoundPredicate must append outer parens
+            leftOuterParens = left instanceof OperationPredicate.OperationCompoundPredicate; // if CompoundPredicate must append outer parens
 
             //1. append left expression
             if (leftOuterParens) {
@@ -658,7 +671,7 @@ abstract class Expressions {
             final StringBuilder sqlBuilder = new StringBuilder();
             final ArmyExpression left = this.left, right = this.right;
             final boolean leftOuterParens, rightOuterParens;
-            leftOuterParens = left instanceof OperationPredicate.CompoundPredicate; // if CompoundPredicate must append outer parens
+            leftOuterParens = left instanceof OperationPredicate.OperationCompoundPredicate; // if CompoundPredicate must append outer parens
 
             //1. append left expression
             if (leftOuterParens) {
@@ -968,7 +981,7 @@ abstract class Expressions {
 
     /*-------------------below predicate class-------------------*/
 
-    private static final class ExistsPredicate extends OperationPredicate.CompoundPredicate {
+    private static final class ExistsPredicate extends OperationPredicate.OperationCompoundPredicate {
 
         private final UnaryBooleanOperator operator;
 
@@ -1025,7 +1038,7 @@ abstract class Expressions {
     }//UnaryPredicate
 
 
-    static abstract class DualPredicate extends OperationPredicate.CompoundPredicate {
+    static abstract class DualPredicate extends OperationPredicate.OperationCompoundPredicate {
 
 
         final ArmyExpression left;
@@ -1052,7 +1065,7 @@ abstract class Expressions {
             sqlBuilder = context.sqlBuilder();
             final ArmyExpression left = this.left, right = this.right;
             final boolean leftOuterParens, rightOuterParens;
-            leftOuterParens = left instanceof OperationPredicate.CompoundPredicate;
+            leftOuterParens = left instanceof OperationCompoundPredicate;
 
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
@@ -1105,7 +1118,7 @@ abstract class Expressions {
 
             final ArmyExpression left = this.left, right = this.right;
             final boolean leftOuterParens, rightOuterParens;
-            leftOuterParens = left instanceof OperationPredicate.CompoundPredicate;
+            leftOuterParens = left instanceof OperationCompoundPredicate;
 
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
@@ -1144,7 +1157,7 @@ abstract class Expressions {
     }//StandardDualPredicate
 
 
-    private static final class LikePredicate extends OperationPredicate.CompoundPredicate {
+    private static final class LikePredicate extends OperationPredicate.OperationCompoundPredicate {
 
         private final ArmyExpression left;
 
@@ -1266,7 +1279,7 @@ abstract class Expressions {
     }//LikePredicate
 
 
-    private static class BetweenPredicate extends OperationPredicate.CompoundPredicate {
+    private static class BetweenPredicate extends OperationPredicate.OperationCompoundPredicate {
 
         private final boolean not;
 
@@ -1298,7 +1311,7 @@ abstract class Expressions {
 
             final ArmyExpression left = this.left, center = this.center, right = this.right;
             final boolean leftOuterParens, centerOuterParens, rightOuterParens;
-            leftOuterParens = left instanceof OperationPredicate.CompoundPredicate; // if predicate must append outer parens
+            leftOuterParens = left instanceof OperationCompoundPredicate; // if predicate must append outer parens
             // 1. append left
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
@@ -1419,7 +1432,7 @@ abstract class Expressions {
     }//BetweenPredicate
 
 
-    private static class CastExpression extends OperationExpression.CompoundExpression {
+    private static class CastExpression extends OperationExpression.OperationCompoundExpression {
 
         private final ArmyExpression expression;
 
@@ -1471,7 +1484,7 @@ abstract class Expressions {
     }//CastExpression
 
 
-    private static final class SubQueryPredicate extends OperationPredicate.CompoundPredicate {
+    private static final class SubQueryPredicate extends OperationPredicate.OperationCompoundPredicate {
         private final ArmyExpression left;
 
         private final DualBooleanOperator operator;
@@ -1524,7 +1537,7 @@ abstract class Expressions {
     }//SubQueryPredicate
 
 
-    private static final class BooleanTestPredicate extends OperationPredicate.CompoundPredicate {
+    private static final class BooleanTestPredicate extends OperationPredicate.OperationCompoundPredicate {
 
         private final OperationExpression expression;
 
@@ -1596,7 +1609,7 @@ abstract class Expressions {
 
     }//BooleanTestPredicate
 
-    private static final class IsComparisonPredicate extends OperationPredicate.CompoundPredicate {
+    private static final class IsComparisonPredicate extends OperationPredicate.OperationCompoundPredicate {
 
         private final ArmyExpression left;
 
@@ -2351,7 +2364,6 @@ abstract class Expressions {
         private final List<Object> elementList;
 
         /**
-         * @see #array(Function, Object...)
          * @see #array(Function, Consumer)
          */
         private SimpleArrayConstructor(List<Object> elementList, TypeMeta inferType) {

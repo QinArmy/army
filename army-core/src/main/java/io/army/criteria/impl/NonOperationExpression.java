@@ -33,313 +33,313 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final IPredicate equal(Expression operand) {
+    public final CompoundPredicate equal(Expression operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate equalAny(SubQuery subQuery) {
+    public final CompoundPredicate equalAny(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate equalSome(SubQuery subQuery) {
+    public final CompoundPredicate equalSome(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate less(Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
-
-    @Override
-    public final OperationPredicate lessAny(SubQuery subQuery) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate lessSome(SubQuery subQuery) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate lessAll(SubQuery subQuery) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate lessEqual(Expression operand) {
+    public final CompoundPredicate less(Expression operand) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final OperationPredicate lessEqualAny(SubQuery subQuery) {
+    public final CompoundPredicate lessAny(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate lessEqualSome(SubQuery subQuery) {
+    public final CompoundPredicate lessSome(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate lessEqualAll(SubQuery subQuery) {
+    public final CompoundPredicate lessAll(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate greater(Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
-
-    @Override
-    public final OperationPredicate greaterAny(SubQuery subQuery) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate greaterSome(SubQuery subQuery) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate greaterAll(SubQuery subQuery) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate greaterEqual(Expression operand) {
+    public final CompoundPredicate lessEqual(Expression operand) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final OperationPredicate greaterEqualAny(SubQuery subQuery) {
+    public final CompoundPredicate lessEqualAny(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate greaterEqualSome(SubQuery subQuery) {
+    public final CompoundPredicate lessEqualSome(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate greaterEqualAll(SubQuery subQuery) {
+    public final CompoundPredicate lessEqualAll(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate notEqual(Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
-
-    @Override
-    public final OperationPredicate notEqualAny(SubQuery subQuery) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate notEqualSome(SubQuery subQuery) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate notEqualAll(SubQuery subQuery) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate between(Expression first, SQLs.WordAnd and, Expression second) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate notBetween(Expression first, SQLs.WordAnd and, Expression second) {
+    public final CompoundPredicate greater(Expression operand) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final IPredicate between(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second) {
+    public final CompoundPredicate greaterAny(SubQuery subQuery) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate greaterSome(SubQuery subQuery) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate greaterAll(SubQuery subQuery) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate greaterEqual(Expression operand) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final IPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second) {
+    public final CompoundPredicate greaterEqualAny(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate is(SQLsSyntax.BooleanTestWord operand) {
+    public final CompoundPredicate greaterEqualSome(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate isNot(SQLsSyntax.BooleanTestWord operand) {
+    public final CompoundPredicate greaterEqualAll(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final IPredicate is(SQLsSyntax.IsComparisonWord operator, Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final IPredicate isNot(SQLsSyntax.IsComparisonWord operator, Expression operand) {
+    public final CompoundPredicate notEqual(Expression operand) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final OperationPredicate isNull() {
+    public final CompoundPredicate notEqualAny(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate isNotNull() {
+    public final CompoundPredicate notEqualSome(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate in(Expression operand) {
+    public final CompoundPredicate notEqualAll(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate in(SubQuery subQuery) {
+    public final CompoundPredicate between(Expression first, SQLs.WordAnd and, Expression second) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate notIn(Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationPredicate notIn(SubQuery subQuery) {
+    public final CompoundPredicate notBetween(Expression first, SQLs.WordAnd and, Expression second) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final OperationPredicate like(Expression pattern) {
+    public final CompoundPredicate between(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final IPredicate like(Expression pattern, SQLs.WordEscape escape, char escapeChar) {
+    public final CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final IPredicate like(Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
+    public final CompoundPredicate is(SQLsSyntax.BooleanTestWord operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationPredicate notLike(Expression pattern) {
-        throw unsupportedOperation(this);
-    }
-
-
-    @Override
-    public final IPredicate notLike(Expression pattern, SQLs.WordEscape escape, char escapeChar) {
+    public final CompoundPredicate isNot(SQLsSyntax.BooleanTestWord operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final IPredicate notLike(Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
+    public final CompoundPredicate is(SQLsSyntax.IsComparisonWord operator, Expression operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationExpression mod(Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationExpression times(Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationExpression plus(Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationExpression minus(Expression minuend) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationExpression divide(Expression divisor) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final OperationExpression bitwiseAnd(Expression operand) {
+    public final CompoundPredicate isNot(SQLsSyntax.IsComparisonWord operator, Expression operand) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final OperationExpression bitwiseOr(Expression operand) {
+    public final CompoundPredicate isNull() {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final OperationExpression bitwiseXor(Expression operand) {
+    public final CompoundPredicate isNotNull() {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate in(Expression operand) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate in(SubQuery subQuery) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate notIn(Expression operand) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate notIn(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final OperationExpression rightShift(Expression bitNumber) {
+    public final CompoundPredicate like(Expression pattern) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final OperationExpression leftShift(Expression bitNumber) {
+    public final CompoundPredicate like(Expression pattern, SQLs.WordEscape escape, char escapeChar) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate like(Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate notLike(Expression pattern) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final Expression apply(BiFunction<Expression, Expression, Expression> operator, Expression operand) {
+    public final CompoundPredicate notLike(Expression pattern, SQLs.WordEscape escape, char escapeChar) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate notLike(Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundExpression mod(Expression operand) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundExpression times(Expression operand) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundExpression plus(Expression operand) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundExpression minus(Expression minuend) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundExpression divide(Expression divisor) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundExpression bitwiseAnd(Expression operand) {
         throw unsupportedOperation(this);
     }
 
 
     @Override
-    public final <M extends SQLWords> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, Expression right, M modifier, Expression optionalExp) {
+    public final CompoundExpression bitwiseOr(Expression operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final <M extends SQLWords> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, Expression right, M modifier, char escapeChar) {
+    public final CompoundExpression bitwiseXor(Expression operand) {
+        throw unsupportedOperation(this);
+    }
+
+
+    @Override
+    public final CompoundExpression rightShift(Expression bitNumber) {
+        throw unsupportedOperation(this);
+    }
+
+
+    @Override
+    public final CompoundExpression leftShift(Expression bitNumber) {
+        throw unsupportedOperation(this);
+    }
+
+
+    @Override
+    public final CompoundExpression apply(BiFunction<Expression, Expression, CompoundExpression> operator, Expression operand) {
+        throw unsupportedOperation(this);
+    }
+
+
+    @Override
+    public final <M extends SQLWords> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator, Expression right, M modifier, Expression optionalExp) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final IPredicate test(BiFunction<Expression, Expression, IPredicate> operator, Expression operand) {
+    public final <M extends SQLWords> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator, Expression right, M modifier, char escapeChar) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final <M extends SQLWords> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, Expression optionalExp) {
+    public final CompoundPredicate test(BiFunction<Expression, Expression, CompoundPredicate> operator, Expression operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final <M extends SQLWords> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, char escapeChar) {
+    public final <M extends SQLWords> CompoundPredicate test(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, Expression right, M modifier, Expression optionalExp) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final <M extends SQLWords> CompoundPredicate test(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, Expression right, M modifier, char escapeChar) {
         throw unsupportedOperation(this);
     }
 

@@ -2,7 +2,6 @@ package io.army.mapping.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect._Constant;
-import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.MetaException;
 import io.army.sqltype.SqlType;
@@ -36,14 +35,10 @@ public abstract class PostgreRangeType<T> extends MappingType {
     /**
      * @param elementType null when only javaType is {@link String#getClass()}
      */
-    protected PostgreRangeType(Class<?> javaType, @Nullable Class<T> elementType) {
+    protected PostgreRangeType(Class<?> javaType, Class<T> elementType) {
         this.javaType = javaType;
         if (javaType == String.class || ArmyPostgreRange.class.isAssignableFrom(javaType)) {
             this.mockFunction = null;
-        } else if (elementType == null) {
-            String m = String.format("elementType must non-null when javaType isn't String.class or %s",
-                    ArmyPostgreRange.class.getName());
-            throw new IllegalArgumentException(m);
         } else {
             this.mockFunction = new MockRangeFunction<>(javaType, elementType);
         }

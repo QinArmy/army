@@ -1002,6 +1002,9 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         return DialectFunctionUtils.multiArgTabularFunc(name, argList, fieldList);
     }
 
+    /*-------------------below Range/Multirange Functions and Operators -------------------*/
+
+
 
     /*-------------------below private method -------------------*/
 

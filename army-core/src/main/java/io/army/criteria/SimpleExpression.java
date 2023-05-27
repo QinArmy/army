@@ -56,7 +56,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate equal(BiFunction<Expression, T, Expression> funcRef, T value);
+    <T> CompoundPredicate equal(BiFunction<Expression, T, Expression> funcRef, T value);
 
     /**
      * <p>
@@ -86,7 +86,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate less(BiFunction<Expression, T, Expression> funcRef, T value);
+    <T> CompoundPredicate less(BiFunction<Expression, T, Expression> funcRef, T value);
 
 
     /**
@@ -117,7 +117,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate lessEqual(BiFunction<Expression, T, Expression> funcRef, T value);
+    <T> CompoundPredicate lessEqual(BiFunction<Expression, T, Expression> funcRef, T value);
 
     /**
      * <p>
@@ -147,7 +147,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate greater(BiFunction<Expression, T, Expression> funcRef, T value);
+    <T> CompoundPredicate greater(BiFunction<Expression, T, Expression> funcRef, T value);
 
     /**
      * <p>
@@ -177,7 +177,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate greaterEqual(BiFunction<Expression, T, Expression> funcRef, T value);
+    <T> CompoundPredicate greaterEqual(BiFunction<Expression, T, Expression> funcRef, T value);
 
     /**
      * <p>
@@ -207,7 +207,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate notEqual(BiFunction<Expression, T, Expression> funcRef, T value);
+    <T> CompoundPredicate notEqual(BiFunction<Expression, T, Expression> funcRef, T value);
 
     /**
      * <p>
@@ -239,7 +239,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate between(BiFunction<Expression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
+    <T> CompoundPredicate between(BiFunction<Expression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
 
 
     /**
@@ -272,7 +272,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate notBetween(BiFunction<Expression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
+    <T> CompoundPredicate notBetween(BiFunction<Expression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
 
 
     /**
@@ -307,7 +307,7 @@ public interface SimpleExpression extends Expression {
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
     @Support({PostgreSQL, H2})
-    <T> IPredicate between(@Nullable SQLs.BetweenModifier modifier, BiFunction<Expression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
+    <T> CompoundPredicate between(@Nullable SQLs.BetweenModifier modifier, BiFunction<Expression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
 
     /**
      * <p>
@@ -341,7 +341,7 @@ public interface SimpleExpression extends Expression {
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
     @Support({PostgreSQL, H2})
-    <T> IPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, BiFunction<Expression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
+    <T> CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, BiFunction<Expression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
 
 
     /**
@@ -372,59 +372,59 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> IPredicate is(SQLs.IsComparisonWord operator, BiFunction<Expression, T, Expression> funcRef, @Nullable T value);
+    <T> CompoundPredicate is(SQLs.IsComparisonWord operator, BiFunction<Expression, T, Expression> funcRef, @Nullable T value);
 
-    <T> IPredicate isNot(SQLs.IsComparisonWord operator, BiFunction<Expression, T, Expression> funcRef, @Nullable T value);
+    <T> CompoundPredicate isNot(SQLs.IsComparisonWord operator, BiFunction<Expression, T, Expression> funcRef, @Nullable T value);
 
-    <T extends Collection<?>> IPredicate in(BiFunction<Expression, T, Expression> funcRef, T value);
+    <T extends Collection<?>> CompoundPredicate in(BiFunction<Expression, T, Expression> funcRef, T value);
 
-    <T extends Collection<?>> IPredicate notIn(BiFunction<Expression, T, Expression> funcRef, T value);
+    <T extends Collection<?>> CompoundPredicate notIn(BiFunction<Expression, T, Expression> funcRef, T value);
 
-    IPredicate in(TeNamedOperator<Expression> funcRef, String paramName, int size);
+    CompoundPredicate in(TeNamedOperator<Expression> funcRef, String paramName, int size);
 
-    IPredicate notIn(TeNamedOperator<Expression> funcRef, String paramName, int size);
-
-
-    <T> IPredicate like(BiFunction<MappingType, T, Expression> funcRef, T value);
-
-    <T> IPredicate like(BiFunction<MappingType, T, Expression> funcRef, T value, SQLs.WordEscape escape, char escapeChar);
-
-    <T> IPredicate notLike(BiFunction<MappingType, T, Expression> funcRef, T value);
-
-    <T> IPredicate notLike(BiFunction<MappingType, T, Expression> funcRef, T value, SQLs.WordEscape escape, char escapeChar);
-
-    <T> Expression mod(BiFunction<Expression, T, Expression> funcRef, T value);
-
-    <T> Expression times(BiFunction<Expression, T, Expression> funcRef, T value);
-
-    <T> Expression plus(BiFunction<Expression, T, Expression> funcRef, T value);
-
-    <T> Expression minus(BiFunction<Expression, T, Expression> funcRef, T value);
-
-    <T> Expression divide(BiFunction<Expression, T, Expression> funcRef, T value);
-
-    <T> Expression bitwiseAnd(BiFunction<Expression, T, Expression> funcRef, T value);
-
-    <T> Expression bitwiseOr(BiFunction<Expression, T, Expression> funcRef, T value);
-
-    <T> Expression bitwiseXor(BiFunction<Expression, T, Expression> funcRef, T value);
-
-    <T> Expression rightShift(BiFunction<Expression, T, Expression> funcRef, T value);
-
-    <T> Expression leftShift(BiFunction<Expression, T, Expression> funcRef, T value);
+    CompoundPredicate notIn(TeNamedOperator<Expression> funcRef, String paramName, int size);
 
 
-    <T> Expression apply(BiFunction<Expression, Expression, Expression> operator, BiFunction<Expression, T, Expression> funcRef, T value);
+    <T> CompoundPredicate like(BiFunction<MappingType, T, Expression> funcRef, T value);
 
-    <M extends SQLWords, T> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, BiFunction<Expression, T, Expression> funcRef, T value, M modifier, Expression optionalExp);
+    <T> CompoundPredicate like(BiFunction<MappingType, T, Expression> funcRef, T value, SQLs.WordEscape escape, char escapeChar);
 
-    <M extends SQLWords, T> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, BiFunction<Expression, T, Expression> funcRef, T value, M modifier, char escapeChar);
+    <T> CompoundPredicate notLike(BiFunction<MappingType, T, Expression> funcRef, T value);
 
-    <T> IPredicate test(BiFunction<Expression, Expression, IPredicate> operator, BiFunction<Expression, T, Expression> funcRef, T value);
+    <T> CompoundPredicate notLike(BiFunction<MappingType, T, Expression> funcRef, T value, SQLs.WordEscape escape, char escapeChar);
 
-    <M extends SQLWords, T> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, Expression optionalExp);
+    <T> CompoundExpression mod(BiFunction<Expression, T, Expression> funcRef, T value);
 
-    <M extends SQLWords, T> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, char escapeChar);
+    <T> CompoundExpression times(BiFunction<Expression, T, Expression> funcRef, T value);
+
+    <T> CompoundExpression plus(BiFunction<Expression, T, Expression> funcRef, T value);
+
+    <T> CompoundExpression minus(BiFunction<Expression, T, Expression> funcRef, T value);
+
+    <T> CompoundExpression divide(BiFunction<Expression, T, Expression> funcRef, T value);
+
+    <T> CompoundExpression bitwiseAnd(BiFunction<Expression, T, Expression> funcRef, T value);
+
+    <T> CompoundExpression bitwiseOr(BiFunction<Expression, T, Expression> funcRef, T value);
+
+    <T> CompoundExpression bitwiseXor(BiFunction<Expression, T, Expression> funcRef, T value);
+
+    <T> CompoundExpression rightShift(BiFunction<Expression, T, Expression> funcRef, T value);
+
+    <T> CompoundExpression leftShift(BiFunction<Expression, T, Expression> funcRef, T value);
+
+
+    <T> CompoundExpression apply(BiFunction<Expression, Expression, CompoundExpression> operator, BiFunction<Expression, T, Expression> funcRef, T value);
+
+    <M extends SQLWords, T> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<Expression, T, Expression> funcRef, T value, M modifier, Expression optionalExp);
+
+    <M extends SQLWords, T> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<Expression, T, Expression> funcRef, T value, M modifier, char escapeChar);
+
+    <T> CompoundPredicate test(BiFunction<Expression, Expression, CompoundPredicate> operator, BiFunction<Expression, T, Expression> funcRef, T value);
+
+    <M extends SQLWords, T> CompoundPredicate test(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, Expression optionalExp);
+
+    <M extends SQLWords, T> CompoundPredicate test(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, char escapeChar);
 
 
 }

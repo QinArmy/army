@@ -170,6 +170,8 @@
     * SQL.refOut() 应用困难,因为引用发生在 context 创建之前.
 37. 为什么 DerivedField typeMeta() 不能返回 io.army.meta.TypeMeta.DelayTypeMeta ?
     * 因为 这会影响 codec field 的解码
+38. 为什么要设计 io.army.criteria.CompoundExpression 和 io.army.criteria.CompoundPredicate ?
+    * 为了 io.army.criteria.Expression.apply() 和 io.army.criteria.Expression.test() 的调用是类型安全的.
 
     
 

@@ -115,6 +115,18 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
                 .toString();
     }
 
+    public boolean isSameType(final MappingType o) {
+        final boolean match;
+        if (o == this) {
+            match = true;
+        } else if (this.getClass().isInstance(o)) {
+            match = o.javaType() == this.javaType();
+        } else {
+            match = false;
+        }
+        return match;
+    }
+
 
     /**
      * prevent default deserialization
@@ -466,7 +478,7 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
 
     public interface SqlArrayType {
 
-      MappingType elementType();
+        MappingType elementType();
 
     }
 

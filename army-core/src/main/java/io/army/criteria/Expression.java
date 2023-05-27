@@ -34,7 +34,7 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    IPredicate equal(Expression operand);
+    CompoundPredicate equal(Expression operand);
 
 
     /**
@@ -42,14 +42,14 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      * <strong>= ANY</strong> operator
      * </p>
      */
-    IPredicate equalAny(SubQuery subQuery);
+    CompoundPredicate equalAny(SubQuery subQuery);
 
     /**
      * <p>
      * <strong>= SOME</strong> operator
      * </p>
      */
-    IPredicate equalSome(SubQuery subQuery);
+    CompoundPredicate equalSome(SubQuery subQuery);
 
     /**
      * <p>
@@ -60,72 +60,72 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    IPredicate less(Expression operand);
+    CompoundPredicate less(Expression operand);
 
-    IPredicate lessAny(SubQuery subQuery);
+    CompoundPredicate lessAny(SubQuery subQuery);
 
-    IPredicate lessSome(SubQuery subQuery);
+    CompoundPredicate lessSome(SubQuery subQuery);
 
-    IPredicate lessAll(SubQuery subQuery);
-
-
-    IPredicate lessEqual(Expression operand);
+    CompoundPredicate lessAll(SubQuery subQuery);
 
 
-    IPredicate lessEqualAny(SubQuery subQuery);
+    CompoundPredicate lessEqual(Expression operand);
 
 
-    IPredicate lessEqualSome(SubQuery subQuery);
-
-    IPredicate lessEqualAll(SubQuery subQuery);
-
-    IPredicate greater(Expression operand);
+    CompoundPredicate lessEqualAny(SubQuery subQuery);
 
 
-    IPredicate greaterAny(SubQuery subQuery);
+    CompoundPredicate lessEqualSome(SubQuery subQuery);
 
-    IPredicate greaterSome(SubQuery subQuery);
+    CompoundPredicate lessEqualAll(SubQuery subQuery);
 
-    IPredicate greaterAll(SubQuery subQuery);
+    CompoundPredicate greater(Expression operand);
 
-    IPredicate greaterEqual(Expression operand);
 
-    IPredicate greaterEqualAny(SubQuery subQuery);
+    CompoundPredicate greaterAny(SubQuery subQuery);
 
-    IPredicate greaterEqualSome(SubQuery subQuery);
+    CompoundPredicate greaterSome(SubQuery subQuery);
 
-    IPredicate greaterEqualAll(SubQuery subQuery);
+    CompoundPredicate greaterAll(SubQuery subQuery);
 
-    IPredicate notEqual(Expression operand);
+    CompoundPredicate greaterEqual(Expression operand);
 
-    IPredicate notEqualAny(SubQuery subQuery);
+    CompoundPredicate greaterEqualAny(SubQuery subQuery);
 
-    IPredicate notEqualSome(SubQuery subQuery);
+    CompoundPredicate greaterEqualSome(SubQuery subQuery);
 
-    IPredicate notEqualAll(SubQuery subQuery);
+    CompoundPredicate greaterEqualAll(SubQuery subQuery);
 
-    /**
-     * @param and {@link SQLs#AND}
-     */
-    IPredicate between(Expression first, SQLs.WordAnd and, Expression second);
+    CompoundPredicate notEqual(Expression operand);
 
+    CompoundPredicate notEqualAny(SubQuery subQuery);
+
+    CompoundPredicate notEqualSome(SubQuery subQuery);
+
+    CompoundPredicate notEqualAll(SubQuery subQuery);
 
     /**
      * @param and {@link SQLs#AND}
      */
-    IPredicate notBetween(Expression first, SQLs.WordAnd and, Expression second);
+    CompoundPredicate between(Expression first, SQLs.WordAnd and, Expression second);
+
 
     /**
      * @param and {@link SQLs#AND}
      */
-    @Support({PostgreSQL, H2})
-    IPredicate between(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second);
+    CompoundPredicate notBetween(Expression first, SQLs.WordAnd and, Expression second);
 
     /**
      * @param and {@link SQLs#AND}
      */
     @Support({PostgreSQL, H2})
-    IPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second);
+    CompoundPredicate between(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second);
+
+    /**
+     * @param and {@link SQLs#AND}
+     */
+    @Support({PostgreSQL, H2})
+    CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second);
 
     /**
      * @param operand <ul>
@@ -136,7 +136,7 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      *                <li>other</li>
      *                </ul>
      */
-    IPredicate is(SQLs.BooleanTestWord operand);
+    CompoundPredicate is(SQLs.BooleanTestWord operand);
 
     /**
      * @param operand <ul>
@@ -147,53 +147,53 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      *                <li>other</li>
      *                </ul>
      */
-    IPredicate isNot(SQLs.BooleanTestWord operand);
+    CompoundPredicate isNot(SQLs.BooleanTestWord operand);
 
-    IPredicate isNull();
+    CompoundPredicate isNull();
 
-    IPredicate isNotNull();
+    CompoundPredicate isNotNull();
 
-    IPredicate is(SQLs.IsComparisonWord operator, Expression operand);
+    CompoundPredicate is(SQLs.IsComparisonWord operator, Expression operand);
 
-    IPredicate isNot(SQLs.IsComparisonWord operator, Expression operand);
+    CompoundPredicate isNot(SQLs.IsComparisonWord operator, Expression operand);
 
-    IPredicate in(Expression operand);
+    CompoundPredicate in(Expression operand);
 
-    IPredicate in(SubQuery operand);
+    CompoundPredicate in(SubQuery operand);
 
-    IPredicate notIn(Expression operand);
+    CompoundPredicate notIn(Expression operand);
 
-    IPredicate notIn(SubQuery subQuery);
+    CompoundPredicate notIn(SubQuery subQuery);
 
 
-    IPredicate like(Expression pattern);
+    CompoundPredicate like(Expression pattern);
 
-    IPredicate like(Expression pattern, SQLs.WordEscape escape, char escapeChar);
+    CompoundPredicate like(Expression pattern, SQLs.WordEscape escape, char escapeChar);
 
-    IPredicate like(Expression pattern, SQLs.WordEscape escape, Expression escapeChar);
+    CompoundPredicate like(Expression pattern, SQLs.WordEscape escape, Expression escapeChar);
 
-    IPredicate notLike(Expression pattern);
+    CompoundPredicate notLike(Expression pattern);
 
-    IPredicate notLike(Expression pattern, SQLs.WordEscape escape, char escapeChar);
+    CompoundPredicate notLike(Expression pattern, SQLs.WordEscape escape, char escapeChar);
 
-    IPredicate notLike(Expression pattern, SQLs.WordEscape escape, Expression escapeChar);
+    CompoundPredicate notLike(Expression pattern, SQLs.WordEscape escape, Expression escapeChar);
 
-    Expression mod(Expression operand);
+    CompoundExpression mod(Expression operand);
 
-    Expression times(Expression operand);
+    CompoundExpression times(Expression operand);
 
-    Expression plus(Expression operand);
+    CompoundExpression plus(Expression operand);
 
-    Expression minus(Expression minuend);
+    CompoundExpression minus(Expression minuend);
 
-    Expression divide(Expression divisor);
+    CompoundExpression divide(Expression divisor);
 
     /**
      * Bitwise AND
      *
      * @return {@link BigInteger} expression
      */
-    Expression bitwiseAnd(Expression operand);
+    CompoundExpression bitwiseAnd(Expression operand);
 
     /**
      * Bitwise OR
@@ -202,14 +202,14 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      * @see #bitwiseAnd(Expression)
      * @see SQLs#bitwiseNot(Expression)
      */
-    Expression bitwiseOr(Expression operand);
+    CompoundExpression bitwiseOr(Expression operand);
 
     /**
      * Bitwise XOR
      *
      * @return {@link BigInteger} expression
      */
-    Expression bitwiseXor(Expression operand);
+    CompoundExpression bitwiseXor(Expression operand);
 
 
     /**
@@ -217,7 +217,7 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      *
      * @return {@link BigInteger} expression
      */
-    Expression rightShift(Expression bitNumber);
+    CompoundExpression rightShift(Expression bitNumber);
 
 
     /**
@@ -225,7 +225,7 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      *
      * @return {@link BigInteger} expression
      */
-    Expression leftShift(Expression bitNumber);
+    CompoundExpression leftShift(Expression bitNumber);
 
 
     @Override
@@ -250,19 +250,19 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
     /*-------------------below dialect operator method -------------------*/
 
 
-    Expression apply(BiFunction<Expression, Expression, Expression> operator, Expression operand);
+    CompoundExpression apply(BiFunction<Expression, Expression, CompoundExpression> operator, Expression operand);
 
 
-    <M extends SQLWords> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, Expression right, M modifier, Expression optionalExp);
+    <M extends SQLWords> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator, Expression right, M modifier, Expression optionalExp);
 
-    <M extends SQLWords> Expression apply(OptionalClauseOperator<M, Expression, Expression> operator, Expression right, M modifier, char escapeChar);
+    <M extends SQLWords> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator, Expression right, M modifier, char escapeChar);
 
-    IPredicate test(BiFunction<Expression, Expression, IPredicate> operator, Expression operand);
+    CompoundPredicate test(BiFunction<Expression, Expression, CompoundPredicate> operator, Expression operand);
 
 
-    <M extends SQLWords> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, Expression optionalExp);
+    <M extends SQLWords> CompoundPredicate test(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, Expression right, M modifier, Expression optionalExp);
 
-    <M extends SQLWords> IPredicate test(OptionalClauseOperator<M, Expression, IPredicate> operator, Expression right, M modifier, char escapeChar);
+    <M extends SQLWords> CompoundPredicate test(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, Expression right, M modifier, char escapeChar);
 
 
 }

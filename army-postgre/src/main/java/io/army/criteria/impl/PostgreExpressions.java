@@ -63,8 +63,8 @@ abstract class PostgreExpressions {
         return new PostgreUnaryPredicate(operator, operand);
     }
 
-    static OperationPredicate dualPredicate(final Expression left, final PostgreDualBooleanOperator operator,
-                                            final Expression right) {
+    static CompoundPredicate dualPredicate(final Expression left, final PostgreDualBooleanOperator operator,
+                                           final Expression right) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
         } else if (!(right instanceof OperationExpression)) {
@@ -116,13 +116,13 @@ abstract class PostgreExpressions {
             if (right instanceof MappingType.SqlIntervalType || left instanceof MappingType.SqlIntervalType) { // date + interval → timestamp or date + time → timestamp
                 returnType = LocalDateTimeType.INSTANCE;
             } else {
-                returnType = StringType.INSTANCE;
+                returnType = TextType.INSTANCE;
             }
         } else if (left instanceof MappingType.SqlLocalDateTimeType || right instanceof MappingType.SqlLocalDateTimeType) { // timestamp + interval → timestamp
             if (right instanceof MappingType.SqlIntervalType || left instanceof MappingType.SqlIntervalType) {
                 returnType = IntervalType.from(Interval.class);
             } else {
-                returnType = StringType.INSTANCE;
+                returnType = TextType.INSTANCE;
             }
         } else if ((left instanceof MappingType.SqlLocalTimeType && right instanceof MappingType.SqlIntervalType)
                 || (left instanceof MappingType.SqlIntervalType && right instanceof MappingType.SqlLocalTimeType)) { // time + interval → time
@@ -134,10 +134,10 @@ abstract class PostgreExpressions {
             returnType = right instanceof MappingType.SqlPointType ? left : right;
         } else if (left instanceof MappingType.SqlLineStringType && right instanceof MappingType.SqlLineStringType) { // path + path → path
             returnType = left;
-        } else if (left.getClass() == right.getClass()) {
+        } else if (left.isSameType(right)) { // anyrange + anyrange → anyrange
             returnType = left;
         } else {
-            returnType = StringType.INSTANCE;
+            returnType = Expressions.plusType(left, right);
         }
         return returnType;
     }
@@ -155,7 +155,7 @@ abstract class PostgreExpressions {
             } else if (right instanceof MappingType.SqlIntervalType) { // date - interval → timestamp
                 returnType = LocalDateTimeType.INSTANCE;
             } else { // error or unknown
-                returnType = StringType.INSTANCE;
+                returnType = TextType.INSTANCE;
             }
         } else if (left instanceof MappingType.SqlLocalTimeType || left instanceof MappingType.SqlOffsetTimeType) {
             if (right instanceof MappingType.SqlLocalTimeType || right instanceof MappingType.SqlOffsetTimeType) {  // time - time → interval
@@ -163,7 +163,7 @@ abstract class PostgreExpressions {
             } else if (right instanceof MappingType.SqlTemporalAmountType) { // time - interval → time
                 returnType = left;
             } else { // error or unknown
-                returnType = StringType.INSTANCE;
+                returnType = TextType.INSTANCE;
             }
         } else if (left instanceof MappingType.SqlLocalDateTimeType || left instanceof MappingType.SqlOffsetDateTimeType) {
             if (right instanceof MappingType.SqlLocalDateTimeType || right instanceof MappingType.SqlOffsetDateTimeType) {  // timestamp - timestamp → interval
@@ -171,7 +171,7 @@ abstract class PostgreExpressions {
             } else if (right instanceof MappingType.SqlTemporalAmountType) { // timestamp - interval → timestamp
                 returnType = left;
             } else { // error or unknown
-                returnType = StringType.INSTANCE;
+                returnType = TextType.INSTANCE;
             }
         } else if (left instanceof MappingType.SqlJsonbType && right instanceof MappingType.SqlNumberOrStringType) {
             returnType = left;
@@ -187,8 +187,10 @@ abstract class PostgreExpressions {
             returnType = left;
         } else if (left instanceof MappingType.SqlNumberOrStringType && right instanceof MappingType.SqlNumberOrStringType) { // numeric_type - numeric_type → numeric_type
             returnType = Expressions.mathExpType(left, right);
+        } else if (left.isSameType(right)) {   // anyrange - anyrange → anyrange
+            returnType = left;
         } else { // error or unknown
-            returnType = StringType.INSTANCE;
+            returnType = TextType.INSTANCE;
         }
         return returnType;
     }
@@ -205,8 +207,10 @@ abstract class PostgreExpressions {
             returnType = IntervalType.from(Interval.class);
         } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType) { // geometric_type * point → geometric_type
             returnType = left;
-        } else {
-            returnType = StringType.INSTANCE;
+        } else if (left.isSameType(right)) {   // anyrange - anyrange → anyrange
+            returnType = left;
+        } else { // error or unknown
+            returnType = Expressions.mathExpType(left, right);
         }
         return returnType;
     }
@@ -457,7 +461,7 @@ abstract class PostgreExpressions {
     }
 
 
-    private static final class PeriodOverlapsPredicate extends OperationPredicate.CompoundPredicate
+    private static final class PeriodOverlapsPredicate extends OperationPredicate.OperationCompoundPredicate
             implements PostgreSyntax._PeriodOverlapsClause {
 
         private final ArmyExpression start1;
@@ -611,7 +615,7 @@ abstract class PostgreExpressions {
     }//PostgreDelayExpression
 
 
-    private static final class PostgreUnaryPredicate extends OperationPredicate.CompoundPredicate {
+    private static final class PostgreUnaryPredicate extends OperationPredicate.OperationCompoundPredicate {
 
         private final PostgreBooleanUnaryOperator operator;
 

@@ -31,7 +31,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
      * </p>
      *
      * @see OperationSimplePredicate#OperationSimplePredicate()
-     * @see CompoundPredicate#OperationPredicate()
+     * @see OperationCompoundPredicate#OperationPredicate()
      */
     private OperationPredicate() {
 
@@ -266,7 +266,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
-    public final IPredicate and(final @Nullable IPredicate predicate) {
+    public final CompoundPredicate and(final @Nullable IPredicate predicate) {
         if (predicate == null) {
             throw ContextStack.nullPointer(ContextStack.peek());
         }
@@ -274,98 +274,98 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
-    public final IPredicate and(Supplier<IPredicate> supplier) {
+    public final CompoundPredicate and(Supplier<IPredicate> supplier) {
         return this.and(supplier.get());
     }
 
     @Override
-    public final IPredicate and(UnaryOperator<IPredicate> expOperator, IPredicate operand) {
+    public final CompoundPredicate and(UnaryOperator<IPredicate> expOperator, IPredicate operand) {
         return this.and(expOperator.apply(operand));
     }
 
     @Override
-    public final IPredicate and(Function<Expression, IPredicate> expOperator, Expression operand) {
+    public final CompoundPredicate and(Function<Expression, IPredicate> expOperator, Expression operand) {
         return this.and(expOperator.apply(operand));
     }
 
     @Override
-    public final IPredicate and(Function<SubQuery, IPredicate> expOperator, SubQuery operand) {
+    public final CompoundPredicate and(Function<SubQuery, IPredicate> expOperator, SubQuery operand) {
         return this.and(expOperator.apply(operand));
     }
 
     @Override
-    public final <E extends RightOperand> IPredicate and(Function<E, IPredicate> expOperator,
-                                                         Supplier<E> supplier) {
+    public final <E extends RightOperand> CompoundPredicate and(Function<E, IPredicate> expOperator,
+                                                                Supplier<E> supplier) {
         return this.and(expOperator.apply(supplier.get()));
     }
 
     @Override
-    public final IPredicate and(ExpressionOperator<Expression, Expression, IPredicate> expOperator,
-                                BiFunction<Expression, Expression, Expression> valueOperator, Expression expression) {
+    public final CompoundPredicate and(ExpressionOperator<Expression, Expression, IPredicate> expOperator,
+                                       BiFunction<Expression, Expression, Expression> valueOperator, Expression expression) {
         return this.and(expOperator.apply(valueOperator, expression));
     }
 
     @Override
-    public final IPredicate and(ExpressionOperator<Expression, Object, IPredicate> expOperator,
-                                BiFunction<Expression, Object, Expression> valueOperator, Object value) {
+    public final CompoundPredicate and(ExpressionOperator<Expression, Object, IPredicate> expOperator,
+                                       BiFunction<Expression, Object, Expression> valueOperator, Object value) {
         return this.and(expOperator.apply(valueOperator, value));
     }
 
     @Override
-    public final <T> IPredicate and(ExpressionOperator<Expression, T, IPredicate> expOperator
+    public final <T> CompoundPredicate and(ExpressionOperator<Expression, T, IPredicate> expOperator
             , BiFunction<Expression, T, Expression> operator, Supplier<T> getter) {
         return this.and(expOperator.apply(operator, getter.get()));
     }
 
     @Override
-    public final IPredicate and(ExpressionOperator<Expression, Object, IPredicate> expOperator
+    public final CompoundPredicate and(ExpressionOperator<Expression, Object, IPredicate> expOperator
             , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName) {
         return this.and(expOperator.apply(operator, function.apply(keyName)));
     }
 
     @Override
-    public final IPredicate and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                                TeNamedOperator<DataField> namedOperator, int size) {
+    public final CompoundPredicate and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
+                                       TeNamedOperator<DataField> namedOperator, int size) {
         return this.and(expOperator.apply(namedOperator, size));
     }
 
     @Override
-    public final IPredicate and(BetweenValueOperator<Object> expOperator,
-                                BiFunction<Expression, Object, Expression> operator, Object firstValue,
-                                SQLsSyntax.WordAnd and, Object secondValue) {
+    public final CompoundPredicate and(BetweenValueOperator<Object> expOperator,
+                                       BiFunction<Expression, Object, Expression> operator, Object firstValue,
+                                       SQLsSyntax.WordAnd and, Object secondValue) {
         return this.and(expOperator.apply(operator, firstValue, and, secondValue));
     }
 
     @Override
-    public final <T> IPredicate and(BetweenValueOperator<T> expOperator,
-                                    BiFunction<Expression, T, Expression> operator,
-                                    Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter) {
+    public final <T> CompoundPredicate and(BetweenValueOperator<T> expOperator,
+                                           BiFunction<Expression, T, Expression> operator,
+                                           Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter) {
         return this.and(expOperator.apply(operator, firstGetter.get(), and, secondGetter.get()));
     }
 
     @Override
-    public final IPredicate and(BetweenValueOperator<Object> expOperator,
-                                BiFunction<Expression, Object, Expression> operator,
-                                Function<String, ?> function, String firstKe,
-                                SQLs.WordAnd and, String secondKey) {
+    public final CompoundPredicate and(BetweenValueOperator<Object> expOperator,
+                                       BiFunction<Expression, Object, Expression> operator,
+                                       Function<String, ?> function, String firstKe,
+                                       SQLs.WordAnd and, String secondKey) {
         return this.and(expOperator.apply(operator, function.apply(firstKe), and, function.apply(secondKey)));
     }
 
     @Override
-    public final IPredicate and(BetweenOperator expOperator, Expression first, SQLs.WordAnd and,
-                                Expression second) {
+    public final CompoundPredicate and(BetweenOperator expOperator, Expression first, SQLs.WordAnd and,
+                                       Expression second) {
         return this.and(expOperator.apply(first, and, second));
     }
 
     @Override
-    public final IPredicate and(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator,
-                                String paramName, int size) {
+    public final CompoundPredicate and(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator,
+                                       String paramName, int size) {
         return this.and(expOperator.apply(namedOperator, paramName, size));
     }
 
     @Override
-    public final IPredicate and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
-                                BiFunction<DataField, String, Expression> namedOperator) {
+    public final CompoundPredicate and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
+                                       BiFunction<DataField, String, Expression> namedOperator) {
         return this.and(fieldOperator.apply(namedOperator));
     }
 
@@ -642,9 +642,9 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }//SqlFunctionPredicate
 
 
-    static abstract class CompoundPredicate extends OperationPredicate {
+    static abstract class OperationCompoundPredicate extends OperationPredicate implements CompoundPredicate {
 
-        CompoundPredicate() {
+        OperationCompoundPredicate() {
         }
 
 
@@ -757,7 +757,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
     }//OrPredicate
 
-    private static final class AndPredicate extends CompoundPredicate {
+    private static final class AndPredicate extends OperationCompoundPredicate {
 
         final OperationPredicate left;
 
@@ -820,7 +820,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
     }//AndPredicate
 
-    private static final class NotPredicate extends OperationPredicate.CompoundPredicate {
+    private static final class NotPredicate extends OperationCompoundPredicate {
 
         private final OperationPredicate predicate;
 
