@@ -13,11 +13,11 @@ import io.army.util._TimeUtils;
 
 import java.time.LocalDateTime;
 
-public final class PostgreTsRangeType extends PostgreRangeType {
+public final class PostgreTsRangeType extends PostgreRangeType<LocalDateTime> {
 
 
     private PostgreTsRangeType(Class<?> javaType) {
-        super(javaType);
+        super(javaType, LocalDateTime.class);
     }
 
     @Override
@@ -47,12 +47,11 @@ public final class PostgreTsRangeType extends PostgreRangeType {
 
     @Nullable
     static LocalDateTime parseDateTime(final String text) {
-        final String safeText = text.trim();
         final LocalDateTime bound;
-        if (INFINITY.equalsIgnoreCase(safeText)) {
+        if (INFINITY.equalsIgnoreCase(text)) {
             bound = null;
         } else {
-            bound = LocalDateTime.parse(safeText, _TimeUtils.DATETIME_FORMATTER_6);
+            bound = LocalDateTime.parse(text, _TimeUtils.DATETIME_FORMATTER_6);
         }
         return bound;
     }

@@ -23,7 +23,7 @@ import java.util.Objects;
  *
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">int4range</a>
  */
-public final class PostgreInt4RangeType extends PostgreRangeType {
+public final class PostgreInt4RangeType extends PostgreRangeType<Integer> {
 
     public static PostgreInt4RangeType from(final Class<?> javaType) {
         if (javaType != String.class) {
@@ -51,14 +51,14 @@ public final class PostgreInt4RangeType extends PostgreRangeType {
      *     </pre>
      * </p>
      *
-     * @param methodName public static factory method name,for example : com.my.Factory#create
+     * @param methodName public static factory method name,for example : com.my.Factory::create
      * @throws io.army.meta.MetaException throw when factory method name error.
      */
     public static PostgreInt4RangeType fromMethod(final Class<?> javaType, final String methodName) {
         if (javaType.isPrimitive() || javaType.isArray()) {
             throw errorJavaType(PostgreInt4RangeType.class, javaType);
         }
-        return new PostgreInt4RangeType(javaType, createRangeFunction(javaType, Integer.TYPE, methodName));
+        return new PostgreInt4RangeType(javaType, createRangeFunction(javaType, Integer.class, methodName));
     }
 
     /**
@@ -82,7 +82,7 @@ public final class PostgreInt4RangeType extends PostgreRangeType {
      * private constructor
      */
     private PostgreInt4RangeType(final Class<?> javaType, final @Nullable RangeFunction<Integer, ?> function) {
-        super(javaType);
+        super(javaType, Integer.class);
         assert function != null || javaType == String.class;
         this.function = function;
     }
@@ -119,33 +119,20 @@ public final class PostgreInt4RangeType extends PostgreRangeType {
     public Object convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
         final SqlType type;
         type = this.map(env.serverMeta());
-
-        final RangeFunction<Integer, ?> function = this.function;
         final Object value;
-        if (!(nonNull instanceof String)) {
-            if (!this.javaType.isInstance(nonNull)) {
-                throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
-            }
+        if (nonNull instanceof String) {
+            value = parseRange((String) nonNull, type, PARAM_ERROR_HANDLER);
+        } else if (this.javaType.isInstance(nonNull)) {
             value = nonNull;
-        } else if (function == null) {
-            assert this.javaType == String.class;
-            value = nonNull;
-        } else if (EMPTY.equalsIgnoreCase((String) nonNull)) {
-            value = emptyRange(this.javaType);
         } else {
-            try {
-                value = textToNonEmptyRange((String) nonNull, 0, ((String) nonNull).length(), function,
-                        PostgreInt4RangeType::parseInt);
-            } catch (Throwable e) {
-                throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, e);
-            }
+            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
         }
         return value;
     }
 
     @Override
     public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
-        return rangeBeforeBind(type, Integer.TYPE, Object::toString, nonNull);
+        return rangeBeforeBind(type, Object::toString, nonNull, PARAM_ERROR_HANDLER);
     }
 
     @Override
@@ -153,31 +140,25 @@ public final class PostgreInt4RangeType extends PostgreRangeType {
         if (!(nonNull instanceof String)) {
             throw ACCESS_ERROR_HANDLER.apply(this, type, nonNull, null);
         }
+        return parseRange((String) nonNull, type, ACCESS_ERROR_HANDLER);
+    }
+
+    private Object parseRange(final String text, final SqlType type, final ErrorHandler handler) {
         final RangeFunction<Integer, ?> function = this.function;
         final Object value;
         if (function == null) {
             assert this.javaType == String.class;
-            value = nonNull;
-        } else if (EMPTY.equalsIgnoreCase((String) nonNull)) {
+            value = text;
+        } else if (EMPTY.equalsIgnoreCase(text)) {
             value = emptyRange(this.javaType);
         } else {
             try {
-                value = textToNonEmptyRange((String) nonNull, 0, ((String) nonNull).length(), function,
-                        PostgreInt4RangeType::parseInt);
-            } catch (Exception e) {
-                throw ACCESS_ERROR_HANDLER.apply(this, type, nonNull, e);
+                value = parseNonEmptyRange(text, 0, text.length(), function, Integer::parseInt);
+            } catch (Throwable e) {
+                throw handler.apply(this, type, text, e);
             }
         }
         return value;
-    }
-
-    static int parseInt(final String text) {
-        final String safeText = text.trim();
-        if (INFINITY.equalsIgnoreCase(safeText)) {
-            String m = String.format("postgre int4range don't support notion '%s'", INFINITY);
-            throw new IllegalArgumentException(m);
-        }
-        return Integer.parseInt(safeText);
     }
 
 

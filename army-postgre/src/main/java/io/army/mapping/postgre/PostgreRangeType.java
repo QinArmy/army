@@ -2,8 +2,8 @@ package io.army.mapping.postgre;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect._Constant;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.MetaException;
 import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
@@ -20,22 +20,33 @@ import java.util.function.Function;
  *
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">Built-in Range and Multirange Types</a>
  */
-public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
+public abstract class PostgreRangeType<T> extends MappingType {
 
     public static final String INFINITY = "infinity";
 
-    static final String EMPTY = "empty";
+    public static final String EMPTY = "empty";
 
     private static final Object INFINITY_BOUND = new Object();
 
 
-    final Class<?> javaType;
+    protected final Class<?> javaType;
+
+    private final MockRangeFunction<T> mockFunction;
 
     /**
-     * package constructor
+     * @param elementType null when only javaType is {@link String#getClass()}
      */
-    PostgreRangeType(Class<?> javaType) {
+    protected PostgreRangeType(Class<?> javaType, @Nullable Class<T> elementType) {
         this.javaType = javaType;
+        if (javaType == String.class || ArmyPostgreRange.class.isAssignableFrom(javaType)) {
+            this.mockFunction = null;
+        } else if (elementType == null) {
+            String m = String.format("elementType must non-null when javaType isn't String.class or %s",
+                    ArmyPostgreRange.class.getName());
+            throw new IllegalArgumentException(m);
+        } else {
+            this.mockFunction = new MockRangeFunction<>(javaType, elementType);
+        }
     }
 
     @Override
@@ -43,26 +54,26 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
         return this.javaType;
     }
 
-    final <T> String rangeBeforeBind(final SqlType type, final Class<T> elementType, final Function<T, String> function,
-                                     final Object nonNull)
+    protected final String rangeBeforeBind(final SqlType type, final Function<T, String> function, final Object nonNull,
+                                           final ErrorHandler handler)
             throws CriteriaException {
 
         final String value, text;
         char boundChar;
         if (!(nonNull instanceof String)) {
             if (!this.javaType.isInstance(nonNull)) {
-                throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+                throw handler.apply(this, type, nonNull, null);
             }
-            value = rangeToText(nonNull, elementType, function, new StringBuilder())
-                    .toString();
+
+            value = rangeToText(nonNull, function, new StringBuilder()).toString();
         } else if (EMPTY.equalsIgnoreCase((String) nonNull)) {
             value = EMPTY;
         } else if ((text = (String) nonNull).length() < 5) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+            throw handler.apply(this, type, nonNull, null);
         } else if ((boundChar = text.charAt(0)) != '[' && boundChar != ')') {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+            throw handler.apply(this, type, nonNull, null);
         } else if ((boundChar = text.charAt(text.length() - 1)) != '[' && boundChar != ')') {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+            throw handler.apply(this, type, nonNull, null);
         } else {
             value = text;
         }
@@ -71,22 +82,33 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
 
     /**
      * @param function <ul>
-     *                 <li>argument of function possibly with any leading and trailing whitespace.</li>
      *                 <li>argument of function possibly is notion 'infinity',see {@link #INFINITY}</li>
      *                 <li>function must return null when argument is notion 'infinity' and support it,see {@link #INFINITY}</li>
      *                 <li>function must throw {@link IllegalArgumentException} when argument is notion 'infinity' and don't support it,see {@link #INFINITY}</li>
      *                 </ul>
-     * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html">Range Types</a>
+     * @see <a href="https://www.postgresql.org/docs/current/rangetypes.html">Range Types</a>
      */
     @SuppressWarnings("unchecked")
-    public static <T, R> R textToNonEmptyRange(final String text, final int offset, final int end,
-                                               final RangeFunction<T, R> rangeFunc, final Function<String, T> function) {
+    protected static <T, R> R parseNonEmptyRange(final String text, final int offset, final int end,
+                                                 final RangeFunction<T, R> rangeFunc, final Function<String, T> function)
+            throws IllegalArgumentException {
+
         if (!(offset < end && end <= text.length())) {
             throw new IllegalArgumentException("offset or end error");
         }
         if (text.regionMatches(true, offset, EMPTY, 0, EMPTY.length())) {
             throw new IllegalArgumentException("range must non-empty.");
         }
+
+        final Function<String, Object> functionDecoration;
+        functionDecoration = s -> {
+            Object value;
+            value = function.apply(s.trim());
+            if (value == null) {
+                value = INFINITY_BOUND;
+            }
+            return value;
+        };
         Boolean includeLowerBound = null, includeUpperBound = null;
         Object lowerBound = null, upperBound = null;
         boolean inQuote = false, findComma = true;
@@ -112,17 +134,11 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
                 } else if (lowerBound == null) {
                     inQuote = false;
                     assert lowerIndex > 0;
-                    lowerBound = function.apply(text.substring(lowerIndex, i));
-                    if (lowerBound == null) {
-                        lowerBound = INFINITY_BOUND;
-                    }
+                    lowerBound = functionDecoration.apply(text.substring(lowerIndex, i));
                 } else {
                     inQuote = false;
                     assert upperBound == null && upperIndex > 0;
-                    upperBound = function.apply(text.substring(upperIndex, i));
-                    if (upperBound == null) {
-                        upperBound = INFINITY_BOUND;
-                    }
+                    upperBound = functionDecoration.apply(text.substring(upperIndex, i));
                 }
                 continue;
             }
@@ -141,10 +157,7 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
             } else if (lowerBound == null) {
                 if (ch == _Constant.COMMA) {
                     findComma = false;
-                    lowerBound = function.apply(text.substring(lowerIndex, i));
-                    if (lowerBound == null) {
-                        lowerBound = INFINITY_BOUND;
-                    }
+                    lowerBound = functionDecoration.apply(text.substring(lowerIndex, i));
                 }
             } else if (findComma) {
                 if (ch == _Constant.COMMA) {
@@ -174,10 +187,7 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
                     includeUpperBound = Boolean.FALSE;
                 }
                 if (includeUpperBound != null) {
-                    upperBound = function.apply(text.substring(upperIndex, i));
-                    if (upperBound == null) {
-                        upperBound = INFINITY_BOUND;
-                    }
+                    upperBound = functionDecoration.apply(text.substring(upperIndex, i));
                 }
             } else if (includeUpperBound != null) {
                 break;
@@ -199,15 +209,16 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
         if (upperBound == INFINITY_BOUND) {
             upperBound = null;
         }
-        return rangeFunc.apply((T) lowerBound, includeLowerBound, (T) upperBound, includeUpperBound);
+        return rangeFunc.apply(includeLowerBound, (T) lowerBound, (T) upperBound, includeUpperBound);
     }
 
     /**
      * @param methodName public static factory method name,for example : com.my.Factory#create
      * @throws io.army.meta.MetaException throw when factory method name error.
      */
-    static <T> RangeFunction<T, ?> createRangeFunction(final Class<?> javaType, final Class<T> elementType,
-                                                       final String methodName) {
+    @SuppressWarnings("unchecked")
+    protected static <T, R> RangeFunction<T, R> createRangeFunction(final Class<R> javaType, final Class<T> elementType,
+                                                                    final String methodName) throws MetaException {
 
         final Method method;
         method = loadFactoryMethod(javaType, methodName, elementType);
@@ -218,51 +229,14 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
                 if (result == null) {
                     throw new NullPointerException();
                 }
-                return result;
+                return (R) result;
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(e);
             }
         };
     }
 
-
-    @SuppressWarnings("unchecked")
-    static <T> StringBuilder rangeToText(final Object nonNull, final Class<T> rangeType, final Function<T, String> function,
-                                         final StringBuilder builder) {
-        final ArmyPostgreRange<T> range;
-        if (!(nonNull instanceof ArmyPostgreRange)) {
-            rangeToTextByReflection(nonNull, rangeType, function, builder);
-        } else if ((range = (ArmyPostgreRange<T>) nonNull).isEmpty()) {
-            builder.append(EMPTY);
-        } else {
-            if (range.isIncludeLowerBound()) {
-                builder.append(_Constant.LEFT_SQUARE_BRACKET);
-            } else {
-                builder.append(_Constant.LEFT_PAREN);
-            }
-            final T lowerBound, upperBound;
-            lowerBound = range.getLowerBound();
-            upperBound = range.getUpperBound();
-
-            if (lowerBound != null) {
-                builder.append(function.apply(lowerBound));
-            }
-            builder.append(_Constant.COMMA);
-            if (upperBound != null) {
-                builder.append(function.apply(upperBound));
-            }
-
-            if (range.isIncludeUpperBound()) {
-                builder.append(_Constant.RIGHT_SQUARE_BRACKET);
-            } else {
-                builder.append(_Constant.RIGHT_PAREN);
-            }
-        }
-        return builder;
-    }
-
-
-    static Object emptyRange(final Class<?> javaType) {
+    protected static Object emptyRange(final Class<?> javaType) {
         final Object empty;
         if (javaType == String.class) {
             empty = EMPTY;
@@ -282,6 +256,75 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
             }
         }
         return empty;
+    }
+
+    /*-------------------below private method -------------------*/
+
+
+    @SuppressWarnings("unchecked")
+    private StringBuilder rangeToText(final Object nonNull, final Function<T, String> function,
+                                      final StringBuilder builder) {
+
+        if (nonNull instanceof ArmyPostgreRange) {
+            final ArmyPostgreRange<T> range = (ArmyPostgreRange<T>) nonNull;
+            if (range.isEmpty()) {
+                builder.append(EMPTY);
+            } else {
+                if (range.isIncludeLowerBound()) {
+                    builder.append(_Constant.LEFT_SQUARE_BRACKET);
+                } else {
+                    builder.append(_Constant.LEFT_PAREN);
+                }
+                final T lowerBound, upperBound;
+                lowerBound = range.getLowerBound();
+                upperBound = range.getUpperBound();
+
+                if (lowerBound != null) {
+                    builder.append(function.apply(lowerBound));
+                }
+                builder.append(_Constant.COMMA);
+                if (upperBound != null) {
+                    builder.append(function.apply(upperBound));
+                }
+
+                if (range.isIncludeUpperBound()) {
+                    builder.append(_Constant.RIGHT_SQUARE_BRACKET);
+                } else {
+                    builder.append(_Constant.RIGHT_PAREN);
+                }
+            }
+        } else {
+            final MockRangeFunction<T> mockFunction = this.mockFunction;
+            assert mockFunction != null;
+            if (mockFunction.isEmpty.apply(nonNull)) {
+                builder.append(EMPTY);
+            } else {
+                if (mockFunction.isIncludeLowerBound.apply(nonNull)) {
+                    builder.append(_Constant.LEFT_SQUARE_BRACKET);
+                } else {
+                    builder.append(_Constant.LEFT_PAREN);
+                }
+                final T lowerBound, upperBound;
+                lowerBound = mockFunction.getLowerBound.apply(nonNull);
+                upperBound = mockFunction.getUpperBound.apply(nonNull);
+
+                if (lowerBound != null) {
+                    builder.append(function.apply(lowerBound));
+                }
+                builder.append(_Constant.COMMA);
+                if (upperBound != null) {
+                    builder.append(function.apply(upperBound));
+                }
+
+                if (mockFunction.isIncludeUpperBound.apply(nonNull)) {
+                    builder.append(_Constant.RIGHT_SQUARE_BRACKET);
+                } else {
+                    builder.append(_Constant.RIGHT_PAREN);
+                }
+            }
+
+        }
+        return builder;
     }
 
 
@@ -313,17 +356,18 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
     private static Method loadFactoryMethod(final Class<?> javaType, final String methodName,
                                             final Class<?> elementType) {
         try {
-            final int poundIndex, modifier;
-            poundIndex = methodName.indexOf('#');
-            if (poundIndex < 1 || poundIndex + 1 >= methodName.length()) {
-                String m = String.format("%s isn't method name", methodName);
+            final int colonIndex, modifier;
+            colonIndex = methodName.indexOf("::");
+            if (colonIndex < 1 || colonIndex + 2 >= methodName.length()) {
+                String m = String.format("%s isn't function ref name", methodName);
                 throw new MetaException(m);
             }
+
             final Class<?> methodClass;
-            methodClass = Class.forName(methodName.substring(0, poundIndex));
+            methodClass = Class.forName(methodName.substring(0, colonIndex));
             final Method method;
-            method = methodClass.getMethod(methodName.substring(poundIndex + 1),
-                    elementType, boolean.class, elementType, boolean.class);
+            method = methodClass.getMethod(methodName.substring(colonIndex + 2),
+                    boolean.class, elementType, elementType, boolean.class);
             modifier = method.getModifiers();
             if (!(Modifier.isPublic(modifier)
                     && Modifier.isStatic(modifier)
@@ -338,42 +382,34 @@ public abstract class PostgreRangeType extends _ArmyNoInjectionMapping {
     }
 
 
-    /**
-     * @see #rangeToText(Object, Class, Function, StringBuilder)
-     */
-    private static <T> void rangeToTextByReflection(final Object nonNull, final Class<T> rangeType,
-                                                    final Function<T, String> function, final StringBuilder builder) {
-        final Class<?> javaType = nonNull.getClass();
-        if (rangeBeanFunc(javaType, "isEmptyRange", Boolean.TYPE).apply(nonNull)) {
-            builder.append(EMPTY);
-            return;
-        }
-        final T lowerBound, upperBound;
-
-        lowerBound = rangeBeanFunc(javaType, "getLowerBound", rangeType).apply(nonNull);
-        upperBound = rangeBeanFunc(javaType, "getUpperBound", rangeType).apply(nonNull);
-
-        if (rangeBeanFunc(javaType, "isIncludeLowerBound", Boolean.TYPE).apply(nonNull)) {
-            builder.append(_Constant.LEFT_SQUARE_BRACKET);
-        } else {
-            builder.append(_Constant.LEFT_PAREN);
-        }
-
-        builder.append(function.apply(lowerBound))
-                .append(_Constant.COMMA)
-                .append(function.apply(upperBound));
-
-        if (rangeBeanFunc(javaType, "isIncludeUpperBound", Boolean.TYPE).apply(nonNull)) {
-            builder.append(_Constant.LEFT_SQUARE_BRACKET);
-        } else {
-            builder.append(_Constant.LEFT_PAREN);
-        }
-    }
-
-
     private static IllegalArgumentException nearbyError(String text) {
         return new IllegalArgumentException(String.format("'%s' nearby error.", text));
     }
+
+
+    private static final class MockRangeFunction<T> {
+
+        private final Function<Object, Boolean> isEmpty;
+
+        private final Function<Object, Boolean> isIncludeLowerBound;
+
+        private final Function<Object, T> getLowerBound;
+
+        private final Function<Object, T> getUpperBound;
+
+        private final Function<Object, Boolean> isIncludeUpperBound;
+
+        private MockRangeFunction(Class<?> javaType, Class<T> elementType) {
+            this.isEmpty = rangeBeanFunc(javaType, "isEmpty", Boolean.TYPE);
+
+            this.isIncludeLowerBound = rangeBeanFunc(javaType, "isIncludeLowerBound", Boolean.TYPE);
+            this.getLowerBound = rangeBeanFunc(javaType, "getLowerBound", elementType);
+            this.getUpperBound = rangeBeanFunc(javaType, "getUpperBound", elementType);
+            this.isIncludeUpperBound = rangeBeanFunc(javaType, "isIncludeUpperBound", Boolean.TYPE);
+
+        }
+
+    }//MockRangeFunction
 
 
 }

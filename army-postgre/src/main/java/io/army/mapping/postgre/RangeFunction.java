@@ -21,6 +21,6 @@ public interface RangeFunction<T, R> {
      * @param lower null representing infinity
      * @param upper null representing infinity
      */
-    R apply(@Nullable T lower, boolean includeLower, @Nullable T upper, boolean includeUpper);
+    R apply(boolean includeLower, @Nullable T lower, @Nullable T upper, boolean includeUpper);
 
 }

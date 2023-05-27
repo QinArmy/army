@@ -17,7 +17,7 @@ import java.util.function.Function;
 public class PostgreRangeTypeUniteTests {
 
     /**
-     * @see PostgreRangeType#textToNonEmptyRange(String, int, int, RangeFunction, Function)
+     * @see PostgreRangeType#parseNonEmptyRange(String, int, int, RangeFunction, Function)
      */
     @Test
     public void textToRange() {
@@ -25,28 +25,28 @@ public class PostgreRangeTypeUniteTests {
         Int4Range range;
 
         text = "(1,3)";
-        range = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), Int4Range::create, PostgreInt4RangeType::parseInt);
-        Assert.assertEquals(range, Int4Range.create(1, false, 3, false));
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        Assert.assertEquals(range, Int4Range.create(false, 1, 3, false));
 
         text = "[-1,34)";
-        range = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), Int4Range::create, PostgreInt4RangeType::parseInt);
-        Assert.assertEquals(range, Int4Range.create(-1, true, 34, false));
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        Assert.assertEquals(range, Int4Range.create(true, -1, 34, false));
 
         text = "[ -1 , 34 )";
-        range = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), Int4Range::create, PostgreInt4RangeType::parseInt);
-        Assert.assertEquals(range, Int4Range.create(-1, true, 34, false));
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        Assert.assertEquals(range, Int4Range.create(true, -1, 34, false));
 
         text = "[  , 34 )";
-        range = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), Int4Range::create, PostgreInt4RangeType::parseInt);
-        Assert.assertEquals(range, Int4Range.create(null, true, 34, false));
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        Assert.assertEquals(range, Int4Range.create(true, null, 34, false));
 
         text = "[  -1,  )";
-        range = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), Int4Range::create, PostgreInt4RangeType::parseInt);
-        Assert.assertEquals(range, Int4Range.create(-1, true, null, false));
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        Assert.assertEquals(range, Int4Range.create(true, -1, null, false));
 
         text = "[  ,  )";
-        range = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), Int4Range::create, PostgreInt4RangeType::parseInt);
-        Assert.assertEquals(range, Int4Range.create(null, false, null, false));
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        Assert.assertEquals(range, Int4Range.create(false, null, null, false));
 
 
         final LocalDateTime lowerBound, upperBound;
@@ -55,52 +55,48 @@ public class PostgreRangeTypeUniteTests {
 
         LocalDateTimeRange timeRange;
         text = "[\"2023-05-25 15:29:51.118251\",\"2023-05-27 11:43:56.89738\")";
-        timeRange = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
-        Assert.assertEquals(timeRange, LocalDateTimeRange.create(lowerBound, true, upperBound, false));
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        Assert.assertEquals(timeRange, LocalDateTimeRange.create(true, lowerBound, upperBound, false));
 
         text = "(\"2023-05-25 15:29:51.118251\",\"2023-05-27 11:43:56.89738\"]";
-        timeRange = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
-        Assert.assertEquals(timeRange, LocalDateTimeRange.create(lowerBound, false, upperBound, true));
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        Assert.assertEquals(timeRange, LocalDateTimeRange.create(false, lowerBound, upperBound, true));
 
         text = "[  \"2023-05-25 15:29:51.118251\"  ,  \"2023-05-27 11:43:56.89738\"   )";
-        timeRange = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
-        Assert.assertEquals(timeRange, LocalDateTimeRange.create(lowerBound, true, upperBound, false));
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        Assert.assertEquals(timeRange, LocalDateTimeRange.create(true, lowerBound, upperBound, false));
 
         text = "[  infinity, \"2023-05-27 11:43:56.89738\" )";
-        timeRange = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
-        Assert.assertEquals(timeRange, LocalDateTimeRange.create(null, false, upperBound, false));
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        Assert.assertEquals(timeRange, LocalDateTimeRange.create(false, null, upperBound, false));
 
         text = "[  \"2023-05-25 15:29:51.118251\", infinity )";
-        timeRange = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
-        Assert.assertEquals(timeRange, LocalDateTimeRange.create(lowerBound, true, null, false));
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        Assert.assertEquals(timeRange, LocalDateTimeRange.create(true, lowerBound, null, false));
 
         text = "[  infinity,  )";
-        timeRange = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
-        Assert.assertEquals(timeRange, LocalDateTimeRange.create(null, false, null, false));
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        Assert.assertEquals(timeRange, LocalDateTimeRange.create(false, null, null, false));
 
         text = "[ infinity , infinity )";
-        timeRange = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
-        Assert.assertEquals(timeRange, LocalDateTimeRange.create(null, false, null, false));
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        Assert.assertEquals(timeRange, LocalDateTimeRange.create(false, null, null, false));
 
         text = "[ infinity,infinity )";
-        timeRange = PostgreRangeType.textToNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
-        Assert.assertEquals(timeRange, LocalDateTimeRange.create(null, false, null, false));
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        Assert.assertEquals(timeRange, LocalDateTimeRange.create(false, null, null, false));
     }
 
-    @Test
-    public void test() {
-        System.out.println(LocalDateTime.parse("2023-05-25 15:29:51.118251", _TimeUtils.DATETIME_FORMATTER_6));
-    }
 
 
     public static final class LocalDateTimeRange {
 
-        private static LocalDateTimeRange create(@Nullable LocalDateTime lower, boolean includeLower,
-                                                 @Nullable LocalDateTime upper, boolean includeUpper) {
-            return new LocalDateTimeRange(lower, includeLower, upper, includeUpper);
+        public static LocalDateTimeRange create(boolean includeLower, @Nullable LocalDateTime lower,
+                                                @Nullable LocalDateTime upper, boolean includeUpper) {
+            return new LocalDateTimeRange(includeLower, lower, upper, includeUpper);
         }
 
-        private static final LocalDateTimeRange EMPTY = new LocalDateTimeRange(null, false, null, false);
+        private static final LocalDateTimeRange EMPTY = new LocalDateTimeRange(false, null, null, false);
 
         public static LocalDateTimeRange emptyRange() {
             return EMPTY;
@@ -114,10 +110,10 @@ public class PostgreRangeTypeUniteTests {
 
         private final boolean includeUpper;
 
-        private LocalDateTimeRange(@Nullable LocalDateTime lower, boolean includeLower, @Nullable LocalDateTime upper,
+        private LocalDateTimeRange(boolean includeLower, @Nullable LocalDateTime lower, @Nullable LocalDateTime upper,
                                    boolean includeUpper) {
-            this.lower = lower;
             this.includeLower = lower != null && includeLower;
+            this.lower = lower;
             this.upper = upper;
             this.includeUpper = upper != null && includeUpper;
         }
@@ -186,12 +182,12 @@ public class PostgreRangeTypeUniteTests {
 
     public static final class Int4Range {
 
-        private static Int4Range create(@Nullable Integer lower, boolean includeLower,
+        private static Int4Range create(boolean includeLower, @Nullable Integer lower,
                                         @Nullable Integer upper, boolean includeUpper) {
-            return new Int4Range(lower, includeLower, upper, includeUpper);
+            return new Int4Range(includeLower, lower, upper, includeUpper);
         }
 
-        private static final Int4Range EMPTY = new Int4Range(null, false, null, false);
+        private static final Int4Range EMPTY = new Int4Range(false, null, null, false);
 
         public static Int4Range emptyRange() {
             return EMPTY;
@@ -205,10 +201,10 @@ public class PostgreRangeTypeUniteTests {
 
         private final boolean includeUpper;
 
-        private Int4Range(@Nullable Integer lower, boolean includeLower, @Nullable Integer upper,
+        private Int4Range(boolean includeLower, @Nullable Integer lower, @Nullable Integer upper,
                           boolean includeUpper) {
-            this.lower = lower;
             this.includeLower = lower != null && includeLower;
+            this.lower = lower;
             this.upper = upper;
             this.includeUpper = upper != null && includeUpper;
         }

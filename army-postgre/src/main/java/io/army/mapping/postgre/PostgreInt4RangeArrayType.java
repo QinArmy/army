@@ -58,7 +58,7 @@ public class PostgreInt4RangeArrayType extends _ArmyNoInjectionMapping implement
      *     </pre>
      * </p>
      *
-     * @param methodName public static factory method name,for example : com.my.Factory#create
+     * @param methodName public static factory method name,for example : com.my.Factory::create
      * @throws io.army.meta.MetaException throw when factory method name error.
      */
     public static PostgreInt4RangeArrayType fromMethod(final Class<?> javaType, final String methodName) {
@@ -186,7 +186,7 @@ public class PostgreInt4RangeArrayType extends _ArmyNoInjectionMapping implement
 
 
     private Object parseInt4RangeArray(final String text, final int offset, final int end) {
-        return PostgreRangeType.textToNonEmptyRange(text, offset, end, this.function, Integer::parseInt);
+        return PostgreRangeType.parseNonEmptyRange(text, offset, end, this.function, Integer::parseInt);
     }
 
     private Object textToRangeArray(final String text, final SqlType type, final ErrorHandler handler) {
