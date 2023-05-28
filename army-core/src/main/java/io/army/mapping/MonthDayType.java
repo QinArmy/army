@@ -66,7 +66,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
 
 
     @Override
-    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

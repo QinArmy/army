@@ -50,7 +50,7 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
     }
 
     @Override
-    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

@@ -5,7 +5,6 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingSupport;
 import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 
@@ -36,15 +35,12 @@ public abstract class PostgreSingleRangeType<T> extends PostgreRangeType<T> {
     }
 
 
-    @Override
-    public final MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
-        throw noMatchCompatibleMapping(this, targetType);
-    }
 
     @Override
     public final Object convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
         return rangeConvert(nonNull, this.rangeFunc, this.parseFunc, this.map(env.serverMeta()), this,
-                PARAM_ERROR_HANDLER);
+                PARAM_ERROR_HANDLER
+        );
     }
 
     @Override
@@ -63,14 +59,12 @@ public abstract class PostgreSingleRangeType<T> extends PostgreRangeType<T> {
         return super.isSameType(type);
     }
 
-    public abstract MappingType subtype();
-
 
     /**
      * @param parseFunc <ul>
-     *                  <li>argument of function possibly is notion 'infinity',see {@link ArmyPostgreRangeType#INFINITY}</li>
-     *                  <li>function must return null when argument is notion 'infinity' and support it,see {@link ArmyPostgreRangeType#INFINITY}</li>
-     *                  <li>function must throw {@link IllegalArgumentException} when argument is notion 'infinity' and don't support it,see {@link ArmyPostgreRangeType#INFINITY}</li>
+     *                  <li>argument of function possibly is notion 'infinity',see {@link PostgreRangeType#INFINITY}</li>
+     *                  <li>function must return null when argument is notion 'infinity' and support it,see {@link PostgreRangeType#INFINITY}</li>
+     *                  <li>function must throw {@link IllegalArgumentException} when argument is notion 'infinity' and don't support it,see {@link PostgreRangeType#INFINITY}</li>
      *                  </ul>
      * @throws IllegalArgumentException when rangeFunc is null and {@link MappingType#javaType()} isn't {@link String#getClass()}
      * @throws CriteriaException        when text error and handler throw this type.
@@ -91,7 +85,7 @@ public abstract class PostgreSingleRangeType<T> extends PostgreRangeType<T> {
         return value;
     }
 
-    public static <T> String rangeBeforeBind(final BiConsumer<T, Consumer<String>> serializer, final Object nonNull,
+    public static <T> String rangeBeforeBind(final BiConsumer<T, Consumer<String>> boundSerializer, final Object nonNull,
                                              final SqlType sqlType, final MappingType type, final ErrorHandler handler)
             throws CriteriaException {
 
@@ -102,7 +96,7 @@ public abstract class PostgreSingleRangeType<T> extends PostgreRangeType<T> {
                 throw handler.apply(type, sqlType, nonNull, null);
             }
             final StringBuilder builder = new StringBuilder();
-            rangeToText(nonNull, serializer, type, builder::append);
+            rangeToText(nonNull, boundSerializer, type, builder::append);
             value = builder.toString();
         } else if (EMPTY.equalsIgnoreCase((text = (String) nonNull).trim())) {
             value = EMPTY;
@@ -119,21 +113,21 @@ public abstract class PostgreSingleRangeType<T> extends PostgreRangeType<T> {
     }
 
     /**
-     * @param function <ul>
-     *                 <li>argument of function possibly is notion 'infinity',see {@link ArmyPostgreRangeType#INFINITY}</li>
-     *                 <li>function must return null when argument is notion 'infinity' and support it,see {@link ArmyPostgreRangeType#INFINITY}</li>
-     *                 <li>function must throw {@link IllegalArgumentException} when argument is notion 'infinity' and don't support it,see {@link ArmyPostgreRangeType#INFINITY}</li>
-     *                 </ul>
+     * @param parseFunc <ul>
+     *                  <li>argument of function possibly is notion 'infinity',see {@link PostgreRangeType#INFINITY}</li>
+     *                  <li>function must return null when argument is notion 'infinity' and support it,see {@link PostgreRangeType#INFINITY}</li>
+     *                  <li>function must throw {@link IllegalArgumentException} when argument is notion 'infinity' and don't support it,see {@link PostgreRangeType#INFINITY}</li>
+     *                  </ul>
      * @throws IllegalArgumentException            when rangeFunc is null and {@link MappingType#javaType()} isn't {@link String#getClass()}
      * @throws io.army.session.DataAccessException when text error and handler throw this type.
      */
     public static <T, R> R rangeAfterGet(final Object nonNull, final @Nullable RangeFunction<T, R> rangeFunc,
-                                         final Function<String, T> function, final SqlType sqlType,
+                                         final Function<String, T> parseFunc, final SqlType sqlType,
                                          final MappingType type, final MappingSupport.ErrorHandler handler) {
         if (!(nonNull instanceof String)) {
             throw ACCESS_ERROR_HANDLER.apply(type, sqlType, nonNull, null);
         }
-        return parseRange((String) nonNull, rangeFunc, function, sqlType, type, handler);
+        return parseRange((String) nonNull, rangeFunc, parseFunc, sqlType, type, handler);
     }
 
 

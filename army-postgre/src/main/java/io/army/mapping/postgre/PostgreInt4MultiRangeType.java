@@ -3,16 +3,14 @@ package io.army.mapping.postgre;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
-import io.army.dialect._Constant;
 import io.army.lang.Nullable;
-import io.army.mapping.IntegerType;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.SingleGenericsMapping;
+import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
+
+import java.util.function.Consumer;
 
 public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
 
@@ -43,30 +41,14 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
         return PostgreDataType.INT4MULTIRANGE;
     }
 
+    @Override
+    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
+        return null;
+    }
 
     @Override
     public final Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        final SqlType type;
-        type = map(env.serverMeta());
-        final Object value;
-        final String text;
-        final int length;
-        if (!(nonNull instanceof String)) {
-            if (!this.javaType.isInstance(nonNull)) {
-                throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
-            }
-            value = nonNull;
-        } else if ((length = (text = (String) nonNull).length()) < 5) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
-        } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
-        } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
-        } else {
-            //PostgreArrayParsers.parseArrayText(javaType, text, _Constant.COMMA, )
-            value = null;
-        }
-        return value;
+        return null;
     }
 
     @Override
@@ -83,6 +65,11 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
     @Override
     public final MappingType subtype() {
         return IntegerType.INSTANCE;
+    }
+
+    @Override
+    void boundToText(Integer bound, Consumer<String> consumer) {
+
     }
 
     private static final class ListType extends PostgreInt4MultiRangeType implements SingleGenericsMapping<Object> {

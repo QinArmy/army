@@ -56,7 +56,7 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

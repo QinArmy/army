@@ -5,6 +5,8 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
+import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
@@ -23,11 +25,14 @@ import java.util.function.Consumer;
  */
 public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> {
 
-    public static PostgreInt4RangeType from(final Class<?> javaType) {
-        if (javaType != String.class) {
-            throw errorJavaType(PostgreInt4RangeType.class, javaType);
+    public static PostgreInt4RangeType from(final Class<?> javaType) throws MetaException {
+        final PostgreInt4RangeType instance;
+        if (javaType == String.class) {
+            instance = TEXT;
+        } else {
+            instance = fromMethod(javaType, CREATE);
         }
-        return TEXT;
+        return instance;
     }
 
     public static <R> PostgreInt4RangeType fromFunc(final Class<? extends R> javaType,
@@ -58,6 +63,7 @@ public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> 
         }
         return new PostgreInt4RangeType(javaType, createRangeFunction(javaType, Integer.class, methodName));
     }
+
 
     /**
      * package method
@@ -102,6 +108,17 @@ public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> 
             arrayType = PostgreInt4RangeArrayType.fromFunc(_ArrayUtils.arrayClassOf(javaType), rangeFunc);
         }
         return arrayType;
+    }
+
+
+    @Override
+    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
+        final RangeFunction<Integer, Z> rangeFunc;
+        rangeFunc = PostgreRangeType.tryCreateDefaultRangeFunc(targetType, Integer.class);
+        if (rangeFunc == null) {
+            throw noMatchCompatibleMapping(this, targetType);
+        }
+        return fromFunc(targetType, rangeFunc);
     }
 
     @Override

@@ -25,19 +25,19 @@ import java.util.function.Function;
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">Built-in Range and Multirange Types</a>
  * @since 1.0
  */
-public abstract class PostgreRangeArrayType<T> extends ArmyPostgreRangeType<T> implements MappingType.SqlArrayType {
+public abstract class PostgreSingleRangeArrayType<T> extends ArmyPostgreRangeType<T> implements MappingType.SqlArrayType {
 
 
     /**
      * package constructor
      */
-    PostgreRangeArrayType(Class<?> javaType, Class<T> elementType, @Nullable RangeFunction<T, ?> rangeFunc,
-                          Function<String, T> parseFunc) {
+    PostgreSingleRangeArrayType(Class<?> javaType, Class<T> elementType, @Nullable RangeFunction<T, ?> rangeFunc,
+                                Function<String, T> parseFunc) {
         super(javaType, elementType, rangeFunc, parseFunc);
     }
 
     @Override
-    public final MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+    public final <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
         throw noMatchCompatibleMapping(this, targetType);
     }
 
@@ -122,15 +122,15 @@ public abstract class PostgreRangeArrayType<T> extends ArmyPostgreRangeType<T> i
             rangeClass = _ArrayUtils.underlyingComponentClass(type);
             elementFunc = (str, offset, end) -> {
                 final Object value;
-                if (str.regionMatches(true, offset, EMPTY, 0, 5)) {
-                    value = PostgreSingleRangeType.emptyRange(rangeClass);
+                if (str.regionMatches(true, offset, PostgreRangeType.EMPTY, 0, 5)) {
+                    value = PostgreRangeType.emptyRange(rangeClass);
                 } else {
-                    value = PostgreSingleRangeType.parseNonEmptyRange(str, offset, end, rangeFunc, parseFunc);
+                    value = PostgreRangeType.parseNonEmptyRange(str, offset, end, rangeFunc, parseFunc);
                 }
                 return value;
             };
         }
-        return PostgreArrays.parseArray(text, elementFunc, _Constant.COMMA, sqlType, type, handler);
+        return PostgreArrays.parseArray(text, false, elementFunc, _Constant.COMMA, sqlType, type, handler);
     }
 
 

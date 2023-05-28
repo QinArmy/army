@@ -63,8 +63,10 @@ public abstract class PostgreArrays extends ArrayMappings {
         return builder;
     }
 
-
-    public static Object parseArray(final String text, final TextFunction<?> elementFunc,
+    /**
+     * @param nonNull true : element of one dimension array non-null
+     */
+    public static Object parseArray(final String text, final boolean nonNull, final TextFunction<?> elementFunc,
                                     final char delimiter, final SqlType sqlType, final MappingType type,
                                     final ErrorHandler handler) {
 
@@ -100,44 +102,8 @@ public abstract class PostgreArrays extends ArrayMappings {
         return value;
     }
 
-    /**
-     * <p>
-     * parse postgre array text.
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/15/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
-     */
-    public static Object parseArrayText(final Class<?> javaType, final String text, final char delimiter,
-                                        final TextFunction<?> function) throws IllegalArgumentException {
-        final int length;
-        length = text.length();
-        int offset = 0;
-        for (; offset < length; offset++) {
-            if (!Character.isWhitespace(text.charAt(offset))) {
-                break;
-            }
-        }
-        if (offset == length) {
-            throw new IllegalArgumentException("no text");
-        }
 
-        final Map<Class<?>, Integer> lengthMap;
-        if (text.charAt(offset) == _Constant.LEFT_SQUARE_BRACKET) {
-            final int index;
-            index = text.indexOf('=', offset);
-            if (index < offset || index >= length) {
-                throw new IllegalArgumentException("postgre array format error.");
-            }
-            lengthMap = parseArrayLengthMap(javaType, text, offset, index);
-            offset = index + 1;
-        } else {
-            lengthMap = EMPTY_LENGTHS;
-        }
-        return _parseArray(javaType, text, offset, length, delimiter, lengthMap, function);
-    }
-
-
-    static int parseArrayLength(final String text, final int offset, final int end)
+    public static int parseArrayLength(final String text, final int offset, final int end)
             throws IllegalArgumentException {
         char ch;
         boolean leftBrace = true, inBrace = false, inQuote = false, arrayEnd = false;
@@ -188,8 +154,8 @@ public abstract class PostgreArrays extends ArrayMappings {
         return length;
     }
 
-    static Map<Class<?>, Integer> parseArrayLengthMap(final Class<?> javaType, final String text, final int offset,
-                                                      final int end) {
+    public static Map<Class<?>, Integer> parseArrayLengthMap(final Class<?> javaType, final String text, final int offset,
+                                                             final int end) {
         final char colon = ':';
         final Map<Class<?>, Integer> map = _Collections.hashMap();
 
@@ -264,6 +230,44 @@ public abstract class PostgreArrays extends ArrayMappings {
         return _Collections.unmodifiableMap(map);
     }
 
+
+    /**
+     * <p>
+     * parse postgre array text.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/15/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
+     */
+    static Object parseArrayText(final Class<?> javaType, final String text, final boolean nonNull, final char delimiter,
+                                 final TextFunction<?> function) throws IllegalArgumentException {
+        final int length;
+        length = text.length();
+        int offset = 0;
+        for (; offset < length; offset++) {
+            if (!Character.isWhitespace(text.charAt(offset))) {
+                break;
+            }
+        }
+        if (offset == length) {
+            throw new IllegalArgumentException("no text");
+        }
+
+        final Map<Class<?>, Integer> lengthMap;
+        if (text.charAt(offset) == _Constant.LEFT_SQUARE_BRACKET) {
+            final int index;
+            index = text.indexOf('=', offset);
+            if (index < offset || index >= length) {
+                throw new IllegalArgumentException("postgre array format error.");
+            }
+            lengthMap = parseArrayLengthMap(javaType, text, offset, index);
+            offset = index + 1;
+        } else {
+            lengthMap = EMPTY_LENGTHS;
+        }
+        return _parseArray(javaType, text, nonNull, offset, length, delimiter, lengthMap, function);
+    }
+
+
     @SuppressWarnings("unchecked")
     static <E> List<E> linearToList(final Object array, final Supplier<List<E>> supplier) {
 
@@ -298,8 +302,9 @@ public abstract class PostgreArrays extends ArrayMappings {
      * @param function before end index possibly with trailing whitespace.
      * @see <a href="https://www.postgresql.org/docs/15/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
      */
-    private static Object _parseArray(final Class<?> javaType, final String text, final int offset, final int end,
-                                      final char delimiter, Map<Class<?>, Integer> lengthMap,
+    private static Object _parseArray(final Class<?> javaType, final String text, final boolean nonNull,
+                                      final int offset, final int end, final char delimiter,
+                                      final Map<Class<?>, Integer> lengthMap,
                                       final TextFunction<?> function) {
         assert offset >= 0 && offset < end;
 
@@ -316,12 +321,13 @@ public abstract class PostgreArrays extends ArrayMappings {
         if (arrayLength == 0) {
             return array;
         }
+
         final boolean oneDimension = !componentType.isArray();
 
         Object elementValue;
         boolean leftBrace = true, inBrace = false, inQuote = false, inElementBrace = false, arrayEnd = false;
-        char ch;
-        for (int i = offset, startIndex = -1, arrayIndex = 0; i < end; i++) {
+        char ch, startChar = _Constant.NUL_CHAR;
+        for (int i = offset, startIndex = -1, arrayIndex = 0, nonNulIndex = -1, tailIndex; i < end; i++) {
             ch = text.charAt(i);
             if (leftBrace) {
                 if (ch == _Constant.LEFT_BRACE) {
@@ -348,10 +354,23 @@ public abstract class PostgreArrays extends ArrayMappings {
                         inElementBrace = false;
                     } else {
                         inBrace = false;
-                        elementValue = _parseArray(componentType, text, startIndex, i + 1, delimiter, lengthMap, function);
+                        elementValue = _parseArray(componentType, text, nonNull, startIndex, i + 1, delimiter,
+                                lengthMap, function);
                         Array.set(array, arrayIndex++, elementValue);
                         startIndex = -1;
                     }
+                } else if (nonNulIndex < 0) {
+                    if (ch != delimiter && !Character.isWhitespace(ch)) {
+                        startChar = ch;
+                        nonNulIndex = i;
+                    }
+                } else if ((startChar == 'n' || startChar == 'N')
+                        && (i - 4) >= nonNulIndex
+                        && text.regionMatches(true, startIndex, _Constant.NULL, 0, 4)
+                        && ((tailIndex = startIndex + 4) == i || Character.isWhitespace(text.charAt(tailIndex)))) {
+
+                } else {
+                    nonNulIndex = -1;
                 }
             } else if (ch == _Constant.LEFT_BRACE) {
                 if (oneDimension) {
@@ -371,7 +390,17 @@ public abstract class PostgreArrays extends ArrayMappings {
             } else if (ch == delimiter || ch == _Constant.RIGHT_BRACE) {
                 if (startIndex > 0) {
                     assert oneDimension;
-                    Array.set(array, arrayIndex++, function.apply(text, startIndex, i));
+                    if ((startChar == 'n' || startChar == 'N')
+                            && (i - 4) >= startIndex
+                            && text.regionMatches(true, startIndex, _Constant.NULL, 0, 4)
+                            && ((tailIndex = startIndex + 4) == i || Character.isWhitespace(text.charAt(tailIndex)))) {
+                        if (nonNull) {
+                            throw new IllegalArgumentException("element must be non-null");
+                        }
+                        Array.set(array, arrayIndex++, null);
+                    } else {
+                        Array.set(array, arrayIndex++, function.apply(text, startIndex, i));
+                    }
                     startIndex = -1;
                 }
                 if (ch == _Constant.RIGHT_BRACE) {
@@ -382,6 +411,7 @@ public abstract class PostgreArrays extends ArrayMappings {
                 String m = String.format("postgre array isn't multi-dimension array after offset[%s]", i);
                 throw new IllegalArgumentException(m);
             } else if (startIndex < 0 && !Character.isWhitespace(ch)) {
+                startChar = ch;
                 startIndex = i;
             }
 

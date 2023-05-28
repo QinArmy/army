@@ -5,6 +5,9 @@ import java.lang.ref.SoftReference;
 
 public abstract class _ArmyBuildInMapping extends MappingType {
 
+
+    protected static final String CREATE = "create";
+
     protected _ArmyBuildInMapping() {
         final Class<?> thisClass = this.getClass();
         if (!thisClass.getName().startsWith("io.army.mapping.")) {

@@ -87,7 +87,7 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
 
 
     @Override
-    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

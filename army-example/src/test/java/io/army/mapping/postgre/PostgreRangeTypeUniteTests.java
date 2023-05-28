@@ -18,7 +18,7 @@ import java.util.function.Function;
 public class PostgreRangeTypeUniteTests {
 
     /**
-     * @see ArmyPostgreRangeType#parseNonEmptyRange(String, int, int, RangeFunction, Function)
+     * @see PostgreRangeType#parseNonEmptyRange(String, int, int, RangeFunction, Function)
      */
     @Test
     public void textToRange() {
@@ -26,27 +26,27 @@ public class PostgreRangeTypeUniteTests {
         Int4Range range;
 
         text = "(1,3)";
-        range = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
         Assert.assertEquals(range, Int4Range.create(false, 1, 3, false));
 
         text = "[-1,34)";
-        range = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
         Assert.assertEquals(range, Int4Range.create(true, -1, 34, false));
 
         text = "[ -1 , 34 )";
-        range = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
         Assert.assertEquals(range, Int4Range.create(true, -1, 34, false));
 
         text = "[  , 34 )";
-        range = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
         Assert.assertEquals(range, Int4Range.create(true, null, 34, false));
 
         text = "[  -1,  )";
-        range = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
         Assert.assertEquals(range, Int4Range.create(true, -1, null, false));
 
         text = "[  ,  )";
-        range = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
+        range = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), Int4Range::create, Integer::parseInt);
         Assert.assertEquals(range, Int4Range.create(false, null, null, false));
 
 
@@ -56,71 +56,71 @@ public class PostgreRangeTypeUniteTests {
 
         LocalDateTimeRange timeRange;
         text = "[\"2023-05-25 15:29:51.118251\",\"2023-05-27 11:43:56.89738\")";
-        timeRange = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
         Assert.assertEquals(timeRange, LocalDateTimeRange.create(true, lowerBound, upperBound, false));
 
         text = "(\"2023-05-25 15:29:51.118251\",\"2023-05-27 11:43:56.89738\"]";
-        timeRange = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
         Assert.assertEquals(timeRange, LocalDateTimeRange.create(false, lowerBound, upperBound, true));
 
         text = "[  \"2023-05-25 15:29:51.118251\"  ,  \"2023-05-27 11:43:56.89738\"   )";
-        timeRange = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
         Assert.assertEquals(timeRange, LocalDateTimeRange.create(true, lowerBound, upperBound, false));
 
         text = "[  infinity, \"2023-05-27 11:43:56.89738\" )";
-        timeRange = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
         Assert.assertEquals(timeRange, LocalDateTimeRange.create(false, null, upperBound, false));
 
         text = "[  \"2023-05-25 15:29:51.118251\", infinity )";
-        timeRange = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
         Assert.assertEquals(timeRange, LocalDateTimeRange.create(true, lowerBound, null, false));
 
         text = "[  infinity,  )";
-        timeRange = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
         Assert.assertEquals(timeRange, LocalDateTimeRange.create(false, null, null, false));
 
         text = "[ infinity , infinity )";
-        timeRange = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
         Assert.assertEquals(timeRange, LocalDateTimeRange.create(false, null, null, false));
 
         text = "[ infinity,infinity )";
-        timeRange = ArmyPostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
+        timeRange = PostgreRangeType.parseNonEmptyRange(text, 0, text.length(), LocalDateTimeRange::create, PostgreTsRangeType::parseDateTime);
         Assert.assertEquals(timeRange, LocalDateTimeRange.create(false, null, null, false));
     }
 
     /**
-     * @see ArmyPostgreRangeType#createMockFunction(Class, Class)
+     * @see PostgreRangeType#createMockFunction(Class, Class)
      */
     @Test
     public void mockFunction() {
-        ArmyPostgreRangeType.createMockFunction(Int4Range.class, Integer.class);
-        ArmyPostgreRangeType.createMockFunction(LocalDateTimeRange.class, LocalDateTime.class);
+        PostgreRangeType.createMockFunction(Int4Range.class, Integer.class);
+        PostgreRangeType.createMockFunction(LocalDateTimeRange.class, LocalDateTime.class);
     }
 
     /**
-     * @see ArmyPostgreRangeType#createRangeFunction(Class, Class, String)
+     * @see PostgreRangeType#createRangeFunction(Class, Class, String)
      */
     @Test
     public void rangeFunction() {
         String funcRef;
         funcRef = Int4Range.class.getName() + _Constant.DOUBLE_COLON + "create";
-        ArmyPostgreRangeType.createRangeFunction(Int4Range.class, Integer.class, funcRef);
+        PostgreRangeType.createRangeFunction(Int4Range.class, Integer.class, funcRef);
 
         funcRef = LocalDateTimeRange.class.getName() + _Constant.DOUBLE_COLON + "create";
-        ArmyPostgreRangeType.createRangeFunction(LocalDateTimeRange.class, LocalDateTime.class, funcRef);
+        PostgreRangeType.createRangeFunction(LocalDateTimeRange.class, LocalDateTime.class, funcRef);
     }
 
     /**
-     * @see ArmyPostgreRangeType#emptyRange(Class)
+     * @see PostgreRangeType#emptyRange(Class)
      */
     @Test
     public void emptyRange() {
         Int4Range intEmpty;
-        intEmpty = ArmyPostgreRangeType.emptyRange(Int4Range.class);
+        intEmpty = PostgreRangeType.emptyRange(Int4Range.class);
         Assert.assertEquals(intEmpty, Int4Range.EMPTY);
 
         LocalDateTimeRange dateTimeEmpty;
-        dateTimeEmpty = ArmyPostgreRangeType.emptyRange(LocalDateTimeRange.class);
+        dateTimeEmpty = PostgreRangeType.emptyRange(LocalDateTimeRange.class);
         Assert.assertEquals(dateTimeEmpty, LocalDateTimeRange.EMPTY);
 
     }

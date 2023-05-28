@@ -49,7 +49,7 @@ public final class PointType extends ArmyGeometryType implements MappingType.Sql
     }
 
     @Override
-    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

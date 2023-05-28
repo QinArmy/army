@@ -67,7 +67,7 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
     }
 
     @Override
-    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
         return null;
     }
 

@@ -12,6 +12,7 @@ import io.army.util._ArrayUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 
@@ -22,7 +23,7 @@ import java.util.function.Supplier;
  *
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">int4range</a>
  */
-public class PostgreInt4RangeArrayType extends PostgreRangeArrayType<Integer> {
+public class PostgreInt4RangeArrayType extends PostgreSingleRangeArrayType<Integer> {
 
 
     public static PostgreInt4RangeArrayType from(final Class<?> javaType) {
@@ -64,7 +65,7 @@ public class PostgreInt4RangeArrayType extends PostgreRangeArrayType<Integer> {
         }
 
         return new PostgreInt4RangeArrayType(javaType,
-                ArmyPostgreRangeType.createRangeFunction(_ArrayUtils.underlyingComponent(javaType), Integer.class, methodName)
+                PostgreRangeType.createRangeFunction(_ArrayUtils.underlyingComponent(javaType), Integer.class, methodName)
         );
     }
 
@@ -120,6 +121,10 @@ public class PostgreInt4RangeArrayType extends PostgreRangeArrayType<Integer> {
         return PostgreDataType.INT4RANGE_ARRAY;
     }
 
+    @Override
+    final void boundToText(Integer bound, Consumer<String> consumer) {
+        consumer.accept(bound.toString());
+    }
 
     private static final class ListType<E> extends PostgreInt4RangeArrayType
             implements SingleGenericsMapping.ListMapping<E> {

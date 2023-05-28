@@ -1,7 +1,6 @@
-package io.army.mapping.postgre;
+package io.army.mapping.optional;
 
 import io.army.dialect._Constant;
-import io.army.mapping.optional.PostgreArrays;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -15,7 +14,7 @@ import java.util.Map;
  * @see PostgreArrays
  */
 @Test
-public class PostgreArrayParsersUnitTests {
+public class PostgreArraysUnitTests {
 
 
     /**
@@ -101,55 +100,55 @@ public class PostgreArrayParsersUnitTests {
 
         text = "{}";
         javaType = int[].class;
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, this::parseInt);
+        array = PostgreArrays.parseArrayText(javaType, text, true, _Constant.COMMA, this::parseInt);
         Assert.assertEquals(array, new int[0]);
 
         text = "{1}";
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, this::parseInt);
+        array = PostgreArrays.parseArrayText(javaType, text, true, _Constant.COMMA, this::parseInt);
         Assert.assertEquals(array, new int[]{1});
 
         text = "{1 , 2}";
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, this::parseInt);
+        array = PostgreArrays.parseArrayText(javaType, text, true, _Constant.COMMA, this::parseInt);
         Assert.assertEquals(array, new int[]{1, 2});
 
         text = "{{1 , 2}}";
         javaType = int[][].class;
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, this::parseInt);
+        array = PostgreArrays.parseArrayText(javaType, text, true, _Constant.COMMA, this::parseInt);
         Assert.assertEquals(array, new int[][]{{1, 2}});
 
         text = "{{1 , 2} , { 3, 4}}";
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, this::parseInt);
+        array = PostgreArrays.parseArrayText(javaType, text, true, _Constant.COMMA, this::parseInt);
         Assert.assertEquals(array, new int[][]{{1, 2}, {3, 4}});
 
         text = "[-1:0][-2:-1]={{1 , 2} , { 3, 4}}";
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, this::parseInt);
+        array = PostgreArrays.parseArrayText(javaType, text, true, _Constant.COMMA, this::parseInt);
         Assert.assertEquals(array, new int[][]{{1, 2}, {3, 4}});
 
 
         text = "{}";
         javaType = String[].class;
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, String::substring);
+        array = PostgreArrays.parseArrayText(javaType, text, false, _Constant.COMMA, String::substring);
         Assert.assertEquals(array, new String[0]);
 
         text = "{\"\"}";
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, String::substring);
+        array = PostgreArrays.parseArrayText(javaType, text, false, _Constant.COMMA, String::substring);
         Assert.assertEquals(array, new String[]{""});
 
         text = "{\"I love \\\"army\\\"\"}";
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, String::substring);
+        array = PostgreArrays.parseArrayText(javaType, text, false, _Constant.COMMA, String::substring);
         Assert.assertEquals(array, new String[]{"I love \\\"army\\\""});
 
         text = "{{\"\"}}";
         javaType = String[][].class;
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, String::substring);
+        array = PostgreArrays.parseArrayText(javaType, text, false, _Constant.COMMA, String::substring);
         Assert.assertEquals(array, new String[][]{{""}});
 
         text = "{{\"\"}, {army} }";
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, String::substring);
+        array = PostgreArrays.parseArrayText(javaType, text, false, _Constant.COMMA, String::substring);
         Assert.assertEquals(array, new String[][]{{""}, {"army"}});
 
         text = "{{\"I love \\\"army\\\"\"} , {\"My Name is zoro.\"} }";
-        array = PostgreArrays.parseArrayText(javaType, text, _Constant.COMMA, String::substring);
+        array = PostgreArrays.parseArrayText(javaType, text, false, _Constant.COMMA, String::substring);
         Assert.assertEquals(array, new String[][]{{"I love \\\"army\\\""}, {"My Name is zoro."}});
     }
 

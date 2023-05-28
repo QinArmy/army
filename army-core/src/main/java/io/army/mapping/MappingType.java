@@ -64,7 +64,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     }
 
 
-    public abstract MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException;
+    public abstract <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException;
 
 
     /**
@@ -108,6 +108,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     @Override
     public final String toString() {
+        //TODO add 泛型
         return _StringUtils.builder()
                 .append(this.getClass().getName())
                 .append("[javaType:")

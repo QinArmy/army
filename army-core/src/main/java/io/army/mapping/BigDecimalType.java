@@ -57,7 +57,7 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
     }
 
     @Override
-    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
         throw new UnsupportedOperationException();
     }
 
