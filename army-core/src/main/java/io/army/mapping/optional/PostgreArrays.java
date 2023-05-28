@@ -1,6 +1,10 @@
-package io.army.mapping.postgre;
+package io.army.mapping.optional;
 
 import io.army.dialect._Constant;
+import io.army.function.TextFunction;
+import io.army.mapping.MappingType;
+import io.army.mapping.SingleGenericsMapping;
+import io.army.sqltype.SqlType;
 import io.army.type.ImmutableSpec;
 import io.army.util._ArrayUtils;
 import io.army.util._Collections;
@@ -9,19 +13,92 @@ import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class PostgreArrayParsers {
+public abstract class PostgreArrays extends ArrayMappings {
 
-    private PostgreArrayParsers() {
-        throw new UnsupportedOperationException();
-    }
-
-    public interface ElementFunction {
-        Object apply(String text, int offset, int end);
+    private PostgreArrays() {
     }
 
     private static final Map<Class<?>, Integer> EMPTY_LENGTHS = Collections.emptyMap();
+
+
+    public static String arrayBeforeBind(final Object nonNull, final BiConsumer<Object, Consumer<String>> consumer,
+                                         final SqlType sqlType, final MappingType type,
+                                         final ErrorHandler handler) {
+
+        final String text, value;
+        final int length;
+        if (!(nonNull instanceof String)) {
+            if (!type.javaType().isInstance(nonNull)) {
+                throw handler.apply(type, sqlType, nonNull, null);
+            }
+            value = PostgreArrays.toArrayText(nonNull, consumer, new StringBuilder())
+                    .toString();
+
+        } else if ((length = (text = ((String) nonNull).trim()).length()) < 2) {
+            throw handler.apply(type, sqlType, nonNull, null);
+        } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
+            throw handler.apply(type, sqlType, nonNull, null);
+        } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
+            throw handler.apply(type, sqlType, nonNull, null);
+        } else {
+            value = text;
+        }
+        return value;
+    }
+
+    public static StringBuilder toArrayText(final Object array, final BiConsumer<Object, Consumer<String>> consumer,
+                                            final StringBuilder builder)
+            throws IllegalArgumentException {
+        if (array instanceof List) {
+            listToArrayText((List<?>) array, consumer, builder);
+        } else if (!array.getClass().isArray()) {
+            throw new IllegalArgumentException("non-array");
+        } else {
+            arrayToArrayText(array, consumer, builder);
+        }
+        return builder;
+    }
+
+
+    public static Object parseArray(final String text, final TextFunction<?> elementFunc,
+                                    final char delimiter, final SqlType sqlType, final MappingType type,
+                                    final ErrorHandler handler) {
+
+        if (!(type instanceof MappingType.SqlArrayType)) {
+            throw notArrayMappingType(type);
+        }
+
+        final Class<?> arrayJavaType;
+        if (type instanceof SingleGenericsMapping.ListMapping) {
+            final Class<?> elementType;
+            elementType = ((SingleGenericsMapping.ListMapping<?>) type).genericsType();
+            arrayJavaType = _ArrayUtils.arrayClassOf(elementType);
+        } else {
+            arrayJavaType = type.javaType();
+            if (!arrayJavaType.isArray()) {
+                throw notArrayJavaType(type);
+            }
+        }
+
+        final Object array, value;
+        try {
+            array = PostgreArrays.parseArrayText(arrayJavaType, text, delimiter, elementFunc);
+        } catch (Throwable e) {
+            throw handler.apply(type, sqlType, text, e);
+        }
+        if (type instanceof SingleGenericsMapping.ListMapping) {
+            value = PostgreArrays.linearToList(array,
+                    ((SingleGenericsMapping.ListMapping<?>) type).listConstructor()
+            );
+        } else {
+            value = array;
+        }
+        return value;
+    }
 
     /**
      * <p>
@@ -30,8 +107,8 @@ public abstract class PostgreArrayParsers {
      *
      * @see <a href="https://www.postgresql.org/docs/15/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
      */
-    static Object parseArrayText(final Class<?> javaType, final String text, final char delimiter,
-                                 final ElementFunction function) throws IllegalArgumentException {
+    public static Object parseArrayText(final Class<?> javaType, final String text, final char delimiter,
+                                        final TextFunction<?> function) throws IllegalArgumentException {
         final int length;
         length = text.length();
         int offset = 0;
@@ -56,7 +133,7 @@ public abstract class PostgreArrayParsers {
         } else {
             lengthMap = EMPTY_LENGTHS;
         }
-        return parseArray(javaType, text, offset, length, delimiter, lengthMap, function);
+        return _parseArray(javaType, text, offset, length, delimiter, lengthMap, function);
     }
 
 
@@ -187,13 +264,15 @@ public abstract class PostgreArrayParsers {
         return _Collections.unmodifiableMap(map);
     }
 
-    static List<Object> linearToList(final Object array, final Supplier<List<Object>> supplier) {
-        List<Object> list;
+    @SuppressWarnings("unchecked")
+    static <E> List<E> linearToList(final Object array, final Supplier<List<E>> supplier) {
+
+        List<E> list;
         list = supplier.get();
         final int arrayLength;
         arrayLength = Array.getLength(array);
         for (int i = 0; i < arrayLength; i++) {
-            list.add(Array.get(array, i));
+            list.add((E) Array.get(array, i));
         }
         if (list instanceof ImmutableSpec) {
             switch (arrayLength) {
@@ -201,7 +280,7 @@ public abstract class PostgreArrayParsers {
                     list = _Collections.emptyList();
                     break;
                 case 1:
-                    list = _Collections.singletonList(Array.get(array, 0));
+                    list = _Collections.singletonList((E) Array.get(array, 0));
                     break;
                 default:
                     list = _Collections.unmodifiableList(list);
@@ -216,11 +295,12 @@ public abstract class PostgreArrayParsers {
      * parse postgre array text.
      * </p>
      *
+     * @param function before end index possibly with trailing whitespace.
      * @see <a href="https://www.postgresql.org/docs/15/arrays.html#ARRAYS-IO">Array Input and Output Syntax</a>
      */
-    private static Object parseArray(final Class<?> javaType, final String text, final int offset, final int end,
-                                     final char delimiter, Map<Class<?>, Integer> lengthMap,
-                                     final ElementFunction function) {
+    private static Object _parseArray(final Class<?> javaType, final String text, final int offset, final int end,
+                                      final char delimiter, Map<Class<?>, Integer> lengthMap,
+                                      final TextFunction<?> function) {
         assert offset >= 0 && offset < end;
 
         final int arrayLength;
@@ -268,7 +348,7 @@ public abstract class PostgreArrayParsers {
                         inElementBrace = false;
                     } else {
                         inBrace = false;
-                        elementValue = parseArray(componentType, text, startIndex, i + 1, delimiter, lengthMap, function);
+                        elementValue = _parseArray(componentType, text, startIndex, i + 1, delimiter, lengthMap, function);
                         Array.set(array, arrayIndex++, elementValue);
                         startIndex = -1;
                     }
@@ -288,7 +368,7 @@ public abstract class PostgreArrayParsers {
                     assert startIndex < 0;
                     startIndex = i + 1;
                 }
-            } else if (ch == delimiter || ch == _Constant.RIGHT_BRACE || Character.isWhitespace(ch)) {
+            } else if (ch == delimiter || ch == _Constant.RIGHT_BRACE) {
                 if (startIndex > 0) {
                     assert oneDimension;
                     Array.set(array, arrayIndex++, function.apply(text, startIndex, i));
@@ -301,7 +381,7 @@ public abstract class PostgreArrayParsers {
             } else if (!oneDimension) {
                 String m = String.format("postgre array isn't multi-dimension array after offset[%s]", i);
                 throw new IllegalArgumentException(m);
-            } else if (startIndex < 0) {
+            } else if (startIndex < 0 && !Character.isWhitespace(ch)) {
                 startIndex = i;
             }
 
@@ -313,6 +393,75 @@ public abstract class PostgreArrayParsers {
             throw noRightBrace(end);
         }
         return array;
+    }
+
+
+    /**
+     * @see #toArrayText(Object, BiConsumer, StringBuilder)
+     */
+    private static void arrayToArrayText(final Object array, final BiConsumer<Object, Consumer<String>> consumer,
+                                         final StringBuilder builder) {
+        final Consumer<String> appendConsumer;
+        appendConsumer = builder::append;
+
+        final int arrayLength;
+        arrayLength = Array.getLength(array);
+        final boolean multiDimension;
+        multiDimension = array.getClass().getComponentType().isArray();
+        Object element;
+        builder.append(_Constant.LEFT_BRACE);
+        for (int i = 0; i < arrayLength; i++) {
+            if (i > 0) {
+                builder.append(_Constant.COMMA);
+            }
+            element = Array.get(array, i);
+            if (element == null) {
+                builder.append(_Constant.NULL);
+            } else if (multiDimension) {
+                arrayToArrayText(element, consumer, builder);
+            } else {
+                consumer.accept(element, appendConsumer);
+            }
+
+        }
+        builder.append(_Constant.RIGHT_BRACE);
+    }
+
+    /**
+     * @see #toArrayText(Object, BiConsumer, StringBuilder)
+     */
+    private static void listToArrayText(final List<?> list, final BiConsumer<Object, Consumer<String>> consumer,
+                                        final StringBuilder builder) {
+        final Consumer<String> appendConsumer;
+        appendConsumer = builder::append;
+
+        final int size;
+        size = list.size();
+        builder.append(_Constant.LEFT_BRACE);
+        Object element;
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(_Constant.COMMA);
+            }
+            element = list.get(i);
+            if (element == null) {
+                builder.append(_Constant.NULL);
+            } else {
+                consumer.accept(element, appendConsumer);
+            }
+        }
+        builder.append(_Constant.RIGHT_BRACE);
+    }
+
+
+    private static IllegalArgumentException notArrayMappingType(MappingType type) {
+        String m = String.format("%s isn't %s type.", type, MappingType.SqlArrayType.class.getName());
+        return new IllegalArgumentException(m);
+    }
+
+    private static IllegalArgumentException notArrayJavaType(MappingType type) {
+        String m = String.format("%s java type isn't array.", type);
+        return new IllegalArgumentException(m);
     }
 
     private static IllegalArgumentException boundDecorationNotMatch(Class<?> javaType, String decoration) {

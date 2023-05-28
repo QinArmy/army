@@ -10,8 +10,8 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.generator.FieldGenerator;
 import io.army.lang.Nullable;
-import io.army.mapping.ElementMappingType;
 import io.army.mapping.MappingType;
+import io.army.mapping.MultiGenericsMappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._ArrayUtils;
@@ -186,7 +186,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
             isDiscriminator = FieldMetaUtils.isDiscriminator(this.table.javaType, this.fieldName);
 
             this.mappingType = FieldMetaUtils.fieldMappingType(field, isDiscriminator);
-            if (this.mappingType instanceof ElementMappingType) {
+            if (this.mappingType instanceof MultiGenericsMappingType) {
                 this.elementTypeList = _ArrayUtils.unmodifiableListFrom(field.getAnnotation(Mapping.class).elements());
             } else {
                 this.elementTypeList = Collections.emptyList();

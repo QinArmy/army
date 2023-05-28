@@ -1,19 +1,17 @@
 package io.army.mapping.postgre;
 
-import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnv;
+import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.util._ArrayUtils;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 
 /**
@@ -23,7 +21,7 @@ import java.util.Objects;
  *
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">int4range</a>
  */
-public final class PostgreInt4RangeType extends PostgreRangeType<Integer> {
+public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> {
 
     public static PostgreInt4RangeType from(final Class<?> javaType) {
         if (javaType != String.class) {
@@ -68,7 +66,7 @@ public final class PostgreInt4RangeType extends PostgreRangeType<Integer> {
         final Class<?> javaType;
         javaType = type.javaType.getComponentType();
         assert !javaType.isArray();
-        final RangeFunction<Integer, ?> function = type.function;
+        final RangeFunction<Integer, ?> function = type.rangeFunc;
         assert function != null;
         return new PostgreInt4RangeType(javaType, function);
     }
@@ -76,31 +74,13 @@ public final class PostgreInt4RangeType extends PostgreRangeType<Integer> {
     public static final PostgreInt4RangeType TEXT = new PostgreInt4RangeType(String.class, null);
 
 
-    private final RangeFunction<Integer, ?> function;
-
     /**
      * private constructor
      */
     private PostgreInt4RangeType(final Class<?> javaType, final @Nullable RangeFunction<Integer, ?> function) {
-        super(javaType, Integer.class);
-        assert function != null || javaType == String.class;
-        this.function = function;
+        super(javaType, Integer.class, function, Integer::parseInt);
     }
 
-
-    @Override
-    public MappingType arrayTypeOfThis() {
-        final Class<?> javaType = this.javaType;
-        final RangeFunction<Integer, ?> function = this.function;
-        final MappingType arrayType;
-        if (function == null) {
-            assert javaType == String.class;
-            arrayType = PostgreInt4RangeArrayType.TEXT_LINEAR;
-        } else {
-            arrayType = PostgreInt4RangeArrayType.fromFunc(_ArrayUtils.arrayClassOf(javaType), function);
-        }
-        return arrayType;
-    }
 
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
@@ -111,54 +91,28 @@ public final class PostgreInt4RangeType extends PostgreRangeType<Integer> {
     }
 
     @Override
-    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
-    @Override
-    public Object convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
-        final SqlType type;
-        type = this.map(env.serverMeta());
-        final Object value;
-        if (nonNull instanceof String) {
-            value = parseRange((String) nonNull, type, PARAM_ERROR_HANDLER);
-        } else if (this.javaType.isInstance(nonNull)) {
-            value = nonNull;
+    public MappingType arrayTypeOfThis() {
+        final Class<?> javaType = this.javaType;
+        final RangeFunction<Integer, ?> rangeFunc = this.rangeFunc;
+        final MappingType arrayType;
+        if (rangeFunc == null) {
+            assert javaType == String.class;
+            arrayType = PostgreInt4RangeArrayType.TEXT;
         } else {
-            throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
+            arrayType = PostgreInt4RangeArrayType.fromFunc(_ArrayUtils.arrayClassOf(javaType), rangeFunc);
         }
-        return value;
+        return arrayType;
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
-        return rangeBeforeBind(type, Object::toString, nonNull, PARAM_ERROR_HANDLER);
+    public MappingType subtype() {
+        return IntegerType.INSTANCE;
     }
+
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
-        if (!(nonNull instanceof String)) {
-            throw ACCESS_ERROR_HANDLER.apply(this, type, nonNull, null);
-        }
-        return parseRange((String) nonNull, type, ACCESS_ERROR_HANDLER);
-    }
-
-    private Object parseRange(final String text, final SqlType type, final ErrorHandler handler) {
-        final RangeFunction<Integer, ?> function = this.function;
-        final Object value;
-        if (function == null) {
-            assert this.javaType == String.class;
-            value = text;
-        } else if (EMPTY.equalsIgnoreCase(text)) {
-            value = emptyRange(this.javaType);
-        } else {
-            try {
-                value = parseNonEmptyRange(text, 0, text.length(), function, Integer::parseInt);
-            } catch (Throwable e) {
-                throw handler.apply(this, type, text, e);
-            }
-        }
-        return value;
+    void boundToText(Integer bound, Consumer<String> consumer) {
+        consumer.accept(bound.toString());
     }
 
 

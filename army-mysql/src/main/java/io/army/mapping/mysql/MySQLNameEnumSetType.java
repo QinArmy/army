@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
-public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implements ElementMappingType {
+public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implements MultiGenericsMappingType {
 
     private static final ConcurrentMap<Class<?>, MySQLNameEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
@@ -42,7 +42,7 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public List<Class<?>> elementTypes() {
+    public List<Class<?>> genericsTypeList() {
         return this.elementTypes;
     }
 

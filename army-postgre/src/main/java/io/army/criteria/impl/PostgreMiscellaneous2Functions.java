@@ -1004,6 +1004,108 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
 
     /*-------------------below Range/Multirange Functions and Operators -------------------*/
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-range.html#RANGE-FUNCTIONS-TABLE">isempty ( anyrange ) → boolean<br/>
+     * Is the range empty?<br/>
+     * isempty(numrange(1.1,2.2)) → f
+     * </a>
+     */
+    public static SimplePredicate isEmpty(Expression exp) {
+        return FunctionUtils.oneArgFuncPredicate("ISEMPTY", exp);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-range.html#RANGE-FUNCTIONS-TABLE">lower_inc ( anyrange ) → boolean<br/>
+     * Is the range's lower bound inclusive?<br/>
+     * lower_inc(numrange(1.1,2.2)) → t
+     * </a>
+     */
+    public static SimplePredicate lowerInc(Expression exp) {
+        return FunctionUtils.oneArgFuncPredicate("LOWER_INC", exp);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-range.html#RANGE-FUNCTIONS-TABLE">upper_inc ( anyrange ) → boolean<br/>
+     * Is the range's upper bound inclusive?<br/>
+     * upper_inc(numrange(1.1,2.2)) → t
+     * </a>
+     */
+    public static SimplePredicate upperInc(Expression exp) {
+        return FunctionUtils.oneArgFuncPredicate("UPPER_INC", exp);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-range.html#RANGE-FUNCTIONS-TABLE">lower_inf ( anyrange ) → boolean<br/>
+     * Is the range's lower bound infinite?<br/>
+     * lower_inf(numrange(1.1,2.2)) → t
+     * </a>
+     */
+    public static SimplePredicate lowerInf(Expression exp) {
+        return FunctionUtils.oneArgFuncPredicate("LOWER_INF", exp);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-range.html#RANGE-FUNCTIONS-TABLE">upper_inf ( anyrange ) → boolean<br/>
+     * Is the range's upper bound infinite?<br/>
+     * upper_inf(numrange(1.1,2.2)) → t
+     * </a>
+     */
+    public static SimplePredicate upperInf(Expression exp) {
+        return FunctionUtils.oneArgFuncPredicate("UPPER_INF", exp);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of range1.
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-range.html#RANGE-FUNCTIONS-TABLE">range_merge ( anyrange, anyrange ) → anyrange<br/>
+     * Computes the smallest range that includes both of the given ranges.<br/>
+     * range_merge('[1,2)'::int4range, '[3,4)'::int4range) → [1,4)
+     * </a>
+     */
+    public static SimpleExpression rangeMerge(Expression range1, Expression range2) {
+        return FunctionUtils.twoArgFunc("RANGE_MERGE", range1, range2, _returnType(range1, Expressions::identityType));
+    }
+
 
 
     /*-------------------below private method -------------------*/

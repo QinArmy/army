@@ -3,6 +3,7 @@ package io.army.util;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.mapping.SingleGenericsMapping;
 
 import java.util.*;
 
@@ -155,7 +156,9 @@ public abstract class _ArrayUtils {
     }
 
     public static Class<?> underlyingComponent(final Class<?> arrayType) {
-        assert arrayType.isArray();
+        if (!arrayType.isArray()) {
+            throw new IllegalArgumentException(String.format("%s isn't array type", arrayType.getName()));
+        }
 
         Class<?> componentType;
         componentType = arrayType.getComponentType();
@@ -178,6 +181,16 @@ public abstract class _ArrayUtils {
         return dimension;
     }
 
+    public static int dimensionOfArrayMapping(final Class<?> javaType) {
+        final int dimension;
+        if (List.class.isAssignableFrom(javaType)) {
+            dimension = 1;
+        } else {
+            dimension = dimensionOf(javaType);
+        }
+        return dimension;
+    }
+
     public static int dimensionOfType(final MappingType type) {
         final Class<?> clazz;
         clazz = type.javaType();
@@ -191,6 +204,18 @@ public abstract class _ArrayUtils {
             throw new ClassCastException(m);
         }
         return dimension;
+    }
+
+    public static Class<?> underlyingComponentClass(final MappingType type) {
+        final Class<?> componentClass;
+        if (!(type instanceof MappingType.SqlArrayType)) {
+            throw new IllegalArgumentException("non-array mapping");
+        } else if (type instanceof SingleGenericsMapping.ListMapping) {
+            componentClass = ((SingleGenericsMapping.ListMapping<?>) type).genericsType();
+        } else {
+            componentClass = underlyingComponent(type.javaType());
+        }
+        return componentClass;
     }
 
     public static Class<?> arrayClassOf(final Class<?> elementType) {

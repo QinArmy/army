@@ -82,7 +82,7 @@ public abstract class _MappingFactory {
         }
         final boolean textMapping, elementMapping;
         textMapping = TextMappingType.class.isAssignableFrom(mappingClass);
-        elementMapping = ElementMappingType.class.isAssignableFrom(mappingClass);
+        elementMapping = MultiGenericsMappingType.class.isAssignableFrom(mappingClass);
 
         try {
             final Method method;

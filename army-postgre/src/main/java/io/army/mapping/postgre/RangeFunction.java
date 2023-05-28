@@ -11,7 +11,7 @@ import io.army.type.DaoLayer;
  * <strong>NOTE</strong> :This interface present only in DAO layer,not service layer,business layer,web layer.
  * </p>
  *
- * @see PostgreRangeType
+ * @see PostgreSingleRangeType
  * @since 1.0
  */
 @DaoLayer

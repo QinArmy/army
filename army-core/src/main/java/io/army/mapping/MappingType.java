@@ -12,6 +12,7 @@ import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
 import io.army.session.ParamException;
 import io.army.sqltype.SqlType;
+import io.army.util._ArrayUtils;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -24,7 +25,7 @@ import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public abstract class MappingType implements TypeMeta, TypeInfer {
+public abstract class MappingType extends MappingSupport implements TypeMeta, TypeInfer {
 
     protected static final BiFunction<MappingType, Object, ArmyException> PARAM_ERROR_HANDLER_0 = MappingType::paramError0;
 
@@ -32,9 +33,9 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
 
     protected static final BiFunction<MappingType, ServerMeta, NotSupportDialectException> MAP_ERROR_HANDLER = MappingType::mapError;
 
-    protected static final ErrorHandler PARAM_ERROR_HANDLER = MappingType::paramError;
+    protected static final MappingSupport.ErrorHandler PARAM_ERROR_HANDLER = MappingType::paramError;
 
-    protected static final ErrorHandler ACCESS_ERROR_HANDLER = MappingType::dataAccessError;
+    protected static final MappingSupport.ErrorHandler ACCESS_ERROR_HANDLER = MappingType::dataAccessError;
 
     protected MappingType() {
     }
@@ -50,15 +51,17 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
     }
 
 
-    public MappingType arrayTypeOfThis() {
-        throw new UnsupportedOperationException();
-    }
-
-
     public abstract Class<?> javaType();
 
 
     public abstract SqlType map(ServerMeta meta) throws NotSupportDialectException;
+
+    /**
+     * @throws CriteriaException when this instance don't support array type.
+     */
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        throw dontSupportArrayType(this);
+    }
 
 
     public abstract MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException;
@@ -115,14 +118,18 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
                 .toString();
     }
 
-    public boolean isSameType(final MappingType o) {
+    public boolean isSameType(final MappingType type) {
         final boolean match;
-        if (o == this) {
+        if (type == this) {
             match = true;
-        } else if (this.getClass().isInstance(o)) {
-            match = o.javaType() == this.javaType();
-        } else {
+        } else if (!this.getClass().isInstance(type)) {
             match = false;
+        } else if (this instanceof SqlArrayType) {
+            final int thisDimension;
+            thisDimension = _ArrayUtils.dimensionOfArrayMapping(this.javaType());
+            match = thisDimension == _ArrayUtils.dimensionOfArrayMapping(type.javaType());
+        } else {
+            match = true;
         }
         return match;
     }
@@ -187,6 +194,17 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
     protected static CriteriaException outRangeOfSqlType(SqlType sqlType, final Object nonNull
             , @Nullable Throwable cause) {
         return _Exceptions.outRangeOfSqlType(sqlType, nonNull, cause);
+    }
+
+    protected static NoMatchMappingException noMatchCompatibleMapping(MappingType type, Class<?> targetJavaType) {
+        String m = String.format("%s not found match %s for %s", type, MappingType.class.getName(),
+                targetJavaType.getName());
+        return new NoMatchMappingException(m);
+    }
+
+    protected static CriteriaException dontSupportArrayType(MappingType type) {
+        String m = String.format("%s don't support array type.", type);
+        return new CriteriaException(m);
     }
 
 
@@ -261,6 +279,12 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
                 .toString();
     }
 
+
+    public interface GenericsMappingType {
+
+        Class<?> javaType();
+
+    }
 
     public enum LengthType {
 
@@ -562,13 +586,6 @@ public abstract class MappingType implements TypeMeta, TypeInfer {
 
 
     /*-------------------below protected interfaces -------------------*/
-
-
-    protected interface ErrorHandler {
-
-        ArmyException apply(MappingType type, SqlType sqlType, Object value, @Nullable Throwable e);
-
-    }
 
 
 }

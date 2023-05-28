@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class MySQLTextEnumSetType extends MappingType implements ElementMappingType {
+public final class MySQLTextEnumSetType extends MappingType implements MultiGenericsMappingType {
 
     private static final ConcurrentMap<Class<?>, MySQLTextEnumSetType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
@@ -45,7 +45,7 @@ public final class MySQLTextEnumSetType extends MappingType implements ElementMa
     }
 
     @Override
-    public List<Class<?>> elementTypes() {
+    public List<Class<?>> genericsTypeList() {
         return this.elementTypes;
     }
 

@@ -5,7 +5,8 @@ import io.army.type.DaoLayer;
 
 /**
  * <p>
- * This interface representing postgre  range type.
+ * This interface representing postgre  range type. The implementations of this interface must provide public static
+ * emptyRange() for return empty range instance.
  * </p>
  * <p>
  * <strong>NOTE</strong> :
@@ -110,6 +111,7 @@ import io.army.type.DaoLayer;
  *    }//Int4Range
  *     </pre>
  * </p>
+ *
  * @see RangeFunction
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html">Range Types</a>
  * @since 1.0

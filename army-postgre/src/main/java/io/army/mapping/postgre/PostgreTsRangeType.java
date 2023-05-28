@@ -1,48 +1,50 @@
 package io.army.mapping.postgre;
 
-import io.army.criteria.CriteriaException;
+import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
+import io.army.dialect._Constant;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnv;
+import io.army.mapping.LocalDateTimeType;
 import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
 import io.army.meta.ServerMeta;
-import io.army.session.DataAccessException;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
-public final class PostgreTsRangeType extends PostgreRangeType<LocalDateTime> {
+public final class PostgreTsRangeType extends PostgreSingleRangeType<LocalDateTime> {
 
 
-    private PostgreTsRangeType(Class<?> javaType) {
-        super(javaType, LocalDateTime.class);
+    private PostgreTsRangeType(Class<?> javaType, final @Nullable RangeFunction<LocalDateTime, ?> rangeFunc) {
+        super(javaType, LocalDateTime.class, rangeFunc, PostgreTsRangeType::parseDateTime);
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
-        return null;
+    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+        if (meta.dialectDatabase() != Database.PostgreSQL) {
+            throw MAP_ERROR_HANDLER.apply(this, meta);
+        }
+        return PostgreDataType.TSRANGE;
     }
 
     @Override
-    public MappingType compatibleFor(Class<?> targetType) throws NoMatchMappingException {
-        return null;
+    public MappingType arrayTypeOfThis() {
+        return super.arrayTypeOfThis();
     }
 
     @Override
-    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return null;
+    public MappingType subtype() {
+        return LocalDateTimeType.INSTANCE;
     }
 
-    @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        return null;
-    }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
-        return null;
+    void boundToText(LocalDateTime bound, Consumer<String> consumer) {
+        consumer.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
+        consumer.accept(bound.format(_TimeUtils.DATETIME_FORMATTER_6));
+        consumer.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
     }
 
     @Nullable
@@ -55,4 +57,6 @@ public final class PostgreTsRangeType extends PostgreRangeType<LocalDateTime> {
         }
         return bound;
     }
+
+
 }

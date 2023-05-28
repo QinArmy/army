@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.TextArrayType;
+import io.army.mapping.postgre.PostgreSingleRangeType;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -154,10 +155,12 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @see #upper(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">lower ( text ) → text</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-range.html#RANGE-FUNCTIONS-TABLE">lower ( anyrange ) → anyelement</a>
      */
     public static SimpleExpression lower(Expression exp) {
-        return FunctionUtils.oneArgFunc("LOWER", exp, TextType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LOWER", exp, _returnType(exp, PostgreStringFunctions::lowerOrUpperType));
     }
+
 
 
     /**
@@ -541,7 +544,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">upper ( text ) → text</a>
      */
     public static SimpleExpression upper(Expression exp) {
-        return FunctionUtils.oneArgFunc("UPPER", exp, TextType.INSTANCE);
+        return FunctionUtils.oneArgFunc("UPPER", exp, _returnType(exp, PostgreStringFunctions::lowerOrUpperType));
     }
 
     /*-------------------below Other String Functions and Operators -------------------*/
@@ -1676,6 +1679,22 @@ abstract class PostgreStringFunctions extends Functions {
         }
         return func;
 
+    }
+
+    /**
+     * @see #lower(Expression)
+     * @see #upper(Expression)
+     */
+    private static MappingType lowerOrUpperType(final MappingType type) {
+        final MappingType returnType;
+        if (type instanceof PostgreSingleRangeType) {
+            returnType = ((PostgreSingleRangeType<?>) type).subtype();
+        } else if (type instanceof PostgreSingleRangeType.UserDefinedRangeType) {
+            returnType = ((PostgreSingleRangeType.UserDefinedRangeType<?>) type).subtype();
+        } else {
+            returnType = TextType.INSTANCE;
+        }
+        return returnType;
     }
 
 

@@ -122,6 +122,13 @@ public class PostgreFuncUnitTests extends PostgreUnitTests {
             LOG.debug("{}", e.getMessage());
             throw e;
         }
+
+
+    }
+
+    @Test
+    public void isEmptyFunc() {
+
     }
 
 
