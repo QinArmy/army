@@ -70,6 +70,19 @@ public final class PostgreTsRangeType extends PostgreSingleRangeType<LocalDateTi
         return new PostgreTsRangeType(javaType, rangeFunc);
     }
 
+    static PostgreTsRangeType fromMultiType(final PostgreTsMultiRangeType type) {
+        final Class<?> javaType;
+        if (type instanceof PostgreTsMultiRangeType.ListType) {
+            javaType = ((PostgreTsMultiRangeType.ListType<?>) type).elementType;
+        } else {
+            javaType = type.javaType.getComponentType();
+        }
+        assert !javaType.isArray();
+        final RangeFunction<LocalDateTime, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        return new PostgreTsRangeType(javaType, rangeFunc);
+    }
+
 
     public static final PostgreTsRangeType TEXT = new PostgreTsRangeType(String.class, null);
 
@@ -104,6 +117,18 @@ public final class PostgreTsRangeType extends PostgreSingleRangeType<LocalDateTi
     @Override
     public MappingType subtype() {
         return LocalDateTimeType.INSTANCE;
+    }
+
+    @Override
+    public MappingType multiRangeType() {
+        final RangeFunction<LocalDateTime, ?> rangeFunc = this.rangeFunc;
+        final PostgreTsMultiRangeType type;
+        if (rangeFunc == null) {
+            type = PostgreTsMultiRangeType.TEXT;
+        } else {
+            type = PostgreTsMultiRangeType.fromSingleType(this);
+        }
+        return type;
     }
 
     @Override

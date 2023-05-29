@@ -107,6 +107,14 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
         return new PostgreInt4MultiRangeType(javaType, rangeFunc);
     }
 
+    static PostgreInt4MultiRangeType fromSingleType(final PostgreInt4RangeType type) {
+        final RangeFunction<Integer, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        final Class<?> javaType = type.javaType;
+        assert !javaType.isArray();
+        return new PostgreInt4MultiRangeType(ArrayUtils.arrayClassOf(javaType), rangeFunc);
+    }
+
     private static PostgreInt4MultiRangeType fromFunc0(final Class<?> javaType,
                                                        final RangeFunction<Integer, ?> function) {
         return new PostgreInt4MultiRangeType(javaType, function);
@@ -154,6 +162,19 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
 
 
     @Override
+    public final MappingType rangeType() {
+        final RangeFunction<Integer, ?> rangeFunc = this.rangeFunc;
+        final PostgreInt4RangeType type;
+        if (rangeFunc == null) {
+            type = PostgreInt4RangeType.TEXT;
+        } else {
+            type = PostgreInt4RangeType.fromMultiType(this);
+        }
+        return type;
+    }
+
+
+    @Override
     final MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<Integer, ?> rangeFunc)
             throws NoMatchMappingException {
         final PostgreInt4MultiRangeType instance;
@@ -175,12 +196,12 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
         return Integer.class;
     }
 
-    private static final class ListType<E> extends PostgreInt4MultiRangeType
+    static final class ListType<E> extends PostgreInt4MultiRangeType
             implements UnaryGenericsMapping.ListMapping<E> {
 
         private final Supplier<List<E>> supplier;
 
-        private final Class<E> elementType;
+        final Class<E> elementType;
 
         private ListType(Supplier<List<E>> supplier, Class<E> elementType,
                          @Nullable RangeFunction<Integer, ?> rangeFunc) {

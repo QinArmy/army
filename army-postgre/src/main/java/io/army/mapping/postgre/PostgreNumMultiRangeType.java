@@ -109,6 +109,14 @@ public class PostgreNumMultiRangeType extends PostgreMultiRangeType<BigDecimal> 
         return new PostgreNumMultiRangeType(javaType, rangeFunc);
     }
 
+    static PostgreNumMultiRangeType fromSingleType(final PostgreNumRangeType type) {
+        final RangeFunction<BigDecimal, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        final Class<?> javaType = type.javaType;
+        assert !javaType.isArray();
+        return new PostgreNumMultiRangeType(ArrayUtils.arrayClassOf(javaType), rangeFunc);
+    }
+
     private static PostgreNumMultiRangeType fromFunc0(final Class<?> javaType,
                                                       final RangeFunction<BigDecimal, ?> function) {
         return new PostgreNumMultiRangeType(javaType, function);
@@ -154,6 +162,18 @@ public class PostgreNumMultiRangeType extends PostgreMultiRangeType<BigDecimal> 
         return BigDecimalType.INSTANCE;
     }
 
+    @Override
+    public final MappingType rangeType() {
+        final RangeFunction<BigDecimal, ?> rangeFunc = this.rangeFunc;
+        final PostgreNumRangeType type;
+        if (rangeFunc == null) {
+            type = PostgreNumRangeType.TEXT;
+        } else {
+            type = PostgreNumRangeType.fromMultiType(this);
+        }
+        return type;
+    }
+
 
     @Override
     final MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<BigDecimal, ?> rangeFunc)
@@ -177,12 +197,12 @@ public class PostgreNumMultiRangeType extends PostgreMultiRangeType<BigDecimal> 
         return BigDecimal.class;
     }
 
-    private static final class ListType<E> extends PostgreNumMultiRangeType
+    static final class ListType<E> extends PostgreNumMultiRangeType
             implements UnaryGenericsMapping.ListMapping<E> {
 
         private final Supplier<List<E>> supplier;
 
-        private final Class<E> elementType;
+        final Class<E> elementType;
 
         private ListType(Supplier<List<E>> supplier, Class<E> elementType,
                          @Nullable RangeFunction<BigDecimal, ?> rangeFunc) {

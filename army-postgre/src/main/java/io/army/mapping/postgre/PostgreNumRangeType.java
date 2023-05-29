@@ -86,6 +86,19 @@ public final class PostgreNumRangeType extends PostgreSingleRangeType<BigDecimal
         return new PostgreNumRangeType(javaType, rangeFunc);
     }
 
+    static PostgreNumRangeType fromMultiType(final PostgreNumMultiRangeType type) {
+        final Class<?> javaType;
+        if (type instanceof PostgreNumMultiRangeType.ListType) {
+            javaType = ((PostgreNumMultiRangeType.ListType<?>) type).elementType;
+        } else {
+            javaType = type.javaType.getComponentType();
+        }
+        assert !javaType.isArray();
+        final RangeFunction<BigDecimal, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        return new PostgreNumRangeType(javaType, rangeFunc);
+    }
+
     public static final PostgreNumRangeType TEXT = new PostgreNumRangeType(String.class, null);
 
 
@@ -122,6 +135,18 @@ public final class PostgreNumRangeType extends PostgreSingleRangeType<BigDecimal
     @Override
     public MappingType subtype() {
         return BigDecimalType.INSTANCE;
+    }
+
+    @Override
+    public MappingType multiRangeType() {
+        final RangeFunction<BigDecimal, ?> rangeFunc = this.rangeFunc;
+        final PostgreNumMultiRangeType type;
+        if (rangeFunc == null) {
+            type = PostgreNumMultiRangeType.TEXT;
+        } else {
+            type = PostgreNumMultiRangeType.fromSingleType(this);
+        }
+        return type;
     }
 
 

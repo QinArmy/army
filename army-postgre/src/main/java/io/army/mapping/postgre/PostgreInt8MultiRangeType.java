@@ -108,6 +108,14 @@ public class PostgreInt8MultiRangeType extends PostgreMultiRangeType<Long> {
         return new PostgreInt8MultiRangeType(javaType, rangeFunc);
     }
 
+    static PostgreInt8MultiRangeType fromSingleType(final PostgreInt8RangeType type) {
+        final RangeFunction<Long, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        final Class<?> javaType = type.javaType;
+        assert !javaType.isArray();
+        return new PostgreInt8MultiRangeType(ArrayUtils.arrayClassOf(javaType), rangeFunc);
+    }
+
     private static PostgreInt8MultiRangeType fromFunc0(final Class<?> javaType,
                                                        final RangeFunction<Long, ?> function) {
         return new PostgreInt8MultiRangeType(javaType, function);
@@ -153,6 +161,18 @@ public class PostgreInt8MultiRangeType extends PostgreMultiRangeType<Long> {
         return LongType.INSTANCE;
     }
 
+    @Override
+    public final MappingType rangeType() {
+        final RangeFunction<Long, ?> rangeFunc = this.rangeFunc;
+        final PostgreInt8RangeType type;
+        if (rangeFunc == null) {
+            type = PostgreInt8RangeType.TEXT;
+        } else {
+            type = PostgreInt8RangeType.fromMultiType(this);
+        }
+        return type;
+    }
+
 
     @Override
     final MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<Long, ?> rangeFunc)
@@ -176,12 +196,12 @@ public class PostgreInt8MultiRangeType extends PostgreMultiRangeType<Long> {
         return Long.class;
     }
 
-    private static final class ListType<E> extends PostgreInt8MultiRangeType
+    static final class ListType<E> extends PostgreInt8MultiRangeType
             implements UnaryGenericsMapping.ListMapping<E> {
 
         private final Supplier<List<E>> supplier;
 
-        private final Class<E> elementType;
+        final Class<E> elementType;
 
         private ListType(Supplier<List<E>> supplier, Class<E> elementType,
                          @Nullable RangeFunction<Long, ?> rangeFunc) {

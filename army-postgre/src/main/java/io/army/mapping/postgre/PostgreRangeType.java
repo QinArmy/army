@@ -455,7 +455,28 @@ public abstract class PostgreRangeType<T> extends ArmyPostgreRangeType<T> {
     }
 
 
-    public interface UserDefinedRangeType<T> {
+    public interface RangeType {
+
+        /**
+         * @return the {@link MappingType} of subtype of range.
+         */
+        MappingType subtype();
+    }
+
+
+    public interface SingleRangeType extends RangeType {
+
+        MappingType multiRangeType();
+
+    }
+
+    public interface MultiRangeType extends RangeType {
+
+        MappingType rangeType();
+    }
+
+
+    public interface UserDefinedRangeType<T> extends RangeType {
 
         /**
          * @throws UnsupportedOperationException when {@link MappingType#javaType()} is {@link ArmyPostgreRange} type.
@@ -463,12 +484,9 @@ public abstract class PostgreRangeType<T> extends ArmyPostgreRangeType<T> {
          */
         MockRangeFunction<T> mockFunction();
 
-        /**
-         * @return the {@link MappingType} of subtype of range.
-         */
-        MappingType subtype();
 
     }
+
 
     public static final class MockRangeFunction<T> {
 

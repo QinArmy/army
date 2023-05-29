@@ -7,6 +7,7 @@ import io.army.mapping.*;
 import io.army.mapping.optional.IntegerArrayType;
 import io.army.mapping.optional.ShortArrayType;
 import io.army.mapping.optional.TextArrayType;
+import io.army.mapping.postgre.PostgreRangeType;
 import io.army.mapping.postgre.PostgreTsVectorType;
 import io.army.util._Collections;
 
@@ -14,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFunctions {
 
@@ -814,6 +816,12 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * @see <a href="https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE">unnest ( anyarray ) → setof anyelement<br/>
      * Expands an array into a set of rows. The array's elements are read out in storage order.
      * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-range.html#MULTIRANGE-FUNCTIONS-TABLE">unnest ( anymultirange ) → setof anyrange<br/>
+     * Expands a multirange into a set of ranges. The ranges are read out in storage order (ascending).<br/>
+     * unnest('{[1,2), [3,4)}'::int4multirange) →
+     * [1,2)
+     * [3,4)
+     * </a>
      */
     public static _TabularWithOrdinalityFunction unnest(final Expression exp) {
         final String name = "UNNEST";
@@ -834,6 +842,9 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
             fieldList.add(ArmySelections.forName("weights", TextType.INSTANCE));
 
             func = DialectFunctionUtils.oneArgTabularFunc(name, exp, fieldList);
+        } else if (type instanceof PostgreRangeType.MultiRangeType) {
+            func = DialectFunctionUtils.oneArgColumnFunction(name, exp, null,
+                    ((PostgreRangeType.MultiRangeType) type).rangeType());
         } else {
             throw CriteriaUtils.funcArgError(name, exp);
         }
@@ -1104,6 +1115,36 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      */
     public static SimpleExpression rangeMerge(Expression range1, Expression range2) {
         return FunctionUtils.twoArgFunc("RANGE_MERGE", range1, range2, _returnType(range1, Expressions::identityType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: <ul>
+     * <li>If anyRange is {@link PostgreRangeType.SingleRangeType} ,then the multi range of the {@link MappingType} of anyRange.</li>
+     * <li>Else {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @throws CriteriaException throw when<ul>
+     *                           <li><the element of consumer isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
+     *                           </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-range.html#MULTIRANGE-FUNCTIONS-TABLE">multirange ( anyrange ) → anymultirange<br/>
+     * Returns a multirange containing just the given range.<br/>
+     * multirange('[1,2)'::int4range) → {[1,2)}
+     * </a>
+     */
+    public static SimpleExpression multiRange(final Expression anyRange) {
+        final UnaryOperator<MappingType> func;
+        func = t -> {
+            final MappingType type;
+            if (t instanceof PostgreRangeType.SingleRangeType) {
+                type = ((PostgreRangeType.SingleRangeType) t).multiRangeType();
+            } else {
+                type = TextType.INSTANCE;
+            }
+            return type;
+        };
+        return FunctionUtils.oneArgFunc("multirange", anyRange, _returnType(anyRange, func));
     }
 
 

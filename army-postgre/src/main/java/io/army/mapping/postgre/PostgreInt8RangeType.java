@@ -84,6 +84,19 @@ public final class PostgreInt8RangeType extends PostgreSingleRangeType<Long> {
         return new PostgreInt8RangeType(javaType, rangeFunc);
     }
 
+    static PostgreInt8RangeType fromMultiType(final PostgreInt8MultiRangeType type) {
+        final Class<?> javaType;
+        if (type instanceof PostgreInt8MultiRangeType.ListType) {
+            javaType = ((PostgreInt8MultiRangeType.ListType<?>) type).elementType;
+        } else {
+            javaType = type.javaType.getComponentType();
+        }
+        assert !javaType.isArray();
+        final RangeFunction<Long, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        return new PostgreInt8RangeType(javaType, rangeFunc);
+    }
+
     public static final PostgreInt8RangeType TEXT = new PostgreInt8RangeType(String.class, null);
 
 
@@ -120,6 +133,18 @@ public final class PostgreInt8RangeType extends PostgreSingleRangeType<Long> {
     @Override
     public MappingType subtype() {
         return LongType.INSTANCE;
+    }
+
+    @Override
+    public MappingType multiRangeType() {
+        final RangeFunction<Long, ?> rangeFunc = this.rangeFunc;
+        final PostgreInt8MultiRangeType type;
+        if (rangeFunc == null) {
+            type = PostgreInt8MultiRangeType.TEXT;
+        } else {
+            type = PostgreInt8MultiRangeType.fromSingleType(this);
+        }
+        return type;
     }
 
 

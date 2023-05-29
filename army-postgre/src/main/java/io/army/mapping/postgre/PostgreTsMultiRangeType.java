@@ -108,6 +108,14 @@ public class PostgreTsMultiRangeType extends PostgreMultiRangeType<LocalDateTime
         return new PostgreTsMultiRangeType(javaType, rangeFunc);
     }
 
+    static PostgreTsMultiRangeType fromSingleType(final PostgreTsRangeType type) {
+        final RangeFunction<LocalDateTime, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        final Class<?> javaType = type.javaType;
+        assert !javaType.isArray();
+        return new PostgreTsMultiRangeType(ArrayUtils.arrayClassOf(javaType), rangeFunc);
+    }
+
     private static PostgreTsMultiRangeType fromFunc0(final Class<?> javaType,
                                                      final RangeFunction<LocalDateTime, ?> function) {
         return new PostgreTsMultiRangeType(javaType, function);
@@ -153,6 +161,18 @@ public class PostgreTsMultiRangeType extends PostgreMultiRangeType<LocalDateTime
         return LocalDateTimeType.INSTANCE;
     }
 
+    @Override
+    public final MappingType rangeType() {
+        final RangeFunction<LocalDateTime, ?> rangeFunc = this.rangeFunc;
+        final PostgreTsRangeType type;
+        if (rangeFunc == null) {
+            type = PostgreTsRangeType.TEXT;
+        } else {
+            type = PostgreTsRangeType.fromMultiType(this);
+        }
+        return type;
+    }
+
 
     @Override
     final MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<LocalDateTime, ?> rangeFunc)
@@ -176,12 +196,12 @@ public class PostgreTsMultiRangeType extends PostgreMultiRangeType<LocalDateTime
         return LocalDateTime.class;
     }
 
-    private static final class ListType<E> extends PostgreTsMultiRangeType
+    static final class ListType<E> extends PostgreTsMultiRangeType
             implements UnaryGenericsMapping.ListMapping<E> {
 
         private final Supplier<List<E>> supplier;
 
-        private final Class<E> elementType;
+        final Class<E> elementType;
 
         private ListType(Supplier<List<E>> supplier, Class<E> elementType,
                          @Nullable RangeFunction<LocalDateTime, ?> rangeFunc) {

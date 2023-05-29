@@ -87,6 +87,19 @@ public final class PostgreTsTzRangeType extends PostgreSingleRangeType<OffsetDat
         return new PostgreTsTzRangeType(javaType, rangeFunc);
     }
 
+    static PostgreTsTzRangeType fromMultiType(final PostgreTsTzMultiRangeType type) {
+        final Class<?> javaType;
+        if (type instanceof PostgreTsTzMultiRangeType.ListType) {
+            javaType = ((PostgreTsTzMultiRangeType.ListType<?>) type).elementType;
+        } else {
+            javaType = type.javaType.getComponentType();
+        }
+        assert !javaType.isArray();
+        final RangeFunction<OffsetDateTime, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        return new PostgreTsTzRangeType(javaType, rangeFunc);
+    }
+
     public static final PostgreTsTzRangeType TEXT = new PostgreTsTzRangeType(String.class, null);
 
 
@@ -123,6 +136,18 @@ public final class PostgreTsTzRangeType extends PostgreSingleRangeType<OffsetDat
     @Override
     public MappingType subtype() {
         return OffsetDateTimeType.INSTANCE;
+    }
+
+    @Override
+    public MappingType multiRangeType() {
+        final RangeFunction<OffsetDateTime, ?> rangeFunc = this.rangeFunc;
+        final PostgreTsTzMultiRangeType type;
+        if (rangeFunc == null) {
+            type = PostgreTsTzMultiRangeType.TEXT;
+        } else {
+            type = PostgreTsTzMultiRangeType.fromSingleType(this);
+        }
+        return type;
     }
 
 

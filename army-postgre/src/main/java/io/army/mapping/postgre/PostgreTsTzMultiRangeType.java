@@ -109,6 +109,14 @@ public class PostgreTsTzMultiRangeType extends PostgreMultiRangeType<OffsetDateT
         return new PostgreTsTzMultiRangeType(javaType, rangeFunc);
     }
 
+    static PostgreTsTzMultiRangeType fromSingleType(final PostgreTsTzRangeType type) {
+        final RangeFunction<OffsetDateTime, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        final Class<?> javaType = type.javaType;
+        assert !javaType.isArray();
+        return new PostgreTsTzMultiRangeType(ArrayUtils.arrayClassOf(javaType), rangeFunc);
+    }
+
     private static PostgreTsTzMultiRangeType fromFunc0(final Class<?> javaType,
                                                        final RangeFunction<OffsetDateTime, ?> function) {
         return new PostgreTsTzMultiRangeType(javaType, function);
@@ -154,6 +162,18 @@ public class PostgreTsTzMultiRangeType extends PostgreMultiRangeType<OffsetDateT
         return LocalDateTimeType.INSTANCE;
     }
 
+    @Override
+    public final MappingType rangeType() {
+        final RangeFunction<OffsetDateTime, ?> rangeFunc = this.rangeFunc;
+        final PostgreTsTzRangeType type;
+        if (rangeFunc == null) {
+            type = PostgreTsTzRangeType.TEXT;
+        } else {
+            type = PostgreTsTzRangeType.fromMultiType(this);
+        }
+        return type;
+    }
+
 
     @Override
     final MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<OffsetDateTime, ?> rangeFunc)
@@ -177,12 +197,12 @@ public class PostgreTsTzMultiRangeType extends PostgreMultiRangeType<OffsetDateT
         return OffsetDateTime.class;
     }
 
-    private static final class ListType<E> extends PostgreTsTzMultiRangeType
+    static final class ListType<E> extends PostgreTsTzMultiRangeType
             implements UnaryGenericsMapping.ListMapping<E> {
 
         private final Supplier<List<E>> supplier;
 
-        private final Class<E> elementType;
+        final Class<E> elementType;
 
         private ListType(Supplier<List<E>> supplier, Class<E> elementType,
                          @Nullable RangeFunction<OffsetDateTime, ?> rangeFunc) {
