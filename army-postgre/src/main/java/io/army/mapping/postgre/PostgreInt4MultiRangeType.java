@@ -12,6 +12,7 @@ import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
+import io.army.util.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -138,8 +139,10 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
         if (rangFunc == null) {
             assert javaType == String.class || javaType == String[].class;
             type = PostgreInt4MultiRangeArrayType.from(String[][].class);
+        } else if (this instanceof ListType) {
+            type = PostgreInt4MultiRangeArrayType.fromFunc(ArrayUtils.arrayClassOf(((ListType<?>) this).elementType), rangFunc);
         } else {
-            type = PostgreInt4MultiRangeArrayType.fromFunc(javaType, rangFunc);
+            type = PostgreInt4MultiRangeArrayType.fromFunc(ArrayUtils.arrayClassOf(javaType), rangFunc);
         }
         return type;
     }

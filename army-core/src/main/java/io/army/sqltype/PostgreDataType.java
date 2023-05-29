@@ -81,6 +81,7 @@ public enum PostgreDataType implements SqlType {
 
     INT4MULTIRANGE,
     INT8MULTIRANGE,
+    NUMMULTIRANGE,
 
     REF_CURSOR,
 

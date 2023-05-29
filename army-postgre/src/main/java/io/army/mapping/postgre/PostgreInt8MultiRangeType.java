@@ -5,7 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
-import io.army.mapping.IntegerType;
+import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.UnaryGenericsMapping;
@@ -13,6 +13,7 @@ import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
+import io.army.util.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,15 +140,17 @@ public class PostgreInt8MultiRangeType extends PostgreMultiRangeType<Long> {
         if (rangFunc == null) {
             assert javaType == String.class || javaType == String[].class;
             type = PostgreInt8MultiRangeArrayType.from(String[][].class);
+        } else if (this instanceof ListType) {
+            type = PostgreInt8MultiRangeArrayType.fromFunc(ArrayUtils.arrayClassOf(((ListType<?>) this).elementType), rangFunc);
         } else {
-            type = PostgreInt8MultiRangeArrayType.fromFunc(javaType, rangFunc);
+            type = PostgreInt8MultiRangeArrayType.fromFunc(ArrayUtils.arrayClassOf(javaType), rangFunc);
         }
         return type;
     }
 
     @Override
     public final MappingType subtype() {
-        return IntegerType.INSTANCE;
+        return LongType.INSTANCE;
     }
 
 
