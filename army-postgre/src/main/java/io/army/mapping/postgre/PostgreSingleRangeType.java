@@ -5,6 +5,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingSupport;
 import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 
@@ -35,6 +36,15 @@ public abstract class PostgreSingleRangeType<T> extends PostgreRangeType<T> {
     }
 
 
+    @Override
+    public final <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+        final RangeFunction<T, Z> rangeFunc;
+        rangeFunc = tryCreateDefaultRangeFunc(targetType, boundJavaType());
+        if (rangeFunc == null) {
+            throw noMatchCompatibleMapping(this, targetType);
+        }
+        return getInstanceFrom(targetType, rangeFunc);
+    }
 
     @Override
     public final Object convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
@@ -58,6 +68,8 @@ public abstract class PostgreSingleRangeType<T> extends PostgreRangeType<T> {
     public final boolean isSameType(MappingType type) {
         return super.isSameType(type);
     }
+
+    abstract <Z> PostgreSingleRangeType<T> getInstanceFrom(Class<Z> javaType, RangeFunction<T, Z> rangeFunc);
 
 
     /**

@@ -160,7 +160,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
 
     @Override
     public final PR partitionBy(Expression exp1, Expression exp2) {
-        this.partitionByList = _ArrayUtils.asUnmodifiableList(
+        this.partitionByList = ArrayUtils.asUnmodifiableList(
                 (ArmyExpression) exp1,
                 (ArmyExpression) exp2
         );
@@ -169,7 +169,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
 
     @Override
     public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3) {
-        this.partitionByList = _ArrayUtils.asUnmodifiableList(
+        this.partitionByList = ArrayUtils.asUnmodifiableList(
                 (ArmyExpression) exp1,
                 (ArmyExpression) exp2,
                 (ArmyExpression) exp3
@@ -179,7 +179,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
 
     @Override
     public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4) {
-        this.partitionByList = _ArrayUtils.asUnmodifiableList(
+        this.partitionByList = ArrayUtils.asUnmodifiableList(
                 (ArmyExpression) exp1,
                 (ArmyExpression) exp2,
                 (ArmyExpression) exp3,
@@ -190,7 +190,7 @@ abstract class WindowClause<PR, OR, FB, FE, BN, BE, NN>
 
     @Override
     public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4, Expression exp5) {
-        this.partitionByList = _ArrayUtils.asUnmodifiableList(
+        this.partitionByList = ArrayUtils.asUnmodifiableList(
                 (ArmyExpression) exp1,
                 (ArmyExpression) exp2,
                 (ArmyExpression) exp3,

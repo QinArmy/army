@@ -10,7 +10,7 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLStatement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 
 import java.util.ArrayList;
@@ -416,7 +416,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public final Statement._AsClause<R> partition(String first, String... rest) {
-            this.partitionList = _ArrayUtils.unmodifiableListOf(first, rest);
+            this.partitionList = ArrayUtils.unmodifiableListOf(first, rest);
             return this;
         }
 
@@ -530,7 +530,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public R parens(String first, String... rest) {
-            return this.stringConsumerEnd(_ArrayUtils.unmodifiableListOf(first, rest));
+            return this.stringConsumerEnd(ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override

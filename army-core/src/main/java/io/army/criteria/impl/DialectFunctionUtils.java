@@ -15,7 +15,7 @@ import io.army.mapping.NoCastTextType;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -349,7 +349,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         private ColumnTabularFunctionWrapper(final ColumnFunction columnFunction) {
             super(columnFunction);
             this.columnFunction = columnFunction;
-            this.funcFieldList = _ArrayUtils.asUnmodifiableList(columnFunction.field,
+            this.funcFieldList = ArrayUtils.asUnmodifiableList(columnFunction.field,
                     ArmySelections.forName(ORDINALITY, LongType.INSTANCE)
             );
         }

@@ -29,6 +29,17 @@ public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
         return _MetaBridge.camelToLowerCase(camel);
     }
 
+    public static boolean isWhitespace(final String text, final int offset, final int end) {
+        boolean match = offset < end;
+        for (int i = offset; i < end; i++) {
+            if (!Character.isWhitespace(text.charAt(i))) {
+                match = false;
+                break;
+            }
+        }
+        return match;
+    }
+
     public static boolean isBinary(String text) {
         final char[] array = text.toCharArray();
         boolean match = array.length > 0;

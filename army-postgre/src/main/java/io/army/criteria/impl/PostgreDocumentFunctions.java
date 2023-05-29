@@ -11,7 +11,7 @@ import io.army.mapping.optional.XmlArrayType;
 import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.postgre.PostgreTsVectorType;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 
 import java.util.Collection;
@@ -3190,7 +3190,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
                                                    String firstPath, String... rest) {
         final String name = "JSON_EXTRACT_PATH";
         final List<String> pathElemList;
-        pathElemList = _ArrayUtils.unmodifiableListOf(firstPath, rest);
+        pathElemList = ArrayUtils.unmodifiableListOf(firstPath, rest);
         return FunctionUtils.oneAndMulti(name, fromJson, funcRef.apply(NoCastTextType.INSTANCE, pathElemList), JsonType.TEXT);
     }
 
@@ -3307,7 +3307,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
                                                     String firstPath, String... rest) {
         final String name = "JSONB_EXTRACT_PATH";
         final List<String> pathElemList;
-        pathElemList = _ArrayUtils.unmodifiableListOf(firstPath, rest);
+        pathElemList = ArrayUtils.unmodifiableListOf(firstPath, rest);
         return FunctionUtils.oneAndMulti(name, fromJson, funcRef.apply(NoCastTextType.INSTANCE, pathElemList), JsonbType.TEXT);
     }
 
@@ -3410,7 +3410,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
                                                        String firstPath, String... rest) {
         final String name = "JSON_EXTRACT_PATH_TEXT";
         final List<String> pathElemList;
-        pathElemList = _ArrayUtils.unmodifiableListOf(firstPath, rest);
+        pathElemList = ArrayUtils.unmodifiableListOf(firstPath, rest);
         return FunctionUtils.oneAndMulti(name, fromJson, funcRef.apply(NoCastTextType.INSTANCE, pathElemList), TextType.INSTANCE);
     }
 
@@ -3527,7 +3527,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
                                                         String firstPath, String... rest) {
         final String name = "JSONB_EXTRACT_PATH_TEXT";
         final List<String> pathElemList;
-        pathElemList = _ArrayUtils.unmodifiableListOf(firstPath, rest);
+        pathElemList = ArrayUtils.unmodifiableListOf(firstPath, rest);
         return FunctionUtils.oneAndMulti(name, fromJson, funcRef.apply(NoCastTextType.INSTANCE, pathElemList), TextType.INSTANCE);
     }
 

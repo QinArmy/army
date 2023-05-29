@@ -3,13 +3,13 @@ package io.army.util;
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.mapping.SingleGenericsMapping;
+import io.army.mapping.UnaryGenericsMapping;
 
 import java.util.*;
 
-public abstract class _ArrayUtils {
+public abstract class ArrayUtils {
 
-    protected _ArrayUtils() {
+    protected ArrayUtils() {
         throw new UnsupportedOperationException();
     }
 
@@ -210,17 +210,22 @@ public abstract class _ArrayUtils {
         final Class<?> componentClass;
         if (!(type instanceof MappingType.SqlArrayType)) {
             throw new IllegalArgumentException("non-array mapping");
-        } else if (type instanceof SingleGenericsMapping.ListMapping) {
-            componentClass = ((SingleGenericsMapping.ListMapping<?>) type).genericsType();
+        } else if (type instanceof UnaryGenericsMapping.ListMapping) {
+            componentClass = ((UnaryGenericsMapping.ListMapping<?>) type).genericsType();
         } else {
             componentClass = underlyingComponent(type.javaType());
         }
         return componentClass;
     }
 
-    public static Class<?> arrayClassOf(final Class<?> elementType) {
+    public static Class<?> arrayClassOf(final Class<?> elementType, final int dimension) {
+        if (dimension < 1) {
+            throw new IllegalArgumentException("dimension error");
+        }
         final StringBuilder builder = new StringBuilder();
-        builder.append('[');
+        for (int i = 0; i < dimension; i++) {
+            builder.append('[');
+        }
         if (elementType.isArray()) {
             builder.append(elementType.getName());
         } else if (elementType.isAnonymousClass()) {
@@ -255,6 +260,10 @@ public abstract class _ArrayUtils {
             //no bug, never here
             throw new RuntimeException(e);
         }
+    }
+
+    public static Class<?> arrayClassOf(final Class<?> elementType) {
+        return arrayClassOf(elementType, 1);
     }
 
 

@@ -2,6 +2,7 @@ package io.army.mapping.postgre;
 
 import io.army.lang.Nullable;
 import io.army.mapping._ArmyNoInjectionMapping;
+import io.army.util.ArrayUtils;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -12,6 +13,7 @@ import java.util.function.Function;
  *     <ul>
  *         <li>{@link PostgreRangeType}</li>
  *         <li>{@link PostgreSingleRangeArrayType}</li>
+ *         <li>{@link PostgreMultiRangeArrayType}</li>
  *     </ul>
  * </p>
  *
@@ -38,11 +40,17 @@ abstract class ArmyPostgreRangeType<T> extends _ArmyNoInjectionMapping {
      */
     ArmyPostgreRangeType(Class<?> javaType, Class<T> elementType, @Nullable RangeFunction<T, ?> rangeFunc,
                          Function<String, T> parseFunc) {
-        assert rangeFunc != null || javaType == String.class;
+        final Class<?> underlyingType;
+        if (javaType == String.class) {
+            underlyingType = javaType;
+        } else {
+            underlyingType = ArrayUtils.underlyingComponent(javaType);
+        }
+        assert rangeFunc != null || underlyingType == String.class;
         this.javaType = javaType;
         this.rangeFunc = rangeFunc;
         this.parseFunc = parseFunc;
-        if (javaType == String.class || ArmyPostgreRange.class.isAssignableFrom(javaType)) {
+        if (underlyingType == String.class || ArmyPostgreRange.class.isAssignableFrom(javaType)) {
             this.mockFunction = null;
         } else {
             this.mockFunction = PostgreRangeType.createMockFunction(javaType, elementType);
@@ -55,9 +63,9 @@ abstract class ArmyPostgreRangeType<T> extends _ArmyNoInjectionMapping {
     }
 
 
-    abstract void boundToText(T bound, Consumer<String> consumer);
+    abstract void boundToText(T bound, Consumer<String> appender);
 
-
+    abstract Class<T> boundJavaType();
 
 
 }

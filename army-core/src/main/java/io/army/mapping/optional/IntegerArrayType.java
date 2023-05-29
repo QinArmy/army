@@ -7,7 +7,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,7 +48,7 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
         this.javaType = javaType;
         if (javaType != Object.class
                 && !List.class.isAssignableFrom(javaType)
-                && _ArrayUtils.underlyingComponent(javaType) != Integer.class) {
+                && ArrayUtils.underlyingComponent(javaType) != Integer.class) {
             throw errorJavaType(IntegerArrayType.class, javaType);
         }
     }

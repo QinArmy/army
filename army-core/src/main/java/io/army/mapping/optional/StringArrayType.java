@@ -11,7 +11,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -47,7 +47,7 @@ public final class StringArrayType extends _ArmyBuildInMapping {
 
     private StringArrayType(Class<?> javaType) {
         this.javaType = javaType;
-        this.underlyingType = _ArrayUtils.underlyingComponent(javaType);
+        this.underlyingType = ArrayUtils.underlyingComponent(javaType);
     }
 
     @Override

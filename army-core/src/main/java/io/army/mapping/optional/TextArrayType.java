@@ -9,7 +9,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 
 import java.lang.ref.SoftReference;
 import java.util.List;
@@ -31,7 +31,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
         } else if (javaType == Object.class) {
             instance = UNLIMITED;
         } else if (List.class.isAssignableFrom(javaType)
-                || (javaType.isArray() && _ArrayUtils.underlyingComponent(javaType) == String.class)) {
+                || (javaType.isArray() && ArrayUtils.underlyingComponent(javaType) == String.class)) {
             instance = getInstance(javaType);
         } else {
             throw errorJavaType(StringArrayType.class, javaType);

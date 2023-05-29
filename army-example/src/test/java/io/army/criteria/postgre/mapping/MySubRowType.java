@@ -11,7 +11,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public final class MySubRowType extends MappingType
         return INSTANCE;
     }
 
-    private static final List<CompositeTypeField> FIELD_LIST = _ArrayUtils.asUnmodifiableList(
+    private static final List<CompositeTypeField> FIELD_LIST = ArrayUtils.asUnmodifiableList(
             CompositeTypeField.from("d", IntegerType.INSTANCE),
             CompositeTypeField.from("e", TextType.INSTANCE)
     );

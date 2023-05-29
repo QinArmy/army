@@ -948,4 +948,10 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
+    public static IllegalArgumentException notArrayMappingType(MappingType type) {
+        String m = String.format("%s isn't %s type.", type, MappingType.SqlArrayType.class.getName());
+        return new IllegalArgumentException(m);
+    }
+
+
 }

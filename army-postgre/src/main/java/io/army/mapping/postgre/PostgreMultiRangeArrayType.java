@@ -5,9 +5,9 @@ import io.army.dialect._Constant;
 import io.army.function.TextFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingSupport;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
+import io.army.mapping.UnaryGenericsMapping;
 import io.army.mapping.optional.PostgreArrays;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
@@ -20,41 +20,46 @@ import java.util.function.Function;
 
 /**
  * <p>
- * This class representing army build-in postgre range array type.
+ * This class representing army build-in postgre multi-range array type.
  * </p>
  *
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">Built-in Range and Multirange Types</a>
  * @since 1.0
  */
-public abstract class PostgreSingleRangeArrayType<T> extends ArmyPostgreRangeType<T>
+public abstract class PostgreMultiRangeArrayType<T> extends ArmyPostgreRangeType<T>
         implements MappingType.SqlArrayType {
-
 
     /**
      * package constructor
      */
-    PostgreSingleRangeArrayType(Class<?> javaType, Class<T> elementType, @Nullable RangeFunction<T, ?> rangeFunc,
-                                Function<String, T> parseFunc) {
+    PostgreMultiRangeArrayType(Class<?> javaType, Class<T> elementType, @Nullable RangeFunction<T, ?> rangeFunc,
+                               Function<String, T> parseFunc) {
         super(javaType, elementType, rangeFunc, parseFunc);
     }
 
+
     @Override
     public final <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        throw noMatchCompatibleMapping(this, targetType);
+        return null;
     }
 
     @Override
-    public final boolean isSameType(MappingType type) {
-        return super.isSameType(type);
+    public final MappingType arrayTypeOfThis() throws CriteriaException {
+        return super.arrayTypeOfThis();
     }
 
     @Override
-    public final Object convert(final MappingEnv env, final Object nonNull) throws CriteriaException {
+    public final MappingType elementType() {
+        return null;
+    }
+
+    @Override
+    public final Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return arrayConvert(nonNull, this.rangeFunc, this.parseFunc, map(env.serverMeta()), this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public final String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
+    public final Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
         return arrayBeforeBind(nonNull, this::boundToText, type, this, PARAM_ERROR_HANDLER);
     }
 
@@ -63,9 +68,17 @@ public abstract class PostgreSingleRangeArrayType<T> extends ArmyPostgreRangeTyp
         return arrayAfterGet(nonNull, this.rangeFunc, this.parseFunc, type, this, ACCESS_ERROR_HANDLER);
     }
 
+    @Override
+    public final boolean isSameType(MappingType type) {
+        return super.isSameType(type);
+    }
+
+    /**
+     * @param rangeFunc null when {@link MappingType#javaType()} of type is {@link String#getClass()}
+     */
     public static <T, R> Object arrayConvert(final Object nonNull, final @Nullable RangeFunction<T, R> rangeFunc,
                                              final Function<String, T> parseFunc, final SqlType sqlType,
-                                             final MappingType type, final MappingSupport.ErrorHandler handler) {
+                                             final MappingType type, final ErrorHandler handler) {
         final Object value;
         final String text;
         final int length;
@@ -74,14 +87,14 @@ public abstract class PostgreSingleRangeArrayType<T> extends ArmyPostgreRangeTyp
                 throw handler.apply(type, sqlType, nonNull, null);
             }
             value = nonNull;
-        } else if ((length = (text = ((String) nonNull).trim()).length()) < 2) {
-            throw PARAM_ERROR_HANDLER.apply(type, sqlType, nonNull, null);
+        } else if ((length = (text = ((String) nonNull).trim()).length()) < 5) { // non-empty
+            throw handler.apply(type, sqlType, nonNull, null);
         } else if (text.charAt(0) != _Constant.LEFT_BRACE) {
-            throw PARAM_ERROR_HANDLER.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, sqlType, nonNull, null);
         } else if (text.charAt(length - 1) != _Constant.RIGHT_BRACE) {
-            throw PARAM_ERROR_HANDLER.apply(type, sqlType, nonNull, null);
+            throw handler.apply(type, sqlType, nonNull, null);
         } else {
-            value = parseRangeArray(text, rangeFunc, parseFunc, sqlType, type, handler);
+            value = parseMultiRangeArray(text, rangeFunc, parseFunc, sqlType, type, handler);
         }
         return value;
     }
@@ -101,42 +114,39 @@ public abstract class PostgreSingleRangeArrayType<T> extends ArmyPostgreRangeTyp
 
     public static <T> Object arrayAfterGet(final Object nonNull, final @Nullable RangeFunction<T, ?> rangeFunc,
                                            final Function<String, T> parseFunc, final SqlType sqlType,
-                                           final MappingType type, final MappingSupport.ErrorHandler handler) {
+                                           final MappingType type, final ErrorHandler handler) {
         if (!(nonNull instanceof String)) {
             throw handler.apply(type, sqlType, nonNull, null);
         }
-        return parseRangeArray((String) nonNull, rangeFunc, parseFunc, sqlType, type, handler);
+        return parseMultiRangeArray((String) nonNull, rangeFunc, parseFunc, sqlType, type, handler);
     }
 
-    private static <T> Object parseRangeArray(final String text, final @Nullable RangeFunction<T, ?> rangeFunc,
-                                              final Function<String, T> parseFunc, final SqlType sqlType,
-                                              final MappingType type, final MappingSupport.ErrorHandler handler) {
+    private static <T> Object parseMultiRangeArray(final String text, final @Nullable RangeFunction<T, ?> rangeFunc,
+                                                   final Function<String, T> parseFunc, final SqlType sqlType,
+                                                   final MappingType type, final ErrorHandler handler) {
 
         final TextFunction<?> elementFunc;
-        if (!(type instanceof MappingType.SqlArrayType)) {
-            throw handler.apply(type, sqlType, text, _Exceptions.notArrayMappingType(type));
-        } else if (rangeFunc == null) {
-            if (ArrayUtils.underlyingComponent(type.javaType()) != String.class) {
-                String m = String.format("%s java type isn't %s array", type, String.class.getName());
+        if (rangeFunc == null) {
+            if (type.javaType() != String.class) {
+                String m = String.format("%s java type isn't %s", type, String.class.getName());
                 throw handler.apply(type, sqlType, text, new IllegalArgumentException(m));
             }
             elementFunc = String::substring;
+        } else if (!(type instanceof MappingType.SqlArrayType)) {
+            throw handler.apply(type, sqlType, text, _Exceptions.notArrayMappingType(type));
+        } else if (type instanceof UnaryGenericsMapping.ListMapping) {
+            String m = String.format("multi range array type don't support %s",
+                    UnaryGenericsMapping.ListMapping.ListMapping.class);
+            throw handler.apply(type, sqlType, text, new IllegalArgumentException(m));
         } else {
-            final Class<?> rangeClass;
-            rangeClass = ArrayUtils.underlyingComponentClass(type);
-            elementFunc = (str, offset, end) -> {
-                final Object value;
-                char ch;
-                if (offset + 5 == end && ((ch = str.charAt(offset)) == 'e' || ch == 'E')
-                        && str.regionMatches(true, offset, PostgreRangeType.EMPTY, 0, 5)) {
-                    value = PostgreRangeType.emptyRange(rangeClass);
-                } else {
-                    value = PostgreRangeType.parseNonEmptyRange(str, offset, end, rangeFunc, parseFunc);
-                }
-                return value;
-            };
+            elementFunc = PostgreMultiRangeType.multiRangeParseFunc(text, rangeFunc, parseFunc, sqlType, type, handler);
         }
-        return PostgreArrays.parseArray(text, false, elementFunc, _Constant.COMMA, sqlType, type, handler);
+        final Object array;
+        array = PostgreArrays.parseArray(text, true, elementFunc, _Constant.COMMA, sqlType, type, handler);
+        if (ArrayUtils.dimensionOf(array.getClass()) < 2) {
+            throw handler.apply(type, sqlType, text, new IllegalArgumentException("Not multi-ranage array"));
+        }
+        return array;
     }
 
 

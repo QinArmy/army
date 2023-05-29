@@ -10,7 +10,7 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLStatement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -549,7 +549,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
         @Override
         public final R parens(String first, String... rest) {
-            return this.onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+            return this.onColumnAlias(ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override

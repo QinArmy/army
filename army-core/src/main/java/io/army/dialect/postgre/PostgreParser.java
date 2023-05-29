@@ -19,7 +19,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -185,7 +185,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 final String name, typeName;
                 name = sqlType.name();
                 typeName = name.substring(0, name.indexOf("_ARRAY"));
-                this.arrayTypeName(typeName, _ArrayUtils.dimensionOfType(type), sqlBuilder);
+                this.arrayTypeName(typeName, ArrayUtils.dimensionOfType(type), sqlBuilder);
             }
             break;
             case UNKNOWN:

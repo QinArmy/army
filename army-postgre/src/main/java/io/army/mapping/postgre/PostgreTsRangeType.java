@@ -6,7 +6,7 @@ import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.mapping.LocalDateTimeType;
 import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
+import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
@@ -16,11 +16,33 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+/**
+ * <p>
+ * This class representing Postgre tsrange type {@link MappingType}
+ * </p>
+ *
+ * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">tsrange</a>
+ */
 public final class PostgreTsRangeType extends PostgreSingleRangeType<LocalDateTime> {
+
+    /**
+     * @throws MetaException when javaType isn't {@link String#getClass()} and no 'create' static factory method.
+     * @see #fromMethod(Class, String)
+     */
+    public static PostgreTsRangeType from(final Class<?> javaType) throws MetaException {
+        final PostgreTsRangeType instance;
+        if (javaType == String.class) {
+            instance = TEXT;
+        } else {
+            instance = fromMethod(javaType, CREATE);
+        }
+        return instance;
+    }
 
 
     public static <R> PostgreTsRangeType fromFunc(final Class<? extends R> javaType,
-                                                  final RangeFunction<LocalDateTime, R> function) {
+                                                  final RangeFunction<LocalDateTime, R> function)
+            throws IllegalArgumentException {
         if (javaType.isPrimitive() || javaType.isArray()) {
             throw errorJavaType(PostgreTsRangeType.class, javaType);
         }
@@ -28,7 +50,32 @@ public final class PostgreTsRangeType extends PostgreSingleRangeType<LocalDateTi
         return new PostgreTsRangeType(javaType, function);
     }
 
+    /**
+     * @throws MetaException when javaType or methodName error
+     */
+    public static PostgreTsRangeType fromMethod(final Class<?> javaType, final String methodName) throws MetaException {
+        return new PostgreTsRangeType(javaType, createRangeFunction(javaType, LocalDateTime.class, methodName));
+    }
 
+    static PostgreTsRangeType fromArrayType(final PostgreTsRangeArrayType type) {
+        final RangeFunction<LocalDateTime, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        final Class<?> javaType;
+        if (type instanceof PostgreTsRangeArrayType.ListType) {
+            javaType = ((PostgreTsRangeArrayType.ListType<?>) type).elementType;
+        } else {
+            javaType = type.javaType.getComponentType();
+        }
+        assert !javaType.isArray();
+        return new PostgreTsRangeType(javaType, rangeFunc);
+    }
+
+
+    public static final PostgreTsRangeType TEXT = new PostgreTsRangeType(String.class, null);
+
+    /**
+     * private constructor
+     */
     private PostgreTsRangeType(Class<?> javaType, final @Nullable RangeFunction<LocalDateTime, ?> rangeFunc) {
         super(javaType, LocalDateTime.class, rangeFunc, PostgreTsRangeType::parseDateTime);
     }
@@ -43,7 +90,7 @@ public final class PostgreTsRangeType extends PostgreSingleRangeType<LocalDateTi
 
     @Override
     public MappingType arrayTypeOfThis() {
-        return super.arrayTypeOfThis();
+        return null;
     }
 
     @Override
@@ -52,21 +99,22 @@ public final class PostgreTsRangeType extends PostgreSingleRangeType<LocalDateTi
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        final RangeFunction<LocalDateTime, Z> rangeFunc;
-        rangeFunc = PostgreRangeType.tryCreateDefaultRangeFunc(targetType, LocalDateTime.class);
-        if (rangeFunc == null) {
-            throw noMatchCompatibleMapping(this, targetType);
-        }
-        return fromFunc(targetType, rangeFunc);
+    void boundToText(LocalDateTime bound, Consumer<String> appender) {
+        appender.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
+        appender.accept(bound.format(_TimeUtils.DATETIME_FORMATTER_6));
+        appender.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
     }
 
 
     @Override
-    void boundToText(LocalDateTime bound, Consumer<String> consumer) {
-        consumer.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
-        consumer.accept(bound.format(_TimeUtils.DATETIME_FORMATTER_6));
-        consumer.accept(String.valueOf(_Constant.DOUBLE_QUOTE));
+    Class<LocalDateTime> boundJavaType() {
+        return LocalDateTime.class;
+    }
+
+    @Override
+    <Z> PostgreSingleRangeType<LocalDateTime> getInstanceFrom(Class<Z> javaType,
+                                                              RangeFunction<LocalDateTime, Z> rangeFunc) {
+        return fromFunc(javaType, rangeFunc);
     }
 
 

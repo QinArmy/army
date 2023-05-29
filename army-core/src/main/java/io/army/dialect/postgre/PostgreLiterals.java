@@ -5,7 +5,7 @@ import io.army.dialect._Literals;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
 import io.army.sqltype.SqlType;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -107,7 +107,7 @@ abstract class PostgreLiterals extends _Literals {
                                       final ArrayElementHandler handler) {
 
         final int length, dimension;
-        dimension = _ArrayUtils.dimensionOf(array.getClass());
+        dimension = ArrayUtils.dimensionOf(array.getClass());
         length = Array.getLength(array);
 
 

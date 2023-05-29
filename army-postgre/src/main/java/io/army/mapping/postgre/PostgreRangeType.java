@@ -264,7 +264,7 @@ public abstract class PostgreRangeType<T> extends ArmyPostgreRangeType<T> {
         RangeFunction<T, R> rangeFunc;
         try {
             rangeFunc = createRangeFunction(targetType, elementType,
-                    targetType.getName() + _Constant.DOUBLE_COLON + "create"
+                    targetType.getName() + _Constant.DOUBLE_COLON + CREATE
             );
         } catch (Throwable e) {
             rangeFunc = null;

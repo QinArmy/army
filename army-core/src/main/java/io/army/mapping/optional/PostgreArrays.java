@@ -3,11 +3,13 @@ package io.army.mapping.optional;
 import io.army.dialect._Constant;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingType;
-import io.army.mapping.SingleGenericsMapping;
+import io.army.mapping.UnaryGenericsMapping;
 import io.army.sqltype.SqlType;
 import io.army.type.ImmutableSpec;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.lang.reflect.Array;
 import java.util.Collections;
@@ -64,21 +66,25 @@ public abstract class PostgreArrays extends ArrayMappings {
     }
 
     /**
-     * @param nonNull true : element of one dimension array non-null
+     * @param nonNull     true : element of one dimension array non-null
+     * @param elementFunc <ul>
+     *                    <li>offset is non-whitespace,non-whitespace before end</li>
+     *                    <li>no notation <strong>null</strong>,because have handled</li>
+     *                    </ul>
      */
     public static Object parseArray(final String text, final boolean nonNull, final TextFunction<?> elementFunc,
                                     final char delimiter, final SqlType sqlType, final MappingType type,
                                     final ErrorHandler handler) {
 
         if (!(type instanceof MappingType.SqlArrayType)) {
-            throw notArrayMappingType(type);
+            throw _Exceptions.notArrayMappingType(type);
         }
 
         final Class<?> arrayJavaType;
-        if (type instanceof SingleGenericsMapping.ListMapping) {
+        if (type instanceof UnaryGenericsMapping.ListMapping) {
             final Class<?> elementType;
-            elementType = ((SingleGenericsMapping.ListMapping<?>) type).genericsType();
-            arrayJavaType = _ArrayUtils.arrayClassOf(elementType);
+            elementType = ((UnaryGenericsMapping.ListMapping<?>) type).genericsType();
+            arrayJavaType = ArrayUtils.arrayClassOf(elementType);
         } else {
             arrayJavaType = type.javaType();
             if (!arrayJavaType.isArray()) {
@@ -88,13 +94,13 @@ public abstract class PostgreArrays extends ArrayMappings {
 
         final Object array, value;
         try {
-            array = PostgreArrays.parseArrayText(arrayJavaType, text, delimiter, elementFunc);
+            array = PostgreArrays.parseArrayText(arrayJavaType, text, nonNull, delimiter, elementFunc);
         } catch (Throwable e) {
             throw handler.apply(type, sqlType, text, e);
         }
-        if (type instanceof SingleGenericsMapping.ListMapping) {
+        if (type instanceof UnaryGenericsMapping.ListMapping) {
             value = PostgreArrays.linearToList(array,
-                    ((SingleGenericsMapping.ListMapping<?>) type).listConstructor()
+                    ((UnaryGenericsMapping.ListMapping<?>) type).listConstructor()
             );
         } else {
             value = array;
@@ -224,7 +230,7 @@ public abstract class PostgreArrays extends ArrayMappings {
 
         if (inBracket) {
             throw lengthOfDimensionError(text.substring(offset, end));
-        } else if (map.size() != _ArrayUtils.dimensionOf(javaType)) {
+        } else if (map.size() != ArrayUtils.dimensionOf(javaType)) {
             throw boundDecorationNotMatch(javaType, text.substring(offset, end));
         }
         return _Collections.unmodifiableMap(map);
@@ -326,8 +332,8 @@ public abstract class PostgreArrays extends ArrayMappings {
 
         Object elementValue;
         boolean leftBrace = true, inBrace = false, inQuote = false, inElementBrace = false, arrayEnd = false;
-        char ch, startChar = _Constant.NUL_CHAR;
-        for (int i = offset, startIndex = -1, arrayIndex = 0, nonNulIndex = -1, tailIndex; i < end; i++) {
+        char ch, startChar = _Constant.NUL_CHAR, preChar = _Constant.NUL_CHAR;
+        for (int i = offset, startIndex = -1, arrayIndex = 0, tailIndex; i < end; i++) {
             ch = text.charAt(i);
             if (leftBrace) {
                 if (ch == _Constant.LEFT_BRACE) {
@@ -359,18 +365,6 @@ public abstract class PostgreArrays extends ArrayMappings {
                         Array.set(array, arrayIndex++, elementValue);
                         startIndex = -1;
                     }
-                } else if (nonNulIndex < 0) {
-                    if (ch != delimiter && !Character.isWhitespace(ch)) {
-                        startChar = ch;
-                        nonNulIndex = i;
-                    }
-                } else if ((startChar == 'n' || startChar == 'N')
-                        && (i - 4) >= nonNulIndex
-                        && text.regionMatches(true, startIndex, _Constant.NULL, 0, 4)
-                        && ((tailIndex = startIndex + 4) == i || Character.isWhitespace(text.charAt(tailIndex)))) {
-
-                } else {
-                    nonNulIndex = -1;
                 }
             } else if (ch == _Constant.LEFT_BRACE) {
                 if (oneDimension) {
@@ -391,13 +385,20 @@ public abstract class PostgreArrays extends ArrayMappings {
                 if (startIndex > 0) {
                     assert oneDimension;
                     if ((startChar == 'n' || startChar == 'N')
-                            && (i - 4) >= startIndex
+                            && (tailIndex = startIndex + 4) <= i
                             && text.regionMatches(true, startIndex, _Constant.NULL, 0, 4)
-                            && ((tailIndex = startIndex + 4) == i || Character.isWhitespace(text.charAt(tailIndex)))) {
+                            && (tailIndex == i || _StringUtils.isWhitespace(text, tailIndex, i))) {
                         if (nonNull) {
                             throw new IllegalArgumentException("element must be non-null");
                         }
                         Array.set(array, arrayIndex++, null);
+                    } else if (Character.isWhitespace(preChar)) {
+                        for (tailIndex = i - 2; tailIndex > startIndex; tailIndex--) {
+                            if (!Character.isWhitespace(text.charAt(tailIndex))) {
+                                break;
+                            }
+                        }
+                        Array.set(array, arrayIndex++, function.apply(text, startIndex, tailIndex + 1));
                     } else {
                         Array.set(array, arrayIndex++, function.apply(text, startIndex, i));
                     }
@@ -407,13 +408,18 @@ public abstract class PostgreArrays extends ArrayMappings {
                     arrayEnd = true;
                     break;
                 }
-            } else if (!oneDimension) {
-                String m = String.format("postgre array isn't multi-dimension array after offset[%s]", i);
-                throw new IllegalArgumentException(m);
-            } else if (startIndex < 0 && !Character.isWhitespace(ch)) {
-                startChar = ch;
-                startIndex = i;
+            } else if (startIndex < 0) {
+                if (!Character.isWhitespace(ch)) {
+                    if (!oneDimension) {
+                        String m = String.format("postgre array isn't multi-dimension array after offset[%s]", i);
+                        throw new IllegalArgumentException(m);
+                    }
+                    startChar = ch;
+                    startIndex = i;
+                }
             }
+
+            preChar = ch;
 
         }//for
 
@@ -445,10 +451,13 @@ public abstract class PostgreArrays extends ArrayMappings {
                 builder.append(_Constant.COMMA);
             }
             element = Array.get(array, i);
-            if (element == null) {
-                builder.append(_Constant.NULL);
-            } else if (multiDimension) {
+            if (multiDimension) {
+                if (element == null) {
+                    throw new IllegalArgumentException("element array couldn't be null.");
+                }
                 arrayToArrayText(element, consumer, builder);
+            } else if (element == null) {
+                builder.append("null");
             } else {
                 consumer.accept(element, appendConsumer);
             }
@@ -483,11 +492,6 @@ public abstract class PostgreArrays extends ArrayMappings {
         builder.append(_Constant.RIGHT_BRACE);
     }
 
-
-    private static IllegalArgumentException notArrayMappingType(MappingType type) {
-        String m = String.format("%s isn't %s type.", type, MappingType.SqlArrayType.class.getName());
-        return new IllegalArgumentException(m);
-    }
 
     private static IllegalArgumentException notArrayJavaType(MappingType type) {
         String m = String.format("%s java type isn't array.", type);

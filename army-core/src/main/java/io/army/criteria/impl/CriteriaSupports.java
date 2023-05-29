@@ -12,7 +12,7 @@ import io.army.mapping.NoCastTextType;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.Stmt;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -499,7 +499,7 @@ abstract class CriteriaSupports {
 
         @Override
         public final R parens(String first, String... rest) {
-            this.columnAliasList = _ArrayUtils.unmodifiableListOf(first, rest);
+            this.columnAliasList = ArrayUtils.unmodifiableListOf(first, rest);
             return (R) this;
         }
 

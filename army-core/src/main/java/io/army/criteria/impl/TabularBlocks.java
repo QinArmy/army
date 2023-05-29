@@ -4,7 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -230,7 +230,7 @@ abstract class TabularBlocks {
         }
 
         final void parens(String first, String... rest) {
-            this.onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+            this.onColumnAlias(ArrayUtils.unmodifiableListOf(first, rest));
         }
 
 
@@ -297,7 +297,7 @@ abstract class TabularBlocks {
         @Override
         public final R on(IPredicate predicate1, IPredicate predicate2) {
 
-            this.predicateList = _ArrayUtils.asUnmodifiableList(
+            this.predicateList = ArrayUtils.asUnmodifiableList(
                     (OperationPredicate) predicate1,
                     (OperationPredicate) predicate2
             );
@@ -313,7 +313,7 @@ abstract class TabularBlocks {
         @Override
         public final R on(Function<Expression, IPredicate> operator1, DataField operandField1,
                           Function<Expression, IPredicate> operator2, DataField operandField2) {
-            this.predicateList = _ArrayUtils.asUnmodifiableList(
+            this.predicateList = ArrayUtils.asUnmodifiableList(
                     (OperationPredicate) operator1.apply(operandField1),
                     (OperationPredicate) operator2.apply(operandField2)
             );
@@ -470,7 +470,7 @@ abstract class TabularBlocks {
 
         @Override
         public final Statement._OnClause<R> parens(String first, String... rest) {
-            return this.onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+            return this.onColumnAlias(ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override

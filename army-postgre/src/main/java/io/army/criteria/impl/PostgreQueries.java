@@ -17,7 +17,7 @@ import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -1177,7 +1177,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public _StaticCteAsClause<I> parens(String first, String... rest) {
-            return this.onColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
+            return this.onColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override

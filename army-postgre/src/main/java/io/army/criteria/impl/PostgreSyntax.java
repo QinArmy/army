@@ -7,7 +7,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._StringUtils;
 
 import java.util.Collection;
@@ -98,7 +98,7 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
     public static _ArrayConstructorSpec array(Object one, Object two) {
-        return Expressions.array(Expressions::nonNullFirstArrayType, _ArrayUtils.asUnmodifiableList(one, two));
+        return Expressions.array(Expressions::nonNullFirstArrayType, ArrayUtils.asUnmodifiableList(one, two));
     }
 
     /**
@@ -109,7 +109,7 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
     public static _ArrayConstructorSpec array(Object one, Object two, Object three) {
-        return Expressions.array(Expressions::nonNullFirstArrayType, _ArrayUtils.asUnmodifiableList(one, two, three));
+        return Expressions.array(Expressions::nonNullFirstArrayType, ArrayUtils.asUnmodifiableList(one, two, three));
     }
 
     /**
@@ -121,7 +121,7 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
      */
     public static _ArrayConstructorSpec array(Object one, Object two, Object three, Object four) {
         return Expressions.array(Expressions::nonNullFirstArrayType,
-                _ArrayUtils.asUnmodifiableList(one, two, three, four)
+                ArrayUtils.asUnmodifiableList(one, two, three, four)
         );
     }
 
@@ -135,7 +135,7 @@ abstract class PostgreSyntax extends PostgreDocumentFunctions {
     public static _ArrayConstructorSpec array(Object one, Object two, Object three, Object four, Object five,
                                               Object... rest) {
         return Expressions.array(Expressions::nonNullFirstArrayType,
-                _ArrayUtils.asUnmodifiableList(one, two, three, four, five, rest)
+                ArrayUtils.asUnmodifiableList(one, two, three, four, five, rest)
         );
     }
 

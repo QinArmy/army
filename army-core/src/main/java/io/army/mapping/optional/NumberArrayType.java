@@ -10,7 +10,7 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
@@ -46,7 +46,7 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
      */
     NumberArrayType(Class<?> javaType) {
         this.javaType = javaType;
-        this.underlyingType = _ArrayUtils.underlyingComponent(javaType);
+        this.underlyingType = ArrayUtils.underlyingComponent(javaType);
         assert Number.class.isAssignableFrom(this.underlyingType);
     }
 
@@ -89,7 +89,7 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
     private void appendPostgreArray(final Object array, final StringBuilder builder, final SqlType type,
                                     final BiPredicate<Object, StringBuilder> valueHandler) {
         final int arrayDimension;
-        arrayDimension = _ArrayUtils.dimensionOf(array.getClass());
+        arrayDimension = ArrayUtils.dimensionOf(array.getClass());
 
         builder.append('{');
         Object component;

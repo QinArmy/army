@@ -9,7 +9,7 @@ import io.army.criteria.postgre.PostgreStatement;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
@@ -568,7 +568,7 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
 
         @Override
         public final R parens(String first, String... rest) {
-            return this.onColumnAlias(_ArrayUtils.unmodifiableListOf(first, rest));
+            return this.onColumnAlias(ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override

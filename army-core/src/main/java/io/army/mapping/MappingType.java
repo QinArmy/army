@@ -12,7 +12,7 @@ import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
 import io.army.session.ParamException;
 import io.army.sqltype.SqlType;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -63,7 +63,9 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         throw dontSupportArrayType(this);
     }
 
-
+    /**
+     * @param targetType never {@code  String.class}
+     */
     public abstract <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException;
 
 
@@ -108,14 +110,35 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     @Override
     public final String toString() {
-        //TODO add 泛型
-        return _StringUtils.builder()
-                .append(this.getClass().getName())
+        final StringBuilder builder = new StringBuilder();
+        builder.append(this.getClass().getName())
                 .append("[javaType:")
                 .append(this.javaType().getName())
                 .append(",hash:")
-                .append(System.identityHashCode(this))
-                .append(']')
+                .append(System.identityHashCode(this));
+
+        if (this instanceof MappingType.GenericsMappingType) {
+            if (this instanceof UnaryGenericsMapping) {
+                builder.append(",unary generic type:")
+                        .append(((UnaryGenericsMapping<?>) this).genericsType().getName());
+            } else if (this instanceof DualGenericsMapping) {
+                final DualGenericsMapping<?, ?> dual = (DualGenericsMapping<?, ?>) this;
+                builder.append(",dual generics first type:")
+                        .append(dual.firstGenericsType().getName())
+                        .append(",dual generic second type:")
+                        .append(dual.secondGenericsType().getName());
+            } else if (this instanceof MultiGenericsMappingType) {
+                final List<Class<?>> list = ((MultiGenericsMappingType) this).genericsTypeList();
+                final int listSize = list.size();
+                for (int i = 0; i < listSize; i++) {
+                    builder.append(",multi generics[")
+                            .append(i)
+                            .append("]:")
+                            .append(list.get(i).getName());
+                }
+            }
+        }
+        return builder.append(']')
                 .toString();
     }
 
@@ -123,14 +146,24 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         final boolean match;
         if (type == this) {
             match = true;
-        } else if (!this.getClass().isInstance(type)) {
-            match = false;
-        } else if (this instanceof SqlArrayType) {
+        } else if (!(this instanceof SqlArrayType)) {
+            match = this.getClass().isInstance(type);
+        } else if (this instanceof UnaryGenericsMapping.ListMapping) {
+            final Class<?> thisClass, typeClass;
+            thisClass = this.getClass();
+            typeClass = type.getClass();
+            match = thisClass == typeClass || thisClass.getSuperclass() == typeClass;
+        } else if (type instanceof UnaryGenericsMapping.ListMapping) {
+            final Class<?> thisClass, typeClass;
+            thisClass = this.getClass();
+            typeClass = type.getClass();
+            match = thisClass == typeClass || typeClass.getSuperclass() == thisClass;
+        } else if (this.getClass().isInstance(type)) {
             final int thisDimension;
-            thisDimension = _ArrayUtils.dimensionOfArrayMapping(this.javaType());
-            match = thisDimension == _ArrayUtils.dimensionOfArrayMapping(type.javaType());
+            thisDimension = ArrayUtils.dimensionOfArrayMapping(this.javaType());
+            match = thisDimension == ArrayUtils.dimensionOfArrayMapping(type.javaType());
         } else {
-            match = true;
+            match = false;
         }
         return match;
     }

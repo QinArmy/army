@@ -9,7 +9,7 @@ import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._Collections;
 
@@ -377,7 +377,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final GR groupBy(Expression sortItem1, Expression sortItem2) {
-        this.groupByList = _ArrayUtils.asUnmodifiableList(
+        this.groupByList = ArrayUtils.asUnmodifiableList(
                 (ArmySortItem) sortItem1,
                 (ArmySortItem) sortItem2
         );
@@ -386,7 +386,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final GR groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3) {
-        this.groupByList = _ArrayUtils.asUnmodifiableList(
+        this.groupByList = ArrayUtils.asUnmodifiableList(
                 (ArmySortItem) sortItem1,
                 (ArmySortItem) sortItem2,
                 (ArmySortItem) sortItem3
@@ -425,7 +425,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (predicate1 == null || predicate2 == null) {
                 throw ContextStack.nullPointer(this.context);
             }
-            this.havingList = _ArrayUtils.asUnmodifiableList(
+            this.havingList = ArrayUtils.asUnmodifiableList(
                     (OperationPredicate) predicate1
                     , (OperationPredicate) predicate2
             );
@@ -911,7 +911,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         @Override
         public final _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp1, Expression exp2) {
             this.onDistinctOnExpList(
-                    _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2)
+                    ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2)
             );
             return this;
         }
@@ -919,7 +919,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         @Override
         public final _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3) {
             this.onDistinctOnExpList(
-                    _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3)
+                    ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3)
             );
             return this;
         }
@@ -949,7 +949,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         @Override
         public final SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer) {
             this.onDistinctOnExpList(
-                    _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2)
+                    ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2)
             );
             return this.selects(consumer);
         }
@@ -957,7 +957,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         @Override
         public final SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer) {
             this.onDistinctOnExpList(
-                    _ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3)
+                    ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3)
             );
             return this.selects(consumer);
         }
@@ -1060,7 +1060,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (this.clauseEnd) {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
-            this.tableAliasList = _ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2);
+            this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2);
             return (LT) this;
         }
 
@@ -1069,7 +1069,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (this.clauseEnd) {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
-            this.tableAliasList = _ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3);
+            this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3);
             return (LT) this;
         }
 
@@ -1078,7 +1078,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (this.clauseEnd) {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
-            this.tableAliasList = _ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3, tableAlias4);
+            this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3, tableAlias4);
             return (LT) this;
         }
 
@@ -1088,7 +1088,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (this.clauseEnd) {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
-            this.tableAliasList = _ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3, tableAlias4,
+            this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3, tableAlias4,
                     tableAlias5, restTableAlias);
             return (LT) this;
         }

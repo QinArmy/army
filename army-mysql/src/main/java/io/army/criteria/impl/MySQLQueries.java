@@ -15,7 +15,7 @@ import io.army.dialect._Constant;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -400,7 +400,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final _AsQueryClause<I> into(String firstVarName, String... rest) {
-        this.intoVarList = _ArrayUtils.unmodifiableListOf(firstVarName, rest);
+        this.intoVarList = ArrayUtils.unmodifiableListOf(firstVarName, rest);
         return this;
     }
 
@@ -1046,7 +1046,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         @Override
         public _StaticCteAsClause<I> parens(String first, String... rest) {
-            return this.onColumnAliasList(_ArrayUtils.unmodifiableListOf(first, rest));
+            return this.onColumnAliasList(ArrayUtils.unmodifiableListOf(first, rest));
         }
 
         @Override

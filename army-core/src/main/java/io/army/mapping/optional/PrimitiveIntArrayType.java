@@ -6,7 +6,7 @@ import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +47,7 @@ public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
         this.javaType = javaType;
         if (javaType != Object.class
                 && !List.class.isAssignableFrom(javaType)
-                && _ArrayUtils.underlyingComponent(javaType) != int.class) {
+                && ArrayUtils.underlyingComponent(javaType) != int.class) {
             throw errorJavaType(IntegerArrayType.class, javaType);
         }
     }
@@ -88,7 +88,7 @@ public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
     public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
         if (nonNull instanceof String
                 || nonNull instanceof int[]
-                || _ArrayUtils.underlyingComponent(nonNull.getClass()) == int.class) {
+                || ArrayUtils.underlyingComponent(nonNull.getClass()) == int.class) {
             return nonNull;
         }
         // TODO

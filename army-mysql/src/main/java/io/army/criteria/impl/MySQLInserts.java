@@ -13,7 +13,7 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -653,7 +653,7 @@ abstract class MySQLInserts extends InsertSupports {
 
         @Override
         public MySQLInsert._ColumnListSpec<I, T> partition(String first, String... rest) {
-            this.partitionList = _ArrayUtils.unmodifiableListOf(first, rest);
+            this.partitionList = ArrayUtils.unmodifiableListOf(first, rest);
             return this;
         }
 

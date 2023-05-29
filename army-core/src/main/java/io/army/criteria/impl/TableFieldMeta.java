@@ -14,7 +14,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.MultiGenericsMappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
 import java.lang.reflect.Field;
@@ -187,7 +187,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
 
             this.mappingType = FieldMetaUtils.fieldMappingType(field, isDiscriminator);
             if (this.mappingType instanceof MultiGenericsMappingType) {
-                this.elementTypeList = _ArrayUtils.unmodifiableListFrom(field.getAnnotation(Mapping.class).elements());
+                this.elementTypeList = ArrayUtils.unmodifiableListFrom(field.getAnnotation(Mapping.class).elements());
             } else {
                 this.elementTypeList = Collections.emptyList();
             }

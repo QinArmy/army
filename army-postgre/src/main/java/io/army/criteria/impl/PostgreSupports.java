@@ -14,7 +14,7 @@ import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.meta.TableMeta;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -553,7 +553,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public final PostgreQuery._SetCycleMarkColumnClause<I> cycle(String firstColumnName, String... rest) {
-            this.cycleColumnList = _ArrayUtils.unmodifiableListOf(firstColumnName, rest);
+            this.cycleColumnList = ArrayUtils.unmodifiableListOf(firstColumnName, rest);
             return this;
         }
 
@@ -782,7 +782,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (this.searchOption == null) {
                 this.firstByColumnList = null;
             } else {
-                this.firstByColumnList = _ArrayUtils.unmodifiableListOf(firstColumnName, rest);
+                this.firstByColumnList = ArrayUtils.unmodifiableListOf(firstColumnName, rest);
             }
             return this;
         }

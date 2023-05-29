@@ -25,7 +25,7 @@ import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -602,7 +602,7 @@ abstract class ArmyParser implements DialectParser {
             } else if (!(type instanceof MappingType.SqlArrayType)) {
                 throw _Exceptions.nonArrayType(type, sqlType);
             } else {
-                this.arrayTypeName(safeTypeName, _ArrayUtils.dimensionOfType(type), sqlBuilder);
+                this.arrayTypeName(safeTypeName, ArrayUtils.dimensionOfType(type), sqlBuilder);
             }
         } else if (sqlType.isUserDefined()) {
             throw _Exceptions.notUserDefinedType(type, sqlType);

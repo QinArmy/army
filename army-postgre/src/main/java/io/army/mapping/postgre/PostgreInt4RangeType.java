@@ -5,12 +5,10 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
 import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
-import io.army.util._ArrayUtils;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -40,6 +38,7 @@ public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> 
         if (javaType.isPrimitive() || javaType.isArray()) {
             throw errorJavaType(PostgreInt4RangeType.class, javaType);
         }
+        Objects.requireNonNull(javaType);
         Objects.requireNonNull(function);
         return new PostgreInt4RangeType(javaType, function);
     }
@@ -70,11 +69,15 @@ public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> 
      */
     static PostgreInt4RangeType fromArrayType(final PostgreInt4RangeArrayType type) {
         final Class<?> javaType;
-        javaType = type.javaType.getComponentType();
+        final RangeFunction<Integer, ?> rangeFunc = type.rangeFunc;
+        assert rangeFunc != null;
+        if (type instanceof PostgreInt4RangeArrayType.ListType) {
+            javaType = ((PostgreInt4RangeArrayType.ListType<?>) type).elementType;
+        } else {
+            javaType = type.javaType.getComponentType();
+        }
         assert !javaType.isArray();
-        final RangeFunction<Integer, ?> function = type.rangeFunc;
-        assert function != null;
-        return new PostgreInt4RangeType(javaType, function);
+        return new PostgreInt4RangeType(javaType, rangeFunc);
     }
 
     public static final PostgreInt4RangeType TEXT = new PostgreInt4RangeType(String.class, null);
@@ -98,28 +101,16 @@ public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> 
 
     @Override
     public MappingType arrayTypeOfThis() {
-        final Class<?> javaType = this.javaType;
-        final RangeFunction<Integer, ?> rangeFunc = this.rangeFunc;
         final MappingType arrayType;
-        if (rangeFunc == null) {
-            assert javaType == String.class;
-            arrayType = PostgreInt4RangeArrayType.TEXT;
+        if (this.rangeFunc == null) {
+            assert this.javaType == String.class;
+            arrayType = PostgreInt4RangeArrayType.LINEAR;
         } else {
-            arrayType = PostgreInt4RangeArrayType.fromFunc(_ArrayUtils.arrayClassOf(javaType), rangeFunc);
+            arrayType = PostgreInt4RangeArrayType.fromInt4Range(this);
         }
         return arrayType;
     }
 
-
-    @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        final RangeFunction<Integer, Z> rangeFunc;
-        rangeFunc = PostgreRangeType.tryCreateDefaultRangeFunc(targetType, Integer.class);
-        if (rangeFunc == null) {
-            throw noMatchCompatibleMapping(this, targetType);
-        }
-        return fromFunc(targetType, rangeFunc);
-    }
 
     @Override
     public MappingType subtype() {
@@ -128,8 +119,19 @@ public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> 
 
 
     @Override
-    void boundToText(Integer bound, Consumer<String> consumer) {
-        consumer.accept(bound.toString());
+    void boundToText(Integer bound, Consumer<String> appender) {
+        appender.accept(bound.toString());
+    }
+
+
+    @Override
+    Class<Integer> boundJavaType() {
+        return Integer.class;
+    }
+
+    @Override
+    <Z> PostgreSingleRangeType<Integer> getInstanceFrom(Class<Z> javaType, RangeFunction<Integer, Z> rangeFunc) {
+        return fromFunc(javaType, rangeFunc);
     }
 
 

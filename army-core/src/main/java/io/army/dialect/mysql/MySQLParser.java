@@ -16,7 +16,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
-import io.army.util._ArrayUtils;
+import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
@@ -60,7 +60,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
         if (isolation == Isolation.DEFAULT) {
             stmtList = Collections.singletonList(startStmt);
         } else {
-            stmtList = _ArrayUtils.asUnmodifiableList(
+            stmtList = ArrayUtils.asUnmodifiableList(
                     "SET TRANSACTION ISOLATION LEVEL " + isolation.command,  // no key word 'SESSION' or 'GLOBAL',so Next transaction only
                     startStmt);
         }
