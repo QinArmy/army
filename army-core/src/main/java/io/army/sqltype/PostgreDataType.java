@@ -80,6 +80,7 @@ public enum PostgreDataType implements SqlType {
     DATERANGE,
 
     INT4MULTIRANGE,
+    INT8MULTIRANGE,
 
     REF_CURSOR,
 
@@ -132,9 +133,7 @@ public enum PostgreDataType implements SqlType {
     POLYGON_ARRAY,
     CIRCLES_ARRAY,
 
-
     UUID_ARRAY,
-
 
     CIDR_ARRAY,
     INET_ARRAY,
@@ -142,11 +141,23 @@ public enum PostgreDataType implements SqlType {
     MACADDR8_ARRAY,
 
     INT4RANGE_ARRAY,
-    TSRANGE_ARRAY,
-    TSTZRANGE_ARRAY,
-    DATERANGE_ARRAY,
+    INT4MULTIRANGE_ARRAY,
+
     INT8RANGE_ARRAY,
+    INT8MULTIRANGE_ARRAY,
+
+    TSRANGE_ARRAY,
+    TSMULTIRANGE_ARRAY,
+
+    TSTZRANGE_ARRAY,
+
+    TSTZMULTIRANGE_ARRAY,
+    DATERANGE_ARRAY,
+
+    DATEMULTIRANGE_ARRAY,
+
     NUMRANGE_ARRAY,
+    NUMMULTIRANGE_ARRAY,
 
     USER_DEFINED,
 

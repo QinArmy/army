@@ -3,7 +3,7 @@ package io.army.mapping.postgre;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
-import io.army.mapping.IntegerType;
+import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
@@ -13,22 +13,22 @@ import io.army.sqltype.SqlType;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-
 /**
  * <p>
- * This class representing Postgre int4range type {@link MappingType}
+ * This class representing Postgre int8range type {@link MappingType}
  * </p>
  *
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">int4range</a>
  */
-public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> {
+public final class PostgreInt8RangeType extends PostgreSingleRangeType<Long> {
+
 
     /**
      * @param javaType array class
      * @throws MetaException when javaType isn't  {@link String} and no 'create' static factory method.
      */
-    public static PostgreInt4RangeType from(final Class<?> javaType) throws MetaException {
-        final PostgreInt4RangeType instance;
+    public static PostgreInt8RangeType from(final Class<?> javaType) throws MetaException {
+        final PostgreInt8RangeType instance;
         if (javaType == String.class) {
             instance = TEXT;
         } else {
@@ -37,14 +37,14 @@ public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> 
         return instance;
     }
 
-    public static <R> PostgreInt4RangeType fromFunc(final Class<? extends R> javaType,
-                                                    final RangeFunction<Integer, R> function) {
+    public static <R> PostgreInt8RangeType fromFunc(final Class<? extends R> javaType,
+                                                    final RangeFunction<Long, R> function) {
         if (javaType.isPrimitive() || javaType.isArray()) {
-            throw errorJavaType(PostgreInt4RangeType.class, javaType);
+            throw errorJavaType(PostgreInt8RangeType.class, javaType);
         }
         Objects.requireNonNull(javaType);
         Objects.requireNonNull(function);
-        return new PostgreInt4RangeType(javaType, function);
+        return new PostgreInt8RangeType(javaType, function);
     }
 
     /**
@@ -60,38 +60,38 @@ public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> 
      * @param methodName public static factory method name,for example : com.my.Factory::create
      * @throws io.army.meta.MetaException throw when factory method name error.
      */
-    public static PostgreInt4RangeType fromMethod(final Class<?> javaType, final String methodName) {
+    public static PostgreInt8RangeType fromMethod(final Class<?> javaType, final String methodName) {
         if (javaType.isPrimitive() || javaType.isArray()) {
-            throw errorJavaType(PostgreInt4RangeType.class, javaType);
+            throw errorJavaType(PostgreInt8RangeType.class, javaType);
         }
-        return new PostgreInt4RangeType(javaType, createRangeFunction(javaType, Integer.class, methodName));
+        return new PostgreInt8RangeType(javaType, createRangeFunction(javaType, Long.class, methodName));
     }
 
 
     /**
      * package method
      */
-    static PostgreInt4RangeType fromArrayType(final PostgreInt4RangeArrayType type) {
+    static PostgreInt8RangeType fromArrayType(final PostgreInt8RangeArrayType type) {
         final Class<?> javaType;
-        final RangeFunction<Integer, ?> rangeFunc = type.rangeFunc;
+        final RangeFunction<Long, ?> rangeFunc = type.rangeFunc;
         assert rangeFunc != null;
-        if (type instanceof PostgreInt4RangeArrayType.ListType) {
-            javaType = ((PostgreInt4RangeArrayType.ListType<?>) type).elementType;
+        if (type instanceof PostgreInt8RangeArrayType.ListType) {
+            javaType = ((PostgreInt8RangeArrayType.ListType<?>) type).elementType;
         } else {
             javaType = type.javaType.getComponentType();
         }
         assert !javaType.isArray();
-        return new PostgreInt4RangeType(javaType, rangeFunc);
+        return new PostgreInt8RangeType(javaType, rangeFunc);
     }
 
-    public static final PostgreInt4RangeType TEXT = new PostgreInt4RangeType(String.class, null);
+    public static final PostgreInt8RangeType TEXT = new PostgreInt8RangeType(String.class, null);
 
 
     /**
      * private constructor
      */
-    private PostgreInt4RangeType(final Class<?> javaType, final @Nullable RangeFunction<Integer, ?> function) {
-        super(javaType, Integer.class, function, Integer::parseInt);
+    private PostgreInt8RangeType(final Class<?> javaType, final @Nullable RangeFunction<Long, ?> function) {
+        super(javaType, Long.class, function, Long::parseLong);
     }
 
 
@@ -100,18 +100,18 @@ public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> 
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreDataType.INT4RANGE;
+        return PostgreDataType.INT8RANGE;
     }
 
     @Override
     public MappingType arrayTypeOfThis() {
-        final PostgreInt4RangeArrayType arrayType;
-        final RangeFunction<Integer, ?> rangeFunc = this.rangeFunc;
+        final PostgreInt8RangeArrayType arrayType;
+        final RangeFunction<Long, ?> rangeFunc = this.rangeFunc;
         if (rangeFunc == null) {
             assert this.javaType == String.class;
-            arrayType = PostgreInt4RangeArrayType.LINEAR;
+            arrayType = PostgreInt8RangeArrayType.LINEAR;
         } else {
-            arrayType = PostgreInt4RangeArrayType.fromFunc(this.javaType, rangeFunc);
+            arrayType = PostgreInt8RangeArrayType.fromFunc(this.javaType, rangeFunc);
         }
         return arrayType;
     }
@@ -119,23 +119,23 @@ public final class PostgreInt4RangeType extends PostgreSingleRangeType<Integer> 
 
     @Override
     public MappingType subtype() {
-        return IntegerType.INSTANCE;
+        return LongType.INSTANCE;
     }
 
 
     @Override
-    void boundToText(Integer bound, Consumer<String> appender) {
+    void boundToText(Long bound, Consumer<String> appender) {
         appender.accept(bound.toString());
     }
 
 
     @Override
-    Class<Integer> boundJavaType() {
-        return Integer.class;
+    Class<Long> boundJavaType() {
+        return Long.class;
     }
 
     @Override
-    <Z> PostgreSingleRangeType<Integer> getInstanceFrom(Class<Z> javaType, RangeFunction<Integer, Z> rangeFunc) {
+    <Z> PostgreSingleRangeType<Long> getInstanceFrom(Class<Z> javaType, RangeFunction<Long, Z> rangeFunc) {
         return fromFunc(javaType, rangeFunc);
     }
 

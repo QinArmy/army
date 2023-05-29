@@ -18,46 +18,42 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-
 /**
  * <p>
- * This class representing Postgre int4range array type {@link MappingType}
+ * This class representing Postgre int8range array type {@link MappingType}
  * </p>
  *
- * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">int4range</a>
+ * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">int8range</a>
  */
-public class PostgreInt4RangeArrayType extends PostgreSingleRangeArrayType<Integer> {
+public class PostgreInt8RangeArrayType extends PostgreSingleRangeArrayType<Long> {
 
 
     /**
      * @param javaType array class
      * @throws MetaException when javaType isn't array of {@link String} and component class no 'create' static factory method.
      */
-    public static PostgreInt4RangeArrayType from(final Class<?> javaType) throws MetaException {
-        final PostgreInt4RangeArrayType instance;
+    public static PostgreInt8RangeArrayType from(final Class<?> javaType) throws MetaException {
+        final PostgreInt8RangeArrayType instance;
         if (javaType == String[].class) {
             instance = LINEAR;
         } else if (!javaType.isArray()) {
-            throw errorJavaType(PostgreInt4RangeArrayType.class, javaType);
+            throw errorJavaType(PostgreInt8RangeArrayType.class, javaType);
         } else if (ArrayUtils.underlyingComponent(javaType) == String.class) {
-            instance = new PostgreInt4RangeArrayType(javaType, null);
+            instance = new PostgreInt8RangeArrayType(javaType, null);
         } else {
             instance = fromMethod(javaType, CREATE);
         }
         return instance;
     }
 
-    /**
-     * @param javaType array class
-     */
-    public static PostgreInt4RangeArrayType fromFunc(final Class<?> javaType,
-                                                     final RangeFunction<Integer, ?> function) {
-        if (javaType.isPrimitive() || !javaType.isArray()) {
-            throw errorJavaType(PostgreInt4RangeArrayType.class, javaType);
+    public static PostgreInt8RangeArrayType fromFunc(final Class<?> javaType,
+                                                     final RangeFunction<Long, ?> function) {
+        if (!javaType.isArray()) {
+            throw errorJavaType(PostgreInt8RangeArrayType.class, javaType);
         }
         Objects.requireNonNull(javaType);
         Objects.requireNonNull(function);
-        return new PostgreInt4RangeArrayType(javaType, function);
+        return new PostgreInt8RangeArrayType(javaType, function);
     }
 
 
@@ -73,20 +69,20 @@ public class PostgreInt4RangeArrayType extends PostgreSingleRangeArrayType<Integ
      * @param methodName public static factory method name,for example : com.my.Factory::create
      * @throws io.army.meta.MetaException throw when factory method name error.
      */
-    public static PostgreInt4RangeArrayType fromMethod(final Class<?> javaType, final String methodName) {
+    public static PostgreInt8RangeArrayType fromMethod(final Class<?> javaType, final String methodName) {
         if (javaType.isPrimitive() || !javaType.isArray()) {
-            throw errorJavaType(PostgreInt4RangeArrayType.class, javaType);
+            throw errorJavaType(PostgreInt8RangeArrayType.class, javaType);
         }
 
-        return new PostgreInt4RangeArrayType(javaType,
-                PostgreRangeType.createRangeFunction(ArrayUtils.underlyingComponent(javaType), Integer.class, methodName)
+        return new PostgreInt8RangeArrayType(javaType,
+                PostgreRangeType.createRangeFunction(ArrayUtils.underlyingComponent(javaType), Long.class, methodName)
         );
     }
 
-    public static <E> PostgreInt4RangeArrayType fromList(Supplier<List<E>> supplier, Class<E> elementClass,
-                                                         RangeFunction<Integer, E> function) {
+    public static <E> PostgreInt8RangeArrayType fromList(Supplier<List<E>> supplier, Class<E> elementClass,
+                                                         RangeFunction<Long, E> function) {
         if (elementClass.isArray()) {
-            throw errorJavaType(PostgreInt4RangeArrayType.class, elementClass);
+            throw errorJavaType(PostgreInt8RangeArrayType.class, elementClass);
         }
         Objects.requireNonNull(supplier);
         Objects.requireNonNull(elementClass);
@@ -94,15 +90,15 @@ public class PostgreInt4RangeArrayType extends PostgreSingleRangeArrayType<Integ
         return new ListType<>(supplier, elementClass, function);
     }
 
-    public static <E> PostgreInt4RangeArrayType fromList(Supplier<List<E>> supplier, Class<E> elementClass,
+    public static <E> PostgreInt8RangeArrayType fromList(Supplier<List<E>> supplier, Class<E> elementClass,
                                                          String methodName) {
         if (elementClass.isArray()) {
-            throw errorJavaType(PostgreInt4RangeArrayType.class, elementClass);
+            throw errorJavaType(PostgreInt8RangeArrayType.class, elementClass);
         }
         Objects.requireNonNull(supplier);
         Objects.requireNonNull(elementClass);
         return new ListType<>(supplier, elementClass,
-                PostgreRangeType.createRangeFunction(elementClass, Integer.class, methodName)
+                PostgreRangeType.createRangeFunction(elementClass, Long.class, methodName)
         );
     }
 
@@ -110,20 +106,20 @@ public class PostgreInt4RangeArrayType extends PostgreSingleRangeArrayType<Integ
     /**
      * one dimension {@link String} array
      */
-    public static final PostgreInt4RangeArrayType LINEAR = new PostgreInt4RangeArrayType(String[].class, null);
+    public static final PostgreInt8RangeArrayType LINEAR = new PostgreInt8RangeArrayType(String[].class, null);
 
     /**
      * private constructor
      */
-    private PostgreInt4RangeArrayType(final Class<?> javaType, final @Nullable RangeFunction<Integer, ?> rangeFunc) {
-        super(javaType, Integer.class, rangeFunc, Integer::parseInt);
+    private PostgreInt8RangeArrayType(final Class<?> javaType, final @Nullable RangeFunction<Long, ?> rangeFunc) {
+        super(javaType, Long.class, rangeFunc, Long::parseLong);
     }
 
 
     @Override
     public final MappingType arrayTypeOfThis() {
-        final RangeFunction<Integer, ?> rangeFunc = this.rangeFunc;
-        final PostgreInt4RangeArrayType type;
+        final RangeFunction<Long, ?> rangeFunc = this.rangeFunc;
+        final MappingType type;
         if (rangeFunc == null) {
             type = from(ArrayUtils.arrayClassOf(this.javaType));
         } else if (this instanceof ListType) {
@@ -137,22 +133,22 @@ public class PostgreInt4RangeArrayType extends PostgreSingleRangeArrayType<Integ
     @Override
     public final MappingType elementType() {
         final Class<?> javaType = this.javaType;
-        final RangeFunction<Integer, ?> rangeFunc = this.rangeFunc;
+        final RangeFunction<Long, ?> rangeFunc = this.rangeFunc;
 
         final MappingType type;
         final Class<?> componentType;
         if (rangeFunc == null) {
             if (javaType == String[].class) {
-                type = PostgreInt4RangeType.TEXT;
+                type = PostgreInt8RangeType.TEXT;
             } else {
                 type = from(javaType.getComponentType());
             }
         } else if (this instanceof ListType) {
-            type = PostgreInt4RangeType.fromArrayType(this);
+            type = PostgreInt8RangeType.fromArrayType(this);
         } else if ((componentType = javaType.getComponentType()).isArray()) {
             type = fromFunc(componentType, rangeFunc);
         } else {
-            type = PostgreInt4RangeType.fromArrayType(this);
+            type = PostgreInt8RangeType.fromArrayType(this);
         }
         return type;
     }
@@ -162,23 +158,23 @@ public class PostgreInt4RangeArrayType extends PostgreSingleRangeArrayType<Integ
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreDataType.INT4RANGE_ARRAY;
+        return PostgreDataType.INT8RANGE_ARRAY;
     }
 
     @Override
-    final void boundToText(Integer bound, Consumer<String> appender) {
+    final void boundToText(Long bound, Consumer<String> appender) {
         appender.accept(bound.toString());
     }
 
     @Override
-    final Class<Integer> boundJavaType() {
-        return Integer.class;
+    final Class<Long> boundJavaType() {
+        return Long.class;
     }
 
     @Override
-    final MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<Integer, ?> rangeFunc)
+    final MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<Long, ?> rangeFunc)
             throws NoMatchMappingException {
-        final PostgreInt4RangeArrayType instance;
+        final PostgreInt8RangeArrayType instance;
         if (targetType == List.class) {
             instance = new ListType<>(ArrayList::new, elementType, rangeFunc);
         } else {
@@ -187,7 +183,7 @@ public class PostgreInt4RangeArrayType extends PostgreSingleRangeArrayType<Integ
         return instance;
     }
 
-    static final class ListType<E> extends PostgreInt4RangeArrayType
+    static final class ListType<E> extends PostgreInt8RangeArrayType
             implements UnaryGenericsMapping.ListMapping<E> {
 
         private final Supplier<List<E>> supplier;
@@ -195,7 +191,7 @@ public class PostgreInt4RangeArrayType extends PostgreSingleRangeArrayType<Integ
         final Class<E> elementType;
 
         private ListType(Supplier<List<E>> supplier,
-                         Class<E> elementType, RangeFunction<Integer, ?> function) {
+                         Class<E> elementType, RangeFunction<Long, ?> function) {
             super(List.class, function);
             this.supplier = supplier;
             this.elementType = elementType;
@@ -212,6 +208,5 @@ public class PostgreInt4RangeArrayType extends PostgreSingleRangeArrayType<Integ
         }
 
     }//ListType
-
 
 }

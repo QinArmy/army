@@ -4,6 +4,7 @@ import io.army.lang.Nullable;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.util.ArrayUtils;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -41,7 +42,9 @@ abstract class ArmyPostgreRangeType<T> extends _ArmyNoInjectionMapping {
     ArmyPostgreRangeType(Class<?> javaType, Class<T> elementType, @Nullable RangeFunction<T, ?> rangeFunc,
                          Function<String, T> parseFunc) {
         final Class<?> underlyingType;
-        if (javaType == String.class) {
+        if (javaType == List.class) {
+            underlyingType = elementType;
+        } else if (javaType == String.class) {
             underlyingType = javaType;
         } else {
             underlyingType = ArrayUtils.underlyingComponent(javaType);

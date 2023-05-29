@@ -90,7 +90,15 @@ public final class PostgreTsRangeType extends PostgreSingleRangeType<LocalDateTi
 
     @Override
     public MappingType arrayTypeOfThis() {
-        return null;
+        final PostgreTsRangeArrayType arrayType;
+        final RangeFunction<LocalDateTime, ?> rangeFunc = this.rangeFunc;
+        if (rangeFunc == null) {
+            assert this.javaType == String.class;
+            arrayType = PostgreTsRangeArrayType.LINEAR;
+        } else {
+            arrayType = PostgreTsRangeArrayType.fromFunc(this.javaType, rangeFunc);
+        }
+        return arrayType;
     }
 
     @Override

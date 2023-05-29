@@ -39,19 +39,23 @@ public abstract class PostgreMultiRangeArrayType<T> extends ArmyPostgreRangeType
 
 
     @Override
-    public final <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
+    public final <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+
+        final RangeFunction<T, ?> rangeFunc;
+        if (!targetType.isArray()) {
+            throw noMatchCompatibleMapping(this, targetType);
+        } else if (ArrayUtils.dimensionOf(targetType) == ArrayUtils.dimensionOf(this.javaType)) {
+            rangeFunc = PostgreRangeType.tryCreateDefaultRangeFunc(ArrayUtils.underlyingComponent(targetType),
+                    boundJavaType());
+        } else {
+            throw noMatchCompatibleMapping(this, targetType);
+        }
+        if (rangeFunc == null) {
+            throw noMatchCompatibleMapping(this, targetType);
+        }
+        return compatibleFor(targetType, rangeFunc);
     }
 
-    @Override
-    public final MappingType arrayTypeOfThis() throws CriteriaException {
-        return super.arrayTypeOfThis();
-    }
-
-    @Override
-    public final MappingType elementType() {
-        return null;
-    }
 
     @Override
     public final Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
@@ -72,6 +76,9 @@ public abstract class PostgreMultiRangeArrayType<T> extends ArmyPostgreRangeType
     public final boolean isSameType(MappingType type) {
         return super.isSameType(type);
     }
+
+    abstract MappingType compatibleFor(Class<?> targetType, RangeFunction<T, ?> rangeFunc)
+            throws NoMatchMappingException;
 
     /**
      * @param rangeFunc null when {@link MappingType#javaType()} of type is {@link String#getClass()}

@@ -7,6 +7,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
+import io.army.mapping.UnaryGenericsMapping;
 import io.army.mapping.optional.PostgreArrays;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
@@ -39,21 +40,56 @@ public abstract class PostgreMultiRangeType<T> extends PostgreRangeType<T> {
 
 
     @Override
-    public final boolean isSameType(MappingType type) {
-        return super.isSameType(type);
+    public final boolean isSameType(final MappingType type) {
+        final boolean match;
+        if (type == this) {
+            match = true;
+        } else if (this instanceof UnaryGenericsMapping.ListMapping) {
+            final Class<?> thisClass, typeClass;
+            thisClass = this.getClass();
+            typeClass = type.getClass();
+            match = thisClass == typeClass || thisClass.getSuperclass() == typeClass;
+        } else if (type instanceof UnaryGenericsMapping.ListMapping) {
+            final Class<?> thisClass, typeClass;
+            thisClass = this.getClass();
+            typeClass = type.getClass();
+            match = thisClass == typeClass || typeClass.getSuperclass() == thisClass;
+        } else {
+            match = this.getClass().isInstance(type);
+        }
+        return match;
     }
 
     @Override
     public final <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
-        final Class<?> componentType;
-        if (List.class.isAssignableFrom(targetType)) {
-            throw noMatchCompatibleMapping(this, targetType);
+        final Class<?> thisJavaType = this.javaType, targetComponentType;
+        final RangeFunction<T, ?> rangeFunc;
+        if (targetType == List.class) {
+            if (!thisJavaType.isArray()) {
+                throw noMatchCompatibleMapping(this, targetType);
+            }
+            // array -> List
+            targetComponentType = thisJavaType.getComponentType();
+            rangeFunc = this.rangeFunc;
         } else if (!targetType.isArray()) {
             throw noMatchCompatibleMapping(this, targetType);
-        } else if ((componentType = targetType.getComponentType()).isArray()) {
+        } else if ((targetComponentType = targetType.getComponentType()).isArray()) {
+            throw noMatchCompatibleMapping(this, targetType);
+        } else if (this instanceof UnaryGenericsMapping.ListMapping) {  // List -> array
+            if (targetComponentType.isAssignableFrom(((UnaryGenericsMapping.ListMapping<?>) this).genericsType())) {
+                rangeFunc = this.rangeFunc;
+            } else {
+                rangeFunc = PostgreRangeType.tryCreateDefaultRangeFunc(targetComponentType, boundJavaType());
+            }
+        } else if (targetComponentType.isAssignableFrom(thisJavaType.getComponentType())) { // array -> array
+            rangeFunc = this.rangeFunc;
+        } else {   // array -> array
+            rangeFunc = PostgreRangeType.tryCreateDefaultRangeFunc(targetComponentType, boundJavaType());
+        }
+        if (rangeFunc == null) {
             throw noMatchCompatibleMapping(this, targetType);
         }
-        return innerCompatibleFor(targetType, componentType);
+        return compatibleFor(targetType, targetComponentType, rangeFunc);
     }
 
     @Override
@@ -72,7 +108,8 @@ public abstract class PostgreMultiRangeType<T> extends PostgreRangeType<T> {
     }
 
 
-    abstract <Z> MappingType innerCompatibleFor(Class<?> targetType, final Class<Z> componentType) throws NoMatchMappingException;
+    abstract MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<T, ?> rangeFunc)
+            throws NoMatchMappingException;
 
 
     public static <T> Object rangeConvert(Object nonNull, @Nullable RangeFunction<T, ?> rangeFunc,

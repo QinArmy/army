@@ -4,16 +4,14 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect._Constant;
 import io.army.function.TextFunction;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingSupport;
-import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
+import io.army.mapping.*;
 import io.army.mapping.optional.PostgreArrays;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -39,8 +37,32 @@ public abstract class PostgreSingleRangeArrayType<T> extends ArmyPostgreRangeTyp
     }
 
     @Override
-    public final <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        throw noMatchCompatibleMapping(this, targetType);
+    public final <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+        final Class<?> thisJavaType = this.javaType, targetComponentType;
+        final RangeFunction<T, ?> rangeFunc;
+        if (targetType == List.class) { // array -> List
+            if (!thisJavaType.isArray() || (targetComponentType = thisJavaType.getComponentType()).isArray()) {
+                throw noMatchCompatibleMapping(this, targetType);
+            }
+            rangeFunc = this.rangeFunc;
+        } else if (!targetType.isArray()) {
+            throw noMatchCompatibleMapping(this, targetType);
+        } else if (!thisJavaType.isArray()) {
+            if (!(this instanceof UnaryGenericsMapping.ListMapping)
+                    || (targetComponentType = targetType.getComponentType()).isArray()) {
+                throw noMatchCompatibleMapping(this, targetType);
+            }
+            rangeFunc = PostgreRangeType.tryCreateDefaultRangeFunc(targetComponentType, boundJavaType());
+        } else if (ArrayUtils.dimensionOf(targetType) == ArrayUtils.dimensionOf(thisJavaType)) {
+            targetComponentType = ArrayUtils.underlyingComponent(targetType);
+            rangeFunc = PostgreRangeType.tryCreateDefaultRangeFunc(targetComponentType, boundJavaType());
+        } else {
+            throw noMatchCompatibleMapping(this, targetType);
+        }
+        if (rangeFunc == null) {
+            throw noMatchCompatibleMapping(this, targetType);
+        }
+        return compatibleFor(targetType, targetComponentType, rangeFunc);
     }
 
     @Override
@@ -62,6 +84,9 @@ public abstract class PostgreSingleRangeArrayType<T> extends ArmyPostgreRangeTyp
     public final Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return arrayAfterGet(nonNull, this.rangeFunc, this.parseFunc, type, this, ACCESS_ERROR_HANDLER);
     }
+
+    abstract MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<T, ?> rangeFunc)
+            throws NoMatchMappingException;
 
     public static <T, R> Object arrayConvert(final Object nonNull, final @Nullable RangeFunction<T, R> rangeFunc,
                                              final Function<String, T> parseFunc, final SqlType sqlType,

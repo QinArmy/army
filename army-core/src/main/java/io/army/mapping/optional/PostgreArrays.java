@@ -102,8 +102,11 @@ public abstract class PostgreArrays extends ArrayMappings {
             value = PostgreArrays.linearToList(array,
                     ((UnaryGenericsMapping.ListMapping<?>) type).listConstructor()
             );
-        } else {
+        } else if (type.javaType().isInstance(array)) {
             value = array;
+        } else {
+            String m = String.format("%s return value and %s not match.", TextFunction.class.getName(), type);
+            throw handler.apply(type, sqlType, text, new IllegalArgumentException(m));
         }
         return value;
     }

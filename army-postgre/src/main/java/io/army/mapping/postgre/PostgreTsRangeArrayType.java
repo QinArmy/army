@@ -5,6 +5,7 @@ import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.UnaryGenericsMapping;
 import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
@@ -13,6 +14,7 @@ import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -45,14 +47,16 @@ public class PostgreTsRangeArrayType extends PostgreSingleRangeArrayType<LocalDa
         return instance;
     }
 
-    public static <R> PostgreTsRangeArrayType fromFunc(Class<? extends R[]> javaType,
-                                                       RangeFunction<LocalDateTime, R> rangeFunc) {
-        if (javaType.isPrimitive() || !javaType.isArray()) {
+    /**
+     * @param javaType java type of array of return value of rangeFunc
+     */
+    public static PostgreTsRangeArrayType fromFunc(Class<?> javaType, RangeFunction<LocalDateTime, ?> rangeFunc) {
+        if (!javaType.isArray()) {
             throw errorJavaType(PostgreTsRangeArrayType.class, javaType);
         }
         Objects.requireNonNull(javaType);
         Objects.requireNonNull(rangeFunc);
-        return fromFunc0(javaType, rangeFunc);
+        return new PostgreTsRangeArrayType(javaType, rangeFunc);
     }
 
     public static PostgreTsRangeArrayType fromMethod(Class<?> javaType, String methodName) {
@@ -66,10 +70,29 @@ public class PostgreTsRangeArrayType extends PostgreSingleRangeArrayType<LocalDa
         );
     }
 
-
-    private static PostgreTsRangeArrayType fromFunc0(Class<?> javaType, RangeFunction<LocalDateTime, ?> rangeFunc) {
-        return new PostgreTsRangeArrayType(javaType, rangeFunc);
+    public static <E> PostgreTsRangeArrayType fromList(Supplier<List<E>> supplier, Class<E> elementClass,
+                                                       RangeFunction<LocalDateTime, E> function) {
+        if (elementClass.isArray()) {
+            throw errorJavaType(PostgreTsRangeArrayType.class, elementClass);
+        }
+        Objects.requireNonNull(supplier);
+        Objects.requireNonNull(elementClass);
+        Objects.requireNonNull(function);
+        return new ListType<>(supplier, elementClass, function);
     }
+
+    public static <E> PostgreTsRangeArrayType fromList(Supplier<List<E>> supplier, Class<E> elementClass,
+                                                       String methodName) {
+        if (elementClass.isArray()) {
+            throw errorJavaType(PostgreTsRangeArrayType.class, elementClass);
+        }
+        Objects.requireNonNull(supplier);
+        Objects.requireNonNull(elementClass);
+        return new ListType<>(supplier, elementClass,
+                PostgreRangeType.createRangeFunction(elementClass, LocalDateTime.class, methodName)
+        );
+    }
+
 
     /**
      * one dimension {@link String} array
@@ -99,9 +122,9 @@ public class PostgreTsRangeArrayType extends PostgreSingleRangeArrayType<LocalDa
         if (rangeFunc == null) {
             type = from(ArrayUtils.arrayClassOf(this.javaType));
         } else if (this instanceof ListType) {
-            type = fromFunc0(ArrayUtils.arrayClassOf(((ListType<?>) this).elementType, 2), rangeFunc);
+            type = fromFunc(ArrayUtils.arrayClassOf(((ListType<?>) this).elementType, 2), rangeFunc);
         } else {
-            type = fromFunc0(ArrayUtils.arrayClassOf(this.javaType), rangeFunc);
+            type = fromFunc(ArrayUtils.arrayClassOf(this.javaType), rangeFunc);
         }
         return type;
     }
@@ -120,7 +143,7 @@ public class PostgreTsRangeArrayType extends PostgreSingleRangeArrayType<LocalDa
         } else if (this instanceof ListType) {
             type = PostgreTsRangeType.fromArrayType(this);
         } else if ((componentType = this.javaType.getComponentType()).isArray()) {
-            type = fromFunc0(componentType, rangeFunc);
+            type = fromFunc(componentType, rangeFunc);
         } else {
             type = PostgreTsRangeType.fromArrayType(this);
         }
@@ -137,6 +160,18 @@ public class PostgreTsRangeArrayType extends PostgreSingleRangeArrayType<LocalDa
         return LocalDateTime.class;
     }
 
+    @Override
+    final MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<LocalDateTime, ?> rangeFunc)
+            throws NoMatchMappingException {
+        final PostgreTsRangeArrayType instance;
+        if (targetType == List.class) {
+            instance = new ListType<>(ArrayList::new, elementType, rangeFunc);
+        } else {
+            instance = fromFunc(targetType, rangeFunc);
+        }
+        return instance;
+    }
+
 
     static final class ListType<E> extends PostgreTsRangeArrayType
             implements UnaryGenericsMapping.ListMapping<E> {
@@ -145,9 +180,9 @@ public class PostgreTsRangeArrayType extends PostgreSingleRangeArrayType<LocalDa
 
         final Class<E> elementType;
 
-        private ListType(Class<?> javaType, Supplier<List<E>> supplier,
+        private ListType(Supplier<List<E>> supplier,
                          Class<E> elementType, RangeFunction<LocalDateTime, ?> function) {
-            super(javaType, function);
+            super(List.class, function);
             this.supplier = supplier;
             this.elementType = elementType;
         }

@@ -1,5 +1,6 @@
 package io.army.mapping.postgre;
 
+
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
@@ -19,36 +20,36 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-
 /**
  * <p>
- * This class representing Postgre int4multirange type {@link MappingType}
+ * This class representing Postgre int8multirange type {@link MappingType}
  * </p>
  *
- * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">int4multirange</a>
+ * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">int8multirange</a>
  */
-public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
+public class PostgreInt8MultiRangeType extends PostgreMultiRangeType<Long> {
+
 
     /**
      * @param javaType array class
-     * @throws MetaException when javaType isn't  {@link String}(or String[]) and no 'create' static factory method.
+     * @throws MetaException when javaType isn't  {@link String} and no 'create' static factory method.
      */
-    public static PostgreInt4MultiRangeType from(final Class<?> javaType) throws MetaException {
-        final PostgreInt4MultiRangeType instance;
+    public static PostgreInt8MultiRangeType from(final Class<?> javaType) throws MetaException {
+        final PostgreInt8MultiRangeType instance;
         if (javaType == String.class) {
             instance = TEXT;
         } else if (javaType == String[].class) {
-            instance = new PostgreInt4MultiRangeType(javaType, null);
+            instance = new PostgreInt8MultiRangeType(javaType, null);
         } else {
             instance = fromMethod(javaType, CREATE);
         }
         return instance;
     }
 
-    public static <R> PostgreInt4MultiRangeType fromFunc(final Class<? extends R[]> javaType,
-                                                         final RangeFunction<Integer, R> function) {
+    public static <R> PostgreInt8MultiRangeType fromFunc(final Class<? extends R[]> javaType,
+                                                         final RangeFunction<Long, R> function) {
         if (!javaType.isArray() || javaType.getComponentType().isArray()) {
-            throw errorJavaType(PostgreInt4MultiRangeType.class, javaType);
+            throw errorJavaType(PostgreInt8MultiRangeType.class, javaType);
         }
         Objects.requireNonNull(javaType);
         Objects.requireNonNull(function);
@@ -68,18 +69,18 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
      * @param methodName public static factory method name,for example : com.my.Factory::create
      * @throws io.army.meta.MetaException throw when factory method name error.
      */
-    public static PostgreInt4MultiRangeType fromMethod(final Class<?> javaType, final String methodName) {
+    public static PostgreInt8MultiRangeType fromMethod(final Class<?> javaType, final String methodName) {
         final Class<?> componentType;
         if (!javaType.isArray() || (componentType = javaType.getComponentType()).isArray()) {
-            throw errorJavaType(PostgreInt4MultiRangeType.class, javaType);
+            throw errorJavaType(PostgreInt8MultiRangeType.class, javaType);
         }
-        return new PostgreInt4MultiRangeType(javaType, createRangeFunction(componentType, Integer.class, methodName));
+        return new PostgreInt8MultiRangeType(javaType, createRangeFunction(componentType, Long.class, methodName));
     }
 
-    public static <E> PostgreInt4MultiRangeType fromList(Supplier<List<E>> supplier, Class<E> elementClass,
-                                                         RangeFunction<Integer, E> function) {
+    public static <E> PostgreInt8MultiRangeType fromList(Supplier<List<E>> supplier, Class<E> elementClass,
+                                                         RangeFunction<Long, E> function) {
         if (elementClass.isArray()) {
-            throw errorJavaType(PostgreInt4MultiRangeType.class, elementClass);
+            throw errorJavaType(PostgreInt8MultiRangeType.class, elementClass);
         }
         Objects.requireNonNull(supplier);
         Objects.requireNonNull(elementClass);
@@ -87,38 +88,38 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
         return new ListType<>(supplier, elementClass, function);
     }
 
-    public static <E> PostgreInt4MultiRangeType fromList(Supplier<List<E>> supplier, Class<E> elementClass,
+    public static <E> PostgreInt8MultiRangeType fromList(Supplier<List<E>> supplier, Class<E> elementClass,
                                                          String methodName) {
         if (elementClass.isArray()) {
-            throw errorJavaType(PostgreInt4MultiRangeType.class, elementClass);
+            throw errorJavaType(PostgreInt8MultiRangeType.class, elementClass);
         }
         Objects.requireNonNull(supplier);
         Objects.requireNonNull(elementClass);
-        return new ListType<>(supplier, elementClass, createRangeFunction(elementClass, Integer.class, methodName));
+        return new ListType<>(supplier, elementClass, createRangeFunction(elementClass, Long.class, methodName));
     }
 
 
-    static PostgreInt4MultiRangeType fromArrayType(final PostgreInt4MultiRangeArrayType type) {
-        final RangeFunction<Integer, ?> rangeFunc = type.rangeFunc;
+    static PostgreInt8MultiRangeType fromArrayType(final PostgreInt8MultiRangeArrayType type) {
+        final RangeFunction<Long, ?> rangeFunc = type.rangeFunc;
         assert rangeFunc != null;
         final Class<?> javaType = type.javaType.getComponentType();
         assert !javaType.getComponentType().isArray();
-        return new PostgreInt4MultiRangeType(javaType, rangeFunc);
+        return new PostgreInt8MultiRangeType(javaType, rangeFunc);
     }
 
-    private static PostgreInt4MultiRangeType fromFunc0(final Class<?> javaType,
-                                                       final RangeFunction<Integer, ?> function) {
-        return new PostgreInt4MultiRangeType(javaType, function);
+    private static PostgreInt8MultiRangeType fromFunc0(final Class<?> javaType,
+                                                       final RangeFunction<Long, ?> function) {
+        return new PostgreInt8MultiRangeType(javaType, function);
     }
 
 
-    public static final PostgreInt4MultiRangeType TEXT = new PostgreInt4MultiRangeType(String.class, null);
+    public static final PostgreInt8MultiRangeType TEXT = new PostgreInt8MultiRangeType(String.class, null);
 
     /**
      * private constructor
      */
-    private PostgreInt4MultiRangeType(Class<?> javaType, @Nullable RangeFunction<Integer, ?> rangeFunc) {
-        super(javaType, Integer.class, rangeFunc, Integer::parseInt);
+    private PostgreInt8MultiRangeType(Class<?> javaType, @Nullable RangeFunction<Long, ?> rangeFunc) {
+        super(javaType, Long.class, rangeFunc, Long::parseLong);
     }
 
 
@@ -127,19 +128,19 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreDataType.INT4MULTIRANGE;
+        return PostgreDataType.INT8MULTIRANGE;
     }
 
     @Override
     public final MappingType arrayTypeOfThis() throws CriteriaException {
         final Class<?> javaType = this.javaType;
-        final RangeFunction<Integer, ?> rangFunc = this.rangeFunc;
-        final PostgreInt4MultiRangeArrayType type;
+        final RangeFunction<Long, ?> rangFunc = this.rangeFunc;
+        final PostgreInt8MultiRangeArrayType type;
         if (rangFunc == null) {
             assert javaType == String.class || javaType == String[].class;
-            type = PostgreInt4MultiRangeArrayType.from(String[][].class);
+            type = PostgreInt8MultiRangeArrayType.from(String[][].class);
         } else {
-            type = PostgreInt4MultiRangeArrayType.fromFunc(javaType, rangFunc);
+            type = PostgreInt8MultiRangeArrayType.fromFunc(javaType, rangFunc);
         }
         return type;
     }
@@ -151,9 +152,9 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
 
 
     @Override
-    final MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<Integer, ?> rangeFunc)
+    final MappingType compatibleFor(Class<?> targetType, Class<?> elementType, RangeFunction<Long, ?> rangeFunc)
             throws NoMatchMappingException {
-        final PostgreInt4MultiRangeType instance;
+        final PostgreInt8MultiRangeType instance;
         if (targetType == List.class) {
             instance = new ListType<>(ArrayList::new, elementType, rangeFunc);
         } else {
@@ -163,16 +164,16 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
     }
 
     @Override
-    final void boundToText(Integer bound, Consumer<String> appender) {
+    final void boundToText(Long bound, Consumer<String> appender) {
         appender.accept(bound.toString());
     }
 
     @Override
-    final Class<Integer> boundJavaType() {
-        return Integer.class;
+    final Class<Long> boundJavaType() {
+        return Long.class;
     }
 
-    private static final class ListType<E> extends PostgreInt4MultiRangeType
+    private static final class ListType<E> extends PostgreInt8MultiRangeType
             implements UnaryGenericsMapping.ListMapping<E> {
 
         private final Supplier<List<E>> supplier;
@@ -180,7 +181,7 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
         private final Class<E> elementType;
 
         private ListType(Supplier<List<E>> supplier, Class<E> elementType,
-                         @Nullable RangeFunction<Integer, ?> rangeFunc) {
+                         @Nullable RangeFunction<Long, ?> rangeFunc) {
             super(List.class, rangeFunc);
             this.supplier = supplier;
             this.elementType = elementType;
@@ -198,6 +199,5 @@ public class PostgreInt4MultiRangeType extends PostgreMultiRangeType<Integer> {
 
 
     }//ListType
-
 
 }
