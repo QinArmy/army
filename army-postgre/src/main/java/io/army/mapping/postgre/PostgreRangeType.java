@@ -54,7 +54,7 @@ public abstract class PostgreRangeType<T> extends ArmyPostgreRangeType<T> {
      * @param function <ul>
      *                 <li>argument of function possibly is notion 'infinity',see {@link #INFINITY}</li>
      *                 <li>function must return null when argument is notion 'infinity' and support it,see {@link #INFINITY}</li>
-     *                 <li>function must throw {@link IllegalArgumentException} when argument is notion 'infinity' and don't support it,see {@link #INFINITY}</li>
+     *                 <li>function must throw {@link RuntimeException} when argument is notion 'infinity' and don't support it,see {@link #INFINITY}</li>
      *                 </ul>
      * @see <a href="https://www.postgresql.org/docs/current/rangetypes.html">Range Types</a>
      */

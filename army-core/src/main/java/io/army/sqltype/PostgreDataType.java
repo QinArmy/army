@@ -76,8 +76,12 @@ public enum PostgreDataType implements SqlType {
     INT8RANGE,
     NUMRANGE,
     TSRANGE,
+    TSMULTIRANGE,
     TSTZRANGE,
+    TSTZMULTIRANGE,
     DATERANGE,
+
+    DATEMULTIRANGE,
 
     INT4MULTIRANGE,
     INT8MULTIRANGE,
