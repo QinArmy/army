@@ -3,7 +3,6 @@ package io.army.criteria;
 import io.army.criteria.impl.SQLs;
 import io.army.function.*;
 import io.army.mapping.BooleanType;
-import io.army.meta.TypeMeta;
 
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -17,7 +16,7 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
      * @return always return {@link BooleanType}
      */
     @Override
-    TypeMeta typeMeta();
+    BooleanType typeMeta();
 
     /**
      * Logical OR
@@ -33,62 +32,49 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
 
     <E extends RightOperand> SimplePredicate or(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
-
-    SimplePredicate or(ExpressionOperator<Expression, Expression, IPredicate> expOperator,
-                       BiFunction<Expression, Expression, Expression> operator, Expression expression);
-
-    SimplePredicate or(ExpressionOperator<Expression, Object, IPredicate> expOperator,
-                       BiFunction<Expression, Object, Expression> operator, Object value);
-
-    <T> SimplePredicate or(ExpressionOperator<Expression, T, IPredicate> expOperator,
-                           BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+    <T> SimplePredicate or(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
+                           BiFunction<SimpleExpression, T, Expression> operator, T value);
 
     SimplePredicate or(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
                        TeNamedOperator<DataField> namedOperator, int size);
 
-    SimplePredicate or(ExpressionOperator<Expression, Object, IPredicate> expOperator,
-                       BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+    <T> SimplePredicate or(BetweenValueOperator<T> expOperator, BiFunction<SimpleExpression, T, Expression> operator,
+                           T firstValue, SQLs.WordAnd and, T secondValue);
 
-    SimplePredicate or(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator,
-                       Object firstValue, SQLs.WordAnd and, Object secondValue);
-
-    <T> SimplePredicate or(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator,
-                           Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
-
-    SimplePredicate or(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator,
-                       Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+    <T, U> SimplePredicate or(BetweenDualOperator<T, U> expOperator, BiFunction<SimpleExpression, T, Expression> firstFunc,
+                              T firstValue, SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFunc, U secondValue);
 
     SimplePredicate or(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
 
-    SimplePredicate or(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, int size);
+    SimplePredicate or(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName, int size);
 
     SimplePredicate or(Consumer<Consumer<IPredicate>> consumer);
 
     IPredicate ifOr(Supplier<IPredicate> supplier);
 
-    <E> IPredicate ifOr(Function<E, IPredicate> expOperator, Supplier<E> supplier);
+    <T> IPredicate ifOr(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 
-    <T> IPredicate ifOr(ExpressionOperator<Expression, T, IPredicate> expOperator,
-                        BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+    <T> IPredicate ifOr(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
+                        BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
     IPredicate ifOr(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
                     TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier);
 
-    IPredicate ifOr(ExpressionOperator<Expression, Object, IPredicate> expOperator,
-                    BiFunction<Expression, Object, Expression> operator, Function<String, ?> function, String keyName);
+    <K, V> IPredicate ifOr(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
+                           BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K keyName);
 
 
-    <T> IPredicate ifOr(BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator,
+    <T> IPredicate ifOr(BetweenValueOperator<T> expOperator, BiFunction<SimpleExpression, T, Expression> operator,
                         Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter);
 
-    IPredicate ifOr(BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator,
-                    Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey);
+    <T, U> IPredicate ifOr(BetweenDualOperator<T, U> expOperator, BiFunction<SimpleExpression, T, Expression> firstFunc,
+                           Supplier<T> firstGetter, SQLs.WordAnd and,
+                           BiFunction<SimpleExpression, U, Expression> secondFunc, Supplier<U> secondGetter);
 
-    IPredicate ifOr(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName,
+    IPredicate ifOr(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName,
                     Supplier<Integer> supplier);
 
     IPredicate ifOr(Consumer<Consumer<IPredicate>> consumer);
-
 
 
 }

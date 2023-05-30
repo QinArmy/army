@@ -53,7 +53,7 @@ public class MySQLValuesUnitTests {
                         .asValues())
                 .as("c")
                 .join(ChinaRegion_.T, AS, "c").on(SQLs.refThis("s", "column_0")::equal, ChinaRegion_.id)
-                .where(ChinaRegion_.id::equal, SQLs::literal, () -> "1")
+                .where(ChinaRegion_.id::equal, SQLs::literal, "1")
                 .asQuery();
 
         printStmt(stmt);
@@ -69,7 +69,7 @@ public class MySQLValuesUnitTests {
                         .asValues())
                 .as("s")
                 .join(ChinaRegion_.T, AS, "c").on(SQLs.refThis("s", "column_0")::equal, ChinaRegion_.id)
-                .where(ChinaRegion_.id::equal, SQLs::literal, () -> "1")
+                .where(ChinaRegion_.id::equal, SQLs::literal, "1")
                 .asQuery();
 
         printStmt(stmt);

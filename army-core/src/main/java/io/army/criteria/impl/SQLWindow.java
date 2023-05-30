@@ -153,6 +153,23 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
     }
 
     @Override
+    public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3) {
+        this.addPartitionExp(exp1);
+        this.addPartitionExp(exp2);
+        this.addPartitionExp(exp3);
+        return (PR) this;
+    }
+
+    @Override
+    public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4) {
+        this.addPartitionExp(exp1);
+        this.addPartitionExp(exp2);
+        this.addPartitionExp(exp3);
+        this.addPartitionExp(exp4);
+        return (PR) this;
+    }
+
+    @Override
     public final PR comma(Expression exp) {
         this.addPartitionExp(exp);
         return (PR) this;
@@ -162,6 +179,23 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
     public final PR comma(Expression exp1, Expression exp2) {
         this.addPartitionExp(exp1);
         this.addPartitionExp(exp2);
+        return (PR) this;
+    }
+
+    @Override
+    public final PR comma(Expression exp1, Expression exp2, Expression exp3) {
+        this.addPartitionExp(exp1);
+        this.addPartitionExp(exp2);
+        this.addPartitionExp(exp3);
+        return (PR) this;
+    }
+
+    @Override
+    public final PR comma(Expression exp1, Expression exp2, Expression exp3, Expression exp4) {
+        this.addPartitionExp(exp1);
+        this.addPartitionExp(exp2);
+        this.addPartitionExp(exp3);
+        this.addPartitionExp(exp4);
         return (PR) this;
     }
 
@@ -526,11 +560,10 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
         }
         //4.partition_clause
         final List<_Expression> partitionByList = this.partitionByList;
-        if (partitionByList != null) {
-            final int size = partitionByList.size();
-            assert size > 0;
+        final int partitionSize;
+        if (partitionByList != null && (partitionSize = partitionByList.size()) > 0) {
             sqlBuilder.append(_Constant.SPACE_PARTITION_BY);
-            for (int i = 0; i < size; i++) {
+            for (int i = 0; i < partitionSize; i++) {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }

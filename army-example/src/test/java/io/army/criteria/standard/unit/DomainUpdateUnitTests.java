@@ -39,7 +39,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                 .update(ChinaRegion_.T, AS, "c")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, addGdp)
-                .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
+                .where(ChinaRegion_.id::between, SQLs::literal, map.get("firstId"), AND, map.get("secondId"))
                 .and(ChinaRegion_.name.equal(SQLs::literal, "江湖"))
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate();
@@ -147,7 +147,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                 .set(PillUser_.nickName, SQLs::param, "令狐冲")
                 .where(PillPerson_.id::equal, SQLs::literal, "1")
                 .and(PillUser_.nickName::equal, SQLs::param, "zoro")
-                .and(PillPerson_.birthday::equal, SQLs::param, LocalDate::now)
+                .and(PillPerson_.birthday::equal, SQLs::param, LocalDate.now())
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -164,7 +164,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
                 )
                 .where(PillPerson_.id::equal, SQLs::literal, "1")
                 .and(PillUser_.nickName::equal, SQLs::param, "zoro")
-                .and(PillPerson_.birthday::equal, SQLs::param, LocalDate::now)
+                .and(PillPerson_.birthday::equal, SQLs::param, LocalDate.now())
                 .asUpdate();
 
         printStmt(LOG, stmt);

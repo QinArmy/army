@@ -94,6 +94,10 @@ public interface Window extends Item {
 
         R comma(Expression exp1, Expression exp2);
 
+        R comma(Expression exp1, Expression exp2, Expression exp3);
+
+        R comma(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
+
     }
 
     /**
@@ -114,6 +118,10 @@ public interface Window extends Item {
         R partitionBy(Expression exp);
 
         R partitionBy(Expression exp1, Expression exp2);
+
+        R partitionBy(Expression exp1, Expression exp2, Expression exp3);
+
+        R partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
 
         R partitionBy(Consumer<Consumer<Expression>> consumer);
 

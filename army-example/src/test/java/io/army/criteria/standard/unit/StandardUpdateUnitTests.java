@@ -39,7 +39,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .update(ChinaRegion_.T, AS, "c")
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, addGdp)
-                .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
+                .where(ChinaRegion_.id::between, SQLs::literal, map.get("firstId"), AND, map.get("secondId"))
                 .and(SQLs::bracket, ChinaRegion_.name.equal(SQLs::literal, "江湖"))
                 .and(ChinaRegion_.regionGdp::plus, SQLs::param, addGdp, Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate();
@@ -56,7 +56,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .where(ChinaRegion_.id.equal(SQLs::literal, 1))
-                .and(ChinaRegion_.name::equal, SQLs::param, () -> "江湖")
+                .and(ChinaRegion_.name::equal, SQLs::param, "江湖")
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
                 .asUpdate();
 
@@ -72,7 +72,7 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO)
-                .and(ChinaRegion_.version::equal, SQLs::param, () -> "0")
+                .and(ChinaRegion_.version::equal, SQLs::param, "0")
                 .namedParamList(this::createProvinceList)
                 .asUpdate();
 
@@ -112,8 +112,8 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                 .set(PillUser_.identityId, SQLs::literal, 888)
                 .set(PillUser_.nickName, SQLs::param, "令狐冲")
-                .where(PillUser_.id::equal, SQLs::literal, () -> "1")
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "zoro")
+                .where(PillUser_.id::equal, SQLs::literal, "1")
+                .and(PillUser_.nickName::equal, SQLs::param, "zoro")
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -127,8 +127,8 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                 .set(PillUser_.identityId, SQLs::literal, 888)
                 .set(PillUser_.nickName, SQLs::param, "令狐冲")
-                .where(PillUser_.id::equal, SQLs::literal, () -> "1")
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "zoro")
+                .where(PillUser_.id::equal, SQLs::literal, "1")
+                .and(PillUser_.nickName::equal, SQLs::param, "zoro")
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -143,8 +143,8 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                         .set(PillUser_.identityId, SQLs::literal, 888)
                         .set(PillUser_.nickName, SQLs::param, "令狐冲"))
 
-                .where(PillUser_.id::equal, SQLs::literal, () -> "1")
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "zoro")
+                .where(PillUser_.id::equal, SQLs::literal, "1")
+                .and(PillUser_.nickName::equal, SQLs::param, "zoro")
                 .asUpdate();
 
         printStmt(LOG, stmt);
@@ -158,9 +158,9 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .set(PillUser_.identityType, SQLs::literal, IdentityType.PERSON)
                 .set(PillUser_.identityId, SQLs::literal, 888)
                 .set(PillUser_.nickName, SQLs::param, "令狐冲")
-                .where(PillUser_.id::equal, SQLs::literal, () -> "1")
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "zoro")
-                .and(PillPerson_.birthday::equal, SQLs::param, LocalDate::now)// child filed
+                .where(PillUser_.id::equal, SQLs::literal, "1")
+                .and(PillUser_.nickName::equal, SQLs::param, "zoro")
+                .and(PillPerson_.birthday::equal, SQLs::param, LocalDate.now())// child filed
                 .asUpdate();
 
         printStmt(LOG, stmt);

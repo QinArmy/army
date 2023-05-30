@@ -43,7 +43,7 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
                 .join(BankUser_.T, AS, "pu").on(RegisterRecord_.partnerId.equal(SQLs.field("pu", BankUser_.id)))
                 .join(BankUser_.T, AS, "u").on(RegisterRecord_.userId.equal(SQLs.field("u", BankUser_.id)))
                 .join(BankAccount_.T, AS, "a").on(BankAccount_.userId.equal(SQLs.field("u", BankUser_.id)))
-                .where(RegisterRecord_.requestNo::equal, SQLs::param, () -> requestNo)
+                .where(RegisterRecord_.requestNo::equal, SQLs::param, requestNo)
                 .and(RegisterRecord_.id.equal(SQLs.field("u", BankUser_.registerRecordId)))
                 .and(RegisterRecord_.id.equal(BankAccount_.registerRecordId))
                 .asQuery();
@@ -65,8 +65,8 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
                 .join(Certificate_.T, AS, "c").on(Certificate_.id::equal, BankUser_.certificateId)
                 .where(RegisterRecord_.requestNo.equal(SQLs::param, requestNo))
                 .and(Certificate_.certificateNo.equal(SQLs::literal, certificateNo))
-                .and(Certificate_.certificateType::equal, SQLs::literal, () -> certificateType)
-                .and(BankUser_.userType::equal, SQLs::literal, () -> BankUserType.PARTNER)
+                .and(Certificate_.certificateType::equal, SQLs::literal, certificateType)
+                .and(BankUser_.userType::equal, SQLs::literal, BankUserType.PARTNER)
                 .and(BankUser_.registerRecordId::equal, RegisterRecord_.id)
                 .and(BankAccount_.registerRecordId::equal, RegisterRecord_.id)
                 .asQuery();

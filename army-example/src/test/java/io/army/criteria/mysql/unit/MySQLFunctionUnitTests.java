@@ -38,7 +38,7 @@ public class MySQLFunctionUnitTests {
                         .elseValue(SQLs.literalValue(0))
 
                         .end()
-                        .plus(SQLs::literal, 1).as("userType"))
+                        .plus(SQLs.literalValue(1)).as("userType"))
                 .from(PillUser_.T, SQLs.AS, "u")
                 .asQuery();
         printStmt(stmt);

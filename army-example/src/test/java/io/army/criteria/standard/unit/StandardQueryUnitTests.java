@@ -45,7 +45,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                 .select(SQLs.scalarSubQuery()
                         .select(PillUser_.nickName)
                         .from(PillUser_.T, AS, "u")
-                        .where(PillUser_.id::equal, SQLs::param, () -> 1)
+                        .where(PillUser_.id::equal, SQLs::param, 1)
                         .asQuery().as("r")
                 )
                 .asQuery();
@@ -83,13 +83,13 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .select(BankAccount_.id)
                         .from(BankAccount_.T, AS, "a")
                         .where(BankAccount_.userId::equal, PillPerson_.id)
-                        .asQuery()
+                        ::asQuery
                 )
                 .and(PillUser_.id::in, SQLs.subQuery()
                         .select(RegisterRecord_.userId)
                         .from(RegisterRecord_.T, AS, "r")
-                        .where(RegisterRecord_.createTime::between, SQLs::literal, () -> LocalDateTime.now().minusDays(1), AND, LocalDateTime::now)
-                        .asQuery()
+                        .where(RegisterRecord_.createTime::between, SQLs::literal, LocalDateTime.now().minusDays(1), AND, LocalDateTime.now())
+                        ::asQuery
                 )
                 //.and(User_.visible.equal(false))
                 .orderBy(PillPerson_.birthday, PillPerson_.id::desc)
@@ -147,8 +147,8 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
                 .select(PillUser_.id)
                 .from(PillUser_.T, AS, "p")
-                .where(PillUser_.id::equal, SQLs::literal, () -> 2)
-                .and(PillUser_.nickName::equal, SQLs::param, () -> "蛮大人")
+                .where(PillUser_.id::equal, SQLs::literal, 2)
+                .and(PillUser_.nickName::equal, SQLs::param, "蛮大人")
                 .and(PillUser_.version.equal(SQLs::literal, 2))
                 //.and(User_.version::equal, SQLs::literal, 2)
                 .groupBy(PillUser_.userType)
@@ -170,13 +170,13 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         stmt = SQLs.query()
                 .select(PillUser_.nickName)
                 .from(PillUser_.T, AS, "u")
-                .where(PillUser_.nickName::equal, SQLs::param, map::get, "nickName")
-                .and(SQLs::exists, () -> SQLs.subQuery()
+                .where(PillUser_.nickName::equal, SQLs::param, map.get("nickName"))
+                .and(SQLs::exists, SQLs.subQuery()
                         .select(ChinaProvince_.id)
                         .from(ChinaProvince_.T, AS, "p")
                         .join(ChinaRegion_.T, AS, "r").on(ChinaProvince_.id::equal, ChinaRegion_.id)
                         .where(ChinaProvince_.governor::equal, SQLs.field("u", PillUser_.nickName))
-                        .asQuery()
+                        ::asQuery
                 )
                 .asQuery();
 
@@ -200,7 +200,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .asQuery()
                 ).as("ps")
                 .join(BankUser_.T, AS, "bu").on(BankUser_.id::equal, SQLs.refThis("ps", ChinaProvince_.ID))
-                .where(BankUser_.nickName::equal, SQLs::param, map::get, "nickName")
+                .where(BankUser_.nickName::equal, SQLs::param, map.get("nickName"))
                 .asQuery();
 
 
@@ -221,13 +221,13 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .where(ChinaProvince_.governor::equal, SQLs.refOuter("bu", BankUser_.NICK_NAME))
                         .asQuery()
                 ).as("ps")
-                .join(() -> SQLs.subQuery()
+                .join(SQLs.subQuery()
                         .select(BankUser_.id, BankUser_.nickName)
                         .from(BankUser_.T, AS, "bu")
                         .limit(SQLs::literal, 10)
                         .asQuery()
                 ).as("bu").on(SQLs.refThis("bu", BankUser_.ID)::equal, SQLs.refThis("ps", ChinaProvince_.ID))
-                .where(BankUser_.nickName::equal, SQLs::param, map::get, "nickName")
+                .where(BankUser_.nickName::equal, SQLs::param, map.get("nickName"))
                 .asQuery();
 
     }
@@ -246,12 +246,12 @@ public class StandardQueryUnitTests extends StandardUnitTests {
                         .select(SQLs.literalValue(1)::as, "one")
                         .comma("u", PERIOD, PillUser_.T)
                         .from(PillUser_.T, AS, "u")
-                        .where(PillUser_.createTime::equal, SQLs::literal, LocalDateTime::now)
+                        .where(PillUser_.createTime::equal, SQLs::literal, LocalDateTime.now())
                         .limit(SQLs::literal, criteria::get, "offset", "rowCount")
                         .asQuery()
                 )
                 .as("us")
-                .where(SQLs.refThis("us", "one")::equal, SQLs::param, () -> "1")
+                .where(SQLs.refThis("us", "one")::equal, SQLs::param, "1")
                 .asQuery();
 
         printStmt(LOG, stmt);

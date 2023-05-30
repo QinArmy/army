@@ -3,6 +3,7 @@ package io.army.example.common;
 import io.army.criteria.Expression;
 import io.army.criteria.NullMode;
 import io.army.criteria.Select;
+import io.army.criteria.SimpleExpression;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.standard.StandardQuery;
 import io.army.meta.ChildTableMeta;
@@ -79,7 +80,7 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
 
     protected final <P, T> StandardQuery._WhereAndSpec<Select> createFindByIdStmt(
             SyncSession session, Class<T> domainClass,
-            BiFunction<Expression, Object, Expression> valueOperator, Object id) {
+            BiFunction<SimpleExpression, Object, Expression> valueOperator, Object id) {
         final TableMeta<T> table;
         table = session.tableMeta(domainClass);
 

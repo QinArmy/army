@@ -13,6 +13,7 @@ import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
+import io.army.mapping.TextType;
 import io.army.mapping.VoidType;
 import io.army.meta.TypeMeta;
 import io.army.util._Collections;
@@ -2610,7 +2611,8 @@ abstract class FunctionUtils {
             SQLFunction._StaticCaseThenClause,
             SQLFunction._CaseElseClause,
             CaseWhens,
-            SQLFunction._DynamicCaseThenClause {
+            SQLFunction._DynamicCaseThenClause,
+            SQLFunction._DynamicWhenSpaceClause {
 
         private final ArmyExpression caseValue;
 
@@ -2622,7 +2624,7 @@ abstract class FunctionUtils {
 
         private ArmyExpression elseExpression;
 
-        private MappingType returnType = StringType.INSTANCE;
+        private TypeMeta returnType = TextType.INSTANCE;
 
         private CaseFunction(@Nullable ArmyExpression caseValue) {
             super("CASE");
@@ -2638,7 +2640,14 @@ abstract class FunctionUtils {
 
         @Override
         public MappingType typeMeta() {
-            return this.returnType.mappingType();
+            final TypeMeta returnType = this.returnType;
+            final MappingType t;
+            if (returnType instanceof MappingType) {
+                t = (MappingType) returnType;
+            } else {
+                t = returnType.mappingType();
+            }
+            return t;
         }
 
         @Override
@@ -2712,11 +2721,19 @@ abstract class FunctionUtils {
         }
 
         @Override
+        public _CaseElseClause whens(Consumer<CaseWhens> consumer) {
+            consumer.accept(this);
+            return this;
+        }
+
+        @Override
         public CaseFunction when(final @Nullable Expression expression) {
             if (this.whenExpression != null) {
                 throw ContextStack.criteriaError(this.outerContext, "last when clause not end.");
             } else if (expression == null) {
                 throw ContextStack.nullPointer(this.outerContext);
+            } else if ((!(expression instanceof ArmyExpression))) {
+                throw ContextStack.nonArmyExp(this.outerContext);
             }
             this.whenExpression = (ArmyExpression) expression;
             return this;
@@ -2726,7 +2743,6 @@ abstract class FunctionUtils {
         public CaseFunction when(Supplier<Expression> supplier) {
             return this.when(supplier.get());
         }
-
 
         @Override
         public CaseFunction when(UnaryOperator<IPredicate> valueOperator, IPredicate predicate) {
@@ -2749,266 +2765,129 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public CaseFunction when(Function<Object, Expression> valueOperator, Function<String, ?> function,
-                                 String keyName) {
-            return this.when(valueOperator.apply(function.apply(keyName)));
-        }
-
-
-        @Override
-        public CaseFunction when(ExpressionOperator<Expression, Expression, Expression> expOperator,
-                                 BiFunction<Expression, Expression, Expression> valueOperator,
-                                 Expression expression) {
-            return this.when(expOperator.apply(valueOperator, expression));
-        }
-
-        @Override
-        public CaseFunction when(ExpressionOperator<Expression, Object, Expression> expOperator,
-                                 BiFunction<Expression, Object, Expression> valueOperator, Object value) {
+        public <T> CaseFunction when(ExpressionOperator<SimpleExpression, T, Expression> expOperator,
+                                     BiFunction<SimpleExpression, T, Expression> valueOperator, T value) {
             return this.when(expOperator.apply(valueOperator, value));
         }
 
         @Override
-        public <T> CaseFunction when(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter) {
-            return this.when(expOperator.apply(valueOperator, getter.get()));
-        }
-
-        @Override
-        public CaseFunction when(ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function
-                , String keyName) {
-            return this.when(expOperator.apply(valueOperator, function.apply(keyName)));
-        }
-
-        @Override
-        public CaseFunction when(BetweenValueOperator<Object> expOperator,
-                                 BiFunction<Expression, Object, Expression> operator, Object firstValue,
-                                 SQLsSyntax.WordAnd and, Object secondValue) {
+        public <T> CaseFunction when(BetweenValueOperator<T> expOperator,
+                                     BiFunction<SimpleExpression, T, Expression> operator, T firstValue,
+                                     SqlSyntax.WordAnd and, T secondValue) {
             return this.when(expOperator.apply(operator, firstValue, and, secondValue));
         }
 
         @Override
-        public <T> CaseFunction when(BetweenValueOperator<T> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter
-                , SQLs.WordAnd and, Supplier<T> secondGetter) {
-            return this.when(expOperator.apply(operator, firstGetter.get(), and, secondGetter.get()));
-        }
-
-        @Override
-        public CaseFunction when(BetweenValueOperator<Object> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-                , String firstKey, SQLs.WordAnd and, String secondKey) {
-            return this.when(expOperator.apply(operator, function.apply(firstKey), and, function.apply(secondKey)));
-        }
-
-        @Override
-        public CaseFunction when(BetweenOperator expOperator, Expression first, SQLs.WordAnd and
-                , Expression second) {
+        public CaseFunction when(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second) {
             return this.when(expOperator.apply(first, and, second));
         }
 
         @Override
-        public SQLFunction._CaseElseClause whens(Consumer<CaseWhens> consumer) {
+        public CaseFunction ifWhen(Consumer<_DynamicWhenSpaceClause> consumer) {
             consumer.accept(this);
             return this;
         }
 
         @Override
-        public CaseFunction ifWhen(Supplier<Expression> supplier) {
-            final Expression expression;
-            expression = supplier.get();
-            if (expression != null) {
-                this.when(expression);
-            }
-            return this;
+        public _SqlCaseThenClause space(Expression expression) {
+            return this.when(expression);
         }
 
         @Override
-        public <T> CaseFunction ifWhen(Function<T, Expression> valueOperator, Supplier<T> getter) {
-            final T operand;
-            operand = getter.get();
-            if (operand != null) {
-                this.when(valueOperator.apply(operand));
-            }
-            return this;
+        public _SqlCaseThenClause space(Supplier<Expression> supplier) {
+            return this.when(supplier.get());
         }
 
         @Override
-        public CaseFunction ifWhen(Function<Object, Expression> valueOperator, Function<String, ?> function
-                , String keyName) {
-            final Object operand;
-            operand = function.apply(keyName);
-            if (operand != null) {
-                this.when(valueOperator.apply(operand));
-            }
-            return this;
+        public _SqlCaseThenClause space(UnaryOperator<IPredicate> valueOperator, IPredicate predicate) {
+            return this.when(valueOperator.apply(predicate));
         }
 
         @Override
-        public <T> CaseFunction ifWhen(ExpressionOperator<Expression, T, Expression> expOperator
-                , BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter) {
-            final T operand;
-            operand = getter.get();
-            if (operand != null) {
-                this.when(expOperator.apply(valueOperator, operand));
-            }
-            return this;
+        public _SqlCaseThenClause space(Function<Expression, Expression> valueOperator, Expression expression) {
+            return this.when(valueOperator.apply(expression));
         }
 
         @Override
-        public CaseFunction ifWhen(ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function
-                , String keyName) {
-            final Object operand;
-            operand = function.apply(keyName);
-            if (operand != null) {
-                this.when(expOperator.apply(valueOperator, operand));
-            }
-            return this;
+        public _SqlCaseThenClause space(Function<Object, Expression> valueOperator, Object value) {
+            return this.when(valueOperator.apply(value));
         }
 
         @Override
-        public <T> CaseFunction ifWhen(BetweenValueOperator<T> expOperator
-                , BiFunction<Expression, T, Expression> operator, Supplier<T> firstGetter, SQLs.WordAnd and
-                , Supplier<T> secondGetter) {
-            final T first, second;
-            if ((first = firstGetter.get()) != null && (second = secondGetter.get()) != null) {
-                this.when(expOperator.apply(operator, first, and, second));
-            }
-            return this;
+        public <T> _SqlCaseThenClause space(Function<T, Expression> valueOperator, Supplier<T> getter) {
+            return this.when(valueOperator.apply(getter.get()));
         }
 
         @Override
-        public CaseFunction ifWhen(BetweenValueOperator<Object> expOperator
-                , BiFunction<Expression, Object, Expression> operator, Function<String, ?> function
-                , String firstKey, SQLs.WordAnd and, String secondKey) {
-            final Object first, second;
-            if ((first = function.apply(firstKey)) != null && (second = function.apply(secondKey)) != null) {
-                this.when(expOperator.apply(operator, first, and, second));
-            }
-            return this;
+        public <T> _SqlCaseThenClause space(ExpressionOperator<SimpleExpression, T, Expression> expOperator,
+                                            BiFunction<SimpleExpression, T, Expression> valueOperator, T value) {
+            return this.when(expOperator.apply(valueOperator, value));
         }
 
         @Override
-        public <T> CaseFunction ifWhen(UnaryOperator<IPredicate> predicateOperator
-                , BetweenValueOperator<T> expOperator, BiFunction<Expression, T, Expression> operator
-                , Supplier<T> firstGetter, SQLsSyntax.WordAnd and, Supplier<T> secondGetter) {
-            final T first, second;
-            if ((first = firstGetter.get()) != null && (second = secondGetter.get()) != null) {
-                this.when(predicateOperator.apply(expOperator.apply(operator, first, and, second)));
-            }
-            return this;
+        public <T> _SqlCaseThenClause space(BetweenValueOperator<T> expOperator,
+                                            BiFunction<SimpleExpression, T, Expression> operator, T firstValue,
+                                            SqlSyntax.WordAnd and, T secondValue) {
+            return this.when(expOperator.apply(operator, firstValue, and, secondValue));
         }
 
         @Override
-        public CaseFunction ifWhen(UnaryOperator<IPredicate> predicateOperator
-                , BetweenValueOperator<Object> expOperator, BiFunction<Expression, Object, Expression> operator
-                , Function<String, ?> function, String firstKey, SQLs.WordAnd and, String secondKey) {
-            final Object first, second;
-            if ((first = function.apply(firstKey)) != null && (second = function.apply(secondKey)) != null) {
-                this.when(predicateOperator.apply(expOperator.apply(operator, first, and, second)));
-            }
-            return this;
+        public _SqlCaseThenClause space(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second) {
+            return this.when(expOperator.apply(first, and, second));
         }
 
         @Override
         public CaseFunction then(final @Nullable Expression expression) {
-            final ArmyExpression whenExpression = this.whenExpression;
-            if (whenExpression != null) {
-                if (expression == null) {
-                    throw ContextStack.nullPointer(this.outerContext);
-                }
-                this.whenExpression = null; //clear for next when clause
-                List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
-                if (expPairList == null) {
-                    expPairList = new ArrayList<>();
-                    this.expPairList = expPairList;
-                } else if (!(expPairList instanceof ArrayList)) {
-                    throw ContextStack.castCriteriaApi(this.outerContext);
-                }
-                expPairList.add(_Pair.create(whenExpression, (ArmyExpression) expression));
+            final ArmyExpression whenExp = this.whenExpression;
+            if (whenExp == null) {
+                throw ContextStack.criteriaError(this.outerContext, "no when clause");
+            } else if (expression == null) {
+                throw ContextStack.nullPointer(this.outerContext);
+            } else if (!(expression instanceof ArmyExpression)) {
+                throw ContextStack.nonArmyExp(this.outerContext);
             }
+            List<_Pair<ArmyExpression, ArmyExpression>> pairList = this.expPairList;
+            if (pairList == null) {
+                pairList = _Collections.arrayList();
+                this.expPairList = pairList;
+            } else if (!(pairList instanceof ArrayList)) {
+                throw ContextStack.castCriteriaApi(this.outerContext);
+            }
+            pairList.add(_Pair.create(whenExp, (ArmyExpression) expression));
+            this.whenExpression = null; // clear for next
             return this;
         }
 
         @Override
         public CaseFunction then(Supplier<Expression> supplier) {
-            if (this.whenExpression != null) {
-                this.then(supplier.get());
-            }
-            return this;
+            return this.then(supplier.get());
+        }
+
+
+        @Override
+        public CaseFunction then(UnaryOperator<IPredicate> valueOperator, IPredicate value) {
+            return this.then(valueOperator.apply(value));
         }
 
         @Override
-        public CaseFunction then(Function<Expression, Expression> valueOperator, Expression expression) {
-            if (this.whenExpression != null) {
-                this.then(valueOperator.apply(expression));
-            }
-            return this;
+        public CaseFunction then(Function<Expression, Expression> valueOperator, Expression value) {
+            return this.then(valueOperator.apply(value));
         }
 
         @Override
-        public CaseFunction then(Function<Object, Expression> valueOperator, @Nullable Object value) {
-            if (this.whenExpression != null) {
-                this.then(valueOperator.apply(value));
-            }
-            return this;
+        public CaseFunction then(Function<Object, Expression> valueOperator, Object value) {
+            return this.then(valueOperator.apply(value));
         }
 
         @Override
-        public <T> CaseFunction then(Function<T, Expression> valueOperator, Supplier<T> getter) {
-            if (this.whenExpression != null) {
-                this.then(valueOperator.apply(getter.get()));
-            }
-            return this;
+        public <T> CaseFunction then(Function<T, Expression> valueOperator, Supplier<T> supplier) {
+            return this.then(valueOperator.apply(supplier.get()));
         }
 
         @Override
-        public CaseFunction then(Function<Object, Expression> valueOperator
-                , Function<String, ?> function, String keyName) {
-            if (this.whenExpression != null) {
-                this.then(valueOperator.apply(function.apply(keyName)));
-            }
-            return this;
-        }
-
-        @Override
-        public CaseFunction then(ExpressionOperator<Expression, Expression, Expression> expOperator,
-                                 BiFunction<Expression, Expression, Expression> valueOperator,
-                                 Expression expression) {
-            if (this.whenExpression != null) {
-                this.then(expOperator.apply(valueOperator, expression));
-            }
-            return this;
-        }
-
-        @Override
-        public CaseFunction then(ExpressionOperator<Expression, Object, Expression> expOperator,
-                                 BiFunction<Expression, Object, Expression> valueOperator, Object value) {
-            if (this.whenExpression != null) {
-                this.then(expOperator.apply(valueOperator, value));
-            }
-            return this;
-        }
-
-        @Override
-        public <T> CaseFunction then(ExpressionOperator<Expression, T, Expression> expOperator,
-                                     BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter) {
-            if (this.whenExpression != null) {
-                this.then(expOperator.apply(valueOperator, getter.get()));
-            }
-            return this;
-        }
-
-        @Override
-        public CaseFunction then(ExpressionOperator<Expression, Object, Expression> expOperator,
-                                 BiFunction<Expression, Object, Expression> valueOperator,
-                                 Function<String, ?> function, String keyName) {
-            if (this.whenExpression != null) {
-                this.then(expOperator.apply(valueOperator, function.apply(keyName)));
-            }
-            return this;
+        public <T> CaseFunction then(ExpressionOperator<SimpleExpression, T, Expression> expOperator,
+                                     BiFunction<SimpleExpression, T, Expression> valueOperator, T value) {
+            return this.then(expOperator.apply(valueOperator, value));
         }
 
 
@@ -3022,6 +2901,8 @@ abstract class FunctionUtils {
                 throw ContextStack.criteriaError(this.outerContext, "duplicate else clause.");
             } else if (expression == null) {
                 throw ContextStack.nullPointer(this.outerContext);
+            } else if (!(expression instanceof ArmyExpression)) {
+                throw ContextStack.nonArmyExp(this.outerContext);
             }
             this.elseExpression = (ArmyExpression) expression;
             return this;
@@ -3034,51 +2915,29 @@ abstract class FunctionUtils {
 
 
         @Override
-        public _CaseEndClause elseValue(Function<Expression, Expression> valueOperator, Expression expression) {
-            return this.elseValue(valueOperator.apply(expression));
-        }
-
-        @Override
-        public _CaseEndClause elseValue(Function<Object, Expression> valueOperator, @Nullable Object value) {
+        public _CaseEndClause elseValue(UnaryOperator<IPredicate> valueOperator, IPredicate value) {
             return this.elseValue(valueOperator.apply(value));
         }
 
         @Override
-        public <T> _CaseEndClause elseValue(Function<T, Expression> valueOperator, Supplier<T> getter) {
-            return this.elseValue(valueOperator.apply(getter.get()));
+        public _CaseEndClause elseValue(Function<Expression, Expression> valueOperator, Expression value) {
+            return this.elseValue(valueOperator.apply(value));
         }
 
         @Override
-        public _CaseEndClause elseValue(Function<Object, Expression> valueOperator
-                , Function<String, ?> function, String keyName) {
-            return this.elseValue(valueOperator.apply(function.apply(keyName)));
+        public _CaseEndClause elseValue(Function<Object, Expression> valueOperator, Object value) {
+            return this.elseValue(valueOperator.apply(value));
         }
 
         @Override
-        public _CaseEndClause elseValue(ExpressionOperator<Expression, Expression, Expression> expOperator,
-                                        BiFunction<Expression, Expression, Expression> valueOperator,
-                                        Expression expression) {
-            return this.elseValue(expOperator.apply(valueOperator, expression));
+        public <T> _CaseEndClause elseValue(Function<T, Expression> valueOperator, Supplier<T> supplier) {
+            return this.elseValue(valueOperator.apply(supplier.get()));
         }
 
         @Override
-        public _CaseEndClause elseValue(ExpressionOperator<Expression, Object, Expression> expOperator,
-                                        BiFunction<Expression, Object, Expression> valueOperator, Object value) {
+        public <T> _CaseEndClause elseValue(ExpressionOperator<SimpleExpression, T, Expression> expOperator,
+                                            BiFunction<SimpleExpression, T, Expression> valueOperator, T value) {
             return this.elseValue(expOperator.apply(valueOperator, value));
-        }
-
-        @Override
-        public <T> _CaseEndClause elseValue(ExpressionOperator<Expression, T, Expression> expOperator,
-                                            BiFunction<Expression, T, Expression> valueOperator,
-                                            Supplier<T> getter) {
-            return this.elseValue(expOperator.apply(valueOperator, getter.get()));
-        }
-
-        @Override
-        public _CaseEndClause elseValue(ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function
-                , String keyName) {
-            return this.elseValue(expOperator.apply(valueOperator, function.apply(keyName)));
         }
 
         @Override
@@ -3102,35 +2961,31 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public _CaseEndClause ifElse(Function<Object, Expression> valueOperator
-                , Function<String, ?> function, String keyName) {
-            final Object operand;
-            operand = function.apply(keyName);
-            if (operand != null) {
-                this.elseValue(valueOperator.apply(operand));
+        public <K, V> _CaseEndClause ifElse(Function<V, Expression> valueOperator, Function<K, V> function, K key) {
+            final V value;
+            if ((value = function.apply(key)) != null) {
+                this.elseValue(valueOperator.apply(value));
             }
             return this;
         }
 
         @Override
-        public <T> _CaseEndClause ifElse(ExpressionOperator<Expression, T, Expression> expOperator,
-                                         BiFunction<Expression, T, Expression> valueOperator, Supplier<T> getter) {
-            final T operand;
-            operand = getter.get();
-            if (operand != null) {
-                this.elseValue(expOperator.apply(valueOperator, operand));
+        public <T> _CaseEndClause ifElse(ExpressionOperator<SimpleExpression, T, Expression> expOperator,
+                                         BiFunction<SimpleExpression, T, Expression> valueOperator, Supplier<T> getter) {
+            final T value;
+            if ((value = getter.get()) != null) {
+                this.elseValue(expOperator.apply(valueOperator, value));
             }
             return this;
         }
 
         @Override
-        public _CaseEndClause ifElse(ExpressionOperator<Expression, Object, Expression> expOperator
-                , BiFunction<Expression, Object, Expression> valueOperator, Function<String, ?> function
-                , String keyName) {
-            final Object operand;
-            operand = function.apply(keyName);
-            if (operand != null) {
-                this.elseValue(expOperator.apply(valueOperator, operand));
+        public <K, V> _CaseEndClause ifElse(ExpressionOperator<SimpleExpression, V, Expression> expOperator,
+                                            BiFunction<SimpleExpression, V, Expression> valueOperator,
+                                            Function<K, V> function, K key) {
+            final V value;
+            if ((value = function.apply(key)) != null) {
+                this.elseValue(expOperator.apply(valueOperator, value));
             }
             return this;
         }
@@ -3144,14 +2999,16 @@ abstract class FunctionUtils {
 
         @Override
         public SimpleExpression end(final @Nullable TypeInfer type) {
-
-            this.endCaseFunction();
-
             if (type == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             }
+            this.endCaseFunction();
             if (type instanceof MappingType) {
                 this.returnType = (MappingType) type;
+            } else if (type instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) type).isDelay()) {
+                this.returnType = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) type, Expressions::identityType);
+            } else if (type instanceof TypeMeta.DelayTypeMeta) {
+                this.returnType = (TypeMeta) type;
             } else {
                 this.returnType = type.typeMeta().mappingType();
             }

@@ -152,9 +152,9 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
     interface _UpdateWhereAndClause<WA> extends Statement._WhereAndClause<WA> {
 
-        <T> WA and(ExpressionOperator<Expression, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);
+        <T> WA and(ExpressionOperator<SimpleExpression, T, Expression> expOperator1, BiFunction<SimpleExpression, T, Expression> operator, T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);
 
-        <T> WA ifAnd(ExpressionOperator<Expression, T, Expression> expOperator1, BiFunction<Expression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand);
+        <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, Expression> expOperator1, BiFunction<SimpleExpression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand);
 
     }
 

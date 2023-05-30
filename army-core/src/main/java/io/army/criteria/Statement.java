@@ -815,22 +815,22 @@ public interface Statement extends Item {
 
         WA where(UnaryOperator<IPredicate> expOperator, IPredicate operand);
 
-        <E extends RightOperand> WA where(Function<E, IPredicate> expOperator, Supplier<E> supplier);
+        <T> WA where(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 
 
         WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
                  BiFunction<DataField, String, Expression> operator);
 
         //below ordinary operator
-        <T> WA where(ExpressionOperator<Expression, T, IPredicate> expOperator,
-                     BiFunction<Expression, T, Expression> valueOperator, T value);
+        <T> WA where(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
+                     BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
 
         // below in operator
         WA where(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
                  TeNamedOperator<DataField> namedOperator, int size);
 
 
-        WA where(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, int size);
+        WA where(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName, int size);
 
         //below between operator
 
@@ -842,20 +842,20 @@ public interface Statement extends Item {
         <T, U> WA where(BetweenDualOperator<T, U> expOperator, BiFunction<SimpleExpression, T, Expression> firstFuncRef,
                         T first, SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondRef, U second);
 
-        <E extends RightOperand> WA whereIf(Function<E, IPredicate> expOperator, Supplier<E> supplier);
+        <T> WA whereIf(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 
-        <T> WA whereIf(ExpressionOperator<Expression, T, IPredicate> expOperator,
-                       BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+        <T> WA whereIf(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
+                       BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
         WA whereIf(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
                    TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier);
 
         //below four argument method
 
-        <K, V> WA whereIf(ExpressionOperator<Expression, V, IPredicate> expOperator,
-                          BiFunction<Expression, V, Expression> operator, Function<K, V> function, K key);
+        <K, V> WA whereIf(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
+                          BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
 
-        WA whereIf(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName,
+        WA whereIf(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName,
                    Supplier<Integer> supplier);
 
         //below between where if
@@ -922,22 +922,22 @@ public interface Statement extends Item {
 
         WA and(UnaryOperator<IPredicate> expOperator, IPredicate operand);
 
-        <E extends RightOperand> WA and(Function<E, IPredicate> expOperator, Supplier<E> supplier);
+        <T> WA and(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 
 
         WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
                BiFunction<DataField, String, Expression> operator);
 
         //below ordinary operator
-        <T> WA and(ExpressionOperator<Expression, T, IPredicate> expOperator,
-                   BiFunction<Expression, T, Expression> valueOperator, T value);
+        <T> WA and(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
+                   BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
 
         // below in operator
         WA and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
                TeNamedOperator<DataField> namedOperator, int size);
 
 
-        WA and(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName, int size);
+        WA and(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName, int size);
 
         //below between operator
 
@@ -949,20 +949,20 @@ public interface Statement extends Item {
         <T, U> WA and(BetweenDualOperator<T, U> expOperator, BiFunction<SimpleExpression, T, Expression> firstFuncRef,
                       T first, SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondRef, U second);
 
-        <E extends RightOperand> WA ifAnd(Function<E, IPredicate> expOperator, Supplier<E> supplier);
+        <T> WA ifAnd(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 
-        <T> WA ifAnd(ExpressionOperator<Expression, T, IPredicate> expOperator,
-                     BiFunction<Expression, T, Expression> operator, Supplier<T> getter);
+        <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
+                     BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
         WA ifAnd(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
                  TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier);
 
         //below four argument method
 
-        <K, V> WA ifAnd(ExpressionOperator<Expression, V, IPredicate> expOperator,
-                        BiFunction<Expression, V, Expression> operator, Function<K, V> function, K key);
+        <K, V> WA ifAnd(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
+                        BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
 
-        WA ifAnd(InNamedOperator expOperator, TeNamedOperator<Expression> namedOperator, String paramName,
+        WA ifAnd(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName,
                  Supplier<Integer> supplier);
 
         //below between where if

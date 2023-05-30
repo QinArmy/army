@@ -29,7 +29,7 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
         final DeleteStatement stmt;
         stmt = SQLs.domainDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.id::between, SQLs::literal, map::get, "firstId", AND, "secondId")
+                .where(ChinaRegion_.id::between, SQLs::literal, map.get("firstId"), AND, map.get("secondId"))
                 .and(ChinaRegion_.name.equal(SQLs::literal, "江湖"))
                 .asDelete();
         printStmt(LOG, stmt);
@@ -41,7 +41,7 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
         stmt = SQLs.domainDelete()
                 .deleteFrom(ChinaProvince_.T, AS, "p")
                 .where(ChinaProvince_.id.equal(SQLs::literal, 1))
-                .and(ChinaRegion_.name::equal, SQLs::param, () -> "江湖")
+                .and(ChinaRegion_.name::equal, SQLs::param, "江湖")
                 .and(ChinaProvince_.governor.equal(SQLs::param, "石教主").or(consumer -> {
                             consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "钟教主"));
                             consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "老钟"));
@@ -60,7 +60,7 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
         stmt = SQLs.batchDomainDelete()
                 .deleteFrom(ChinaRegion_.T, AS, "cr")
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
-                .and(ChinaRegion_.version::equal, SQLs::param, () -> "0")
+                .and(ChinaRegion_.version::equal, SQLs::param, "0")
                 .namedParamList(this::createProvinceList)
                 .asDelete();
 

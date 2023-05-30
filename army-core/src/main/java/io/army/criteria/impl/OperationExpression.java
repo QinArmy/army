@@ -995,7 +995,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
 
         @Override
-        public final TypeMeta typeMeta() {
+        public final BooleanType typeMeta() {
             return BooleanType.INSTANCE;
         }
 

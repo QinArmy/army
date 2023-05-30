@@ -1,14 +1,14 @@
 package io.army.function;
 
-import io.army.criteria.Expression;
 import io.army.criteria.IPredicate;
+import io.army.criteria.SimpleExpression;
 
 /**
  * <p>
  * This interface representing below methods:
  *     <ul>
- *         <li>{@link Expression#in(TeNamedOperator, String, int)}</li>
- *         <li>{@link Expression#notIn(TeNamedOperator, String, int)}</li>
+ *         <li>{@link SimpleExpression#in(TeNamedOperator, String, int)}</li>
+ *         <li>{@link SimpleExpression#notIn(TeNamedOperator, String, int)}</li>
  *         <li>other custom method</li>
  *     </ul>
  * </p>
@@ -19,7 +19,7 @@ import io.army.criteria.IPredicate;
 public interface InNamedOperator {
 
 
-    IPredicate apply(TeNamedOperator<Expression> namedOperator, String paramName, int size);
+    IPredicate apply(TeNamedOperator<SimpleExpression> namedOperator, String paramName, int size);
 
 
 }
