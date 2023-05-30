@@ -8,6 +8,7 @@ import io.army.criteria.impl.inner.mysql._MySQLTableBlock;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLStatement;
+import io.army.criteria.mysql.MySQLWindow;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
@@ -27,14 +28,22 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
 
-
-    static MySQLCtes mySQLCteBuilder(boolean recursive, CriteriaContext context) {
+    static MySQLCtes mysqlLCteBuilder(boolean recursive, CriteriaContext context) {
         return new MySQLCteBuilder(recursive, context);
     }
 
     static <R> MySQLQuery._IndexPurposeBySpec<R> indexHintClause(CriteriaContext context, IndexHintCommand command,
                                                                  Function<_IndexHint, R> function) {
         return new MySQLIndexHintClause<>(context, command, function);
+    }
+
+    static MySQLWindow._PartitionBySpec namedWindow(String windowName, CriteriaContext context,
+                                                    @Nullable String existingWindowName) {
+        return new MySQLWindowImpl(windowName, context, existingWindowName);
+    }
+
+    static MySQLWindow._PartitionBySpec anonymousWindow(CriteriaContext context, @Nullable String existingWindowName) {
+        return new MySQLWindowImpl(context, existingWindowName);
     }
 
 
@@ -635,6 +644,32 @@ abstract class MySQLSupports extends CriteriaSupports {
 
 
     }//MySQLIndexHint
+
+
+    static final class MySQLWindowImpl extends SQLWindow<
+            MySQLWindow._PartitionByCommaSpec,
+            MySQLWindow._FrameExtentSpec,
+            Item,
+            MySQLWindow._MySQLFrameBetweenClause,
+            Item,
+            MySQLWindow._FrameUnitSpaceSpec,
+            Item>
+            implements MySQLWindow,
+            MySQLWindow._PartitionBySpec,
+            MySQLWindow._PartitionByCommaSpec,
+            MySQLWindow._FrameUnitSpaceSpec,
+            MySQLWindow._MySQLFrameBetweenClause {
+
+        private MySQLWindowImpl(String windowName, CriteriaContext context, @Nullable String existingWindowName) {
+            super(windowName, context, existingWindowName);
+        }
+
+        private MySQLWindowImpl(CriteriaContext context, @Nullable String existingWindowName) {
+            super(context, existingWindowName);
+        }
+
+
+    }//MySQLWindowImpl
 
 
 }

@@ -37,8 +37,13 @@ abstract class PostgreSupports extends CriteriaSupports {
         return new PostgreCteBuilder(recursive, context);
     }
 
-    static PostgreWindow namedWindow(String name, CriteriaContext context, @Nullable String existingWindowName) {
-        return new PostgreWindow(name, context, existingWindowName);
+    static PostgreWindow._PartitionBySpec namedWindow(String name, CriteriaContext context,
+                                                      @Nullable String existingWindowName) {
+        return new PostgreWindowImpl(name, context, existingWindowName);
+    }
+
+    static PostgreWindow._PartitionBySpec anonymousWindow(CriteriaContext context, @Nullable String existingWindowName) {
+        return new PostgreWindowImpl(context, existingWindowName);
     }
 
 
@@ -1264,213 +1269,36 @@ abstract class PostgreSupports extends CriteriaSupports {
     }//PostgreCteBuilderImpl
 
 
-    static final class PostgreWindow extends SQLWindow<
-            PostgreQuery._WindowOrderBySpec,
-            PostgreQuery._PostgreFrameUnitSpec,
-            PostgreQuery._PostgreFrameBetweenSpec,
-            PostgreQuery._PostgreFrameEndExpBoundClause,
-            PostgreQuery._PostgreFrameStartNonExpBoundClause,
-            PostgreQuery._PostgreFrameStartExpBoundClause,
-            PostgreQuery._PostgreFrameEndNonExpBoundClause>
-            implements PostgreQuery._WindowPartitionBySpec,
-            PostgreQuery._PostgreFrameBetweenSpec,
-            PostgreQuery._PostgreFrameStartExpBoundClause,
-            PostgreQuery._PostgreFrameStartNonExpBoundClause,
-            PostgreQuery._PostgreFrameEndExpBoundClause,
-            PostgreQuery._PostgreFrameEndNonExpBoundClause,
-            PostgreQuery._PostgreFrameBetweenAndClause,
-            PostgreQuery._FrameExclusionSpec,
-            SQLWindow.FrameExclusionSpec {
-
-        private FrameExclusion frameExclusion;
+    static final class PostgreWindowImpl extends SQLWindow.SQLExcludeWindow<
+            PostgreWindow._PartitionByCommaSpec,
+            PostgreWindow._FrameExtentSpec,
+            PostgreWindow._PostgreFrameExclusionClause,
+            PostgreWindow._PostgreFrameBetweenClause,
+            PostgreWindow._PostgreFrameExclusionClause,
+            PostgreWindow._FrameUnitSpaceSpec,
+            Item>
+            implements PostgreWindow._PartitionBySpec,
+            PostgreWindow._PartitionByCommaSpec,
+            PostgreWindow._PostgreFrameBetweenClause,
+            PostgreWindow._PostgreFrameExclusionClause,
+            PostgreWindow._FrameUnitSpaceSpec {
 
         /**
          * @see #namedWindow(String, CriteriaContext, String)
          */
-        private PostgreWindow(String windowName, CriteriaContext context, @Nullable String existingWindowName) {
+        private PostgreWindowImpl(String windowName, CriteriaContext context, @Nullable String existingWindowName) {
             super(windowName, context, existingWindowName);
         }
 
         /**
          * @see #anonymousWindow(CriteriaContext, String)
          */
-        private PostgreWindow(CriteriaContext context, @Nullable String existingWindowName) {
+        private PostgreWindowImpl(CriteriaContext context, @Nullable String existingWindowName) {
             super(context, existingWindowName);
-        }
-
-        @Override
-        public PostgreQuery._PostgreFrameBetweenSpec groups() {
-            return this.frameUnit(FrameUnits.GROUPS);
-        }
-
-        @Override
-        public PostgreQuery._PostgreFrameBetweenSpec ifGroups(BooleanSupplier predicate) {
-            return this.ifFrameUnit(predicate, FrameUnits.GROUPS);
-        }
-
-        @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause groups(Expression expression) {
-            return this.frameUnit(FrameUnits.GROUPS, expression);
-        }
-
-        @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause groups(Supplier<Expression> supplier) {
-            return this.frameUnit(FrameUnits.GROUPS, supplier.get());
-        }
-
-        @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause groups(Function<Object, Expression> valueOperator,
-                                                                  @Nullable Object value) {
-            return this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
-        }
-
-        @Override
-        public <E> PostgreQuery._PostgreFrameEndExpBoundClause groups(Function<E, Expression> valueOperator
-                , Supplier<E> supplier) {
-            return this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(supplier.get()));
-        }
-
-        @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause groups(Function<Object, Expression> valueOperator
-                , Function<String, ?> function, String keyName) {
-            return this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(function.apply(keyName)));
-        }
-
-        @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause ifGroups(Supplier<Expression> supplier) {
-            final Expression expression;
-            if ((expression = supplier.get()) != null) {
-                this.frameUnit(FrameUnits.GROUPS, expression);
-            }
-            return this;
-        }
-
-        @Override
-        public <E> PostgreQuery._PostgreFrameEndExpBoundClause ifGroups(Function<E, Expression> valueOperator
-                , Supplier<E> supplier) {
-            final E value;
-            if ((value = supplier.get()) != null) {
-                this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
-            }
-            return this;
-        }
-
-        @Override
-        public PostgreQuery._PostgreFrameEndExpBoundClause ifGroups(Function<Object, Expression> valueOperator
-                , Function<String, ?> function, String keyName) {
-            final Object value;
-            if ((value = function.apply(keyName)) != null) {
-                this.frameUnit(FrameUnits.GROUPS, valueOperator.apply(value));
-            }
-            return this;
-        }
-
-        @Override
-        public PostgreWindow currentRow() {
-            this.bound(FrameBound.CURRENT_ROW);
-            return this;
-        }
-
-        @Override
-        public PostgreWindow unboundedPreceding() {
-            this.bound(FrameBound.UNBOUNDED_PRECEDING);
-            return this;
-        }
-
-        @Override
-        public PostgreWindow unboundedFollowing() {
-            this.bound(FrameBound.UNBOUNDED_FOLLOWING);
-            return this;
-        }
-
-        @Override
-        public PostgreWindow preceding() {
-            this.bound(FrameBound.PRECEDING);
-            return this;
-        }
-
-        @Override
-        public PostgreWindow following() {
-            this.bound(FrameBound.FOLLOWING);
-            return this;
-        }
-
-        @Override
-        public PostgreWindow excludeCurrentRow() {
-            this.frameExclusion = FrameExclusion.EXCLUDE_CURRENT_ROW;
-            return this;
-        }
-
-        @Override
-        public PostgreWindow excludeGroup() {
-            this.frameExclusion = FrameExclusion.EXCLUDE_GROUP;
-            return this;
-        }
-
-        @Override
-        public PostgreWindow excludeTies() {
-            this.frameExclusion = FrameExclusion.EXCLUDE_TIES;
-            return this;
-        }
-
-        @Override
-        public PostgreWindow excludeNoOthers() {
-            this.frameExclusion = FrameExclusion.EXCLUDE_NO_OTHERS;
-            return this;
-        }
-
-        @Override
-        public PostgreWindow ifExcludeCurrentRow(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.frameExclusion = FrameExclusion.EXCLUDE_CURRENT_ROW;
-            } else {
-                this.frameExclusion = null;
-            }
-            return this;
-        }
-
-        @Override
-        public PostgreWindow ifExcludeGroup(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.frameExclusion = FrameExclusion.EXCLUDE_GROUP;
-            } else {
-                this.frameExclusion = null;
-            }
-            return this;
-        }
-
-        @Override
-        public PostgreWindow ifExcludeTies(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.frameExclusion = FrameExclusion.EXCLUDE_TIES;
-            } else {
-                this.frameExclusion = null;
-            }
-            return this;
-        }
-
-        @Override
-        public PostgreWindow ifExcludeNoOthers(BooleanSupplier predicate) {
-            if (predicate.getAsBoolean()) {
-                this.frameExclusion = FrameExclusion.EXCLUDE_NO_OTHERS;
-            } else {
-                this.frameExclusion = null;
-            }
-            return this;
-        }
-
-        @Override
-        public void appendFrameExclusion(final _SqlContext context) {
-            final FrameExclusion exclusion = this.frameExclusion;
-            if (exclusion != null) {
-                context.sqlBuilder().append(exclusion);
-            }
         }
 
 
     }//PostgreWindow
-
-
 
 
 }

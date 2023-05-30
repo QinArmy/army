@@ -274,7 +274,7 @@ abstract class MySQLSimpleValues<I extends Item>
 
         @Override
         final MySQLCtes createCteBuilder(boolean recursive, CriteriaContext context) {
-            return MySQLSupports.mySQLCteBuilder(recursive, context);
+            return MySQLSupports.mysqlLCteBuilder(recursive, context);
         }
 
 

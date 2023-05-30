@@ -43,8 +43,8 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                 )
                 .comma(MySQLs.lag(ChinaRegion_.population, SQLs.literalValue(1))
                         .over("w", s -> s.orderBy(ChinaRegion_.id)
-                                .rows().between().unboundedPreceding()
-                                .and().currentRow())::as, "log2"
+                                .rows().between(UNBOUNDED_PRECEDING, AND, CURRENT_ROW)
+                        )::as, "log2"
                 )
                 .from(ChinaRegion_.T, AS, "cr")
                 .where(ChinaRegion_.id::greaterEqual, SQLs::literal, 10)

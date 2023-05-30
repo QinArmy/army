@@ -30,8 +30,11 @@ public interface MySQLWindow extends Window {
 
     }
 
+    interface _PartitionByCommaSpec extends _PartitionByCommaClause<_PartitionByCommaSpec>, _OrderBySpec {
 
-    interface _PartitionBySpec extends _PartitionByExpClause<_OrderBySpec>, _OrderBySpec {
+    }
+
+    interface _PartitionBySpec extends _PartitionByExpClause<_PartitionByCommaSpec>, _OrderBySpec {
 
     }
 

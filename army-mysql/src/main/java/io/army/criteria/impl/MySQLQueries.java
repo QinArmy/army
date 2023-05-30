@@ -336,18 +336,18 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     @Override
-    public final Window._WindowAsClause<Window._SimplePartitionBySpec, _WindowCommaSpec<I>> comma(String windowName) {
+    public final Window._WindowAsClause<MySQLWindow._PartitionBySpec, _WindowCommaSpec<I>> window(String windowName) {
         return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow);
     }
 
     @Override
-    public final Window._WindowAsClause<Window._SimplePartitionBySpec, _WindowCommaSpec<I>> window(String windowName) {
+    public final Window._WindowAsClause<MySQLWindow._PartitionBySpec, _WindowCommaSpec<I>> comma(String windowName) {
         return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow);
     }
 
 
     @Override
-    public final _OrderBySpec<I> windows(Consumer<Window.Builder<Window._SimplePartitionBySpec>> consumer) {
+    public final _OrderBySpec<I> windows(Consumer<Window.Builder<MySQLWindow._PartitionBySpec>> consumer) {
         consumer.accept(this::createDynamicWindow);
         if (this.windowList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
@@ -356,7 +356,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
-    public final _OrderBySpec<I> ifWindows(Consumer<Window.Builder<Window._SimplePartitionBySpec>> consumer) {
+    public final _OrderBySpec<I> ifWindows(Consumer<Window.Builder<MySQLWindow._PartitionBySpec>> consumer) {
         consumer.accept(this::createDynamicWindow);
         return this;
     }
@@ -453,7 +453,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     final MySQLCtes createCteBuilder(boolean recursive) {
-        return MySQLSupports.mySQLCteBuilder(recursive, this.context);
+        return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
     }
 
     @Override
@@ -640,17 +640,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #windows(Consumer)
      * @see #ifWindows(Consumer)
      */
-    private Window._WindowAsClause<Window._SimplePartitionBySpec, Item> createDynamicWindow(String name) {
-        return new NamedWindowAsClause<>(this.context, name, this::onAddDynamicWindow);
+    private Window._WindowAsClause<MySQLWindow._PartitionBySpec, Item> createDynamicWindow(String name) {
+        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow);
     }
 
-    /**
-     * @see #createDynamicWindow(String)
-     */
-    private Item onAddDynamicWindow(ArmyWindow window) {
-        this.onAddWindow(window);
-        return CriteriaUtils.NONE_ITEM;
-    }
 
 
     private MySQLQueries<I> onLockClauseEnd(final _LockBlock block) {
@@ -903,7 +896,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
 
     private static final class NamedWindowAsClause<R extends Item>
-            extends SimpleWindowAsClause<Window._SimplePartitionBySpec, R> {
+            extends SimpleWindowAsClause<MySQLWindow._PartitionBySpec, R> {
 
 
         /**
@@ -914,8 +907,8 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        Window._SimplePartitionBySpec createNameWindow(@Nullable String existingWindowName) {
-            return SQLWindow.namedWindow(this.name, this.context, existingWindowName);
+        MySQLWindow._PartitionBySpec createNameWindow(@Nullable String existingWindowName) {
+            return MySQLSupports.namedWindow(this.name, this.context, existingWindowName);
         }
 
     }//NamedWindowAsClause
@@ -1197,7 +1190,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         @Override
         final MySQLCtes createCteBuilder(boolean recursive, CriteriaContext context) {
-            return MySQLSupports.mySQLCteBuilder(recursive, context);
+            return MySQLSupports.mysqlLCteBuilder(recursive, context);
         }
 
 

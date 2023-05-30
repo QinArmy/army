@@ -298,7 +298,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE extends Item, DT, FU extends
 
     @Override
     final MySQLCtes createCteBuilder(boolean recursive) {
-        return MySQLSupports.mySQLCteBuilder(recursive, this.context);
+        return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
     }
 
     @Override

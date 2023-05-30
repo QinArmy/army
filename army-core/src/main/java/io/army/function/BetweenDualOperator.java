@@ -8,8 +8,8 @@ import io.army.criteria.impl.SQLs;
 import java.util.function.BiFunction;
 
 @FunctionalInterface
-public interface BetweenValueOperator<T> {
+public interface BetweenDualOperator<T, U> {
 
-    IPredicate apply(BiFunction<SimpleExpression, T, Expression> valueOperator, T first, SQLs.WordAnd and, T second);
+    IPredicate apply(BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first, SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondRef, U second);
 
 }

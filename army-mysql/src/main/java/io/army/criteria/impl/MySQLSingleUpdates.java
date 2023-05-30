@@ -264,7 +264,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
         @Override
         final MySQLCtes createCteBuilder(boolean recursive) {
-            return MySQLSupports.mySQLCteBuilder(recursive, this.context);
+            return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
         }
 
         final void doUpdate(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers,

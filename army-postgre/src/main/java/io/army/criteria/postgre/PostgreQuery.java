@@ -22,168 +22,6 @@ import java.util.function.*;
 public interface PostgreQuery extends Query, PostgreStatement {
 
 
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
-     */
-    interface _FrameExclusionSpec extends Item {
-
-        Item excludeCurrentRow();
-
-        Item excludeGroup();
-
-        Item excludeTies();
-
-        Item excludeNoOthers();
-
-        Item ifExcludeCurrentRow(BooleanSupplier predicate);
-
-        Item ifExcludeGroup(BooleanSupplier predicate);
-
-        Item ifExcludeTies(BooleanSupplier predicate);
-
-        Item ifExcludeNoOthers(BooleanSupplier predicate);
-
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
-     */
-    interface _PostgreFrameEndNonExpBoundClause extends Window._FrameNonExpBoundClause {
-
-        @Override
-        _FrameExclusionSpec currentRow();
-
-        @Override
-        _FrameExclusionSpec unboundedPreceding();
-
-        @Override
-        _FrameExclusionSpec unboundedFollowing();
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
-     */
-    interface _PostgreFrameEndExpBoundClause extends Window._FrameExpBoundClause {
-
-        @Override
-        _FrameExclusionSpec preceding();
-
-        @Override
-        _FrameExclusionSpec following();
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
-     */
-    interface _PostgreFrameBetweenAndClause
-            extends Window._FrameBetweenAndExpClause<_PostgreFrameEndExpBoundClause>,
-            _StaticAndClause<_PostgreFrameEndNonExpBoundClause> {
-
-    }
-
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
-     */
-    interface _PostgreFrameStartNonExpBoundClause extends Window._FrameNonExpBoundClause {
-
-        @Override
-        _PostgreFrameBetweenAndClause currentRow();
-
-        @Override
-        _PostgreFrameBetweenAndClause unboundedPreceding();
-
-        @Override
-        _PostgreFrameBetweenAndClause unboundedFollowing();
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
-     */
-    interface _PostgreFrameStartExpBoundClause extends Window._FrameExpBoundClause {
-
-        @Override
-        _PostgreFrameBetweenAndClause preceding();
-
-        @Override
-        _PostgreFrameBetweenAndClause following();
-
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
-     */
-    interface _PostgreFrameBetweenSpec
-            extends Window._FrameBetweenExpClause<_PostgreFrameStartExpBoundClause>,
-            _StaticBetweenClause<_PostgreFrameStartNonExpBoundClause>,
-            _PostgreFrameStartNonExpBoundClause {
-
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
-     */
-    interface _PostgreFrameUnitSpec
-            extends Window._FrameUnitExpClause<_PostgreFrameEndExpBoundClause>,
-            Window._StaticFrameUnitRowsClause<_PostgreFrameBetweenSpec> {
-
-        _PostgreFrameBetweenSpec groups();
-
-        _PostgreFrameBetweenSpec ifGroups(BooleanSupplier predicate);
-
-        _PostgreFrameEndExpBoundClause groups(Expression expression);
-
-        _PostgreFrameEndExpBoundClause groups(Supplier<Expression> supplier);
-
-        _PostgreFrameEndExpBoundClause groups(Function<Object, Expression> valueOperator, @Nullable Object value);
-
-        <E> _PostgreFrameEndExpBoundClause groups(Function<E, Expression> valueOperator, Supplier<E> supplier);
-
-        _PostgreFrameEndExpBoundClause groups(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-        _PostgreFrameEndExpBoundClause ifGroups(Supplier<Expression> supplier);
-
-        <E> _PostgreFrameEndExpBoundClause ifGroups(Function<E, Expression> valueOperator, Supplier<E> supplier);
-
-        _PostgreFrameEndExpBoundClause ifGroups(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
-
-
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
-     */
-    interface _WindowOrderBySpec extends _OrderByClause<_PostgreFrameUnitSpec>, _PostgreFrameUnitSpec {
-        //TODO _PostgreOrderByClause return order by comma
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
-     */
-    interface _WindowPartitionBySpec extends Window._PartitionByExpClause<_WindowOrderBySpec>,
-            _WindowOrderBySpec {
-
-    }
 
 
     interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryWithComplexSpec<I>>,
@@ -284,14 +122,14 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     interface _WindowCommaSpec<I extends Item> extends _OrderBySpec<I> {
 
-        Window._WindowAsClause<_WindowPartitionBySpec, _WindowCommaSpec<I>> comma(String name);
+        Window._WindowAsClause<PostgreWindow._PartitionBySpec, _WindowCommaSpec<I>> comma(String name);
 
     }
 
-    interface _WindowSpec<I extends Item> extends Window._DynamicWindowClause<_WindowPartitionBySpec, _OrderBySpec<I>>,
+    interface _WindowSpec<I extends Item> extends Window._DynamicWindowClause<PostgreWindow._PartitionBySpec, _OrderBySpec<I>>,
             _OrderBySpec<I> {
 
-        Window._WindowAsClause<_WindowPartitionBySpec, _WindowCommaSpec<I>> window(String name);
+        Window._WindowAsClause<PostgreWindow._PartitionBySpec, _WindowCommaSpec<I>> window(String name);
 
     }
 

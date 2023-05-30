@@ -7,6 +7,7 @@ import io.army.criteria.SqlValueParam;
 import io.army.criteria.TypeInfer;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.mysql.MySQLFunction;
+import io.army.criteria.mysql.MySQLWindow;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
@@ -31,11 +32,8 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
     }
 
 
-    public interface _OverSpec extends Window._OverWindowClause {
+    public interface _OverSpec extends Window._OverWindowClause<MySQLWindow._PartitionBySpec> {
 
-        Expression over(Consumer<Window._SimplePartitionBySpec> consumer);
-
-        Expression over(@Nullable String windowName, Consumer<Window._SimplePartitionBySpec> consumer);
 
     }
 

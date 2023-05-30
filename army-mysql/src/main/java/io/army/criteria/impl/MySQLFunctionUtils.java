@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.mysql.*;
 import io.army.dialect.Dialect;
@@ -161,7 +160,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }
 
 
-    private static abstract class MySQLWindowFunction extends WindowFunction
+    private static abstract class MySQLWindowFunction extends WindowFunction<MySQLWindow._PartitionBySpec>
             implements MySQLWindowFunctions._OverSpec, MySQLFunction {
 
 
@@ -171,23 +170,14 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         @Override
-        public Expression over(Consumer<Window._SimplePartitionBySpec> consumer) {
-            return this.over(null, consumer);
-        }
-
-        @Override
-        public Expression over(@Nullable String windowName, Consumer<Window._SimplePartitionBySpec> consumer) {
-            final Window._SimplePartitionBySpec clause;
-            clause = SQLWindow.anonymousWindow(this.context, windowName);
-            consumer.accept(clause);
-            return this.endWindow((ArmyWindow) clause);
-        }
-
-        @Override
         final boolean isDontSupportWindow(final Dialect dialect) {
-            return !(dialect instanceof MySQLDialect) || dialect.version() < MySQLDialect.MySQL80.version();
+            return MySQLDialect.MySQL80.compareWith((MySQLDialect) dialect) < 0;
         }
 
+        @Override
+        final MySQLWindow._PartitionBySpec createAnonymousWindow(@Nullable String existingWindowName) {
+            return MySQLSupports.anonymousWindow(this.context, existingWindowName);
+        }
 
     }//MySQLWindowFunction
 

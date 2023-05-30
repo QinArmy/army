@@ -490,105 +490,154 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         }
 
         @Override
-        public final <T> CompoundPredicate equal(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundPredicate equal(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, funcRef.apply(this, value));
         }
 
 
         @Override
-        public final <T> CompoundPredicate less(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundPredicate less(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.LESS, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundPredicate lessEqual(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundPredicate lessEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.LESS_EQUAL, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundPredicate greater(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundPredicate greater(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.GREATER, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundPredicate greaterEqual(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundPredicate greaterEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.GREATER_EQUAL, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundPredicate notEqual(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundPredicate notEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundPredicate between(BiFunction<Expression, T, Expression> funcRef, T first,
+        public final <T> CompoundPredicate between(BiFunction<SimpleExpression, T, Expression> funcRef, T first,
                                                    SQLs.WordAnd and, T second) {
-            return Expressions.betweenPredicate(this, false, null, funcRef.apply(this, first), funcRef.apply(this, second));
+            return Expressions.betweenPredicate(this, false, null, funcRef.apply(this, first),
+                    funcRef.apply(this, second)
+            );
         }
 
         @Override
-        public final <T> CompoundPredicate notBetween(BiFunction<Expression, T, Expression> funcRef, T first,
+        public final <T, U> CompoundPredicate between(BiFunction<SimpleExpression, T, Expression> firstFuncRef,
+                                                      T first, SqlSyntax.WordAnd and,
+                                                      BiFunction<SimpleExpression, U, Expression> secondFuncRef,
+                                                      U second) {
+            return Expressions.betweenPredicate(this, false, null, firstFuncRef.apply(this, first),
+                    secondFuncRef.apply(this, second)
+            );
+        }
+
+        @Override
+        public final <T> CompoundPredicate notBetween(BiFunction<SimpleExpression, T, Expression> funcRef, T first,
                                                       SQLs.WordAnd and, T second) {
-            return Expressions.betweenPredicate(this, true, null, funcRef.apply(this, first), funcRef.apply(this, second));
+            return Expressions.betweenPredicate(this, true, null, funcRef.apply(this, first),
+                    funcRef.apply(this, second)
+            );
+        }
+
+        @Override
+        public final <T, U> CompoundPredicate notBetween(BiFunction<SimpleExpression, T, Expression> firstFuncRef,
+                                                         T first, SqlSyntax.WordAnd and,
+                                                         BiFunction<SimpleExpression, U, Expression> secondFuncRef,
+                                                         U second) {
+            return Expressions.betweenPredicate(this, true, null, firstFuncRef.apply(this, first),
+                    secondFuncRef.apply(this, second)
+            );
         }
 
         @Override
         public final <T> CompoundPredicate between(@Nullable SQLsSyntax.BetweenModifier modifier,
-                                                   BiFunction<Expression, T, Expression> funcRef, T first,
+                                                   BiFunction<SimpleExpression, T, Expression> funcRef, T first,
                                                    SQLsSyntax.WordAnd and, T second) {
-            return Expressions.betweenPredicate(this, false, modifier, funcRef.apply(this, first), funcRef.apply(this, second));
+            return Expressions.betweenPredicate(this, false, modifier, funcRef.apply(this, first),
+                    funcRef.apply(this, second)
+            );
+        }
+
+        @Override
+        public final <T, U> CompoundPredicate between(@Nullable SQLsSyntax.BetweenModifier modifier,
+                                                      BiFunction<SimpleExpression, T, Expression> firstFuncRef,
+                                                      T first, SqlSyntax.WordAnd and,
+                                                      BiFunction<SimpleExpression, U, Expression> secondFuncRef,
+                                                      U second) {
+            return Expressions.betweenPredicate(this, false, modifier, firstFuncRef.apply(this, first),
+                    secondFuncRef.apply(this, second)
+            );
         }
 
         @Override
         public final <T> CompoundPredicate notBetween(@Nullable SQLsSyntax.BetweenModifier modifier,
-                                                      BiFunction<Expression, T, Expression> funcRef, T first,
+                                                      BiFunction<SimpleExpression, T, Expression> funcRef, T first,
                                                       SQLsSyntax.WordAnd and, T second) {
             return Expressions.betweenPredicate(this, true, modifier, funcRef.apply(this, first), funcRef.apply(this, second));
         }
 
         @Override
+        public final <T, U> CompoundPredicate notBetween(@Nullable SQLsSyntax.BetweenModifier modifier,
+                                                         BiFunction<SimpleExpression, T, Expression> firstFuncRef,
+                                                         T first, SqlSyntax.WordAnd and,
+                                                         BiFunction<SimpleExpression, U, Expression> secondFuncRef,
+                                                         U second) {
+            return Expressions.betweenPredicate(this, true, modifier, firstFuncRef.apply(this, first),
+                    secondFuncRef.apply(this, second)
+            );
+        }
+
+
+        @Override
         public final <T> CompoundPredicate is(SQLsSyntax.IsComparisonWord operator,
-                                              BiFunction<Expression, T, Expression> funcRef, @Nullable T value) {
+                                              BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value) {
             return Expressions.isComparisonPredicate(this, false, operator, funcRef.apply(this, value));
         }
 
         @Override
         public final <T> CompoundPredicate isNot(SQLsSyntax.IsComparisonWord operator,
-                                                 BiFunction<Expression, T, Expression> funcRef, @Nullable T value) {
+                                                 BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value) {
             return Expressions.isComparisonPredicate(this, true, operator, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T extends Collection<?>> CompoundPredicate in(BiFunction<Expression, T, Expression> funcRef,
+        public final <T extends Collection<?>> CompoundPredicate in(BiFunction<SimpleExpression, T, Expression> funcRef,
                                                                     T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.IN, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T extends Collection<?>> CompoundPredicate notIn(BiFunction<Expression, T, Expression> funcRef,
+        public final <T extends Collection<?>> CompoundPredicate notIn(BiFunction<SimpleExpression, T, Expression> funcRef,
                                                                        T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.NOT_IN, funcRef.apply(this, value));
         }
 
         @Override
-        public final CompoundPredicate in(TeNamedOperator<Expression> funcRef, String paramName, int size) {
+        public final CompoundPredicate in(TeNamedOperator<SimpleExpression> funcRef, String paramName, int size) {
             return Expressions.dualPredicate(this, DualBooleanOperator.IN, funcRef.apply(this, paramName, size));
         }
 
         @Override
-        public final CompoundPredicate notIn(TeNamedOperator<Expression> funcRef, String paramName, int size) {
+        public final CompoundPredicate notIn(TeNamedOperator<SimpleExpression> funcRef, String paramName, int size) {
             return Expressions.dualPredicate(this, DualBooleanOperator.NOT_IN, funcRef.apply(this, paramName, size));
         }
 
         @Override
-        public final <T> CompoundPredicate like(BiFunction<MappingType, T, Expression> funcRef, T value) {
+        public final <T> CompoundPredicate like(BiFunction<NoCastTextType, T, Expression> funcRef, T value) {
             return Expressions.likePredicate(this, DualBooleanOperator.LIKE, funcRef.apply(NoCastTextType.INSTANCE, value),
                     SQLs.ESCAPE, null);
         }
 
 
         @Override
-        public final <T> CompoundPredicate like(BiFunction<MappingType, T, Expression> funcRef, T value,
+        public final <T> CompoundPredicate like(BiFunction<NoCastTextType, T, Expression> funcRef, T value,
                                                 SqlSyntax.WordEscape escape, char escapeChar) {
             return Expressions.likePredicate(this, DualBooleanOperator.LIKE, funcRef.apply(NoCastTextType.INSTANCE, value),
                     escape, SQLs.literal(NoCastTextType.INSTANCE, escapeChar)
@@ -597,13 +646,13 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
 
         @Override
-        public final <T> CompoundPredicate notLike(BiFunction<MappingType, T, Expression> funcRef, T value) {
+        public final <T> CompoundPredicate notLike(BiFunction<NoCastTextType, T, Expression> funcRef, T value) {
             return Expressions.likePredicate(this, DualBooleanOperator.NOT_LIKE, funcRef.apply(NoCastTextType.INSTANCE, value),
                     SQLs.ESCAPE, null);
         }
 
         @Override
-        public final <T> CompoundPredicate notLike(BiFunction<MappingType, T, Expression> funcRef, T value,
+        public final <T> CompoundPredicate notLike(BiFunction<NoCastTextType, T, Expression> funcRef, T value,
                                                    SqlSyntax.WordEscape escape, char escapeChar) {
             return Expressions.likePredicate(this, DualBooleanOperator.NOT_LIKE, funcRef.apply(NoCastTextType.INSTANCE, value),
                     escape, SQLs.literal(NoCastTextType.INSTANCE, escapeChar)
@@ -611,59 +660,59 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         }
 
         @Override
-        public final <T> CompoundExpression mod(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression mod(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualExp(this, DualExpOperator.MOD, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundExpression times(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression times(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualExp(this, DualExpOperator.TIMES, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundExpression plus(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression plus(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualExp(this, DualExpOperator.PLUS, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundExpression minus(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression minus(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualExp(this, DualExpOperator.MINUS, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundExpression divide(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression divide(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualExp(this, DualExpOperator.DIVIDE, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundExpression bitwiseAnd(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression bitwiseAnd(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualExp(this, DualExpOperator.BITWISE_AND, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundExpression bitwiseOr(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression bitwiseOr(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualExp(this, DualExpOperator.BITWISE_OR, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundExpression bitwiseXor(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression bitwiseXor(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualExp(this, DualExpOperator.BITWISE_XOR, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundExpression rightShift(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression rightShift(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualExp(this, DualExpOperator.RIGHT_SHIFT, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundExpression leftShift(BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression leftShift(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             return Expressions.dualExp(this, DualExpOperator.LEFT_SHIFT, funcRef.apply(this, value));
         }
 
 
         @Override
-        public final <T> CompoundExpression apply(BiFunction<Expression, Expression, CompoundExpression> operator,
-                                                  BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundExpression apply(BiFunction<SimpleExpression, Expression, CompoundExpression> operator,
+                                                  BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             final CompoundExpression result;
             result = operator.apply(this, funcRef.apply(this, value));
             if (result == null) {
@@ -674,7 +723,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
         @Override
         public final <M extends SQLWords, T> CompoundExpression apply(
-                OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<Expression, T, Expression> funcRef,
+                OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef,
                 T value, M modifier, Expression optionalExp) {
             final CompoundExpression result;
             result = operator.apply(this, funcRef.apply(this, value), modifier, optionalExp);
@@ -687,14 +736,14 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
         @Override
         public final <M extends SQLWords, T> CompoundExpression apply(
-                OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<Expression, T, Expression> funcRef,
+                OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef,
                 T value, M modifier, char escapeChar) {
             return this.apply(operator, funcRef, value, modifier, SQLs.literal(NoCastTextType.INSTANCE, escapeChar));
         }
 
         @Override
-        public final <T> CompoundPredicate test(BiFunction<Expression, Expression, CompoundPredicate> operator,
-                                                BiFunction<Expression, T, Expression> funcRef, T value) {
+        public final <T> CompoundPredicate test(BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                                BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             final CompoundPredicate result;
             result = operator.apply(this, funcRef.apply(this, value));
             if (result == null) {

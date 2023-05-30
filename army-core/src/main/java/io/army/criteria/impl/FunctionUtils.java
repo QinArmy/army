@@ -1147,9 +1147,11 @@ abstract class FunctionUtils {
     }//FromFirstLast
 
 
-    static abstract class WindowFunction extends OperationExpression.SqlFunctionExpression
-            implements Window._OverWindowClause,
+    static abstract class WindowFunction<T extends Window._WindowSpec> extends OperationExpression.SqlFunctionExpression
+            implements Window._OverWindowClause<T>,
             CriteriaContextSpec {
+
+        private static final String GLOBAL_PLACE_HOLDER = "";
 
         final CriteriaContext context;
 
@@ -1166,13 +1168,13 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public boolean isDelay() {
+        public final boolean isDelay() {
             final TypeMeta returnType = this.returnType;
             return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
         }
 
         @Override
-        public MappingType typeMeta() {
+        public final MappingType typeMeta() {
             return this.returnType.mappingType();
         }
 
@@ -1182,23 +1184,44 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final Expression over(final @Nullable String windowName) {
-            if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            } else if (windowName == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            this.context.onRefWindow(windowName);
-            this.existingWindowName = windowName;
-            return this;
-        }
-
-        @Override
         public final Expression over() {
             if (this.existingWindowName != null || this.anonymousWindow != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.anonymousWindow = GlobalWindow.INSTANCE;
+            return this;
+        }
+
+        @Override
+        public final Expression over(final @Nullable String existingWindowName) {
+            if (this.existingWindowName != null || this.anonymousWindow != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            if (existingWindowName == null) {
+                this.existingWindowName = GLOBAL_PLACE_HOLDER;
+            } else {
+                // context don't allow empty existingWindowName
+                this.context.onRefWindow(existingWindowName);
+                this.existingWindowName = existingWindowName;
+            }
+            return this;
+        }
+
+        @Override
+        public final Expression over(Consumer<T> consumer) {
+            return this.over(null, consumer);
+        }
+
+        @Override
+        public final Expression over(@Nullable String existingWindowName, Consumer<T> consumer) {
+            final T window;
+            window = this.createAnonymousWindow(existingWindowName);
+            consumer.accept(window);
+            if (this.existingWindowName != null || this.anonymousWindow != null) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            ((ArmyWindow) window).endWindowClause();
+            this.anonymousWindow = (ArmyWindow) window;
             return this;
         }
 
@@ -1236,11 +1259,11 @@ abstract class FunctionUtils {
                 throw new CriteriaException(m);
             } else {
                 sqlBuilder.append(_Constant.SPACE_OVER);
-                if (existingWindowName != null) {
-                    sqlBuilder.append(_Constant.SPACE);
-                    context.parser().identifier(existingWindowName, sqlBuilder);
-                } else if (anonymousWindow == GlobalWindow.INSTANCE) {
+                if (anonymousWindow == GlobalWindow.INSTANCE || GLOBAL_PLACE_HOLDER.equals(existingWindowName)) {
                     sqlBuilder.append(_Constant.PARENS);
+                } else if (existingWindowName != null) {
+                    sqlBuilder.append(_Constant.SPACE);
+                    parser.identifier(existingWindowName, sqlBuilder);
                 } else {
                     anonymousWindow.appendSql(context);
                 }
@@ -1277,17 +1300,20 @@ abstract class FunctionUtils {
             } else {
                 //2. OVER clause
                 sqlBuilder.append(_Constant.SPACE_OVER);
-                if (existingWindowName != null) {
+                if (anonymousWindow == GlobalWindow.INSTANCE || GLOBAL_PLACE_HOLDER.equals(existingWindowName)) {
+                    sqlBuilder.append(_Constant.PARENS);
+                } else if (existingWindowName != null) {
                     sqlBuilder.append(_Constant.SPACE)
                             .append(existingWindowName);
-                } else if (anonymousWindow == GlobalWindow.INSTANCE) {
-                    sqlBuilder.append(_Constant.PARENS);
                 } else {
                     sqlBuilder.append(anonymousWindow);
                 }
             }
             return sqlBuilder.toString();
         }
+
+
+        abstract T createAnonymousWindow(@Nullable String existingWindowName);
 
         abstract void appendArguments(_SqlContext context);
 
@@ -1303,13 +1329,6 @@ abstract class FunctionUtils {
             throw new UnsupportedOperationException();
         }
 
-        final Expression endWindow(final ArmyWindow anonymousWindow) {
-            if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.anonymousWindow = anonymousWindow.endWindowClause();
-            return this;
-        }
 
     }//AggregateOverClause
 
@@ -2168,7 +2187,6 @@ abstract class FunctionUtils {
         FunctionPredicate(String name) {
             super(name);
         }
-
 
 
         @Override

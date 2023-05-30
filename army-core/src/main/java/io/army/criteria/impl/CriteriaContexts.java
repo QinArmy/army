@@ -2287,7 +2287,12 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void onRefWindow(final String windowName) {
+        public final void onRefWindow(final @Nullable String windowName) {
+            if (windowName == null) {
+                throw ContextStack.nullPointer(this);
+            } else if (!_StringUtils.hasText(windowName)) {
+                throw ContextStack.criteriaError(this, "couldn't reference empty window name");
+            }
             final Map<String, Boolean> windowNameMap = this.windowNameMap;
             if (windowNameMap != null && windowNameMap.containsKey(windowName)) {
                 return;

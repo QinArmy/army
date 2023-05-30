@@ -87,8 +87,7 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
     }
 
     public static void assertWindow(final @Nullable _Window window) {
-        if (!(window instanceof PostgreSupports.PostgreWindow
-                || SQLWindow.isSimpleWindow(window))) {
+        if (!(window instanceof PostgreSupports.PostgreWindowImpl || window instanceof SQLWindow.SimpleWindow)) {
             throw illegalWindow(window);
         }
     }

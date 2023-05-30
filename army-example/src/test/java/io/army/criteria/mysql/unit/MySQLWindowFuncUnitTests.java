@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import static io.army.criteria.impl.SQLs.UNBOUNDED_FOLLOWING;
+
 public class MySQLWindowFuncUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLWindowFuncUnitTests.class);
@@ -16,7 +18,7 @@ public class MySQLWindowFuncUnitTests {
     public void rowNumber() {
         Select stmt;
         stmt = MySQLs.query()
-                .select(MySQLs.rowNumber().over(s -> s.range().unboundedFollowing()).as("rowNumber"))
+                .select(MySQLs.rowNumber().over(s -> s.range(UNBOUNDED_FOLLOWING)).as("rowNumber"))
                 .comma(PillUser_.id, PillUser_.createTime)
                 .asQuery();
         LOG.debug("{}", stmt);

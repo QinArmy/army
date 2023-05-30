@@ -187,11 +187,7 @@ public interface OracleQuery extends Query, OracleStatement {
 
     }
 
-    interface _WindowsSpec<I extends Item> extends Window._StaticWindowClause<_WindowCommaSpec<I>>
-            , Window._DynamicWindowClause<OracleWindowBuilder, _OrderBySpec<I>>
-            , _OrderBySpec<I> {
 
-    }
 
 
     interface _MinWithSpec<I extends Item> extends Item {

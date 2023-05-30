@@ -29,6 +29,10 @@ public enum MySQLDialect implements Dialect {
         return this.version;
     }
 
+    public final int compareWith(MySQLDialect o) {
+        return this.version - o.version;
+    }
+
 
     @Override
     public final String toString() {

@@ -12,10 +12,12 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
-import io.army.util.*;
+import io.army.util._Assert;
+import io.army.util._Collections;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -33,6 +35,7 @@ import java.util.function.Consumer;
 abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
         extends OrderByClause<OR>
         implements Window._PartitionByExpClause<PR>,
+        Window._PartitionByCommaClause<PR>,
         Statement._OrderByClause<OR>,
         Window._StaticFrameUnitRowsRangeGroupsSpec<FS, FB>,
         Window._FrameUnitSpaceClause<FS, FB>,
@@ -43,13 +46,12 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
         ArmyWindow {
 
 
-
     static ArmyWindow namedGlobalWindow(final CriteriaContext context, final String windowName) {
         if (!_StringUtils.hasText(windowName)) {
             throw ContextStack.criteriaError(context, _Exceptions::namedWindowNoText);
         }
         context.onAddWindow(windowName);
-        return new SimpleWindowSpec(windowName);
+        return new SimpleWindow(windowName);
     }
 
     static ArmyWindow namedRefWindow(CriteriaContext context, String windowName, @Nullable String refWindowName) {
@@ -58,10 +60,10 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
         }
         final ArmyWindow window;
         if (refWindowName == null) {
-            window = new SimpleWindowSpec(windowName);
+            window = new SimpleWindow(windowName);
         } else if (_StringUtils.hasText(refWindowName)) {
             context.onRefWindow(refWindowName);
-            window = new SimpleWindowSpec(windowName, refWindowName);
+            window = new SimpleWindow(windowName, refWindowName);
         } else {
             throw ContextStack.criteriaError(context, "exists window name must be null or has text.");
         }
@@ -71,7 +73,7 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
 
 
     static boolean isSimpleWindow(final @Nullable Window window) {
-        return window instanceof SQLWindow.SimpleWindowSpec;
+        return window instanceof SQLWindow.SimpleWindow;
     }
 
     final String windowName;
@@ -139,62 +141,40 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
 
     @Override
     public final PR partitionBy(Expression exp) {
-        this.partitionByList = Collections.singletonList((ArmyExpression) exp);
+        this.addPartitionExp(exp);
         return (PR) this;
     }
 
     @Override
     public final PR partitionBy(Expression exp1, Expression exp2) {
-        this.partitionByList = ArrayUtils.asUnmodifiableList(
-                (ArmyExpression) exp1,
-                (ArmyExpression) exp2
-        );
+        this.addPartitionExp(exp1);
+        this.addPartitionExp(exp2);
         return (PR) this;
     }
 
     @Override
-    public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3) {
-        this.partitionByList = ArrayUtils.asUnmodifiableList(
-                (ArmyExpression) exp1,
-                (ArmyExpression) exp2,
-                (ArmyExpression) exp3
-        );
+    public final PR comma(Expression exp) {
+        this.addPartitionExp(exp);
         return (PR) this;
     }
 
     @Override
-    public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4) {
-        this.partitionByList = ArrayUtils.asUnmodifiableList(
-                (ArmyExpression) exp1,
-                (ArmyExpression) exp2,
-                (ArmyExpression) exp3,
-                (ArmyExpression) exp4
-        );
-        return (PR) this;
-    }
-
-    @Override
-    public final PR partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4, Expression exp5) {
-        this.partitionByList = ArrayUtils.asUnmodifiableList(
-                (ArmyExpression) exp1,
-                (ArmyExpression) exp2,
-                (ArmyExpression) exp3,
-                (ArmyExpression) exp4,
-                (ArmyExpression) exp5
-        );
+    public final PR comma(Expression exp1, Expression exp2) {
+        this.addPartitionExp(exp1);
+        this.addPartitionExp(exp2);
         return (PR) this;
     }
 
     @Override
     public final PR partitionBy(Consumer<Consumer<Expression>> consumer) {
         consumer.accept(this::addPartitionExp);
-        return this.endPartitionBy(true);
+        return this.endPartitionIfNeed(true);
     }
 
     @Override
     public final PR ifPartitionBy(Consumer<Consumer<Expression>> consumer) {
         consumer.accept(this::addPartitionExp);
-        return this.endPartitionBy(false);
+        return this.endPartitionIfNeed(false);
     }
 
 
@@ -494,10 +474,26 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
     @Override
     public final ArmyWindow endWindowClause() {
         _Assert.nonPrepared(this.prepared);
+        this.endPartitionIfNeed(false);
         this.endOrderByClause();
-        if (this.frameUnits != null && (this.betweenExtent == null || this.frameStartBound == null)) {
-            // no frame clause
+
+        final FrameUnits units = this.frameUnits;
+        final Boolean betweenExtent = this.betweenExtent;
+        final FrameBound frameStartBound = this.frameStartBound;
+        if (units != null && betweenExtent == null) {
+            //dynamic frame clause no space invoking
+            assert frameStartBound == null && this.frameEndBound == null;
             this.frameUnits = null;
+        } else if (units != null && frameStartBound == null) {
+            //dynamic frame clause, space invoking but no between invoking
+            String m = String.format("You invoking dynamic %s and space method,but don't invoking between method.",
+                    units.name());
+            throw ContextStack.criteriaError(this.context, m);
+        } else if (units != null && betweenExtent == Boolean.TRUE && this.frameEndBound == null) {
+            //dynamic frame clause, space invoking and between invoking but no and invoking
+            String m = String.format("You invoking dynamic %s and space method and between method,but don't invoking and method.",
+                    units.name());
+            throw ContextStack.criteriaError(this.context, m);
         }
         this.prepared = Boolean.TRUE;
         return this;
@@ -703,7 +699,7 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
         }
         List<_Expression> partitionByList = this.partitionByList;
         if (partitionByList == null) {
-            this.partitionByList = partitionByList = new ArrayList<>();
+            this.partitionByList = partitionByList = _Collections.arrayList();
         } else if (!(partitionByList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -711,16 +707,18 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
     }
 
 
-    private PR endPartitionBy(final boolean required) {
+    /**
+     * @see #endWindowClause()
+     */
+    private PR endPartitionIfNeed(final boolean required) {
         final List<_Expression> partitionByList = this.partitionByList;
         if (partitionByList instanceof ArrayList) {
             this.partitionByList = _Collections.unmodifiableList(partitionByList);
-        } else if (partitionByList != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        } else if (required) {
-            throw ContextStack.criteriaError(this.context, "partition by claus is empty.");
-        } else {
-            this.partitionByList = Collections.emptyList();
+        } else if (partitionByList == null) {
+            if (required) {
+                throw ContextStack.criteriaError(this.context, "partition by claus is empty.");
+            }
+            this.partitionByList = _Collections.emptyList();
         }
         return (PR) this;
     }
@@ -892,18 +890,18 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
     }//SQLExcludeWindow
 
 
-    private static final class SimpleWindowSpec implements ArmyWindow {
+    static final class SimpleWindow implements ArmyWindow {
 
         private final String windowName;
 
         private final String refWindowName;
 
-        private SimpleWindowSpec(String windowName) {
+        private SimpleWindow(String windowName) {
             this.windowName = windowName;
             this.refWindowName = null;
         }
 
-        private SimpleWindowSpec(String windowName, String refWindowName) {
+        private SimpleWindow(String windowName, String refWindowName) {
             this.windowName = windowName;
             this.refWindowName = refWindowName;
         }
@@ -964,8 +962,8 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof SimpleWindowSpec) {
-                final SimpleWindowSpec o = (SimpleWindowSpec) obj;
+            } else if (obj instanceof SQLWindow.SimpleWindow) {
+                final SimpleWindow o = (SimpleWindow) obj;
                 match = o.windowName.equals(this.windowName)
                         && Objects.equals(o.refWindowName, this.refWindowName);
             } else {

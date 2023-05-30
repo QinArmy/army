@@ -188,7 +188,7 @@ abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, W
 
     @Override
     final MySQLCtes createCteBuilder(boolean recursive) {
-        return MySQLSupports.mySQLCteBuilder(recursive, this.context);
+        return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
     }
 
     @Override

@@ -40,25 +40,6 @@ public interface Window extends Item {
 
     }
 
-    /**
-     * <p>
-     * This interface representing static WINDOW clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <WR> next clause java type
-     * @since 1.0
-     */
-    @Deprecated
-    interface _StaticWindowClause<WR> {
-
-        WR window(String windowName);
-
-    }
 
     /**
      * <p>
@@ -103,6 +84,18 @@ public interface Window extends Item {
     }
 
 
+    interface _WindowSpec {
+
+    }
+
+    interface _PartitionByCommaClause<R> {
+
+        R comma(Expression exp);
+
+        R comma(Expression exp1, Expression exp2);
+
+    }
+
     /**
      * <p>
      * This interface representing PARTITION BY clause in WINDOW clause.
@@ -116,17 +109,11 @@ public interface Window extends Item {
      * @param <R> next clause java type
      * @since 1.0
      */
-    interface _PartitionByExpClause<R> {
+    interface _PartitionByExpClause<R> extends _WindowSpec {
 
         R partitionBy(Expression exp);
 
         R partitionBy(Expression exp1, Expression exp2);
-
-        R partitionBy(Expression exp1, Expression exp2, Expression exp3);
-
-        R partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4);
-
-        R partitionBy(Expression exp1, Expression exp2, Expression exp3, Expression exp4, Expression exp5);
 
         R partitionBy(Consumer<Consumer<Expression>> consumer);
 
@@ -333,12 +320,9 @@ public interface Window extends Item {
 
         <T> R between(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier startModifier, SQLs.WordAnd and, Expression endExp, ExpModifier endModifier);
 
-
         <T> R between(Expression startExp, ExpModifier startModifier, SQLs.WordAnd and, BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier endModifier);
 
-
         <T, U> R between(BiFunction<IntegerType, T, Expression> funcRefForStart, T startValue, ExpModifier startModifier, SQLs.WordAnd and, BiFunction<IntegerType, U, Expression> funcRefForEnd, U endValue, ExpModifier endModifier);
-
 
     }
 
@@ -366,15 +350,15 @@ public interface Window extends Item {
     }
 
 
-    interface _OverWindowClause<T> extends Item {
-
-        Expression over(String windowName);
+    interface _OverWindowClause<T extends _WindowSpec> extends Item {
 
         Expression over();
 
+        Expression over(@Nullable String existingWindowName);
+
         Expression over(Consumer<T> consumer);
 
-        Expression over(@Nullable String windowName, Consumer<T> consumer);
+        Expression over(@Nullable String existingWindowName, Consumer<T> consumer);
 
     }
 

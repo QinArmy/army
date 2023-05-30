@@ -130,8 +130,8 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
         }
     }
 
-    public static void assertWindow(Window window) {
-        if (!SQLWindow.isStandardWindow(window)) {
+    public static void assertWindow(final Window window) {
+        if (!(window instanceof MySQLSupports.MySQLWindowImpl || window instanceof SQLWindow.SimpleWindow)) {
             throw illegalWindow(window);
         }
     }

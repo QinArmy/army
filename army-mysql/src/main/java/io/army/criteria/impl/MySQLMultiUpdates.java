@@ -314,7 +314,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE extends Item, FT extends Ite
 
     @Override
     final MySQLCtes createCteBuilder(boolean recursive) {
-        return MySQLSupports.mySQLCteBuilder(recursive, this.context);
+        return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
     }
 
     @Override
