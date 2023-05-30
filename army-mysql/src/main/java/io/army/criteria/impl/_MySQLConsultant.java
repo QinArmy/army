@@ -131,7 +131,7 @@ public abstract class _MySQLConsultant extends _SQLConsultant {
     }
 
     public static void assertWindow(Window window) {
-        if (!WindowClause.isStandardWindow(window)) {
+        if (!SQLWindow.isStandardWindow(window)) {
             throw illegalWindow(window);
         }
     }

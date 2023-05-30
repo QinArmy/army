@@ -22,6 +22,11 @@ import java.util.function.*;
 public interface PostgreQuery extends Query, PostgreStatement {
 
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+     */
     interface _FrameExclusionSpec extends Item {
 
         Item excludeCurrentRow();
@@ -42,6 +47,11 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+     */
     interface _PostgreFrameEndNonExpBoundClause extends Window._FrameNonExpBoundClause {
 
         @Override
@@ -54,6 +64,11 @@ public interface PostgreQuery extends Query, PostgreStatement {
         _FrameExclusionSpec unboundedFollowing();
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+     */
     interface _PostgreFrameEndExpBoundClause extends Window._FrameExpBoundClause {
 
         @Override
@@ -63,6 +78,11 @@ public interface PostgreQuery extends Query, PostgreStatement {
         _FrameExclusionSpec following();
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+     */
     interface _PostgreFrameBetweenAndClause
             extends Window._FrameBetweenAndExpClause<_PostgreFrameEndExpBoundClause>,
             _StaticAndClause<_PostgreFrameEndNonExpBoundClause> {
@@ -70,6 +90,11 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+     */
     interface _PostgreFrameStartNonExpBoundClause extends Window._FrameNonExpBoundClause {
 
         @Override
@@ -82,6 +107,11 @@ public interface PostgreQuery extends Query, PostgreStatement {
         _PostgreFrameBetweenAndClause unboundedFollowing();
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+     */
     interface _PostgreFrameStartExpBoundClause extends Window._FrameExpBoundClause {
 
         @Override
@@ -92,6 +122,11 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+     */
     interface _PostgreFrameBetweenSpec
             extends Window._FrameBetweenExpClause<_PostgreFrameStartExpBoundClause>,
             _StaticBetweenClause<_PostgreFrameStartNonExpBoundClause>,
@@ -99,9 +134,14 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+     */
     interface _PostgreFrameUnitSpec
             extends Window._FrameUnitExpClause<_PostgreFrameEndExpBoundClause>,
-            Window._FrameUnitNoExpClause<_PostgreFrameBetweenSpec> {
+            Window._StaticFrameUnitRowsClause<_PostgreFrameBetweenSpec> {
 
         _PostgreFrameBetweenSpec groups();
 
@@ -126,10 +166,20 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+     */
     interface _WindowOrderBySpec extends _OrderByClause<_PostgreFrameUnitSpec>, _PostgreFrameUnitSpec {
         //TODO _PostgreOrderByClause return order by comma
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+     */
     interface _WindowPartitionBySpec extends Window._PartitionByExpClause<_WindowOrderBySpec>,
             _WindowOrderBySpec {
 

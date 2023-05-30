@@ -1263,34 +1263,8 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     }//PostgreCteBuilderImpl
 
-    private enum FrameExclusion implements SQLWords {
 
-        EXCLUDE_CURRENT_ROW(" EXCLUDE CURRENT ROW"),
-        EXCLUDE_GROUP(" EXCLUDE GROUP"),
-        EXCLUDE_TIES(" EXCLUDE TIES"),
-        EXCLUDE_NO_OTHERS(" EXCLUDE NO OTHERS");
-
-        private final String spaceWords;
-
-        FrameExclusion(String spaceWords) {
-            this.spaceWords = spaceWords;
-        }
-
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWords;
-        }
-
-        @Override
-        public final String toString() {
-            return CriteriaUtils.enumToString(this);
-        }
-
-    }//FrameExclusion
-
-
-    static final class PostgreWindow extends WindowClause<
+    static final class PostgreWindow extends SQLWindow<
             PostgreQuery._WindowOrderBySpec,
             PostgreQuery._PostgreFrameUnitSpec,
             PostgreQuery._PostgreFrameBetweenSpec,
@@ -1306,7 +1280,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             PostgreQuery._PostgreFrameEndNonExpBoundClause,
             PostgreQuery._PostgreFrameBetweenAndClause,
             PostgreQuery._FrameExclusionSpec,
-            WindowClause.FrameExclusionSpec {
+            SQLWindow.FrameExclusionSpec {
 
         private FrameExclusion frameExclusion;
 

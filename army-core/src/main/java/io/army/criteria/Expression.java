@@ -16,6 +16,13 @@ import static io.army.dialect.Database.PostgreSQL;
 
 /**
  * Interface representing the sql expression, eg: column,function.
+ * <p> This interface is the base interface of below"
+ *     <ul>
+ *         <li>{@link SimpleExpression}</li>
+ *         <li>{@link CompoundExpression}</li>
+ *         <li>{@link IPredicate}</li>
+ *     </ul>
+ * </p>
  *
  * @see FieldMeta
  * @since 1.0

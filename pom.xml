@@ -22,6 +22,7 @@
         <module>army-annotation</module>
         <module>army-example</module>
         <module>army-postgre</module>
+        <module>army-sergeant</module>
     </modules>
 
     <properties>

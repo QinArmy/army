@@ -2,13 +2,13 @@ package io.army.criteria.dialect;
 
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
-import io.army.criteria.Statement;
+import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
+import io.army.mapping.IntegerType;
 
+import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * <p>
@@ -135,342 +135,246 @@ public interface Window extends Item {
     }
 
 
-    interface _FrameUnitNoExpClause<FB> {
-
-        FB rows();
-
-        FB range();
-
-        FB ifRows(BooleanSupplier predicate);
-
-        FB ifRange(BooleanSupplier predicate);
+    /**
+     * <p>
+     *     <ul>
+     *         <li>UNBOUNDED PRECEDING</li>
+     *         <li>CURRENT ROW</li>
+     *         <li>UNBOUNDED FOLLOWING</li>
+     *     </ul>
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
+     */
+    interface RowModifier {
 
     }
 
     /**
      * <p>
-     * This interface representing FRAME_UNITS  clause  in FRAME clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
+     *     <ul>
+     *         <li>PRECEDING</li>
+     *         <li>FOLLOWING</li>
+     *     </ul>
      * </p>
      *
-     * @param <FC> next clause java type
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
      */
-    interface _FrameUnitExpClause<FC> {
+    interface ExpModifier {
 
-        FC rows(Expression expression);
+    }
 
-        FC rows(Supplier<Expression> supplier);
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
+     */
+    interface _StaticFrameUnitRowsClause<RS, RB> {
 
-        <E> FC rows(Function<E, Expression> valueOperator, E value);
+        RS rows(RowModifier modifier);
 
-        <E> FC rows(Function<E, Expression> valueOperator, Supplier<E> supplier);
+        RS rows(Expression exp, ExpModifier modifier);
 
-        FC rows(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <T> RS rows(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier);
 
-        FC range(Expression expression);
-
-        FC range(Supplier<Expression> supplier);
-
-        <E> FC range(Function<E, Expression> valueOperator, E value);
-
-        <E> FC range(Function<E, Expression> valueOperator, Supplier<E> supplier);
-
-        FC range(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        RB rows();
 
 
     }
 
 
     /**
-     * <p>
-     * This interface representing BETWEEN  clause  in FRAME clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <BE> next clause java type
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
      */
-    interface _FrameBetweenExpClause<BE> extends Item {
+    interface _StaticFrameUnitRangeClause<RS, RB> {
 
-        BE between(Expression expression);
+        RS range(RowModifier modifier);
 
-        BE between(Supplier<Expression> supplier);
+        RS range(Expression exp, ExpModifier modifier);
 
-        <E> BE between(Function<E, Expression> valueOperator, E value);
+        <T> RS range(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier);
 
-        <E> BE between(Function<E, Expression> valueOperator, Supplier<E> supplier);
+        RB range();
 
-        BE between(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+
+    }
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
+     */
+    interface _StaticFrameUnitRowsRangeSpec<RS, RB> extends _StaticFrameUnitRowsClause<RS, RB>,
+            _StaticFrameUnitRangeClause<RS, RB> {
+
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
+     */
+    interface _StaticFrameUnitGroupsClause<RS, RB> {
+
+        RS groups(RowModifier modifier);
+
+        RS groups(Expression exp, ExpModifier modifier);
+
+        <T> RS groups(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier);
+
+        RB groups();
+
 
     }
 
 
     /**
-     * <p>
-     * This interface representing AND clause  in FRAME clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @param <AE> next clause java type
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
      */
-    interface _FrameBetweenAndExpClause<AE> extends Item {
+    interface _StaticFrameUnitRowsRangeGroupsSpec<RS, RB> extends _StaticFrameUnitRowsRangeSpec<RS, RB>,
+            _StaticFrameUnitGroupsClause<RS, RB> {
 
-        AE and(Expression expression);
+    }
 
-        AE and(Supplier<Expression> supplier);
+    interface _FrameUnitSpaceClause<RS, RB> {
 
-        <E> AE and(Function<E, Expression> valueOperator, E value);
+        RS space(RowModifier modifier);
 
-        <E> AE and(Function<E, Expression> valueOperator, Supplier<E> supplier);
+        RS space(Expression exp, ExpModifier modifier);
 
-        AE and(Function<Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <T> RS space(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier);
+
+        RB space();
+    }
+
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
+     */
+    interface _DynamicFrameUnitRowsClause<T, R> {
+
+
+        R ifRows(Consumer<T> consumer);
 
     }
 
     /**
-     * <p>
-     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
      */
-    interface _FrameNonExpBoundClause {
+    interface _DynamicFrameUnitRangeClause<T, R> {
 
-        Item currentRow();
 
-        Item unboundedPreceding();
-
-        Item unboundedFollowing();
+        R ifRange(Consumer<T> consumer);
 
     }
 
     /**
-     * <p>
-     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
      */
-    interface _FrameExpBoundClause {
+    interface _DynamicFrameUnitRowsRangeClause<T, R> extends _DynamicFrameUnitRowsClause<T, R>,
+            _DynamicFrameUnitRangeClause<T, R> {
 
-        Item preceding();
-
-        Item following();
 
     }
 
 
-    interface _OverWindowClause extends Item {
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
+     */
+    interface _DynamicFrameUnitGroupsClause<T, R> {
+
+
+        R ifGroups(Consumer<T> consumer);
+
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
+     */
+    interface _DynamicFrameUnitRowsRangeGroupsClause<T, R> extends _DynamicFrameUnitRowsRangeClause<T, R>,
+            _DynamicFrameUnitGroupsClause<T, R> {
+
+
+    }
+
+
+    interface _FrameBetweenAndClause<R> {
+
+        R and(Expression endExp, ExpModifier endModifier);
+
+        <T> R and(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier endModifier);
+
+        R and(RowModifier frameEnd);
+
+    }
+
+
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-functions-frames.html">MySQL Window Function Frame Specification</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
+     */
+    interface _FrameBetweenClause<R> {
+
+        R between(RowModifier frameStart, SQLs.WordAnd and, RowModifier frameEnd);
+
+        R between(Expression startExp, ExpModifier startModifier, SQLs.WordAnd and, Expression endExp, ExpModifier endModifier);
+
+        R between(RowModifier frameStart, SQLs.WordAnd and, Expression endExp, ExpModifier endModifier);
+
+        R between(Expression startExp, ExpModifier startModifier, SQLs.WordAnd and, RowModifier frameEnd);
+
+        _FrameBetweenAndClause<R> between(Expression startExp, ExpModifier startModifier);
+
+        <T> R between(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier startModifier, SQLs.WordAnd and, RowModifier frameEnd);
+
+        <T> R between(RowModifier frameStart, SQLs.WordAnd and, BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier endModifier);
+
+        <T> R between(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier startModifier, SQLs.WordAnd and, Expression endExp, ExpModifier endModifier);
+
+
+        <T> R between(Expression startExp, ExpModifier startModifier, SQLs.WordAnd and, BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier endModifier);
+
+
+        <T, U> R between(BiFunction<IntegerType, T, Expression> funcRefForStart, T startValue, ExpModifier startModifier, SQLs.WordAnd and, BiFunction<IntegerType, U, Expression> funcRefForEnd, U endValue, ExpModifier endModifier);
+
+
+    }
+
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Postgre Window Function Calls</a>
+     */
+    interface _FrameExclusionClause<R> {
+
+        R excludeCurrentRow();
+
+        R excludeGroup();
+
+        R excludeTies();
+
+        R excludeNoOthers();
+
+        R ifExcludeCurrentRow(BooleanSupplier predicate);
+
+        R ifExcludeGroup(BooleanSupplier predicate);
+
+        R ifExcludeTies(BooleanSupplier predicate);
+
+        R ifExcludeNoOthers(BooleanSupplier predicate);
+    }
+
+
+    interface _OverWindowClause<T> extends Item {
 
         Expression over(String windowName);
 
         Expression over();
-    }
 
+        Expression over(Consumer<T> consumer);
 
-    /**
-     * <p>
-     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _SimpleFrameEndExpBoundClause extends _FrameExpBoundClause {
-
-
-    }
-
-    /**
-     * <p>
-     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _SimpleFrameEndNonExpBoundClause extends _FrameNonExpBoundClause {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _SimpleFrameExpBoundClause extends _FrameExpBoundClause {
-
-
-        @Override
-        _SimpleFrameBetweenAndClause preceding();
-
-        @Override
-        _SimpleFrameBetweenAndClause following();
-
-
-    }
-
-    /**
-     * <p>
-     * This interface representing FRAME_START or FRAME_END  clause  in FRAME clause for simple window.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _SimpleFrameNonExpBoundClause
-            extends _FrameNonExpBoundClause {
-
-        @Override
-        _SimpleFrameBetweenAndClause currentRow();
-
-        @Override
-        _SimpleFrameBetweenAndClause unboundedPreceding();
-
-        @Override
-        _SimpleFrameBetweenAndClause unboundedFollowing();
-
-    }
-
-    /**
-     * <p>
-     * This interface representing AND clause  in FRAME clause for simple window.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _SimpleFrameBetweenAndClause
-            extends _FrameBetweenAndExpClause<_SimpleFrameEndExpBoundClause>
-            , Statement._StaticAndClause<_SimpleFrameEndNonExpBoundClause> {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing BETWEEN clause  in FRAME clause for simple window.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _SimpleFrameBetweenSpec
-            extends _FrameBetweenExpClause<_SimpleFrameExpBoundClause>,
-            Statement._StaticBetweenClause<_SimpleFrameNonExpBoundClause>,
-            _SimpleFrameEndNonExpBoundClause {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>{@link _FrameUnitExpClause}</li>
-     *          <li>{@link Statement._RightParenClause}</li>
-     *     </ul>
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _SimpleFrameUnitsSpec
-            extends _FrameUnitExpClause<_SimpleFrameEndExpBoundClause>,
-            _FrameUnitNoExpClause<_SimpleFrameBetweenSpec> {
-
-    }
-
-
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>{@link Statement._OrderByClause} clause in WINDOW clause</li>
-     *          <li>the composite {@link _SimpleFrameUnitsSpec}</li>
-     *     </ul>
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _SimpleOrderBySpec extends Statement._OrderByClause<_SimpleFrameUnitsSpec>
-            , _SimpleFrameUnitsSpec {
-
-    }
-
-    /**
-     * <p>
-     * This interface representing the composite of below:
-     *     <ul>
-     *          <li>{@link _PartitionByExpClause} in WINDOW clause</li>
-     *          <li>the composite {@link _SimpleOrderBySpec}</li>
-     *     </ul>
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _SimplePartitionBySpec extends _PartitionByExpClause<_SimpleOrderBySpec>
-            , _SimpleOrderBySpec {
+        Expression over(@Nullable String windowName, Consumer<T> consumer);
 
     }
 

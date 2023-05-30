@@ -178,7 +178,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         @Override
         public Expression over(@Nullable String windowName, Consumer<Window._SimplePartitionBySpec> consumer) {
             final Window._SimplePartitionBySpec clause;
-            clause = WindowClause.anonymousWindow(this.context, windowName);
+            clause = SQLWindow.anonymousWindow(this.context, windowName);
             consumer.accept(clause);
             return this.endWindow((ArmyWindow) clause);
         }

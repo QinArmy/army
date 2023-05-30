@@ -146,16 +146,16 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     interface _WindowCommaSpec<I extends Item> extends _OrderBySpec<I> {
 
-        Window._WindowAsClause<Window._SimplePartitionBySpec, _WindowCommaSpec<I>> comma(String windowName);
+        Window._WindowAsClause<MySQLWindow._PartitionBySpec, _WindowCommaSpec<I>> comma(String windowName);
 
 
     }
 
 
     interface _WindowSpec<I extends Item> extends _OrderBySpec<I>,
-            Window._DynamicWindowClause<Window._SimplePartitionBySpec, _OrderBySpec<I>> {
+            Window._DynamicWindowClause<MySQLWindow._PartitionBySpec, _OrderBySpec<I>> {
 
-        Window._WindowAsClause<Window._SimplePartitionBySpec, _WindowCommaSpec<I>> window(String windowName);
+        Window._WindowAsClause<MySQLWindow._PartitionBySpec, _WindowCommaSpec<I>> window(String windowName);
 
     }
 

@@ -1198,12 +1198,12 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         @Override
         public final R as() {
-            return this.function.apply(WindowClause.namedGlobalWindow(this.context, this.name));
+            return this.function.apply(SQLWindow.namedGlobalWindow(this.context, this.name));
         }
 
         @Override
         public final R as(@Nullable String existingWindowName) {
-            return this.function.apply(WindowClause.namedRefWindow(this.context, this.name, existingWindowName));
+            return this.function.apply(SQLWindow.namedRefWindow(this.context, this.name, existingWindowName));
         }
 
         @Override

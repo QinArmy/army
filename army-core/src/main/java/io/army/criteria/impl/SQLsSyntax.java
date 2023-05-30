@@ -3,11 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.standard.SQLFunction;
-import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
-import io.army.util._StringUtils;
 
 import java.util.BitSet;
 import java.util.Collection;
@@ -108,7 +106,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
 
@@ -132,7 +130,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
 
@@ -156,7 +154,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordInterval
@@ -178,7 +176,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordPercent
@@ -200,7 +198,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     } //KeyWordUnknown
@@ -223,7 +221,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordAscDesc
@@ -245,7 +243,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordLateral
@@ -267,7 +265,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordFirst
@@ -289,7 +287,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordNext
@@ -313,7 +311,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordsNullsFirstLast
@@ -336,7 +334,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordRow
@@ -358,7 +356,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordRows
@@ -380,7 +378,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordNext
@@ -402,7 +400,7 @@ abstract class SQLsSyntax extends Functions {
 
         @Override
         public final String toString() {
-            return sqlKeyWordsToString(this);
+            return SQLs.sqlKeyWordsToString(this);
         }
 
     }//KeyWordOny
@@ -1113,14 +1111,6 @@ abstract class SQLsSyntax extends Functions {
 
 
     /*-------------------below private method-------------------*/
-
-    static String sqlKeyWordsToString(Enum<?> wordEnum) {
-        return _StringUtils.builder()
-                .append(SQLs.class.getSimpleName())
-                .append(_Constant.POINT)
-                .append(wordEnum.name())
-                .toString();
-    }
 
 
 }

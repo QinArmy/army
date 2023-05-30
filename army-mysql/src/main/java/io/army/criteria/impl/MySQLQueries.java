@@ -915,7 +915,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         @Override
         Window._SimplePartitionBySpec createNameWindow(@Nullable String existingWindowName) {
-            return WindowClause.namedWindow(this.name, this.context, existingWindowName);
+            return SQLWindow.namedWindow(this.name, this.context, existingWindowName);
         }
 
     }//NamedWindowAsClause

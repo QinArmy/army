@@ -205,7 +205,7 @@ public abstract class PostgreMultiRangeType<T> extends PostgreRangeType<T>
             elementFunc = multiRangeParseFunc(text, rangeFunc, parseFunc, sqlType, type, handler);
         }
         final Object array;
-        array = PostgreArrays.parseArray(text, true, elementFunc, _Constant.COMMA, sqlType, type, handler);
+        array = PostgreArrays.parseMultiRange(text, elementFunc, sqlType, type, handler);
 
         if (!(array instanceof List || ArrayUtils.dimensionOf(array.getClass()) == 1)) {
             throw handler.apply(type, sqlType, text, null);

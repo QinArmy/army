@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardDelete;
 import io.army.criteria.standard.StandardInsert;
@@ -22,6 +23,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,6 +63,17 @@ public abstract class SQLs extends SQLsSyntax {
     public static final WordFor FOR = SqlWords.KeyWordFor.FOR;
     public static final WordFrom FROM = SqlWords.KeyWordFrom.FROM;
     public static final WordSimilar SIMILAR = SqlWords.KeyWordSimilar.SIMILAR;
+
+    public static final Window.RowModifier UNBOUNDED_PRECEDING = SQLWindow.WindowRowModifier.UNBOUNDED_PRECEDING;
+
+    public static final Window.RowModifier CURRENT_ROW = SQLWindow.WindowRowModifier.CURRENT_ROW;
+
+    public static final Window.RowModifier UNBOUNDED_FOLLOWING = SQLWindow.WindowRowModifier.UNBOUNDED_FOLLOWING;
+
+    public static final Window.ExpModifier PRECEDING = SQLWindow.WindowExpModifier.PRECEDING;
+
+    public static final Window.ExpModifier FOLLOWING = SQLWindow.WindowExpModifier.FOLLOWING;
+
 
     @Support({PostgreSQL, H2})
     public static final BetweenModifier SYMMETRIC = KeyWordSymmetric.SYMMETRIC;
@@ -268,6 +281,14 @@ public abstract class SQLs extends SQLsSyntax {
     @SuppressWarnings("unchecked")
     static <T extends Item> Function<T, T> _getIdentity() {
         return (Function<T, T>) _IDENTITY;
+    }
+
+    static String sqlKeyWordsToString(Enum<?> wordEnum) {
+        return _StringUtils.builder()
+                .append(SQLs.class.getSimpleName())
+                .append(_Constant.POINT)
+                .append(wordEnum.name())
+                .toString();
     }
 
 
