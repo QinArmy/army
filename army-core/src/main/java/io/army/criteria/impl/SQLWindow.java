@@ -509,7 +509,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     public final ArmyWindow endWindowClause() {
         _Assert.nonPrepared(this.prepared);
         this.endPartitionIfNeed(false);
-        this.endOrderByClause();
+        this.endOrderByClauseIfNeed();
 
         final FrameUnits units = this.frameUnits;
         final Boolean betweenExtent = this.betweenExtent;

@@ -13,7 +13,6 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -128,15 +127,16 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
         return orderByList;
     }
 
-    final void endOrderByClause() {
-        final List<ArmySortItem> orderByList = this.orderByList;
-        if (orderByList == null) {
-            this.orderByList = Collections.emptyList();
-        } else if (orderByList instanceof ArrayList) {
-            this.orderByList = _Collections.unmodifiableList(orderByList);
-        } else {
-            throw ContextStack.castCriteriaApi(this.context);
+    final List<ArmySortItem> endOrderByClauseIfNeed() {
+        List<ArmySortItem> orderByList = this.orderByList;
+        if (orderByList instanceof ArrayList) {
+            orderByList = _Collections.unmodifiableList(orderByList);
+            this.orderByList = orderByList;
+        } else if (orderByList == null) {
+            orderByList = _Collections.emptyList();
+            this.orderByList = orderByList;
         }
+        return orderByList;
     }
 
 
@@ -262,12 +262,12 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
             return s;
         }
 
-        private Dialect statementDialect(){
-              RowSet left = this.left;
-             while ( !(left instanceof CriteriaSupports.StatementMockSupport)){
-                 left = ((UnionRowSet) left).left;
-             }
-             return ((CriteriaSupports.StatementMockSupport) left).statementDialect();
+        private Dialect statementDialect() {
+            RowSet left = this.left;
+            while (!(left instanceof CriteriaSupports.StatementMockSupport)) {
+                left = ((UnionRowSet) left).left;
+            }
+            return ((CriteriaSupports.StatementMockSupport) left).statementDialect();
         }
 
         private Stmt parseStatement(final DialectParser parser, final Visible visible) {

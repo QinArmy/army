@@ -218,7 +218,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
         if (this.innerRowSet == null) {
             throw ContextStack.castCriteriaApi(context);
         }
-        this.endOrderByClause();
+        this.endOrderByClauseIfNeed();
         this.onEndQuery();
 
         context.endContext();

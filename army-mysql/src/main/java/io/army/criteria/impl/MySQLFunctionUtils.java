@@ -534,7 +534,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         @Override
         public Clause separator(final @Nullable String strVal) {
-            this.endOrderByClause();
+            this.endOrderByClauseIfNeed();
             if (this.stringValue != null) {
                 throw ContextStack.criteriaError(this.context, "duplicate separator");
             } else if (strVal == null) {
@@ -551,7 +551,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         @Override
         public Clause ifSeparator(Supplier<String> supplier) {
-            this.endOrderByClause();
+            this.endOrderByClauseIfNeed();
             this.stringValue = supplier.get();
             return this;
         }

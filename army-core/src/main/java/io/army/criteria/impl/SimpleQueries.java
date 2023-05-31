@@ -757,7 +757,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             this.havingList = Collections.emptyList();
         }
 
-        this.endOrderByClause();
+        this.endOrderByClauseIfNeed();
 
         this.endGroupBy(false);
 

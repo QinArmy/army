@@ -413,7 +413,7 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.rowList = _Collections.unmodifiableList(rowList);
-            this.endOrderByClause();
+            this.endOrderByClauseIfNeed();
             this.prepared = Boolean.TRUE;
             this.context.endContext();
         }

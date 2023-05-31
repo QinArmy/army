@@ -5,6 +5,7 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Database;
+import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
@@ -810,6 +811,11 @@ abstract class CriteriaUtils {
             e = ContextStack.criteriaError(context, m);
         }
         return e;
+    }
+
+    static CriteriaException userDefinedFuncNameError(String name, Dialect dialect) {
+        String m = String.format("user defined function name[%s] for %s", name, dialect);
+        return new CriteriaException(m);
     }
 
     @Deprecated

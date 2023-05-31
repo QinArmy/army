@@ -1310,7 +1310,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         final FunctionUtils.OrderByOptionClause clause;
         clause = FunctionUtils.orderByOptionClause();
         consumer.accept(clause);
-        clause.endOrderByClause();
+        clause.endOrderByClauseIfNeed();
 
         final SimpleExpression func;
         final String name = "XMLAGG";

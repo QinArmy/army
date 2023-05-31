@@ -5,6 +5,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.SQLFunction;
+import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.IntervalType;
 
@@ -387,8 +388,54 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _AggWindowFunc arrayAgg(Expression any) {
-        return PostgreFunctionUtils.oneArgAggWindowFunc("array_agg", any, _returnType(any, MappingType::arrayTypeOfThis));
+        return PostgreFunctionUtils.oneArgAggWindowFunc("array_agg", any,
+                _returnType(any, MappingType::arrayTypeOfThis)
+        );
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the array {@link  MappingType} of any
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
+     * Collects all the input values, including nulls, into an array.
+     * </a>
+     */
+    public static _PgAggFunc arrayAgg(@Nullable Postgres.Modifier modifier, Expression any) {
+        return _arrayAgg(modifier, any, null);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the array {@link  MappingType} of any
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
+     * Collects all the input values, including nulls, into an array.
+     * </a>
+     */
+    public static _PgAggFunc arrayAgg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return _arrayAgg(null, any, consumer);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the array {@link  MappingType} of any
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
+     * Collects all the input values, including nulls, into an array.
+     * </a>
+     */
+    public static _PgAggFunc arrayAgg(@Nullable Postgres.Modifier modifier, Expression any,
+                                      Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return _arrayAgg(modifier, any, consumer);
+    }
+
 
     /**
      * <p>
@@ -1027,6 +1074,19 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
 
     /*-------------------below private method-------------------*/
+
+    /**
+     * @see #arrayAgg(Postgres.Modifier, Expression)
+     * @see #arrayAgg(Expression, Consumer)
+     * @see #arrayAgg(Postgres.Modifier, Expression, Consumer)
+     */
+    private static _PgAggFunc _arrayAgg(@Nullable Postgres.Modifier modifier, Expression any,
+                                        @Nullable Consumer<Statement._SimpleOrderByClause> consumer) {
+        return PostgreFunctionUtils.oneArgAggFunc("array_agg", true, modifier, any, consumer,
+                _returnType(any, MappingType::arrayTypeOfThis)
+        );
+    }
+
 
     /**
      * @see #avg(Expression)

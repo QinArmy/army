@@ -1557,8 +1557,17 @@ abstract class FunctionUtils {
 
         final TypeMeta returnType;
 
+        final boolean buildIn;
+
         FunctionExpression(String name, TypeMeta returnType) {
             super(name);
+            this.buildIn = true;
+            this.returnType = returnType;
+        }
+
+        FunctionExpression(String name, boolean buildIn, TypeMeta returnType) {
+            super(name);
+            this.buildIn = buildIn;
             this.returnType = returnType;
         }
 
@@ -1578,8 +1587,13 @@ abstract class FunctionUtils {
         public final void appendSql(final _SqlContext context) {
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name) // function name
+                    .append(_Constant.SPACE);
+
+            final String name = this.name;
+            if (!this.buildIn && (context.parser().isKeyWords(name) || !_DialectUtils.isSimpleIdentifier(name))) {
+                throw CriteriaUtils.userDefinedFuncNameError(name, context.dialect());
+            }
+            sqlBuilder.append(name)// function name
                     .append(_Constant.LEFT_PAREN);
 
             this.appendArg(sqlBuilder, context);
