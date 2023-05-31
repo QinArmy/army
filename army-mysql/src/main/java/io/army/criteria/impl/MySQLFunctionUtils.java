@@ -466,10 +466,10 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         @Override
-        void appendArg(final _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             if (this.distinct != null) {
-                context.sqlBuilder().append(this.distinct.spaceRender());
+                sqlBuilder.append(this.distinct.spaceRender());
             }
             FunctionUtils.appendArguments(this.distinct, this.expList, context);
 
@@ -579,7 +579,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         @Override
-        void appendArg(final _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             final PrimaryStatement statement = this.statement;
 
             final Stmt stmt;
@@ -930,9 +930,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.jsonDoc.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_COMMA);

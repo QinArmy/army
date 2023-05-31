@@ -14,7 +14,6 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;
 import io.army.mapping.TextType;
-import io.army.mapping.VoidType;
 import io.army.meta.TypeMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -31,6 +30,14 @@ abstract class FunctionUtils {
 
 
     interface ArmyFuncClause extends _SelfDescribed, Clause {
+
+    }
+
+    interface OuterClause {
+
+        void appendOuterClause(StringBuilder sqlBuilder, _SqlContext context);
+
+        void outerClauseToString(StringBuilder builder);
 
     }
 
@@ -1179,7 +1186,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final Expression over() {
+        public final SimpleExpression over() {
             if (this.existingWindowName != null || this.anonymousWindow != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
@@ -1188,7 +1195,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final Expression over(final @Nullable String existingWindowName) {
+        public final SimpleExpression over(final @Nullable String existingWindowName) {
             if (this.existingWindowName != null || this.anonymousWindow != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
@@ -1203,12 +1210,12 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final Expression over(Consumer<T> consumer) {
+        public final SimpleExpression over(Consumer<T> consumer) {
             return this.over(null, consumer);
         }
 
         @Override
-        public final Expression over(@Nullable String existingWindowName, Consumer<T> consumer) {
+        public final SimpleExpression over(@Nullable String existingWindowName, Consumer<T> consumer) {
             final T window;
             window = this.createAnonymousWindow(existingWindowName);
             consumer.accept(window);
@@ -1557,13 +1564,13 @@ abstract class FunctionUtils {
 
 
         @Override
-        public boolean isDelay() {
+        public final boolean isDelay() {
             final TypeMeta returnType = this.returnType;
             return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
         }
 
         @Override
-        public MappingType typeMeta() {
+        public final MappingType typeMeta() {
             return this.returnType.mappingType();
         }
 
@@ -1575,9 +1582,14 @@ abstract class FunctionUtils {
                     .append(this.name) // function name
                     .append(_Constant.LEFT_PAREN);
 
-            this.appendArg(context);
+            this.appendArg(sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+            if (this instanceof OuterClause) {
+                ((OuterClause) this).appendOuterClause(sqlBuilder, context);
+            }
+
         }
 
 
@@ -1589,12 +1601,15 @@ abstract class FunctionUtils {
                     .append(this.name) // function name
                     .append(_Constant.LEFT_PAREN);
             this.argToString(builder);
-            return builder.append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
+            if (this instanceof OuterClause) {
+                ((OuterClause) this).outerClauseToString(builder);
+            }
+            return builder.toString();
         }
 
 
-        abstract void appendArg(_SqlContext context);
+        abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
 
         abstract void argToString(StringBuilder builder);
 
@@ -1610,29 +1625,9 @@ abstract class FunctionUtils {
             this.argument = (ArmyExpressionElement) argument;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.argument, this.returnType);
-        }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof OneArgFunction) {
-                final OneArgFunction o = (OneArgFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.argument.equals(this.argument)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        void appendArg(final _SqlContext context) {
+        void appendArg(StringBuilder sqlBuilder, final _SqlContext context) {
             this.argument.appendSql(context);
         }
 
@@ -1659,33 +1654,11 @@ abstract class FunctionUtils {
             this.two = (ArmyExpressionElement) two;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.one, this, two, this.returnType);
-        }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof TwoArgFunction) {
-                final TwoArgFunction o = (TwoArgFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.one.equals(this.one)
-                        && o.two.equals(this.two)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        void appendArg(final _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.one.appendSql(context);
-            context.sqlBuilder()
-                    .append(_Constant.SPACE_COMMA);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
             this.two.appendSql(context);
         }
 
@@ -1719,33 +1692,9 @@ abstract class FunctionUtils {
             this.three = (ArmyExpressionElement) three;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.one, this, two, this.three, this.returnType);
-        }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof ThreeArgFunction) {
-                final ThreeArgFunction o = (ThreeArgFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.one.equals(this.one)
-                        && o.two.equals(this.two)
-                        && o.three.equals(this.three)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1791,34 +1740,9 @@ abstract class FunctionUtils {
             this.four = (ArmyExpressionElement) four;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.one, this, two, this.three, this.four, this.returnType);
-        }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof FourArgFunction) {
-                final FourArgFunction o = (FourArgFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.one.equals(this.one)
-                        && o.two.equals(this.two)
-                        && o.three.equals(this.three)
-                        && o.four.equals(this.four)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1873,35 +1797,9 @@ abstract class FunctionUtils {
             this.five = (ArmyExpressionElement) five;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.one, this, two, this.three, this.four, this.five, this.returnType);
-        }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof FiveArgFunction) {
-                final FiveArgFunction o = (FiveArgFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.one.equals(this.one)
-                        && o.two.equals(this.two)
-                        && o.three.equals(this.three)
-                        && o.four.equals(this.four)
-                        && o.five.equals(this.five)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1967,36 +1865,9 @@ abstract class FunctionUtils {
             this.six = (ArmyExpressionElement) six;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.one, this, two, this.three, this.four, this.five, this.six, this.returnType);
-        }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof SixArgFunction) {
-                final SixArgFunction o = (SixArgFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.one.equals(this.one)
-                        && o.two.equals(this.two)
-                        && o.three.equals(this.three)
-                        && o.four.equals(this.four)
-                        && o.five.equals(this.five)
-                        && o.six.equals(this.six)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -2070,38 +1941,9 @@ abstract class FunctionUtils {
             this.seven = (ArmyExpressionElement) seven;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.one, this, two, this.three, this.four, this.five, this.six, this.seven,
-                    this.returnType);
-        }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof SevenArgFunction) {
-                final SevenArgFunction o = (SevenArgFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.one.equals(this.one)
-                        && o.two.equals(this.two)
-                        && o.three.equals(this.three)
-                        && o.four.equals(this.four)
-                        && o.five.equals(this.five)
-                        && o.six.equals(this.six)
-                        && o.seven.equals(this.seven)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.one.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -2158,7 +2000,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        void appendArg(final _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             FunctionUtils.appendArguments(null, this.argList, context);
         }
 
@@ -2336,30 +2178,6 @@ abstract class FunctionUtils {
     }//MultiArgFuncPredicate
 
 
-    private static final class MultiArgVoidFunction extends NonOperationExpression.NonOperationFunction {
-
-        private final List<? extends Expression> argList;
-
-        private MultiArgVoidFunction(String name, List<? extends Expression> argList) {
-            super(name);
-            this.argList = argList;
-        }
-
-
-        @Override
-        public TypeMeta typeMeta() {
-            return VoidType.INSTANCE;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            FunctionUtils.appendMultiArgFunc(this.name, this.argList, context);
-        }
-
-
-    }//MultiArgVoidFunction
-
-
     /**
      * @see ComplexArgFuncExpression
      */
@@ -2389,25 +2207,6 @@ abstract class FunctionUtils {
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.argumentList);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof ComplexArgFuncPredicate) {
-                final ComplexArgFuncPredicate o = (ComplexArgFuncPredicate) obj;
-                match = o.name.equals(this.name) && o.argumentList.equals(this.argumentList);
-            } else {
-                match = false;
-            }
-            return match;
-        }
 
         @Override
         public String toString() {
@@ -2445,13 +2244,13 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public boolean isDelay() {
+        public final boolean isDelay() {
             final TypeMeta returnType = this.returnType;
             return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
         }
 
         @Override
-        public MappingType typeMeta() {
+        public final MappingType typeMeta() {
             return this.returnType.mappingType();
         }
 
@@ -2592,7 +2391,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        void appendArg(_SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             this.clause.appendSql(context);
         }
 
@@ -3118,7 +2917,6 @@ abstract class FunctionUtils {
             }
 
         }
-
 
 
     }//OrderByOptionClause

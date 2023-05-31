@@ -12,9 +12,11 @@ public interface SQLFunction {
 
     String name();
 
+
     interface AggregateFunction {
 
     }
+
 
     interface _OuterClauseBeforeOver {
 

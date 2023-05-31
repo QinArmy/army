@@ -1,10 +1,7 @@
 package io.army.criteria.impl;
 
 
-import io.army.criteria.Expression;
-import io.army.criteria.SimpleExpression;
-import io.army.criteria.Statement;
-import io.army.criteria.TypeInfer;
+import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.SQLFunction;
@@ -20,11 +17,16 @@ import java.util.function.Consumer;
  * Package class,This class hold window function and Aggregate function method.
  * </p>
  *
- * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
- * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html">Aggregate Functions</a>
- * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions</a>
  * @see <a href="https://www.postgresql.org/docs/current/tutorial-window.html">Window Functions tutorial</a>
- * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function Calls</a>
+ * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS">Window Function synatx</a>
+ * @see <a href="https://www.postgresql.org/docs/current/functions-window.html">Window Functions list</a>
+ * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-WINDOW">Window Function Processing</a>
+ * @see <a href="https://www.postgresql.org/docs/current/tutorial-agg.html">Aggregate Functions tutorial</a>
+ * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SYNTAX-AGGREGATES">Aggregate function syntax</a>
+ * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">General-Purpose Aggregate Functions list</a>
+ * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">Aggregate Functions for Statistics list</a>
+ * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE">Ordered-Set Aggregate Functions list</a>
+ * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">Hypothetical-Set Aggregate Functions list</a>
  * @since 1.0
  */
 abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
@@ -33,20 +35,84 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     }
 
 
+    /**
+     * <p>
+     * This interface representing postgre over clause.
+     * </p>
+     */
     public interface _OverSpec extends Window._OverWindowClause<PostgreWindow._PartitionBySpec> {
 
 
     }
 
-    public interface _AggregateWindowFunc extends _OverSpec, SQLFunction.AggregateFunction,
-            SQLFunction._OuterClauseBeforeOver, SimpleExpression {
+    /**
+     * <p>
+     * This interface representing postgre aggregate function over clause.
+     * </p>
+     */
+    public interface _PgAggWindowFuncSpec extends _OverSpec,
+            SQLFunction._OuterClauseBeforeOver,
+            SQLFunction.AggregateFunction,
+            SimpleExpression {
 
-        _OverSpec filter(Consumer<Statement._SimpleWhereClause> consumer);
+    }
 
-        _OverSpec ifFilter(Consumer<Statement._SimpleWhereClause> consumer);
+    /**
+     * <p>
+     * This interface representing postgre aggregate function filter clause.
+     * </p>
+     */
+    interface _PgAggFuncFilterClause<R extends Item> {
+
+        R filter(Consumer<Statement._SimpleWhereClause> consumer);
+
+        R ifFilter(Consumer<Statement._SimpleWhereClause> consumer);
+    }
+
+    /**
+     * <p>
+     * This interface representing postgre aggregate function.
+     * </p>
+     */
+    public interface _PostgreAggregateFunction<R extends SimpleExpression> extends SimpleExpression,
+            _PgAggFuncFilterClause<R>,
+            SQLFunction.AggregateFunction {
 
 
     }
+
+    /**
+     * <p>
+     * This interface is base interface of postgre window aggregate function.
+     * </p>
+     */
+    public interface _AggWindowFunc extends _PostgreAggregateFunction<_PgAggWindowFuncSpec>, _PgAggWindowFuncSpec {
+
+    }
+
+
+    /**
+     * <p>
+     * This interface is base interface of postgre non-window aggregate function.
+     * </p>
+     */
+    public interface _PgAggFunc extends _PostgreAggregateFunction<SimpleExpression> {
+
+    }
+
+    /**
+     * <p>
+     * This interface representing postgre  ordered-set aggregate function.
+     * </p>
+     */
+    public interface _OrderedSetAggFunc extends _PgAggFunc {
+
+        _PgAggFunc withinGroup(Consumer<Statement._SimpleOrderByClause> consumer);
+
+    }
+
+    /*-------------------below window function-------------------*/
+
 
     /**
      * <p>
@@ -309,7 +375,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.twoArgWindowFunc("nth_value", value, n, _returnType(value, Expressions::identityType));
     }
 
-    /*-------------------below Aggregate Functions-------------------*/
+    /*-------------------below general-purpose Aggregate Functions-------------------*/
 
     /**
      * <p>
@@ -320,7 +386,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Collects all the input values, including nulls, into an array.
      * </a>
      */
-    public static _AggregateWindowFunc arrayAgg(Expression any) {
+    public static _AggWindowFunc arrayAgg(Expression any) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("array_agg", any, _returnType(any, MappingType::arrayTypeOfThis));
     }
 
@@ -344,7 +410,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * avg ( interval ) → interval<br/>
      * </a>
      */
-    public static _AggregateWindowFunc avg(Expression exp) {
+    public static _AggWindowFunc avg(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("avg", exp, _returnType(exp, PostgreWindowFunctions::_avgType));
     }
 
@@ -364,7 +430,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the bitwise AND of all non-null input values.
      * </a>
      */
-    public static _AggregateWindowFunc bitAnd(Expression exp) {
+    public static _AggWindowFunc bitAnd(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("bit_and", exp, _returnType(exp, PostgreWindowFunctions::_bitOpeType));
     }
 
@@ -384,7 +450,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the bitwise OR of all non-null input values.
      * </a>
      */
-    public static _AggregateWindowFunc bitOr(Expression exp) {
+    public static _AggWindowFunc bitOr(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("bit_or", exp, _returnType(exp, PostgreWindowFunctions::_bitOpeType));
     }
 
@@ -404,7 +470,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the bitwise OR of all non-null input values.
      * </a>
      */
-    public static _AggregateWindowFunc bitXor(Expression exp) {
+    public static _AggWindowFunc bitXor(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("bit_xor", exp, _returnType(exp, PostgreWindowFunctions::_bitOpeType));
     }
 
@@ -418,7 +484,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Returns true if all non-null input values are true, otherwise false.
      * </a>
      */
-    public static _AggregateWindowFunc boolAnd(Expression exp) {
+    public static _AggWindowFunc boolAnd(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("bool_and", exp, BooleanType.INSTANCE);
     }
 
@@ -431,7 +497,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Returns true if any non-null input value is true, otherwise false.
      * </a>
      */
-    public static _AggregateWindowFunc boolOr(Expression exp) {
+    public static _AggWindowFunc boolOr(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("bool_or", exp, BooleanType.INSTANCE);
     }
 
@@ -445,7 +511,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      * @see SQLs#countAsterisk()
      */
-    public static _AggregateWindowFunc countAsterisk() {
+    public static _AggWindowFunc countAsterisk() {
         return PostgreFunctionUtils.oneArgAggWindowFunc("count", SQLs._ASTERISK_EXP, LongType.INSTANCE);
     }
 
@@ -459,7 +525,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      * @see SQLs#count(Expression)
      */
-    public static _AggregateWindowFunc count(Expression exp) {
+    public static _AggWindowFunc count(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("count", exp, LongType.INSTANCE);
     }
 
@@ -473,7 +539,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      * @see #boolAnd(Expression)
      */
-    public static _AggregateWindowFunc every(Expression exp) {
+    public static _AggWindowFunc every(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("every", exp, BooleanType.INSTANCE);
     }
 
@@ -486,7 +552,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
      * </a>
      */
-    public static _AggregateWindowFunc jsonAgg(Expression exp) {
+    public static _AggWindowFunc jsonAgg(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("json_agg", exp, JsonType.TEXT);
     }
 
@@ -499,7 +565,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
      * </a>
      */
-    public static _AggregateWindowFunc jsonbAgg(Expression exp) {
+    public static _AggWindowFunc jsonbAgg(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("jsonb_agg", exp, JsonbType.TEXT);
     }
 
@@ -534,8 +600,8 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
      * </a>
      */
-    public static <K, V> _AggregateWindowFunc jsonObjectAgg(BiFunction<TextType, K, Expression> keyFunc, K key,
-                                                            BiFunction<TextType, V, Expression> valueFunc, V value) {
+    public static <K, V> _AggWindowFunc jsonObjectAgg(BiFunction<TextType, K, Expression> keyFunc, K key,
+                                                      BiFunction<TextType, V, Expression> valueFunc, V value) {
         return jsonObjectAgg(keyFunc.apply(TextType.INSTANCE, key), valueFunc.apply(TextType.INSTANCE, value));
     }
 
@@ -548,7 +614,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
      * </a>
      */
-    public static _AggregateWindowFunc jsonObjectAgg(Expression key, Expression value) {
+    public static _AggWindowFunc jsonObjectAgg(Expression key, Expression value) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("json_object_agg", key, value, JsonType.TEXT);
     }
 
@@ -582,8 +648,8 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
      * </a>
      */
-    public static <K, V> _AggregateWindowFunc jsonbObjectAgg(BiFunction<TextType, K, Expression> keyFunc, K key,
-                                                             BiFunction<TextType, V, Expression> valueFunc, V value) {
+    public static <K, V> _AggWindowFunc jsonbObjectAgg(BiFunction<TextType, K, Expression> keyFunc, K key,
+                                                       BiFunction<TextType, V, Expression> valueFunc, V value) {
         return jsonbObjectAgg(keyFunc.apply(TextType.INSTANCE, key), valueFunc.apply(TextType.INSTANCE, value));
     }
 
@@ -596,7 +662,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
      * </a>
      */
-    public static _AggregateWindowFunc jsonbObjectAgg(Expression key, Expression value) {
+    public static _AggWindowFunc jsonbObjectAgg(Expression key, Expression value) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("jsonb_object_agg", key, value, JsonbType.TEXT);
     }
 
@@ -610,7 +676,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the maximum of the non-null input values. Available for any numeric, string, date/time, or enum type, as well as inet, interval, money, oid, pg_lsn, tid, xid8, and arrays of any of these types.
      * </a>
      */
-    public static _AggregateWindowFunc max(Expression exp) {
+    public static _AggWindowFunc max(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("max", exp, _returnType(exp, Expressions::identityType));
     }
 
@@ -623,7 +689,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the minimum of the non-null input values. Available for any numeric, string, date/time, or enum type, as well as inet, interval, money, oid, pg_lsn, tid, xid8, and arrays of any of these types.
      * </a>
      */
-    public static _AggregateWindowFunc min(Expression exp) {
+    public static _AggWindowFunc min(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("min", exp, _returnType(exp, Expressions::identityType));
     }
 
@@ -638,7 +704,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the union of the non-null input values.
      * </a>
      */
-    public static _AggregateWindowFunc rangeAgg(Expression exp) {
+    public static _AggWindowFunc rangeAgg(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("range_agg", exp, _returnType(exp, Expressions::identityType));
     }
 
@@ -653,7 +719,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the intersection of the non-null input values.
      * </a>
      */
-    public static _AggregateWindowFunc rangeIntersectAgg(Expression exp) {
+    public static _AggWindowFunc rangeIntersectAgg(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("range_intersect_agg", exp, _returnType(exp, Expressions::identityType));
     }
 
@@ -667,7 +733,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Concatenates the non-null input values into a string. Each value after the first is preceded by the corresponding delimiter (if it's not null).
      * </a>
      */
-    public static _AggregateWindowFunc stringAgg(Expression value, Expression delimiter) {
+    public static _AggWindowFunc stringAgg(Expression value, Expression delimiter) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("string_agg", value, delimiter, _returnType(value, Expressions::identityType));
     }
 
@@ -698,7 +764,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the sum of the non-null input values.
      * </a>
      */
-    public static _AggregateWindowFunc sum(Expression exp) {
+    public static _AggWindowFunc sum(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("sum", exp, _returnType(exp, Functions::_sumType));
     }
 
@@ -712,7 +778,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Concatenates the non-null XML input values
      * </a>
      */
-    public static _AggregateWindowFunc xmlAgg(Expression xml) {
+    public static _AggWindowFunc xmlAgg(Expression xml) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("xmlagg", xml, XmlType.TEXT);
     }
 
@@ -727,7 +793,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the correlation coefficient.
      * </a>
      */
-    public static _AggregateWindowFunc corr(Expression y, Expression x) {
+    public static _AggWindowFunc corr(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("corr", y, x, DoubleType.INSTANCE);
     }
 
@@ -740,7 +806,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the population covariance.
      * </a>
      */
-    public static _AggregateWindowFunc covarPop(Expression y, Expression x) {
+    public static _AggWindowFunc covarPop(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("covar_pop", y, x, DoubleType.INSTANCE);
     }
 
@@ -753,7 +819,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the sample covariance.
      * </a>
      */
-    public static _AggregateWindowFunc covarSamp(Expression y, Expression x) {
+    public static _AggWindowFunc covarSamp(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("covar_samp", y, x, DoubleType.INSTANCE);
     }
 
@@ -766,7 +832,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the average of the independent variable, sum(X)/N.
      * </a>
      */
-    public static _AggregateWindowFunc regrAvgx(Expression y, Expression x) {
+    public static _AggWindowFunc regrAvgx(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_avgx", y, x, DoubleType.INSTANCE);
     }
 
@@ -779,7 +845,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the average of the dependent variable, sum(Y)/N.
      * </a>
      */
-    public static _AggregateWindowFunc regrAvgy(Expression y, Expression x) {
+    public static _AggWindowFunc regrAvgy(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_avgy", y, x, DoubleType.INSTANCE);
     }
 
@@ -792,7 +858,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the number of rows in which both inputs are non-null.
      * </a>
      */
-    public static _AggregateWindowFunc regrCount(Expression y, Expression x) {
+    public static _AggWindowFunc regrCount(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_count", y, x, LongType.INSTANCE);
     }
 
@@ -805,7 +871,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the y-intercept of the least-squares-fit linear equation determined by the (X, Y) pairs.
      * </a>
      */
-    public static _AggregateWindowFunc regrIntercept(Expression y, Expression x) {
+    public static _AggWindowFunc regrIntercept(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_intercept", y, x, DoubleType.INSTANCE);
     }
 
@@ -818,7 +884,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the square of the correlation coefficient.
      * </a>
      */
-    public static _AggregateWindowFunc regrR2(Expression y, Expression x) {
+    public static _AggWindowFunc regrR2(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_r2", y, x, DoubleType.INSTANCE);
     }
 
@@ -831,7 +897,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the slope of the least-squares-fit linear equation determined by the (X, Y) pairs.
      * </a>
      */
-    public static _AggregateWindowFunc regrSlope(Expression y, Expression x) {
+    public static _AggWindowFunc regrSlope(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_slope", y, x, DoubleType.INSTANCE);
     }
 
@@ -844,7 +910,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the “sum of squares” of the independent variable, sum(X^2) - sum(X)^2/N.
      * </a>
      */
-    public static _AggregateWindowFunc regrSxx(Expression y, Expression x) {
+    public static _AggWindowFunc regrSxx(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_sxx", y, x, DoubleType.INSTANCE);
     }
 
@@ -857,7 +923,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the “sum of products” of independent times dependent variables, sum(X*Y) - sum(X) * sum(Y)/N.
      * </a>
      */
-    public static _AggregateWindowFunc regrSxy(Expression y, Expression x) {
+    public static _AggWindowFunc regrSxy(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_sxy", y, x, DoubleType.INSTANCE);
     }
 
@@ -870,7 +936,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the “sum of squares” of the dependent variable, sum(Y^2) - sum(Y)^2/N.
      * </a>
      */
-    public static _AggregateWindowFunc regrSyy(Expression y, Expression x) {
+    public static _AggWindowFunc regrSyy(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_syy", y, x, DoubleType.INSTANCE);
     }
 
@@ -883,7 +949,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * This is a historical alias for stddev_samp.
      * </a>
      */
-    public static _AggregateWindowFunc stdDev(Expression exp) {
+    public static _AggWindowFunc stdDev(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("stddev", exp, DoubleType.INSTANCE);
     }
 
@@ -896,7 +962,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the population standard deviation of the input values.
      * </a>
      */
-    public static _AggregateWindowFunc stdDevPop(Expression exp) {
+    public static _AggWindowFunc stdDevPop(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("stddev_pop", exp, DoubleType.INSTANCE);
     }
 
@@ -909,7 +975,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the sample standard deviation of the input values.
      * </a>
      */
-    public static _AggregateWindowFunc stdDevSamp(Expression exp) {
+    public static _AggWindowFunc stdDevSamp(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("stddev_samp", exp, DoubleType.INSTANCE);
     }
 
@@ -923,7 +989,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * This is a historical alias for var_samp.
      * </a>
      */
-    public static _AggregateWindowFunc variance(Expression exp) {
+    public static _AggWindowFunc variance(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("variance", exp, DoubleType.INSTANCE);
     }
 
@@ -936,7 +1002,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the population variance of the input values (square of the population standard deviation).
      * </a>
      */
-    public static _AggregateWindowFunc varPop(Expression exp) {
+    public static _AggWindowFunc varPop(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("var_pop", exp, DoubleType.INSTANCE);
     }
 
@@ -950,7 +1016,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the sample variance of the input values (square of the sample standard deviation).
      * </a>
      */
-    public static _AggregateWindowFunc varSamp(Expression exp) {
+    public static _AggWindowFunc varSamp(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("var_samp", exp, DoubleType.INSTANCE);
     }
 

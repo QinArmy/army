@@ -105,16 +105,16 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         return new ThreeArgWindowFunc(name, one, two, three, returnType);
     }
 
-    static PostgreWindowFunctions._AggregateWindowFunc oneArgAggWindowFunc(final String name, final Expression one,
-                                                                           final TypeMeta returnType) {
+    static PostgreWindowFunctions._AggWindowFunc oneArgAggWindowFunc(final String name, final Expression one,
+                                                                     final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
         return new OneArgAggWindowFunc(name, one, returnType);
     }
 
-    static PostgreWindowFunctions._AggregateWindowFunc twoArgAggWindowFunc(final String name, final Expression one,
-                                                                           final Expression two, final TypeMeta returnType) {
+    static PostgreWindowFunctions._AggWindowFunc twoArgAggWindowFunc(final String name, final Expression one,
+                                                                     final Expression two, final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -945,17 +945,18 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
     /*-------------------below Aggregate Functions-------------------*/
 
-    private static abstract class PostgreAggregateWindowFunction extends PostgreWindowFunction
-            implements PostgreWindowFunctions._AggregateWindowFunc {
+    private static final class AggFuncFilterClause implements PostgreWindowFunctions._PgAggFuncFilterClause<Item>, Item {
+
+        private final CriteriaContext outerContext;
 
         private List<_Predicate> whereList;
 
-        private PostgreAggregateWindowFunction(String name, TypeMeta returnType) {
-            super(name, returnType);
+        private AggFuncFilterClause(CriteriaContext outerContext) {
+            this.outerContext = outerContext;
         }
 
         @Override
-        public final PostgreWindowFunctions._OverSpec filter(Consumer<Statement._SimpleWhereClause> consumer) {
+        public Item filter(Consumer<Statement._SimpleWhereClause> consumer) {
             this.ifFilter(consumer);
             final List<_Predicate> whereList = this.whereList;
             if (whereList == null || whereList.size() == 0) {
@@ -965,7 +966,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final PostgreWindowFunctions._OverSpec ifFilter(final Consumer<Statement._SimpleWhereClause> consumer) {
+        public Item ifFilter(Consumer<Statement._SimpleWhereClause> consumer) {
             final WhereClause.SimpleWhereClause whereClause;
             whereClause = new WhereClause.SimpleWhereClause(this.outerContext);
             consumer.accept(whereClause);
@@ -976,9 +977,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             return this;
         }
 
-
-        @Override
-        final void appendOuterClause(final StringBuilder sqlBuilder, final _SqlContext context) {
+        private void appendOuterClause(final StringBuilder sqlBuilder, final _SqlContext context) {
             final List<_Predicate> whereList = this.whereList;
             final int predicateSize;
             if (whereList == null || (predicateSize = whereList.size()) == 0) {
@@ -996,8 +995,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         }
 
-        @Override
-        final void outerClauseToString(final StringBuilder builder) {
+        private void outerClauseToString(final StringBuilder builder) {
             final List<_Predicate> whereList = this.whereList;
             final int predicateSize;
             if (whereList == null || (predicateSize = whereList.size()) == 0) {
@@ -1013,6 +1011,62 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             }
             builder.append(_Constant.SPACE_RIGHT_PAREN);
 
+        }
+
+
+    }//AggFuncFilterClause
+
+    private static abstract class PostgreAggregateWindowFunction extends PostgreWindowFunction
+            implements PostgreWindowFunctions._AggWindowFunc {
+
+        private AggFuncFilterClause filterClause;
+
+        private PostgreAggregateWindowFunction(String name, TypeMeta returnType) {
+            super(name, returnType);
+        }
+
+        @Override
+        public final PostgreWindowFunctions._PgAggWindowFuncSpec filter(Consumer<Statement._SimpleWhereClause> consumer) {
+            return this.doFilter(true, consumer);
+        }
+
+        @Override
+        public final PostgreWindowFunctions._PgAggWindowFuncSpec ifFilter(final Consumer<Statement._SimpleWhereClause> consumer) {
+            return this.doFilter(false, consumer);
+        }
+
+
+        @Override
+        final void appendOuterClause(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final AggFuncFilterClause clause = this.filterClause;
+            if (clause != null) {
+                clause.appendOuterClause(sqlBuilder, context);
+            }
+        }
+
+        @Override
+        final void outerClauseToString(final StringBuilder builder) {
+            final AggFuncFilterClause clause = this.filterClause;
+            if (clause != null) {
+                clause.outerClauseToString(builder);
+            }
+
+        }
+
+        private PostgreAggregateWindowFunction doFilter(final boolean required,
+                                                        final Consumer<Statement._SimpleWhereClause> consumer) {
+            if (this.filterClause != null) {
+                throw ContextStack.castCriteriaApi(this.outerContext);
+            }
+            final AggFuncFilterClause clause;
+            clause = new AggFuncFilterClause(this.outerContext);
+            this.filterClause = clause;
+            if (required) {
+                clause.filter(consumer);
+            } else {
+                clause.ifFilter(consumer);
+            }
+            return this;
         }
 
 
@@ -1074,6 +1128,164 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
     }//OneArgAggWindowFunc
+
+    /**
+     * This class is base class of non-window aggregate function.
+     */
+    private static abstract class PostgreAggregateFunction extends FunctionUtils.FunctionExpression
+            implements PostgreWindowFunctions._PgAggFunc, OuterClause {
+
+        private final SQLsSyntax.Modifier modifier;
+
+        private final OrderByOptionClause orderByClause;
+
+        private final CriteriaContext outerContext;
+        private AggFuncFilterClause filterClause;
+
+        private PostgreAggregateFunction(String name, @Nullable SQLsSyntax.Modifier modifier,
+                                         @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
+            super(name, returnType);
+            assert modifier == null || modifier == SQLs.DISTINCT || modifier == SQLs.ALL;
+            this.modifier = modifier;
+            this.orderByClause = orderByClause;
+            this.outerContext = ContextStack.peek();
+        }
+
+
+        @Override
+        public final SimpleExpression filter(Consumer<Statement._SimpleWhereClause> consumer) {
+            return this.doFilter(true, consumer);
+        }
+
+        @Override
+        public final SimpleExpression ifFilter(final Consumer<Statement._SimpleWhereClause> consumer) {
+            return this.doFilter(false, consumer);
+        }
+
+
+        @Override
+        public final void appendOuterClause(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final AggFuncFilterClause clause = this.filterClause;
+            if (clause != null) {
+                clause.appendOuterClause(sqlBuilder, context);
+            }
+        }
+
+        @Override
+        public final void outerClauseToString(final StringBuilder builder) {
+            final AggFuncFilterClause clause = this.filterClause;
+            if (clause != null) {
+                clause.outerClauseToString(builder);
+            }
+
+        }
+
+        @Override
+        final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final SQLsSyntax.Modifier modifier = this.modifier;
+            if (modifier != null) {
+                sqlBuilder.append(modifier.spaceRender());
+            }
+
+            this.pgAppendArg(sqlBuilder, context);
+
+            final OrderByOptionClause orderByClause = this.orderByClause;
+            if (orderByClause != null) {
+                orderByClause.appendSql(context);
+            }
+        }
+
+        @Override
+        final void argToString(final StringBuilder builder) {
+            final SQLsSyntax.Modifier modifier = this.modifier;
+            if (modifier != null) {
+                builder.append(modifier.spaceRender());
+            }
+
+            this.pgArgToString(builder);
+
+            final OrderByOptionClause orderByClause = this.orderByClause;
+            if (orderByClause != null) {
+                builder.append(orderByClause);
+            }
+        }
+
+
+        abstract void pgAppendArg(final StringBuilder sqlBuilder, final _SqlContext context);
+
+
+        abstract void pgArgToString(final StringBuilder builder);
+
+
+        private SimpleExpression doFilter(final boolean required, final Consumer<Statement._SimpleWhereClause> consumer) {
+            if (this.filterClause != null) {
+                throw ContextStack.castCriteriaApi(this.outerContext);
+            }
+            final AggFuncFilterClause clause;
+            clause = new AggFuncFilterClause(this.outerContext);
+            this.filterClause = clause;
+            if (required) {
+                clause.filter(consumer);
+            } else {
+                clause.ifFilter(consumer);
+            }
+            return this;
+        }
+
+    }//PostgreAggregateFunction
+
+    private static final class OneArgAggFunc extends PostgreAggregateFunction {
+
+        private final ArmyExpression one;
+
+        private OneArgAggFunc(String name, @Nullable SQLsSyntax.Modifier modifier, Expression one,
+                              @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
+            super(name, modifier, orderByClause, returnType);
+            this.one = (ArmyExpression) one;
+        }
+
+        @Override
+        void pgAppendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            this.one.appendSql(context);
+        }
+
+        @Override
+        void pgArgToString(StringBuilder builder) {
+            builder.append(this.one);
+        }
+
+
+    }//OneArgAggFunc
+
+    private static final class TwoArgAggFunc extends PostgreAggregateFunction {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private TwoArgAggFunc(String name, @Nullable SQLsSyntax.Modifier modifier, Expression one, Expression two,
+                              @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
+            super(name, modifier, orderByClause, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+        }
+
+        @Override
+        void pgAppendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            this.two.appendSql(context);
+        }
+
+        @Override
+        void pgArgToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two);
+        }
+
+
+    }//TwoArgAggFunc
 
 
 }

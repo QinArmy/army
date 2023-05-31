@@ -2,6 +2,7 @@ package io.army.criteria.dialect;
 
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
+import io.army.criteria.SimpleExpression;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
@@ -360,13 +361,13 @@ public interface Window extends Item {
 
     interface _OverWindowClause<T extends _WindowSpec> extends Item {
 
-        Expression over();
+        SimpleExpression over();
 
-        Expression over(@Nullable String existingWindowName);
+        SimpleExpression over(@Nullable String existingWindowName);
 
-        Expression over(Consumer<T> consumer);
+        SimpleExpression over(Consumer<T> consumer);
 
-        Expression over(@Nullable String existingWindowName, Consumer<T> consumer);
+        SimpleExpression over(@Nullable String existingWindowName, Consumer<T> consumer);
 
     }
 

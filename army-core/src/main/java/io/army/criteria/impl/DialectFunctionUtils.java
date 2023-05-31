@@ -1076,9 +1076,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        void appendArg(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             final String tableAlias;
             tableAlias = this.group.tableAlias();
 
