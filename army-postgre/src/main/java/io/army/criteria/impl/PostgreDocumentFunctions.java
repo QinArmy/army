@@ -1008,7 +1008,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         } else if (!(value instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, value);
         }
-        return FunctionUtils.complexArgFunc(name, XmlType.TEXT_INSTANCE, option, value);
+        return FunctionUtils.complexArgFunc(name, XmlType.TEXT, option, value);
     }
 
     /**
@@ -1026,13 +1026,13 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         } else if (as != SQLs.AS) {
             throw CriteriaUtils.funcArgError(name, as);
         }
-        return FunctionUtils.complexArgFunc(name, XmlType.TEXT_INSTANCE, option, value, as, type);
+        return FunctionUtils.complexArgFunc(name, XmlType.TEXT, option, value, as, type);
     }
 
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">Xmlforest<br/>
@@ -1053,7 +1053,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlcomment ( text ) → xml</a>
      */
     public static SimpleExpression xmlComment(Expression exp) {
-        return FunctionUtils.oneArgFunc("XMLCOMMENT", exp, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.oneArgFunc("XMLCOMMENT", exp, XmlType.TEXT);
     }
 
     /**
@@ -1064,7 +1064,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlconcat ( xml [, ...] ) → xml</a>
      */
     public static SimpleExpression xmlConcat(Expression xmls) {
-        return FunctionUtils.oneOrMultiArgFunc("XMLCONCAT", xmls, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.oneOrMultiArgFunc("XMLCONCAT", xmls, XmlType.TEXT);
     }
 
     /**
@@ -1075,7 +1075,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlconcat ( xml [, ...] ) → xml</a>
      */
     public static SimpleExpression xmlConcat(Expression xml1, Expression... xml2) {
-        return FunctionUtils.oneAndRestFunc("XMLCONCAT", XmlType.TEXT_INSTANCE, xml1, xml2);
+        return FunctionUtils.oneAndRestFunc("XMLCONCAT", XmlType.TEXT, xml1, xml2);
     }
 
     /**
@@ -1086,7 +1086,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlconcat ( xml [, ...] ) → xml</a>
      */
     public static SimpleExpression xmlConcat(List<Expression> xmlList) {
-        return FunctionUtils.multiArgFunc("XMLCONCAT", xmlList, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.multiArgFunc("XMLCONCAT", xmlList, XmlType.TEXT);
     }
 
     /**
@@ -1180,7 +1180,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see #xmlPi(PostgreSyntax.WordName, String, Expression)
@@ -1193,7 +1193,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see #xmlPi(PostgreSyntax.WordName, String)
@@ -1210,7 +1210,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see #xmlPi(PostgreSyntax.WordName, String)
@@ -1224,7 +1224,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see #xmlRoot(Expression, WordVersion, Expression)
@@ -1239,7 +1239,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see #xmlRoot(Expression, WordVersion, WordsNoValue)
@@ -1254,7 +1254,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see #xmlRoot(Expression, WordVersion, WordsNoValue)
@@ -1271,7 +1271,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see #xmlRoot(Expression, WordVersion, WordsNoValue)
@@ -1288,19 +1288,19 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlagg ( xml ) → xml<br/>
      * </a>
      */
     public static SimpleExpression xmlAgg(Expression xml) {
-        return FunctionUtils.oneArgFunc("XMLAGG", xml, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.oneArgFunc("XMLAGG", xml, XmlType.TEXT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlagg ( xml ) → xml<br/>
@@ -1315,9 +1315,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         final SimpleExpression func;
         final String name = "XMLAGG";
         if (clause.orderByList().size() == 0) {
-            func = FunctionUtils.oneArgFunc(name, xml, XmlType.TEXT_INSTANCE);
+            func = FunctionUtils.oneArgFunc(name, xml, XmlType.TEXT);
         } else {
-            func = FunctionUtils.complexArgFunc(name, XmlType.TEXT_INSTANCE, xml, clause);
+            func = FunctionUtils.complexArgFunc(name, XmlType.TEXT, xml, clause);
         }
         return func;
     }
@@ -1775,7 +1775,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression tableToXml(Expression table, Expression nulls, Expression tableForest,
                                               Expression targetNs) {
-        return FunctionUtils.fourArgFunc("TABLE_TO_XML", table, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.fourArgFunc("TABLE_TO_XML", table, nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
     /**
@@ -1813,7 +1813,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression queryToXml(Expression query, Expression nulls, Expression tableForest,
                                               Expression targetNs) {
-        return FunctionUtils.fourArgFunc("QUERY_TO_XML", query, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.fourArgFunc("QUERY_TO_XML", query, nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
     /**
@@ -1825,7 +1825,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression cursorToXml(Expression cursor, Expression nulls, Expression tableForest,
                                                Expression targetNs) {
-        return FunctionUtils.fourArgFunc("CURSOR_TO_XML", cursor, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.fourArgFunc("CURSOR_TO_XML", cursor, nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
 
@@ -1852,7 +1852,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression tableToXmlSchema(Expression table, Expression nulls, Expression tableForest,
                                                     Expression targetNs) {
-        return FunctionUtils.fourArgFunc("TABLE_TO_XMLSCHEMA", table, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.fourArgFunc("TABLE_TO_XMLSCHEMA", table, nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
     /**
@@ -1892,7 +1892,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression queryToXmlSchema(Expression query, Expression nulls, Expression tableForest,
                                                     Expression targetNs) {
-        return FunctionUtils.fourArgFunc("QUERY_TO_XMLSCHEMA", query, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.fourArgFunc("QUERY_TO_XMLSCHEMA", query, nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
     /**
@@ -1904,7 +1904,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression cursorToXmlSchema(Expression cursor, Expression nulls, Expression tableForest,
                                                      Expression targetNs) {
-        return FunctionUtils.fourArgFunc("CURSOR_TO_XMLSCHEMA", cursor, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.fourArgFunc("CURSOR_TO_XMLSCHEMA", cursor, nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
 
@@ -1931,7 +1931,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression tableToXmlAndXmlSchema(Expression table, Expression nulls, Expression tableForest,
                                                           Expression targetNs) {
-        return FunctionUtils.fourArgFunc("TABLE_TO_XML_AND_XMLSCHEMA", table, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.fourArgFunc("TABLE_TO_XML_AND_XMLSCHEMA", table, nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
     /**
@@ -1969,7 +1969,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression queryToXmlAndXmlSchema(Expression query, Expression nulls, Expression tableForest,
                                                           Expression targetNs) {
-        return FunctionUtils.fourArgFunc("QUERY_TO_XML_AND_XMLSCHEMA", query, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.fourArgFunc("QUERY_TO_XML_AND_XMLSCHEMA", query, nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
 
@@ -1982,7 +1982,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression schemaToXml(Expression schema, Expression nulls, Expression tableForest,
                                                Expression targetNs) {
-        return FunctionUtils.fourArgFunc("SCHEMA_TO_XML", schema, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.fourArgFunc("SCHEMA_TO_XML", schema, nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
     /**
@@ -1994,7 +1994,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression schemaToXmlSchema(Expression schema, Expression nulls, Expression tableForest,
                                                      Expression targetNs) {
-        return FunctionUtils.fourArgFunc("SCHEMA_TO_XMLSCHEMA", schema, nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.fourArgFunc("SCHEMA_TO_XMLSCHEMA", schema, nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
     /**
@@ -2007,7 +2007,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     public static SimpleExpression schemaToXmlAndXmlSchema(Expression schema, Expression nulls, Expression tableForest,
                                                            Expression targetNs) {
         return FunctionUtils.fourArgFunc("SCHEMA_TO_XML_AND_XMLSCHEMA", schema, nulls, tableForest, targetNs,
-                XmlType.TEXT_INSTANCE);
+                XmlType.TEXT);
     }
 
     /**
@@ -2018,7 +2018,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">database_to_xml</a>
      */
     public static SimpleExpression databaseToXml(Expression nulls, Expression tableForest, Expression targetNs) {
-        return FunctionUtils.threeArgFunc("DATABASE_TO_XML", nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.threeArgFunc("DATABASE_TO_XML", nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
     /**
@@ -2029,7 +2029,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-MAPPING">database_to_xmlschema</a>
      */
     public static SimpleExpression databaseToXmlSchema(Expression nulls, Expression tableForest, Expression targetNs) {
-        return FunctionUtils.threeArgFunc("DATABASE_TO_XMLSCHEMA", nulls, tableForest, targetNs, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.threeArgFunc("DATABASE_TO_XMLSCHEMA", nulls, tableForest, targetNs, XmlType.TEXT);
     }
 
     /**
@@ -2042,7 +2042,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     public static SimpleExpression databaseToXmlAndXmlSchema(Expression nulls, Expression tableForest,
                                                              Expression targetNs) {
         return FunctionUtils.threeArgFunc("DATABASE_TO_XML_AND_XMLSCHEMA", nulls, tableForest, targetNs,
-                XmlType.TEXT_INSTANCE);
+                XmlType.TEXT);
     }
 
     /*-------------------below JSON function -------------------*/
@@ -6942,12 +6942,12 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
             argList.add(attributes);
         }
         consumer.accept(argList::add);
-        return FunctionUtils.complexArgFunc(funcName, argList, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.complexArgFunc(funcName, argList, XmlType.TEXT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see #xmlPi(PostgreSyntax.WordName, String)
@@ -6964,16 +6964,16 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         }
         final SimpleExpression func;
         if (content == null) {
-            func = FunctionUtils.complexArgFunc(funcName, XmlType.TEXT_INSTANCE, wordName, name);
+            func = FunctionUtils.complexArgFunc(funcName, XmlType.TEXT, wordName, name);
         } else {
-            func = FunctionUtils.complexArgFunc(funcName, XmlType.TEXT_INSTANCE, wordName, name, FuncWord.COMMA, content);
+            func = FunctionUtils.complexArgFunc(funcName, XmlType.TEXT, wordName, name, FuncWord.COMMA, content);
         }
         return func;
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  XmlType#TEXT_INSTANCE}
+     * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
      * @see #xmlRoot(Expression, WordVersion, WordsNoValue)
@@ -7000,10 +7000,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
         }
         final SimpleExpression func;
         if (option == null) {
-            func = FunctionUtils.complexArgFunc(name, XmlType.TEXT_INSTANCE, xml, FuncWord.COMMA, version,
+            func = FunctionUtils.complexArgFunc(name, XmlType.TEXT, xml, FuncWord.COMMA, version,
                     textOrNoValue);
         } else {
-            func = FunctionUtils.complexArgFunc(name, XmlType.TEXT_INSTANCE, xml, FuncWord.COMMA, version,
+            func = FunctionUtils.complexArgFunc(name, XmlType.TEXT, xml, FuncWord.COMMA, version,
                     textOrNoValue, FuncWord.COMMA, standalone, option);
         }
         return func;

@@ -6,6 +6,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
+import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.ArrayList;
@@ -928,6 +929,59 @@ abstract class Functions extends SqlSyntax {
             returnType = type;
         } else {
             returnType = StringType.INSTANCE;
+        }
+        return returnType;
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>If exp is {@link ByteType},then {@link ShortType}</li>
+     *     <li>Else if exp is {@link ShortType},then {@link IntegerType}</li>
+     *     <li>Else if exp is {@link MediumIntType},then {@link IntegerType}</li>
+     *     <li>Else if exp is {@link LongType},then {@link BigIntegerType}</li>
+     *     <li>Else if exp is {@link BigDecimalType},then {@link BigDecimalType}</li>
+     *     <li>Else if exp is {@link FloatType},then {@link FloatType}</li>
+     *     <li>Else if exp is sql float type,then {@link DoubleType}</li>
+     *     <li>Else he {@link MappingType} of exp</li>
+     * </ul>
+     * </p>
+     */
+    static MappingType _sumType(final MappingType type) {
+        final MappingType returnType;
+        if (type instanceof MappingType.SqlIntegerType) {
+            final MappingType.LengthType length;
+            length = ((MappingType.SqlIntegerType) type).lengthType();
+            switch (length) {
+                case DEFAULT:
+                    returnType = LongType.INSTANCE;
+                    break;
+                case LONG:
+                case BIG_LONG:
+                    returnType = BigIntegerType.INSTANCE;
+                    break;
+                case TINY:
+                    returnType = ShortType.INSTANCE;
+                    break;
+                case SMALL:
+                case MEDIUM:
+                    returnType = IntegerType.INSTANCE;
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(length);
+            }
+        } else if (type instanceof MappingType.SqlDecimalType) {
+            returnType = BigDecimalType.INSTANCE;
+        } else if (type instanceof MappingType.SqlFloatType) {
+            if (type instanceof FloatType) {
+                returnType = type;
+            } else {
+                returnType = DoubleType.INSTANCE;
+            }
+        } else {
+            returnType = type;
         }
         return returnType;
     }

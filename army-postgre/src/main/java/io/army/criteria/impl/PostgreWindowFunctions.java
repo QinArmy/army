@@ -628,9 +628,334 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     }
 
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_agg ( value anyrange ) → anymultirange<br/>
+     * range_agg ( value anymultirange ) → anymultirange
+     * Computes the union of the non-null input values.
+     * </a>
+     */
+    public static _AggregateWindowFunc rangeAgg(Expression exp) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc("range_agg", exp, _returnType(exp, Expressions::identityType));
+    }
 
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_intersect_agg ( value anyrange ) → anymultirange<br/>
+     * range_intersect_agg ( value anymultirange ) → anymultirange
+     * Computes the intersection of the non-null input values.
+     * </a>
+     */
+    public static _AggregateWindowFunc rangeIntersectAgg(Expression exp) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc("range_intersect_agg", exp, _returnType(exp, Expressions::identityType));
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">string_agg ( value text, delimiter text ) → text<br/>
+     * string_agg ( value bytea, delimiter bytea ) → bytea
+     * Concatenates the non-null input values into a string. Each value after the first is preceded by the corresponding delimiter (if it's not null).
+     * </a>
+     */
+    public static _AggregateWindowFunc stringAgg(Expression value, Expression delimiter) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("string_agg", value, delimiter, _returnType(value, Expressions::identityType));
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>If exp is {@link ByteType},then {@link ShortType}</li>
+     *     <li>Else if exp is {@link ShortType},then {@link IntegerType}</li>
+     *     <li>Else if exp is {@link MediumIntType},then {@link IntegerType}</li>
+     *     <li>Else if exp is {@link LongType},then {@link BigIntegerType}</li>
+     *     <li>Else if exp is {@link BigDecimalType},then {@link BigDecimalType}</li>
+     *     <li>Else if exp is {@link FloatType},then {@link FloatType}</li>
+     *     <li>Else if exp is sql float type,then {@link DoubleType}</li>
+     *     <li>Else he {@link MappingType} of exp</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">sum ( smallint ) → bigint<br/>
+     * sum ( integer ) → bigint<br/>
+     * sum ( bigint ) → numeric<br/>
+     * sum ( numeric ) → numeric<br/>
+     * sum ( real ) → real<br/>
+     * sum ( double precision ) → double precision<br/>
+     * sum ( interval ) → interval<br/>
+     * sum ( money ) → money<br/>
+     * Computes the sum of the non-null input values.
+     * </a>
+     */
+    public static _AggregateWindowFunc sum(Expression exp) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc("sum", exp, _returnType(exp, Functions::_sumType));
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link XmlType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">xmlagg ( xml ) → xml<br/>
+     * Concatenates the non-null XML input values
+     * </a>
+     */
+    public static _AggregateWindowFunc xmlAgg(Expression xml) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc("xmlagg", xml, XmlType.TEXT);
+    }
+
+    /*-------------------below Aggregate Functions for Statistics-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">corr ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the correlation coefficient.
+     * </a>
+     */
+    public static _AggregateWindowFunc corr(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("corr", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_pop ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the population covariance.
+     * </a>
+     */
+    public static _AggregateWindowFunc covarPop(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("covar_pop", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_samp ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the sample covariance.
+     * </a>
+     */
+    public static _AggregateWindowFunc covarSamp(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("covar_samp", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgx ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the average of the independent variable, sum(X)/N.
+     * </a>
+     */
+    public static _AggregateWindowFunc regrAvgx(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_avgx", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the average of the dependent variable, sum(Y)/N.
+     * </a>
+     */
+    public static _AggregateWindowFunc regrAvgy(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_avgy", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
+     * Computes the number of rows in which both inputs are non-null.
+     * </a>
+     */
+    public static _AggregateWindowFunc regrCount(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_count", y, x, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_intercept ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the y-intercept of the least-squares-fit linear equation determined by the (X, Y) pairs.
+     * </a>
+     */
+    public static _AggregateWindowFunc regrIntercept(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_intercept", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_r2 ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the square of the correlation coefficient.
+     * </a>
+     */
+    public static _AggregateWindowFunc regrR2(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_r2", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_slope ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the slope of the least-squares-fit linear equation determined by the (X, Y) pairs.
+     * </a>
+     */
+    public static _AggregateWindowFunc regrSlope(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_slope", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxx ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of squares” of the independent variable, sum(X^2) - sum(X)^2/N.
+     * </a>
+     */
+    public static _AggregateWindowFunc regrSxx(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_sxx", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of products” of independent times dependent variables, sum(X*Y) - sum(X) * sum(Y)/N.
+     * </a>
+     */
+    public static _AggregateWindowFunc regrSxy(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_sxy", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_syy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of squares” of the dependent variable, sum(Y^2) - sum(Y)^2/N.
+     * </a>
+     */
+    public static _AggregateWindowFunc regrSyy(Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_syy", y, x, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * This is a historical alias for stddev_samp.
+     * </a>
+     */
+    public static _AggregateWindowFunc stdDev(Expression exp) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc("stddev", exp, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the population standard deviation of the input values.
+     * </a>
+     */
+    public static _AggregateWindowFunc stdDevPop(Expression exp) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc("stddev_pop", exp, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the sample standard deviation of the input values.
+     * </a>
+     */
+    public static _AggregateWindowFunc stdDevSamp(Expression exp) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc("stddev_samp", exp, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">variance ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * This is a historical alias for var_samp.
+     * </a>
+     */
+    public static _AggregateWindowFunc variance(Expression exp) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc("variance", exp, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the population variance of the input values (square of the population standard deviation).
+     * </a>
+     */
+    public static _AggregateWindowFunc varPop(Expression exp) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc("var_pop", exp, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the sample variance of the input values (square of the sample standard deviation).
+     * </a>
+     */
+    public static _AggregateWindowFunc varSamp(Expression exp) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc("var_samp", exp, DoubleType.INSTANCE);
+    }
+
+
+    /*-------------------below Ordered-Set Aggregate Functions -------------------*/
 
 
 

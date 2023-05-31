@@ -72,7 +72,7 @@ public class PostgreXmlFuncUnitTests extends PostgreUnitTests {
     public void xmlAggFunc() {
         final Select stmt;
         stmt = Postgres.query()
-                .select(Postgres.xmlAgg(Postgres.xmlAgg(SQLs.literal(XmlType.TEXT_INSTANCE, "<foo>abc</foo>")),
+                .select(Postgres.xmlAgg(Postgres.xmlAgg(SQLs.literal(XmlType.TEXT, "<foo>abc</foo>")),
                         c -> c.orderBy(SQLs.literalValue(1))).as("xmlagg")
                 )
                 .asQuery();
@@ -90,7 +90,7 @@ public class PostgreXmlFuncUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(Postgres.xmlExists(SQLs.literalValue("//town[text() = 'Toronto']"), PASSING, BY_VALUE,
-                        SQLs.literal(XmlType.TEXT_INSTANCE, "<towns><town>Toronto</town><town>Ottawa</town></towns>"), BY_VALUE)::as, "match"
+                        SQLs.literal(XmlType.TEXT, "<towns><town>Toronto</town><town>Ottawa</town></towns>"), BY_VALUE)::as, "match"
                 )
                 .asQuery();
         printStmt(LOG, stmt);
@@ -105,7 +105,7 @@ public class PostgreXmlFuncUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(xpath(SQLs.literalValue("/my:a/text()"),
-                                SQLs.literal(XmlType.TEXT_INSTANCE, "<my:a xmlns:my=\"http://example.com\">test</my:a>"),
+                                SQLs.literal(XmlType.TEXT, "<my:a xmlns:my=\"http://example.com\">test</my:a>"),
                                 SQLs.literal(TextArrayType.LINEAR, "{{my,http://example.com}}")
                         ).as("xpath")
                 ).asQuery();
@@ -143,7 +143,7 @@ public class PostgreXmlFuncUnitTests extends PostgreUnitTests {
         stmt = Postgres.query()
                 .select("x", PERIOD, ASTERISK)
                 .from(() -> xmlTable(xmlNamespaces(SQLs::literal, "http://example.com/myns", AS, "xz"),
-                                SQLs.literal(TextType.INSTANCE, "//ROWS/ROW"), PASSING, BY_VALUE, SQLs.literal(XmlType.TEXT_INSTANCE, xmlDoc), BY_VALUE,
+                                SQLs.literal(TextType.INSTANCE, "//ROWS/ROW"), PASSING, BY_VALUE, SQLs.literal(XmlType.TEXT, xmlDoc), BY_VALUE,
                                 c -> c.columns("id", IntegerType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "@id"))
                                         .comma("ordinality", FOR_ORDINALITY)
                                         .comma("COUNTRY_NAME", TextType.INSTANCE)
@@ -215,9 +215,9 @@ public class PostgreXmlFuncUnitTests extends PostgreUnitTests {
         final String xml = "<?xml version=\"1.0\"?><book><title>Manual</title><chapter>...</chapter></book>";
         final Select stmt;
         stmt = Postgres.query()
-                .select(xmlSerialize(CONTENT, SQLs.literal(XmlType.TEXT_INSTANCE, xml), AS, TextType.INSTANCE)::as, "contentXml"
+                .select(xmlSerialize(CONTENT, SQLs.literal(XmlType.TEXT, xml), AS, TextType.INSTANCE)::as, "contentXml"
                 )
-                .comma(xmlSerialize(DOCUMENT, SQLs.literal(XmlType.TEXT_INSTANCE, xml), AS, TextType.INSTANCE)::as, "documentXml"
+                .comma(xmlSerialize(DOCUMENT, SQLs.literal(XmlType.TEXT, xml), AS, TextType.INSTANCE)::as, "documentXml"
                 )
                 .asQuery();
 

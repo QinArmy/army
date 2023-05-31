@@ -126,7 +126,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
     private static SimpleExpression onXmlForestEnd(ArmyFuncClause clause) {
         assert clause instanceof XmlNamedElementPart;
-        return FunctionUtils.clauseFunc("XMLFOREST", clause, XmlType.TEXT_INSTANCE);
+        return FunctionUtils.clauseFunc("XMLFOREST", clause, XmlType.TEXT);
     }
 
 

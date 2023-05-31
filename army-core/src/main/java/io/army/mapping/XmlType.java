@@ -12,14 +12,14 @@ import java.util.concurrent.ConcurrentMap;
 public final class XmlType extends _ArmyBuildInMapping {
 
 
-    public static final XmlType TEXT_INSTANCE = new XmlType(String.class);
+    public static final XmlType TEXT = new XmlType(String.class);
 
     private static final ConcurrentMap<Class<?>, XmlType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
     public static XmlType from(final Class<?> javaType) {
         final XmlType instance;
         if (javaType == String.class) {
-            instance = TEXT_INSTANCE;
+            instance = TEXT;
         } else {
             instance = INSTANCE_MAP.computeIfAbsent(javaType, XmlType::new);
         }
