@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardDelete;
 import io.army.criteria.standard.StandardInsert;
@@ -63,16 +62,6 @@ public abstract class SQLs extends SQLsSyntax {
     public static final WordFor FOR = SqlWords.KeyWordFor.FOR;
     public static final WordFrom FROM = SqlWords.KeyWordFrom.FROM;
     public static final WordSimilar SIMILAR = SqlWords.KeyWordSimilar.SIMILAR;
-
-    public static final Window.RowModifier UNBOUNDED_PRECEDING = SQLWindow.WindowRowModifier.UNBOUNDED_PRECEDING;
-
-    public static final Window.RowModifier CURRENT_ROW = SQLWindow.WindowRowModifier.CURRENT_ROW;
-
-    public static final Window.RowModifier UNBOUNDED_FOLLOWING = SQLWindow.WindowRowModifier.UNBOUNDED_FOLLOWING;
-
-    public static final Window.ExpModifier PRECEDING = SQLWindow.WindowExpModifier.PRECEDING;
-
-    public static final Window.ExpModifier FOLLOWING = SQLWindow.WindowExpModifier.FOLLOWING;
 
 
     @Support({PostgreSQL, H2})

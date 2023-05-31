@@ -24,7 +24,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         PostgreCtes,
         PostgreValues._ValuesSpec<I>,
         PostgreValues._ValuesLeftParenSpec<I>,
-        PostgreValues._LimitSpec<I>,
+        PostgreValues._OrderByCommaSpec<I>,
         PostgreValues._OffsetSpec<I>,
         PostgreValues._FetchSpec<I>,
         PostgreStatement._AsValuesClause<I>,
@@ -32,6 +32,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         implements PostgreValues._WithSpec<I>,
         PostgreValues._ValuesLeftParenSpec<I>,
         PostgreValues._OffsetSpec<I>,
+        PostgreValues._OrderByCommaSpec<I>,
         PostgreValues {
 
 
@@ -191,15 +192,16 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
      static abstract class PostgreBracketValues<I extends Item> extends BracketRowSet<
              I,
              PostgreValues._UnionOrderBySpec<I>,
-             PostgreValues._UnionLimitSpec<I>,
+             PostgreValues._UnionOrderByCommaSpec<I>,
              PostgreValues._UnionOffsetSpec<I>,
              PostgreValues._UnionFetchSpec<I>,
              PostgreValues._AsValuesClause<I>,
              PostgreValues._QueryWithComplexSpec<I>>
              implements PostgreValues,
              PostgreValues._UnionOrderBySpec<I>,
+             PostgreValues._UnionOrderByCommaSpec<I>,
              PostgreValues._UnionOffsetSpec<I>,
-            PostgreValues._UnionFetchSpec<I> {
+             PostgreValues._UnionFetchSpec<I> {
 
         private PostgreBracketValues(ArmyStmtSpec spec) {
             super(spec);

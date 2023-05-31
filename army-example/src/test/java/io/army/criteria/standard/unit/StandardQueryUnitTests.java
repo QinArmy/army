@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,11 +26,30 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
     @Test//(invocationCount = 10)
     public void caseFunction() {
+        final Map<String, Object> criteria = Collections.singletonMap("a", "");
         Select stmt;
         stmt = SQLs.query()
                 .select(SQLs.cases()
                         .when(SQLs.literalValue(1).is(TRUE))
                         .then(SQLs::literalValue, PillUserType.PARTNER)
+                        .ifWhen(c -> {
+                            if (criteria.get("myCriteria") != null) {
+                                c.space(SQLs::literalValue, "zoro")
+                                        .then(SQLs::literalValue, "good");
+                            }
+                        })
+                        .elseValue(SQLs.literalValue(PillUserType.NONE))
+                        .end()
+                        .plus(SQLs.literalValue(1)).times(SQLs.literalValue(5)).as("a")
+                ).comma(SQLs.cases()
+                        .whens(c -> {
+                            c.when(SQLs.literalValue(1).is(TRUE))
+                                    .then(SQLs::literalValue, PillUserType.PARTNER);
+                            if (criteria.get("myCriteria") != null) {
+                                c.when(SQLs.literalValue(1).is(TRUE))
+                                        .then(SQLs::literalValue, PillUserType.PARTNER);
+                            }
+                        })
                         .elseValue(SQLs.literalValue(PillUserType.NONE))
                         .end()
                         .plus(SQLs.literalValue(1)).times(SQLs.literalValue(5)).as("a")

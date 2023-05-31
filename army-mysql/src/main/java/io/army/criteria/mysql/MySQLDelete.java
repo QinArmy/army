@@ -65,6 +65,10 @@ public interface MySQLDelete extends MySQLStatement {
 
     }
 
+    interface _OrderByCommaSpec<I extends Item> extends _OrderByCommaClause<_OrderByCommaSpec<I>>, _LimitSpec<I> {
+
+    }
+
     /**
      * <p>
      * This interface representing the composite of below:
@@ -81,7 +85,7 @@ public interface MySQLDelete extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _OrderBySpec<I extends Item> extends _OrderByClause<_LimitSpec<I>>, _LimitSpec<I> {
+    interface _OrderBySpec<I extends Item> extends _OrderByClause<_OrderByCommaSpec<I>>, _LimitSpec<I> {
 
     }
 
@@ -193,6 +197,11 @@ public interface MySQLDelete extends MySQLStatement {
 
     }
 
+    interface _BatchOrderByCommaSpec<I extends Item> extends _OrderByCommaClause<_BatchOrderByCommaSpec<I>>,
+            _BatchLimitSpec<I> {
+
+    }
+
     /**
      * <p>
      * This interface representing the composite of below:
@@ -209,7 +218,7 @@ public interface MySQLDelete extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _BatchOrderBySpec<I extends Item> extends _OrderByClause<_BatchLimitSpec<I>>, _BatchLimitSpec<I> {
+    interface _BatchOrderBySpec<I extends Item> extends _OrderByClause<_BatchOrderByCommaSpec<I>>, _BatchLimitSpec<I> {
 
     }
 

@@ -1306,7 +1306,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlagg ( xml ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlAgg(Expression xml, Consumer<Statement._OrderByClause<Item>> consumer) {
+    public static SimpleExpression xmlAgg(Expression xml, Consumer<Statement._SimpleOrderByClause> consumer) {
         final FunctionUtils.OrderByOptionClause clause;
         clause = FunctionUtils.orderByOptionClause();
         consumer.accept(clause);

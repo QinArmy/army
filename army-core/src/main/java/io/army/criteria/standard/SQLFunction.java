@@ -128,8 +128,6 @@ public interface SQLFunction {
 
         Item when(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
 
-        Item ifWhen(Consumer<_DynamicWhenSpaceClause> consumer);
-
     }
 
     interface _StaticCaseThenClause extends _SqlCaseThenClause {
@@ -186,8 +184,8 @@ public interface SQLFunction {
         @Override
         _StaticCaseThenClause when(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
 
-        @Override
-        _StaticCaseWhenClause ifWhen(Consumer<_DynamicWhenSpaceClause> consumer);
+
+        _CaseWhenSpec ifWhen(Consumer<_DynamicWhenSpaceClause> consumer);
 
     }
 
@@ -246,8 +244,7 @@ public interface SQLFunction {
         @Override
         _DynamicCaseThenClause when(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second);
 
-        @Override
-        _DynamicCaseWhenClause ifWhen(Consumer<_DynamicWhenSpaceClause> consumer);
+
     }
 
 

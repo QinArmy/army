@@ -1030,6 +1030,17 @@ public interface Statement extends Item {
 
     }
 
+    interface _OrderByCommaClause<R> {
+
+        R spaceComma(SortItem sortItem);
+
+        R spaceComma(SortItem sortItem1, SortItem sortItem2);
+
+        R spaceComma(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3);
+
+        R spaceComma(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4);
+    }
+
     interface _OrderByClause<R> extends Item {
 
         R orderBy(SortItem sortItem);
@@ -1040,11 +1051,17 @@ public interface Statement extends Item {
 
         R orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4);
 
-        R orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4, SortItem sortItem5);
-
         R orderBy(Consumer<Consumer<SortItem>> consumer);
 
         R ifOrderBy(Consumer<Consumer<SortItem>> consumer);
+
+    }
+
+    interface _SimpleOrderByCommaClause extends _OrderByCommaClause<_SimpleOrderByCommaClause> {
+
+    }
+
+    interface _SimpleOrderByClause extends _OrderByClause<_SimpleOrderByCommaClause> {
 
     }
 

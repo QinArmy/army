@@ -1072,6 +1072,11 @@ abstract class SQLsSyntax extends Functions {
         return FunctionUtils.caseFunction(null);
     }
 
+    public static SQLFunction._CaseFuncWhenClause cases(Expression expression) {
+        ContextStack.assertNonNull(expression);
+        return FunctionUtils.caseFunction(expression);
+    }
+
 
     /*################################## blow sql key word operate method ##################################*/
 

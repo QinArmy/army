@@ -2626,6 +2626,8 @@ abstract class FunctionUtils {
 
         private TypeMeta returnType = TextType.INSTANCE;
 
+        private boolean dynamicWhenSpace;
+
         private CaseFunction(@Nullable ArmyExpression caseValue) {
             super("CASE");
             this.caseValue = caseValue;
@@ -2784,56 +2786,62 @@ abstract class FunctionUtils {
 
         @Override
         public CaseFunction ifWhen(Consumer<_DynamicWhenSpaceClause> consumer) {
+            this.dynamicWhenSpace = true;
             consumer.accept(this);
+            this.dynamicWhenSpace = false;
             return this;
         }
 
         @Override
         public _SqlCaseThenClause space(Expression expression) {
+            if (!this.dynamicWhenSpace) {
+                throw ContextStack.criteriaError(this.outerContext, "duplication ifWhen space.");
+            }
+            this.dynamicWhenSpace = false;
             return this.when(expression);
         }
 
         @Override
         public _SqlCaseThenClause space(Supplier<Expression> supplier) {
-            return this.when(supplier.get());
+            return this.space(supplier.get());
         }
 
         @Override
         public _SqlCaseThenClause space(UnaryOperator<IPredicate> valueOperator, IPredicate predicate) {
-            return this.when(valueOperator.apply(predicate));
+            return this.space(valueOperator.apply(predicate));
         }
 
         @Override
         public _SqlCaseThenClause space(Function<Expression, Expression> valueOperator, Expression expression) {
-            return this.when(valueOperator.apply(expression));
+            return this.space(valueOperator.apply(expression));
         }
 
         @Override
         public _SqlCaseThenClause space(Function<Object, Expression> valueOperator, Object value) {
-            return this.when(valueOperator.apply(value));
+            return this.space(valueOperator.apply(value));
         }
 
         @Override
         public <T> _SqlCaseThenClause space(Function<T, Expression> valueOperator, Supplier<T> getter) {
-            return this.when(valueOperator.apply(getter.get()));
+            return this.space(valueOperator.apply(getter.get()));
         }
 
         @Override
         public <T> _SqlCaseThenClause space(ExpressionOperator<SimpleExpression, T, Expression> expOperator,
                                             BiFunction<SimpleExpression, T, Expression> valueOperator, T value) {
-            return this.when(expOperator.apply(valueOperator, value));
+            return this.space(expOperator.apply(valueOperator, value));
         }
 
         @Override
         public <T> _SqlCaseThenClause space(BetweenValueOperator<T> expOperator,
                                             BiFunction<SimpleExpression, T, Expression> operator, T firstValue,
                                             SqlSyntax.WordAnd and, T secondValue) {
-            return this.when(expOperator.apply(operator, firstValue, and, secondValue));
+            return this.space(expOperator.apply(operator, firstValue, and, secondValue));
         }
 
         @Override
         public _SqlCaseThenClause space(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second) {
-            return this.when(expOperator.apply(first, and, second));
+            return this.space(expOperator.apply(first, and, second));
         }
 
         @Override
@@ -3076,7 +3084,9 @@ abstract class FunctionUtils {
     }//GlobalWindow
 
 
-    static final class OrderByOptionClause extends OrderByClause<Item> implements ArmyFuncClause {
+    static final class OrderByOptionClause extends OrderByClause<Statement._SimpleOrderByClause>
+            implements ArmyFuncClause,
+            Statement._SimpleOrderByClause {
 
         /**
          * @see #orderByOptionClause()

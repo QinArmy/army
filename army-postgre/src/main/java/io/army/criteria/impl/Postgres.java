@@ -68,6 +68,17 @@ public abstract class Postgres extends PostgreSyntax {
     public static final NullTreatMode RETURN_TARGET = PostgreWords.NullTreatModeExpression.RETURN_TARGET;
 
 
+    public static final Window.RowModifier UNBOUNDED_PRECEDING = SQLWindow.WindowRowModifier.UNBOUNDED_PRECEDING;
+
+    public static final Window.RowModifier CURRENT_ROW = SQLWindow.WindowRowModifier.CURRENT_ROW;
+
+    public static final Window.RowModifier UNBOUNDED_FOLLOWING = SQLWindow.WindowRowModifier.UNBOUNDED_FOLLOWING;
+
+    public static final Window.ExpModifier PRECEDING = SQLWindow.WindowExpModifier.PRECEDING;
+
+    public static final Window.ExpModifier FOLLOWING = SQLWindow.WindowExpModifier.FOLLOWING;
+
+
     /**
      * <p>
      * create single-table INSERT statement that is primary statement.

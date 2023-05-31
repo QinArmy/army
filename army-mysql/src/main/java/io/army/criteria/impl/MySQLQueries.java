@@ -53,7 +53,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         MySQLQuery._WhereAndSpec<I>,
         MySQLQuery._GroupByWithRollupSpec<I>,
         MySQLQuery._WindowSpec<I>,
-        MySQLQuery._OrderByWithRollupSpec<I>,
+        MySQLQuery._OrderByCommaSpec<I>,
         MySQLQuery._LockSpec<I>,
         Object,
         Object,
@@ -68,6 +68,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         MySQLQuery._HavingSpec<I>,
         MySQLQuery._WindowCommaSpec<I>,
         MySQLQuery._OrderByWithRollupSpec<I>,
+        MySQLQuery._OrderByCommaSpec<I>,
         OrderByClause.OrderByEventListener {
 
     static _WithSpec<Select> simpleQuery() {
@@ -1080,13 +1081,14 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     static abstract class MySQLBracketQuery<I extends Item>
             extends BracketRowSet<
             I,
-            _UnionOrderBySpec<I>,
-            _UnionLimitSpec<I>,
-            _AsQueryClause<I>,
+            MySQLQuery._UnionOrderBySpec<I>,
+            MySQLQuery._UnionOrderByCommaSpec<I>,
+            Query._AsQueryClause<I>,
             Object,
             Object,
             _QueryWithComplexSpec<I>>
-            implements _UnionOrderBySpec<I> {
+            implements MySQLQuery._UnionOrderBySpec<I>,
+            MySQLQuery._UnionOrderByCommaSpec<I> {
 
 
         private MySQLBracketQuery(ArmyStmtSpec spec) {

@@ -27,8 +27,13 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     }
 
+    interface _UnionOrderByCommaSpec<I extends Item> extends _OrderByCommaClause<_UnionOrderByCommaSpec<I>>,
+            _UnionLimitSpec<I> {
 
-    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionLimitSpec<I>>,
+    }
+
+
+    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionOrderByCommaSpec<I>>,
             _UnionLimitSpec<I>,
             _UnionSpec<I> {
 
@@ -47,8 +52,12 @@ public interface PostgreValues extends PostgreStatement, ValuesQuery {
 
     }
 
+    interface _OrderByCommaSpec<I extends Item> extends _OrderByCommaClause<_OrderByCommaSpec<I>>, _LimitSpec<I> {
 
-    interface _OrderBySpec<I extends Item> extends _OrderByClause<_LimitSpec<I>>,
+    }
+
+
+    interface _OrderBySpec<I extends Item> extends _OrderByClause<_OrderByCommaSpec<I>>,
             _LimitSpec<I>,
             _UnionSpec<I> {
 

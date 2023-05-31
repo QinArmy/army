@@ -1271,7 +1271,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
     static final class PostgreWindowImpl extends SQLWindow.SQLExcludeWindow<
             PostgreWindow._PartitionByCommaSpec,
-            PostgreWindow._FrameExtentSpec,
+            PostgreWindow._OrderByCommaSpec,
             PostgreWindow._PostgreFrameExclusionClause,
             PostgreWindow._PostgreFrameBetweenClause,
             PostgreWindow._PostgreFrameExclusionClause,
@@ -1279,6 +1279,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             Item>
             implements PostgreWindow._PartitionBySpec,
             PostgreWindow._PartitionByCommaSpec,
+            PostgreWindow._OrderByCommaSpec,
             PostgreWindow._PostgreFrameBetweenClause,
             PostgreWindow._PostgreFrameExclusionClause,
             PostgreWindow._FrameUnitSpaceSpec {

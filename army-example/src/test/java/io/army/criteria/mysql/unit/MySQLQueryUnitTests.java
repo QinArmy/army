@@ -15,6 +15,8 @@ import org.testng.annotations.Test;
 import java.time.LocalDateTime;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static io.army.criteria.impl.MySQLs.CURRENT_ROW;
+import static io.army.criteria.impl.MySQLs.UNBOUNDED_PRECEDING;
 import static io.army.criteria.impl.SQLs.*;
 
 public class MySQLQueryUnitTests extends MySQLUnitTests {
@@ -38,7 +40,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                 )
                 .comma(MySQLs.rowNumber().over()::as, "rowNumber")
                 .comma(MySQLs.sum(ChinaRegion_.regionGdp).over(s -> s.partitionBy(ChinaRegion_.regionType))::as, "gdpSum")
-                .comma(MySQLs.sum(DISTINCT, ChinaRegion_.regionGdp)
+                .comma(MySQLs.sum(MySQLs.DISTINCT, ChinaRegion_.regionGdp)
                         .over(s -> s.partitionBy(ChinaRegion_.regionType)).as("distinctGdpSum")
                 )
                 .comma(MySQLs.lag(ChinaRegion_.population, SQLs.literalValue(1))

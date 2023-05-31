@@ -47,7 +47,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreQuery._WhereAndSpec<I>,
         PostgreQuery._HavingSpec<I>,
         PostgreQuery._WindowSpec<I>,
-        PostgreQuery._LimitSpec<I>,
+        PostgreQuery._OrderByCommaSpec<I>,
         PostgreQuery._OffsetSpec<I>,
         PostgreQuery._FetchSpec<I>,
         PostgreQuery._LockSpec<I>,
@@ -62,6 +62,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreQuery._WhereAndSpec<I>,
         PostgreQuery._WindowCommaSpec<I>,
         PostgreQuery._HavingSpec<I>,
+        PostgreQuery._OrderByCommaSpec<I>,
         PostgreQuery._FetchSpec<I> {
 
 
@@ -905,12 +906,13 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             extends BracketRowSet<
             I,
             PostgreQuery._UnionOrderBySpec<I>,
-            PostgreQuery._UnionLimitSpec<I>,
+            PostgreQuery._UnionOrderByCommaSpec<I>,
             PostgreQuery._UnionOffsetSpec<I>,
             PostgreQuery._UnionFetchSpec<I>,
             Query._AsQueryClause<I>,
             PostgreQuery._QueryWithComplexSpec<I>>
             implements PostgreQuery._UnionOrderBySpec<I>,
+            PostgreQuery._UnionOrderByCommaSpec<I>,
             PostgreQuery._UnionOffsetSpec<I>,
             PostgreQuery._UnionFetchSpec<I> {
 

@@ -28,6 +28,7 @@ abstract class MySQLSupports extends CriteriaSupports {
     }
 
 
+
     static MySQLCtes mysqlLCteBuilder(boolean recursive, CriteriaContext context) {
         return new MySQLCteBuilder(recursive, context);
     }
@@ -648,7 +649,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
     static final class MySQLWindowImpl extends SQLWindow<
             MySQLWindow._PartitionByCommaSpec,
-            MySQLWindow._FrameExtentSpec,
+            MySQLWindow._OrderByCommaSpec,
             Item,
             MySQLWindow._MySQLFrameBetweenClause,
             Item,
@@ -657,6 +658,7 @@ abstract class MySQLSupports extends CriteriaSupports {
             implements MySQLWindow,
             MySQLWindow._PartitionBySpec,
             MySQLWindow._PartitionByCommaSpec,
+            MySQLWindow._OrderByCommaSpec,
             MySQLWindow._FrameUnitSpaceSpec,
             MySQLWindow._MySQLFrameBetweenClause {
 

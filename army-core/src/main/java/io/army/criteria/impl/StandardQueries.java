@@ -45,7 +45,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._WhereAndSpec<I>, // AR
         StandardQuery._HavingSpec<I>, // GR
         StandardQuery._OrderBySpec<I>, // HR
-        StandardQuery._LimitSpec<I>, // OR
+        StandardQuery._OrderByCommaSpec<I>, // OR
         StandardQuery._LockSpec<I>, // LR
         Object,
         Object,
@@ -57,6 +57,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._JoinSpec<I>,
         StandardQuery._WhereAndSpec<I>,
         StandardQuery._HavingSpec<I>,
+        StandardQuery._OrderByCommaSpec<I>,
         _StandardQuery,
         ArmyStmtSpec {
 
@@ -397,13 +398,14 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     static abstract class StandardBracketQuery<I extends Item>
             extends BracketRowSet<
             I,
-            _UnionOrderBySpec<I>,
-            _UnionLimitSpec<I>,
-            _AsQueryClause<I>,
+            StandardQuery._UnionOrderBySpec<I>,
+            StandardQuery._UnionOrderByCommaSpec<I>,
+            Query._AsQueryClause<I>,
             Object,
             Object,
             _SelectSpec<I>>
             implements StandardQuery._UnionOrderBySpec<I>,
+            StandardQuery._UnionOrderByCommaSpec<I>,
             StandardQuery {
 
 

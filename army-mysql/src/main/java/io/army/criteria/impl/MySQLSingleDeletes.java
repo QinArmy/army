@@ -204,11 +204,12 @@ abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, W
             MySQLDelete._SingleWhereClause<I>,
             MySQLDelete._OrderBySpec<I>,
             MySQLDelete._SingleWhereAndSpec<I>,
-            MySQLDelete._LimitSpec<I>,
+            MySQLDelete._OrderByCommaSpec<I>,
             Statement._DmlDeleteSpec<I>>
             implements MySQLDelete._SingleWithSpec<I>,
             MySQLDelete._SinglePartitionSpec<I>,
             MySQLDelete._SingleWhereAndSpec<I>,
+            MySQLDelete._OrderByCommaSpec<I>,
             Delete {
 
         private final Function<? super Delete, I> function;
@@ -240,16 +241,17 @@ abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, W
 
     private static final class MySQLBatchDelete extends MySQLSingleDeletes<
             BatchDelete,
-            _BatchSingleDeleteClause<BatchDelete>,
-            _BatchSinglePartitionSpec<BatchDelete>,
-            _BatchSingleWhereClause<BatchDelete>,
-            _BatchOrderBySpec<BatchDelete>,
-            _BatchSingleWhereAndSpec<BatchDelete>,
-            _BatchLimitSpec<BatchDelete>,
-            _BatchParamClause<_DmlDeleteSpec<BatchDelete>>>
+            MySQLDelete._BatchSingleDeleteClause<BatchDelete>,
+            MySQLDelete._BatchSinglePartitionSpec<BatchDelete>,
+            MySQLDelete._BatchSingleWhereClause<BatchDelete>,
+            MySQLDelete._BatchOrderBySpec<BatchDelete>,
+            MySQLDelete._BatchSingleWhereAndSpec<BatchDelete>,
+            MySQLDelete._BatchOrderByCommaSpec<BatchDelete>,
+            MySQLDelete._BatchParamClause<_DmlDeleteSpec<BatchDelete>>>
             implements MySQLDelete._BatchSingleWithSpec<BatchDelete>,
             MySQLDelete._BatchSinglePartitionSpec<BatchDelete>,
             MySQLDelete._BatchSingleWhereAndSpec<BatchDelete>,
+            MySQLDelete._BatchOrderByCommaSpec<BatchDelete>,
             BatchDelete,
             _BatchDml {
 

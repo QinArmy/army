@@ -65,7 +65,11 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionLimitSpec<I>>,
+    interface _UnionOrderByCommaSpec<I extends Item> extends _OrderByCommaClause<_UnionOrderByCommaSpec<I>>, _UnionLimitSpec<I> {
+
+    }
+
+    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionOrderByCommaSpec<I>>,
             _UnionLimitSpec<I>, _UnionSpec<I> {
 
     }
@@ -137,7 +141,12 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _OrderBySpec<I extends Item> extends _OrderByClause<_OrderByWithRollupSpec<I>>,
+    interface _OrderByCommaSpec<I extends Item> extends _OrderByCommaClause<_OrderByCommaSpec<I>>, _OrderByWithRollupSpec<I> {
+
+    }
+
+
+    interface _OrderBySpec<I extends Item> extends _OrderByClause<_OrderByCommaSpec<I>>,
             _LimitSpec<I>,
             _UnionSpec<I> {
 

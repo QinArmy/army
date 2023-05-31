@@ -210,15 +210,16 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
     private static final class MySQLSimpleUpdate<I extends Item, T> extends MySQLSingleUpdates<
             I,
             T,
-            _SingleIndexHintSpec<I, T>,
-            _SingleWhereSpec<I, T>,
-            _OrderBySpec<I>,
-            _SingleWhereAndSpec<I>,
-            _LimitSpec<I>,
+            MySQLUpdate._SingleIndexHintSpec<I, T>,
+            MySQLUpdate._SingleWhereSpec<I, T>,
+            MySQLUpdate._OrderBySpec<I>,
+            MySQLUpdate._SingleWhereAndSpec<I>,
+            MySQLUpdate._OrderByCommaSpec<I>,
             _DmlUpdateSpec<I>>
             implements MySQLUpdate._SingleIndexHintSpec<I, T>,
             MySQLUpdate._SingleWhereSpec<I, T>,
             MySQLUpdate._SingleWhereAndSpec<I>,
+            MySQLUpdate._OrderByCommaSpec<I>,
             Update {
 
         private final Function<? super Update, I> function;
@@ -396,11 +397,12 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
             _BatchSingleWhereSpec<BatchUpdate, T>,
             _BatchOrderBySpec<BatchUpdate>,
             _BatchSingleWhereAndSpec<BatchUpdate>,
-            _BatchLimitSpec<BatchUpdate>,
+            _BatchOrderByCommaSpec<BatchUpdate>,
             _BatchParamClause<_DmlUpdateSpec<BatchUpdate>>>
             implements MySQLUpdate._BatchSingleIndexHintSpec<BatchUpdate, T>,
             MySQLUpdate._BatchSingleWhereSpec<BatchUpdate, T>,
             MySQLUpdate._BatchSingleWhereAndSpec<BatchUpdate>,
+            MySQLUpdate._BatchOrderByCommaSpec<BatchUpdate>,
             _DmlUpdateSpec<BatchUpdate>,
             BatchUpdate,
             _BatchDml {

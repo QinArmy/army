@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         implements CriteriaContextSpec,
         Statement._OrderByClause<OR>,
+        Statement._OrderByCommaClause<OR>,
         _Statement._OrderByListSpec {
 
     final CriteriaContext context;
@@ -37,20 +38,15 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         return this.context;
     }
 
+
     @Override
     public final OR orderBy(SortItem sortItem) {
-        if (this instanceof OrderByEventListener) {
-            ((OrderByEventListener) this).onOrderByEvent();
-        }
         this.onAddOrderBy(sortItem);
         return (OR) this;
     }
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2) {
-        if (this instanceof OrderByEventListener) {
-            ((OrderByEventListener) this).onOrderByEvent();
-        }
         this.onAddOrderBy(sortItem1)
                 .onAddOrderBy(sortItem2);
         return (OR) this;
@@ -58,9 +54,6 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
-        if (this instanceof OrderByEventListener) {
-            ((OrderByEventListener) this).onOrderByEvent();
-        }
         this.onAddOrderBy(sortItem1)
                 .onAddOrderBy(sortItem2)
                 .onAddOrderBy(sortItem3);
@@ -69,9 +62,6 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4) {
-        if (this instanceof OrderByEventListener) {
-            ((OrderByEventListener) this).onOrderByEvent();
-        }
         this.onAddOrderBy(sortItem1)
                 .onAddOrderBy(sortItem2)
                 .onAddOrderBy(sortItem3)
@@ -80,23 +70,38 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     }
 
     @Override
-    public final OR orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4, SortItem sortItem5) {
-        if (this instanceof OrderByEventListener) {
-            ((OrderByEventListener) this).onOrderByEvent();
-        }
-        this.onAddOrderBy(sortItem1)
-                .onAddOrderBy(sortItem2)
-                .onAddOrderBy(sortItem3)
-                .onAddOrderBy(sortItem4)
-                .onAddOrderBy(sortItem5);
+    public final OR spaceComma(SortItem sortItem) {
+        this.onAddOrderBy(sortItem);
         return (OR) this;
     }
 
     @Override
+    public final OR spaceComma(SortItem sortItem1, SortItem sortItem2) {
+        this.onAddOrderBy(sortItem1)
+                .onAddOrderBy(sortItem2);
+        return (OR) this;
+    }
+
+    @Override
+    public final OR spaceComma(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3) {
+        this.onAddOrderBy(sortItem1)
+                .onAddOrderBy(sortItem2)
+                .onAddOrderBy(sortItem3);
+        return (OR) this;
+    }
+
+    @Override
+    public final OR spaceComma(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4) {
+        this.onAddOrderBy(sortItem1)
+                .onAddOrderBy(sortItem2)
+                .onAddOrderBy(sortItem3)
+                .onAddOrderBy(sortItem4);
+        return (OR) this;
+    }
+
+
+    @Override
     public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
-        if (this instanceof OrderByEventListener) {
-            ((OrderByEventListener) this).onOrderByEvent();
-        }
         consumer.accept(this::onAddOrderBy);
         if (this.orderByList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
@@ -106,10 +111,10 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
     @Override
     public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
-        if (this instanceof OrderByEventListener) {
+        consumer.accept(this::onAddOrderBy);
+        if (this.orderByList == null || this instanceof OrderByEventListener) {
             ((OrderByEventListener) this).onOrderByEvent();
         }
-        consumer.accept(this::onAddOrderBy);
         return (OR) this;
     }
 
@@ -149,6 +154,9 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
         if (orderByList == null) {
             orderByList = _Collections.arrayList();
             this.orderByList = orderByList;
+            if (this instanceof OrderByEventListener) {
+                ((OrderByEventListener) this).onOrderByEvent();
+            }
         } else if (!(orderByList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
         }

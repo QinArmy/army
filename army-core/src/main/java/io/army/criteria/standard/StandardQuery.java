@@ -55,6 +55,11 @@ public interface StandardQuery extends Query, StandardStatement {
 
     }
 
+
+    interface _UnionOrderByCommaSpec<I extends Item> extends _OrderByCommaClause<_UnionOrderByCommaSpec<I>>, _UnionLimitSpec<I> {
+
+    }
+
     /**
      * <p>
      * This interface representing the composite of below:
@@ -71,7 +76,7 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionLimitSpec<I>>,
+    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionOrderByCommaSpec<I>>,
             _UnionLimitSpec<I>,
             _UnionSpec<I> {
 
@@ -122,6 +127,11 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
 
+    interface _OrderByCommaSpec<I extends Item> extends _OrderByCommaClause<_OrderByCommaSpec<I>>, _LimitSpec<I> {
+
+    }
+
+
     /**
      * <p>
      * This interface representing the composite of below:
@@ -139,7 +149,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _OrderBySpec<I extends Item> extends _LimitSpec<I>,
-            _OrderByClause<_LimitSpec<I>>,
+            _OrderByClause<_OrderByCommaSpec<I>>,
             _UnionSpec<I> {
 
     }

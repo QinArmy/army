@@ -18,13 +18,14 @@ abstract class MySQLSimpleValues<I extends Item>
         extends SimpleValues<
         I,
         MySQLValues._ValuesLeftParenSpec<I>,
-        MySQLValues._LimitSpec<I>,
+        MySQLValues._OrderByCommaSpec<I>,
         Statement._AsValuesClause<I>,
         Object,
         Object,
         MySQLValues._ValueWithComplexSpec<I>>
         implements MySQLValues._ValueSpec<I>,
         MySQLValues._ValuesLeftParenSpec<I>,
+        MySQLValues._OrderByCommaSpec<I>,
         ArmyStmtSpec,
         MySQLValues {
 
@@ -162,12 +163,13 @@ abstract class MySQLSimpleValues<I extends Item>
             extends BracketRowSet<
             I,
             MySQLValues._UnionOrderBySpec<I>,
-            MySQLValues._UnionLimitSpec<I>,
+            MySQLValues._UnionOrderByCommaSpec<I>,
             _AsValuesClause<I>,
             Object,
             Object,
             MySQLValues._ValueWithComplexSpec<I>>
             implements MySQLValues._UnionOrderBySpec<I>,
+            MySQLValues._UnionOrderByCommaSpec<I>,
             MySQLValues {
 
         private MySQLBracketValues(ArmyStmtSpec spec) {
