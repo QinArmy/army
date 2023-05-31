@@ -65,7 +65,7 @@ abstract class SingleDeleteStatement<I extends Item, WR, WA, OR, OD, LR, LO, LF>
     private void endDeleteStatement() {
         _Assert.nonPrepared(this.prepared);
         this.endOrderByClause();
-        this.endWhereClause();
+        this.endWhereClauseIfNeed();
         ContextStack.pop(this.context);
         this.prepared = Boolean.TRUE;
     }

@@ -373,7 +373,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final GR groupBy(Expression sortItem) {
-         this.addGroupByItem(sortItem);
+        this.addGroupByItem(sortItem);
         return (GR) this;
     }
 
@@ -747,7 +747,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             this.modifierList = Collections.emptyList();
         }
 
-        this.endWhereClause();
+        this.endWhereClauseIfNeed();
 
         // group by and having
         if (this.groupByList == null) {
@@ -791,15 +791,13 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     private GD endGroupBy(final boolean required) {
         final List<ArmySortItem> itemList = this.groupByList;
-        if (itemList == null) {
+        if (itemList instanceof ArrayList) {
+            this.groupByList = _Collections.unmodifiableList(itemList);
+        } else if (itemList == null) {
             if (required) {
                 throw ContextStack.criteriaError(this.context, "group by clause is empty");
             }
             this.groupByList = _Collections.emptyList();
-        } else if (itemList instanceof ArrayList) {
-            this.groupByList = _Collections.unmodifiableList(itemList);
-        } else {
-            throw ContextStack.castCriteriaApi(this.context);
         }
         return (GD) this;
     }

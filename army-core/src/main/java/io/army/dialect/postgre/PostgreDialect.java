@@ -2,7 +2,6 @@ package io.army.dialect.postgre;
 
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.dialect._Constant;
 import io.army.meta.ServerMeta;
 import io.army.util._StringUtils;
 
@@ -32,13 +31,13 @@ public enum PostgreDialect implements Dialect {
         return this.version;
     }
 
+    public final int compareWith(PostgreDialect o) {
+        return this.version - o.version;
+    }
+
     @Override
     public final String toString() {
-        return _StringUtils.builder()
-                .append(PostgreDialect.class.getName())
-                .append(_Constant.POINT)
-                .append(this.name())
-                .toString();
+        return _StringUtils.enumToString(this);
     }
 
 

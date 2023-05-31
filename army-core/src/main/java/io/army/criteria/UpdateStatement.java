@@ -47,44 +47,34 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
         SR set(F field, Expression value);
 
-        SR set(F field, Supplier<Expression> supplier);
+        <R extends AssignmentItem> SR set(F field, Supplier<R> supplier);
 
-        SR set(F field, Function<F, Expression> function);
+        <R extends AssignmentItem> SR set(F field, Function<F, R> function);
 
-        <R extends AssignmentItem> SR set(F field, BiFunction<F, Expression, R> valueOperator, Expression expression);
+        <E, R extends AssignmentItem> SR set(F field, BiFunction<F, E, R> valueOperator, @Nullable E value);
 
-        SR set(F field, BiFunction<F, Object, Expression> valueOperator, @Nullable Object value);
+        <K, V, R extends AssignmentItem> SR set(F field, BiFunction<F, V, R> valueOperator, Function<K, V> function, K key);
 
-        <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
+        <E, V, R extends AssignmentItem> SR set(F field, BiFunction<F, V, R> fieldOperator,
+                                                BiFunction<F, E, V> valueOperator, E value);
 
-        SR set(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <K, V, U, R extends AssignmentItem> SR set(F field, BiFunction<F, U, R> fieldOperator,
+                                                   BiFunction<F, V, U> valueOperator, Function<K, V> function, K key);
 
-        SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-               BiFunction<F, Object, Expression> valueOperator, Expression expression);
+        <R extends AssignmentItem> SR ifSet(F field, Supplier<R> supplier);
 
-        SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-               BiFunction<F, Object, Expression> valueOperator, Object value);
+        <R extends AssignmentItem> SR ifSet(F field, Function<F, R> function);
 
-        <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                   BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
+        <E, R extends AssignmentItem> SR ifSet(F field, BiFunction<F, E, R> valueOperator, Supplier<E> supplier);
 
-        SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-               BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <K, V, R extends AssignmentItem> SR ifSet(F field, BiFunction<F, V, R> valueOperator,
+                                                  Function<K, V> function, K key);
 
-        SR ifSet(F field, Supplier<Expression> supplier);
+        <E, V, R extends AssignmentItem> SR ifSet(F field, BiFunction<F, V, R> fieldOperator,
+                                                  BiFunction<F, E, V> valueOperator, Supplier<E> getter);
 
-        SR ifSet(F field, Function<F, Expression> function);
-
-        <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier);
-
-        SR ifSet(F field, BiFunction<F, Object, Expression> valueOperator,
-                 Function<String, ?> function, String keyName);
-
-        <E> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                     BiFunction<F, E, Expression> valueOperator, Supplier<E> getter);
-
-        SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                 BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <K, V, U, R extends AssignmentItem> SR ifSet(F field, BiFunction<F, U, R> fieldOperator,
+                                                     BiFunction<F, V, U> valueOperator, Function<K, V> function, K key);
 
     }
 
@@ -103,25 +93,31 @@ public interface UpdateStatement extends NarrowDmlStatement {
      */
     interface _StaticBatchSetClause<F extends DataField, SR> extends _StaticSetClause<F, SR> {
 
-        /**
-         * @see #set(DataField, BiFunction, Object)
-         */
-        SR set(F field, BiFunction<F, String, Expression> valueOperator);
 
-        SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator, BiFunction<F, String, Expression> valueOperator);
+        SR setNamed(F field, BiFunction<F, String, Expression> valueOperator);
+
+        <R extends AssignmentItem> SR setNamed(F field, BiFunction<F, Expression, R> fieldOperator, BiFunction<F, String, Expression> valueOperator);
 
     }
 
 
     interface _StaticRowSetClause<F extends DataField, SR> extends _StaticSetClause<F, SR> {
 
-        SR set(F field1, F field2, Supplier<SubQuery> supplier);
+        SR setRow(F field1, F field2, Supplier<SubQuery> supplier);
 
-        SR set(F field1, F field2, F field3, Supplier<SubQuery> supplier);
+        SR setRow(F field1, F field2, F field3, Supplier<SubQuery> supplier);
 
-        SR set(F field1, F field2, F field3, F field4, Supplier<SubQuery> supplier);
+        SR setRow(F field1, F field2, F field3, F field4, Supplier<SubQuery> supplier);
 
-        SR set(Consumer<Consumer<F>> consumer, Supplier<SubQuery> supplier);
+        SR setRow(Consumer<Consumer<F>> consumer, Supplier<SubQuery> supplier);
+
+        SR ifSetRow(F field1, F field2, Supplier<SubQuery> supplier);
+
+        SR ifSetRow(F field1, F field2, F field3, Supplier<SubQuery> supplier);
+
+        SR ifSetRow(F field1, F field2, F field3, F field4, Supplier<SubQuery> supplier);
+
+        SR ifSetRow(Consumer<Consumer<F>> consumer, Supplier<SubQuery> supplier);
 
     }
 
@@ -152,9 +148,17 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
     interface _UpdateWhereAndClause<WA> extends Statement._WhereAndClause<WA> {
 
-        <T> WA and(ExpressionOperator<SimpleExpression, T, Expression> expOperator1, BiFunction<SimpleExpression, T, Expression> operator, T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);
+        <T> WA and(ExpressionOperator<SimpleExpression, T, Expression> expOperator1,
+                   BiFunction<SimpleExpression, T, Expression> operator, T operand1,
+                   BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);
 
-        <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, Expression> expOperator1, BiFunction<SimpleExpression, T, Expression> operator, @Nullable T operand1, BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand);
+        <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, Expression> expOperator1,
+                     BiFunction<SimpleExpression, T, Expression> operator, @Nullable T operand1,
+                     BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand);
+
+        WA and(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+               BiFunction<DataField, String, Expression> operator,
+               BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);
 
     }
 

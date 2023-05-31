@@ -979,6 +979,14 @@ public interface Statement extends Item {
 
     }
 
+    interface _SimpleWhereAndClause extends _WhereAndClause<_SimpleWhereAndClause> {
+
+    }
+
+    interface _SimpleWhereClause extends _WhereClause<Item, _SimpleWhereAndClause> {
+
+    }
+
 
     interface _StaticOrderByCommaClause<OR> {
 

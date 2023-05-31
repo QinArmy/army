@@ -612,19 +612,19 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(Selection selection) {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returning(selection);
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(Selection selection1, Selection selection2) {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returning(selection1, selection2);
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias) {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returning(function, alias);
         }
 
@@ -632,59 +632,59 @@ abstract class PostgreInserts extends InsertSupports {
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(
                 Function<String, Selection> function1, String alias1,
                 Function<String, Selection> function2, String alias2) {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returning(function1, alias1, function2, alias2);
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias,
                                                                     Selection selection) {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returning(function, alias, selection);
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(
                 Selection selection, Function<String, Selection> function, String alias) {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returning(selection, function, alias);
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(TableMeta<?> insertTable) {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returning(insertTable);
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2,
                                                                     TableField field3) {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returning(field1, field2, field3);
         }
 
         @Override
         public PostgreInsert._StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2,
                                                                     TableField field3, TableField field4) {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returning(field1, field2, field3, field4);
         }
 
         @Override
         public Statement._DqlInsertClause<Q> returningAll() {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returningAll();
         }
 
         @Override
         public Statement._DqlInsertClause<Q> returning(Consumer<Returnings> consumer) {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .returning(consumer);
         }
 
         @Override
         public I asInsert() {
-            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClause())
+            return this.onConflictClause.updateActionClauseEnd(this.endUpdateSetClause(), this.endWhereClauseIfNeed())
                     .asInsert();
         }
 
@@ -741,14 +741,14 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public PostgreInsert._ReturningSpec<I, Q> doNothing() {
-            this.endWhereClause();
+            this.endWhereClauseIfNeed();
             this.doNothing = true;
             return this.valuesClause.conflictClauseEnd(new ConflictActionClauseResult(this));
         }
 
         @Override
         public PostgreInsert._DoUpdateSetClause<T, I, Q> doUpdate() {
-            this.endWhereClause();
+            this.endWhereClauseIfNeed();
             return new ConflictDoUpdateActionClause<>(this);
         }
 

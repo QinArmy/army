@@ -801,9 +801,15 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(ContextStack.peek(), m);
     }
 
-    static CriteriaException illegalAssignmentItem(CriteriaContext context, @Nullable AssignmentItem item) {
+    static CriteriaException illegalAssignmentItem(@Nullable CriteriaContext context, @Nullable AssignmentItem item) {
         String m = String.format("%s is illegal %s", _ClassUtils.safeClassName(item), AssignmentItem.class.getName());
-        return ContextStack.criteriaError(context, m);
+        final CriteriaException e;
+        if (context == null) {
+            e = ContextStack.clearStackAndCriteriaError(m);
+        } else {
+            e = ContextStack.criteriaError(context, m);
+        }
+        return e;
     }
 
     @Deprecated

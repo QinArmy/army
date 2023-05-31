@@ -68,10 +68,12 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
     public void batchUpdateParent() {
         final UpdateStatement stmt;
         stmt = SQLs.batchSingleUpdate()
-                .update(ChinaProvince_.T, AS, "p")
-                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
+                .update(ChinaProvince_.T, AS, "p") // update only parent table field: ChinaRegion_.*
+                .setNamed(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::namedParam)
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
-                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO)
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
+                .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
+                .ifAnd(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
                 .and(ChinaRegion_.version::equal, SQLs::param, "0")
                 .namedParamList(this::createProvinceList)
                 .asUpdate();

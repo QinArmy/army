@@ -171,12 +171,15 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         @Override
         final boolean isDontSupportWindow(final Dialect dialect) {
+            if (!(dialect instanceof MySQLDialect)) {
+                throw dialectError(dialect);
+            }
             return MySQLDialect.MySQL80.compareWith((MySQLDialect) dialect) < 0;
         }
 
         @Override
         final MySQLWindow._PartitionBySpec createAnonymousWindow(@Nullable String existingWindowName) {
-            return MySQLSupports.anonymousWindow(this.context, existingWindowName);
+            return MySQLSupports.anonymousWindow(this.outerContext, existingWindowName);
         }
 
     }//MySQLWindowFunction
@@ -188,12 +191,12 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        final void appendArguments(final _SqlContext context) {
+        final void appendArguments(StringBuilder sqlBuilder, _SqlContext context) {
             //no argument,no-op
         }
 
         @Override
-        final void argumentToString(final StringBuilder builder) {
+        final void argumentToString(StringBuilder builder) {
             //no argument,no-op
         }
 
@@ -210,7 +213,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        final void appendArguments(final _SqlContext context) {
+        final void appendArguments(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.argument.appendSql(context);
         }
 
@@ -238,11 +241,10 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        final void appendArguments(final _SqlContext context) {
+        final void appendArguments(final StringBuilder sqlBuilder, final _SqlContext context) {
             final SQLWords option = this.option;
             if (option != null) {
-                context.sqlBuilder()
-                        .append(option.spaceRender());
+                sqlBuilder.append(option.spaceRender());
             }
             this.argument.appendSql(context);
         }
@@ -276,7 +278,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        final void appendArguments(final _SqlContext context) {
+        final void appendArguments(final StringBuilder sqlBuilder, final _SqlContext context) {
             FunctionUtils.appendArguments(this.option, this.argList, context);
         }
 

@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardDelete;
 import io.army.criteria.standard.StandardInsert;
@@ -21,10 +22,10 @@ import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -62,6 +63,16 @@ public abstract class SQLs extends SQLsSyntax {
     public static final WordFor FOR = SqlWords.KeyWordFor.FOR;
     public static final WordFrom FROM = SqlWords.KeyWordFrom.FROM;
     public static final WordSimilar SIMILAR = SqlWords.KeyWordSimilar.SIMILAR;
+
+    public static final Window.RowModifier UNBOUNDED_PRECEDING = SQLWindow.WindowRowModifier.UNBOUNDED_PRECEDING;
+
+    public static final Window.RowModifier CURRENT_ROW = SQLWindow.WindowRowModifier.CURRENT_ROW;
+
+    public static final Window.RowModifier UNBOUNDED_FOLLOWING = SQLWindow.WindowRowModifier.UNBOUNDED_FOLLOWING;
+
+    public static final Window.ExpModifier PRECEDING = SQLWindow.WindowExpModifier.PRECEDING;
+
+    public static final Window.ExpModifier FOLLOWING = SQLWindow.WindowExpModifier.FOLLOWING;
 
 
     @Support({PostgreSQL, H2})
@@ -375,7 +386,7 @@ public abstract class SQLs extends SQLsSyntax {
                         , fieldList.size(), selectionCount);
                 throw new CriteriaException(m);
             }
-            final List<DataField> tempList = new ArrayList<>(fieldList.size());
+            final List<DataField> tempList = _Collections.arrayList(fieldList.size());
             for (DataField field : fieldList) {
                 if (!(field instanceof TableField)) {
                     tempList.add(field);

@@ -3,8 +3,10 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._TableNameElement;
 import io.army.criteria.postgre.PostgreQuery;
+import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.*;
+import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
@@ -65,6 +67,25 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             throw ContextStack.clearStackAndCriteriaError(m);
         }
         return new QueryExpression(query, visible);
+    }
+
+
+    static PostgreWindowFunctions._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
+        return new ZeroArgWindowFunc(name, returnType);
+    }
+
+    static PostgreWindowFunctions._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
+        return new OneArgWindowFunc(name, one, returnType);
+    }
+
+    static PostgreWindowFunctions._OverSpec twoArgWindowFunc(String name, Expression one, Expression two,
+                                                             TypeMeta returnType) {
+        return new TwoArgWindowFunc(name, one, two, returnType);
+    }
+
+    static PostgreWindowFunctions._OverSpec threeArgWindowFunc(String name, Expression one, Expression two,
+                                                               Expression three, TypeMeta returnType) {
+        return new ThreeArgWindowFunc(name, one, two, three, returnType);
     }
 
 
@@ -757,6 +778,134 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
     }//QueryExpression
+
+
+    private static abstract class PostgreWindowFunction
+            extends FunctionUtils.WindowFunction<PostgreWindow._PartitionBySpec>
+            implements PostgreWindowFunctions._OverSpec {
+
+        private PostgreWindowFunction(String name, TypeMeta returnType) {
+            super(name, returnType);
+        }
+
+        @Override
+        final boolean isDontSupportWindow(Dialect dialect) {
+            if (!(dialect instanceof PostgreDialect)) {
+                throw dialectError(dialect);
+            }
+            return false;
+        }
+
+        @Override
+        final PostgreWindow._PartitionBySpec createAnonymousWindow(@Nullable String existingWindowName) {
+            return PostgreSupports.anonymousWindow(this.outerContext, existingWindowName);
+        }
+
+
+    }//PostgreWindowFunction
+
+
+    private static final class ZeroArgWindowFunc extends PostgreWindowFunction implements NoArgFunction {
+
+        private ZeroArgWindowFunc(String name, TypeMeta returnType) {
+            super(name, returnType);
+        }
+
+        @Override
+        void appendArguments(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
+
+        @Override
+        void argumentToString(StringBuilder builder) {
+            //no-op
+        }
+
+    }//ZeroArgWindowFunc
+
+    private static final class OneArgWindowFunc extends PostgreWindowFunction {
+
+        private final ArmyExpression one;
+
+        private OneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+        }
+
+        @Override
+        void appendArguments(final StringBuilder sqlBuilder, _SqlContext context) {
+            this.one.appendSql(context);
+        }
+
+        @Override
+        void argumentToString(StringBuilder builder) {
+            builder.append(this.one);
+        }
+
+    }//OneArgWindowFunc
+
+    private static final class TwoArgWindowFunc extends PostgreWindowFunction {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private TwoArgWindowFunc(String name, Expression one, Expression two, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+        }
+
+        @Override
+        void appendArguments(final StringBuilder sqlBuilder, _SqlContext context) {
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.COMMA);
+            this.two.appendSql(context);
+        }
+
+        @Override
+        void argumentToString(StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.COMMA)
+                    .append(this.two);
+        }
+
+    }//TwoArgWindowFunc
+
+    private static final class ThreeArgWindowFunc extends PostgreWindowFunction {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        private final ArmyExpression three;
+
+        private ThreeArgWindowFunc(String name, Expression one, Expression two, Expression three, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+            this.three = (ArmyExpression) three;
+        }
+
+        @Override
+        void appendArguments(final StringBuilder sqlBuilder, _SqlContext context) {
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.COMMA);
+            this.two.appendSql(context);
+            sqlBuilder.append(_Constant.COMMA);
+            this.three.appendSql(context);
+        }
+
+        @Override
+        void argumentToString(StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.COMMA)
+                    .append(this.two)
+                    .append(_Constant.COMMA)
+                    .append(this.three);
+        }
+
+    }//ThreeArgWindowFunc
 
 
 }

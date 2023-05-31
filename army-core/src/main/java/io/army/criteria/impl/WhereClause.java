@@ -10,7 +10,6 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.*;
 
@@ -45,63 +44,68 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
         if (this.predicateList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
         }
+        this.endWhereClauseIfNeed();
         return (WR) this;
     }
 
 
     @Override
     public final WA where(IPredicate predicate) {
+        if (this.predicateList != null) {
+            throw duplicationWhere();
+        }
         return this.and(predicate);
     }
 
+
     @Override
     public final WA where(Supplier<IPredicate> supplier) {
-        return this.and(supplier.get());
+        return this.where(supplier.get());
     }
 
 
     @Override
     public final WA where(Function<Expression, IPredicate> expOperator, Expression operand) {
-        return this.and(expOperator.apply(operand));
+        return this.where(expOperator.apply(operand));
     }
 
     @Override
     public final WA where(UnaryOperator<IPredicate> expOperator, IPredicate operand) {
-        return this.and(expOperator.apply(operand));
+        return this.where(expOperator.apply(operand));
     }
 
     @Override
     public final <T> WA where(Function<T, IPredicate> expOperator, Supplier<T> supplier) {
-        return this.and(expOperator.apply(supplier.get()));
+        return this.where(expOperator.apply(supplier.get()));
     }
 
     @Override
     public final WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
                           BiFunction<DataField, String, Expression> namedOperator) {
-        return this.and(fieldOperator.apply(namedOperator));
+        return this.where(fieldOperator.apply(namedOperator));
     }
 
     @Override
     public final <T> WA where(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                               BiFunction<SimpleExpression, T, Expression> valueOperator, T value) {
-        return this.and(expOperator.apply(valueOperator, value));
+        return this.where(expOperator.apply(valueOperator, value));
     }
 
     @Override
     public final WA where(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
                           TeNamedOperator<DataField> namedOperator, int size) {
-        return this.and(expOperator.apply(namedOperator, size));
+        return this.where(expOperator.apply(namedOperator, size));
     }
 
     @Override
     public final WA where(BetweenOperator expOperator, Expression first, SQLs.WordAnd and, Expression second) {
-        return this.and(expOperator.apply(first, and, second));
+        return this.where(expOperator.apply(first, and, second));
     }
 
     @Override
     public final <T> WA where(BetweenValueOperator<T> expOperator, BiFunction<SimpleExpression, T, Expression> operator,
                               T firstValue, SqlSyntax.WordAnd and, T secondValue) {
-        return this.and(expOperator.apply(operator, firstValue, and, secondValue));
+        return this.where(expOperator.apply(operator, firstValue, and, secondValue));
     }
 
     @Override
@@ -109,35 +113,48 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
                                  BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first,
                                  SqlSyntax.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondRef,
                                  U second) {
-        return this.and(expOperator.apply(firstFuncRef, first, and, secondRef, second));
+        return this.where(expOperator.apply(firstFuncRef, first, and, secondRef, second));
     }
 
 
     @Override
     public final WA where(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator,
                           String paramName, int size) {
-        return this.and(expOperator.apply(namedOperator, paramName, size));
+        return this.where(expOperator.apply(namedOperator, paramName, size));
     }
 
     @Override
     public final WA whereIf(Supplier<IPredicate> supplier) {
+        if (this.predicateList != null) {
+            throw duplicationWhere();
+        }
         return this.ifAnd(supplier);
     }
 
+
     @Override
     public final <T> WA whereIf(Function<T, IPredicate> expOperator, Supplier<T> supplier) {
+        if (this.predicateList != null) {
+            throw duplicationWhere();
+        }
         return this.ifAnd(expOperator, supplier);
     }
 
     @Override
     public final <T> WA whereIf(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                                 BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter) {
+        if (this.predicateList != null) {
+            throw duplicationWhere();
+        }
         return this.ifAnd(expOperator, operator, getter);
     }
 
     @Override
     public final WA whereIf(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
                             TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier) {
+        if (this.predicateList != null) {
+            throw duplicationWhere();
+        }
         return this.ifAnd(expOperator, namedOperator, supplier);
     }
 
@@ -145,6 +162,9 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     @Override
     public final <T> WA whereIf(BetweenValueOperator<T> expOperator, BiFunction<SimpleExpression, T, Expression> operator,
                                 Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter) {
+        if (this.predicateList != null) {
+            throw duplicationWhere();
+        }
         return this.ifAnd(expOperator, operator, firstGetter, and, secondGetter);
     }
 
@@ -152,6 +172,9 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     @Override
     public final WA whereIf(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator,
                             String paramName, Supplier<Integer> supplier) {
+        if (this.predicateList != null) {
+            throw duplicationWhere();
+        }
         return this.ifAnd(expOperator, namedOperator, paramName, supplier);
     }
 
@@ -159,6 +182,9 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     public final <K, V> WA whereIf(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
                                    BiFunction<SimpleExpression, V, Expression> operator,
                                    Function<K, V> function, K key) {
+        if (this.predicateList != null) {
+            throw duplicationWhere();
+        }
         return this.ifAnd(expOperator, operator, function, key);
     }
 
@@ -167,12 +193,18 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
                                    BiFunction<SimpleExpression, T, Expression> firstFuncRef,
                                    Supplier<T> firstGetter, SqlSyntax.WordAnd and,
                                    BiFunction<SimpleExpression, U, Expression> secondFuncRef, Supplier<U> secondGetter) {
+        if (this.predicateList != null) {
+            throw duplicationWhere();
+        }
         return this.ifAnd(expOperator, firstFuncRef, firstGetter, and, secondFuncRef, secondGetter);
     }
 
     @Override
     public final <K, V> WA whereIf(BetweenValueOperator<V> expOperator, BiFunction<SimpleExpression, V, Expression> operator,
                                    Function<K, V> function, K firstKey, SqlSyntax.WordAnd and, K secondKey) {
+        if (this.predicateList != null) {
+            throw duplicationWhere();
+        }
         return this.ifAnd(expOperator, operator, function, firstKey, and, secondKey);
     }
 
@@ -274,6 +306,12 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
         return this.and(expOperator2.apply(expression, SQLs.literalValue(numberOperand)));
     }
 
+    @Override
+    public final WA and(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
+                        BiFunction<DataField, String, Expression> operator,
+                        BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand) {
+        return this.and(expOperator2.apply(fieldOperator.apply(operator), SQLs.literalValue(numberOperand)));
+    }
 
     @Override
     public final WA ifAnd(Supplier<IPredicate> supplier) {
@@ -400,21 +438,24 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
         this.predicateList = null;
     }
 
-    final List<_Predicate> endWhereClause() {
+    final List<_Predicate> endWhereClauseIfNeed() {
         List<_Predicate> list = this.predicateList;
         if (list instanceof ArrayList) {
             list = _Collections.unmodifiableList(list);
             this.predicateList = list;
-        } else if (list != null) {
-            throw ContextStack.castCriteriaApi(this.context);
-        } else if (this instanceof Statement.DmlStatementSpec) {
-            //dml statement must have where clause
-            throw ContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
-        } else {
-            list = Collections.emptyList();
+        } else if (list == null) {
+            if (this instanceof Statement.DmlStatementSpec) {
+                //dml statement must have where clause
+                throw ContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
+            }
+            list = _Collections.emptyList();
             this.predicateList = list;
         }
         return list;
+    }
+
+    private CriteriaException duplicationWhere() {
+        return ContextStack.criteriaError(this.context, "duplication where clause");
     }
 
 
@@ -431,6 +472,17 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
         }
 
     }//WhereClauseClause
+
+
+    static final class SimpleWhereClause extends WhereClauseClause<Item, Statement._SimpleWhereAndClause>
+            implements Statement._SimpleWhereAndClause,
+            Statement._SimpleWhereClause {
+
+        SimpleWhereClause(CriteriaContext context) {
+            super(context);
+        }
+
+    }//SimpleWhereClause
 
 
 }

@@ -48,12 +48,14 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
         super(outerContext, stmt, parser, visible);
 
         this.domainTable = stmt.table();
-        if (this.domainTable instanceof ChildTableMeta
-                && (stmt instanceof _DomainUpdate || stmt instanceof _DomainDelete)) {
+        if (this.domainTable instanceof ChildTableMeta) {
             this.targetTable = ((ChildTableMeta<?>) this.domainTable).parentMeta();
-            this.tableAlias = _DialectUtils.parentAlias(stmt.tableAlias());
         } else {
             this.targetTable = this.domainTable;
+        }
+        if (stmt instanceof _DomainUpdate || stmt instanceof _DomainDelete) {
+            this.tableAlias = _DialectUtils.parentAlias(stmt.tableAlias());
+        } else {
             this.tableAlias = stmt.tableAlias();
         }
         this.safeTableAlias = parser.identifier(this.tableAlias);

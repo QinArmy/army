@@ -6,6 +6,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
 import io.army.util._ClassUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.util.function.Supplier;
  * This class is base class of multi-table update implementation.
  * </p>
  *
+ * @see SetWhereClause
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
@@ -52,171 +54,182 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
     }
 
     @Override
-    public final SR set(F field, Supplier<Expression> supplier) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, supplier.get()));
-    }
-
-    @Override
-    public final SR set(F field, Function<F, Expression> function) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, function.apply(field)));
+    public final <R extends AssignmentItem> SR set(F field, Supplier<R> supplier) {
+        return this.onAddAssignmentItemPair(field, supplier.get());
     }
 
 
     @Override
-    public final <R extends AssignmentItem> SR set(F field, BiFunction<F, Expression, R> valueOperator,
-                                                   Expression expression) {
+    public final <R extends AssignmentItem> SR set(F field, Function<F, R> function) {
+        return this.onAddAssignmentItemPair(field, function.apply(field));
+    }
+
+
+    @Override
+    public final <E, R extends AssignmentItem> SR set(final F field, final BiFunction<F, E, R> valueOperator,
+                                                      final @Nullable E value) {
+        return this.onAddAssignmentItemPair(field, valueOperator.apply(field, value));
+    }
+
+
+    @Override
+    public final <K, V, R extends AssignmentItem> SR set(final F field, final BiFunction<F, V, R> valueOperator,
+                                                         final Function<K, V> function, final K key) {
+        return this.onAddAssignmentItemPair(field, valueOperator.apply(field, function.apply(key)));
+    }
+
+    @Override
+    public final <E, V, R extends AssignmentItem> SR set(F field, BiFunction<F, V, R> fieldOperator,
+                                                         BiFunction<F, E, V> valueOperator, E value) {
+        return this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, value)));
+    }
+
+    @Override
+    public final <K, V, U, R extends AssignmentItem> SR set(F field, BiFunction<F, U, R> fieldOperator,
+                                                            BiFunction<F, V, U> valueOperator, Function<K, V> function,
+                                                            K key) {
+        return this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, function.apply(key))));
+    }
+
+    @Override
+    public final <R extends AssignmentItem> SR ifSet(final F field, Supplier<R> supplier) {
         final R item;
-        item = valueOperator.apply(field, expression);
-        final ItemPair pair;
-        if (item instanceof Expression) {
-            pair = SQLs._itemPair(field, null, (Expression) item);
-        } else if (item instanceof ItemPair) {
-            pair = (ItemPair) item;
-        } else {
-            throw CriteriaUtils.illegalAssignmentItem(this.context, item);
-        }
-        return this.onAddItemPair(pair);
-    }
-
-    @Override
-    public final SR set(F field, BiFunction<F, Object, Expression> valueOperator, @Nullable Object value) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
-    }
-
-    @Override
-    public final <E> SR set(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, supplier.get())));
-    }
-
-    @Override
-    public final SR set(F field, BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function
-            , String keyName) {
-        return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, function.apply(keyName))));
-    }
-
-    @Override
-    public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                        BiFunction<F, Object, Expression> valueOperator, Expression expression) {
-        return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, expression)));
-    }
-
-    @Override
-    public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator,
-                        BiFunction<F, Object, Expression> valueOperator, Object value) {
-        return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
-    }
-
-    @Override
-    public final <E> SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-            , BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
-        return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
-    }
-
-    @Override
-    public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-            , BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-        return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
-    }
-
-    @Override
-    public final SR ifSet(F field, Supplier<Expression> supplier) {
-        final Expression expression;
-        expression = supplier.get();
-        if (expression != null) {
-            this.onAddItemPair(SQLs._itemPair(field, null, expression));
+        if ((item = supplier.get()) != null) {
+            this.onAddAssignmentItemPair(field, item);
         }
         return (SR) this;
     }
 
     @Override
-    public final SR ifSet(F field, Function<F, Expression> function) {
-        final Expression expression;
-        expression = function.apply(field);
-        if (expression != null) {
-            this.onAddItemPair(SQLs._itemPair(field, null, expression));
+    public final <R extends AssignmentItem> SR ifSet(final F field, Function<F, R> function) {
+        final R item;
+        if ((item = function.apply(field)) != null) {
+            this.onAddAssignmentItemPair(field, item);
         }
         return (SR) this;
     }
 
     @Override
-    public final <E> SR ifSet(F field, BiFunction<F, E, Expression> valueOperator, Supplier<E> supplier) {
+    public final <E, R extends AssignmentItem> SR ifSet(F field, BiFunction<F, E, R> valueOperator, Supplier<E> supplier) {
         final E value;
         if ((value = supplier.get()) != null) {
-            this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
-        }
-        return (SR) this;
-    }
-
-
-    @Override
-    public final SR ifSet(F field, BiFunction<F, Object, Expression> valueOperator
-            , Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (value != null) {
-            this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+            this.onAddAssignmentItemPair(field, valueOperator.apply(field, value));
         }
         return (SR) this;
     }
 
     @Override
-    public final <E> SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-            , BiFunction<F, E, Expression> valueOperator, Supplier<E> getter) {
+    public final <K, V, R extends AssignmentItem> SR ifSet(F field, BiFunction<F, V, R> valueOperator,
+                                                           Function<K, V> function, K key) {
+        final V value;
+        if ((value = function.apply(key)) != null) {
+            this.onAddAssignmentItemPair(field, valueOperator.apply(field, value));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final <E, V, R extends AssignmentItem> SR ifSet(F field, BiFunction<F, V, R> fieldOperator,
+                                                           BiFunction<F, E, V> valueOperator, Supplier<E> getter) {
         final E value;
         if ((value = getter.get()) != null) {
-            this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+            this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, value)));
         }
         return (SR) this;
     }
 
     @Override
-    public final SR ifSet(F field, BiFunction<F, Expression, ItemPair> fieldOperator
-            , BiFunction<F, Object, Expression> valueOperator, Function<String, ?> function, String keyName) {
-        final Object value;
-        value = function.apply(keyName);
-        if (value != null) {
-            this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+    public final <K, V, U, R extends AssignmentItem> SR ifSet(F field, BiFunction<F, U, R> fieldOperator,
+                                                              BiFunction<F, V, U> valueOperator,
+                                                              Function<K, V> function, K key) {
+        final V value;
+        if ((value = function.apply(key)) != null) {
+            this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, value)));
         }
         return (SR) this;
     }
 
     @Override
-    public final SR set(F field, BiFunction<F, String, Expression> valueOperator) {
+    public final SR setNamed(F field, BiFunction<F, String, Expression> valueOperator) {
         return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, field.fieldName())));
     }
 
     @Override
-    public final SR set(F field, BiFunction<F, Expression, ItemPair> fieldOperator
+    public final <R extends AssignmentItem> SR setNamed(F field, BiFunction<F, Expression, R> fieldOperator
             , BiFunction<F, String, Expression> valueOperator) {
-        return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, field.fieldName())));
+        return this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, field.fieldName())));
     }
 
     @Override
-    public final SR set(F field1, F field2, Supplier<SubQuery> supplier) {
+    public final SR setRow(F field1, F field2, Supplier<SubQuery> supplier) {
         final List<F> fieldList;
         fieldList = Arrays.asList(field1, field2);
         return this.onAddItemPair(SQLs._itemPair(fieldList, supplier.get()));
     }
 
     @Override
-    public final SR set(F field1, F field2, F field3, Supplier<SubQuery> supplier) {
+    public final SR setRow(F field1, F field2, F field3, Supplier<SubQuery> supplier) {
         final List<F> fieldList;
         fieldList = Arrays.asList(field1, field2, field3);
         return this.onAddItemPair(SQLs._itemPair(fieldList, supplier.get()));
     }
 
     @Override
-    public final SR set(F field1, F field2, F field3, F field4, Supplier<SubQuery> supplier) {
+    public final SR setRow(F field1, F field2, F field3, F field4, Supplier<SubQuery> supplier) {
         final List<F> fieldList;
         fieldList = Arrays.asList(field1, field2, field3, field4);
         return this.onAddItemPair(SQLs._itemPair(fieldList, supplier.get()));
     }
 
     @Override
-    public final SR set(Consumer<Consumer<F>> consumer, Supplier<SubQuery> supplier) {
-        final List<F> fieldList = new ArrayList<>();
+    public final SR setRow(Consumer<Consumer<F>> consumer, Supplier<SubQuery> supplier) {
+        final List<F> fieldList = _Collections.arrayList();
         consumer.accept(fieldList::add);
         return this.onAddItemPair(SQLs._itemPair(fieldList, supplier.get()));
+    }
+
+    @Override
+    public final SR ifSetRow(F field1, F field2, Supplier<SubQuery> supplier) {
+        final SubQuery query;
+        if ((query = supplier.get()) != null) {
+            final List<F> fieldList;
+            fieldList = Arrays.asList(field1, field2);
+            this.onAddItemPair(SQLs._itemPair(fieldList, query));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetRow(F field1, F field2, F field3, Supplier<SubQuery> supplier) {
+        final SubQuery query;
+        if ((query = supplier.get()) != null) {
+            final List<F> fieldList;
+            fieldList = Arrays.asList(field1, field2, field3);
+            this.onAddItemPair(SQLs._itemPair(fieldList, query));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetRow(F field1, F field2, F field3, F field4, Supplier<SubQuery> supplier) {
+        final SubQuery query;
+        if ((query = supplier.get()) != null) {
+            final List<F> fieldList;
+            fieldList = Arrays.asList(field1, field2, field3, field4);
+            this.onAddItemPair(SQLs._itemPair(fieldList, query));
+        }
+        return (SR) this;
+    }
+
+    @Override
+    public final SR ifSetRow(Consumer<Consumer<F>> consumer, Supplier<SubQuery> supplier) {
+        final List<F> fieldList = _Collections.arrayList();
+        consumer.accept(fieldList::add);
+        final SubQuery query;
+        if (fieldList.size() > 0 && (query = supplier.get()) != null) {
+            this.onAddItemPair(SQLs._itemPair(fieldList, query));
+        }
+        return (SR) this;
     }
 
     @Override
@@ -302,7 +315,7 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
             throw ContextStack.criteriaError(this.context, _Exceptions::setClauseNotExists);
         }
         this.itemPairList = Collections.unmodifiableList(itemPairList);
-        if (this.endWhereClause().size() == 0) {
+        if (this.endWhereClauseIfNeed().size() == 0) {
             throw ContextStack.criteriaError(this.context, _Exceptions::dmlNoWhereClause);
         }
 
@@ -311,6 +324,21 @@ abstract class JoinableUpdate<I extends Item, F extends DataField, SR, FT, FS, F
 
         ContextStack.pop(context);
         this.prepared = Boolean.TRUE;
+    }
+
+
+    private SR onAddAssignmentItemPair(final F field, final @Nullable AssignmentItem item) {
+        final ItemPair pair;
+        if (item == null) {
+            throw ContextStack.nullPointer(this.context);
+        } else if (item instanceof Expression) {
+            pair = SQLs._itemPair(field, null, (Expression) item);
+        } else if (item instanceof ItemPair) {
+            pair = (ItemPair) item;
+        } else {
+            throw CriteriaUtils.illegalAssignmentItem(this.context, item);
+        }
+        return this.onAddItemPair(pair);
     }
 
 

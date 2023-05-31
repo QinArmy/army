@@ -23,7 +23,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-abstract class PostgreSyntax extends PostgreDocumentFunctions {
+abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * Package constructor

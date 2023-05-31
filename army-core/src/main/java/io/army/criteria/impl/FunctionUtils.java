@@ -1149,12 +1149,11 @@ abstract class FunctionUtils {
 
 
     static abstract class WindowFunction<T extends Window._WindowSpec> extends OperationExpression.SqlFunctionExpression
-            implements Window._OverWindowClause<T>,
-            CriteriaContextSpec {
+            implements Window._OverWindowClause<T> {
 
         private static final String GLOBAL_PLACE_HOLDER = "";
 
-        final CriteriaContext context;
+        final CriteriaContext outerContext;
 
         final TypeMeta returnType;
 
@@ -1164,7 +1163,7 @@ abstract class FunctionUtils {
 
         WindowFunction(String name, TypeMeta returnType) {
             super(name);
-            this.context = ContextStack.peek();
+            this.outerContext = ContextStack.peek();
             this.returnType = returnType;
         }
 
@@ -1180,14 +1179,9 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final CriteriaContext getContext() {
-            return this.context;
-        }
-
-        @Override
         public final Expression over() {
             if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.outerContext);
             }
             this.anonymousWindow = GlobalWindow.INSTANCE;
             return this;
@@ -1196,13 +1190,13 @@ abstract class FunctionUtils {
         @Override
         public final Expression over(final @Nullable String existingWindowName) {
             if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.outerContext);
             }
             if (existingWindowName == null) {
                 this.existingWindowName = GLOBAL_PLACE_HOLDER;
             } else {
                 // context don't allow empty existingWindowName
-                this.context.onRefWindow(existingWindowName);
+                this.outerContext.onRefWindow(existingWindowName);
                 this.existingWindowName = existingWindowName;
             }
             return this;
@@ -1219,7 +1213,7 @@ abstract class FunctionUtils {
             window = this.createAnonymousWindow(existingWindowName);
             consumer.accept(window);
             if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.outerContext);
             }
             ((ArmyWindow) window).endWindowClause();
             this.anonymousWindow = (ArmyWindow) window;
@@ -1237,7 +1231,7 @@ abstract class FunctionUtils {
             if (this instanceof NoArgFunction) {
                 sqlBuilder.append(_Constant.RIGHT_PAREN);
             } else {
-                this.appendArguments(context);
+                this.appendArguments(sqlBuilder, context);
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
@@ -1294,10 +1288,10 @@ abstract class FunctionUtils {
 
             if (existingWindowName == null && anonymousWindow == null) {
                 if (!(this instanceof SQLFunction.AggregateFunction)) {
-                    throw ContextStack.castCriteriaApi(this.context);
+                    throw ContextStack.castCriteriaApi(this.outerContext);
                 }
             } else if (existingWindowName != null && anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.context);
+                throw ContextStack.castCriteriaApi(this.outerContext);
             } else {
                 //2. OVER clause
                 sqlBuilder.append(_Constant.SPACE_OVER);
@@ -1316,7 +1310,7 @@ abstract class FunctionUtils {
 
         abstract T createAnonymousWindow(@Nullable String existingWindowName);
 
-        abstract void appendArguments(_SqlContext context);
+        abstract void appendArguments(StringBuilder sqlBuilder, _SqlContext context);
 
         abstract void argumentToString(StringBuilder builder);
 
@@ -1328,6 +1322,12 @@ abstract class FunctionUtils {
 
         void outerClauseToString(StringBuilder builder) {
             throw new UnsupportedOperationException();
+        }
+
+        final CriteriaException dialectError(Dialect dialect) {
+            String m = String.format("%s window function[%s]don't support %s.",
+                    this.getClass().getName(), this.name, dialect);
+            throw ContextStack.criteriaError(this.outerContext, m);
         }
 
 
@@ -3087,7 +3087,8 @@ abstract class FunctionUtils {
     static final class OrderByOptionClause
             extends OrderByClause.OrderByClauseClause<Statement._SimpleOrderByCommaClause, Item>
             implements ArmyFuncClause,
-            Statement._SimpleOrderByClause {
+            Statement._SimpleOrderByClause,
+            Statement._SimpleOrderByCommaClause {
 
         /**
          * @see #orderByOptionClause()

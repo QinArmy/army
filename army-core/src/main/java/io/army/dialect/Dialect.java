@@ -6,6 +6,7 @@ public interface Dialect {
 
     Database database();
 
+    @Deprecated
     int version();
 
     @Override

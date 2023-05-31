@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.SQLCommand;
 import io.army.criteria.dialect.SubQuery;
-import io.army.criteria.dialect.Window;
 import io.army.criteria.mysql.*;
 
 public abstract class MySQLs extends MySQLSyntax {
@@ -14,16 +13,6 @@ public abstract class MySQLs extends MySQLSyntax {
     private MySQLs() {
     }
 
-
-    public static final Window.RowModifier UNBOUNDED_PRECEDING = SQLWindow.WindowRowModifier.UNBOUNDED_PRECEDING;
-
-    public static final Window.RowModifier CURRENT_ROW = SQLWindow.WindowRowModifier.CURRENT_ROW;
-
-    public static final Window.RowModifier UNBOUNDED_FOLLOWING = SQLWindow.WindowRowModifier.UNBOUNDED_FOLLOWING;
-
-    public static final Window.ExpModifier PRECEDING = SQLWindow.WindowExpModifier.PRECEDING;
-
-    public static final Window.ExpModifier FOLLOWING = SQLWindow.WindowExpModifier.FOLLOWING;
 
     /**
      * <p>

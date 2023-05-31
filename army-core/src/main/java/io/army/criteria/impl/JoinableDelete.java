@@ -88,7 +88,7 @@ abstract class JoinableDelete<I extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR
 
     final void endDeleteStatement() {
         _Assert.nonPrepared(this.prepared);
-        this.endWhereClause();
+        this.endWhereClauseIfNeed();
         this.onEndStatement();
         final CriteriaContext context = this.context;
         this.tableBlockList = context.endContext();

@@ -15,8 +15,6 @@ import org.testng.annotations.Test;
 import java.time.LocalDateTime;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static io.army.criteria.impl.MySQLs.CURRENT_ROW;
-import static io.army.criteria.impl.MySQLs.UNBOUNDED_PRECEDING;
 import static io.army.criteria.impl.SQLs.*;
 
 public class MySQLQueryUnitTests extends MySQLUnitTests {

@@ -33,8 +33,8 @@ public class MySQLSingleUpdateUnitTests extends MySQLUnitTests {
         final Update stmt;
         stmt = MySQLs.singleUpdate()
                 .update(ChinaRegion_.T, AS, "c")
-                .set(ChinaRegion_.name, SQLs::literal, this::randomProvince)
-                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, criteria::getRegionGdp)
+                .set(ChinaRegion_.name, SQLs::literal, this.randomProvince())
+                .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, criteria.getRegionGdp())
                 .whereIf(ChinaRegion_.id::equal, SQLs::param, criteria::getId)
                 .and(ChinaRegion_.createTime::less, SQLs::literal, LocalDateTime.now().minusDays(2))
                 .asUpdate();
