@@ -1014,7 +1014,7 @@ public interface Statement extends Item {
      * @since 1.0
      */
     @Deprecated
-    interface _StaticOrderByClause<OR> extends Item {
+    interface _StaticOrderByClause0<OR> extends Item {
 
         OR orderBy(Expression exp);
 
@@ -1041,7 +1041,7 @@ public interface Statement extends Item {
         R spaceComma(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4);
     }
 
-    interface _OrderByClause<R> extends Item {
+    interface _StaticOrderByClause<R> extends Item {
 
         R orderBy(SortItem sortItem);
 
@@ -1051,23 +1051,29 @@ public interface Statement extends Item {
 
         R orderBy(SortItem sortItem1, SortItem sortItem2, SortItem sortItem3, SortItem sortItem4);
 
+
+    }
+
+
+    interface _DynamicOrderByClause<R> {
+
         R orderBy(Consumer<Consumer<SortItem>> consumer);
 
         R ifOrderBy(Consumer<Consumer<SortItem>> consumer);
-
     }
 
     interface _SimpleOrderByCommaClause extends _OrderByCommaClause<_SimpleOrderByCommaClause> {
 
     }
 
-    interface _SimpleOrderByClause extends _OrderByClause<_SimpleOrderByCommaClause> {
+    interface _SimpleOrderByClause extends _StaticOrderByClause<_SimpleOrderByCommaClause>,
+            _DynamicOrderByClause<Item> {
 
     }
 
 
     @Deprecated
-    interface _DynamicOrderByClause<B, R> {
+    interface _DynamicOrderByClause0<B, R> {
 
         R orderBy(Consumer<B> consumer);
 

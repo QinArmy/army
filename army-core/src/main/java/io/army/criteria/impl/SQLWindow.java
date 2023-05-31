@@ -32,11 +32,11 @@ import java.util.function.Consumer;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
-        extends OrderByClause<OR>
+abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
+        extends OrderByClause<OR, OD>
         implements Window._PartitionByExpClause<PR>,
         Window._PartitionByCommaClause<PR>,
-        Statement._OrderByClause<OR>,
+        Statement._StaticOrderByClause<OR>,
         Window._StaticFrameUnitRowsRangeGroupsSpec<FS, FB>,
         Window._FrameUnitSpaceClause<FS, FB>,
         Window._DynamicFrameUnitRowsRangeGroupsClause<DC, R>,
@@ -619,7 +619,7 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
             }
 
             if (this instanceof SQLExcludeWindow) {
-                final FrameExclusion exclusion = ((SQLExcludeWindow<PR, OR, FS, FB, BR, DC, R>) this).exclusion;
+                final FrameExclusion exclusion = ((SQLExcludeWindow<?, ?, ?, ?, ?, ?, ?, ?>) this).exclusion;
                 if (exclusion != null) {
                     sqlBuilder.append(exclusion.spaceWords);
                 }
@@ -846,7 +846,7 @@ abstract class SQLWindow<PR, OR, FS, FB, BR, DC, R>
 
     }//FrameExclusion
 
-    static abstract class SQLExcludeWindow<PR, OR, FS, FB, BR, DC, R> extends SQLWindow<PR, OR, FS, FB, BR, DC, R>
+    static abstract class SQLExcludeWindow<PR, OR, OD, FS, FB, BR, DC, R> extends SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
             implements Window._FrameExclusionClause<R> {
 
         private FrameExclusion exclusion;

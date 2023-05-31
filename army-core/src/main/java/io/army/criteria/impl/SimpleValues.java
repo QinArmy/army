@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends LimitRowOrderByClause<OR, LR, LO, LF>
+abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends LimitRowOrderByClause<OR, OD, LR, LO, LF>
         implements _ValuesQuery,
         Values._StaticValueLeftParenClause<RR>,
         Values._StaticValueRowCommaDualSpec<RR>,
@@ -421,8 +421,8 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
     }
 
     @SuppressWarnings("unchecked")
-    static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE extends Item, RR, OR, LR, LO, LF, SP>
-            extends SimpleValues<I, RR, OR, LR, LO, LF, SP>
+    static abstract class WithSimpleValues<I extends Item, B extends CteBuilderSpec, WE extends Item, RR, OR, OD, LR, LO, LF, SP>
+            extends SimpleValues<I, RR, OR, OD, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>
             , ArmyStmtSpec {
 
@@ -515,9 +515,9 @@ abstract class SimpleValues<I extends Item, RR, OR, LR, LO, LF, SP> extends Limi
 
     static final class RowConstructorImpl implements RowConstructor {
 
-        private final SimpleValues<?, ?, ?, ?, ?, ?, ?> clause;
+        private final SimpleValues<?, ?, ?, ?, ?, ?, ?, ?> clause;
 
-        RowConstructorImpl(SimpleValues<?, ?, ?, ?, ?, ?, ?> clause) {
+        RowConstructorImpl(SimpleValues<?, ?, ?, ?, ?, ?, ?, ?> clause) {
             this.clause = clause;
         }
 

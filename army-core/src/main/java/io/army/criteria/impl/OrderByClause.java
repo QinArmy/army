@@ -18,10 +18,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unchecked")
-abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
+abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSupport
         implements CriteriaContextSpec,
-        Statement._OrderByClause<OR>,
+        Statement._StaticOrderByClause<OR>,
         Statement._OrderByCommaClause<OR>,
+        Statement._DynamicOrderByClause<OD>,
         _Statement._OrderByListSpec {
 
     final CriteriaContext context;
@@ -101,21 +102,21 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
 
 
     @Override
-    public final OR orderBy(Consumer<Consumer<SortItem>> consumer) {
+    public final OD orderBy(Consumer<Consumer<SortItem>> consumer) {
         consumer.accept(this::onAddOrderBy);
         if (this.orderByList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
         }
-        return (OR) this;
+        return (OD) this;
     }
 
     @Override
-    public final OR ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
+    public final OD ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
         consumer.accept(this::onAddOrderBy);
         if (this.orderByList == null || this instanceof OrderByEventListener) {
             ((OrderByEventListener) this).onOrderByEvent();
         }
-        return (OR) this;
+        return (OD) this;
     }
 
     @Override
@@ -149,7 +150,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     }
 
 
-    private OrderByClause<?> onAddOrderBy(final SortItem sortItem) {
+    private OrderByClause<?, ?> onAddOrderBy(final SortItem sortItem) {
         List<ArmySortItem> orderByList = this.orderByList;
         if (orderByList == null) {
             orderByList = _Collections.arrayList();
@@ -318,7 +319,7 @@ abstract class OrderByClause<OR> extends CriteriaSupports.StatementMockSupport
     }//UnionSubRowSet
 
 
-    static abstract class OrderByClauseClause<OR> extends OrderByClause<OR> {
+    static abstract class OrderByClauseClause<OR, OD> extends OrderByClause<OR, OD> {
 
         OrderByClauseClause(CriteriaContext context) {
             super(context);

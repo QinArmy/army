@@ -22,7 +22,7 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause<OR, LR, LO, LF>
+abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByClause<OR, OD, LR, LO, LF>
         implements Statement._WhereClause<WR, WA>
         , Statement._WhereAndClause<WA>
         , UpdateStatement._UpdateWhereAndClause<WA>
@@ -418,7 +418,7 @@ abstract class WhereClause<WR, WA, OR, LR, LO, LF> extends LimitRowOrderByClause
     }
 
 
-    static abstract class WhereClauseClause<WR, WA> extends WhereClause<WR, WA, Object, Object, Object, Object> {
+    static abstract class WhereClauseClause<WR, WA> extends WhereClause<WR, WA, Object, Object, Object, Object, Object> {
 
         WhereClauseClause(CriteriaContext context) {
             super(context);

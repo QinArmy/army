@@ -650,6 +650,7 @@ abstract class MySQLSupports extends CriteriaSupports {
     static final class MySQLWindowImpl extends SQLWindow<
             MySQLWindow._PartitionByCommaSpec,
             MySQLWindow._OrderByCommaSpec,
+            MySQLWindow._FrameExtentSpec,
             Item,
             MySQLWindow._MySQLFrameBetweenClause,
             Item,

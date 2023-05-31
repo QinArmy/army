@@ -36,13 +36,13 @@ abstract class CriteriaSupports {
     }
 
     @Deprecated
-    static <OR> Statement._StaticOrderByClause<OR> orderByClause(CriteriaContext criteriaContext
+    static <OR> Statement._StaticOrderByClause0<OR> orderByClause(CriteriaContext criteriaContext
             , Function<List<ArmySortItem>, OR> function) {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
-    static <OR> Statement._StaticOrderByClause<OR> voidOrderByClause(CriteriaContext criteriaContext
+    static <OR> Statement._StaticOrderByClause0<OR> voidOrderByClause(CriteriaContext criteriaContext
             , Function<List<ArmySortItem>, OR> function) {
         throw new UnsupportedOperationException();
     }

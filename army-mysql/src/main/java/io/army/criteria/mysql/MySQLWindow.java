@@ -30,7 +30,9 @@ public interface MySQLWindow extends Window {
 
     }
 
-    interface _OrderBySpec extends Statement._OrderByClause<_OrderByCommaSpec>, _FrameExtentSpec {
+    interface _OrderBySpec extends Statement._StaticOrderByClause<_OrderByCommaSpec>,
+            Statement._DynamicOrderByClause<_FrameExtentSpec>,
+            _FrameExtentSpec {
 
     }
 

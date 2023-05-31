@@ -21,8 +21,8 @@ import java.util.function.Supplier;
 
 
 @SuppressWarnings("unchecked")
-abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
-        extends WhereClause<WR, WA, OR, LR, LO, LF>
+abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, LF>
+        extends WhereClause<WR, WA, OR, OD, LR, LO, LF>
         implements UpdateStatement._StaticBatchSetClause<F, SR>
         , UpdateStatement._StaticRowSetClause<F, SR>
         , _Statement._ItemPairList
@@ -300,7 +300,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, LR, LO, LF>
 
 
     static abstract class SetWhereClauseClause<F extends TableField, SR, WR, WA>
-            extends SetWhereClause<F, SR, WR, WA, Object, Object, Object, Object> {
+            extends SetWhereClause<F, SR, WR, WA, Object, Object, Object, Object, Object> {
 
         SetWhereClauseClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
             super(context, updateTable, tableAlias);

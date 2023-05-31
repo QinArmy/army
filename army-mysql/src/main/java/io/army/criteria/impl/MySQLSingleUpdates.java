@@ -35,8 +35,8 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA, OR, LR>
-        extends SingleUpdateStatement<I, FieldMeta<T>, SR, WR, WA, OR, LR, Object, Object>
+abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA, OR, OD, LR>
+        extends SingleUpdateStatement<I, FieldMeta<T>, SR, WR, WA, OR, OD, LR, Object, Object>
         implements _MySQLSingleUpdate,
         MySQLUpdate,
         UpdateStatement,
@@ -215,6 +215,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
             MySQLUpdate._OrderBySpec<I>,
             MySQLUpdate._SingleWhereAndSpec<I>,
             MySQLUpdate._OrderByCommaSpec<I>,
+            MySQLUpdate._LimitSpec<I>,
             _DmlUpdateSpec<I>>
             implements MySQLUpdate._SingleIndexHintSpec<I, T>,
             MySQLUpdate._SingleWhereSpec<I, T>,
@@ -398,6 +399,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
             _BatchOrderBySpec<BatchUpdate>,
             _BatchSingleWhereAndSpec<BatchUpdate>,
             _BatchOrderByCommaSpec<BatchUpdate>,
+            _BatchLimitSpec<BatchUpdate>,
             _BatchParamClause<_DmlUpdateSpec<BatchUpdate>>>
             implements MySQLUpdate._BatchSingleIndexHintSpec<BatchUpdate, T>,
             MySQLUpdate._BatchSingleWhereSpec<BatchUpdate, T>,

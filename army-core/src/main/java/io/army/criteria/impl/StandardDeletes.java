@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 abstract class StandardDeletes<I extends Item, DR, WR, WA>
-        extends SingleDeleteStatement<I, WR, WA, Object, Object, Object, Object>
+        extends SingleDeleteStatement<I, WR, WA, Object, Object, Object, Object, Object>
         implements StandardDelete, DeleteStatement {
 
     static _StandardDeleteClause<Delete> singleDelete() {

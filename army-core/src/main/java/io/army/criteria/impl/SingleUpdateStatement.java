@@ -9,8 +9,8 @@ import io.army.meta.TableMeta;
 import io.army.util._Assert;
 
 
-abstract class SingleUpdateStatement<I extends Item, F extends TableField, SR, WR, WA, OR, LR, LO, LF>
-        extends SetWhereClause<F, SR, WR, WA, OR, LR, LO, LF>
+abstract class SingleUpdateStatement<I extends Item, F extends TableField, SR, WR, WA, OR, OD, LR, LO, LF>
+        extends SetWhereClause<F, SR, WR, WA, OR, OD, LR, LO, LF>
         implements Statement
         , Statement._DmlUpdateSpec<I>
         , _Update, _SingleUpdate {

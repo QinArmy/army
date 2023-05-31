@@ -46,6 +46,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._HavingSpec<I>, // GR
         StandardQuery._OrderBySpec<I>, // HR
         StandardQuery._OrderByCommaSpec<I>, // OR
+        StandardQuery._LimitSpec<I>, // OD
         StandardQuery._LockSpec<I>, // LR
         Object,
         Object,
@@ -400,6 +401,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             I,
             StandardQuery._UnionOrderBySpec<I>,
             StandardQuery._UnionOrderByCommaSpec<I>,
+            StandardQuery._UnionLimitSpec<I>,
             Query._AsQueryClause<I>,
             Object,
             Object,

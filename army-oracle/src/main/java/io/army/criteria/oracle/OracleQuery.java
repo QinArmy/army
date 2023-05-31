@@ -54,7 +54,7 @@ public interface OracleQuery extends Query, OracleStatement {
     }
 
 
-    interface _OracleStaticOrderByClause<OR> extends _StaticOrderByClause<OR> {
+    interface _OracleStaticOrderByClause<OR> extends _StaticOrderByClause0<OR> {
 
         OR orderSiblingsBy(Expression exp1);
 
@@ -70,7 +70,7 @@ public interface OracleQuery extends Query, OracleStatement {
 
     }
 
-    interface _OracleDynamicOrderByClause<OR> extends _DynamicOrderByClause<SortNullItems,OR> {
+    interface _OracleDynamicOrderByClause<OR> extends _DynamicOrderByClause0<SortNullItems, OR> {
 
         OR orderSiblingsBy(Consumer<SortNullItems> consumer);
 

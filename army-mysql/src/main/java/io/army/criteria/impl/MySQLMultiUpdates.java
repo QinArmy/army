@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unchecked")
 abstract class MySQLMultiUpdates<I extends Item, WE extends Item, FT extends Item, SR, FS extends Item, FC extends Item, JT, JS, JC, WR, WA>
-        extends JoinableUpdate.WithMultiUpdate<I, MySQLCtes, WE, TableField, SR, FT, FS, FC, Void, JT, JS, JC, Void, WR, WA, Object, Object, Object, Object>
+        extends JoinableUpdate.WithMultiUpdate<I, MySQLCtes, WE, TableField, SR, FT, FS, FC, Void, JT, JS, JC, Void, WR, WA>
         implements UpdateStatement,
         _MySQLMultiUpdate,
         MySQLUpdate,

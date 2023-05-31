@@ -76,7 +76,7 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionOrderByCommaSpec<I>>,
+    interface _UnionOrderBySpec<I extends Item> extends _StaticOrderByClause<_UnionOrderByCommaSpec<I>>,
             _UnionLimitSpec<I>,
             _UnionSpec<I> {
 
@@ -149,7 +149,8 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _OrderBySpec<I extends Item> extends _LimitSpec<I>,
-            _OrderByClause<_OrderByCommaSpec<I>>,
+            _StaticOrderByClause<_OrderByCommaSpec<I>>,
+            _DynamicOrderByClause<_LimitSpec<I>>,
             _UnionSpec<I> {
 
     }

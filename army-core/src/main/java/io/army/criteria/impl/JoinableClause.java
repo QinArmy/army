@@ -30,8 +30,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, LR, LO, LF>
-        extends WhereClause<WR, WA, OR, LR, LO, LF>
+abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR, LO, LF>
+        extends WhereClause<WR, WA, OR, OD, LR, LO, LF>
         implements Statement._JoinModifierClause<JT, JS>,
         Statement._JoinModifierUndoneFunctionClause<JF>,
         Statement._CrossJoinModifierClause<FT, FS>,
@@ -893,7 +893,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, LR, LO
 
     @SuppressWarnings("unchecked")
     static abstract class JoinableBlock<FT, FS, FC, FF, JT, JS, JC, JF, OR>
-            extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, Object, Object, Object, Object, Object, Object>
+            extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, Object, Object, Object, Object, Object, Object, Object>
             implements Statement._OnClause<OR>, _TabularBlock, _TabularBlock._ModifierTableBlockSpec {
 
         private final _JoinType joinType;

@@ -33,8 +33,8 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, WA, OR, LR>
-        extends SingleDeleteStatement.WithSingleDelete<I, MySQLCtes, WE, WR, WA, OR, LR, Object, Object>
+abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, WA, OR, OD, LR>
+        extends SingleDeleteStatement.WithSingleDelete<I, MySQLCtes, WE, WR, WA, OR, OD, LR, Object, Object>
         implements MySQLDelete,
         _MySQLSingleDelete,
         DeleteStatement,
@@ -205,6 +205,7 @@ abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, W
             MySQLDelete._OrderBySpec<I>,
             MySQLDelete._SingleWhereAndSpec<I>,
             MySQLDelete._OrderByCommaSpec<I>,
+            MySQLDelete._LimitSpec<I>,
             Statement._DmlDeleteSpec<I>>
             implements MySQLDelete._SingleWithSpec<I>,
             MySQLDelete._SinglePartitionSpec<I>,
@@ -247,6 +248,7 @@ abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, W
             MySQLDelete._BatchOrderBySpec<BatchDelete>,
             MySQLDelete._BatchSingleWhereAndSpec<BatchDelete>,
             MySQLDelete._BatchOrderByCommaSpec<BatchDelete>,
+            MySQLDelete._BatchLimitSpec<BatchDelete>,
             MySQLDelete._BatchParamClause<_DmlDeleteSpec<BatchDelete>>>
             implements MySQLDelete._BatchSingleWithSpec<BatchDelete>,
             MySQLDelete._BatchSinglePartitionSpec<BatchDelete>,

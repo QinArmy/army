@@ -32,11 +32,13 @@ public interface PostgreWindow extends Window {
 
     }
 
-    interface _OrderByCommaSpec extends Statement._OrderByCommaClause<_OrderByCommaSpec>, _FrameExtentSpec {
+    interface _OrderByCommaSpec extends Statement._OrderByCommaClause<_OrderByCommaSpec>,
+            Statement._DynamicOrderByClause<_FrameExtentSpec>,
+            _FrameExtentSpec {
         //TODO postgre USING operator
     }
 
-    interface _OrderBySpec extends Statement._OrderByClause<_OrderByCommaSpec>, _FrameExtentSpec {
+    interface _OrderBySpec extends Statement._StaticOrderByClause<_OrderByCommaSpec>, _FrameExtentSpec {
         //TODO postgre USING operator
     }
 

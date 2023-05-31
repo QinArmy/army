@@ -497,7 +497,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
      * @see #groupConcatClause()
      */
     static final class GroupConcatInnerClause
-            extends OrderByClause.OrderByClauseClause<MySQLFunction._GroupConcatSeparatorClause>
+            extends OrderByClause.OrderByClauseClause<MySQLFunction._GroupConcatSeparatorClause, Item>
             implements MySQLFunction._GroupConcatOrderBySpec, ArmyFuncClause, _SelfDescribed {
 
 

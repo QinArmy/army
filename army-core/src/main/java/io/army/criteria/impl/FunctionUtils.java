@@ -3084,7 +3084,8 @@ abstract class FunctionUtils {
     }//GlobalWindow
 
 
-    static final class OrderByOptionClause extends OrderByClause<Statement._SimpleOrderByClause>
+    static final class OrderByOptionClause
+            extends OrderByClause.OrderByClauseClause<Statement._SimpleOrderByCommaClause, Item>
             implements ArmyFuncClause,
             Statement._SimpleOrderByClause {
 
@@ -3117,10 +3118,6 @@ abstract class FunctionUtils {
 
         }
 
-        @Override
-        Dialect statementDialect() {
-            throw _Exceptions.castCriteriaApi();
-        }
 
 
     }//OrderByOptionClause

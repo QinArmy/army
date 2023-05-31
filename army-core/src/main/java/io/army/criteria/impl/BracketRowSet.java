@@ -7,8 +7,8 @@ import io.army.util._Assert;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
-abstract class BracketRowSet<I extends Item, RR, OR, LR, LO, LF, SP>
-        extends LimitRowOrderByClause<OR, LR, LO, LF>
+abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
+        extends LimitRowOrderByClause<OR, OD, LR, LO, LF>
         implements _ParensRowSet,
         RowSet._StaticUnionClause<SP>,
         RowSet._StaticIntersectClause<SP>,

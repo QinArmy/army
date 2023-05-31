@@ -50,7 +50,8 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
-    interface _UnionOrderBySpec<I extends Item> extends _OrderByClause<_UnionOrderByCommaSpec<I>>,
+    interface _UnionOrderBySpec<I extends Item> extends _StaticOrderByClause<_UnionOrderByCommaSpec<I>>,
+            _DynamicOrderByClause<_UnionLimitSpec<I>>,
             _UnionLimitSpec<I>,
             _UnionSpec<I> {
 
@@ -124,7 +125,10 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-    interface _OrderBySpec<I extends Item> extends _OrderByClause<_OrderByCommaSpec<I>>, _LimitSpec<I>, _UnionSpec<I> {
+    interface _OrderBySpec<I extends Item> extends _StaticOrderByClause<_OrderByCommaSpec<I>>,
+            _DynamicOrderByClause<_LimitSpec<I>>,
+            _LimitSpec<I>,
+            _UnionSpec<I> {
 
     }
 
