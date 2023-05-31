@@ -1,7 +1,11 @@
-package io.army.mapping;
+package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
@@ -14,6 +18,7 @@ public final class IntervalType extends _ArmyNoInjectionMapping implements Mappi
         throw new UnsupportedOperationException();
     }
 
+    public static final IntervalType TEXT = new IntervalType();
 
     private IntervalType() {
     }

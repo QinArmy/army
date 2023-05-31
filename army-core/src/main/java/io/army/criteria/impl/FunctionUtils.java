@@ -1236,7 +1236,7 @@ abstract class FunctionUtils {
             }
 
             if (this instanceof SQLFunction._OuterClauseBeforeOver) {
-                this.appendOuterClause(context);
+                this.appendOuterClause(sqlBuilder, context);
             }
 
             final String existingWindowName = this.existingWindowName;
@@ -1316,7 +1316,7 @@ abstract class FunctionUtils {
 
         abstract boolean isDontSupportWindow(Dialect dialect);
 
-        void appendOuterClause(_SqlContext context) {
+        void appendOuterClause(StringBuilder sqlBuilder, _SqlContext context) {
             throw new UnsupportedOperationException();
         }
 

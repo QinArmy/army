@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableNameElement;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreWindow;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract class PostgreFunctionUtils extends DialectFunctionUtils {
@@ -75,17 +77,50 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }
 
     static PostgreWindowFunctions._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        }
         return new OneArgWindowFunc(name, one, returnType);
     }
 
-    static PostgreWindowFunctions._OverSpec twoArgWindowFunc(String name, Expression one, Expression two,
-                                                             TypeMeta returnType) {
+    static PostgreWindowFunctions._OverSpec twoArgWindowFunc(final String name, final Expression one, final Expression two,
+                                                             final TypeMeta returnType) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
         return new TwoArgWindowFunc(name, one, two, returnType);
     }
 
-    static PostgreWindowFunctions._OverSpec threeArgWindowFunc(String name, Expression one, Expression two,
-                                                               Expression three, TypeMeta returnType) {
+    static PostgreWindowFunctions._OverSpec threeArgWindowFunc(final String name, final Expression one, final Expression two,
+                                                               final Expression three, final TypeMeta returnType) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
         return new ThreeArgWindowFunc(name, one, two, three, returnType);
+    }
+
+    static PostgreWindowFunctions._AggregateWindowFunc oneArgAggWindowFunc(final String name, final Expression one,
+                                                                           final TypeMeta returnType) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        }
+        return new OneArgAggWindowFunc(name, one, returnType);
+    }
+
+    static PostgreWindowFunctions._AggregateWindowFunc twoArgAggWindowFunc(final String name, final Expression one,
+                                                                           final Expression two, final TypeMeta returnType) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
+        return new TwoArgAggWindowFunc(name, one, two, returnType);
     }
 
 
@@ -906,6 +941,139 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
     }//ThreeArgWindowFunc
+
+
+    /*-------------------below Aggregate Functions-------------------*/
+
+    private static abstract class PostgreAggregateWindowFunction extends PostgreWindowFunction
+            implements PostgreWindowFunctions._AggregateWindowFunc {
+
+        private List<_Predicate> whereList;
+
+        private PostgreAggregateWindowFunction(String name, TypeMeta returnType) {
+            super(name, returnType);
+        }
+
+        @Override
+        public final PostgreWindowFunctions._OverSpec filter(Consumer<Statement._SimpleWhereClause> consumer) {
+            this.ifFilter(consumer);
+            final List<_Predicate> whereList = this.whereList;
+            if (whereList == null || whereList.size() == 0) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            return this;
+        }
+
+        @Override
+        public final PostgreWindowFunctions._OverSpec ifFilter(final Consumer<Statement._SimpleWhereClause> consumer) {
+            final WhereClause.SimpleWhereClause whereClause;
+            whereClause = new WhereClause.SimpleWhereClause(this.outerContext);
+            consumer.accept(whereClause);
+            if (this.whereList != null) {
+                throw ContextStack.castCriteriaApi(this.outerContext);
+            }
+            this.whereList = whereClause.endWhereClauseIfNeed();
+            return this;
+        }
+
+
+        @Override
+        final void appendOuterClause(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final List<_Predicate> whereList = this.whereList;
+            final int predicateSize;
+            if (whereList == null || (predicateSize = whereList.size()) == 0) {
+                return;
+            }
+            sqlBuilder.append(" FILTER(")
+                    .append(_Constant.SPACE_WHERE);
+            for (int i = 0; i < predicateSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                whereList.get(i).appendSql(context);
+            }
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        }
+
+        @Override
+        final void outerClauseToString(final StringBuilder builder) {
+            final List<_Predicate> whereList = this.whereList;
+            final int predicateSize;
+            if (whereList == null || (predicateSize = whereList.size()) == 0) {
+                return;
+            }
+            builder.append(" FILTER(")
+                    .append(_Constant.SPACE_WHERE);
+            for (int i = 0; i < predicateSize; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                builder.append(whereList.get(i));
+            }
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        }
+
+
+    }//PostgreAggregateWindowFunction
+
+    private static final class OneArgAggWindowFunc extends PostgreAggregateWindowFunction {
+
+        private final ArmyExpression one;
+
+        /**
+         * @see #oneArgAggWindowFunc(String, Expression, TypeMeta)
+         */
+        private OneArgAggWindowFunc(String name, Expression one, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+        }
+
+        @Override
+        void appendArguments(StringBuilder sqlBuilder, _SqlContext context) {
+            this.one.appendSql(context);
+        }
+
+        @Override
+        void argumentToString(StringBuilder builder) {
+            builder.append(this.one);
+        }
+
+
+    }//OneArgAggWindowFunc
+
+    private static final class TwoArgAggWindowFunc extends PostgreAggregateWindowFunction {
+
+        private final ArmyExpression one;
+
+        private final ArmyExpression two;
+
+        /**
+         * @see #twoArgAggWindowFunc(String, Expression, Expression, TypeMeta)
+         */
+        private TwoArgAggWindowFunc(String name, Expression one, Expression two, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+            this.two = (ArmyExpression) two;
+        }
+
+        @Override
+        void appendArguments(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.one.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_COMMA);
+            this.two.appendSql(context);
+        }
+
+        @Override
+        void argumentToString(final StringBuilder builder) {
+            builder.append(this.one)
+                    .append(_Constant.SPACE_COMMA)
+                    .append(this.two);
+        }
+
+
+    }//OneArgAggWindowFunc
 
 
 }

@@ -5,6 +5,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
+import io.army.mapping.optional.IntervalType;
 import io.army.mapping.postgre.PostgreInetType;
 import io.army.mapping.postgre.PostgreTsQueryType;
 import io.army.mapping.spatial.postgre.PostgreBoxType;

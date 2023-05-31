@@ -354,13 +354,11 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        void appendOuterClause(final _SqlContext context) {
+        void appendOuterClause(final StringBuilder sqlBuilder, final _SqlContext context) {
             final FromFirstLast fromFirstLast = this.fromFirstLast;
             final NullTreatment nullTreatment = this.nullTreatment;
 
             if (fromFirstLast != null || nullTreatment != null) {
-                final StringBuilder sqlBuilder;
-                sqlBuilder = context.sqlBuilder();
                 if (fromFirstLast != null) {
                     sqlBuilder.append(fromFirstLast);
                 }
