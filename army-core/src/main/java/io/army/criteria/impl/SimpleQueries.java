@@ -373,73 +373,61 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final GR groupBy(Expression sortItem) {
-        this.groupByList = Collections.singletonList((ArmySortItem) sortItem);
+         this.addGroupByItem(sortItem);
         return (GR) this;
     }
 
     @Override
     public final GR groupBy(Expression sortItem1, Expression sortItem2) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(
-                (ArmySortItem) sortItem1,
-                (ArmySortItem) sortItem2
-        );
+        this.addGroupByItem(sortItem1);
+        this.addGroupByItem(sortItem2);
         return (GR) this;
     }
 
     @Override
     public final GR groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(
-                (ArmySortItem) sortItem1,
-                (ArmySortItem) sortItem2,
-                (ArmySortItem) sortItem3
-        );
+        this.addGroupByItem(sortItem1);
+        this.addGroupByItem(sortItem2);
+        this.addGroupByItem(sortItem3);
         return (GR) this;
     }
 
     @Override
     public final GR groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3, Expression sortItem4) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(
-                (ArmySortItem) sortItem1,
-                (ArmySortItem) sortItem2,
-                (ArmySortItem) sortItem3,
-                (ArmySortItem) sortItem4
-        );
+        this.addGroupByItem(sortItem1);
+        this.addGroupByItem(sortItem2);
+        this.addGroupByItem(sortItem3);
+        this.addGroupByItem(sortItem4);
         return (GR) this;
     }
 
     @Override
     public final GR commaSpace(Expression sortItem) {
-        this.groupByList = Collections.singletonList((ArmySortItem) sortItem);
+        this.addGroupByItem(sortItem);
         return (GR) this;
     }
 
     @Override
     public final GR commaSpace(Expression sortItem1, Expression sortItem2) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(
-                (ArmySortItem) sortItem1,
-                (ArmySortItem) sortItem2
-        );
+        this.addGroupByItem(sortItem1);
+        this.addGroupByItem(sortItem2);
         return (GR) this;
     }
 
     @Override
     public final GR commaSpace(Expression sortItem1, Expression sortItem2, Expression sortItem3) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(
-                (ArmySortItem) sortItem1,
-                (ArmySortItem) sortItem2,
-                (ArmySortItem) sortItem3
-        );
+        this.addGroupByItem(sortItem1);
+        this.addGroupByItem(sortItem2);
+        this.addGroupByItem(sortItem3);
         return (GR) this;
     }
 
     @Override
     public final GR commaSpace(Expression sortItem1, Expression sortItem2, Expression sortItem3, Expression sortItem4) {
-        this.groupByList = ArrayUtils.asUnmodifiableList(
-                (ArmySortItem) sortItem1,
-                (ArmySortItem) sortItem2,
-                (ArmySortItem) sortItem3,
-                (ArmySortItem) sortItem4
-        );
+        this.addGroupByItem(sortItem1);
+        this.addGroupByItem(sortItem2);
+        this.addGroupByItem(sortItem3);
+        this.addGroupByItem(sortItem4);
         return (GR) this;
     }
 
@@ -771,6 +759,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         this.endOrderByClause();
 
+        this.endGroupBy(false);
+
         final CriteriaContext context = this.context;
         if (beforeSelect) {
             context.endContextBeforeCommand();
@@ -791,7 +781,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
         List<ArmySortItem> itemList = this.groupByList;
         if (itemList == null) {
-            itemList = new ArrayList<>();
+            itemList = _Collections.arrayList();
             this.groupByList = itemList;
         } else if (!(itemList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -805,7 +795,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (required) {
                 throw ContextStack.criteriaError(this.context, "group by clause is empty");
             }
-            //null,no-op
+            this.groupByList = _Collections.emptyList();
         } else if (itemList instanceof ArrayList) {
             this.groupByList = _Collections.unmodifiableList(itemList);
         } else {
