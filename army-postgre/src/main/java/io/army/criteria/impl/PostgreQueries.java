@@ -45,6 +45,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreStatement._FuncColumnDefinitionAsClause<Statement._OnClause<PostgreQuery._JoinSpec<I>>>,
         PostgreQuery._GroupBySpec<I>,
         PostgreQuery._WhereAndSpec<I>,
+        PostgreQuery._GroupByCommaSpec<I>,
         PostgreQuery._HavingSpec<I>,
         PostgreQuery._WindowSpec<I>,
         PostgreQuery._OrderByCommaSpec<I>,
@@ -62,7 +63,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreQuery._ParensJoinSpec<I>,
         PostgreQuery._WhereAndSpec<I>,
         PostgreQuery._WindowCommaSpec<I>,
-        PostgreQuery._HavingSpec<I>,
+        PostgreQuery._GroupByCommaSpec<I>,
         PostgreQuery._OrderByCommaSpec<I>,
         PostgreQuery._FetchSpec<I> {
 

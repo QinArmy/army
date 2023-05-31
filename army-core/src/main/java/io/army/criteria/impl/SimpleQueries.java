@@ -27,13 +27,15 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, HR, OR, OD, LR, LO, LF, SP>
+abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, OR, OD, LR, LO, LF, SP>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR, LO, LF>
         implements Query._SelectDispatcher<W, SR, SD>,
         Query._StaticSelectCommaClause<SR>,
         Query._StaticSelectSpaceClause<SR>,
         Statement._QueryWhereClause<WR, WA>,
-        Query._GroupByClause<GR>,
+        Query._StaticGroupByClause<GR>,
+        Query._GroupByCommaClause<GR>,
+        Query._DynamicGroupByClause<GD>,
         Query._HavingClause<HR>,
         Query._AsQueryClause<Q>,
         RowSet._StaticUnionClause<SP>,
@@ -394,16 +396,62 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         return (GR) this;
     }
 
+    @Override
+    public final GR groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3, Expression sortItem4) {
+        this.groupByList = ArrayUtils.asUnmodifiableList(
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2,
+                (ArmySortItem) sortItem3,
+                (ArmySortItem) sortItem4
+        );
+        return (GR) this;
+    }
 
     @Override
-    public final GR groupBy(Consumer<Consumer<Expression>> consumer) {
+    public final GR commaSpace(Expression sortItem) {
+        this.groupByList = Collections.singletonList((ArmySortItem) sortItem);
+        return (GR) this;
+    }
+
+    @Override
+    public final GR commaSpace(Expression sortItem1, Expression sortItem2) {
+        this.groupByList = ArrayUtils.asUnmodifiableList(
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2
+        );
+        return (GR) this;
+    }
+
+    @Override
+    public final GR commaSpace(Expression sortItem1, Expression sortItem2, Expression sortItem3) {
+        this.groupByList = ArrayUtils.asUnmodifiableList(
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2,
+                (ArmySortItem) sortItem3
+        );
+        return (GR) this;
+    }
+
+    @Override
+    public final GR commaSpace(Expression sortItem1, Expression sortItem2, Expression sortItem3, Expression sortItem4) {
+        this.groupByList = ArrayUtils.asUnmodifiableList(
+                (ArmySortItem) sortItem1,
+                (ArmySortItem) sortItem2,
+                (ArmySortItem) sortItem3,
+                (ArmySortItem) sortItem4
+        );
+        return (GR) this;
+    }
+
+    @Override
+    public final GD groupBy(Consumer<Consumer<Expression>> consumer) {
         consumer.accept(this::addGroupByItem);
         return this.endGroupBy(true);
     }
 
 
     @Override
-    public final GR ifGroupBy(Consumer<Consumer<Expression>> consumer) {
+    public final GD ifGroupBy(Consumer<Consumer<Expression>> consumer) {
         consumer.accept(this::addGroupByItem);
         return this.endGroupBy(false);
     }
@@ -751,7 +799,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         itemList.add((ArmySortItem) sortItem);
     }
 
-    private GR endGroupBy(final boolean required) {
+    private GD endGroupBy(final boolean required) {
         final List<ArmySortItem> itemList = this.groupByList;
         if (itemList == null) {
             if (required) {
@@ -763,7 +811,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         } else {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return (GR) this;
+        return (GD) this;
     }
 
     private void addHavingPredicate(final @Nullable IPredicate predicate) {
@@ -799,8 +847,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
-    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, HR, OR, OD, LR, LO, LF, SP>
-            extends SimpleQueries<Q, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, HR, OR, OD, LR, LO, LF, SP>
+    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, OR, OD, LR, LO, LF, SP>
+            extends SimpleQueries<Q, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, OR, OD, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>,
             ArmyStmtSpec,
             Query._WithSelectDispatcher<B, WE, W, SR, SD> {
@@ -891,8 +939,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     }//WithCteSimpleQueries
 
-    static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, HR, OR, OD, LR, LO, LF, SP>
-            extends WithCteSimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, HR, OR, OD, LR, LO, LF, SP>
+    static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, OR, OD, LR, LO, LF, SP>
+            extends WithCteSimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, OR, OD, LR, LO, LF, SP>
             implements _SelectDistinctOnDispatcher<W, SR, SD>,
             _Query._DistinctOnClauseSpec {
 

@@ -240,7 +240,19 @@ public interface Query extends RowSet {
     }
 
 
-    interface _GroupByClause<R> {
+    interface _GroupByCommaClause<R> {
+
+        R commaSpace(Expression sortItem);
+
+        R commaSpace(Expression sortItem1, Expression sortItem2);
+
+        R commaSpace(Expression sortItem1, Expression sortItem2, Expression sortItem3);
+
+        R commaSpace(Expression sortItem1, Expression sortItem2, Expression sortItem3, Expression sortItem4);
+    }
+
+
+    interface _StaticGroupByClause<R> {
 
         R groupBy(Expression sortItem);
 
@@ -248,10 +260,17 @@ public interface Query extends RowSet {
 
         R groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3);
 
+        R groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3, Expression sortItem4);
+
+
+    }
+
+
+    interface _DynamicGroupByClause<R> {
+
         R groupBy(Consumer<Consumer<Expression>> consumer);
 
         R ifGroupBy(Consumer<Consumer<Expression>> consumer);
-
     }
 
 

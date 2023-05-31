@@ -177,6 +177,11 @@ public interface StandardQuery extends Query, StandardStatement {
     }
 
 
+    interface _GroupByCommaSpec<I extends Item> extends _GroupByCommaClause<_GroupByCommaSpec<I>>, _HavingSpec<I> {
+
+    }
+
+
     /**
      * <p>
      * This interface representing the composite of below:
@@ -193,7 +198,8 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _GroupBySpec<I extends Item> extends _GroupByClause<_HavingSpec<I>>,
+    interface _GroupBySpec<I extends Item> extends _StaticGroupByClause<_GroupByCommaSpec<I>>,
+            _DynamicGroupByClause<_HavingSpec<I>>,
             _OrderBySpec<I> {
 
     }

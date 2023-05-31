@@ -185,7 +185,14 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _GroupBySpec<I extends Item> extends _GroupByClause<_GroupByWithRollupSpec<I>>, _WindowSpec<I> {
+    interface _GroupByCommaSpec<I extends Item> extends _GroupByCommaClause<_GroupByCommaSpec<I>>,
+            _GroupByWithRollupSpec<I> {
+
+    }
+
+    interface _GroupBySpec<I extends Item> extends _StaticGroupByClause<_GroupByCommaSpec<I>>,
+            _DynamicGroupByClause<_GroupByWithRollupSpec<I>>,
+            _WindowSpec<I> {
 
     }
 

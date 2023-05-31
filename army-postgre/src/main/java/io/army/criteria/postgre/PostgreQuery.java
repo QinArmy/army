@@ -151,8 +151,14 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
     }
 
+    interface _GroupByCommaSpec<I extends Item> extends _GroupByCommaClause<_GroupByCommaSpec<I>>, _HavingSpec<I> {
 
-    interface _GroupBySpec<I extends Item> extends _GroupByClause<_HavingSpec<I>>, _WindowSpec<I> {
+    }
+
+
+    interface _GroupBySpec<I extends Item> extends _StaticGroupByClause<_GroupByCommaSpec<I>>,
+            _DynamicGroupByClause<_HavingSpec<I>>,
+            _WindowSpec<I> {
         //TODO add dialect method
     }
 

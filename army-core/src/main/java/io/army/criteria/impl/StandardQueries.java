@@ -43,7 +43,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         Void,
         StandardQuery._GroupBySpec<I>, // WR
         StandardQuery._WhereAndSpec<I>, // AR
-        StandardQuery._HavingSpec<I>, // GR
+        StandardQuery._GroupByCommaSpec<I>, // GR
+        StandardQuery._HavingSpec<I>, // GD
         StandardQuery._OrderBySpec<I>, // HR
         StandardQuery._OrderByCommaSpec<I>, // OR
         StandardQuery._LimitSpec<I>, // OD
@@ -57,7 +58,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         StandardQuery._StandardSelectCommaClause<I>,
         StandardQuery._JoinSpec<I>,
         StandardQuery._WhereAndSpec<I>,
-        StandardQuery._HavingSpec<I>,
+        StandardQuery._GroupByCommaSpec<I>,
         StandardQuery._OrderByCommaSpec<I>,
         _StandardQuery,
         ArmyStmtSpec {
