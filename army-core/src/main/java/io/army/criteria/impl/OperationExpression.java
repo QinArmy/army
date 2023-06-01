@@ -948,22 +948,26 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
         final String name;
 
-        final boolean buildIn;
+        final TypeMeta returnType;
+
+        private final boolean buildIn;
 
         /**
          * package constructor
          */
-        SqlFunctionExpression(String name) {
+        SqlFunctionExpression(String name, TypeMeta returnType) {
             this.name = name;
             this.buildIn = true;
+            this.returnType = returnType;
         }
 
         /**
          * package constructor
          */
-        SqlFunctionExpression(String name, boolean buildIn) {
+        SqlFunctionExpression(String name, boolean buildIn, TypeMeta returnType) {
             this.name = name;
             this.buildIn = buildIn;
+            this.returnType = returnType;
         }
 
         @Override
@@ -971,11 +975,26 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
             return this.name;
         }
 
+        @Override
+        public final boolean isDelay() {
+            final TypeMeta returnType = this.returnType;
+            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
+        }
+
         /**
          * @return sql function couldn't return {@link TableField},void to codec {@link TableField}
          */
         @Override
-        public abstract MappingType typeMeta();
+        public final MappingType typeMeta() {
+            final TypeMeta returnType = this.returnType;
+            final MappingType type;
+            if (returnType instanceof MappingType) {
+                type = (MappingType) returnType;
+            } else {
+                type = returnType.mappingType();
+            }
+            return type;
+        }
 
         @Override
         public void appendSql(final _SqlContext context) {
@@ -1009,9 +1028,12 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
                     this.appendArg(sqlBuilder, context);
                     sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
                 }
+
+                if (!(this instanceof FunctionUtils.SimpleFunction)) {
+                    this.appendFuncRest(sqlBuilder, context);
+                }
             }
 
-            this.appendFuncRest(sqlBuilder, context);
         }
 
         @Override
@@ -1034,14 +1056,22 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
             return builder.toString();
         }
 
-        abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
 
-        abstract void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context);
+        void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
 
 
-        abstract void argToString(StringBuilder builder);
+        void argToString(StringBuilder builder) {
+            //no-op
+        }
 
-        abstract void funcRestToString(StringBuilder builder);
+        void funcRestToString(StringBuilder builder) {
+            //no-op
+        }
 
 
     }//FunctionExpression

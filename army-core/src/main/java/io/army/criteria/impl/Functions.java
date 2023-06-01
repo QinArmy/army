@@ -1010,22 +1010,18 @@ abstract class Functions extends SqlSyntax {
         private static final CountAsteriskFunction INSTANCE = new CountAsteriskFunction();
 
         private CountAsteriskFunction() {
-            super("COUNT");
+            super("count", true, LongType.INSTANCE);
+        }
+
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            sqlBuilder.append(" *");
         }
 
         @Override
-        public boolean isDelay() {
-            return false;
-        }
-
-        @Override
-        public MappingType typeMeta() {
-            return LongType.INSTANCE;
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" COUNT(*)");
+        void argToString(StringBuilder builder) {
+            builder.append(" *");
         }
 
 

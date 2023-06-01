@@ -12,7 +12,6 @@ import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.mapping.StringType;
 import io.army.mapping.TextType;
 import io.army.meta.TypeMeta;
 import io.army.util._Collections;
@@ -800,8 +799,9 @@ abstract class FunctionUtils {
     }
 
 
+    @Deprecated
     static SimpleExpression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
-        return new JsonObjectFunc(name, expMap, returnType);
+        throw new UnsupportedOperationException();
     }
 
 
@@ -1098,15 +1098,21 @@ abstract class FunctionUtils {
     }
 
 
-    interface FunctionSpec extends _SelfDescribed, TypeInfer {
-
-    }
-
     interface NoArgFunction {
 
     }
 
-    interface NoParensFunction {
+    /**
+     * don't invoke <ul>
+     * <li>{@link OperationExpression.SqlFunctionExpression#appendFuncRest(StringBuilder, _SqlContext)}</li>
+     * <li>{@link OperationExpression.SqlFunctionExpression#funcRestToString(StringBuilder)} </li>
+     * </ul>
+     */
+    interface SimpleFunction {
+
+    }
+
+    interface NoParensFunction extends SimpleFunction {
 
     }
 
@@ -1166,27 +1172,13 @@ abstract class FunctionUtils {
 
         final CriteriaContext outerContext;
 
-        final TypeMeta returnType;
-
         private String existingWindowName;
 
         private _Window anonymousWindow;
 
         WindowFunction(String name, TypeMeta returnType) {
-            super(name);
+            super(name, returnType);
             this.outerContext = ContextStack.peek();
-            this.returnType = returnType;
-        }
-
-        @Override
-        public final boolean isDelay() {
-            final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
-        }
-
-        @Override
-        public final MappingType typeMeta() {
-            return this.returnType.mappingType();
         }
 
         @Override
@@ -1398,48 +1390,11 @@ abstract class FunctionUtils {
     private static final class NoParensFunctionExpression extends OperationExpression.SqlFunctionExpression
             implements NoParensFunction {
 
-        private final TypeMeta returnType;
-
         /**
          * @see #noParensFunc(String, TypeMeta)
          */
         private NoParensFunctionExpression(String name, TypeMeta returnType) {
-            super(name, true); //no parens function must be build-in
-            this.returnType = returnType;
-        }
-
-
-        @Override
-        public boolean isDelay() {
-            final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeInfer.DelayTypeInfer
-                    && ((DelayTypeInfer) returnType).isDelay();
-        }
-
-        @Override
-        public MappingType typeMeta() {
-            return this.returnType.mappingType();
-        }
-
-
-        @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            //no-op
-        }
-
-        @Override
-        void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
-            //no-op
-        }
-
-        @Override
-        void argToString(StringBuilder builder) {
-            //no-op
-        }
-
-        @Override
-        void funcRestToString(StringBuilder builder) {
-            //no-op
+            super(name, true, returnType); //no parens function must be build-in
         }
 
 
@@ -1447,48 +1402,14 @@ abstract class FunctionUtils {
 
 
     private static final class ZeroArgFunction extends OperationExpression.SqlFunctionExpression
-            implements NoArgFunction {
+            implements NoArgFunction, SimpleFunction {
 
-
-        private final TypeMeta returnType;
 
         /**
          * @see #zeroArgFunc(String, TypeMeta)
          */
         private ZeroArgFunction(String name, TypeMeta returnType) {
-            super(name);
-            this.returnType = returnType;
-        }
-
-        @Override
-        public boolean isDelay() {
-            final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) returnType).isDelay();
-        }
-
-        @Override
-        public MappingType typeMeta() {
-            return this.returnType.mappingType();
-        }
-
-        @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            //no-op
-        }
-
-        @Override
-        void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
-            //no-op
-        }
-
-        @Override
-        void argToString(StringBuilder builder) {
-            //no-op
-        }
-
-        @Override
-        void funcRestToString(StringBuilder builder) {
-            //no-op
+            super(name, returnType);
         }
 
     }//NoArgFuncExpression
@@ -1496,33 +1417,12 @@ abstract class FunctionUtils {
 
     static abstract class FunctionExpression extends OperationExpression.SqlFunctionExpression {
 
-
-        final TypeMeta returnType;
-
-        final boolean buildIn;
-
         FunctionExpression(String name, TypeMeta returnType) {
-            super(name);
-            this.buildIn = true;
-            this.returnType = returnType;
+            super(name, returnType);
         }
 
         FunctionExpression(String name, boolean buildIn, TypeMeta returnType) {
-            super(name);
-            this.buildIn = buildIn;
-            this.returnType = returnType;
-        }
-
-
-        @Override
-        public final boolean isDelay() {
-            final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
-        }
-
-        @Override
-        public final MappingType typeMeta() {
-            return this.returnType.mappingType();
+            super(name, buildIn, returnType);
         }
 
         @Override
@@ -2158,30 +2058,17 @@ abstract class FunctionUtils {
     /**
      * @see ComplexArgFuncPredicate
      */
-    private static class ComplexArgFuncExpression extends OperationExpression.SqlFunctionExpression {
+    private static class ComplexArgFuncExpression extends OperationExpression.SqlFunctionExpression
+            implements SimpleFunction {
         private final List<?> argList;
-
-        private final TypeMeta returnType;
 
         /**
          * @see #complexArgFunc(String, TypeMeta, Object...)
          */
         private ComplexArgFuncExpression(String name, List<?> argList, TypeMeta returnType) {
-            super(name);
+            super(name, returnType);
             assert argList.size() > 0;
             this.argList = argList;
-            this.returnType = returnType;
-        }
-
-        @Override
-        public final boolean isDelay() {
-            final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
-        }
-
-        @Override
-        public final MappingType typeMeta() {
-            return this.returnType.mappingType();
         }
 
 
@@ -2208,72 +2095,6 @@ abstract class FunctionUtils {
 
     }//ComplexArgFuncExpression
 
-    private static final class JsonObjectFunc extends OperationExpression.SqlFunctionExpression {
-
-        private final Map<String, Expression> expMap;
-
-        private final TypeMeta returnType;
-
-        private JsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
-            super(name);
-            assert expMap.size() > 0;
-            this.expMap = new HashMap<>(expMap);
-            this.returnType = returnType;
-        }
-
-        @Override
-        public boolean isDelay() {
-            final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
-        }
-
-        @Override
-        public MappingType typeMeta() {
-            return this.returnType.mappingType();
-        }
-
-
-        @Override
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            int index = 0;
-            for (Map.Entry<String, Expression> e : this.expMap.entrySet()) {
-                if (index > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
-                }
-                context.appendLiteral(StringType.INSTANCE, e.getKey());
-                sqlBuilder.append(_Constant.SPACE_COMMA);
-                ((ArmyExpression) e.getValue()).appendSql(context);
-                index++;
-            }
-        }
-
-        @Override
-        void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
-            //no-op
-        }
-
-        @Override
-        void argToString(StringBuilder builder) {
-            int index = 0;
-            for (Map.Entry<String, Expression> e : this.expMap.entrySet()) {
-                if (index > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                builder.append(_Constant.SPACE)
-                        .append(e.getKey())
-                        .append(_Constant.SPACE_COMMA)
-                        .append(e.getValue());
-                index++;
-            }
-        }
-
-        @Override
-        void funcRestToString(StringBuilder builder) {
-            //no-op
-        }
-
-
-    }//JsonMapFunc
 
 
     private static final class NamedComplexArgFunc extends ComplexArgFuncExpression implements NamedExpression {

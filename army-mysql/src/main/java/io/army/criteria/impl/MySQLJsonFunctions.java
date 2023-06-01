@@ -70,6 +70,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-object">JSON_OBJECT([key, val[, key, val] ...])</a>
      */
+    @Deprecated
     public static SimpleExpression jsonObject(final Map<String, Expression> expMap) {
         final String name = "JSON_OBJECT";
         final SimpleExpression func;

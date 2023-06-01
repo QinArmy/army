@@ -1166,7 +1166,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _PgAggFunc jsonObjectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression key, Expression value) {
-        return _jsonObjectAggAggFunc("json_object_agg", modifier, key, value, null);
+        return PostgreFunctionUtils.twoArgAggFunc("json_object_agg", modifier, key, value, null, JsonType.TEXT);
     }
 
     /**
@@ -1181,7 +1181,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc jsonObjectAgg(Expression key, Expression value, Consumer<Statement._SimpleOrderByClause> consumer) {
 
         ContextStack.assertNonNull(consumer);
-        return _jsonObjectAggAggFunc("json_object_agg", null, key, value, consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("json_object_agg", null, key, value, consumer, JsonType.TEXT);
     }
 
     /**
@@ -1196,7 +1196,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc jsonObjectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression key, Expression value,
                                            Consumer<Statement._SimpleOrderByClause> consumer) {
         ContextStack.assertNonNull(consumer);
-        return _jsonObjectAggAggFunc("json_object_agg", modifier, key, value, consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("json_object_agg", modifier, key, value, consumer, JsonType.TEXT);
     }
 
 
@@ -1259,7 +1259,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _PgAggFunc jsonbObjectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression key, Expression value) {
-        return _jsonObjectAggAggFunc("jsonb_object_agg", modifier, key, value, null);
+        return PostgreFunctionUtils.twoArgAggFunc("jsonb_object_agg", modifier, key, value, null, JsonbType.TEXT);
     }
 
     /**
@@ -1274,7 +1274,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc jsonbObjectAgg(Expression key, Expression value, Consumer<Statement._SimpleOrderByClause> consumer) {
 
         ContextStack.assertNonNull(consumer);
-        return _jsonObjectAggAggFunc("jsonb_object_agg", null, key, value, consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("jsonb_object_agg", null, key, value, consumer, JsonbType.TEXT);
     }
 
     /**
@@ -1289,7 +1289,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc jsonbObjectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression key, Expression value,
                                             Consumer<Statement._SimpleOrderByClause> consumer) {
         ContextStack.assertNonNull(consumer);
-        return _jsonObjectAggAggFunc("jsonb_object_agg", modifier, key, value, consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("jsonb_object_agg", modifier, key, value, consumer, JsonbType.TEXT);
     }
 
 
@@ -1351,7 +1351,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _PgAggFunc max(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
-        return _oneArgAggIdentityTypeFunc("max", modifier, exp, null);
+        return PostgreFunctionUtils.oneArgAggFunc("max", modifier, exp, null, _returnType(exp, Expressions::identityType));
     }
 
     /**
@@ -1377,7 +1377,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _PgAggFunc min(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
-        return _oneArgAggIdentityTypeFunc("min", modifier, exp, null);
+        return PostgreFunctionUtils.oneArgAggFunc("min", modifier, exp, null, _returnType(exp, Expressions::identityType));
     }
 
     /**
@@ -1405,7 +1405,9 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _PgAggFunc rangeAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
-        return _oneArgAggIdentityTypeFunc("range_agg", modifier, any, null);
+        return PostgreFunctionUtils.oneArgAggFunc("range_agg", modifier, any, null,
+                _returnType(any, Expressions::identityType)
+        );
     }
 
     /**
@@ -1421,7 +1423,9 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc rangeAgg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
 
         ContextStack.assertNonNull(consumer);
-        return _oneArgAggIdentityTypeFunc("range_agg", null, any, consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("range_agg", null, any, consumer,
+                _returnType(any, Expressions::identityType)
+        );
     }
 
     /**
@@ -1437,7 +1441,9 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc rangeAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
                                       Consumer<Statement._SimpleOrderByClause> consumer) {
         ContextStack.assertNonNull(consumer);
-        return _oneArgAggIdentityTypeFunc("range_agg", modifier, any, consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("range_agg", modifier, any, consumer,
+                _returnType(any, Expressions::identityType)
+        );
     }
 
 
@@ -1466,7 +1472,9 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _PgAggFunc rangeIntersectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
-        return _oneArgAggIdentityTypeFunc("range_intersect_agg", modifier, any, null);
+        return PostgreFunctionUtils.oneArgAggFunc("range_intersect_agg", modifier, any, null,
+                _returnType(any, Expressions::identityType)
+        );
     }
 
     /**
@@ -1482,7 +1490,9 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc rangeIntersectAgg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
 
         ContextStack.assertNonNull(consumer);
-        return _oneArgAggIdentityTypeFunc("range_intersect_agg", null, any, consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("range_intersect_agg", null, any, consumer,
+                _returnType(any, Expressions::identityType)
+        );
     }
 
     /**
@@ -1498,7 +1508,9 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc rangeIntersectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
                                                Consumer<Statement._SimpleOrderByClause> consumer) {
         ContextStack.assertNonNull(consumer);
-        return _oneArgAggIdentityTypeFunc("range_intersect_agg", modifier, any, consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("range_intersect_agg", modifier, any, consumer,
+                _returnType(any, Expressions::identityType)
+        );
     }
 
 
@@ -1528,7 +1540,9 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _PgAggFunc stringAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression value, Expression delimiter) {
-        return _twoArgAggIdentityTypeFunc("string_agg", modifier, value, delimiter, null);
+        return PostgreFunctionUtils.twoArgAggFunc("string_agg", modifier, value, delimiter, null,
+                _returnType(value, Expressions::identityType)
+        );
     }
 
     /**
@@ -1544,7 +1558,9 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc stringAgg(Expression value, Expression delimiter, Consumer<Statement._SimpleOrderByClause> consumer) {
 
         ContextStack.assertNonNull(consumer);
-        return _twoArgAggIdentityTypeFunc("string_agg", null, value, delimiter, consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("string_agg", null, value, delimiter, consumer,
+                _returnType(value, Expressions::identityType)
+        );
     }
 
     /**
@@ -1560,7 +1576,9 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc stringAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression value, Expression delimiter,
                                        Consumer<Statement._SimpleOrderByClause> consumer) {
         ContextStack.assertNonNull(consumer);
-        return _twoArgAggIdentityTypeFunc("string_agg", modifier, value, delimiter, consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("string_agg", modifier, value, delimiter, consumer,
+                _returnType(value, Expressions::identityType)
+        );
     }
 
     /**
@@ -1954,58 +1972,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     }
 
 
-    /**
-     * @see #jsonObjectAgg(ArgDistinct, Expression, Expression)
-     * @see #jsonObjectAgg(Expression, Expression, Consumer)
-     * @see #jsonObjectAgg(ArgDistinct, Expression, Expression, Consumer)
-     * @see #jsonbObjectAgg(ArgDistinct, Expression, Expression)
-     * @see #jsonbObjectAgg(Expression, Expression, Consumer)
-     * @see #jsonbObjectAgg(ArgDistinct, Expression, Expression, Consumer)
-     */
-    private static _PgAggFunc _jsonObjectAggAggFunc(String name, @Nullable ArgDistinct modifier, Expression key,
-                                                    Expression value,
-                                                    @Nullable Consumer<Statement._SimpleOrderByClause> consumer) {
-        final MappingType returnType;
-        switch (name) {
-            case "json_object_agg":
-                returnType = JsonType.TEXT;
-                break;
-            case "jsonb_object_agg":
-                returnType = JsonbType.TEXT;
-                break;
-            default:
-                //no bug,never here
-                throw new IllegalArgumentException();
 
-        }
-        return PostgreFunctionUtils.twoArgAggFunc(name, modifier, key, value, consumer, returnType);
-    }
-
-    /**
-     * @see #min(ArgDistinct, Expression)
-     * @see #max(ArgDistinct, Expression)
-     * @see #rangeAgg(ArgDistinct, Expression)
-     * @see #rangeAgg(Expression, Consumer)
-     * @see #rangeAgg(ArgDistinct, Expression, Consumer)
-     * @see #rangeIntersectAgg(ArgDistinct, Expression)
-     * @see #rangeIntersectAgg(Expression, Consumer)
-     * @see #rangeIntersectAgg(ArgDistinct, Expression, Consumer)
-     */
-    private static _PgAggFunc _oneArgAggIdentityTypeFunc(String name, @Nullable ArgDistinct modifier, Expression one,
-                                                         @Nullable Consumer<Statement._SimpleOrderByClause> consumer) {
-        return PostgreFunctionUtils.oneArgAggFunc(name, modifier, one, consumer, _returnType(one, Expressions::identityType));
-    }
-
-    /**
-     * @see #stringAgg(ArgDistinct, Expression, Expression)
-     * @see #stringAgg(Expression, Expression, Consumer)
-     * @see #stringAgg(ArgDistinct, Expression, Expression, Consumer)
-     */
-    private static _PgAggFunc _twoArgAggIdentityTypeFunc(String name, @Nullable ArgDistinct modifier, Expression one,
-                                                         Expression two,
-                                                         @Nullable Consumer<Statement._SimpleOrderByClause> consumer) {
-        return PostgreFunctionUtils.twoArgAggFunc(name, modifier, one, two, consumer, _returnType(one, Expressions::identityType));
-    }
 
 
     /**
