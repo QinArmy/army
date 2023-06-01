@@ -7,8 +7,12 @@ import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
+import io.army.mapping.optional.DoubleArrayType;
+import io.army.mapping.optional.IntervalArrayType;
 import io.army.mapping.optional.IntervalType;
+import io.army.meta.TypeMeta;
 
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -103,10 +107,10 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
     /**
      * <p>
-     * This interface representing postgre  ordered-set aggregate function.
+     * This interface representing postgre  ordered-set aggregate function. This interface couldn't extends {@link  _PgAggFunc}
      * </p>
      */
-    public interface _OrderedSetAggFunc extends _PgAggFunc {
+    public interface _AggWithGroupClause {
 
         _PgAggFunc withinGroup(Consumer<Statement._SimpleOrderByClause> consumer);
 
@@ -1715,6 +1719,50 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
     /*-------------------below Aggregate Functions for Statistics-------------------*/
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">corr ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the correlation coefficient.
+     * </a>
+     */
+    public static _PgAggFunc corr(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("corr", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">corr ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the correlation coefficient.
+     * </a>
+     */
+    public static _PgAggFunc corr(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("corr", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">corr ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the correlation coefficient.
+     * </a>
+     */
+    public static _PgAggFunc corr(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                  Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("corr", modifier, y, x, consumer, DoubleType.INSTANCE);
+    }
+
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
@@ -1737,8 +1785,95 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the population covariance.
      * </a>
      */
+    public static _PgAggFunc covarPop(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("covar_pop", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_pop ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the population covariance.
+     * </a>
+     */
+    public static _PgAggFunc covarPop(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("covar_pop", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_pop ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the population covariance.
+     * </a>
+     */
+    public static _PgAggFunc covarPop(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                      Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("covar_pop", modifier, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_pop ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the population covariance.
+     * </a>
+     */
     public static _AggWindowFunc covarPop(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("covar_pop", y, x, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_samp ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the sample covariance.
+     * </a>
+     */
+    public static _PgAggFunc covarSamp(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("covar_samp", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_samp ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the sample covariance.
+     * </a>
+     */
+    public static _PgAggFunc covarSamp(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("covar_samp", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">covar_samp ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the sample covariance.
+     * </a>
+     */
+    public static _PgAggFunc covarSamp(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                       Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("covar_samp", modifier, y, x, consumer, DoubleType.INSTANCE);
     }
 
     /**
@@ -1754,6 +1889,50 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.twoArgAggWindowFunc("covar_samp", y, x, DoubleType.INSTANCE);
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgx ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the average of the independent variable, sum(X)/N.
+     * </a>
+     */
+    public static _PgAggFunc regrAvgx(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("regr_avgx", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgx ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the average of the independent variable, sum(X)/N.
+     * </a>
+     */
+    public static _PgAggFunc regrAvgx(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_avgx", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgx ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the average of the independent variable, sum(X)/N.
+     * </a>
+     */
+    public static _PgAggFunc regrAvgx(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                      Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_avgx", modifier, y, x, consumer, DoubleType.INSTANCE);
+    }
+
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
@@ -1765,6 +1944,50 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      */
     public static _AggWindowFunc regrAvgx(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_avgx", y, x, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the average of the dependent variable, sum(Y)/N.
+     * </a>
+     */
+    public static _PgAggFunc regrAvgy(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("regr_avgy", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the average of the dependent variable, sum(Y)/N.
+     * </a>
+     */
+    public static _PgAggFunc regrAvgy(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_avgy", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_avgy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the average of the dependent variable, sum(Y)/N.
+     * </a>
+     */
+    public static _PgAggFunc regrAvgy(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                      Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_avgy", modifier, y, x, consumer, DoubleType.INSTANCE);
     }
 
     /**
@@ -1780,6 +2003,50 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_avgy", y, x, DoubleType.INSTANCE);
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
+     * Computes the number of rows in which both inputs are non-null.
+     * </a>
+     */
+    public static _PgAggFunc regrCount(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("regr_count", modifier, y, x, null, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
+     * Computes the number of rows in which both inputs are non-null.
+     * </a>
+     */
+    public static _PgAggFunc regrCount(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_count", null, y, x, consumer, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
+     * Computes the number of rows in which both inputs are non-null.
+     * </a>
+     */
+    public static _PgAggFunc regrCount(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                       Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_count", modifier, y, x, consumer, LongType.INSTANCE);
+    }
+
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
@@ -1792,6 +2059,51 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _AggWindowFunc regrCount(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_count", y, x, LongType.INSTANCE);
     }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_intercept ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the y-intercept of the least-squares-fit linear equation determined by the (X, Y) pairs.
+     * </a>
+     */
+    public static _PgAggFunc regrIntercept(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("regr_intercept", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_intercept ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the y-intercept of the least-squares-fit linear equation determined by the (X, Y) pairs.
+     * </a>
+     */
+    public static _PgAggFunc regrIntercept(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_intercept", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_intercept ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the y-intercept of the least-squares-fit linear equation determined by the (X, Y) pairs.
+     * </a>
+     */
+    public static _PgAggFunc regrIntercept(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                           Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_intercept", modifier, y, x, consumer, DoubleType.INSTANCE);
+    }
+
 
     /**
      * <p>
@@ -1806,6 +2118,51 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_intercept", y, x, DoubleType.INSTANCE);
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_r2 ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the square of the correlation coefficient.
+     * </a>
+     */
+    public static _PgAggFunc regrR2(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("regr_r2", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_r2 ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the square of the correlation coefficient.
+     * </a>
+     */
+    public static _PgAggFunc regrR2(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_r2", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_r2 ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the square of the correlation coefficient.
+     * </a>
+     */
+    public static _PgAggFunc regrR2(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                    Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_r2", modifier, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
@@ -1817,6 +2174,51 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      */
     public static _AggWindowFunc regrR2(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_r2", y, x, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_slope ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the slope of the least-squares-fit linear equation determined by the (X, Y) pairs.
+     * </a>
+     */
+    public static _PgAggFunc regrSlope(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("regr_slope", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_slope ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the slope of the least-squares-fit linear equation determined by the (X, Y) pairs.
+     * </a>
+     */
+    public static _PgAggFunc regrSlope(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_slope", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_slope ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the slope of the least-squares-fit linear equation determined by the (X, Y) pairs.
+     * </a>
+     */
+    public static _PgAggFunc regrSlope(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                       Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_slope", modifier, y, x, consumer, DoubleType.INSTANCE);
     }
 
     /**
@@ -1832,6 +2234,51 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_slope", y, x, DoubleType.INSTANCE);
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxx ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of squares” of the independent variable, sum(X^2) - sum(X)^2/N.
+     * </a>
+     */
+    public static _PgAggFunc regrSxx(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("regr_sxx", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxx ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of squares” of the independent variable, sum(X^2) - sum(X)^2/N.
+     * </a>
+     */
+    public static _PgAggFunc regrSxx(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_sxx", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxx ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of squares” of the independent variable, sum(X^2) - sum(X)^2/N.
+     * </a>
+     */
+    public static _PgAggFunc regrSxx(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                     Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_sxx", modifier, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
@@ -1843,6 +2290,50 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      */
     public static _AggWindowFunc regrSxx(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_sxx", y, x, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of products” of independent times dependent variables, sum(X*Y) - sum(X) * sum(Y)/N.
+     * </a>
+     */
+    public static _PgAggFunc regrSxy(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("regr_sxy", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of products” of independent times dependent variables, sum(X*Y) - sum(X) * sum(Y)/N.
+     * </a>
+     */
+    public static _PgAggFunc regrSxy(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_sxy", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_sxy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of products” of independent times dependent variables, sum(X*Y) - sum(X) * sum(Y)/N.
+     * </a>
+     */
+    public static _PgAggFunc regrSxy(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                     Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_sxy", modifier, y, x, consumer, DoubleType.INSTANCE);
     }
 
     /**
@@ -1858,6 +2349,50 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_sxy", y, x, DoubleType.INSTANCE);
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_syy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of squares” of the dependent variable, sum(Y^2) - sum(Y)^2/N.
+     * </a>
+     */
+    public static _PgAggFunc regrSyy(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x) {
+        return PostgreFunctionUtils.twoArgAggFunc("regr_syy", modifier, y, x, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_syy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of squares” of the dependent variable, sum(Y^2) - sum(Y)^2/N.
+     * </a>
+     */
+    public static _PgAggFunc regrSyy(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_syy", null, y, x, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_syy ( Y double precision, X double precision ) → double precision<br/>
+     * Computes the “sum of squares” of the dependent variable, sum(Y^2) - sum(Y)^2/N.
+     * </a>
+     */
+    public static _PgAggFunc regrSyy(@Nullable SqlSyntax.ArgDistinct modifier, Expression y, Expression x,
+                                     Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_syy", modifier, y, x, consumer, DoubleType.INSTANCE);
+    }
+
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
@@ -1869,6 +2404,50 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      */
     public static _AggWindowFunc regrSyy(Expression y, Expression x) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("regr_syy", y, x, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * This is a historical alias for stddev_samp.
+     * </a>
+     */
+    public static _PgAggFunc stdDev(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
+        return PostgreFunctionUtils.oneArgAggFunc("stddev", modifier, exp, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * This is a historical alias for stddev_samp.
+     * </a>
+     */
+    public static _PgAggFunc stdDev(Expression exp, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("stddev", null, exp, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * This is a historical alias for stddev_samp.
+     * </a>
+     */
+    public static _PgAggFunc stdDev(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp,
+                                    Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("stddev", modifier, exp, consumer, DoubleType.INSTANCE);
     }
 
     /**
@@ -1884,6 +2463,50 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.oneArgAggWindowFunc("stddev", exp, DoubleType.INSTANCE);
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the population standard deviation of the input values.
+     * </a>
+     */
+    public static _PgAggFunc stdDevPop(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
+        return PostgreFunctionUtils.oneArgAggFunc("stddev_pop", modifier, exp, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the population standard deviation of the input values.
+     * </a>
+     */
+    public static _PgAggFunc stdDevPop(Expression exp, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("stddev_pop", null, exp, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the population standard deviation of the input values.
+     * </a>
+     */
+    public static _PgAggFunc stdDevPop(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp,
+                                       Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("stddev_pop", modifier, exp, consumer, DoubleType.INSTANCE);
+    }
+
     /**
      * <p>
      * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
@@ -1895,6 +2518,50 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      */
     public static _AggWindowFunc stdDevPop(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("stddev_pop", exp, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the sample standard deviation of the input values.
+     * </a>
+     */
+    public static _PgAggFunc stdDevSamp(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
+        return PostgreFunctionUtils.oneArgAggFunc("stddev_samp", modifier, exp, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the sample standard deviation of the input values.
+     * </a>
+     */
+    public static _PgAggFunc stdDevSamp(Expression exp, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("stddev_samp", null, exp, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">stddev_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the sample standard deviation of the input values.
+     * </a>
+     */
+    public static _PgAggFunc stdDevSamp(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp,
+                                        Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("stddev_samp", modifier, exp, consumer, DoubleType.INSTANCE);
     }
 
     /**
@@ -1920,8 +2587,96 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * This is a historical alias for var_samp.
      * </a>
      */
+    public static _PgAggFunc variance(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
+        return PostgreFunctionUtils.oneArgAggFunc("variance", modifier, exp, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">variance ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * This is a historical alias for var_samp.
+     * </a>
+     */
+    public static _PgAggFunc variance(Expression exp, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("variance", null, exp, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">variance ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * This is a historical alias for var_samp.
+     * </a>
+     */
+    public static _PgAggFunc variance(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp,
+                                      Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("variance", modifier, exp, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">variance ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * This is a historical alias for var_samp.
+     * </a>
+     */
     public static _AggWindowFunc variance(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("variance", exp, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the population variance of the input values (square of the population standard deviation).
+     * </a>
+     */
+    public static _PgAggFunc varPop(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
+        return PostgreFunctionUtils.oneArgAggFunc("var_pop", modifier, exp, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the population variance of the input values (square of the population standard deviation).
+     * </a>
+     */
+    public static _PgAggFunc varPop(Expression exp, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("var_pop", null, exp, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_pop ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the population variance of the input values (square of the population standard deviation).
+     * </a>
+     */
+    public static _PgAggFunc varPop(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp,
+                                    Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("var_pop", modifier, exp, consumer, DoubleType.INSTANCE);
     }
 
     /**
@@ -1947,14 +2702,187 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the sample variance of the input values (square of the sample standard deviation).
      * </a>
      */
+    public static _PgAggFunc varSamp(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
+        return PostgreFunctionUtils.oneArgAggFunc("var_samp", modifier, exp, null, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the sample variance of the input values (square of the sample standard deviation).
+     * </a>
+     */
+    public static _PgAggFunc varSamp(Expression exp, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("var_samp", null, exp, consumer, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the sample variance of the input values (square of the sample standard deviation).
+     * </a>
+     */
+    public static _PgAggFunc varSamp(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp,
+                                     Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("var_samp", modifier, exp, consumer, DoubleType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">var_samp ( numeric_type ) → double precision for real or double precision, otherwise numeric<br/>
+     * Computes the sample variance of the input values (square of the sample standard deviation).
+     * </a>
+     */
     public static _AggWindowFunc varSamp(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("var_samp", exp, DoubleType.INSTANCE);
     }
 
 
+
+
     /*-------------------below Ordered-Set Aggregate Functions -------------------*/
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  the {@link MappingType} of order by clause first item.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE">mode () WITHIN GROUP ( ORDER BY anyelement ) → anyelement<br/>
+     * Computes the mode, the most frequent value of the aggregated argument (arbitrarily choosing the first one if there are multiple equally-frequent values). The aggregated argument must be of a sortable type.
+     * </a>
+     */
+    public static _AggWithGroupClause mode() {
+        return PostgreFunctionUtils.zeroArgWithGroupAggFunc("mode",
+                PostgreFunctionUtils.unaryOrderSetType(Expressions::identityType)
+        );
+    }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: <ul>
+     * <li>If fraction is double array type and order by clause first item is sql double type type,then {@link DoubleType#INSTANCE}</li>
+     * <li>If fraction is sql double array type and order by clause first item is sql interval type,then {@link IntervalType#TEXT}</li>
+     * <li>If fraction is sql double type and order by clause first item is sql double type type,then {@link DoubleArrayType#LINEAR}</li>
+     * <li>If fraction is sql double type and order by clause first item is sql interval type,then {@link IntervalArrayType#LINEAR}</li>
+     * <li>Else {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE">percentile_cont ( fraction double precision ) WITHIN GROUP ( ORDER BY double precision ) → double precision<br/>
+     * </a>
+     */
+    public static _AggWithGroupClause percentileCont(final Expression fraction) {
+        return PostgreFunctionUtils.oneArgWithGroupAggFunc("percentile_cont", fraction,
+                PostgreFunctionUtils.biOrderedSetType(fraction, PostgreWindowFunctions::_percentileType)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: <ul>
+     * <li>If fraction is double array type ,then it is the {@link MappingType} of order by clause first item</li>
+     * <li>If fraction is double array type ,then it is the array {@link MappingType} of order by clause first item</li>
+     * <li>Else {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE">percentile_disc ( fraction double precision ) WITHIN GROUP ( ORDER BY anyelement ) → anyelement<br/>
+     * percentile_disc ( fractions double precision[] ) WITHIN GROUP ( ORDER BY anyelement ) → anyarray
+     * </a>
+     */
+    public static _AggWithGroupClause percentileDisc(final Expression fraction) {
+        return PostgreFunctionUtils.oneArgWithGroupAggFunc("percentile_disc", fraction,
+                PostgreFunctionUtils.biOrderedSetType(fraction, PostgreWindowFunctions::_percentileType)
+        );
+    }
+
+
+    /*-------------------below Hypothetical-Set Aggregate Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link LongType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">rank ( args ) WITHIN GROUP ( ORDER BY sorted_args ) → bigint<br/>
+     * </a>
+     */
+    public static _AggWithGroupClause rank(Expression args) {
+        return PostgreFunctionUtils.oneArgWithGroupAggFunc("rank", args, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link LongType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">dense_rank ( args ) WITHIN GROUP ( ORDER BY sorted_args ) → bigint<br/>
+     * </a>
+     */
+    public static _AggWithGroupClause denseRank(Expression args) {
+        return PostgreFunctionUtils.oneArgWithGroupAggFunc("dense_rank", args, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">percent_rank ( args ) WITHIN GROUP ( ORDER BY sorted_args ) → double precision<br/>
+     * </a>
+     */
+    public static _AggWithGroupClause percentRank(Expression args) {
+        return PostgreFunctionUtils.oneArgWithGroupAggFunc("percent_rank", args, DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link DoubleType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">cume_dist ( args ) WITHIN GROUP ( ORDER BY sorted_args ) → double precision<br/>
+     * </a>
+     */
+    public static _AggWithGroupClause cumeDist(Expression args) {
+        return PostgreFunctionUtils.oneArgWithGroupAggFunc("cume_dist", args, DoubleType.INSTANCE);
+    }
+
+    /*-------------------below user-defined WITH GROUP aggregate function-------------------*/
+
+    /**
+     * user-defined WITH GROUP aggregate function
+     */
+    public static _AggWithGroupClause myWithGroupAggFunc(String name, TypeMeta returnType) {
+        return PostgreFunctionUtils.zeroArgMyWithGroupAggFunc(name, returnType);
+    }
+
+
+    /**
+     * user-defined WITH GROUP aggregate function
+     */
+    public static _AggWithGroupClause myWithGroupAggFunc(String name, Expression one, TypeMeta returnType) {
+        return PostgreFunctionUtils.oneArgMyWithGroupAggFunc(name, one, returnType);
+    }
+
+    /**
+     * user-defined WITH GROUP aggregate function
+     */
+    public static _AggWithGroupClause myWithGroupAggFunc(String name, List<Expression> argList, TypeMeta returnType) {
+        return PostgreFunctionUtils.multiArgMyWithGroupAggFunc(name, FunctionUtils.expList(name, argList), returnType);
+    }
 
 
     /*-------------------below private method-------------------*/
@@ -1970,9 +2898,6 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
                 _returnType(exp, PostgreWindowFunctions::_bitOpeType)
         );
     }
-
-
-
 
 
     /**
@@ -1999,6 +2924,23 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     private static MappingType _bitOpeType(final MappingType type) {
         final MappingType returnType;
         if (type instanceof MappingType.SqlIntegerType || type instanceof MappingType.SqlBitType) {
+            returnType = type;
+        } else {
+            returnType = TextType.INSTANCE;
+        }
+        return returnType;
+    }
+
+    /**
+     * @see #percentileCont(Expression)
+     */
+    private static MappingType _percentileType(final MappingType fractionType, final MappingType type) {
+        final MappingType returnType;
+        if (fractionType instanceof MappingType.SqlArrayType) {
+            returnType = type.arrayTypeOfThis();
+        } else if (type instanceof MappingType.SqlFloatType) {
+            returnType = type;
+        } else if (type instanceof MappingType.SqlIntervalType) {
             returnType = type;
         } else {
             returnType = TextType.INSTANCE;

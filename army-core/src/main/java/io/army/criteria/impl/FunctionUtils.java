@@ -40,6 +40,15 @@ abstract class FunctionUtils {
 
     }
 
+    interface FunctionOuterClause {
+
+
+        void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context);
+
+        void funcRestToString(StringBuilder builder);
+
+    }
+
 
     static SQLFunction._CaseFuncWhenClause caseFunction(final @Nullable Expression caseValue) {
         if (!(caseValue == null || caseValue instanceof OperationExpression)) {
@@ -798,6 +807,10 @@ abstract class FunctionUtils {
         return new OrderByOptionClause();
     }
 
+    static OrderByOptionClause orderByOptionClause(CriteriaContext outerContext) {
+        return new OrderByOptionClause(outerContext);
+    }
+
 
     @Deprecated
     static SimpleExpression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
@@ -863,8 +876,7 @@ abstract class FunctionUtils {
             , final StringBuilder builder) {
 
         if (option != null) {
-            builder.append(_Constant.SPACE)
-                    .append(option.spaceRender());
+            builder.append(option.spaceRender());
         }
 
         final int argSize = argList.size();
@@ -1024,24 +1036,6 @@ abstract class FunctionUtils {
     }
 
 
-    static void appendMultiArgFunc(final String name, final List<? extends Expression> argList
-            , final _SqlContext context) {
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder()
-                .append(_Constant.SPACE)
-                .append(name)
-                .append(_Constant.LEFT_PAREN);
-        final int size = argList.size();
-        for (int i = 0; i < size; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.COMMA);
-            }
-            ((ArmyExpression) argList.get(i)).appendSql(context);
-        }
-
-        sqlBuilder.append(_Constant.RIGHT_PAREN);
-    }
-
 
     static Map<String, Selection> createSelectionMapFrom(final @Nullable CriteriaContext context,
                                                          final List<? extends Selection> selectionList) {
@@ -1166,7 +1160,7 @@ abstract class FunctionUtils {
 
 
     static abstract class WindowFunction<T extends Window._WindowSpec> extends OperationExpression.SqlFunctionExpression
-            implements Window._OverWindowClause<T> {
+            implements Window._OverWindowClause<T>, FunctionOuterClause {
 
         private static final String GLOBAL_PLACE_HOLDER = "";
 
@@ -1224,10 +1218,10 @@ abstract class FunctionUtils {
         }
 
         @Override
-        final void appendFuncRest(final StringBuilder sqlBuilder, final _SqlContext context) {
+        public final void appendFuncRest(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             if (this instanceof SQLFunction._OuterClauseBeforeOver) {
-                this.appendOuterClause(sqlBuilder, context);
+                this.appendClauseBeforeOver(sqlBuilder, context);
             }
 
             final String existingWindowName = this.existingWindowName;
@@ -1257,7 +1251,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        final void funcRestToString(final StringBuilder builder) {
+        public final void funcRestToString(final StringBuilder builder) {
             if (this instanceof SQLFunction._OuterClauseBeforeOver) {
                 this.outerClauseToString(builder);
             }
@@ -1289,7 +1283,7 @@ abstract class FunctionUtils {
 
         abstract boolean isDontSupportWindow(Dialect dialect);
 
-        void appendOuterClause(StringBuilder sqlBuilder, _SqlContext context) {
+        void appendClauseBeforeOver(StringBuilder sqlBuilder, _SqlContext context) {
             throw new UnsupportedOperationException();
         }
 
@@ -1397,6 +1391,16 @@ abstract class FunctionUtils {
             super(name, true, returnType); //no parens function must be build-in
         }
 
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            //no-op
+        }
+
 
     }//NoParensFunction
 
@@ -1412,6 +1416,16 @@ abstract class FunctionUtils {
             super(name, returnType);
         }
 
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            //no-op
+        }
+
     }//NoArgFuncExpression
 
 
@@ -1425,23 +1439,6 @@ abstract class FunctionUtils {
             super(name, buildIn, returnType);
         }
 
-        @Override
-        final void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
-            if (this instanceof OuterClause) {
-                ((OuterClause) this).appendOuterClause(sqlBuilder, context);
-            }
-        }
-
-        @Override
-        final void funcRestToString(final StringBuilder builder) {
-            if (this instanceof OuterClause) {
-                ((OuterClause) this).outerClauseToString(builder);
-            }
-        }
-
-        abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
-
-        abstract void argToString(StringBuilder builder);
 
 
     }//FunctionExpression
@@ -2078,23 +2075,12 @@ abstract class FunctionUtils {
         }
 
         @Override
-        final void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
-            //no-op
-        }
-
-        @Override
         final void argToString(StringBuilder builder) {
             FunctionUtils.complexArgToString(this.argList, builder);
         }
 
-        @Override
-        final void funcRestToString(StringBuilder builder) {
-            //no-op
-        }
-
 
     }//ComplexArgFuncExpression
-
 
 
     private static final class NamedComplexArgFunc extends ComplexArgFuncExpression implements NamedExpression {
@@ -2638,6 +2624,10 @@ abstract class FunctionUtils {
          */
         private OrderByOptionClause() {
             super(ContextStack.peek());
+        }
+
+        private OrderByOptionClause(CriteriaContext outerContext) {
+            super(outerContext);
         }
 
 

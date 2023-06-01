@@ -997,7 +997,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public final void appendSql(final _SqlContext context) {
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE);
@@ -1029,15 +1029,15 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
                     sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
                 }
 
-                if (!(this instanceof FunctionUtils.SimpleFunction)) {
-                    this.appendFuncRest(sqlBuilder, context);
+                if (this instanceof FunctionUtils.FunctionOuterClause) {
+                    ((FunctionUtils.FunctionOuterClause) this).appendFuncRest(sqlBuilder, context);
                 }
             }
 
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
             final StringBuilder builder = new StringBuilder();
 
             builder.append(_Constant.SPACE)
@@ -1051,27 +1051,16 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
                     builder.append(_Constant.SPACE_RIGHT_PAREN);
                 }
             }
-
-            this.funcRestToString(builder);
+            if (this instanceof FunctionUtils.FunctionOuterClause) {
+                ((FunctionUtils.FunctionOuterClause) this).funcRestToString(builder);
+            }
             return builder.toString();
         }
 
-        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            //no-op
-        }
-
-        void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
-            //no-op
-        }
+        abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
 
 
-        void argToString(StringBuilder builder) {
-            //no-op
-        }
-
-        void funcRestToString(StringBuilder builder) {
-            //no-op
-        }
+        abstract void argToString(StringBuilder builder);
 
 
     }//FunctionExpression

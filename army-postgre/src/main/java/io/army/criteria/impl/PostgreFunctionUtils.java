@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.*;
 
 abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
@@ -151,6 +149,62 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                                                                final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
                                                                final TypeMeta returnType) {
         return _twoArgAggFunc(name, false, modifier, one, two, consumer, returnType);
+    }
+
+    static PostgreWindowFunctions._AggWithGroupClause zeroArgWithGroupAggFunc(final String name,
+                                                                              final TypeMeta returnType) {
+        return new ZeroArgWithGroupAggFunc(name, true, returnType);
+    }
+
+    /**
+     * user-defined WITH GROUP aggregate function
+     */
+    static PostgreWindowFunctions._AggWithGroupClause zeroArgMyWithGroupAggFunc(final String name,
+                                                                                final TypeMeta returnType) {
+        return new ZeroArgWithGroupAggFunc(name, false, returnType);
+    }
+
+    static PostgreWindowFunctions._AggWithGroupClause oneArgWithGroupAggFunc(final String name,
+                                                                             final Expression one,
+                                                                             final TypeMeta returnType) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        }
+        return new OneArgWithGroupAggFunc(name, true, one, returnType);
+    }
+
+    /**
+     * user-defined WITH GROUP aggregate function
+     */
+    static PostgreWindowFunctions._AggWithGroupClause oneArgMyWithGroupAggFunc(final String name,
+                                                                               final Expression one,
+                                                                               final TypeMeta returnType) {
+        if (!(one instanceof FunctionArg.SingleFunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        }
+        return new OneArgWithGroupAggFunc(name, false, one, returnType);
+    }
+
+    /**
+     * user-defined WITH GROUP aggregate function
+     */
+    static PostgreWindowFunctions._AggWithGroupClause multiArgMyWithGroupAggFunc(final String name,
+                                                                                 final List<ArmyExpression> argList,
+                                                                                 final TypeMeta returnType) {
+        for (ArmyExpression exp : argList) {
+            if (!(exp instanceof FunctionArg.SingleFunctionArg)) {
+                throw CriteriaUtils.funcArgError(name, exp);
+            }
+        }
+        return new MultiArgWithGroupAggFunc(name, false, argList, returnType);
+    }
+
+    static TypeMeta unaryOrderSetType(UnaryOperator<MappingType> function) {
+        return new UnaryOrderedSetType(function);
+    }
+
+    static TypeMeta biOrderedSetType(Expression exp, BinaryOperator<MappingType> function) {
+        return new BiOrderedSetType(exp, function);
     }
 
     /**
@@ -1111,7 +1165,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
         @Override
-        final void appendOuterClause(final StringBuilder sqlBuilder, final _SqlContext context) {
+        final void appendClauseBeforeOver(final StringBuilder sqlBuilder, final _SqlContext context) {
             final AggFuncFilterClause clause = this.filterClause;
             if (clause != null) {
                 clause.appendOuterClause(sqlBuilder, context);
@@ -1204,33 +1258,26 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }//OneArgAggWindowFunc
 
     /**
-     * This class is base class of non-window aggregate function.
+     * <p>
+     * This class is base class of :
+     *     <ul>
+     *         <li>{@link NonOrderedSetAggregateFunction}</li>
+     *         <li>{@link PgWithGroupAggFunc}</li>
+     *     </ul>
+     * </p>
      */
-    private static abstract class PostgreAggregateFunction extends FunctionUtils.FunctionExpression
-            implements PostgreWindowFunctions._PgAggFunc, OuterClause {
+    private static abstract class PostgreAggregateFunction extends OperationExpression.SqlFunctionExpression
+            implements PostgreWindowFunctions._PgAggFunc, FunctionOuterClause {
 
-        private final SqlSyntax.ArgDistinct modifier;
+        final CriteriaContext outerContext;
 
-        private final OrderByOptionClause orderByClause;
-
-        private final CriteriaContext outerContext;
         private AggFuncFilterClause filterClause;
 
-        private PostgreAggregateFunction(String name, boolean buildIn, @Nullable SqlSyntax.ArgDistinct modifier,
-                                         final @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
+        private PostgreAggregateFunction(String name, boolean buildIn, TypeMeta returnType,
+                                         CriteriaContext outerContext) {
             super(name, buildIn, returnType);
-            if (!(modifier == null || modifier instanceof SqlSyntax.ArmyKeyWord)) {
-                throw CriteriaUtils.funcArgError(name, modifier);
-            }
-            this.modifier = modifier;
-            this.orderByClause = orderByClause;
-            if (orderByClause == null) {
-                this.outerContext = ContextStack.peek();
-            } else {
-                this.outerContext = orderByClause.context;
-            }
+            this.outerContext = outerContext;
         }
-
 
         @Override
         public final SimpleExpression filter(Consumer<Statement._SimpleWhereClause> consumer) {
@@ -1242,23 +1289,67 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             return this.doFilter(false, consumer);
         }
 
-
         @Override
-        public final void appendOuterClause(final StringBuilder sqlBuilder, final _SqlContext context) {
-            final AggFuncFilterClause clause = this.filterClause;
-            if (clause != null) {
-                clause.appendOuterClause(sqlBuilder, context);
+        public final void appendFuncRest(final StringBuilder sqlBuilder, final _SqlContext context) {
+            if (this instanceof PgWithGroupAggFunc) {
+                ((PgWithGroupAggFunc) this).appendWithGroupClause(sqlBuilder, context);
+            }
+            final AggFuncFilterClause filterClause = this.filterClause;
+            if (filterClause != null) {
+                filterClause.appendOuterClause(sqlBuilder, context);
             }
         }
 
         @Override
-        public final void outerClauseToString(final StringBuilder builder) {
-            final AggFuncFilterClause clause = this.filterClause;
-            if (clause != null) {
-                clause.outerClauseToString(builder);
+        public final void funcRestToString(final StringBuilder builder) {
+            if (this instanceof PgWithGroupAggFunc) {
+                ((PgWithGroupAggFunc) this).withGroupClauseToString(builder);
             }
-
+            final AggFuncFilterClause filterClause = this.filterClause;
+            if (filterClause != null) {
+                builder.append(filterClause);
+            }
         }
+
+        private SimpleExpression doFilter(final boolean required, final Consumer<Statement._SimpleWhereClause> consumer) {
+            if (this.filterClause != null) {
+                throw ContextStack.castCriteriaApi(this.outerContext);
+            }
+            final AggFuncFilterClause clause;
+            clause = new AggFuncFilterClause(this.outerContext);
+            this.filterClause = clause;
+            if (required) {
+                clause.filter(consumer);
+            } else {
+                clause.ifFilter(consumer);
+            }
+            return this;
+        }
+
+
+    }//PostgreAggregateFunction
+
+
+    /**
+     * This class is base class of non-window aggregate function.
+     */
+    private static abstract class NonOrderedSetAggregateFunction extends PostgreAggregateFunction
+            implements PostgreWindowFunctions._PgAggFunc {
+
+        private final SqlSyntax.ArgDistinct modifier;
+
+        private final OrderByOptionClause orderByClause;
+
+        private NonOrderedSetAggregateFunction(String name, boolean buildIn, @Nullable SqlSyntax.ArgDistinct modifier,
+                                               final @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
+            super(name, buildIn, returnType, orderByClause == null ? ContextStack.peek() : orderByClause.context);
+            if (!(modifier == null || modifier instanceof SqlSyntax.ArmyKeyWord)) {
+                throw CriteriaUtils.funcArgError(name, modifier);
+            }
+            this.modifier = modifier;
+            this.orderByClause = orderByClause;
+        }
+
 
         @Override
         final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
@@ -1297,24 +1388,9 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         abstract void pgArgToString(final StringBuilder builder);
 
 
-        private SimpleExpression doFilter(final boolean required, final Consumer<Statement._SimpleWhereClause> consumer) {
-            if (this.filterClause != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            final AggFuncFilterClause clause;
-            clause = new AggFuncFilterClause(this.outerContext);
-            this.filterClause = clause;
-            if (required) {
-                clause.filter(consumer);
-            } else {
-                clause.ifFilter(consumer);
-            }
-            return this;
-        }
-
     }//PostgreAggregateFunction
 
-    private static final class OneArgAggFunc extends PostgreAggregateFunction {
+    private static final class OneArgAggFunc extends NonOrderedSetAggregateFunction {
 
         private final ArmyExpression one;
 
@@ -1340,7 +1416,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
     }//OneArgAggFunc
 
-    private static final class TwoArgAggFunc extends PostgreAggregateFunction {
+    private static final class TwoArgAggFunc extends NonOrderedSetAggregateFunction {
 
         private final ArmyExpression one;
 
@@ -1372,6 +1448,334 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
     }//TwoArgAggFunc
+
+    private static abstract class PgWithGroupAggFunc extends PostgreAggregateFunction
+            implements PostgreWindowFunctions._AggWithGroupClause {
+
+        private List<ArmySortItem> orderByItemList;
+
+        private PgWithGroupAggFunc(String name, boolean buildIn, TypeMeta returnType) {
+            super(name, buildIn, returnType, ContextStack.peek());
+        }
+
+        @Override
+        public final PostgreWindowFunctions._PgAggFunc withinGroup(Consumer<Statement._SimpleOrderByClause> consumer) {
+            if (this.orderByItemList != null) {
+                throw ContextStack.castCriteriaApi(this.outerContext);
+            }
+            final OrderByOptionClause clause;
+            clause = FunctionUtils.orderByOptionClause(this.outerContext);
+            consumer.accept(clause);
+
+            final List<ArmySortItem> list;
+            list = clause.endOrderByClauseIfNeed();
+            this.orderByItemList = list;
+            if (list.size() == 0) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+
+            final TypeMeta returnType = this.returnType;
+            if (returnType instanceof OrderedSetType) {
+                ((OrderedSetType) returnType).onOrderByEnd(list.get(0));
+            }
+            return this;
+        }
+
+
+        private void appendWithGroupClause(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final List<ArmySortItem> list = this.orderByItemList;
+            final int itemSize;
+            if (list == null || (itemSize = list.size()) == 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            sqlBuilder.append(" WITHIN GROUP(")
+                    .append(_Constant.SPACE_ORDER_BY);
+            for (int i = 0; i < itemSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                list.get(i).appendSql(context);
+            }
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+        }
+
+        private void withGroupClauseToString(final StringBuilder builder) {
+            final List<ArmySortItem> list = this.orderByItemList;
+            final int itemSize;
+            if (list == null || (itemSize = list.size()) == 0) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            builder.append(" WITHIN GROUP(")
+                    .append(_Constant.SPACE_ORDER_BY);
+            for (int i = 0; i < itemSize; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                builder.append(list.get(i));
+            }
+            builder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+
+    }//PgWithGroupAggFunc
+
+
+    private static final class ZeroArgWithGroupAggFunc extends PgWithGroupAggFunc
+            implements NoArgFunction {
+
+        /**
+         * @see #zeroArgWithGroupAggFunc(String, TypeMeta)
+         * @see #zeroArgMyWithGroupAggFunc(String, TypeMeta)
+         */
+        private ZeroArgWithGroupAggFunc(String name, boolean buildIn, TypeMeta returnType) {
+            super(name, buildIn, returnType);
+        }
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            //no-op
+        }
+
+
+    }//ZeroArgWithGroupAggFunc
+
+    private static final class OneArgWithGroupAggFunc extends PgWithGroupAggFunc {
+
+        private final ArmyExpression one;
+
+        /**
+         * @see #oneArgWithGroupAggFunc(String, Expression, TypeMeta)
+         * @see #oneArgMyWithGroupAggFunc(String, Expression, TypeMeta)
+         */
+        private OneArgWithGroupAggFunc(String name, boolean buildIn, Expression one, TypeMeta returnType) {
+            super(name, buildIn, returnType);
+            this.one = (ArmyExpression) one;
+        }
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            this.one.appendSql(context);
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            builder.append(this.one);
+        }
+
+
+    }//OneArgWithGroupAggFunc
+
+    private static final class MultiArgWithGroupAggFunc extends PgWithGroupAggFunc {
+
+        private final List<? extends ArmyExpression> argList;
+
+        private MultiArgWithGroupAggFunc(String name, boolean buildIn, List<? extends ArmyExpression> argList,
+                                         TypeMeta returnType) {
+            super(name, buildIn, returnType);
+            this.argList = argList;
+        }
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            FunctionUtils.appendArguments(null, this.argList, context);
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            FunctionUtils.argumentsToString(null, this.argList, builder);
+        }
+
+
+    }//MultiArgWithGroupAggFunc
+
+
+    private interface OrderedSetType {
+
+        void onOrderByEnd(TypeInfer inputType);
+
+    }
+
+    private static final class UnaryOrderedSetType implements TypeMeta.DelayTypeMeta, OrderedSetType {
+
+        private final UnaryOperator<MappingType> function;
+
+        private TypeInfer inputType;
+
+        private MappingType type;
+
+        private UnaryOrderedSetType(UnaryOperator<MappingType> function) {
+            this.function = function;
+        }
+
+        @Override
+        public void onOrderByEnd(final TypeInfer inputType) {
+            if (this.inputType != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.inputType = inputType;
+            this.onContextEnd();
+        }
+
+        @Override
+        public MappingType mappingType() {
+            MappingType type = this.type;
+            if (type != null) {
+                return type;
+            }
+            final TypeInfer inputType = this.inputType;
+            if (inputType == null) {
+                throw noWithGroupClause();
+            } else if (inputType instanceof MappingType) {
+                type = (MappingType) inputType;
+            } else if (inputType instanceof TableField) {
+                type = ((TableField) inputType).mappingType();
+            } else {
+                type = inputType.typeMeta().mappingType();
+            }
+
+            type = this.function.apply(type);
+            this.type = type;
+            return type;
+        }
+
+
+        @Override
+        public boolean isDelay() {
+            final boolean match;
+            if (this.type != null) {
+                match = false;
+            } else {
+                final TypeInfer inputType = this.inputType;
+                match = inputType == null || (inputType instanceof TypeInfer.DelayTypeInfer
+                        && ((TypeInfer.DelayTypeInfer) inputType).isDelay());
+            }
+            return match;
+        }
+
+
+        private void onContextEnd() {
+            if (this.type != null) {
+                return;
+            }
+            final TypeInfer inputType = this.inputType;
+            if (inputType instanceof TypeInfer.DelayTypeInfer
+                    && ((TypeInfer.DelayTypeInfer) inputType).isDelay()) {
+                if (ContextStack.isEmpty()) {
+                    throw CriteriaUtils.delayTypeMeta((TypeMeta.DelayTypeMeta) inputType);
+                }
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            } else {
+                this.mappingType();
+            }
+        }
+
+
+    }//UnaryOrderedSetType
+
+    private static final class BiOrderedSetType implements TypeMeta.DelayTypeMeta, OrderedSetType {
+
+        private final TypeInfer argInfer;
+
+        private final BinaryOperator<MappingType> function;
+
+        private TypeInfer inputInfer;
+
+        private MappingType type;
+
+        private BiOrderedSetType(TypeInfer argInfer, BinaryOperator<MappingType> function) {
+            this.argInfer = argInfer;
+            this.function = function;
+        }
+
+        @Override
+        public void onOrderByEnd(final TypeInfer inputType) {
+            if (this.inputInfer != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.inputInfer = inputType;
+            this.onContextEnd();
+        }
+
+        @Override
+        public MappingType mappingType() {
+            MappingType type = this.type;
+            if (type != null) {
+                return type;
+            }
+            final TypeInfer argInfer = this.argInfer, inputInfer = this.inputInfer;
+
+            if (inputInfer == null) {
+                throw noWithGroupClause();
+            }
+            final MappingType argType, inputType;
+
+            if (argInfer instanceof MappingType) {
+                argType = (MappingType) argInfer;
+            } else if (inputInfer instanceof TableField) {
+                argType = ((TableField) argInfer).mappingType();
+            } else {
+                argType = argInfer.typeMeta().mappingType();
+            }
+
+            if (inputInfer instanceof MappingType) {
+                inputType = (MappingType) inputInfer;
+            } else if (inputInfer instanceof TableField) {
+                inputType = ((TableField) inputInfer).mappingType();
+            } else {
+                inputType = inputInfer.typeMeta().mappingType();
+            }
+
+            type = this.function.apply(argType, inputType);
+            this.type = type;
+            return type;
+        }
+
+        @Override
+        public boolean isDelay() {
+            final boolean match;
+            if (this.type != null) {
+                match = false;
+            } else {
+                final TypeInfer argInfer = this.argInfer, inputInfer = this.inputInfer;
+                match = (argInfer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) argInfer).isDelay())
+                        || (inputInfer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) inputInfer).isDelay());
+            }
+            return match;
+        }
+
+        private void onContextEnd() {
+            if (this.type != null) {
+                return;
+            }
+
+            final TypeInfer argInfer = this.argInfer, inputInfer = this.inputInfer;
+            assert inputInfer != null;
+
+            if ((argInfer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) argInfer).isDelay())
+                    || (inputInfer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) inputInfer).isDelay())) {
+                if (ContextStack.isEmpty()) {
+                    throw CriteriaUtils.delayTypeMeta((TypeMeta.DelayTypeMeta) inputInfer);
+                }
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            } else {
+                this.mappingType();
+            }
+
+        }
+
+
+    }//BiOrderedSetType
+
+
+    private static CriteriaException noWithGroupClause() {
+        return ContextStack.clearStackAndCriteriaError("error,you don't invoke WITHIN GROUP clause");
+    }
 
 
 }

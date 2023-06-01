@@ -739,6 +739,11 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
+    static CriteriaException delayTypeMeta(TypeMeta.DelayTypeMeta type) {
+        String m = String.format("%s %s isPrepared() return true", TypeMeta.DelayTypeMeta.class.getName(), type);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
 
     static CriteriaException nonCollectionValue(String keyName) {
         String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());

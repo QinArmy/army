@@ -354,7 +354,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        void appendOuterClause(final StringBuilder sqlBuilder, final _SqlContext context) {
+        void appendClauseBeforeOver(final StringBuilder sqlBuilder, final _SqlContext context) {
             final FromFirstLast fromFirstLast = this.fromFirstLast;
             final NullTreatment nullTreatment = this.nullTreatment;
 
