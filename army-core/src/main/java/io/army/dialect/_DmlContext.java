@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.DataField;
+import io.army.criteria.SQLField;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.BatchStmt;
@@ -40,7 +40,7 @@ public  interface _DmlContext extends _PrimaryContext {
 
     interface _SetClauseContextSpec {
 
-        void appendSetLeftItem(DataField dataField);
+        void appendSetLeftItem(SQLField dataField);
 
 
     }

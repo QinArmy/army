@@ -17,7 +17,7 @@ import static io.army.dialect.Database.PostgreSQL;
  * <p>
  * This interface representing simple {@link Expression} :
  *     <ul>
- *         <li>{@link DataField}</li>
+ *         <li>{@link SQLField}</li>
  *         <li>single-value parameter/literal,for example {@link SQLs#param(TypeInfer, Object)}</li>
  *         <li>sql function,for example {@link SQLs#countAsterisk()}</li>
  *         <li>sql variable</li>

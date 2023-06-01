@@ -1094,11 +1094,11 @@ abstract class SQLsSyntax extends Functions {
         return Expressions.existsPredicate(UnaryBooleanOperator.NOT_EXISTS, subQuery);
     }
 
-    public static ItemPair plusEqual(final DataField field, final Expression value) {
+    public static ItemPair plusEqual(final SQLField field, final Expression value) {
         return SQLs._itemPair(field, AssignOperator.PLUS_EQUAL, value);
     }
 
-    public static ItemPair minusEqual(final DataField field, final Expression value) {
+    public static ItemPair minusEqual(final SQLField field, final Expression value) {
         return SQLs._itemPair(field, AssignOperator.MINUS_EQUAL, value);
     }
 

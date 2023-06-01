@@ -35,8 +35,8 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
     <T> SimplePredicate or(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                            BiFunction<SimpleExpression, T, Expression> operator, T value);
 
-    SimplePredicate or(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                       TeNamedOperator<DataField> namedOperator, int size);
+    SimplePredicate or(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                       TeNamedOperator<SQLField> namedOperator, int size);
 
     <T> SimplePredicate or(BetweenValueOperator<T> expOperator, BiFunction<SimpleExpression, T, Expression> operator,
                            T firstValue, SQLs.WordAnd and, T secondValue);
@@ -57,8 +57,8 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
     <T> IPredicate ifOr(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                         BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
-    IPredicate ifOr(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                    TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier);
+    IPredicate ifOr(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                    TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier);
 
     <K, V> IPredicate ifOr(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
                            BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K keyName);

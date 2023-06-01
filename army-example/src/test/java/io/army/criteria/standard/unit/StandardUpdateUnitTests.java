@@ -6,10 +6,12 @@ import io.army.criteria.Expression;
 import io.army.criteria.UpdateStatement;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
+import io.army.example.bank.domain.user.ChinaRegion;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.pill.domain.PillPerson_;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.IdentityType;
+import io.army.mapping.BigDecimalType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -18,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static io.army.criteria.impl.SQLs.AND;
 import static io.army.criteria.impl.SQLs.AS;
@@ -50,9 +53,15 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
     @Test
     public void updateChild() {
         final BigDecimal gdpAmount = new BigDecimal("888.8");
+        final ChinaRegion<?> criteria = new ChinaRegion<>();
+        final Supplier<Expression> amountSupplier = () -> SQLs.literal(BigDecimalType.INSTANCE, gdpAmount);
+
+        criteria.setRegionGdp(gdpAmount);
         final UpdateStatement stmt;
         stmt = SQLs.singleUpdate()
                 .update(ChinaProvince_.T, AS, "p")
+                .set(ChinaRegion_.regionGdp, amountSupplier)  // test method infer
+                .set(ChinaRegion_.regionGdp, SQLs::negate) // test method infer
                 .set(ChinaRegion_.name, SQLs::param, "武侠江湖")
                 .set(ChinaRegion_.regionGdp, SQLs::plusEqual, SQLs::param, gdpAmount)
                 .where(ChinaRegion_.id.equal(SQLs::literal, 1))

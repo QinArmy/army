@@ -305,14 +305,14 @@ abstract class TabularBlocks {
         }
 
         @Override
-        public final R on(Function<Expression, IPredicate> operator, DataField operandField) {
+        public final R on(Function<Expression, IPredicate> operator, SQLField operandField) {
             this.predicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
             return this.clause;
         }
 
         @Override
-        public final R on(Function<Expression, IPredicate> operator1, DataField operandField1,
-                          Function<Expression, IPredicate> operator2, DataField operandField2) {
+        public final R on(Function<Expression, IPredicate> operator1, SQLField operandField1,
+                          Function<Expression, IPredicate> operator2, SQLField operandField2) {
             this.predicateList = ArrayUtils.asUnmodifiableList(
                     (OperationPredicate) operator1.apply(operandField1),
                     (OperationPredicate) operator2.apply(operandField2)

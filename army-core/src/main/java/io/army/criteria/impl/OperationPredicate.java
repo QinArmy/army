@@ -69,8 +69,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
 
     @Override
-    public final SimplePredicate or(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                                    TeNamedOperator<DataField> namedOperator, int size) {
+    public final SimplePredicate or(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                                    TeNamedOperator<SQLField> namedOperator, int size) {
         return this.or(expOperator.apply(namedOperator, size));
     }
 
@@ -144,8 +144,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
-    public final IPredicate ifOr(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                                 TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier) {
+    public final IPredicate ifOr(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                                 TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier) {
         final IPredicate predicate;
         final Integer size;
         if ((size = supplier.get()) == null) {
@@ -268,8 +268,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
-    public final IPredicate and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                                TeNamedOperator<DataField> namedOperator, int size) {
+    public final IPredicate and(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                                TeNamedOperator<SQLField> namedOperator, int size) {
         return this.and(expOperator.apply(namedOperator, size));
     }
 
@@ -287,8 +287,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
-    public final IPredicate and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
-                                BiFunction<DataField, String, Expression> namedOperator) {
+    public final IPredicate and(Function<BiFunction<SQLField, String, Expression>, IPredicate> fieldOperator,
+                                BiFunction<SQLField, String, Expression> namedOperator) {
         return this.and(fieldOperator.apply(namedOperator));
     }
 
@@ -357,8 +357,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
-    public final IPredicate ifAnd(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                                  TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier) {
+    public final IPredicate ifAnd(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                                  TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier) {
         final IPredicate predicate;
         final Integer size;
         if ((size = supplier.get()) == null) {

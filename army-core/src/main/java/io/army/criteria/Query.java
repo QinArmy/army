@@ -72,9 +72,9 @@ public interface Query extends RowSet {
 
         SR select(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2);
 
-        SR select(DataField field1, DataField field2, DataField field3);
+        SR select(SQLField field1, SQLField field2, SQLField field3);
 
-        SR select(DataField field1, DataField field2, DataField field3, DataField field4);
+        SR select(SQLField field1, SQLField field2, SQLField field3, SQLField field4);
 
         SR select(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
@@ -100,9 +100,9 @@ public interface Query extends RowSet {
 
         SR space(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2);
 
-        SR space(DataField field1, DataField field2, DataField field3);
+        SR space(SQLField field1, SQLField field2, SQLField field3);
 
-        SR space(DataField field1, DataField field2, DataField field3, DataField field4);
+        SR space(SQLField field1, SQLField field2, SQLField field3, SQLField field4);
 
         SR space(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
@@ -175,9 +175,9 @@ public interface Query extends RowSet {
 
         SR comma(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2);
 
-        SR comma(DataField field1, DataField field2, DataField field3);
+        SR comma(SQLField field1, SQLField field2, SQLField field3);
 
-        SR comma(DataField field1, DataField field2, DataField field3, DataField field4);
+        SR comma(SQLField field1, SQLField field2, SQLField field3, SQLField field4);
 
         SR comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 

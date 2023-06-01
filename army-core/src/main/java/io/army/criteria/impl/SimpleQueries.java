@@ -109,7 +109,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR select(DataField field1, DataField field2, DataField field3) {
+    public final SR select(SQLField field1, SQLField field2, SQLField field3) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3);
@@ -117,7 +117,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR select(DataField field1, DataField field2, DataField field3, DataField field4) {
+    public final SR select(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3)
@@ -244,7 +244,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR space(DataField field1, DataField field2, DataField field3) {
+    public final SR space(SQLField field1, SQLField field2, SQLField field3) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3);
@@ -252,7 +252,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR space(DataField field1, DataField field2, DataField field3, DataField field4) {
+    public final SR space(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3)
@@ -322,7 +322,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR comma(DataField field1, DataField field2, DataField field3) {
+    public final SR comma(SQLField field1, SQLField field2, SQLField field3) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3);
@@ -330,7 +330,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR comma(DataField field1, DataField field2, DataField field3, DataField field4) {
+    public final SR comma(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3)
@@ -1315,13 +1315,13 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public final SR select(DataField field1, DataField field2, DataField field3) {
+        public final SR select(SQLField field1, SQLField field2, SQLField field3) {
             return this.createSelectClause()
                     .select(field1, field2, field3);
         }
 
         @Override
-        public final SR select(DataField field1, DataField field2, DataField field3, DataField field4) {
+        public final SR select(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
             return this.createSelectClause()
                     .select(field1, field2, field3, field4);
         }
@@ -1646,7 +1646,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public Selections selection(DataField field1, DataField field2, DataField field3) {
+        public Selections selection(SQLField field1, SQLField field2, SQLField field3) {
             this.context.onAddSelectItem(field1)
                     .onAddSelectItem(field2)
                     .onAddSelectItem(field3);
@@ -1654,7 +1654,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public Selections selection(DataField field1, DataField field2, DataField field3, DataField field4) {
+        public Selections selection(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
             this.context.onAddSelectItem(field1)
                     .onAddSelectItem(field2)
                     .onAddSelectItem(field3)

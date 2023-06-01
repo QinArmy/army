@@ -191,12 +191,12 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        final void appendArguments(StringBuilder sqlBuilder, _SqlContext context) {
+        final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             //no argument,no-op
         }
 
         @Override
-        final void argumentToString(StringBuilder builder) {
+        final void argToString(StringBuilder builder) {
             //no argument,no-op
         }
 
@@ -213,12 +213,12 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        final void appendArguments(final StringBuilder sqlBuilder, final _SqlContext context) {
+        final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.argument.appendSql(context);
         }
 
         @Override
-        final void argumentToString(final StringBuilder builder) {
+        final void argToString(final StringBuilder builder) {
             builder.append(this.argument);
         }
 
@@ -241,7 +241,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        final void appendArguments(final StringBuilder sqlBuilder, final _SqlContext context) {
+        final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             final SQLWords option = this.option;
             if (option != null) {
                 sqlBuilder.append(option.spaceRender());
@@ -250,7 +250,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        final void argumentToString(final StringBuilder builder) {
+        final void argToString(final StringBuilder builder) {
             final SQLWords option = this.option;
             if (option != null) {
                 builder.append(_Constant.SPACE)
@@ -278,12 +278,12 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        final void appendArguments(final StringBuilder sqlBuilder, final _SqlContext context) {
+        final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             FunctionUtils.appendArguments(this.option, this.argList, context);
         }
 
         @Override
-        final void argumentToString(final StringBuilder builder) {
+        final void argToString(final StringBuilder builder) {
             FunctionUtils.argumentsToString(this.option, this.argList, builder);
         }
 

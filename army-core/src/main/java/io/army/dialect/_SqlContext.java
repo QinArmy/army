@@ -4,6 +4,7 @@ import io.army.criteria.NamedLiteral;
 import io.army.criteria.QualifiedField;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Visible;
+import io.army.env.NameMode;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
@@ -23,6 +24,9 @@ public interface _SqlContext {
 
     Dialect dialect();
 
+    NameMode funcNameMode();
+
+    @Deprecated
     boolean isLowerFunctionName();
 
 

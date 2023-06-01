@@ -1567,7 +1567,7 @@ abstract class InsertSupports {
 
         @Override
         public final InsertStatement._StaticColumnValueClause<T, RR> comma(final FieldMeta<T> field, final @Nullable Expression value) {
-            if (value instanceof DataField) {
+            if (value instanceof SQLField) {
                 throw ContextStack.criteriaError(this.context, "column value must be non-field.");
             } else if (!(value instanceof ArmyExpression)) {
                 throw ContextStack.nonArmyExp(this.context);

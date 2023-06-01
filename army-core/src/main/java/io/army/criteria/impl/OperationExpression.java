@@ -6,6 +6,7 @@ import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
+import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
@@ -13,9 +14,11 @@ import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonPathType;
 import io.army.meta.TypeMeta;
+import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.function.BiFunction;
 
 /**
@@ -945,11 +948,22 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
         final String name;
 
+        final boolean buildIn;
+
         /**
          * package constructor
          */
         SqlFunctionExpression(String name) {
             this.name = name;
+            this.buildIn = true;
+        }
+
+        /**
+         * package constructor
+         */
+        SqlFunctionExpression(String name, boolean buildIn) {
+            this.name = name;
+            this.buildIn = buildIn;
         }
 
         @Override
@@ -962,6 +976,72 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
          */
         @Override
         public abstract MappingType typeMeta();
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE);
+
+            final String name = this.name;
+            if (!this.buildIn && (context.parser().isKeyWords(name) || !_DialectUtils.isSimpleIdentifier(name))) {
+                throw CriteriaUtils.userDefinedFuncNameError(name, context.dialect());
+            }
+            switch (context.funcNameMode()) {
+                case DEFAULT:
+                    sqlBuilder.append(name);
+                    break;
+                case LOWER_CASE:
+                    sqlBuilder.append(name.toLowerCase(Locale.ROOT));
+                    break;
+                case UPPER_CASE:
+                    sqlBuilder.append(name.toUpperCase(Locale.ROOT));
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(context.funcNameMode());
+            }
+
+            if (!(this instanceof FunctionUtils.NoParensFunction)) {
+                if (this instanceof FunctionUtils.NoArgFunction) {
+                    sqlBuilder.append(_Constant.RIGHT_PAREN);
+                } else {
+                    sqlBuilder.append(_Constant.LEFT_PAREN);
+                    this.appendArg(sqlBuilder, context);
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                }
+            }
+
+            this.appendFuncRest(sqlBuilder, context);
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+
+            builder.append(_Constant.SPACE)
+                    .append(this.name); // function name
+            if (!(this instanceof FunctionUtils.NoParensFunction)) {
+                if (this instanceof FunctionUtils.NoArgFunction) {
+                    builder.append(_Constant.RIGHT_PAREN);
+                } else {
+                    builder.append(_Constant.LEFT_PAREN);
+                    argToString(builder);
+                    builder.append(_Constant.SPACE_RIGHT_PAREN);
+                }
+            }
+
+            this.funcRestToString(builder);
+            return builder.toString();
+        }
+
+        abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
+
+        abstract void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context);
+
+
+        abstract void argToString(StringBuilder builder);
+
+        abstract void funcRestToString(StringBuilder builder);
 
 
     }//FunctionExpression

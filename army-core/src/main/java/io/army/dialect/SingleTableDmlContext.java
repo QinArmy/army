@@ -1,8 +1,8 @@
 package io.army.dialect;
 
 import io.army.annotation.UpdateMode;
-import io.army.criteria.DataField;
 import io.army.criteria.QualifiedField;
+import io.army.criteria.SQLField;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.*;
@@ -118,7 +118,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
     }
 
     @Override
-    public final void appendSetLeftItem(final DataField dataField) {
+    public final void appendSetLeftItem(final SQLField dataField) {
         assert this instanceof _UpdateContext;
         if (!(dataField instanceof TableField)) {
             throw _Exceptions.immutableField(dataField);

@@ -23,7 +23,7 @@ abstract class ArmySelections implements _Selection {
             } else {
                 selection = new FieldSelectionImpl((TableField) exp, alias);
             }
-        } else if (exp instanceof DataField && ((DataField) exp).fieldName().equals(alias)) {
+        } else if (exp instanceof SQLField && ((SQLField) exp).fieldName().equals(alias)) {
             selection = (_Selection) exp;
         } else {
             selection = new ExpressionSelection((ArmyExpression) exp, alias);

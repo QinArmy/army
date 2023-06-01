@@ -306,7 +306,7 @@ abstract class FunctionUtils {
     }
 
     static SimpleExpression noParensFunc(String name, TypeMeta returnType) {
-        return new NoParensFunction(name, returnType);
+        return new NoParensFunctionExpression(name, returnType);
     }
 
     static SimpleExpression oneOrMultiArgFunc(String name, Expression exp, TypeMeta returnType) {
@@ -1106,6 +1106,10 @@ abstract class FunctionUtils {
 
     }
 
+    interface NoParensFunction {
+
+    }
+
 
     enum NullTreatment implements SQLWords {
 
@@ -1228,19 +1232,7 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
-            //1. function
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name) // function name
-                    .append(_Constant.LEFT_PAREN);
-            if (this instanceof NoArgFunction) {
-                sqlBuilder.append(_Constant.RIGHT_PAREN);
-            } else {
-                this.appendArguments(sqlBuilder, context);
-                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-            }
+        final void appendFuncRest(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             if (this instanceof SQLFunction._OuterClauseBeforeOver) {
                 this.appendOuterClause(sqlBuilder, context);
@@ -1270,25 +1262,12 @@ abstract class FunctionUtils {
                     anonymousWindow.appendSql(context);
                 }
             }
-
         }
 
         @Override
-        public final String toString() {
-            //1. function
-            final StringBuilder sqlBuilder;
-            sqlBuilder = new StringBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name) // function name
-                    .append(_Constant.LEFT_PAREN);
-
-            if (!(this instanceof NoArgFunction)) {
-                this.argumentToString(sqlBuilder);
-            }
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
+        final void funcRestToString(final StringBuilder builder) {
             if (this instanceof SQLFunction._OuterClauseBeforeOver) {
-                this.outerClauseToString(sqlBuilder);
+                this.outerClauseToString(builder);
             }
             final String existingWindowName = this.existingWindowName;
             final _Window anonymousWindow = this.anonymousWindow;
@@ -1301,25 +1280,20 @@ abstract class FunctionUtils {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             } else {
                 //2. OVER clause
-                sqlBuilder.append(_Constant.SPACE_OVER);
+                builder.append(_Constant.SPACE_OVER);
                 if (anonymousWindow == GlobalWindow.INSTANCE || GLOBAL_PLACE_HOLDER.equals(existingWindowName)) {
-                    sqlBuilder.append(_Constant.PARENS);
+                    builder.append(_Constant.PARENS);
                 } else if (existingWindowName != null) {
-                    sqlBuilder.append(_Constant.SPACE)
+                    builder.append(_Constant.SPACE)
                             .append(existingWindowName);
                 } else {
-                    sqlBuilder.append(anonymousWindow);
+                    builder.append(anonymousWindow);
                 }
             }
-            return sqlBuilder.toString();
         }
 
 
         abstract T createAnonymousWindow(@Nullable String existingWindowName);
-
-        abstract void appendArguments(StringBuilder sqlBuilder, _SqlContext context);
-
-        abstract void argumentToString(StringBuilder builder);
 
         abstract boolean isDontSupportWindow(Dialect dialect);
 
@@ -1421,16 +1395,16 @@ abstract class FunctionUtils {
 
     }//NamedNotation
 
-    private static final class NoParensFunction extends OperationExpression.SqlFunctionExpression {
-
+    private static final class NoParensFunctionExpression extends OperationExpression.SqlFunctionExpression
+            implements NoParensFunction {
 
         private final TypeMeta returnType;
 
         /**
          * @see #noParensFunc(String, TypeMeta)
          */
-        private NoParensFunction(String name, TypeMeta returnType) {
-            super(name);
+        private NoParensFunctionExpression(String name, TypeMeta returnType) {
+            super(name, true); //no parens function must be build-in
             this.returnType = returnType;
         }
 
@@ -1447,47 +1421,33 @@ abstract class FunctionUtils {
             return this.returnType.mappingType();
         }
 
+
         @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name);
-            // no parens
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.returnType);
+        void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
         }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof NoParensFunction) {
-                final NoParensFunction o = (NoParensFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
+        void argToString(StringBuilder builder) {
+            //no-op
         }
 
         @Override
-        public String toString() {
-            return _StringUtils.builder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .toString();
+        void funcRestToString(StringBuilder builder) {
+            //no-op
         }
 
 
     }//NoParensFunction
 
 
-    private static final class ZeroArgFunction extends OperationExpression.SqlFunctionExpression {
+    private static final class ZeroArgFunction extends OperationExpression.SqlFunctionExpression
+            implements NoArgFunction {
 
 
         private final TypeMeta returnType;
@@ -1512,42 +1472,24 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.PARENS);
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.returnType);
+        void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
         }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof ZeroArgFunction) {
-                final ZeroArgFunction o = (ZeroArgFunction) obj;
-                match = o.name.equals(this.name)
-                        && o.returnType.equals(this.returnType);
-            } else {
-                match = false;
-            }
-            return match;
+        void argToString(StringBuilder builder) {
+            //no-op
         }
 
         @Override
-        public String toString() {
-            return _StringUtils.builder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.PARENS)
-                    .toString();
+        void funcRestToString(StringBuilder builder) {
+            //no-op
         }
-
 
     }//NoArgFuncExpression
 
@@ -1584,44 +1526,18 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-
-            final String name = this.name;
-            if (!this.buildIn && (context.parser().isKeyWords(name) || !_DialectUtils.isSimpleIdentifier(name))) {
-                throw CriteriaUtils.userDefinedFuncNameError(name, context.dialect());
-            }
-            sqlBuilder.append(name)// function name
-                    .append(_Constant.LEFT_PAREN);
-
-            this.appendArg(sqlBuilder, context);
-
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
+        final void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
             if (this instanceof OuterClause) {
                 ((OuterClause) this).appendOuterClause(sqlBuilder, context);
             }
-
         }
 
-
         @Override
-        public final String toString() {
-            final StringBuilder builder = new StringBuilder();
-
-            builder.append(_Constant.SPACE)
-                    .append(this.name) // function name
-                    .append(_Constant.LEFT_PAREN);
-            this.argToString(builder);
-            builder.append(_Constant.SPACE_RIGHT_PAREN);
+        final void funcRestToString(final StringBuilder builder) {
             if (this instanceof OuterClause) {
                 ((OuterClause) this).outerClauseToString(builder);
             }
-            return builder.toString();
         }
-
 
         abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
 
@@ -2268,31 +2184,25 @@ abstract class FunctionUtils {
             return this.returnType.mappingType();
         }
 
+
         @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(name)
-                    .append(_Constant.LEFT_PAREN);
-
+        final void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             FunctionUtils.appendComplexArg(this.argList, context);
-
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
         }
 
+        @Override
+        final void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
 
         @Override
-        public final String toString() {
-            final StringBuilder builder = new StringBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
-
+        final void argToString(StringBuilder builder) {
             FunctionUtils.complexArgToString(this.argList, builder);
-            return builder.append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
+        }
+
+        @Override
+        final void funcRestToString(StringBuilder builder) {
+            //no-op
         }
 
 
@@ -2322,14 +2232,9 @@ abstract class FunctionUtils {
             return this.returnType.mappingType();
         }
 
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
 
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             int index = 0;
             for (Map.Entry<String, Expression> e : this.expMap.entrySet()) {
                 if (index > 0) {
@@ -2340,35 +2245,33 @@ abstract class FunctionUtils {
                 ((ArmyExpression) e.getValue()).appendSql(context);
                 index++;
             }
-
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-
         }
 
         @Override
-        public String toString() {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = new StringBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
+        void appendFuncRest(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
 
+        @Override
+        void argToString(StringBuilder builder) {
             int index = 0;
             for (Map.Entry<String, Expression> e : this.expMap.entrySet()) {
                 if (index > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                    builder.append(_Constant.SPACE_COMMA);
                 }
-                sqlBuilder.append(_Constant.SPACE)
+                builder.append(_Constant.SPACE)
                         .append(e.getKey())
                         .append(_Constant.SPACE_COMMA)
                         .append(e.getValue());
                 index++;
             }
-
-            return sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
-
         }
+
+        @Override
+        void funcRestToString(StringBuilder builder) {
+            //no-op
+        }
+
 
     }//JsonMapFunc
 
@@ -2418,14 +2321,16 @@ abstract class FunctionUtils {
     }//ArmyFuncClauseFunction
 
 
-    private static final class CaseFunction extends OperationExpression.SqlFunctionExpression
+    private static final class CaseFunction extends OperationExpression.OperationSimpleExpression
             implements SQLFunction._CaseWhenSpec,
             SQLFunction._CaseFuncWhenClause,
             SQLFunction._StaticCaseThenClause,
             SQLFunction._CaseElseClause,
             CaseWhens,
             SQLFunction._DynamicCaseThenClause,
-            SQLFunction._DynamicWhenSpaceClause {
+            SQLFunction._DynamicWhenSpaceClause,
+            SQLFunction,
+            TypeInfer.DelayTypeInfer {
 
         private final ArmyExpression caseValue;
 
@@ -2442,9 +2347,13 @@ abstract class FunctionUtils {
         private boolean dynamicWhenSpace;
 
         private CaseFunction(@Nullable ArmyExpression caseValue) {
-            super("CASE");
             this.caseValue = caseValue;
             this.outerContext = ContextStack.peek();
+        }
+
+        @Override
+        public String name() {
+            return "CASE";
         }
 
         @Override

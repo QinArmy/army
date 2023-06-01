@@ -21,9 +21,9 @@ public interface Selections extends Item {
 
     Selections selection(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2);
 
-    Selections selection(DataField field1, DataField field2, DataField field3);
+    Selections selection(SQLField field1, SQLField field2, SQLField field3);
 
-    Selections selection(DataField field1, DataField field2, DataField field3, DataField field4);
+    Selections selection(SQLField field1, SQLField field2, SQLField field3, SQLField field4);
 
     Selections selection(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 

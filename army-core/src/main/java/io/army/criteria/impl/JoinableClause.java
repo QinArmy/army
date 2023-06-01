@@ -945,14 +945,14 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         }
 
         @Override
-        public final OR on(Function<Expression, IPredicate> operator, DataField operandField) {
+        public final OR on(Function<Expression, IPredicate> operator, SQLField operandField) {
             this.onPredicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
             return (OR) this;
         }
 
         @Override
-        public final OR on(Function<Expression, IPredicate> operator1, DataField operandField1
-                , Function<Expression, IPredicate> operator2, DataField operandField2) {
+        public final OR on(Function<Expression, IPredicate> operator1, SQLField operandField1
+                , Function<Expression, IPredicate> operator2, SQLField operandField2) {
             this.onPredicateList = ArrayUtils.asUnmodifiableList(
                     (OperationPredicate) operator1.apply(operandField1),
                     (OperationPredicate) operator2.apply(operandField2)

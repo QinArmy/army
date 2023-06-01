@@ -123,22 +123,58 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         return new TwoArgAggWindowFunc(name, one, two, returnType);
     }
 
-    static PostgreWindowFunctions._PgAggFunc oneArgAggFunc(final String name, final boolean buildIn,
-                                                           final @Nullable Postgres.Modifier modifier,
+    static PostgreWindowFunctions._PgAggFunc oneArgAggFunc(final String name, final @Nullable SqlSyntax.ArgDistinct modifier,
                                                            final Expression one,
                                                            final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
                                                            final TypeMeta returnType) {
+
+        return _oneArgAggFunc(name, true, modifier, one, consumer, returnType);
+    }
+
+    static PostgreWindowFunctions._PgAggFunc twoArgAggFunc(final String name, final @Nullable SqlSyntax.ArgDistinct modifier,
+                                                           final Expression one, final Expression two,
+                                                           final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
+                                                           final TypeMeta returnType) {
+        return _twoArgAggFunc(name, true, modifier, one, two, consumer, returnType);
+    }
+
+    static PostgreWindowFunctions._PgAggFunc oneUserArgAggFunc(final String name, final @Nullable SqlSyntax.ArgDistinct modifier,
+                                                               final Expression one,
+                                                               final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
+                                                               final TypeMeta returnType) {
+
+        return _oneArgAggFunc(name, false, modifier, one, consumer, returnType);
+    }
+
+    static PostgreWindowFunctions._PgAggFunc twoUserArgAggFunc(final String name, final @Nullable SqlSyntax.ArgDistinct modifier,
+                                                               final Expression one, final Expression two,
+                                                               final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
+                                                               final TypeMeta returnType) {
+        return _twoArgAggFunc(name, false, modifier, one, two, consumer, returnType);
+    }
+
+    /**
+     * @see #oneArgAggFunc(String, SqlSyntax.ArgDistinct, Expression, Consumer, TypeMeta)
+     */
+    private static PostgreWindowFunctions._PgAggFunc _oneArgAggFunc(final String name, final boolean buildIn,
+                                                                    final @Nullable SqlSyntax.ArgDistinct modifier,
+                                                                    final Expression one,
+                                                                    final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
+                                                                    final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
         return new OneArgAggFunc(name, buildIn, modifier, one, consumeOrderBy(consumer), returnType);
     }
 
-    static PostgreWindowFunctions._PgAggFunc twoArgAggFunc(final String name, final boolean buildIn,
-                                                           final @Nullable Postgres.Modifier modifier,
-                                                           final Expression one, final Expression two,
-                                                           final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
-                                                           final TypeMeta returnType) {
+    /**
+     * @see #twoArgAggFunc(String, SqlSyntax.ArgDistinct, Expression, Expression, Consumer, TypeMeta)
+     */
+    private static PostgreWindowFunctions._PgAggFunc _twoArgAggFunc(final String name, final boolean buildIn,
+                                                                    final @Nullable SqlSyntax.ArgDistinct modifier,
+                                                                    final Expression one, final Expression two,
+                                                                    final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
+                                                                    final TypeMeta returnType) {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
@@ -249,7 +285,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                     sqlBuilder.append(_Constant.SPACE);
                     parser.identifier(attrPair.second, sqlBuilder);
 
-                } else if (attObject instanceof DataField) {
+                } else if (attObject instanceof SQLField) {
                     ((ArmyExpression) attObject).appendSql(context);
                 } else {
                     //no bug,never here
@@ -261,7 +297,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
         @Override
-        public Postgres._XmlNamedElementFieldClause accept(final @Nullable DataField field) {
+        public Postgres._XmlNamedElementFieldClause accept(final @Nullable SQLField field) {
             if (!this.supportField) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
@@ -885,12 +921,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArguments(StringBuilder sqlBuilder, _SqlContext context) {
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             //no-op
         }
 
         @Override
-        void argumentToString(StringBuilder builder) {
+        void argToString(StringBuilder builder) {
             //no-op
         }
 
@@ -906,12 +942,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArguments(final StringBuilder sqlBuilder, _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(context);
         }
 
         @Override
-        void argumentToString(StringBuilder builder) {
+        void argToString(StringBuilder builder) {
             builder.append(this.one);
         }
 
@@ -930,14 +966,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArguments(final StringBuilder sqlBuilder, _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(context);
             sqlBuilder.append(_Constant.COMMA);
             this.two.appendSql(context);
         }
 
         @Override
-        void argumentToString(StringBuilder builder) {
+        void argToString(StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.COMMA)
                     .append(this.two);
@@ -961,7 +997,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArguments(final StringBuilder sqlBuilder, _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(context);
             sqlBuilder.append(_Constant.COMMA);
             this.two.appendSql(context);
@@ -970,7 +1006,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void argumentToString(StringBuilder builder) {
+        void argToString(StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.COMMA)
                     .append(this.two)
@@ -1123,12 +1159,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArguments(StringBuilder sqlBuilder, _SqlContext context) {
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             this.one.appendSql(context);
         }
 
         @Override
-        void argumentToString(StringBuilder builder) {
+        void argToString(StringBuilder builder) {
             builder.append(this.one);
         }
 
@@ -1151,14 +1187,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        void appendArguments(final StringBuilder sqlBuilder, final _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.one.appendSql(context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
             this.two.appendSql(context);
         }
 
         @Override
-        void argumentToString(final StringBuilder builder) {
+        void argToString(final StringBuilder builder) {
             builder.append(this.one)
                     .append(_Constant.SPACE_COMMA)
                     .append(this.two);
@@ -1173,17 +1209,19 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     private static abstract class PostgreAggregateFunction extends FunctionUtils.FunctionExpression
             implements PostgreWindowFunctions._PgAggFunc, OuterClause {
 
-        private final Postgres.Modifier modifier;
+        private final SqlSyntax.ArgDistinct modifier;
 
         private final OrderByOptionClause orderByClause;
 
         private final CriteriaContext outerContext;
         private AggFuncFilterClause filterClause;
 
-        private PostgreAggregateFunction(String name, boolean buildIn, @Nullable Postgres.Modifier modifier,
+        private PostgreAggregateFunction(String name, boolean buildIn, @Nullable SqlSyntax.ArgDistinct modifier,
                                          final @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
             super(name, buildIn, returnType);
-            assert modifier == null || modifier == Postgres.DISTINCT || modifier == Postgres.ALL;
+            if (!(modifier == null || modifier instanceof SqlSyntax.ArmyKeyWord)) {
+                throw CriteriaUtils.funcArgError(name, modifier);
+            }
             this.modifier = modifier;
             this.orderByClause = orderByClause;
             if (orderByClause == null) {
@@ -1224,7 +1262,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            final Postgres.Modifier modifier = this.modifier;
+            final SqlSyntax.ArgDistinct modifier = this.modifier;
             if (modifier != null) {
                 sqlBuilder.append(modifier.spaceRender());
             }
@@ -1239,7 +1277,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         final void argToString(final StringBuilder builder) {
-            final Postgres.Modifier modifier = this.modifier;
+            final SqlSyntax.ArgDistinct modifier = this.modifier;
             if (modifier != null) {
                 builder.append(modifier.spaceRender());
             }
@@ -1281,9 +1319,9 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         private final ArmyExpression one;
 
         /**
-         * @see #oneArgAggFunc(String, boolean, Postgres.Modifier, Expression, Consumer, TypeMeta)
+         * @see #_oneArgAggFunc(String, boolean, SqlSyntax.ArgDistinct, Expression, Consumer, TypeMeta)
          */
-        private OneArgAggFunc(String name, boolean buildIn, @Nullable Postgres.Modifier modifier, Expression one,
+        private OneArgAggFunc(String name, boolean buildIn, @Nullable SqlSyntax.ArgDistinct modifier, Expression one,
                               @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
             super(name, buildIn, modifier, orderByClause, returnType);
             this.one = (ArmyExpression) one;
@@ -1309,9 +1347,9 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         private final ArmyExpression two;
 
         /**
-         * @see #twoArgAggFunc(String, boolean, Postgres.Modifier, Expression, Expression, Consumer, TypeMeta)
+         * @see #_twoArgAggFunc(String, boolean, SqlSyntax.ArgDistinct, Expression, Expression, Consumer, TypeMeta)
          */
-        private TwoArgAggFunc(String name, boolean buildIn, @Nullable Postgres.Modifier modifier, Expression one, Expression two,
+        private TwoArgAggFunc(String name, boolean buildIn, @Nullable SqlSyntax.ArgDistinct modifier, Expression one, Expression two,
                               @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
             super(name, buildIn, modifier, orderByClause, returnType);
             this.one = (ArmyExpression) one;

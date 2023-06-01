@@ -116,6 +116,10 @@ interface CriteriaContext {
 
     void onAddWindow(String windowName);
 
+    /**
+     * @param windowName non-null and non-empty
+     * @throws CriteriaException throw when windowName is null or empty.
+     */
     void onRefWindow(String windowName);
 
     @Nullable

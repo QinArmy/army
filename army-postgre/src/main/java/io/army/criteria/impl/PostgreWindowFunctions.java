@@ -378,6 +378,52 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
     /*-------------------below general-purpose Aggregate Functions-------------------*/
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the array {@link  MappingType} of any
+     * </p>
+     *
+     * @param modifier see {@link SQLs#DISTINCT} or {@link Postgres#DISTINCT}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
+     * Collects all the input values, including nulls, into an array.
+     * </a>
+     */
+    public static _PgAggFunc arrayAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("array_agg", modifier, any, null, _returnType(any, MappingType::arrayTypeOfThis));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the array {@link  MappingType} of any
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
+     * Collects all the input values, including nulls, into an array.
+     * </a>
+     */
+    public static _PgAggFunc arrayAgg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("array_agg", null, any, consumer, _returnType(any, MappingType::arrayTypeOfThis));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the array {@link  MappingType} of any
+     * </p>
+     *
+     * @param modifier see {@link SQLs#DISTINCT} or {@link Postgres#DISTINCT}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
+     * Collects all the input values, including nulls, into an array.
+     * </a>
+     */
+    public static _PgAggFunc arrayAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                      Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("array_agg", modifier, any, consumer, _returnType(any, MappingType::arrayTypeOfThis));
+    }
+
     /**
      * <p>
      * The {@link MappingType} of function return type: the array {@link  MappingType} of any
@@ -393,47 +439,81 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         );
     }
 
+
     /**
      * <p>
-     * The {@link MappingType} of function return type: the array {@link  MappingType} of any
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → {@link BigDecimalType#INSTANCE}</li>
+     * <li>exp is decimal type  → {@link BigDecimalType#INSTANCE}</li>
+     * <li>exp is float type  → {@link DoubleType#INSTANCE}</li>
+     * <li>exp is interval type  → {@link IntervalType#TEXT}</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
      * </p>
      *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
-     * Collects all the input values, including nulls, into an array.
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">avg ( smallint ) → numeric<br/>
+     * avg ( integer ) → numeric<br/>
+     * avg ( bigint ) → numeric<br/>
+     * avg ( numeric ) → numeric<br/>
+     * avg ( real ) → double precision<br/>
+     * avg ( double precision ) → double precision<br/>
+     * avg ( interval ) → interval<br/>
      * </a>
      */
-    public static _PgAggFunc arrayAgg(@Nullable Postgres.Modifier modifier, Expression any) {
-        return _arrayAgg(modifier, any, null);
+    public static _PgAggFunc avg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("avg", modifier, any, null, _returnType(any, PostgreWindowFunctions::_avgType));
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: the array {@link  MappingType} of any
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → {@link BigDecimalType#INSTANCE}</li>
+     * <li>exp is decimal type  → {@link BigDecimalType#INSTANCE}</li>
+     * <li>exp is float type  → {@link DoubleType#INSTANCE}</li>
+     * <li>exp is interval type  → {@link IntervalType#TEXT}</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
      * </p>
      *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
-     * Collects all the input values, including nulls, into an array.
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">avg ( smallint ) → numeric<br/>
+     * avg ( integer ) → numeric<br/>
+     * avg ( bigint ) → numeric<br/>
+     * avg ( numeric ) → numeric<br/>
+     * avg ( real ) → double precision<br/>
+     * avg ( double precision ) → double precision<br/>
+     * avg ( interval ) → interval<br/>
      * </a>
      */
-    public static _PgAggFunc arrayAgg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+    public static _PgAggFunc avg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
 
         ContextStack.assertNonNull(consumer);
-        return _arrayAgg(null, any, consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("avg", null, any, consumer, _returnType(any, PostgreWindowFunctions::_avgType));
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: the array {@link  MappingType} of any
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → {@link BigDecimalType#INSTANCE}</li>
+     * <li>exp is decimal type  → {@link BigDecimalType#INSTANCE}</li>
+     * <li>exp is float type  → {@link DoubleType#INSTANCE}</li>
+     * <li>exp is interval type  → {@link IntervalType#TEXT}</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
      * </p>
      *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">array_agg ( anynonarray ) → anyarray<br/>
-     * Collects all the input values, including nulls, into an array.
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">avg ( smallint ) → numeric<br/>
+     * avg ( integer ) → numeric<br/>
+     * avg ( bigint ) → numeric<br/>
+     * avg ( numeric ) → numeric<br/>
+     * avg ( real ) → double precision<br/>
+     * avg ( double precision ) → double precision<br/>
+     * avg ( interval ) → interval<br/>
      * </a>
      */
-    public static _PgAggFunc arrayAgg(@Nullable Postgres.Modifier modifier, Expression any,
-                                      Consumer<Statement._SimpleOrderByClause> consumer) {
+    public static _PgAggFunc avg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                 Consumer<Statement._SimpleOrderByClause> consumer) {
         ContextStack.assertNonNull(consumer);
-        return _arrayAgg(modifier, any, consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("avg", modifier, any, consumer, _returnType(any, PostgreWindowFunctions::_avgType));
     }
 
 
@@ -461,6 +541,71 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.oneArgAggWindowFunc("avg", exp, _returnType(exp, PostgreWindowFunctions::_avgType));
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → the {@link MappingType} of exp</li>
+     * <li>exp is bit type  → the {@link MappingType} of exp</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_and ( smallint ) → smallint<br/>
+     * bit_and ( integer ) → integer<br/>
+     * bit_and ( bigint ) → bigint<br/>
+     * bit_and ( bit ) → bit<br/>
+     * Computes the bitwise AND of all non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc bitAnd(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("bit_and", modifier, any, null, _returnType(any, PostgreWindowFunctions::_bitOpeType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → the {@link MappingType} of exp</li>
+     * <li>exp is bit type  → the {@link MappingType} of exp</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_and ( smallint ) → smallint<br/>
+     * bit_and ( integer ) → integer<br/>
+     * bit_and ( bigint ) → bigint<br/>
+     * bit_and ( bit ) → bit<br/>
+     * Computes the bitwise AND of all non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc bitAnd(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("bit_and", null, any, consumer, _returnType(any, PostgreWindowFunctions::_bitOpeType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → the {@link MappingType} of exp</li>
+     * <li>exp is bit type  → the {@link MappingType} of exp</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_and ( smallint ) → smallint<br/>
+     * bit_and ( integer ) → integer<br/>
+     * bit_and ( bigint ) → bigint<br/>
+     * bit_and ( bit ) → bit<br/>
+     * Computes the bitwise AND of all non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc bitAnd(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                    Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("bit_and", modifier, any, consumer, _returnType(any, PostgreWindowFunctions::_bitOpeType));
+    }
+
     /**
      * <p>
      * The {@link MappingType} of function return type:<ul>
@@ -478,8 +623,73 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _AggWindowFunc bitAnd(Expression exp) {
-        return PostgreFunctionUtils.oneArgAggWindowFunc("bit_and", exp, _returnType(exp, PostgreWindowFunctions::_bitOpeType));
+        return _bitWindowFunc("bit_and", exp);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → the {@link MappingType} of exp</li>
+     * <li>exp is bit type  → the {@link MappingType} of exp</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_or ( smallint ) → smallint<br/>
+     * bit_or ( integer ) → integer<br/>
+     * bit_or ( bigint ) → bigint<br/>
+     * bit_or ( bit ) → bit<br/>
+     * Computes the bitwise OR of all non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc bitOr(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("bit_or", modifier, any, null, _returnType(any, PostgreWindowFunctions::_bitOpeType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → the {@link MappingType} of exp</li>
+     * <li>exp is bit type  → the {@link MappingType} of exp</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_or ( smallint ) → smallint<br/>
+     * bit_or ( integer ) → integer<br/>
+     * bit_or ( bigint ) → bigint<br/>
+     * bit_or ( bit ) → bit<br/>
+     * Computes the bitwise OR of all non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc bitOr(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("bit_or", null, any, consumer, _returnType(any, PostgreWindowFunctions::_bitOpeType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → the {@link MappingType} of exp</li>
+     * <li>exp is bit type  → the {@link MappingType} of exp</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_or ( smallint ) → smallint<br/>
+     * bit_or ( integer ) → integer<br/>
+     * bit_or ( bigint ) → bigint<br/>
+     * bit_or ( bit ) → bit<br/>
+     * Computes the bitwise OR of all non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc bitOr(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                   Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("bit_or", modifier, any, consumer, _returnType(any, PostgreWindowFunctions::_bitOpeType));
+    }
+
 
     /**
      * <p>
@@ -498,7 +708,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _AggWindowFunc bitOr(Expression exp) {
-        return PostgreFunctionUtils.oneArgAggWindowFunc("bit_or", exp, _returnType(exp, PostgreWindowFunctions::_bitOpeType));
+        return _bitWindowFunc("bit_or", exp);
     }
 
     /**
@@ -510,15 +720,122 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </ul>
      * </p>
      *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_or ( smallint ) → smallint<br/>
-     * bit_or ( integer ) → integer<br/>
-     * bit_or ( bigint ) → bigint<br/>
-     * bit_or ( bit ) → bit<br/>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_xor ( smallint ) → smallint<br/>
+     * bit_xor ( integer ) → integer<br/>
+     * bit_xor ( bigint ) → bigint<br/>
+     * bit_xor ( bit ) → bit<br/>
+     * Computes the bitwise OR of all non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc bitXor(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("bit_xor", modifier, any, null, _returnType(any, PostgreWindowFunctions::_bitOpeType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → the {@link MappingType} of exp</li>
+     * <li>exp is bit type  → the {@link MappingType} of exp</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_xor ( smallint ) → smallint<br/>
+     * bit_xor ( integer ) → integer<br/>
+     * bit_xor ( bigint ) → bigint<br/>
+     * bit_xor ( bit ) → bit<br/>
+     * Computes the bitwise OR of all non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc bitXor(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("bit_xor", null, any, consumer, _returnType(any, PostgreWindowFunctions::_bitOpeType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → the {@link MappingType} of exp</li>
+     * <li>exp is bit type  → the {@link MappingType} of exp</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_xor ( smallint ) → smallint<br/>
+     * bit_xor ( integer ) → integer<br/>
+     * bit_xor ( bigint ) → bigint<br/>
+     * bit_xor ( bit ) → bit<br/>
+     * Computes the bitwise OR of all non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc bitXor(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                    Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("bit_xor", modifier, any, consumer, _returnType(any, PostgreWindowFunctions::_bitOpeType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:<ul>
+     * <li>exp is integer type  → the {@link MappingType} of exp</li>
+     * <li>exp is bit type  → the {@link MappingType} of exp</li>
+     * <li>else → {@link TextType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bit_xor ( smallint ) → smallint<br/>
+     * bit_xor ( integer ) → integer<br/>
+     * bit_xor ( bigint ) → bigint<br/>
+     * bit_xor ( bit ) → bit<br/>
      * Computes the bitwise OR of all non-null input values.
      * </a>
      */
     public static _AggWindowFunc bitXor(Expression exp) {
-        return PostgreFunctionUtils.oneArgAggWindowFunc("bit_xor", exp, _returnType(exp, PostgreWindowFunctions::_bitOpeType));
+        return _bitWindowFunc("bit_xor", exp);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_and ( boolean ) → boolean<br/>
+     * Returns true if all non-null input values are true, otherwise false.
+     * </a>
+     */
+    public static _PgAggFunc boolAnd(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("bool_and", modifier, any, null, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_and ( boolean ) → boolean<br/>
+     * Returns true if all non-null input values are true, otherwise false.
+     * </a>
+     */
+    public static _PgAggFunc boolAnd(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("bool_and", null, any, consumer, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_and ( boolean ) → boolean<br/>
+     * Returns true if all non-null input values are true, otherwise false.
+     * </a>
+     */
+    public static _PgAggFunc boolAnd(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                     Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("bool_and", modifier, any, consumer, BooleanType.INSTANCE);
     }
 
 
@@ -535,6 +852,50 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.oneArgAggWindowFunc("bool_and", exp, BooleanType.INSTANCE);
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_or ( boolean ) → boolean<br/>
+     * Returns true if any non-null input value is true, otherwise false.
+     * </a>
+     */
+    public static _PgAggFunc boolOr(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("bool_or", modifier, any, null, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_or ( boolean ) → boolean<br/>
+     * Returns true if any non-null input value is true, otherwise false.
+     * </a>
+     */
+    public static _PgAggFunc boolOr(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("bool_or", null, any, consumer, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">bool_or ( boolean ) → boolean<br/>
+     * Returns true if any non-null input value is true, otherwise false.
+     * </a>
+     */
+    public static _PgAggFunc boolOr(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                    Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("bool_or", modifier, any, consumer, BooleanType.INSTANCE);
+    }
+
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
@@ -548,6 +909,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.oneArgAggWindowFunc("bool_or", exp, BooleanType.INSTANCE);
     }
 
+
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
@@ -560,6 +922,52 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      */
     public static _AggWindowFunc countAsterisk() {
         return PostgreFunctionUtils.oneArgAggWindowFunc("count", SQLs._ASTERISK_EXP, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
+     * Computes the number of input rows in which the input value is not null.
+     * </a>
+     * @see SQLs#count(Expression)
+     */
+    public static _PgAggFunc count(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("count", modifier, any, null, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
+     * Computes the number of input rows in which the input value is not null.
+     * </a>
+     * @see SQLs#count(Expression)
+     */
+    public static _PgAggFunc count(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("count", null, any, consumer, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
+     * Computes the number of input rows in which the input value is not null.
+     * </a>
+     * @see SQLs#count(Expression)
+     */
+    public static _PgAggFunc count(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                   Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("count", modifier, any, consumer, LongType.INSTANCE);
     }
 
     /**
@@ -586,8 +994,97 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      * @see #boolAnd(Expression)
      */
+    public static _PgAggFunc every(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("every", modifier, any, null, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">every ( boolean ) → boolean<br/>
+     * This is the SQL standard's equivalent to bool_and.
+     * </a>
+     * @see #boolAnd(Expression)
+     */
+    public static _PgAggFunc every(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("every", null, any, consumer, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">every ( boolean ) → boolean<br/>
+     * This is the SQL standard's equivalent to bool_and.
+     * </a>
+     * @see #boolAnd(Expression)
+     */
+    public static _PgAggFunc every(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                   Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("every", modifier, any, consumer, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  BooleanType#INSTANCE}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">every ( boolean ) → boolean<br/>
+     * This is the SQL standard's equivalent to bool_and.
+     * </a>
+     * @see #boolAnd(Expression)
+     */
     public static _AggWindowFunc every(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("every", exp, BooleanType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_agg ( anyelement ) → json<br/>
+     * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
+     * </a>
+     */
+    public static _PgAggFunc jsonAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("json_agg", modifier, any, null, JsonType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_agg ( anyelement ) → json<br/>
+     * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
+     * </a>
+     */
+    public static _PgAggFunc jsonAgg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("json_agg", null, any, consumer, JsonType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_agg ( anyelement ) → json<br/>
+     * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
+     * </a>
+     */
+    public static _PgAggFunc jsonAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                     Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("json_agg", modifier, any, consumer, JsonType.TEXT);
     }
 
     /**
@@ -612,8 +1109,94 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
      * </a>
      */
+    public static _PgAggFunc jsonbAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("jsonb_agg", modifier, any, null, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_agg ( anyelement ) → jsonb_agg<br/>
+     * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
+     * </a>
+     */
+    public static _PgAggFunc jsonbAgg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("jsonb_agg", null, any, consumer, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_agg ( anyelement ) → jsonb_agg<br/>
+     * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
+     * </a>
+     */
+    public static _PgAggFunc jsonbAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                      Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("jsonb_agg", modifier, any, consumer, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_agg ( anyelement ) → jsonb_agg<br/>
+     * Collects all the input values, including nulls, into a JSON array. Values are converted to JSON as per to_json or to_jsonb.
+     * </a>
+     */
     public static _AggWindowFunc jsonbAgg(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("jsonb_agg", exp, JsonbType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_object_agg ( key "any", value "any" ) → json<br/>
+     * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
+     * </a>
+     */
+    public static _PgAggFunc jsonObjectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression key, Expression value) {
+        return _jsonObjectAggAggFunc("json_object_agg", modifier, key, value, null);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_object_agg ( key "any", value "any" ) → json<br/>
+     * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
+     * </a>
+     */
+    public static _PgAggFunc jsonObjectAgg(Expression key, Expression value, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return _jsonObjectAggAggFunc("json_object_agg", null, key, value, consumer);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">json_object_agg ( key "any", value "any" ) → json<br/>
+     * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
+     * </a>
+     */
+    public static _PgAggFunc jsonObjectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression key, Expression value,
+                                           Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return _jsonObjectAggAggFunc("json_object_agg", modifier, key, value, consumer);
     }
 
 
@@ -665,6 +1248,51 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.twoArgAggWindowFunc("json_object_agg", key, value, JsonType.TEXT);
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_object_agg ( key "any", value "any" ) → json<br/>
+     * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
+     * </a>
+     */
+    public static _PgAggFunc jsonbObjectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression key, Expression value) {
+        return _jsonObjectAggAggFunc("jsonb_object_agg", modifier, key, value, null);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_object_agg ( key "any", value "any" ) → json<br/>
+     * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
+     * </a>
+     */
+    public static _PgAggFunc jsonbObjectAgg(Expression key, Expression value, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return _jsonObjectAggAggFunc("jsonb_object_agg", null, key, value, consumer);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">jsonb_object_agg ( key "any", value "any" ) → json<br/>
+     * Collects all the key/value pairs into a JSON object. Key arguments are coerced to text; value arguments are converted as per to_json or to_jsonb. Values can be null, but not keys.
+     * </a>
+     */
+    public static _PgAggFunc jsonbObjectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression key, Expression value,
+                                            Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return _jsonObjectAggAggFunc("jsonb_object_agg", modifier, key, value, consumer);
+    }
+
+
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link  JsonbType#TEXT}.
@@ -713,6 +1341,18 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.twoArgAggWindowFunc("jsonb_object_agg", key, value, JsonbType.TEXT);
     }
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">max ( see text ) → same as input type<br/>
+     * Computes the maximum of the non-null input values. Available for any numeric, string, date/time, or enum type, as well as inet, interval, money, oid, pg_lsn, tid, xid8, and arrays of any of these types.
+     * </a>
+     */
+    public static _PgAggFunc max(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
+        return _oneArgAggIdentityTypeFunc("max", modifier, exp, null);
+    }
 
     /**
      * <p>
@@ -725,6 +1365,19 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      */
     public static _AggWindowFunc max(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("max", exp, _returnType(exp, Expressions::identityType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">min ( see text ) → same as input type<br/>
+     * Computes the minimum of the non-null input values. Available for any numeric, string, date/time, or enum type, as well as inet, interval, money, oid, pg_lsn, tid, xid8, and arrays of any of these types.
+     * </a>
+     */
+    public static _PgAggFunc min(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
+        return _oneArgAggIdentityTypeFunc("min", modifier, exp, null);
     }
 
     /**
@@ -751,8 +1404,101 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * Computes the union of the non-null input values.
      * </a>
      */
+    public static _PgAggFunc rangeAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return _oneArgAggIdentityTypeFunc("range_agg", modifier, any, null);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_agg ( value anyrange ) → anymultirange<br/>
+     * range_agg ( value anymultirange ) → anymultirange
+     * Computes the union of the non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc rangeAgg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return _oneArgAggIdentityTypeFunc("range_agg", null, any, consumer);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_agg ( value anyrange ) → anymultirange<br/>
+     * range_agg ( value anymultirange ) → anymultirange
+     * Computes the union of the non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc rangeAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                      Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return _oneArgAggIdentityTypeFunc("range_agg", modifier, any, consumer);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_agg ( value anyrange ) → anymultirange<br/>
+     * range_agg ( value anymultirange ) → anymultirange
+     * Computes the union of the non-null input values.
+     * </a>
+     */
     public static _AggWindowFunc rangeAgg(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("range_agg", exp, _returnType(exp, Expressions::identityType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_intersect_agg ( value anyrange ) → anymultirange<br/>
+     * range_intersect_agg ( value anymultirange ) → anymultirange
+     * Computes the intersection of the non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc rangeIntersectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return _oneArgAggIdentityTypeFunc("range_intersect_agg", modifier, any, null);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_intersect_agg ( value anyrange ) → anymultirange<br/>
+     * range_intersect_agg ( value anymultirange ) → anymultirange
+     * Computes the intersection of the non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc rangeIntersectAgg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return _oneArgAggIdentityTypeFunc("range_intersect_agg", null, any, consumer);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">range_intersect_agg ( value anyrange ) → anymultirange<br/>
+     * range_intersect_agg ( value anymultirange ) → anymultirange
+     * Computes the intersection of the non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc rangeIntersectAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                               Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return _oneArgAggIdentityTypeFunc("range_intersect_agg", modifier, any, consumer);
     }
 
 
@@ -770,6 +1516,53 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.oneArgAggWindowFunc("range_intersect_agg", exp, _returnType(exp, Expressions::identityType));
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">string_agg ( value text, delimiter text ) → text<br/>
+     * string_agg ( value bytea, delimiter bytea ) → bytea
+     * Concatenates the non-null input values into a string. Each value after the first is preceded by the corresponding delimiter (if it's not null).
+     * </a>
+     */
+    public static _PgAggFunc stringAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression value, Expression delimiter) {
+        return _twoArgAggIdentityTypeFunc("string_agg", modifier, value, delimiter, null);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">string_agg ( value text, delimiter text ) → text<br/>
+     * string_agg ( value bytea, delimiter bytea ) → bytea
+     * Concatenates the non-null input values into a string. Each value after the first is preceded by the corresponding delimiter (if it's not null).
+     * </a>
+     */
+    public static _PgAggFunc stringAgg(Expression value, Expression delimiter, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return _twoArgAggIdentityTypeFunc("string_agg", null, value, delimiter, consumer);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of exp.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">string_agg ( value text, delimiter text ) → text<br/>
+     * string_agg ( value bytea, delimiter bytea ) → bytea
+     * Concatenates the non-null input values into a string. Each value after the first is preceded by the corresponding delimiter (if it's not null).
+     * </a>
+     */
+    public static _PgAggFunc stringAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression value, Expression delimiter,
+                                       Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return _twoArgAggIdentityTypeFunc("string_agg", modifier, value, delimiter, consumer);
+    }
+
     /**
      * <p>
      * The {@link MappingType} of function return type: the {@link MappingType} of exp.
@@ -782,6 +1575,36 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      */
     public static _AggWindowFunc stringAgg(Expression value, Expression delimiter) {
         return PostgreFunctionUtils.twoArgAggWindowFunc("string_agg", value, delimiter, _returnType(value, Expressions::identityType));
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>If exp is {@link ByteType},then {@link ShortType}</li>
+     *     <li>Else if exp is {@link ShortType},then {@link IntegerType}</li>
+     *     <li>Else if exp is {@link MediumIntType},then {@link IntegerType}</li>
+     *     <li>Else if exp is {@link LongType},then {@link BigIntegerType}</li>
+     *     <li>Else if exp is {@link BigDecimalType},then {@link BigDecimalType}</li>
+     *     <li>Else if exp is {@link FloatType},then {@link FloatType}</li>
+     *     <li>Else if exp is sql float type,then {@link DoubleType}</li>
+     *     <li>Else he {@link MappingType} of exp</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">sum ( smallint ) → bigint<br/>
+     * sum ( integer ) → bigint<br/>
+     * sum ( bigint ) → numeric<br/>
+     * sum ( numeric ) → numeric<br/>
+     * sum ( real ) → real<br/>
+     * sum ( double precision ) → double precision<br/>
+     * sum ( interval ) → interval<br/>
+     * sum ( money ) → money<br/>
+     * Computes the sum of the non-null input values.
+     * </a>
+     */
+    public static _PgAggFunc sum(@Nullable SqlSyntax.ArgDistinct modifier, Expression exp) {
+        return PostgreFunctionUtils.oneArgAggFunc("sum", modifier, exp, null, _returnType(exp, Functions::_sumType));
     }
 
 
@@ -815,6 +1638,49 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
         return PostgreFunctionUtils.oneArgAggWindowFunc("sum", exp, _returnType(exp, Functions::_sumType));
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link XmlType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">xmlagg ( xml ) → xml<br/>
+     * Concatenates the non-null XML input values
+     * </a>
+     */
+    public static _PgAggFunc xmlAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any) {
+        return PostgreFunctionUtils.oneArgAggFunc("xmlagg", modifier, any, null, XmlType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link XmlType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">xmlagg ( xml ) → xml<br/>
+     * Concatenates the non-null XML input values
+     * </a>
+     */
+    public static _PgAggFunc xmlAgg(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
+
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("xmlagg", null, any, consumer, XmlType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link XmlType#TEXT}.
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">xmlagg ( xml ) → xml<br/>
+     * Concatenates the non-null XML input values
+     * </a>
+     */
+    public static _PgAggFunc xmlAgg(@Nullable SqlSyntax.ArgDistinct modifier, Expression any,
+                                    Consumer<Statement._SimpleOrderByClause> consumer) {
+        ContextStack.assertNonNull(consumer);
+        return PostgreFunctionUtils.oneArgAggFunc("xmlagg", modifier, any, consumer, XmlType.TEXT);
+    }
 
     /**
      * <p>
@@ -1075,16 +1941,70 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
     /*-------------------below private method-------------------*/
 
+
     /**
-     * @see #arrayAgg(Postgres.Modifier, Expression)
-     * @see #arrayAgg(Expression, Consumer)
-     * @see #arrayAgg(Postgres.Modifier, Expression, Consumer)
+     * @see #bitAnd(Expression)
+     * @see #bitOr(Expression)
+     * @see #bitXor(Expression)
      */
-    private static _PgAggFunc _arrayAgg(@Nullable Postgres.Modifier modifier, Expression any,
-                                        @Nullable Consumer<Statement._SimpleOrderByClause> consumer) {
-        return PostgreFunctionUtils.oneArgAggFunc("array_agg", true, modifier, any, consumer,
-                _returnType(any, MappingType::arrayTypeOfThis)
+    private static _AggWindowFunc _bitWindowFunc(String name, Expression exp) {
+        return PostgreFunctionUtils.oneArgAggWindowFunc(name, exp,
+                _returnType(exp, PostgreWindowFunctions::_bitOpeType)
         );
+    }
+
+
+    /**
+     * @see #jsonObjectAgg(ArgDistinct, Expression, Expression)
+     * @see #jsonObjectAgg(Expression, Expression, Consumer)
+     * @see #jsonObjectAgg(ArgDistinct, Expression, Expression, Consumer)
+     * @see #jsonbObjectAgg(ArgDistinct, Expression, Expression)
+     * @see #jsonbObjectAgg(Expression, Expression, Consumer)
+     * @see #jsonbObjectAgg(ArgDistinct, Expression, Expression, Consumer)
+     */
+    private static _PgAggFunc _jsonObjectAggAggFunc(String name, @Nullable ArgDistinct modifier, Expression key,
+                                                    Expression value,
+                                                    @Nullable Consumer<Statement._SimpleOrderByClause> consumer) {
+        final MappingType returnType;
+        switch (name) {
+            case "json_object_agg":
+                returnType = JsonType.TEXT;
+                break;
+            case "jsonb_object_agg":
+                returnType = JsonbType.TEXT;
+                break;
+            default:
+                //no bug,never here
+                throw new IllegalArgumentException();
+
+        }
+        return PostgreFunctionUtils.twoArgAggFunc(name, modifier, key, value, consumer, returnType);
+    }
+
+    /**
+     * @see #min(ArgDistinct, Expression)
+     * @see #max(ArgDistinct, Expression)
+     * @see #rangeAgg(ArgDistinct, Expression)
+     * @see #rangeAgg(Expression, Consumer)
+     * @see #rangeAgg(ArgDistinct, Expression, Consumer)
+     * @see #rangeIntersectAgg(ArgDistinct, Expression)
+     * @see #rangeIntersectAgg(Expression, Consumer)
+     * @see #rangeIntersectAgg(ArgDistinct, Expression, Consumer)
+     */
+    private static _PgAggFunc _oneArgAggIdentityTypeFunc(String name, @Nullable ArgDistinct modifier, Expression one,
+                                                         @Nullable Consumer<Statement._SimpleOrderByClause> consumer) {
+        return PostgreFunctionUtils.oneArgAggFunc(name, modifier, one, consumer, _returnType(one, Expressions::identityType));
+    }
+
+    /**
+     * @see #stringAgg(ArgDistinct, Expression, Expression)
+     * @see #stringAgg(Expression, Expression, Consumer)
+     * @see #stringAgg(ArgDistinct, Expression, Expression, Consumer)
+     */
+    private static _PgAggFunc _twoArgAggIdentityTypeFunc(String name, @Nullable ArgDistinct modifier, Expression one,
+                                                         Expression two,
+                                                         @Nullable Consumer<Statement._SimpleOrderByClause> consumer) {
+        return PostgreFunctionUtils.twoArgAggFunc(name, modifier, one, two, consumer, _returnType(one, Expressions::identityType));
     }
 
 

@@ -296,10 +296,10 @@ public interface Statement extends Item {
 
         OR on(IPredicate predicate1, IPredicate predicate2);
 
-        OR on(Function<Expression, IPredicate> operator, DataField operandField);
+        OR on(Function<Expression, IPredicate> operator, SQLField operandField);
 
-        OR on(Function<Expression, IPredicate> operator1, DataField operandField1
-                , Function<Expression, IPredicate> operator2, DataField operandField2);
+        OR on(Function<Expression, IPredicate> operator1, SQLField operandField1
+                , Function<Expression, IPredicate> operator2, SQLField operandField2);
 
         OR on(Consumer<Consumer<IPredicate>> consumer);
 
@@ -818,16 +818,16 @@ public interface Statement extends Item {
         <T> WA where(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 
 
-        WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
-                 BiFunction<DataField, String, Expression> operator);
+        WA where(Function<BiFunction<SQLField, String, Expression>, IPredicate> fieldOperator,
+                 BiFunction<SQLField, String, Expression> operator);
 
         //below ordinary operator
         <T> WA where(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                      BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
 
         // below in operator
-        WA where(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                 TeNamedOperator<DataField> namedOperator, int size);
+        WA where(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                 TeNamedOperator<SQLField> namedOperator, int size);
 
 
         WA where(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName, int size);
@@ -847,8 +847,8 @@ public interface Statement extends Item {
         <T> WA whereIf(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                        BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
-        WA whereIf(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                   TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier);
+        WA whereIf(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                   TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier);
 
         //below four argument method
 
@@ -925,16 +925,16 @@ public interface Statement extends Item {
         <T> WA and(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 
 
-        WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
-               BiFunction<DataField, String, Expression> operator);
+        WA and(Function<BiFunction<SQLField, String, Expression>, IPredicate> fieldOperator,
+               BiFunction<SQLField, String, Expression> operator);
 
         //below ordinary operator
         <T> WA and(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                    BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
 
         // below in operator
-        WA and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-               TeNamedOperator<DataField> namedOperator, int size);
+        WA and(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+               TeNamedOperator<SQLField> namedOperator, int size);
 
 
         WA and(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName, int size);
@@ -954,8 +954,8 @@ public interface Statement extends Item {
         <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                      BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
-        WA ifAnd(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                 TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier);
+        WA ifAnd(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                 TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier);
 
         //below four argument method
 

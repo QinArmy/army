@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.DataField;
+import io.army.criteria.SQLField;
 import io.army.meta.SingleTableMeta;
 
 public interface _MultiUpdateContext extends _UpdateContext, _MultiTableStmtContext, _SetClauseContext {
@@ -14,7 +14,7 @@ public interface _MultiUpdateContext extends _UpdateContext, _MultiTableStmtCont
      *     </ul>
      * </p>
      */
-    String singleTableAliasOf(DataField dataField);
+    String singleTableAliasOf(SQLField dataField);
 
 
 }

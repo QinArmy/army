@@ -27,10 +27,15 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<Boolean> COLUMN_NAME_UPPER = new ArmyKey<>("column.name.upper", Boolean.class, Boolean.FALSE);
 
+    public static final ArmyKey<NameMode> TABLE_NAME_MODE = new ArmyKey<>("table.name.mode", NameMode.class, NameMode.DEFAULT);
+    public static final ArmyKey<NameMode> COLUMN_NAME_MODE = new ArmyKey<>("column.name.mode", NameMode.class, NameMode.DEFAULT);
+
     public static final ArmyKey<QueryInsertMode> SUBQUERY_INSERT_MODE = new ArmyKey<>("subquery.insert.mode", QueryInsertMode.class, QueryInsertMode.ONLY_MIGRATION);
 
+    public static final ArmyKey<NameMode> FUNC_NAME_MODE = new ArmyKey<>("func.name.mode", NameMode.class, NameMode.DEFAULT);
     public static final ArmyKey<Boolean> SQL_LOG_DYNAMIC = new ArmyKey<>("sql.log.dynamic", Boolean.class, Boolean.FALSE);
 
+    public static final ArmyKey<SqlLogMode> SQL_LOG_MODE = new ArmyKey<>("sql.log.mode", SqlLogMode.class, SqlLogMode.OFF);
     public static final ArmyKey<Boolean> SQL_LOG_SHOW = new ArmyKey<>("sql.log.show", Boolean.class, Boolean.FALSE);
 
     public static final ArmyKey<Boolean> SQL_LOG_BEAUTIFY = new ArmyKey<>("sql.log.format", Boolean.class, Boolean.FALSE);

@@ -158,7 +158,7 @@ public abstract class Postgres extends PostgreSyntax {
 
     public interface _XmlNamedElementFieldClause extends _XmlNamedElementClause {
 
-        _XmlNamedElementFieldClause accept(DataField field);
+        _XmlNamedElementFieldClause accept(SQLField field);
 
         _XmlNamedElementFieldClause accept(Expression value, WordAs as, String name);
 

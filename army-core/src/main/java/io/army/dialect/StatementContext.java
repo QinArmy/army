@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
+import io.army.env.NameMode;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
@@ -88,6 +89,11 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
     @Override
     public final Dialect dialect() {
         return this.parser.dialect;
+    }
+
+    @Override
+    public final NameMode funcNameMode() {
+        return this.parser.funcNameMode;
     }
 
     @Override

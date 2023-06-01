@@ -95,11 +95,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownColumn(DataField field) {
+    public static CriteriaException unknownColumn(SQLField field) {
         return new CriteriaException(String.format("Unknown %s", field));
     }
 
-    public static CriteriaException unsupportedFieldType(DataField field) {
+    public static CriteriaException unsupportedFieldType(SQLField field) {
         return new CriteriaException(String.format("unsupported field type %s", field));
     }
 
@@ -149,7 +149,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static CriteriaException immutableField(DataField field) {
+    public static CriteriaException immutableField(SQLField field) {
         return new CriteriaException(String.format("%s is immutable.", field));
     }
 
@@ -223,7 +223,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException nonNullField(DataField field) {
+    public static CriteriaException nonNullField(SQLField field) {
         return new CriteriaException(String.format("%s is non-null.", field));
     }
 
@@ -393,7 +393,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException nonUpdatableField(DataField field) {
+    public static CriteriaException nonUpdatableField(SQLField field) {
         String m;
         m = String.format("%s %s isn't %s.", field, UpdateMode.class.getSimpleName(), UpdateMode.UPDATABLE);
         return new CriteriaException(m);

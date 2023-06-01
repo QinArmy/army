@@ -80,8 +80,8 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     }
 
     @Override
-    public final WA where(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
-                          BiFunction<DataField, String, Expression> namedOperator) {
+    public final WA where(Function<BiFunction<SQLField, String, Expression>, IPredicate> fieldOperator,
+                          BiFunction<SQLField, String, Expression> namedOperator) {
         return this.where(fieldOperator.apply(namedOperator));
     }
 
@@ -92,8 +92,8 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     }
 
     @Override
-    public final WA where(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                          TeNamedOperator<DataField> namedOperator, int size) {
+    public final WA where(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                          TeNamedOperator<SQLField> namedOperator, int size) {
         return this.where(expOperator.apply(namedOperator, size));
     }
 
@@ -150,8 +150,8 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     }
 
     @Override
-    public final WA whereIf(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                            TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier) {
+    public final WA whereIf(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                            TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier) {
         if (this.predicateList != null) {
             throw duplicationWhere();
         }
@@ -248,14 +248,14 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
 
 
     @Override
-    public final WA and(Function<BiFunction<DataField, String, Expression>, IPredicate> fieldOperator,
-                        BiFunction<DataField, String, Expression> namedOperator) {
+    public final WA and(Function<BiFunction<SQLField, String, Expression>, IPredicate> fieldOperator,
+                        BiFunction<SQLField, String, Expression> namedOperator) {
         return this.and(fieldOperator.apply(namedOperator));
     }
 
     @Override
-    public final WA and(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                        TeNamedOperator<DataField> namedOperator, int size) {
+    public final WA and(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                        TeNamedOperator<SQLField> namedOperator, int size) {
         return this.and(expOperator.apply(namedOperator, size));
     }
 
@@ -307,8 +307,8 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     }
 
     @Override
-    public final WA and(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
-                        BiFunction<DataField, String, Expression> operator,
+    public final WA and(Function<BiFunction<SQLField, String, Expression>, Expression> fieldOperator,
+                        BiFunction<SQLField, String, Expression> operator,
                         BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand) {
         return this.and(expOperator2.apply(fieldOperator.apply(operator), SQLs.literalValue(numberOperand)));
     }
@@ -346,8 +346,8 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     }
 
     @Override
-    public final WA ifAnd(BiFunction<TeNamedOperator<DataField>, Integer, IPredicate> expOperator,
-                          TeNamedOperator<DataField> namedOperator, Supplier<Integer> supplier) {
+    public final WA ifAnd(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
+                          TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier) {
         final Integer size;
         if ((size = supplier.get()) != null) {
             this.and(expOperator.apply(namedOperator, size));

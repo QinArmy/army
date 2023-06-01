@@ -43,7 +43,7 @@ public interface UpdateStatement extends NarrowDmlStatement {
     /**
      * @param <SR> java type of next clause.
      */
-    interface _StaticSetClause<F extends DataField, SR> {
+    interface _StaticSetClause<F extends SQLField, SR> {
 
         SR set(F field, Expression value);
 
@@ -83,7 +83,7 @@ public interface UpdateStatement extends NarrowDmlStatement {
      * @param <SR> java type of next clause.
      */
     @Deprecated
-    interface _SimpleSetClause<F extends DataField, SR> extends _StaticSetClause<F, SR> {
+    interface _SimpleSetClause<F extends SQLField, SR> extends _StaticSetClause<F, SR> {
 
     }
 
@@ -91,7 +91,7 @@ public interface UpdateStatement extends NarrowDmlStatement {
     /**
      * @param <SR> java type of next clause.
      */
-    interface _StaticBatchSetClause<F extends DataField, SR> extends _StaticSetClause<F, SR> {
+    interface _StaticBatchSetClause<F extends SQLField, SR> extends _StaticSetClause<F, SR> {
 
 
         SR setNamed(F field, BiFunction<F, String, Expression> valueOperator);
@@ -101,7 +101,7 @@ public interface UpdateStatement extends NarrowDmlStatement {
     }
 
 
-    interface _StaticRowSetClause<F extends DataField, SR> extends _StaticSetClause<F, SR> {
+    interface _StaticRowSetClause<F extends SQLField, SR> extends _StaticSetClause<F, SR> {
 
         SR setRow(F field1, F field2, Supplier<SubQuery> supplier);
 
@@ -121,26 +121,26 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
     }
 
-    interface _BatchRowPairs<F extends DataField> extends _ItemPairBuilder,
+    interface _BatchRowPairs<F extends SQLField> extends _ItemPairBuilder,
             _StaticRowSetClause<F, _BatchRowPairs<F>>,
             _StaticBatchSetClause<F, _BatchRowPairs<F>> {
 
 
     }
 
-    interface _ItemPairs<F extends DataField> extends _ItemPairBuilder,
+    interface _ItemPairs<F extends SQLField> extends _ItemPairBuilder,
             _StaticSetClause<F, _ItemPairs<F>> {
 
 
     }
 
-    interface _BatchItemPairs<F extends DataField> extends _ItemPairBuilder,
+    interface _BatchItemPairs<F extends SQLField> extends _ItemPairBuilder,
             _StaticBatchSetClause<F, _BatchItemPairs<F>> {
 
 
     }
 
-    interface _RowPairs<F extends DataField> extends _ItemPairBuilder,
+    interface _RowPairs<F extends SQLField> extends _ItemPairBuilder,
             _StaticRowSetClause<F, _RowPairs<F>> {
 
 
@@ -156,8 +156,8 @@ public interface UpdateStatement extends NarrowDmlStatement {
                      BiFunction<SimpleExpression, T, Expression> operator, @Nullable T operand1,
                      BiFunction<Expression, Expression, IPredicate> expOperator2, @Nullable Number numberOperand);
 
-        WA and(Function<BiFunction<DataField, String, Expression>, Expression> fieldOperator,
-               BiFunction<DataField, String, Expression> operator,
+        WA and(Function<BiFunction<SQLField, String, Expression>, Expression> fieldOperator,
+               BiFunction<SQLField, String, Expression> operator,
                BiFunction<Expression, Expression, IPredicate> expOperator2, Number numberOperand);
 
     }

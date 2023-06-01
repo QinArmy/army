@@ -14,6 +14,7 @@ import io.army.criteria.standard.StandardQuery;
 import io.army.criteria.standard.StandardUpdate;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
+import io.army.env.NameMode;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingEnv;
@@ -101,6 +102,8 @@ abstract class ArmyParser implements DialectParser {
     final ChildUpdateMode childUpdateMode;
     final FieldValueGenerator generator;
 
+    final NameMode funcNameMode;
+
     private final String qualifiedSchemaName;
     private final boolean tableNameUpper;
 
@@ -149,6 +152,7 @@ abstract class ArmyParser implements DialectParser {
         this.tableNameUpper = env.getOrDefault(ArmyKey.TABLE_NAME_UPPER);
         this.columnNameUpper = env.getOrDefault(ArmyKey.COLUMN_NAME_UPPER);
 
+        this.funcNameMode = env.getOrDefault(ArmyKey.FUNC_NAME_MODE);
 
         if (env.getOrDefault(ArmyKey.USE_QUALIFIED_TABLE_NAME)) {
             final String schemaName, lowerSchemaName;
@@ -1243,7 +1247,7 @@ abstract class ArmyParser implements DialectParser {
         sqlBuilder.append(_Constant.SPACE_SET);
         //2. append item pairs in SET clause
         _ItemPair pair;
-        DataField dataField;
+        SQLField dataField;
         for (int i = 0; i < itemPairSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1256,7 +1260,7 @@ abstract class ArmyParser implements DialectParser {
                 aliasMap.putIfAbsent(context.singleTableAliasOf(dataField), Boolean.TRUE);
             } else {
                 assert pair instanceof _ItemPair._RowItemPair;
-                for (DataField field : ((_ItemPair._RowItemPair) pair).rowFieldList()) {
+                for (SQLField field : ((_ItemPair._RowItemPair) pair).rowFieldList()) {
                     aliasMap.putIfAbsent(context.singleTableAliasOf(field), Boolean.TRUE);
                 }
             }

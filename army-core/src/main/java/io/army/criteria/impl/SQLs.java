@@ -191,9 +191,9 @@ public abstract class SQLs extends SQLsSyntax {
      * </p>
      *
      * @param value {@link Expression} or parameter.
-     * @see #plusEqual(DataField, Expression)
+     * @see #plusEqual(SQLField, Expression)
      */
-    static SQLs.ArmyItemPair _itemPair(final @Nullable DataField field, final @Nullable AssignOperator operator,
+    static SQLs.ArmyItemPair _itemPair(final @Nullable SQLField field, final @Nullable AssignOperator operator,
                                        final @Nullable Expression value) {
         if (field == null || value == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -213,12 +213,12 @@ public abstract class SQLs extends SQLsSyntax {
      * package method that is used by army developer.
      * </p>
      */
-    static _ItemPair _itemExpPair(final DataField field, @Nullable Expression value) {
+    static _ItemPair _itemExpPair(final SQLField field, @Nullable Expression value) {
         assert value != null;
         return SQLs._itemPair(field, null, value);
     }
 
-    static ItemPair _itemPair(List<? extends DataField> fieldList, SubQuery subQuery) {
+    static ItemPair _itemPair(List<? extends SQLField> fieldList, SubQuery subQuery) {
         return new SQLs.RowItemPair(fieldList, subQuery);
     }
 
@@ -308,20 +308,20 @@ public abstract class SQLs extends SQLsSyntax {
     }//ArmyItemPair
 
     /**
-     * @see #_itemPair(DataField, AssignOperator, Expression)
+     * @see #_itemPair(SQLField, AssignOperator, Expression)
      */
     static class FieldItemPair extends ArmyItemPair implements _ItemPair._FieldItemPair {
 
-        final DataField field;
+        final SQLField field;
 
-        private FieldItemPair(DataField field, ArmyExpression value) {
+        private FieldItemPair(SQLField field, ArmyExpression value) {
             super(value);
             this.field = field;
         }
 
         @Override
         public final void appendItemPair(final _SetClauseContext context) {
-            final DataField field = this.field;
+            final SQLField field = this.field;
             //1. append left item
             context.appendSetLeftItem(field);
             //2. append operator
@@ -337,7 +337,7 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public final DataField field() {
+        public final SQLField field() {
             return this.field;
         }
 
@@ -365,7 +365,7 @@ public abstract class SQLs extends SQLsSyntax {
 
         final AssignOperator operator;
 
-        private OperatorItemPair(DataField field, AssignOperator operator, ArmyExpression value) {
+        private OperatorItemPair(SQLField field, AssignOperator operator, ArmyExpression value) {
             super(field, value);
             this.operator = operator;
         }
@@ -375,9 +375,9 @@ public abstract class SQLs extends SQLsSyntax {
 
     static final class RowItemPair extends ArmyItemPair implements _ItemPair._RowItemPair {
 
-        final List<DataField> fieldList;
+        final List<SQLField> fieldList;
 
-        private RowItemPair(List<? extends DataField> fieldList, SubQuery subQuery) {
+        private RowItemPair(List<? extends SQLField> fieldList, SubQuery subQuery) {
             super(subQuery);
             final int selectionCount;
             selectionCount = ((_RowSet) subQuery).selectionSize();
@@ -386,8 +386,8 @@ public abstract class SQLs extends SQLsSyntax {
                         , fieldList.size(), selectionCount);
                 throw new CriteriaException(m);
             }
-            final List<DataField> tempList = _Collections.arrayList(fieldList.size());
-            for (DataField field : fieldList) {
+            final List<SQLField> tempList = _Collections.arrayList(fieldList.size());
+            for (SQLField field : fieldList) {
                 if (!(field instanceof TableField)) {
                     tempList.add(field);
                     continue;
@@ -406,7 +406,7 @@ public abstract class SQLs extends SQLsSyntax {
 
         @Override
         public void appendItemPair(final _SetClauseContext context) {
-            final List<? extends DataField> fieldList = this.fieldList;
+            final List<? extends SQLField> fieldList = this.fieldList;
             final int fieldSize = fieldList.size();
             //1. append left paren
             final StringBuilder sqlBuilder = context.sqlBuilder()
@@ -430,7 +430,7 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public List<? extends DataField> rowFieldList() {
+        public List<? extends SQLField> rowFieldList() {
             return this.fieldList;
         }
 
@@ -440,7 +440,7 @@ public abstract class SQLs extends SQLsSyntax {
 
             //1. append left paren
             builder.append(_Constant.SPACE_LEFT_PAREN);
-            final List<? extends DataField> fieldList = this.fieldList;
+            final List<? extends SQLField> fieldList = this.fieldList;
             final int fieldSize = fieldList.size();
             //2. append field list
             for (int i = 0; i < fieldSize; i++) {

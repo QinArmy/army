@@ -62,7 +62,7 @@ final class TableContext {
             if (pair instanceof _ItemPair._FieldItemPair) {
                 childMap = handleUpdateField(((_ItemPair._FieldItemPair) pair).field(), childMap);
             } else if (pair instanceof _ItemPair._RowItemPair) {
-                for (DataField dataField : ((_ItemPair._RowItemPair) pair).rowFieldList()) {
+                for (SQLField dataField : ((_ItemPair._RowItemPair) pair).rowFieldList()) {
                     childMap = handleUpdateField(dataField, childMap);
                 }
             } else {
@@ -146,7 +146,7 @@ final class TableContext {
      * @see #forUpdate(_JoinableUpdate, ArmyParser, Visible)
      */
     @Nullable
-    private static Map<ChildTableMeta<?>, Boolean> handleUpdateField(final DataField dataField
+    private static Map<ChildTableMeta<?>, Boolean> handleUpdateField(final SQLField dataField
             , @Nullable Map<ChildTableMeta<?>, Boolean> childMap) {
         if (!(dataField instanceof TableField)) {
             //TODO

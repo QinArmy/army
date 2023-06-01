@@ -1,7 +1,7 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.DataField;
 import io.army.criteria.ItemPair;
+import io.army.criteria.SQLField;
 import io.army.dialect._SetClauseContext;
 
 import java.util.List;
@@ -14,7 +14,7 @@ public interface _ItemPair extends ItemPair {
 
     interface _FieldItemPair extends _ItemPair {
 
-        DataField field();
+        SQLField field();
 
         _Expression value();
 
@@ -22,7 +22,7 @@ public interface _ItemPair extends ItemPair {
 
     interface _RowItemPair extends _ItemPair {
 
-        List<? extends DataField> rowFieldList();
+        List<? extends SQLField> rowFieldList();
 
     }
 
