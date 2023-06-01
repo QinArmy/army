@@ -12,5 +12,14 @@ import io.army.criteria.RowExpression;
  */
 interface ArmyRowExpression extends ArmyExpressionElement, RowExpression, FunctionArg.SingleFunctionArg {
 
+    int columnSize();
+
+
+    interface DelayRow {
+
+        boolean isDelay();
+
+    }
+
 
 }

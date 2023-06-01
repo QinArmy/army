@@ -113,6 +113,12 @@ abstract class SelectionGroups {
             this.insertTable = insertTable;
         }
 
+
+        @Override
+        public int columnSize() {
+            return this.insertTable.fieldList().size();
+        }
+
         @Override
         public String tableAlias() {
             //no bug,never here
@@ -318,7 +324,8 @@ abstract class SelectionGroups {
     }//DerivedSelectionGroup
 
 
-    private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup, ArmyRowExpression {
+    private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup, ArmyRowExpression,
+            ArmyRowExpression.DelayRow {
 
         private final String derivedAlias;
 
@@ -326,6 +333,21 @@ abstract class SelectionGroups {
 
         private DelayDerivedSelectionGroup(String derivedAlias) {
             this.derivedAlias = derivedAlias;
+        }
+
+
+        @Override
+        public boolean isDelay() {
+            return this.selectionList == null;
+        }
+
+        @Override
+        public int columnSize() {
+            final List<? extends Selection> selectionList = this.selectionList;
+            if (selectionList == null) {
+                throw new IllegalStateException("row(*) is delay");
+            }
+            return selectionList.size();
         }
 
         @Override

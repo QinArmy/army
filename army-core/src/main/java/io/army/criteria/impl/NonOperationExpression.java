@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.standard.SQLFunction;
 import io.army.function.OptionalClauseOperator;
 import io.army.lang.Nullable;
@@ -34,6 +33,11 @@ abstract class NonOperationExpression implements ArmyExpression {
 
     @Override
     public final CompoundPredicate equal(Expression operand) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate nullSafeEqual(Expression operand) {
         throw unsupportedOperation(this);
     }
 
@@ -205,26 +209,16 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation(this);
     }
 
+
     @Override
-    public final CompoundPredicate in(Expression operand) {
+    public final CompoundPredicate in(RowElement row) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final CompoundPredicate in(SubQuery subQuery) {
+    public final CompoundPredicate notIn(RowElement row) {
         throw unsupportedOperation(this);
     }
-
-    @Override
-    public final CompoundPredicate notIn(Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
-    public final CompoundPredicate notIn(SubQuery subQuery) {
-        throw unsupportedOperation(this);
-    }
-
 
     @Override
     public final CompoundPredicate like(Expression pattern) {

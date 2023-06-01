@@ -1,7 +1,5 @@
 package io.army.criteria;
 
-import io.army.criteria.dialect.SubQuery;
-
 /**
  * <p>
  * This interface representing derived table. This interface possibly is below:

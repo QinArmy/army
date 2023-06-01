@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
 
+@Deprecated
 enum UnaryBooleanOperator implements Operator.SqlUnaryBooleanOperator {
 
 

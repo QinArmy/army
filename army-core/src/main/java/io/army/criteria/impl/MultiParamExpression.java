@@ -157,7 +157,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
 
 
         @Override
-        public final int valueSize() {
+        public final int columnSize() {
             return this.valueList.size();
         }
 
@@ -310,7 +310,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         }
 
         @Override
-        public final int valueSize() {
+        public final int columnSize() {
             return this.valueSize;
         }
 

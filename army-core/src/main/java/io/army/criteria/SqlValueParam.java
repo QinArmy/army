@@ -35,7 +35,7 @@ public interface SqlValueParam extends TypeInfer {
 
     interface MultiValue extends SqlValueParam, NonNullValue {
 
-        int valueSize();
+        int columnSize();
 
     }
 

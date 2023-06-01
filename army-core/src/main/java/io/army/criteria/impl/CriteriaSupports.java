@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Returnings;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
@@ -1156,6 +1155,7 @@ abstract class CriteriaSupports {
             assert columnList.size() > 0;
             this.columnList = columnList;
         }
+
 
         @Override
         public void appendSql(final _SqlContext context) {

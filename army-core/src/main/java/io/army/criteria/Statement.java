@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 import io.army.criteria.dialect.SubDelete;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
 import io.army.function.*;

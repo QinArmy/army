@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.SQLCommand;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.mysql.*;
 
 public abstract class MySQLs extends MySQLSyntax {

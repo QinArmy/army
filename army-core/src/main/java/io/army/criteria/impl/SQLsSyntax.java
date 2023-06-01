@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -834,7 +833,7 @@ abstract class SQLsSyntax extends Functions {
      * @param values non-null and non-empty
      * @see #multiParam(TypeInfer, Collection)
      */
-    public static Expression multiLiteral(final TypeInfer type, final Collection<?> values) {
+    public static RowExpression multiLiteral(final TypeInfer type, final Collection<?> values) {
         return MultiLiteralExpression.multi(type, values);
     }
 
@@ -879,7 +878,7 @@ abstract class SQLsSyntax extends Functions {
      * @return named non-null multi literal expression
      * @see #namedMultiParam(TypeInfer, String, int)
      */
-    public static Expression namedMultiLiteral(final TypeInfer type, final String name, final int size) {
+    public static RowExpression namedMultiLiteral(final TypeInfer type, final String name, final int size) {
         return MultiLiteralExpression.named(type, name, size);
     }
 
@@ -917,7 +916,7 @@ abstract class SQLsSyntax extends Functions {
      *                           </ul>
      * @see #encodingMultiParam(TypeInfer, Collection)
      */
-    public static Expression encodingMultiLiteral(final TypeInfer type, final Collection<?> values) {
+    public static RowExpression encodingMultiLiteral(final TypeInfer type, final Collection<?> values) {
         return MultiLiteralExpression.encodingMulti(type, values);
     }
 
@@ -968,7 +967,7 @@ abstract class SQLsSyntax extends Functions {
      *                           </ul>
      * @see #encodingNamedMultiParam(TypeInfer, String, int)
      */
-    public static Expression encodingNamedMultiLiteral(final TypeInfer type, final String name, final int size) {
+    public static RowExpression encodingNamedMultiLiteral(final TypeInfer type, final String name, final int size) {
         return MultiLiteralExpression.encodingNamed(type, name, size);
     }
 
@@ -1084,14 +1083,14 @@ abstract class SQLsSyntax extends Functions {
      * @param subQuery non-null
      */
     public static IPredicate exists(SubQuery subQuery) {
-        return Expressions.existsPredicate(UnaryBooleanOperator.EXISTS, subQuery);
+        return Expressions.existsPredicate(false, subQuery);
     }
 
     /**
      * @param subQuery non-null
      */
     public static IPredicate notExists(SubQuery subQuery) {
-        return Expressions.existsPredicate(UnaryBooleanOperator.NOT_EXISTS, subQuery);
+        return Expressions.existsPredicate(true, subQuery);
     }
 
     public static ItemPair plusEqual(final SQLField field, final Expression value) {

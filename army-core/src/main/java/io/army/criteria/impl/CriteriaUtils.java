@@ -637,6 +637,7 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
+
     static CriteriaException operandError(final Enum<?> operator, final @Nullable Expression operand) {
         String m = String.format("%s don't support %s .", operator, _ClassUtils.safeClassName(operand));
         return ContextStack.clearStackAndCriteriaError(m);

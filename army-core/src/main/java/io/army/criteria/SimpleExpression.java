@@ -10,8 +10,7 @@ import io.army.mapping.NoCastTextType;
 import java.util.Collection;
 import java.util.function.BiFunction;
 
-import static io.army.dialect.Database.H2;
-import static io.army.dialect.Database.PostgreSQL;
+import static io.army.dialect.Database.*;
 
 /**
  * <p>
@@ -58,6 +57,38 @@ public interface SimpleExpression extends Expression {
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
     <T> CompoundPredicate equal(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
+
+    /**
+     * <p>
+     * <strong>=</strong> operator. This method is similar to {@link #equal(Expression)},except that the operand
+     * of {@link #equal(Expression)} is returned by funcRef.
+     * </p>
+     * <p>
+     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     *
+     * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
+     *                <ul>
+     *                    <li>{@link SQLs#param(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#literal(TypeInfer, Object)}</li>
+     *                    <li>{@link SQLs#namedParam(TypeInfer, String)} ,used only in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>{@link SQLs#encodingParam(TypeInfer, Object)},used when only <strong>this</strong> is instance of {@link TableField} and {@link TableField#codec()} is true</li>
+     *                    <li>{@link SQLs#encodingLiteral(TypeInfer, Object)},used when only <strong>this</strong> is instance of {@link TableField} and {@link TableField#codec()} is true</li>
+     *                    <li>{@link SQLs#encodingNamedParam(TypeInfer, String)} ,used when only <strong>this</strong> is instance of {@link TableField} and {@link TableField#codec()} is true
+     *                    and in INSERT( or batch update/delete ) syntax</li>
+     *                    <li>{@link SQLs#encodingNamedLiteral(TypeInfer, String)} ,used when only <strong>this</strong> is instance of {@link TableField} and {@link TableField#codec()} is true
+     *                    and in INSERT( or batch update/delete in multi-statement) syntax</li>
+     *                    <li>developer custom method</li>
+     *                </ul>.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
+     * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
+     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/comparison-operators.html#operator_equal-to">NULL-safe equal.</a>
+     */
+    @Support({MySQL})
+    <T> CompoundPredicate nullSafeEqual(BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value);
 
     /**
      * <p>

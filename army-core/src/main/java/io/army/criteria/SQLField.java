@@ -21,45 +21,45 @@ public interface SQLField extends NamedExpression {
     String fieldName();
 
 
-    IPredicate equal(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundPredicate equal(BiFunction<SQLField, String, Expression> namedOperator);
 
-    IPredicate less(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundPredicate less(BiFunction<SQLField, String, Expression> namedOperator);
 
-    IPredicate lessEqual(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundPredicate lessEqual(BiFunction<SQLField, String, Expression> namedOperator);
 
-    IPredicate great(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundPredicate great(BiFunction<SQLField, String, Expression> namedOperator);
 
-    IPredicate greatEqual(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundPredicate greatEqual(BiFunction<SQLField, String, Expression> namedOperator);
 
-    IPredicate notEqual(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundPredicate notEqual(BiFunction<SQLField, String, Expression> namedOperator);
 
-    IPredicate like(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundPredicate like(BiFunction<SQLField, String, Expression> namedOperator);
 
-    IPredicate notLike(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundPredicate notLike(BiFunction<SQLField, String, Expression> namedOperator);
 
-    IPredicate in(TeNamedOperator<SQLField> namedOperator, int size);
+    CompoundPredicate in(TeNamedOperator<SQLField> namedOperator, int size);
 
-    IPredicate notIn(TeNamedOperator<SQLField> namedOperator, int size);
+    CompoundPredicate notIn(TeNamedOperator<SQLField> namedOperator, int size);
 
-    Expression mod(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundExpression mod(BiFunction<SQLField, String, Expression> namedOperator);
 
-    Expression plus(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundExpression plus(BiFunction<SQLField, String, Expression> namedOperator);
 
-    Expression minus(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundExpression minus(BiFunction<SQLField, String, Expression> namedOperator);
 
-    Expression times(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundExpression times(BiFunction<SQLField, String, Expression> namedOperator);
 
-    Expression divide(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundExpression divide(BiFunction<SQLField, String, Expression> namedOperator);
 
-    Expression bitwiseAnd(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundExpression bitwiseAnd(BiFunction<SQLField, String, Expression> namedOperator);
 
-    Expression bitwiseOr(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundExpression bitwiseOr(BiFunction<SQLField, String, Expression> namedOperator);
 
-    Expression xor(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundExpression xor(BiFunction<SQLField, String, Expression> namedOperator);
 
-    Expression rightShift(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundExpression rightShift(BiFunction<SQLField, String, Expression> namedOperator);
 
-    Expression leftShift(BiFunction<SQLField, String, Expression> namedOperator);
+    CompoundExpression leftShift(BiFunction<SQLField, String, Expression> namedOperator);
 
 
 }

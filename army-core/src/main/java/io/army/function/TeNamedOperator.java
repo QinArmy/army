@@ -1,6 +1,7 @@
 package io.army.function;
 
 import io.army.criteria.Expression;
+import io.army.criteria.RowExpression;
 import io.army.criteria.TypeInfer;
 import io.army.criteria.impl.SQLs;
 
@@ -16,7 +17,7 @@ import io.army.criteria.impl.SQLs;
 @FunctionalInterface
 public interface TeNamedOperator<E extends Expression> {
 
-    Expression apply(E exp, String paramName, int size);
+    RowExpression apply(E exp, String paramName, int size);
 
 
 }

@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.Item;
+import io.army.criteria.SubQuery;
 import io.army.criteria.UndoneFunction;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._FunctionField;
 import io.army.criteria.impl.inner._ParensRowSet;
 import io.army.criteria.impl.inner._RowSet;

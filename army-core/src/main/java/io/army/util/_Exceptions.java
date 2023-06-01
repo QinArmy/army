@@ -6,7 +6,6 @@ import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
 import io.army.bean.ObjectAccessException;
 import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl.inner.*;
@@ -656,19 +655,19 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static CriteriaException namedParamsInNonBatch(NamedParam.NamedMulti param) {
         String m = String.format("Couldn't exist named parameters[name:%s,size:%s] in non-batch statement."
-                , param.name(), param.valueSize());
+                , param.name(), param.columnSize());
         return new CriteriaException(m);
     }
 
     public static CriteriaException namedParamNotMatch(SqlValueParam.NamedMultiValue param, @Nullable Object value) {
         String m = String.format("named value[name:%s,size:%s] value[%s] isn't %s."
-                , param.name(), param.valueSize(), _ClassUtils.safeClassName(value), Collection.class.getName());
+                , param.name(), param.columnSize(), _ClassUtils.safeClassName(value), Collection.class.getName());
         return new CriteriaException(m);
     }
 
     public static CriteriaException namedMultiParamSizeError(SqlValueParam.NamedMultiValue param, int size) {
         String m = String.format("named collection parameters[name:%s,size:%s] value size[%s] error."
-                , param.name(), param.valueSize(), size);
+                , param.name(), param.columnSize(), size);
         return new CriteriaException(m);
     }
 
@@ -951,6 +950,12 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static IllegalArgumentException notArrayMappingType(MappingType type) {
         String m = String.format("%s isn't %s type.", type, MappingType.SqlArrayType.class.getName());
         return new IllegalArgumentException(m);
+    }
+
+
+    public static CriteriaException operatorError(Object operator, Dialect dialect) {
+        String m = String.format("%s is not supported by %s.", operator, dialect);
+        return new CriteriaException(m);
     }
 
 

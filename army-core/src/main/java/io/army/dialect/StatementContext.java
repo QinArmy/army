@@ -189,7 +189,7 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
             throw new IllegalArgumentException();
         } else if (!(value instanceof Collection)) {
             throw _Exceptions.namedParamNotMatch((SqlValueParam.NamedMultiValue) namedLiteral, value);
-        } else if (((Collection<?>) value).size() == ((SqlValueParam.NamedMultiValue) namedLiteral).valueSize()) {
+        } else if (((Collection<?>) value).size() == ((SqlValueParam.NamedMultiValue) namedLiteral).columnSize()) {
 
             final ArmyParser parser = this.parser;
             final TypeMeta paramMeta = namedLiteral.typeMeta();
@@ -281,7 +281,7 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
     private static void appendMultiParamPlaceholder(final StringBuilder sqlBuilder
             , final SqlValueParam.MultiValue sqlParam) {
         final int paramSize;
-        paramSize = sqlParam.valueSize();
+        paramSize = sqlParam.columnSize();
         assert paramSize > 0;
         for (int i = 0; i < paramSize; i++) {
             if (i > 0) {

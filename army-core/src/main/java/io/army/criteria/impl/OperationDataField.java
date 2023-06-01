@@ -65,12 +65,12 @@ abstract class OperationDataField extends OperationExpression.OperationSimpleExp
 
     @Override
     public final CompoundPredicate in(TeNamedOperator<SQLField> namedOperator, int size) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.IN, namedOperator.apply(this, this.fieldName(), size));
+        return Expressions.inPredicate(this, false, namedOperator.apply(this, this.fieldName(), size));
     }
 
     @Override
     public final CompoundPredicate notIn(TeNamedOperator<SQLField> namedOperator, int size) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_IN, namedOperator.apply(this, this.fieldName(), size));
+        return Expressions.inPredicate(this, true, namedOperator.apply(this, this.fieldName(), size));
     }
 
     @Override

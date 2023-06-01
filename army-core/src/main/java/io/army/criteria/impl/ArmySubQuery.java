@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SubValues;
-import io.army.criteria.dialect.SubQuery;
+import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._DerivedTable;
 
 /**

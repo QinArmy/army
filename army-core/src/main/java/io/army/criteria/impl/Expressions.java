@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._DerivedTable;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -97,18 +96,41 @@ abstract class Expressions {
         return new ScalarExpression(validateScalarSubQuery(subQuery), subQuery);
     }
 
-    static OperationPredicate existsPredicate(final UnaryBooleanOperator operator, final @Nullable SubQuery operand) {
+    static OperationPredicate existsPredicate(final boolean not, final @Nullable SubQuery operand) {
         if (operand == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
-        switch (operator) {
-            case NOT_EXISTS:
-            case EXISTS:
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(operator);
+        validateSubQueryContext(operand);
+        return new ExistsPredicate(not, operand);
+    }
+
+    static CompoundPredicate inPredicate(final ExpressionElement left, final boolean not,
+                                         final @Nullable RowElement right) {
+        if (right == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (right instanceof SubQuery) {
+            validateSubQueryContext((SubQuery) right);
+            final int rightSize;
+            rightSize = ((ArmySubQuery) right).refAllSelection().size();
+            if (left instanceof Expression && rightSize != 1) {
+                String m = String.format("Left operand of IN  is expression but subquery selection count is %s",
+                        rightSize);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            } else if (left instanceof RowExpression) {
+                if (left instanceof ArmyRowExpression.DelayRow) {
+                    //TODO
+                } else if (rightSize != ((ArmyRowExpression) left).columnSize()) {
+                    String m = String.format("Left operand of IN  is row expression and column size is %s, but subquery selection count is %s",
+                            ((ArmyRowExpression) left).columnSize(), rightSize);
+                    throw ContextStack.clearStackAndCriteriaError(m);
+                }
+            }
+        } else if (!(right instanceof ArmyRowExpression)) {
+            String m = String.format("don't right operand %s", right);
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
-        return new ExistsPredicate(operator, operand);
+
+        return new InOperationPredicate(left, not, right);
     }
 
 
@@ -138,22 +160,8 @@ abstract class Expressions {
     static CompoundPredicate dualPredicate(final Expression left, final DualBooleanOperator operator, final Expression right) {
         if (!(left instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(left);
-        }
-        switch (operator) {
-            case IN:
-            case NOT_IN: {
-                if (!(right instanceof OperationExpression
-                        || right instanceof NonOperationExpression.MultiValueExpression)) {
-                    throw NonOperationExpression.nonOperationExpression(right);
-                }
-            }
-            break;
-            default: {
-                if (!(right instanceof OperationExpression)) {
-                    throw NonOperationExpression.nonOperationExpression(right);
-                }
-            }
-
+        } else if (!(right instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(right);
         }
         return new StandardDualPredicate(left, operator, right);
     }
@@ -218,20 +226,6 @@ abstract class Expressions {
                 throw _Exceptions.unexpectedEnum(operator);
         }
         return new SubQueryPredicate(left, operator, queryOperator, subQuery);
-    }
-
-    static CompoundPredicate inOperator(final OperationExpression left, final DualBooleanOperator operator,
-                                        final SubQuery subQuery) {
-        switch (operator) {
-            case IN:
-            case NOT_IN:
-                assertColumnSubQuery(operator, null, subQuery);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(operator);
-        }
-        return new SubQueryPredicate(left, operator, null, subQuery);
-
     }
 
 
@@ -518,10 +512,7 @@ abstract class Expressions {
      * @see #array(SubQuery)
      */
     private static MappingType validateScalarSubQuery(final SubQuery subQuery) {
-        if (((CriteriaContextSpec) subQuery).getContext().getOuterContext() != ContextStack.peek()) {
-            String m = String.format("outer context of %s don't match.", subQuery);
-            throw ContextStack.clearStackAndCriteriaError(m);
-        }
+        validateSubQueryContext(subQuery);
         final List<? extends Selection> selectionList;
         selectionList = ((_DerivedTable) subQuery).refAllSelection();
         if (selectionList.size() != 1) {
@@ -535,12 +526,19 @@ abstract class Expressions {
         return (MappingType) typeMeta;
     }
 
+    private static void validateSubQueryContext(final SubQuery subQuery) {
+        if (((CriteriaContextSpec) subQuery).getContext().getOuterContext() != ContextStack.peek()) {
+            String m = String.format("outer context of %s don't match.", subQuery);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+    }
+
     /**
      * @see #compareQueryPredicate(OperationExpression, DualBooleanOperator, QueryOperator, SubQuery)
-     * @see #inOperator(OperationExpression, DualBooleanOperator, SubQuery)
      */
     private static void assertColumnSubQuery(final DualBooleanOperator operator
             , final @Nullable QueryOperator queryOperator, final SubQuery subQuery) {
+        validateSubQueryContext(subQuery);
         if (((_DerivedTable) subQuery).refAllSelection().size() != 1) {
             StringBuilder builder = new StringBuilder();
             builder.append("Operator ")
@@ -983,54 +981,37 @@ abstract class Expressions {
 
     private static final class ExistsPredicate extends OperationPredicate.OperationCompoundPredicate {
 
-        private final UnaryBooleanOperator operator;
+        private final boolean not;
 
-        private final SubQuery subQuery;
+        private final ArmySubQuery subQuery;
 
         /**
-         * @see #existsPredicate(UnaryBooleanOperator, SubQuery)
+         * @see #existsPredicate(boolean, SubQuery)
          */
-        private ExistsPredicate(UnaryBooleanOperator operator, SubQuery subQuery) {
-            this.operator = operator;
-            this.subQuery = subQuery;
+        private ExistsPredicate(boolean not, SubQuery subQuery) {
+            this.not = not;
+            this.subQuery = (ArmySubQuery) subQuery;
         }
 
         @Override
         public void appendSql(final _SqlContext context) {
-            switch (this.operator) {
-                case EXISTS:
-                case NOT_EXISTS:
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(this.operator);
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+            if (this.not) {
+                sqlBuilder.append(_Constant.SPACE_NOT);
             }
-
-            context.sqlBuilder().append(this.operator.spaceOperator);
+            sqlBuilder.append(_Constant.SPACE_EXISTS);
             context.parser().subQuery(this.subQuery, context);
-        }
-
-        @Override
-        public int hashCode() {
-            return super.hashCode();
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            return obj == this;
         }
 
         @Override
         public String toString() {
             final StringBuilder builder = new StringBuilder();
-            switch (this.operator) {
-                case EXISTS:
-                case NOT_EXISTS:
-                    builder.append(this.operator.spaceOperator)
-                            .append(this.subQuery);
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(this.operator);
+            if (this.not) {
+                builder.append(_Constant.SPACE_NOT);
             }
+            builder.append(_Constant.SPACE_EXISTS)
+                    .append(this.subQuery);
             return builder.toString();
         }
 
@@ -1056,9 +1037,15 @@ abstract class Expressions {
 
         @Override
         public final void appendSql(final _SqlContext context) {
+            final Database database;
+            database = context.database();
             final Operator.SqlDualBooleanOperator operator = this.operator;
-            if (!(operator instanceof DualBooleanOperator) && context.database() != operator.database()) {
+            if (!(operator instanceof DualBooleanOperator) && database != operator.database()) {
                 throw unsupportedOperator(operator, context.database());
+            }
+
+            if (operator == DualBooleanOperator.NULL_SAFE_EQUAL && database != Database.MySQL) {
+                throw _Exceptions.operatorError(operator, context.dialect());
             }
 
             final StringBuilder sqlBuilder;
@@ -1494,7 +1481,7 @@ abstract class Expressions {
         private final SubQuery subQuery;
 
         private SubQueryPredicate(OperationExpression left, DualBooleanOperator operator,
-                                  @Nullable QueryOperator queryOperator, SubQuery subQuery) {
+                                  QueryOperator queryOperator, SubQuery subQuery) {
             this.left = left;
             this.operator = operator;
             this.queryOperator = queryOperator;
@@ -1506,30 +1493,19 @@ abstract class Expressions {
         public void appendSql(final _SqlContext context) {
 
             this.left.appendSql(context);
-
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(this.operator.spaceOperator);
-
-            final QueryOperator queryOperator = this.queryOperator;
-            if (queryOperator != null) {
-                sqlBuilder.append(queryOperator.spaceWord);
-            }
+            context.sqlBuilder()
+                    .append(this.operator.spaceOperator)
+                    .append(this.queryOperator.spaceWord);
             context.parser().subQuery(this.subQuery, context);
         }
 
         @Override
         public String toString() {
-            final StringBuilder builder = new StringBuilder()
+            return _StringUtils.builder()
                     .append(this.left)
-                    .append(this.operator.spaceOperator);
-
-            final QueryOperator queryOperator = this.queryOperator;
-            if (queryOperator != null) {
-                builder.append(queryOperator.spaceWord);
-            }
-
-            return builder.append(this.subQuery)
+                    .append(this.operator.spaceOperator)
+                    .append(this.queryOperator.spaceWord)
+                    .append(this.subQuery)
                     .toString();
         }
 
@@ -1703,6 +1679,61 @@ abstract class Expressions {
 
 
     }//IsComparisonPredicates
+
+
+    private static final class InOperationPredicate extends OperationPredicate.OperationCompoundPredicate {
+
+        private final ArmyExpressionElement left;
+
+        private final boolean not;
+
+        private final RowElement right;
+
+
+        /**
+         * @see #inPredicate(ExpressionElement, boolean, RowElement)
+         */
+        private InOperationPredicate(ExpressionElement left, boolean not, RowElement right) {
+            this.left = (ArmyExpressionElement) left;
+            this.not = not;
+            this.right = right;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+
+            this.left.appendSql(context);
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+            if (this.not) {
+                sqlBuilder.append(_Constant.SPACE_NOT);
+            }
+            sqlBuilder.append(" IN");
+
+            final RowElement right = this.right;
+            if (right instanceof SubQuery) {
+                context.parser().subQuery((SubQuery) right, context);
+            } else {
+                ((ArmyRowExpression) right).appendSql(context);
+            }
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(this.left);
+
+            if (this.not) {
+                builder.append(" NOT");
+            }
+            builder.append(" IN");
+            return builder.append(this.right)
+                    .toString();
+        }
+
+
+    }//InOperationPredicate
 
 
     private static abstract class ArrayElementExpression extends OperationExpression.OperationSimpleExpression {

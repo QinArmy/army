@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.criteria.dialect.SubQuery;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 

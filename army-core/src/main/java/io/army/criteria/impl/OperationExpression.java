@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
@@ -53,6 +52,10 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, operand);
     }
 
+    @Override
+    public final CompoundPredicate nullSafeEqual(Expression operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.NULL_SAFE_EQUAL, operand);
+    }
 
     @Override
     public final CompoundPredicate equalAny(SubQuery subQuery) {
@@ -232,25 +235,14 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         return Expressions.isComparisonPredicate(this, true, operator, operand);
     }
 
-
     @Override
-    public final CompoundPredicate in(Expression operand) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.IN, operand);
+    public final CompoundPredicate in(RowElement row) {
+        return Expressions.inPredicate(this, false, row);
     }
 
     @Override
-    public final CompoundPredicate in(SubQuery subQuery) {
-        return Expressions.inOperator(this, DualBooleanOperator.IN, subQuery);
-    }
-
-    @Override
-    public final CompoundPredicate notIn(Expression operand) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_IN, operand);
-    }
-
-    @Override
-    public final CompoundPredicate notIn(SubQuery subQuery) {
-        return Expressions.inOperator(this, DualBooleanOperator.NOT_IN, subQuery);
+    public final CompoundPredicate notIn(RowElement row) {
+        return Expressions.inPredicate(this, true, row);
     }
 
     @Override
@@ -497,6 +489,10 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
             return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, funcRef.apply(this, value));
         }
 
+        @Override
+        public final <T> CompoundPredicate nullSafeEqual(BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value) {
+            return Expressions.dualPredicate(this, DualBooleanOperator.NULL_SAFE_EQUAL, funcRef.apply(this, value));
+        }
 
         @Override
         public final <T> CompoundPredicate less(BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
@@ -624,12 +620,12 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
         @Override
         public final CompoundPredicate in(TeNamedOperator<SimpleExpression> funcRef, String paramName, int size) {
-            return Expressions.dualPredicate(this, DualBooleanOperator.IN, funcRef.apply(this, paramName, size));
+            return Expressions.inPredicate(this, false, funcRef.apply(this, paramName, size));
         }
 
         @Override
         public final CompoundPredicate notIn(TeNamedOperator<SimpleExpression> funcRef, String paramName, int size) {
-            return Expressions.dualPredicate(this, DualBooleanOperator.NOT_IN, funcRef.apply(this, paramName, size));
+            return Expressions.inPredicate(this, true, funcRef.apply(this, paramName, size));
         }
 
         @Override

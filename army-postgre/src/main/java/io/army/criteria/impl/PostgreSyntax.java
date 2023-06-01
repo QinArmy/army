@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
 import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.meta.FieldMeta;
@@ -177,16 +176,23 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     }
 
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">Row Constructors</a>
+     */
     public static RowExpression row(ExpressionElement... column) {
         return CriteriaSupports.rowElement(false, column);
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">Row Constructors</a>
+     */
     public static RowExpression row(Consumer<Statement._ElementSpaceClause> consumer) {
         return CriteriaSupports.staticRowElement(false, consumer);
     }
 
     /**
      * @param space see {@link SQLs#SPACE}
+     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">Row Constructors</a>
      */
     public static RowExpression row(SymbolSpace space, Consumer<Statement._ElementConsumer> consumer) {
         if (space != SQLs.SPACE) {

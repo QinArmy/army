@@ -22,7 +22,8 @@ import java.util.*;
  * @since 1.0
  */
 
-abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueExpression {
+abstract class MultiLiteralExpression extends OperationRowExpression implements
+        SqlValueParam.MultiValue, FunctionArg {
 
     /**
      * @throws CriteriaException throw when <ul>
@@ -40,8 +41,8 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
             throw ContextStack.clearStackAndNullPointer();
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
-        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
-            expression = new DelayAnonymousMultiLiteral((DelayTypeInfer) infer, values);
+        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) infer).isDelay()) {
+            expression = new DelayAnonymousMultiLiteral((TypeInfer.DelayTypeInfer) infer, values);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw SingleParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
         } else {
@@ -61,8 +62,8 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
             throw ContextStack.clearStackAndNullPointer();
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
-        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
-            expression = new DelayAnonymousMultiLiteral(values, (DelayTypeInfer) infer);
+        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) infer).isDelay()) {
+            expression = new DelayAnonymousMultiLiteral(values, (TypeInfer.DelayTypeInfer) infer);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw SingleParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
         } else {
@@ -89,8 +90,8 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
             throw nameHaveNoText();
         } else if (size < 1) {
             throw sizeLessThanOne(size);
-        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
-            expression = new DelayNamedMultiLiteral((DelayTypeInfer) infer, name, size);
+        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) infer).isDelay()) {
+            expression = new DelayNamedMultiLiteral((TypeInfer.DelayTypeInfer) infer, name, size);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw SingleParamExpression.typeInferReturnCodecField("encodingNamedMultiLiteral");
         } else {
@@ -170,6 +171,10 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
             this.valueList = unmodifiedList;
         }
 
+        @Override
+        public final int columnSize() {
+            return this.valueList.size();
+        }
 
         @Override
         public final void appendSql(final _SqlContext context) {
@@ -189,11 +194,6 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
             }
         }
 
-
-        @Override
-        public final int valueSize() {
-            return this.valueList.size();
-        }
 
         @Override
         public final String toString() {
@@ -377,7 +377,7 @@ abstract class MultiLiteralExpression extends NonOperationExpression.MultiValueE
         }
 
         @Override
-        public final int valueSize() {
+        public final int columnSize() {
             return this.valueSize;
         }
 

@@ -3,7 +3,6 @@ package io.army.dialect;
 import io.army.ArmyException;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._SQLConsultant;

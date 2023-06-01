@@ -21,7 +21,7 @@ abstract class SqlParams implements SQLParam {
     static MultiParam multi(final NamedParam.NamedMulti namedParam, final Collection<?> values) {
         final List<?> valueList;
         valueList = _Collections.asUnmodifiableList(values);
-        if (valueList.size() != namedParam.valueSize()) {
+        if (valueList.size() != namedParam.columnSize()) {
             throw _Exceptions.namedMultiParamSizeError(namedParam, values.size());
         }
         return new SqlMultiParam(namedParam.typeMeta(), valueList);
@@ -71,7 +71,7 @@ abstract class SqlParams implements SQLParam {
         }
 
         @Override
-        public int valueSize() {
+        public int columnSize() {
             return this.valueList.size();
         }
 

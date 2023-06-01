@@ -1,6 +1,5 @@
 package io.army.criteria;
 
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.SQLs;
 import io.army.function.OptionalClauseOperator;
 import io.army.lang.Nullable;
@@ -11,8 +10,7 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.function.BiFunction;
 
-import static io.army.dialect.Database.H2;
-import static io.army.dialect.Database.PostgreSQL;
+import static io.army.dialect.Database.*;
 
 /**
  * Interface representing the sql expression, eg: column,function.
@@ -42,6 +40,14 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
     CompoundPredicate equal(Expression operand);
+
+    /**
+     * MySQL
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/comparison-operators.html#operator_equal-to">NULL-safe equal.</a>
+     */
+    @Support({MySQL})
+    CompoundPredicate nullSafeEqual(Expression operand);
 
 
     /**
@@ -164,14 +170,9 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
 
     CompoundPredicate isNot(SQLs.IsComparisonWord operator, Expression operand);
 
-    CompoundPredicate in(Expression operand);
+    CompoundPredicate in(RowElement row);
 
-    CompoundPredicate in(SubQuery operand);
-
-    CompoundPredicate notIn(Expression operand);
-
-    CompoundPredicate notIn(SubQuery subQuery);
-
+    CompoundPredicate notIn(RowElement row);
 
     CompoundPredicate like(Expression pattern);
 

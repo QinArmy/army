@@ -1,7 +1,6 @@
 package io.army.dialect.postgre;
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.SubQuery;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
