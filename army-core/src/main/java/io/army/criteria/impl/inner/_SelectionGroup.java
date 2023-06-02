@@ -1,7 +1,6 @@
 package io.army.criteria.impl.inner;
 
 
-import io.army.criteria.RowExpression;
 import io.army.criteria.Selection;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -16,7 +15,7 @@ import java.util.List;
  *
  * @since 1.0
  */
-public interface _SelectionGroup extends _SelectItem, RowExpression {
+public interface _SelectionGroup extends _SelectItem {
 
     String tableAlias();
 

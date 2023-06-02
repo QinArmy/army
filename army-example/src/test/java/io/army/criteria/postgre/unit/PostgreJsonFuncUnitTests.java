@@ -5,6 +5,7 @@ import io.army.criteria.SQLExpression;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl.SQLsSyntax;
 import io.army.criteria.postgre.mapping.MyRowType;
 import io.army.criteria.postgre.mapping.MySubRowType;
 import io.army.criteria.postgre.mapping.TwoIntType;
@@ -26,6 +27,7 @@ import java.util.function.Consumer;
 import static io.army.criteria.impl.Postgres.SymbolPeriod;
 import static io.army.criteria.impl.Postgres.SymbolSpace;
 import static io.army.criteria.impl.Postgres.*;
+import static io.army.criteria.impl.SQLs.row;
 import static io.army.criteria.impl.SQLs.*;
 
 public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
@@ -45,7 +47,7 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                 .comma(toJsonb(SQLs.literalValue("Fred said \"Hi.\""))::as, "json2")
                 .comma(toJson(row(SQLs.literalValue(1), SQLs.literalValue(2), row(SQLs.literalValue(randomPerson()))))::as, "json3")
                 .comma(toJsonb(row(SQLs.literalValue(1), SQLs.literalValue(2), row(SQLs.literalValue(randomPerson()))))::as, "json4")
-                .comma(toJsonb(space("b", PERIOD, ASTERISK))::as, "json5")
+                .comma(toJsonb(SQLsSyntax.space("b", PERIOD, ASTERISK))::as, "json5")
                 .from(Postgres.subQuery()
                         .select(ChinaRegion_.id, ChinaRegion_.name)
                         .from(ChinaRegion_.T, AS, "c")

@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
+import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 
 import java.util.BitSet;
@@ -28,6 +29,7 @@ abstract class SQLsSyntax extends Functions {
      */
     SQLsSyntax() {
     }
+
 
 
     public interface Modifier extends Query.SelectModifier {
@@ -994,6 +996,15 @@ abstract class SQLsSyntax extends Functions {
 
     public static RowExpression row(Consumer<Consumer<Object>> consumer) {
         return RowExpressions.row(consumer);
+    }
+
+    public static RowElement space(String derivedAlias, SymbolPeriod period,
+                                   SymbolAsterisk asterisk) {
+        return ContextStack.peek().row(derivedAlias, period, asterisk);
+    }
+
+    public static RowElement space(String tableAlias, SymbolPeriod period, TableMeta<?> table) {
+        return ContextStack.peek().row(tableAlias, period, table); // register derived row
     }
 
 

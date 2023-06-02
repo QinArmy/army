@@ -163,8 +163,8 @@ interface CriteriaContext {
     void insertColumnList(List<FieldMeta<?>> columnList);
 
 
-    ArmyRowExpression row(String alias, SQLs.SymbolPeriod period, TableMeta<?> table);
+    RowElement row(String alias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
-    ArmyRowExpression row(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
+    RowElement row(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
 
 }

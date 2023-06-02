@@ -60,20 +60,12 @@ abstract class CriteriaSupports {
     }
 
 
-    static ExpressionConsumer expressionConsumer(boolean required, Consumer<? super ArmyExpression> consumer) {
-        return new ExpressionConsumer(required, consumer);
-    }
-
-    static ExpressionSpaceClause expressionSpaceClause(boolean required, Consumer<? super ArmyExpression> consumer) {
-        return new ExpressionSpaceClause(required, consumer);
-    }
-
 
     static ElementSpaceClause elementSpaceClause(boolean required, Consumer<? super ArmySQLExpression> consumer) {
         return new ElementSpaceClause(required, consumer);
     }
 
-    static ElementConsumer elementConsumer(boolean required, Consumer<? super ArmySQLExpression> consumer) {
+    static ElementConsumer elementConsumer(boolean required, Consumer<? super RowElement> consumer) {
         return new ElementConsumer(required, consumer);
     }
 
@@ -85,46 +77,6 @@ abstract class CriteriaSupports {
         return new ElementObjectConsumer(consumer);
     }
 
-    static RowExpression rowElement(final boolean required, final SQLExpression... columns) {
-        if (required && columns.length == 0) {
-            throw CriteriaUtils.dontAddAnyItem();
-        }
-
-        final List<ArmySQLExpression> columnList;
-        columnList = _Collections.arrayList(columns.length);
-        for (SQLExpression exp : columns) {
-            if (!(exp instanceof ArmySQLExpression)) {
-                throw CriteriaUtils.funcArgError("ROW", exp);
-            }
-            columnList.add((ArmySQLExpression) exp);
-        }
-        return new RowExpressionImpl(columnList);
-    }
-
-
-    static RowExpression staticRowElement(final boolean required,
-                                          final Consumer<Statement._ElementSpaceClause> consumer) {
-        final List<ArmySQLExpression> columnList = _Collections.arrayList();
-        final ElementSpaceClause clause;
-        clause = elementSpaceClause(required, columnList::add);
-
-        consumer.accept(clause);
-
-        clause.endClause();
-        return new RowExpressionImpl(columnList);
-    }
-
-    static RowExpression dynamicRowElement(final boolean required,
-                                           final Consumer<Statement._ElementConsumer> consumer) {
-        final List<ArmySQLExpression> columnList = _Collections.arrayList();
-        final ElementConsumer clause;
-        clause = elementConsumer(required, columnList::add);
-
-        consumer.accept(clause);
-
-        clause.endConsumer();
-        return new RowExpressionImpl(columnList);
-    }
 
 
     static Returnings returningBuilder(Consumer<_SelectItem> consumer) {
@@ -1382,11 +1334,11 @@ abstract class CriteriaSupports {
 
         private final boolean required;
 
-        private final Consumer<? super ArmySQLExpression> consumer;
+        private final Consumer<? super RowElement> consumer;
 
         private Boolean state;
 
-        private ElementConsumer(boolean required, Consumer<? super ArmySQLExpression> consumer) {
+        private ElementConsumer(boolean required, Consumer<? super RowElement> consumer) {
             this.required = required;
             this.consumer = consumer;
         }
@@ -1404,7 +1356,7 @@ abstract class CriteriaSupports {
             } else if (!(exp instanceof ArmySQLExpression)) {
                 throw ContextStack.clearStackAndNonArmyExpression();
             }
-            this.consumer.accept((ArmySQLExpression) exp);
+            this.consumer.accept(exp);
             return this;
         }
 
@@ -1418,6 +1370,9 @@ abstract class CriteriaSupports {
                                                  SQLs.SymbolAsterisk asterisk) {
             return this.accept(derivedAsterisk(derivedAlias, period, asterisk));
         }
+
+
+        private Statement._ElementConsumer
 
         void endConsumer() {
             if (this.state == null && this.required) {

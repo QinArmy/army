@@ -5,7 +5,6 @@ import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.meta.FieldMeta;
-import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._StringUtils;
 
@@ -177,40 +176,18 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
 
     /**
+     * <p>
+     * create empty row. non-empty row see {@link SQLs#row(Object)}
+     * </p>
+     *
+     * @see SQLs#row(Object)
+     * @see SQLs#row(SubQuery)
+     * @see SQLs#row(Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">Row Constructors</a>
      */
-    public static RowExpression row(SQLExpression... column) {
-        return CriteriaSupports.rowElement(false, column);
+    public static RowExpression row() {
+        return RowExpressions.emptyRow();
     }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">Row Constructors</a>
-     */
-    public static RowExpression row(Consumer<Statement._ElementSpaceClause> consumer) {
-        return CriteriaSupports.staticRowElement(false, consumer);
-    }
-
-    /**
-     * @param space see {@link SQLs#SPACE}
-     * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">Row Constructors</a>
-     */
-    public static RowExpression row(SymbolSpace space, Consumer<Statement._ElementConsumer> consumer) {
-        if (space != SQLs.SPACE) {
-            throw CriteriaUtils.errorSymbol(space);
-        }
-        return CriteriaSupports.dynamicRowElement(false, consumer);
-    }
-
-
-    public static SQLExpression space(String derivedAlias, SqlSyntax.SymbolPeriod period,
-                                      SqlSyntax.SymbolAsterisk asterisk) {
-        return CriteriaSupports.derivedAsterisk(derivedAlias, period, asterisk);
-    }
-
-    public static SQLExpression space(String tableAlias, SqlSyntax.SymbolPeriod period, TableMeta<?> table) {
-        return ContextStack.peek().row(tableAlias, period, table); // register derived row
-    }
-
 
 
 

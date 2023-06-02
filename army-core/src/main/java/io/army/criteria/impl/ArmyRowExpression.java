@@ -15,11 +15,4 @@ interface ArmyRowExpression extends ArmySQLExpression, RowExpression, FunctionAr
     int columnSize();
 
 
-    interface DelayRow extends ArmyRowExpression {
-
-        boolean isDelay();
-
-    }
-
-
 }

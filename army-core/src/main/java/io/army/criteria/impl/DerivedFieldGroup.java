@@ -1,9 +1,10 @@
 package io.army.criteria.impl;
 
+import io.army.criteria.RowElement;
 import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.criteria.impl.inner._SelectionMap;
 
-interface DerivedFieldGroup extends _SelectionGroup {
+interface DerivedFieldGroup extends _SelectionGroup, RowElement.DelayElement {
 
 
     /**

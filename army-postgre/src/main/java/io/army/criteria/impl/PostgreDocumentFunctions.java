@@ -2056,7 +2056,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @throws CriteriaException throw when<ul>
      *                           <li>exp is not operable expression,eg: {@link SQLs#DEFAULT}</li>
      *                           <li>exp is multi value expression,eg:{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                           <li>exp is {@link Postgres#space(String, SymbolPeriod, TableMeta)},should use {@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *                           <li>exp is {@link SQLsSyntax#space(String, SymbolPeriod, TableMeta)},should use {@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
      *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_json ( anyelement ) → json</a>
      */
@@ -2077,7 +2077,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @throws CriteriaException throw when<ul>
      *                           <li>exp is not operable expression,eg: {@link SQLs#DEFAULT}</li>
      *                           <li>exp is multi value expression,eg:{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                           <li>exp is {@link Postgres#space(String, SymbolPeriod, TableMeta)},should use {@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *                           <li>exp is {@link SQLsSyntax#space(String, SymbolPeriod, TableMeta)},should use {@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
      *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_jsonb ( anyelement ) → jsonb</a>
      */
@@ -2163,8 +2163,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
@@ -2187,8 +2187,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see SQLs#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLs#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
@@ -2210,8 +2210,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
@@ -2234,8 +2234,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
@@ -2258,7 +2258,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
@@ -2281,7 +2281,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
@@ -2303,8 +2303,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
@@ -2321,8 +2321,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param period see {@link SQLs#PERIOD}
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
@@ -2346,8 +2346,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → jsonb<br/>
@@ -2370,8 +2370,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
@@ -2393,8 +2393,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
      *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → json<br/>
@@ -2411,8 +2411,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param period see {@link SQLs#PERIOD}
-     * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see Postgres#space(String, SymbolPeriod, TableMeta)
+     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.

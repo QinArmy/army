@@ -7,6 +7,7 @@ import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -312,6 +313,10 @@ abstract class NonOperationExpression implements ArmyExpression {
         throw unsupportedOperation(this);
     }
 
+    @Override
+    public final <R extends UnaryResult> R space(Function<Expression, R> funcRef) {
+        throw unsupportedOperation(this);
+    }
 
     @Override
     public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator, Expression right, M modifier, Expression optionalExp) {

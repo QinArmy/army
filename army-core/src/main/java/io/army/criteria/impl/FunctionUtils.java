@@ -455,23 +455,6 @@ abstract class FunctionUtils {
     }
 
 
-    static SimpleExpression staticVarargsElementFunc(String name, final boolean required,
-                                                     Consumer<Statement._ElementSpaceClause> consumer,
-                                                     TypeMeta returnType) {
-        final List<ArmySQLExpression> argList = _Collections.arrayList();
-        final CriteriaSupports.ElementSpaceClause clause;
-        clause = CriteriaSupports.elementSpaceClause(required, argList::add);
-        consumer.accept(clause);
-        clause.endClause();
-
-        final SimpleExpression func;
-        if (argList.size() == 0) {
-            func = new ZeroArgFunction(name, returnType);
-        } else {
-            func = new MultiArgFunctionExpression(name, argList, returnType);
-        }
-        return func;
-    }
 
     static SimpleExpression dynamicVarargsElementFunc(String name, SqlSyntax.SymbolSpace space, final boolean required,
                                                       Consumer<Statement._ElementConsumer> consumer,

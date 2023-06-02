@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.RowElement;
 import io.army.criteria.Selection;
 import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.criteria.impl.inner._SelectionMap;
@@ -13,6 +14,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
@@ -75,12 +77,13 @@ abstract class SelectionGroups {
         }
     }
 
-    private static void appendDerivedRow(final String derivedAlias, final List<? extends Selection> selectionList,
-                                         final _SqlContext context) {
+    private static void appendDerivedAsRow(final DerivedFieldGroup group, final _SqlContext context) {
         final StringBuilder builder = context.sqlBuilder();
 
         final DialectParser dialect = context.parser();
-        final String safeDerivedAlias = dialect.identifier(derivedAlias);
+        final String safeDerivedAlias = dialect.identifier(group.tableAlias());
+        final List<? extends Selection> selectionList;
+        selectionList = group.selectionList();
         final int size = selectionList.size();
         assert size > 0;
 
@@ -98,8 +101,60 @@ abstract class SelectionGroups {
 
     }
 
+    private static <T> void appendTableAsRow(final TableFieldGroupImpl<T> group, final _SqlContext context) {
+        final List<FieldMeta<T>> fieldList;
+        fieldList = group.fieldList;
+        final int size = fieldList.size();
+        assert size > 0;
+        final StringBuilder builder = context.sqlBuilder();
+
+        final String tableAlias;
+        tableAlias = group.tableAlias;
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
+                builder.append(_Constant.SPACE_COMMA);
+            }
+            context.appendField(tableAlias, fieldList.get(i));
+        }
+
+    }
+
+
+    private static void appendGroupAsRowElement(final _SelectionGroup group, final _SqlContext context) {
+        switch (context.database()) {
+            case MySQL: {
+                if (group instanceof TableFieldGroupImpl) {
+                    appendTableAsRow((TableFieldGroupImpl<?>) group, context);
+                } else {
+                    appendDerivedAsRow((DerivedFieldGroup) group, context);
+                }
+            }
+            break;
+            case PostgreSQL: {
+                final StringBuilder sqlBuilder;
+                sqlBuilder = context.sqlBuilder()
+                        .append(_Constant.SPACE);
+                context.parser().identifier(group.tableAlias(), sqlBuilder);
+                sqlBuilder.append(_Constant.POINT)
+                        .append('*');
+            }
+            break;
+            case Oracle:
+            case H2:
+            default:
+                throw _Exceptions.unexpectedEnum(context.database());
+        }
+    }
+
 
     /*################################## blow static inner class  ##################################*/
+
+
+    interface RowElementGroup extends RowElement, _SelectionGroup {
+
+        void appendRowElement(_SqlContext context);
+
+    }
 
 
     /**
@@ -108,7 +163,7 @@ abstract class SelectionGroups {
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
      * </p>
      */
-    private static final class InsertTableGroup<T> extends OperationRowExpression implements _SelectionGroup._TableFieldGroup, ArmyRowExpression {
+    private static final class InsertTableGroup<T> implements _SelectionGroup._TableFieldGroup {
 
         private final TableMeta<T> insertTable;
 
@@ -116,11 +171,6 @@ abstract class SelectionGroups {
             this.insertTable = insertTable;
         }
 
-
-        @Override
-        public int columnSize() {
-            return this.insertTable.fieldList().size();
-        }
 
         @Override
         public String tableAlias() {
@@ -157,27 +207,6 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final List<FieldMeta<T>> fieldList;
-            fieldList = this.insertTable.fieldList();
-
-            final int fieldSize;
-            fieldSize = fieldList.size();
-
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
-
-            for (int i = 0; i < fieldSize; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
-                }
-                context.appendField(fieldList.get(i));
-
-            }
-
-        }
-
-        @Override
         public List<? extends Selection> selectionList() {
             return this.insertTable.fieldList();
         }
@@ -196,7 +225,7 @@ abstract class SelectionGroups {
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
      * </p>
      */
-    static final class TableFieldGroupImpl<T> extends OperationRowExpression implements _SelectionGroup._TableFieldGroup, ArmyRowExpression {
+    static final class TableFieldGroupImpl<T> implements _SelectionGroup._TableFieldGroup, RowElementGroup {
 
         private final String tableAlias;
 
@@ -222,11 +251,6 @@ abstract class SelectionGroups {
 
 
         @Override
-        public int columnSize() {
-            return this.fieldList.size();
-        }
-
-        @Override
         public String tableAlias() {
             return this.tableAlias;
         }
@@ -239,6 +263,11 @@ abstract class SelectionGroups {
         @Override
         public boolean isLegalGroup(final @Nullable TableMeta<?> table) {
             return table != null && table == this.fieldList.get(0).tableMeta();
+        }
+
+        @Override
+        public void appendRowElement(final _SqlContext context) {
+            SelectionGroups.appendGroupAsRowElement(this, context);
         }
 
         @Override
@@ -264,21 +293,6 @@ abstract class SelectionGroups {
 
         }
 
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder builder = context.sqlBuilder();
-            final String tableAlias = this.tableAlias;
-
-            final List<FieldMeta<T>> fieldList = this.fieldList;
-            final int size = fieldList.size();
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                context.appendField(tableAlias, fieldList.get(i));
-            }
-
-        }
 
         @Override
         public String toString() {
@@ -308,7 +322,7 @@ abstract class SelectionGroups {
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
      * </p>
      */
-    private static final class DerivedSelectionGroup extends OperationRowExpression implements _SelectionGroup, ArmyRowExpression {
+    private static final class DerivedSelectionGroup implements _SelectionGroup {
 
         private final String derivedAlias;
 
@@ -320,19 +334,10 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public int columnSize() {
-            return this.selectionList.size();
-        }
-
-        @Override
         public void appendSelectItem(final _SqlContext context) {
             appendDerivedFieldGroup(this.derivedAlias, this.selectionList, context);
         }
 
-        @Override
-        public void appendSql(final _SqlContext context) {
-            appendDerivedRow(this.derivedAlias, this.selectionList, context);
-        }
 
         @Override
         public String tableAlias() {
@@ -351,8 +356,8 @@ abstract class SelectionGroups {
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
      * </p>
      */
-    private static final class DelayDerivedSelectionGroup extends OperationRowExpression implements DerivedFieldGroup, ArmyRowExpression,
-            ArmyRowExpression.DelayRow {
+    private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup, RowElementGroup,
+            RowElement.DelayElement {
 
         private final String derivedAlias;
 
@@ -368,13 +373,13 @@ abstract class SelectionGroups {
             return this.selectionList == null;
         }
 
+
         @Override
-        public int columnSize() {
-            final List<? extends Selection> selectionList = this.selectionList;
-            if (selectionList == null) {
-                throw new IllegalStateException("row(*) is delay");
+        public void appendRowElement(final _SqlContext context) {
+            if (this.selectionList == null) {
+                throw _Exceptions.castCriteriaApi();
             }
-            return selectionList.size();
+            SelectionGroups.appendGroupAsRowElement(this, context);
         }
 
         @Override
@@ -414,15 +419,6 @@ abstract class SelectionGroups {
             }
             appendDerivedFieldGroup(this.derivedAlias, selectionList, context);
 
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            final List<? extends Selection> selectionList = this.selectionList;
-            if (selectionList == null || selectionList.size() == 0) {
-                throw new CriteriaException("DerivedSelectionGroup no selection.");
-            }
-            appendDerivedRow(this.derivedAlias, selectionList, context);
         }
 
 

@@ -7,11 +7,17 @@ package io.army.criteria;
  *     <ul>
  *         <li>{@link SubQuery}</li>
  *         <li>{@link SQLExpression}</li>
+ *         <li>{@code  io.army.criteria.impl.SelectionGroups.RowElementGroup}</li>
  *     </ul>
  * </p>
  *
  * @since 1.0
  */
 public interface RowElement extends Item {
+
+    interface DelayElement {
+
+        boolean isDelay();
+    }
 
 }

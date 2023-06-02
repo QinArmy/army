@@ -907,13 +907,13 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public ArmyRowExpression row(String alias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+        public RowElement row(String alias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             String m = "current context don't support row(String alias, SQLs.SymbolPeriod period, TableMeta<?> table)";
             throw ContextStack.criteriaError(this, m);
         }
 
         @Override
-        public ArmyRowExpression row(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
+        public RowElement row(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
             String m = "current context don't support row(String alias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk";
             throw ContextStack.criteriaError(this, m);
         }
@@ -2085,8 +2085,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final ArmyRowExpression row(final @Nullable String alias, SQLs.SymbolPeriod period,
-                                           final @Nullable TableMeta<?> table) {
+        public final RowElement row(final @Nullable String alias, SQLs.SymbolPeriod period,
+                                    final @Nullable TableMeta<?> table) {
             if (this.isSelectClauseEnd()) {
                 throw ContextStack.criteriaError(this, "Error,SELECT clause have ended.");
             } else if (alias == null || table == null) {
@@ -2104,13 +2104,13 @@ abstract class CriteriaContexts {
                 String m = String.format("error,please check table alias[%s] in statement.", alias);
                 throw ContextStack.criteriaError(this, m);
             }
-            return (ArmyRowExpression) group;
+            return group;
         }
 
 
         @Override
-        public final ArmyRowExpression row(final @Nullable String alias, SQLs.SymbolPeriod period,
-                                           SQLs.SymbolAsterisk asterisk) {
+        public final RowElement row(final @Nullable String alias, SQLs.SymbolPeriod period,
+                                    SQLs.SymbolAsterisk asterisk) {
             if (this.isSelectClauseEnd()) {
                 throw ContextStack.criteriaError(this, "Error,SELECT clause have ended.");
             } else if (alias == null) {
@@ -2129,7 +2129,7 @@ abstract class CriteriaContexts {
                 String m = String.format("error,please check derived alias[%s] in statement.", alias);
                 throw ContextStack.criteriaError(this, m);
             }
-            return (ArmyRowExpression) group;
+            return group;
         }
 
         @Override
