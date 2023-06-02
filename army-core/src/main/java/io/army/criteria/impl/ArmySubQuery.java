@@ -10,6 +10,6 @@ import io.army.criteria.impl.inner._DerivedTable;
  *
  * @since 1.0
  */
-interface ArmySubQuery extends SubQuery, _DerivedTable {
+interface ArmySubQuery extends SubQuery, _DerivedTable, ArmyRightOperand {
 
 }

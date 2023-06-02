@@ -2316,7 +2316,7 @@ abstract class InsertSupports {
         final Expression discriminatorExp;
         discriminatorExp = ((_Selection) discriminatorSelection).underlyingExp();
 
-        if (!(discriminatorExp instanceof SingleLiteralExpression
+        if (!(discriminatorExp instanceof LiteralExpression
                 && discriminatorExp instanceof SqlValueParam.SingleAnonymousValue
                 && discriminatorExp.typeMeta().mappingType() instanceof CodeEnumType)) {
             String m = String.format("The appropriate %s[%s] of discriminator %s must be literal."

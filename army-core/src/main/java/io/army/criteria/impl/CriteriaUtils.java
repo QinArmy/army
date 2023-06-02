@@ -662,10 +662,8 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError("You don't add any item.");
     }
 
-    static CriteriaException nonDefaultType(@Nullable Object value) {
-        String m = String.format("Not found default %s for %s.", MappingType.class.getName(),
-                _ClassUtils.safeClassName(value));
-        return ContextStack.clearStackAndCriteriaError(m);
+    static CriteriaException clearStackAndNonDefaultType(Object value) {
+        return ContextStack.clearStackAndCriteriaError(_Exceptions::notFoundMappingType, value);
     }
 
     static CriteriaException errorSymbol(@Nullable Object symbol) {

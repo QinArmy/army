@@ -12,7 +12,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import static io.army.dialect.Database.*;
+import static io.army.dialect.Database.H2;
+import static io.army.dialect.Database.PostgreSQL;
 
 /**
  * Interface representing the sql expression, eg: column,function.
@@ -39,7 +40,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      *
      * @param operand non-null
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     CompoundPredicate equal(Expression operand);
 
@@ -53,7 +54,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      *
      * @param operand non-null
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     CompoundPredicate less(Expression operand);
 

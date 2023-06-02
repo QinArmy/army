@@ -238,8 +238,8 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * </p>
      *
      * @param jsonDoc   non-null,wrap to {@link SQLs#param(TypeInfer, Object)}
-     * @param firstPath non-null,non-empty,wrap to {@link SQLs#param(TypeInfer, Object)} or {@link SQLs#multiParam(TypeInfer, Collection)}
-     * @param paths     optional paths ,wrap to {@link SQLs#multiParam(TypeInfer, Collection)}
+     * @param firstPath non-null,non-empty,wrap to {@link SQLs#param(TypeInfer, Object)} or {@link SQLs#rowParam(TypeInfer, Collection)}
+     * @param paths     optional paths ,wrap to {@link SQLs#rowParam(TypeInfer, Collection)}
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see #jsonExtract(Expression, Expression)
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
@@ -254,7 +254,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
             pathList = new ArrayList<>(1 + paths.length);
             pathList.add(firstPath);
             Collections.addAll(pathList, paths);
-            pathLiterals = SQLs.multiParam(StringType.INSTANCE, pathList);
+            pathLiterals = SQLs.rowParam(StringType.INSTANCE, pathList);
         }
         return FunctionUtils.twoOrMultiArgFunc("JSON_EXTRACT", jsonDoc, pathLiterals, StringType.INSTANCE);
     }

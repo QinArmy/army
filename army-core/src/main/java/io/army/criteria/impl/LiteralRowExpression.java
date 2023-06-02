@@ -15,24 +15,28 @@ import java.util.*;
  * <p>
  * This class representing multi-value literal expression.
  * </p>
+ * <p>
+ * Below is chinese signature:<br/>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
  *
- * @see SingleParamExpression
- * @see SingleLiteralExpression
- * @see MultiParamExpression
+ * @see ParamExpression
+ * @see LiteralExpression
+ * @see ParamRowExpression
  * @since 1.0
  */
 
-abstract class MultiLiteralExpression extends OperationRowExpression implements
-        SqlValueParam.MultiValue, FunctionArg {
+abstract class LiteralRowExpression extends OperationRowExpression implements
+        SqlValueParam.MultiValue {
 
     /**
      * @throws CriteriaException throw when <ul>
      *                           <li>values is empty</li>
      *                           <li>infer return codec {@link TableField}</li>
      *                           </ul>
-     * @see SQLs#multiLiteral(TypeInfer, Collection)
+     * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    static MultiLiteralExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    static LiteralRowExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         final AnonymousMultiLiteral expression;
         final TypeMeta type;
         if (infer == null) {
@@ -44,7 +48,7 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
         } else if (infer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) infer).isDelay()) {
             expression = new DelayAnonymousMultiLiteral((TypeInfer.DelayTypeInfer) infer, values);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw SingleParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
+            throw ParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
         } else {
             expression = new ImmutableAnonymousMultiLiteral(type, values);
         }
@@ -53,7 +57,7 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
 
 
     @Deprecated
-    static MultiLiteralExpression unsafeMulti(final @Nullable TypeInfer infer, final @Nullable List<?> values) {
+    static LiteralRowExpression unsafeMulti(final @Nullable TypeInfer infer, final @Nullable List<?> values) {
         final AnonymousMultiLiteral expression;
         final TypeMeta type;
         if (infer == null) {
@@ -65,7 +69,7 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
         } else if (infer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) infer).isDelay()) {
             expression = new DelayAnonymousMultiLiteral(values, (TypeInfer.DelayTypeInfer) infer);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw SingleParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
+            throw ParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
         } else {
             expression = new ImmutableAnonymousMultiLiteral(values, type);
         }
@@ -78,10 +82,10 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
      *                           <li>size less than 1</li>
      *                           <li>infer return codec {@link TableField}</li>
      *                           </ul>
-     * @see SQLs#namedMultiLiteral(TypeInfer, String, int)
+     * @see SQLs#namedRowLiteral(TypeInfer, String, int)
      */
 
-    static MultiLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
+    static LiteralRowExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
         final NamedMultiLiteral expression;
         final TypeMeta type;
         if (infer == null) {
@@ -93,7 +97,7 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
         } else if (infer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) infer).isDelay()) {
             expression = new DelayNamedMultiLiteral((TypeInfer.DelayTypeInfer) infer, name, size);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw SingleParamExpression.typeInferReturnCodecField("encodingNamedMultiLiteral");
+            throw ParamExpression.typeInferReturnCodecField("encodingNamedMultiLiteral");
         } else {
             expression = new ImmutableNamedMultiLiteral(type, name, size);
         }
@@ -105,9 +109,9 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
      *                           <li>values is empty</li>
      *                           <li>infer isn't codec {@link TableField}</li>
      *                           </ul>
-     * @see SQLs#encodingMultiLiteral(TypeInfer, Collection)
+     * @see SQLs#encodingRowLiteral(TypeInfer, Collection)
      */
-    static MultiLiteralExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    static LiteralRowExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (values == null) {
@@ -115,7 +119,7 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw SingleParamExpression.typeInferIsNotCodecField("multiLiteral");
+            throw ParamExpression.typeInferIsNotCodecField("multiLiteral");
         }
         return new ImmutableAnonymousMultiLiteral((TableField) infer, values);
     }
@@ -126,9 +130,9 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
      *                           <li>size less than 1</li>
      *                           <li>infer isn't codec {@link TableField}</li>
      *                           </ul>
-     * @see SQLs#encodingNamedMultiLiteral(TypeInfer, String, int)
+     * @see SQLs#encodingNamedRowLiteral(TypeInfer, String, int)
      */
-    static MultiLiteralExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
+    static LiteralRowExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -136,7 +140,7 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
         } else if (size < 1) {
             throw sizeLessThanOne(size);
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw SingleParamExpression.typeInferIsNotCodecField("namedMultiLiteral");
+            throw ParamExpression.typeInferIsNotCodecField("namedMultiLiteral");
         }
         return new ImmutableNamedMultiLiteral((TableField) infer, name, size);
     }
@@ -158,11 +162,11 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
     /**
      * private constructor
      */
-    private MultiLiteralExpression() {
+    private LiteralRowExpression() {
     }
 
 
-    static abstract class AnonymousMultiLiteral extends MultiLiteralExpression {
+    static abstract class AnonymousMultiLiteral extends LiteralRowExpression {
 
         final List<?> valueList;
 
@@ -322,7 +326,7 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
         public TypeMeta typeMeta() {
             TypeMeta type = this.type;
             if (type == null) {
-                type = SingleParamExpression.inferDelayType(this.infer, "encodingMultiLiteral");
+                type = ParamExpression.inferDelayType(this.infer, "encodingMultiLiteral");
                 this.type = type;
             }
             return type;
@@ -363,7 +367,7 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
     }//DelayAnonymousMultiLiteral
 
 
-    private static abstract class NamedMultiLiteral extends MultiLiteralExpression implements NamedLiteral,
+    private static abstract class NamedMultiLiteral extends LiteralRowExpression implements NamedLiteral,
             SqlValueParam.NamedMultiValue {
 
         final String name;
@@ -487,7 +491,7 @@ abstract class MultiLiteralExpression extends OperationRowExpression implements
         public TypeMeta typeMeta() {
             TypeMeta type = this.type;
             if (type == null) {
-                type = SingleParamExpression.inferDelayType(this.infer, "encodingNamedMultiLiteral");
+                type = ParamExpression.inferDelayType(this.infer, "encodingNamedMultiLiteral");
                 this.type = type;
             }
             return type;

@@ -25,6 +25,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+/**
+ * <p>
+ * This class hold the methods that create {@link Expression} and {@link IPredicate}.
+ * </p>
+ * <p>
+ * Below is chinese signature:<br/>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ * </p>
+ *
+ * @since 1.0
+ */
 abstract class Expressions {
 
     Expressions() {
@@ -105,31 +116,24 @@ abstract class Expressions {
     }
 
     static CompoundPredicate inPredicate(final SQLExpression left, final boolean not,
-                                         final @Nullable RowElement right) {
+                                         final @Nullable SQLColumnSet right) {
         if (right == null) {
             throw ContextStack.clearStackAndNullPointer();
+        } else if (left instanceof RowExpression) {
+            RowExpressions.validateColumnSize((RowExpression) left, right);
         } else if (right instanceof SubQuery) {
             validateSubQueryContext((SubQuery) right);
-            final int rightSize;
-            rightSize = ((ArmySubQuery) right).refAllSelection().size();
-            if (left instanceof Expression && rightSize != 1) {
-                String m = String.format("Left operand of IN  is expression but subquery selection count is %s",
-                        rightSize);
+            final int selectionCount;
+            if ((selectionCount = ((ArmySubQuery) right).refAllSelection().size()) != 1) {
+                String m;
+                m = String.format("left operand is expression ,but right operand subquery selection count is %s",
+                        selectionCount);
                 throw ContextStack.clearStackAndCriteriaError(m);
-            } else if (left instanceof RowExpression) {
-                if (left instanceof ArmyRowExpression.DelayRow) {
-                    ContextStack.peek().addEndEventListener(
-                            new DelayRowColumnValidator((ArmyRowExpression.DelayRow) left, rightSize)::onContextEnd
-                    );
-                } else if (rightSize != ((ArmyRowExpression) left).columnSize()) {
-                    throw inOpeRowAndSubQueryNotMatch(((ArmyRowExpression) left).columnSize(), rightSize);
-                }
             }
         } else if (!(right instanceof ArmyRowExpression)) {
             String m = String.format("don't right operand %s", right);
             throw ContextStack.clearStackAndCriteriaError(m);
         }
-
         return new InOperationPredicate(left, not, right);
     }
 
@@ -157,11 +161,15 @@ abstract class Expressions {
     }
 
 
-    static CompoundPredicate dualPredicate(final Expression left, final DualBooleanOperator operator, final Expression right) {
-        if (!(left instanceof OperationExpression)) {
-            throw NonOperationExpression.nonOperationExpression(left);
-        } else if (!(right instanceof OperationExpression)) {
-            throw NonOperationExpression.nonOperationExpression(right);
+    static CompoundPredicate dualPredicate(final OperationSQLExpression left, final DualBooleanOperator operator,
+                                           final @Nullable RightOperand right) {
+        if (right == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!(right instanceof ArmyRightOperand)) {
+            String m = String.format("don't support right operand %s", right);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (left instanceof SQLColumnSet && right instanceof SQLColumnSet) {
+            RowExpressions.validateColumnSize((SQLColumnSet) left, (SQLColumnSet) right);
         }
         return new StandardDualPredicate(left, operator, right);
     }
@@ -359,7 +367,7 @@ abstract class Expressions {
             if (!(element instanceof Expression)) {
                 type = _MappingFactory.getDefaultIfMatch(element.getClass());
                 if (type == null) {
-                    throw CriteriaUtils.nonDefaultType(element);
+                    throw CriteriaUtils.clearStackAndNonDefaultType(element);
                 }
             } else if (element instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) element).isDelay()) {
                 type = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) element, MappingType::arrayTypeOfThis);
@@ -509,6 +517,20 @@ abstract class Expressions {
         return returnType;
     }
 
+    static void validateSubQueryContext(final @Nullable SubQuery subQuery) {
+        if (subQuery == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        if (((CriteriaContextSpec) subQuery).getContext().getOuterContext() != ContextStack.peek()) {
+            String m = String.format("outer context of %s don't match.", subQuery);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+    }
+
+
+
+    /*-------------------below private method-------------------*/
+
     /**
      * @see #scalarExpression(SubQuery)
      * @see #array(SubQuery)
@@ -528,15 +550,9 @@ abstract class Expressions {
         return (MappingType) typeMeta;
     }
 
-    private static void validateSubQueryContext(final SubQuery subQuery) {
-        if (((CriteriaContextSpec) subQuery).getContext().getOuterContext() != ContextStack.peek()) {
-            String m = String.format("outer context of %s don't match.", subQuery);
-            throw ContextStack.clearStackAndCriteriaError(m);
-        }
-    }
 
     /**
-     * @see #compareQueryPredicate(OperationExpression, DualBooleanOperator, QueryOperator, SubQuery)
+     * @see #compareQueryPredicate(OperationSQLExpression, DualBooleanOperator, QueryOperator, SubQuery)
      */
     private static void assertColumnSubQuery(final DualBooleanOperator operator
             , final @Nullable QueryOperator queryOperator, final SubQuery subQuery) {
@@ -556,7 +572,7 @@ abstract class Expressions {
     }
 
     /**
-     * @see #inPredicate(SQLExpression, boolean, RowElement)
+     * @see #inPredicate(SQLExpression, boolean, SQLColumnSet)
      */
     private static CriteriaException inOpeRowAndSubQueryNotMatch(int leftSize, int rightSize) {
         String m = String.format("Left operand of IN  is row expression and column size is %s, but subquery selection count is %s",
@@ -1033,17 +1049,17 @@ abstract class Expressions {
     static abstract class DualPredicate extends OperationPredicate.OperationCompoundPredicate {
 
 
-        final ArmyExpression left;
+        final ArmySQLExpression left;
 
         final Operator.SqlDualBooleanOperator operator;
 
-        final ArmyExpression right;
+        final ArmyRightOperand right;
 
 
-        DualPredicate(Expression left, Operator.SqlDualBooleanOperator operator, Expression right) {
-            this.left = (ArmyExpression) left;
+        DualPredicate(OperationSQLExpression left, Operator.SqlDualBooleanOperator operator, RightOperand right) {
+            this.left = left;
             this.operator = operator;
-            this.right = (ArmyExpression) right;
+            this.right = (ArmyRightOperand) right;
         }
 
         @Override
@@ -1061,8 +1077,8 @@ abstract class Expressions {
 
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder();
-            final ArmyExpression left = this.left, right = this.right;
-            final boolean leftOuterParens, rightOuterParens;
+            final ArmySQLExpression left = this.left;
+            final boolean leftOuterParens;
             leftOuterParens = left instanceof OperationCompoundPredicate;
 
             if (leftOuterParens) {
@@ -1075,37 +1091,20 @@ abstract class Expressions {
 
             sqlBuilder.append(this.operator.spaceRender());
 
-            rightOuterParens = !(right instanceof ArmySimpleExpression);
-            if (rightOuterParens) {
-                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-            }
-            right.appendSql(context);
-
-            if (rightOuterParens) {
-                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-            }
-
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(this.left, this.operator, this.right);
-        }
-
-        @Override
-        public final boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof DualPredicate) {
-                final DualPredicate p = (DualPredicate) obj;
-                match = p.operator == this.operator
-                        && p.left.equals(this.left)
-                        && p.right.equals(this.right);
+            final ArmyRightOperand right = this.right;
+            if (right instanceof SubQuery) {
+                context.parser().subQuery((SubQuery) right, context);
             } else {
-                match = false;
+                final boolean rightOuterParens = !(right instanceof ArmySimpleSQLExpression);
+                if (rightOuterParens) {
+                    sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+                }
+                ((ArmySQLExpression) right).appendSql(context);
+                if (rightOuterParens) {
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                }
             }
-            return match;
+
         }
 
         @Override
@@ -1114,8 +1113,9 @@ abstract class Expressions {
             final StringBuilder sqlBuilder;
             sqlBuilder = new StringBuilder();
 
-            final ArmyExpression left = this.left, right = this.right;
-            final boolean leftOuterParens, rightOuterParens;
+            final ArmySQLExpression left = this.left;
+
+            final boolean leftOuterParens;
             leftOuterParens = left instanceof OperationCompoundPredicate;
 
             if (leftOuterParens) {
@@ -1126,17 +1126,21 @@ abstract class Expressions {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
-            rightOuterParens = !(right instanceof ArmySimpleExpression);
+            final ArmyRightOperand right = this.right;
+            if (right instanceof SubQuery) {
+                sqlBuilder.append(right);
+            } else {
+                final boolean rightOuterParens = !(right instanceof ArmySimpleExpression);
 
-            if (rightOuterParens) {
-                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+                if (rightOuterParens) {
+                    sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+                }
+                sqlBuilder.append(right);
+
+                if (rightOuterParens) {
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                }
             }
-            sqlBuilder.append(right);
-
-            if (rightOuterParens) {
-                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-            }
-
             return sqlBuilder.toString();
         }
 
@@ -1146,9 +1150,9 @@ abstract class Expressions {
     private static final class StandardDualPredicate extends DualPredicate {
 
         /**
-         * @see #dualPredicate(Expression, DualBooleanOperator, Expression)
+         * @see #dualPredicate(OperationSQLExpression, DualBooleanOperator, RightOperand)
          */
-        private StandardDualPredicate(Expression left, DualBooleanOperator operator, Expression right) {
+        private StandardDualPredicate(OperationSQLExpression left, DualBooleanOperator operator, RightOperand right) {
             super(left, operator, right);
         }
 
@@ -1698,13 +1702,13 @@ abstract class Expressions {
 
         private final boolean not;
 
-        private final RowElement right;
+        private final SQLColumnSet right;
 
 
         /**
-         * @see #inPredicate(SQLExpression, boolean, RowElement)
+         * @see #inPredicate(SQLExpression, boolean, SQLColumnSet)
          */
-        private InOperationPredicate(SQLExpression left, boolean not, RowElement right) {
+        private InOperationPredicate(SQLExpression left, boolean not, SQLColumnSet right) {
             this.left = (ArmySQLExpression) left;
             this.not = not;
             this.right = right;
@@ -1722,7 +1726,7 @@ abstract class Expressions {
             }
             sqlBuilder.append(" IN");
 
-            final RowElement right = this.right;
+            final SQLColumnSet right = this.right;
             if (right instanceof SubQuery) {
                 context.parser().subQuery((SubQuery) right, context);
             } else {
@@ -1745,37 +1749,6 @@ abstract class Expressions {
 
 
     }//InOperationPredicate
-
-
-    private static final class DelayRowColumnValidator {
-
-        private final ArmyRowExpression.DelayRow row;
-
-        private final int selectionSize;
-
-        /**
-         * @see #inPredicate(SQLExpression, boolean, RowElement)
-         */
-        private DelayRowColumnValidator(ArmyRowExpression.DelayRow row, int selectionSize) {
-            this.row = row;
-            this.selectionSize = selectionSize;
-        }
-
-        void onContextEnd() {
-            final ArmyRowExpression.DelayRow row = this.row;
-            if (!row.isDelay()) {
-                if (this.selectionSize != row.columnSize()) {
-                    throw inOpeRowAndSubQueryNotMatch(row.columnSize(), this.selectionSize);
-                }
-            } else if (ContextStack.isEmpty()) {
-                String m = String.format("unknown row %s", row);
-                throw new CriteriaException(m);
-            } else {
-                ContextStack.peek().addEndEventListener(this::onContextEnd);
-            }
-        }
-
-    }//DelayRowColumnValidator
 
 
     private static abstract class ArrayElementExpression extends OperationExpression.OperationSimpleExpression {
@@ -2362,7 +2335,7 @@ abstract class Expressions {
             sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator);
             sqlBuilder.append(_Constant.SPACE);
 
-            if (this.jsonPath instanceof SingleParamExpression) {
+            if (this.jsonPath instanceof ParamExpression) {
                 sqlBuilder.append(this.jsonPath);
             } else {
                 sqlBuilder.append(_Constant.QUOTE)

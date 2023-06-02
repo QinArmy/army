@@ -7,8 +7,8 @@ import io.army.criteria.impl.SQLs;
 
 /**
  * <ul>
- *     <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
- *     <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+ *     <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+ *     <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
  *     <li>other custom method</li>
  * </ul>
  *

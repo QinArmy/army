@@ -284,7 +284,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *
      * @throws CriteriaException throw when<ul>
      *                           <li><firstValue isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
-     *                           <li>firstValue is multi value {@link Expression},eg: {@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>firstValue is multi value {@link Expression},eg: {@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                           <li><the element of rest isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
      *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-COALESCE-NVL-IFNULL">COALESCE(value [, ...])</a>
@@ -316,7 +316,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *
      * @throws CriteriaException throw when<ul>
      *                           <li><firstValue isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
-     *                           <li>firstValue is multi value {@link Expression},eg: {@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>firstValue is multi value {@link Expression},eg: {@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                           <li><the element of rest isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
      *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-GREATEST-LEAST">GREATEST(value [, ...])</a>
@@ -348,7 +348,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *
      * @throws CriteriaException throw when<ul>
      *                           <li><firstValue isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
-     *                           <li>firstValue is multi value {@link Expression},eg: {@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>firstValue is multi value {@link Expression},eg: {@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                           <li><the element of rest isn't operable {@link Expression},eg:{@link SQLs#DEFAULT}/li>
      *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-conditional.html#FUNCTIONS-GREATEST-LEAST">LEAST(value [, ...])</a>

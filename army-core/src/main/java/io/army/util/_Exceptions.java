@@ -959,4 +959,14 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
+    public static CriteriaException notFoundMappingType(Object value) {
+        String m = String.format("Not found default %s for %s.", MappingType.class.getName(),
+                _ClassUtils.safeClassName(value));
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException unknownRowElement(Object element) {
+        String m = String.format("unknown row element %s", element);
+        return new CriteriaException(m);
+    }
 }

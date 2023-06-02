@@ -182,8 +182,8 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * [ORDER BY {unsigned_integer | col_name | expr}
      * [ASC | DESC] [,col_name ...]]
      * [SEPARATOR str_val])</a>
-     * @see SQLs#multiParam(TypeInfer, Collection)
-     * @see SQLs#multiLiteral(TypeInfer, Collection)
+     * @see SQLs#rowParam(TypeInfer, Collection)
+     * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
     public static Expression groupConcat(@Nullable SQLs.ArgDistinct distinct, Expression exp) {
         assertDistinct(distinct);
@@ -201,8 +201,8 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * [ORDER BY {unsigned_integer | col_name | expr}
      * [ASC | DESC] [,col_name ...]]
      * [SEPARATOR str_val])</a>
-     * @see SQLs#multiParam(TypeInfer, Collection)
-     * @see SQLs#multiLiteral(TypeInfer, Collection)
+     * @see SQLs#rowParam(TypeInfer, Collection)
+     * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
     public static Expression groupConcat(@Nullable SQLs.ArgDistinct distinct, Expression exp
             , Consumer<MySQLFunction._GroupConcatOrderBySpec> consumer) {

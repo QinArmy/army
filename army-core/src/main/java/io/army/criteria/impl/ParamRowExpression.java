@@ -22,21 +22,22 @@ import java.util.*;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  *
- * @see SingleParamExpression
- * @see SingleLiteralExpression
- * @see MultiLiteralExpression
+ * @see ParamExpression
+ * @see LiteralExpression
+ * @see LiteralRowExpression
  * @since 1.0
  */
-abstract class MultiParamExpression extends NonOperationExpression.MultiValueExpression implements SQLParam {
+abstract class ParamRowExpression extends OperationRowExpression
+        implements SqlValueParam.MultiValue, SQLParam {
 
     /**
      * @throws CriteriaException throw when <ul>
      *                           <li>values is empty</li>
      *                           <li>infer return codec {@link TableField}</li>
      *                           </ul>
-     * @see SQLs#multiParam(TypeInfer, Collection)
+     * @see SQLs#rowParam(TypeInfer, Collection)
      */
-    static MultiParamExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    static ParamRowExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         final AnonymousMultiParam expression;
         final TypeMeta type;
         if (infer == null) {
@@ -48,7 +49,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
             expression = new DelayAnonymousMultiParam((DelayTypeInfer) infer, values);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw SingleParamExpression.typeInferReturnCodecField("encodingMultiParam");
+            throw ParamExpression.typeInferReturnCodecField("encodingMultiParam");
         } else {
             expression = new ImmutableAnonymousMultiParam(type, values);
         }
@@ -61,9 +62,9 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
      *                           <li>size less than 1</li>
      *                           <li>infer return codec {@link TableField}</li>
      *                           </ul>
-     * @see SQLs#namedMultiParam(TypeInfer, String, int)
+     * @see SQLs#namedRowParam(TypeInfer, String, int)
      */
-    static MultiParamExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
+    static ParamRowExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
         final NamedMultiParam expression;
         final TypeMeta type;
         if (infer == null) {
@@ -75,7 +76,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
             expression = new DelayNamedMultiParam((DelayTypeInfer) infer, name, size);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw SingleParamExpression.typeInferReturnCodecField("encodingNamedMultiParam");
+            throw ParamExpression.typeInferReturnCodecField("encodingNamedMultiParam");
         } else {
             expression = new ImmutableNamedMultiParam(type, name, size);
         }
@@ -87,9 +88,9 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
      *                           <li>values is empty</li>
      *                           <li>infer isn't codec {@link TableField}</li>
      *                           </ul>
-     * @see SQLs#encodingMultiParam(TypeInfer, Collection)
+     * @see SQLs#encodingRowParam(TypeInfer, Collection)
      */
-    static MultiParamExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    static ParamRowExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (values == null) {
@@ -97,7 +98,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw SingleParamExpression.typeInferIsNotCodecField("multiParam");
+            throw ParamExpression.typeInferIsNotCodecField("multiParam");
         }
         return new ImmutableAnonymousMultiParam((TableField) infer, values);
     }
@@ -108,9 +109,9 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
      *                           <li>size less than 1</li>
      *                           <li>infer isn't codec {@link TableField}</li>
      *                           </ul>
-     * @see SQLs#encodingNamedMultiParam(TypeInfer, String, int)
+     * @see SQLs#encodingNamedRowParam(TypeInfer, String, int)
      */
-    static MultiParamExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
+    static ParamRowExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -118,7 +119,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         } else if (size < 1) {
             throw sizeLessThanOne(size);
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw SingleParamExpression.typeInferIsNotCodecField("namedMultiParam");
+            throw ParamExpression.typeInferIsNotCodecField("namedMultiParam");
         }
         return new ImmutableNamedMultiParam((TableField) infer, name, size);
     }
@@ -139,7 +140,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
     /**
      * private constructor
      */
-    private MultiParamExpression() {
+    private ParamRowExpression() {
     }
 
     @Override
@@ -147,7 +148,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         context.appendParam(this);
     }
 
-    private static abstract class AnonymousMultiParam extends MultiParamExpression implements MultiParam {
+    private static abstract class AnonymousMultiParam extends ParamRowExpression implements MultiParam {
 
         final List<?> valueList;
 
@@ -251,7 +252,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         public TypeMeta typeMeta() {
             TypeMeta type = this.type;
             if (type == null) {
-                type = SingleParamExpression.inferDelayType(this.infer, "encodingMultiParam");
+                type = ParamExpression.inferDelayType(this.infer, "encodingMultiParam");
                 this.type = type;
             }
             return type;
@@ -292,7 +293,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
     }//DelayAnonymousMultiParam
 
 
-    private static abstract class NamedMultiParam extends MultiParamExpression implements NamedParam.NamedMulti {
+    private static abstract class NamedMultiParam extends ParamRowExpression implements NamedParam.NamedMulti {
 
         final String name;
 
@@ -403,7 +404,7 @@ abstract class MultiParamExpression extends NonOperationExpression.MultiValueExp
         public TypeMeta typeMeta() {
             TypeMeta type = this.type;
             if (type == null) {
-                type = SingleParamExpression.inferDelayType(this.infer, "encodingNamedMultiParam");
+                type = ParamExpression.inferDelayType(this.infer, "encodingNamedMultiParam");
                 this.type = type;
             }
             return type;

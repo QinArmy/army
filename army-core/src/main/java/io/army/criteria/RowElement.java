@@ -1,17 +1,17 @@
 package io.army.criteria;
 
+
 /**
  * <p>
- * This interface representing one or more row.
- * This interface is base interface of :
+ * This interface representing the element of ROW constructor. This interface is base interface of :
  *     <ul>
- *         <li>{@link RowExpression}</li>
  *         <li>{@link SubQuery}</li>
+ *         <li>{@link SQLExpression}</li>
  *     </ul>
  * </p>
  *
- * @see 1.0
+ * @since 1.0
  */
-public interface RowElement {
+public interface RowElement extends Item {
 
 }

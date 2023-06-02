@@ -110,6 +110,14 @@ abstract class ContextStack {
         return stack == null || stack.size() == 0;
     }
 
+    static void addEndLise(final Runnable listener, final Supplier<CriteriaException> errorHandler) {
+        final Stack stack;
+        if ((stack = HOLDER.get()) == null) {
+            throw errorHandler.get();
+        }
+        stack.getLast().addEndEventListener(listener);
+    }
+
 
     static CriteriaException criteriaError(CriteriaContext criteriaContext, Supplier<CriteriaException> supplier) {
         clearStackOnError(criteriaContext);

@@ -55,7 +55,7 @@ public interface SimpleExpression extends Expression {
      *                The first argument of funcRef always is <strong>this</strong>.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T> CompoundPredicate equal(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
@@ -85,7 +85,7 @@ public interface SimpleExpression extends Expression {
      *                The first argument of funcRef always is <strong>this</strong>.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/comparison-operators.html#operator_equal-to">NULL-safe equal.</a>
      */
     @Support({MySQL})
@@ -117,7 +117,7 @@ public interface SimpleExpression extends Expression {
      *                The first argument of funcRef always is <strong>this</strong>.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T> CompoundPredicate less(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
@@ -148,7 +148,7 @@ public interface SimpleExpression extends Expression {
      *                The first argument of funcRef always is <strong>this</strong>.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T> CompoundPredicate lessEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
@@ -178,7 +178,7 @@ public interface SimpleExpression extends Expression {
      *                The first argument of funcRef always is <strong>this</strong>.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T> CompoundPredicate greater(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
@@ -208,7 +208,7 @@ public interface SimpleExpression extends Expression {
      *                The first argument of funcRef always is <strong>this</strong>.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T> CompoundPredicate greaterEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
@@ -238,7 +238,7 @@ public interface SimpleExpression extends Expression {
      *                The first argument of funcRef always is <strong>this</strong>.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T> CompoundPredicate notEqual(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
@@ -270,7 +270,7 @@ public interface SimpleExpression extends Expression {
      * @param and     {@link SQLs#AND}
      * @param second  non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T> CompoundPredicate between(BiFunction<SimpleExpression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
 
@@ -318,7 +318,7 @@ public interface SimpleExpression extends Expression {
      *                      The first argument of secondFuncRef always is <strong>this</strong>.
      * @param second        non-null,it will be passed to secondFuncRef as the second argument of secondFuncRef
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T, U> CompoundPredicate between(BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first, SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFuncRef, U second);
 
@@ -351,7 +351,7 @@ public interface SimpleExpression extends Expression {
      * @param and     {@link SQLs#AND}
      * @param second  non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T> CompoundPredicate notBetween(BiFunction<SimpleExpression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
 
@@ -398,7 +398,7 @@ public interface SimpleExpression extends Expression {
      *                      The first argument of secondFuncRef always is <strong>this</strong>.
      * @param second        non-null,it will be passed to secondFuncRef as the second argument of secondFuncRef
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T, U> CompoundPredicate notBetween(BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first, SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFuncRef, U second);
 
@@ -432,7 +432,7 @@ public interface SimpleExpression extends Expression {
      * @param and      {@link SQLs#AND}
      * @param second   non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     @Support({PostgreSQL, H2})
     <T> CompoundPredicate between(@Nullable SQLs.BetweenModifier modifier, BiFunction<SimpleExpression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
@@ -480,7 +480,7 @@ public interface SimpleExpression extends Expression {
      *                      The first argument of secondFuncRef always is <strong>this</strong>.
      * @param second        non-null,it will be passed to secondFuncRef as the second argument of secondFuncRef
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     @Support({PostgreSQL, H2})
     <T, U> CompoundPredicate between(@Nullable SQLs.BetweenModifier modifier, BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first, SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFuncRef, U second);
@@ -515,7 +515,7 @@ public interface SimpleExpression extends Expression {
      * @param and      {@link SQLs#AND}
      * @param second   non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     @Support({PostgreSQL, H2})
     <T> CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, BiFunction<SimpleExpression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
@@ -563,7 +563,7 @@ public interface SimpleExpression extends Expression {
      *                      The first argument of secondFuncRef always is <strong>this</strong>.
      * @param second        non-null,it will be passed to secondFuncRef as the second argument of secondFuncRef
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     @Support({PostgreSQL, H2})
     <T,U> CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first, SQLs.WordAnd and,BiFunction<SimpleExpression, U, Expression> secondFuncRef, U second);
@@ -595,7 +595,7 @@ public interface SimpleExpression extends Expression {
      *                The first argument of funcRef always is <strong>this</strong>.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
     <T> CompoundPredicate is(SQLs.IsComparisonWord operator, BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 

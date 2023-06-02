@@ -6,8 +6,8 @@ package io.army.criteria.impl;
  *     <ul>
  *         <li>{@link OperationExpression.OperationSimpleExpression}</li>
  *         <li>{@link OperationExpression.BracketsExpression}</li>
- *         <li>{@link SingleParamExpression}</li>
- *         <li>{@link SingleLiteralExpression}</li>
+ *         <li>{@link ParamExpression}</li>
+ *         <li>{@link LiteralExpression}</li>
  *         <li>{@link SQLs#NULL}</li>
  *         <li>{@link SQLs#TRUE}</li>
  *         <li>{@link SQLs#FALSE}</li>
@@ -17,7 +17,7 @@ package io.army.criteria.impl;
  *
  * @since 1.0
  */
-interface ArmySimpleExpression extends ArmyExpression {
+interface ArmySimpleExpression extends ArmyExpression, ArmySimpleSQLExpression {
 
 
 }

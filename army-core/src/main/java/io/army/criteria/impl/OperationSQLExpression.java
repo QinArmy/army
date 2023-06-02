@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.CompoundPredicate;
-import io.army.criteria.RowElement;
+import io.army.criteria.SQLColumnSet;
 import io.army.criteria.SubQuery;
 
 /**
@@ -125,12 +125,12 @@ abstract class OperationSQLExpression implements ArmySQLExpression {
 
 
     @Override
-    public final CompoundPredicate in(RowElement row) {
+    public final CompoundPredicate in(SQLColumnSet row) {
         return Expressions.inPredicate(this, false, row);
     }
 
     @Override
-    public final CompoundPredicate notIn(RowElement row) {
+    public final CompoundPredicate notIn(SQLColumnSet row) {
         return Expressions.inPredicate(this, true, row);
     }
 

@@ -71,7 +71,7 @@ abstract class PostgreExpressions {
         } else if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
         }
-        return new PostgreDualPredicate(left, operator, right);
+        return new PostgreDualPredicate((OperationExpression) left, operator, right);
     }
 
 
@@ -585,7 +585,7 @@ abstract class PostgreExpressions {
         /**
          * @see #dualPredicate(Expression, PostgreDualBooleanOperator, Expression)
          */
-        private PostgreDualPredicate(Expression left, PostgreDualBooleanOperator operator, Expression right) {
+        private PostgreDualPredicate(OperationSQLExpression left, PostgreDualBooleanOperator operator, RightOperand right) {
             super(left, operator, right);
         }
 

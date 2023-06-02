@@ -211,12 +211,12 @@ abstract class NonOperationExpression implements ArmyExpression {
 
 
     @Override
-    public final CompoundPredicate in(RowElement row) {
+    public final CompoundPredicate in(SQLColumnSet row) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final CompoundPredicate notIn(RowElement row) {
+    public final CompoundPredicate notIn(SQLColumnSet row) {
         throw unsupportedOperation(this);
     }
 
@@ -420,8 +420,8 @@ abstract class NonOperationExpression implements ArmyExpression {
      * <p>
      * This class is base class only of below:
      *     <ul>
-     *         <li>{@link MultiParamExpression}</li>
-     *         <li>{@link MultiLiteralExpression}</li>
+     *         <li>{@link ParamRowExpression}</li>
+     *         <li>{@link LiteralRowExpression}</li>
      *     </ul>
      * </p>
      *

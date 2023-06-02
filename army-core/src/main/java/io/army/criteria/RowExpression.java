@@ -4,16 +4,17 @@ import io.army.criteria.impl.SQLs;
 
 import java.util.Collection;
 
-import static io.army.dialect.Database.MySQL;
-
 /**
  * <p>
  * This interface representing one row in SQL.
  * </p>
  *
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/row-constructor-optimization.html">MySQL Row Constructor Expression Optimization</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/range-optimization.html#row-constructor-range-optimization">Range Optimization of Row Constructor Expressions</a>
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/row-subqueries.html">MySQL Row Subqueries</a>
  * @since 1.0
  */
-public interface RowExpression extends SQLExpression, RowElement {
+public interface RowExpression extends SQLExpression, SQLColumnSet {
 
 
     /**
@@ -23,11 +24,11 @@ public interface RowExpression extends SQLExpression, RowElement {
      *
      * @param operand non-null
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
-    CompoundPredicate equal(RowElement operand);
+    CompoundPredicate equal(SQLColumnSet operand);
 
-    CompoundPredicate notEqual(RowElement operand);
+    CompoundPredicate notEqual(SQLColumnSet operand);
 
 
     /**
@@ -37,17 +38,17 @@ public interface RowExpression extends SQLExpression, RowElement {
      *
      * @param operand non-null
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
-    CompoundPredicate less(RowElement operand);
+    CompoundPredicate less(SQLColumnSet operand);
 
 
-    CompoundPredicate lessEqual(RowElement operand);
+    CompoundPredicate lessEqual(SQLColumnSet operand);
 
 
-    CompoundPredicate greater(RowElement operand);
+    CompoundPredicate greater(SQLColumnSet operand);
 
-    CompoundPredicate greaterEqual(RowElement operand);
+    CompoundPredicate greaterEqual(SQLColumnSet operand);
 
 
 }

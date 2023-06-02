@@ -1,7 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CompoundPredicate;
-import io.army.criteria.RowElement;
+import io.army.criteria.SQLColumnSet;
 
 /**
  * <p>
@@ -20,35 +20,37 @@ abstract class OperationRowExpression extends OperationSQLExpression implements 
     }
 
     @Override
-    public final CompoundPredicate equal(RowElement operand) {
-        return null;
+    public final CompoundPredicate equal(SQLColumnSet operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, operand);
+    }
+
+    @Override
+    public final CompoundPredicate notEqual(SQLColumnSet operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, operand);
     }
 
 
     @Override
-    public final CompoundPredicate less(RowElement operand) {
-        return null;
+    public final CompoundPredicate less(SQLColumnSet operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.LESS, operand);
     }
 
     @Override
-    public final CompoundPredicate lessEqual(RowElement operand) {
-        return null;
+    public final CompoundPredicate lessEqual(SQLColumnSet operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.LESS_EQUAL, operand);
     }
 
     @Override
-    public final CompoundPredicate greater(RowElement operand) {
-        return null;
+    public final CompoundPredicate greater(SQLColumnSet operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.GREATER, operand);
     }
 
     @Override
-    public final CompoundPredicate greaterEqual(RowElement operand) {
-        return null;
+    public final CompoundPredicate greaterEqual(SQLColumnSet operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.GREATER_EQUAL, operand);
     }
 
-    @Override
-    public final CompoundPredicate notEqual(RowElement operand) {
-        return null;
-    }
+
 
 
 }

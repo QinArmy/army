@@ -9,6 +9,7 @@ import io.army.meta.TypeMeta;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -482,7 +483,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #literalValue(Object)
      */
     public static SimpleExpression paramValue(final Object value) {
-        return SingleParamExpression.from(value);
+        return ParamExpression.from(value);
     }
 
 
@@ -499,9 +500,9 @@ abstract class SQLsSyntax extends Functions {
     public static SimpleExpression param(final TypeInfer type, final @Nullable Object value) {
         final SimpleExpression result;
         if (value instanceof Supplier) {
-            result = SingleParamExpression.single(type, ((Supplier<?>) value).get());
+            result = ParamExpression.single(type, ((Supplier<?>) value).get());
         } else {
-            result = SingleParamExpression.single(type, value);
+            result = ParamExpression.single(type, value);
         }
         return result;
     }
@@ -518,9 +519,9 @@ abstract class SQLsSyntax extends Functions {
     public static SimpleExpression encodingParam(final TypeInfer type, final @Nullable Object value) {
         final SimpleExpression result;
         if (value instanceof Supplier) {
-            result = SingleParamExpression.encodingSingle(type, ((Supplier<?>) value).get());
+            result = ParamExpression.encodingSingle(type, ((Supplier<?>) value).get());
         } else {
-            result = SingleParamExpression.encodingSingle(type, value);
+            result = ParamExpression.encodingSingle(type, value);
         }
         return result;
     }
@@ -544,7 +545,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
     public static SimpleExpression namedParam(final TypeInfer type, final String name) {
-        return SingleParamExpression.named(type, name);
+        return ParamExpression.named(type, name);
     }
 
     /**
@@ -565,7 +566,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
     public static SimpleExpression encodingNamedParam(final TypeInfer type, final String name) {
-        return SingleParamExpression.encodingNamed(type, name);
+        return ParamExpression.encodingNamed(type, name);
     }
 
     /**
@@ -586,7 +587,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
     public static SimpleExpression namedNullableParam(final TypeInfer type, final String name) {
-        return SingleParamExpression.namedNullable(type, name);
+        return ParamExpression.namedNullable(type, name);
     }
 
     /**
@@ -607,7 +608,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
     public static SimpleExpression encodingNamedNullableParam(final TypeInfer type, final String name) {
-        return SingleParamExpression.encodingNamedNullable(type, name);
+        return ParamExpression.encodingNamedNullable(type, name);
     }
 
 
@@ -649,7 +650,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #paramValue(Object)
      */
     public static SimpleExpression literalValue(final Object value) {
-        return SingleLiteralExpression.from(value);
+        return LiteralExpression.from(value);
     }
 
 
@@ -666,9 +667,9 @@ abstract class SQLsSyntax extends Functions {
     public static SimpleExpression literal(final TypeInfer type, final @Nullable Object value) {
         final SimpleExpression result;
         if (value instanceof Supplier) {
-            result = SingleLiteralExpression.single(type, ((Supplier<?>) value).get());
+            result = LiteralExpression.single(type, ((Supplier<?>) value).get());
         } else {
-            result = SingleLiteralExpression.single(type, value);
+            result = LiteralExpression.single(type, value);
         }
         return result;
     }
@@ -686,9 +687,9 @@ abstract class SQLsSyntax extends Functions {
     public static SimpleExpression encodingLiteral(final TypeInfer type, final @Nullable Object value) {
         final SimpleExpression result;
         if (value instanceof Supplier) {
-            result = SingleLiteralExpression.encodingSingle(type, ((Supplier<?>) value).get());
+            result = LiteralExpression.encodingSingle(type, ((Supplier<?>) value).get());
         } else {
-            result = SingleLiteralExpression.encodingSingle(type, value);
+            result = LiteralExpression.encodingSingle(type, value);
         }
         return result;
     }
@@ -718,7 +719,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
     public static SimpleExpression namedLiteral(final TypeInfer type, final String name) {
-        return SingleLiteralExpression.named(type, name);
+        return LiteralExpression.named(type, name);
     }
 
     /**
@@ -745,7 +746,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
     public static SimpleExpression encodingNamedLiteral(final TypeInfer type, final String name) {
-        return SingleLiteralExpression.encodingNamed(type, name);
+        return LiteralExpression.encodingNamed(type, name);
     }
 
     /**
@@ -772,7 +773,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
     public static SimpleExpression namedNullableLiteral(final TypeInfer type, final String name) {
-        return SingleLiteralExpression.namedNullable(type, name);
+        return LiteralExpression.namedNullable(type, name);
     }
 
     /**
@@ -799,7 +800,7 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      */
     public static SimpleExpression encodingNamedNullableLiteral(final TypeInfer type, final String name) {
-        return SingleLiteralExpression.encodingNamedNullable(type, name);
+        return LiteralExpression.encodingNamedNullable(type, name);
     }
 
     /**
@@ -815,11 +816,11 @@ abstract class SQLsSyntax extends Functions {
      *                           <li>values is empty</li>
      *                           <li>infer return codec {@link TableField}</li>
      *                           </ul>
-     * @see #multiParam(TypeInfer, Collection)
-     * @see #multiLiteral(TypeInfer, Collection)
+     * @see #rowParam(TypeInfer, Collection)
+     * @see #rowLiteral(TypeInfer, Collection)
      */
-    public static Expression multiParam(final TypeInfer type, final Collection<?> values) {
-        return MultiParamExpression.multi(type, values);
+    public static RowExpression rowParam(final TypeInfer type, final Collection<?> values) {
+        return ParamRowExpression.multi(type, values);
     }
 
     /**
@@ -831,10 +832,10 @@ abstract class SQLsSyntax extends Functions {
      *
      * @param type   non-null,the type of element of values.
      * @param values non-null and non-empty
-     * @see #multiParam(TypeInfer, Collection)
+     * @see #rowParam(TypeInfer, Collection)
      */
-    public static RowExpression multiLiteral(final TypeInfer type, final Collection<?> values) {
-        return MultiLiteralExpression.multi(type, values);
+    public static RowExpression rowLiteral(final TypeInfer type, final Collection<?> values) {
+        return LiteralRowExpression.multi(type, values);
     }
 
     /**
@@ -856,10 +857,10 @@ abstract class SQLsSyntax extends Functions {
      *                           <li>size less than 1</li>
      *                           <li>infer return codec {@link TableField}</li>
      *                           </ul>
-     * @see #namedMultiLiteral(TypeInfer, String, int)
+     * @see #namedRowLiteral(TypeInfer, String, int)
      */
-    public static Expression namedMultiParam(final TypeInfer type, final String name, final int size) {
-        return MultiParamExpression.named(type, name, size);
+    public static RowExpression namedRowParam(final TypeInfer type, final String name, final int size) {
+        return ParamRowExpression.named(type, name, size);
     }
 
     /**
@@ -876,10 +877,10 @@ abstract class SQLsSyntax extends Functions {
      * @param name non-null,the key name of {@link Map} or the field name of java bean.
      * @param size positive,the size of {@link Collection}
      * @return named non-null multi literal expression
-     * @see #namedMultiParam(TypeInfer, String, int)
+     * @see #namedRowParam(TypeInfer, String, int)
      */
-    public static RowExpression namedMultiLiteral(final TypeInfer type, final String name, final int size) {
-        return MultiLiteralExpression.named(type, name, size);
+    public static RowExpression namedRowLiteral(final TypeInfer type, final String name, final int size) {
+        return LiteralRowExpression.named(type, name, size);
     }
 
     /**
@@ -895,10 +896,10 @@ abstract class SQLsSyntax extends Functions {
      *                           <li>values is empty</li>
      *                           <li>infer isn't codec {@link TableField}</li>
      *                           </ul>
-     * @see #encodingMultiLiteral(TypeInfer, Collection)
+     * @see #encodingRowLiteral(TypeInfer, Collection)
      */
-    public static Expression encodingMultiParam(final TypeInfer type, final Collection<?> values) {
-        return MultiParamExpression.encodingMulti(type, values);
+    public static RowExpression encodingRowParam(final TypeInfer type, final Collection<?> values) {
+        return ParamRowExpression.encodingMulti(type, values);
     }
 
     /**
@@ -914,10 +915,10 @@ abstract class SQLsSyntax extends Functions {
      *                           <li>values is empty</li>
      *                           <li>infer isn't codec {@link TableField}</li>
      *                           </ul>
-     * @see #encodingMultiParam(TypeInfer, Collection)
+     * @see #encodingRowParam(TypeInfer, Collection)
      */
-    public static RowExpression encodingMultiLiteral(final TypeInfer type, final Collection<?> values) {
-        return MultiLiteralExpression.encodingMulti(type, values);
+    public static RowExpression encodingRowLiteral(final TypeInfer type, final Collection<?> values) {
+        return LiteralRowExpression.encodingMulti(type, values);
     }
 
     /**
@@ -939,10 +940,10 @@ abstract class SQLsSyntax extends Functions {
      *                           <li>size less than 1</li>
      *                           <li>infer isn't codec {@link TableField}</li>
      *                           </ul>
-     * @see #encodingNamedMultiLiteral(TypeInfer, String, int)
+     * @see #encodingNamedRowLiteral(TypeInfer, String, int)
      */
-    public static Expression encodingNamedMultiParam(final TypeInfer type, final String name, final int size) {
-        return MultiParamExpression.encodingNamed(type, name, size);
+    public static RowExpression encodingNamedRowParam(final TypeInfer type, final String name, final int size) {
+        return ParamRowExpression.encodingNamed(type, name, size);
     }
 
 
@@ -965,10 +966,34 @@ abstract class SQLsSyntax extends Functions {
      *                           <li>size less than 1</li>
      *                           <li>infer isn't codec {@link TableField}</li>
      *                           </ul>
-     * @see #encodingNamedMultiParam(TypeInfer, String, int)
+     * @see #encodingNamedRowParam(TypeInfer, String, int)
      */
-    public static RowExpression encodingNamedMultiLiteral(final TypeInfer type, final String name, final int size) {
-        return MultiLiteralExpression.encodingNamed(type, name, size);
+    public static RowExpression encodingNamedRowLiteral(final TypeInfer type, final String name, final int size) {
+        return LiteralRowExpression.encodingNamed(type, name, size);
+    }
+
+    public static RowExpression row(SubQuery subQuery) {
+        return RowExpressions.row(subQuery);
+    }
+
+    public static RowExpression row(Supplier<SubQuery> subQuery) {
+        return RowExpressions.row(subQuery.get());
+    }
+
+    public static RowExpression row(Object element) {
+        return RowExpressions.row(element);
+    }
+
+    public static RowExpression row(Object element1, Object element2) {
+        return RowExpressions.row(element1, element2);
+    }
+
+    public static RowExpression row(Object element1, Object element2, Object element3, Object... restElement) {
+        return RowExpressions.row(element1, element2, element3, restElement);
+    }
+
+    public static RowExpression row(Consumer<Consumer<Object>> consumer) {
+        return RowExpressions.row(consumer);
     }
 
 

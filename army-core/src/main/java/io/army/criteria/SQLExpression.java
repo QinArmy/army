@@ -1,7 +1,5 @@
 package io.army.criteria;
 
-import java.util.function.BiFunction;
-
 /**
  * <p>
  * This interface is base interface of below:
@@ -13,7 +11,7 @@ import java.util.function.BiFunction;
  *
  * @since 1.0
  */
-public interface SQLExpression extends Item {
+public interface SQLExpression extends RowElement {
 
 
     /**
@@ -63,9 +61,9 @@ public interface SQLExpression extends Item {
     CompoundPredicate greaterEqualAll(SubQuery subQuery);
 
 
-    CompoundPredicate in(RowElement row);
+    CompoundPredicate in(SQLColumnSet row);
 
-    CompoundPredicate notIn(RowElement row);
+    CompoundPredicate notIn(SQLColumnSet row);
 
 
 }

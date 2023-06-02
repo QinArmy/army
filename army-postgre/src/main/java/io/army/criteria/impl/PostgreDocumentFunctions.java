@@ -2055,7 +2055,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>exp is not operable expression,eg: {@link SQLs#DEFAULT}</li>
-     *                           <li>exp is multi value expression,eg:{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>exp is multi value expression,eg:{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                           <li>exp is {@link Postgres#space(String, SymbolPeriod, TableMeta)},should use {@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
      *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_json ( anyelement ) → json</a>
@@ -2076,7 +2076,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @throws CriteriaException throw when<ul>
      *                           <li>exp is not operable expression,eg: {@link SQLs#DEFAULT}</li>
-     *                           <li>exp is multi value expression,eg:{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>exp is multi value expression,eg:{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                           <li>exp is {@link Postgres#space(String, SymbolPeriod, TableMeta)},should use {@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
      *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_jsonb ( anyelement ) → jsonb</a>
@@ -2158,10 +2158,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param variadic here,<ul>
-     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
      * @see Postgres#space(String, SymbolPeriod, TableMeta)
@@ -2182,10 +2182,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param consumer here,<ul>
-     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
      * @see Postgres#space(String, SymbolPeriod, TableMeta)
@@ -2205,10 +2205,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param variadic here,<ul>
-     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
      * @see Postgres#space(String, SymbolPeriod, TableMeta)
@@ -2229,10 +2229,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param consumer here,<ul>
-     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
      * @see Postgres#space(String, SymbolPeriod, TableMeta)
@@ -2253,10 +2253,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param variadic here,<ul>
-     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
@@ -2276,10 +2276,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param consumer here,<ul>
-     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
@@ -2298,10 +2298,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param consumer here,<ul>
-     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
      * @see Postgres#space(String, SymbolPeriod, TableMeta)
@@ -2341,10 +2341,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param variadic here,<ul>
-     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
      * @see Postgres#space(String, SymbolPeriod, TableMeta)
@@ -2365,10 +2365,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param consumer here,<ul>
-     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
      * @see Postgres#space(String, SymbolPeriod, TableMeta)
@@ -2388,10 +2388,10 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param consumer here,<ul>
-     *                 <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedMultiParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedMultiLiteral(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
+     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
+     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
      *                 </ul> is allowed.
      * @see Postgres#space(String, SymbolPeriod, SymbolAsterisk)
      * @see Postgres#space(String, SymbolPeriod, TableMeta)
@@ -3151,8 +3151,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param json           non-null,it will be passed to funcRefForJson as the second argument of funcRefForJson
      * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                       <ul>
-     *                           <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                           <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                           <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
      *                       The first argument of funcRefForPath always is {@link NoCastTextType#INSTANCE}.
@@ -3175,8 +3175,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param funcRef   the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                  <ul>
-     *                      <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                      <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                      <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                      <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                      <li>developer custom method</li>
      *                  </ul>.
      *                  The first argument of funcRef always is {@link NoCastTextType#INSTANCE}.
@@ -3201,8 +3201,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
-     *                    <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                    <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                    <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                    <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                    <li>developer custom method</li>
      *                </ul>.
      *                The first argument of funcRefForPath always is {@link NoCastTextType#INSTANCE}.
@@ -3268,8 +3268,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param json           non-null,it will be passed to funcRefForJson as the second argument of funcRefForJson
      * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                       <ul>
-     *                           <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                           <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                           <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
      *                       The first argument of funcRefForPath always is {@link NoCastTextType#INSTANCE}.
@@ -3292,8 +3292,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param funcRef   the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                  <ul>
-     *                      <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                      <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                      <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                      <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                      <li>developer custom method</li>
      *                  </ul>.
      *                  The first argument of funcRef always is {@link NoCastTextType#INSTANCE}.
@@ -3319,8 +3319,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
-     *                    <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                    <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                    <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                    <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                    <li>developer custom method</li>
      *                </ul>.
      *                The first argument of funcRefForPath always is {@link NoCastTextType#INSTANCE}.
@@ -3371,8 +3371,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param json           non-null,it will be passed to funcRefForJson as the second argument of funcRefForJson
      * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                       <ul>
-     *                           <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                           <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                           <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
      *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
@@ -3395,8 +3395,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param funcRef   the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                  <ul>
-     *                      <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                      <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                      <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                      <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                      <li>developer custom method</li>
      *                  </ul>.
      *                  The first argument of funcRef always is {@link NoCastTextType#INSTANCE}.
@@ -3435,8 +3435,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
-     *                    <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                    <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                    <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                    <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                    <li>developer custom method</li>
      *                </ul>.
      *                The first argument of funcRefForPath always is {@link NoCastTextType#INSTANCE}.
@@ -3487,8 +3487,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param json           non-null,it will be passed to funcRefForJson as the second argument of funcRefForJson
      * @param funcRefForPath the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                       <ul>
-     *                           <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                           <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                           <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                           <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                           <li>developer custom method</li>
      *                       </ul>.
      *                       The first argument of funcRefForPath always is {@link TextType#INSTANCE}.
@@ -3512,8 +3512,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param funcRef   the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                  <ul>
-     *                      <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                      <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                      <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                      <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                      <li>developer custom method</li>
      *                  </ul>.
      *                  The first argument of funcRef always is {@link NoCastTextType#INSTANCE}.
@@ -3552,8 +3552,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
      *                <ul>
-     *                    <li>{@link SQLs#multiParam(TypeInfer, Collection)}</li>
-     *                    <li>{@link SQLs#multiLiteral(TypeInfer, Collection)}</li>
+     *                    <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
+     *                    <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
      *                    <li>developer custom method</li>
      *                </ul>.
      *                The first argument of funcRefForPath always is {@link NoCastTextType#INSTANCE}.
@@ -4026,7 +4026,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param newValue        non-null,it will be passed to funcRefForValue as the second argument of funcRefForValue
      * @param createIfMissing in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbSet(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_set ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean ] ) → jsonb<br/>
      *
@@ -4081,7 +4081,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                        The first argument of funcRefForValue always is {@link JsonbType#TEXT}.
      * @param newValue        non-null,it will be passed to funcRefForValue as the second argument of funcRefForValue
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbSet(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_set ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean ] ) → jsonb<br/>
      *
@@ -4137,7 +4137,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param newValue        non-null,it will be passed to funcRefForValue as the second argument of funcRefForValue
      * @param createIfMissing in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbSetLax(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_set_lax ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean [, null_value_treatment text ]] ) → jsonb<br/>
      *
@@ -4192,7 +4192,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                        The first argument of funcRefForValue always is {@link JsonbType#TEXT}.
      * @param newValue        non-null,it will be passed to funcRefForValue as the second argument of funcRefForValue
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbSetLax(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_set_lax ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean [, null_value_treatment text ]] ) → jsonb<br/>
      *
@@ -4252,7 +4252,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                        <li>{@link Postgres#RETURN_TARGET}</li>
      *                        </ul>
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbSetLax(Expression, Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_set_lax ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean [, null_value_treatment text ]] ) → jsonb<br/>
      *
@@ -4281,7 +4281,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                        <li>{@link Postgres#RETURN_TARGET}</li>
      *                        </ul>
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbSetLax(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_set_lax ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean [, null_value_treatment text ]] ) → jsonb<br/>
      *
@@ -4326,7 +4326,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param newValue        non-null,it will be passed to funcRefForValue as the second argument of funcRefForValue
      * @param insertAfter     in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbInsert(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_insert ( target jsonb, path text[], new_value jsonb [, insert_after boolean ] ) → jsonb<br/>
      *
@@ -4381,7 +4381,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                        The first argument of funcRefForValue always is {@link JsonbType#TEXT}.
      * @param newValue        non-null,it will be passed to funcRefForValue as the second argument of funcRefForValue
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbInsert(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_insert ( target jsonb, path text[], new_value jsonb [, insert_after boolean ] ) → jsonb<br/>
      *
@@ -4402,7 +4402,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbInsert(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_insert ( target jsonb, path text[], new_value jsonb [, insert_after boolean ] ) → jsonb<br/>
      *
@@ -4420,7 +4420,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_strip_nulls ( json ) → json<br/>
      *
      * </a>
@@ -4435,7 +4435,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_strip_nulls ( jsonb ) → jsonb<br/>
      *
      * </a>
@@ -4462,7 +4462,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathExists(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4479,7 +4479,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -4504,7 +4504,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathExists(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4541,7 +4541,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForVars always is {@link JsonbType#TEXT}.
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathExists(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4560,7 +4560,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -4586,7 +4586,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathExists(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4624,7 +4624,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathExists(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4644,7 +4644,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -4671,7 +4671,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatch(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4700,7 +4700,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatch(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4716,7 +4716,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -4742,7 +4742,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatch(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4770,7 +4770,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatch(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4798,7 +4798,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatch(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4817,7 +4817,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -4853,7 +4853,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForVars always is {@link JsonbType#TEXT}.
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatch(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -4874,7 +4874,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -4917,7 +4917,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQuery(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
@@ -4949,7 +4949,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </pre>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
      * </a>
@@ -4991,7 +4991,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQuery(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
@@ -5033,7 +5033,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQuery(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
@@ -5067,7 +5067,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </pre>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
      * </a>
@@ -5111,7 +5111,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQuery(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
@@ -5164,7 +5164,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQuery(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
@@ -5200,7 +5200,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
      * </a>
@@ -5230,7 +5230,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryArray(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -5247,7 +5247,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -5272,7 +5272,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryArray(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -5309,7 +5309,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForVars always is {@link JsonbType#TEXT}.
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryArray(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -5328,7 +5328,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -5354,7 +5354,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryArray(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -5392,7 +5392,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      *                       @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryArray(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -5413,7 +5413,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -5441,7 +5441,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryFirst(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -5458,7 +5458,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -5483,7 +5483,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryFirst(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -5520,7 +5520,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForVars always is {@link JsonbType#TEXT}.
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryFirst(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -5539,7 +5539,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -5565,7 +5565,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryFirst(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -5602,7 +5602,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForVars always is {@link JsonbType#TEXT}.
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryFirst(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -5623,7 +5623,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -5651,7 +5651,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                The first argument of funcRef always is {@link JsonPathType#INSTANCE}.
      * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathExistsTz(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -5667,7 +5667,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -5692,7 +5692,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                The first argument of funcRef always is {@link JsonPathType#INSTANCE}.
      * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathExistsTz(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -5729,7 +5729,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForVars always is {@link JsonbType#TEXT}.
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathExistsTz(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -5748,7 +5748,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -5774,7 +5774,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
      * @param silent  in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathExistsTz(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -5812,7 +5812,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathExistsTz(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -5833,7 +5833,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_exists_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -5861,7 +5861,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                The first argument of funcRef always is {@link JsonPathType#INSTANCE}.
      * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatchTz(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -5877,7 +5877,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -5902,7 +5902,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                The first argument of funcRef always is {@link JsonPathType#INSTANCE}.
      * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatchTz(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -5939,7 +5939,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForVars always is {@link JsonbType#TEXT}.
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatchTz(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -5958,7 +5958,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -5984,7 +5984,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param path    non-null,it will be passed to funcRef as the second argument of funcRef
      * @param silent  in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatchTz(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -6022,7 +6022,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathMatchTz(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
@@ -6043,7 +6043,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_match_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → boolean<br/>
      *
      * </a>
@@ -6095,7 +6095,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryTz(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
@@ -6136,7 +6136,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </pre>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
      * </a>
@@ -6187,7 +6187,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryTz(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
@@ -6238,7 +6238,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryTz(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
@@ -6281,7 +6281,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </pre>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
      * </a>
@@ -6334,7 +6334,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryTz(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
@@ -6385,7 +6385,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryTz(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
@@ -6430,7 +6430,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → setof jsonb<br/>
      *
      * </a>
@@ -6461,7 +6461,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryArrayTz(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -6478,7 +6478,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -6503,7 +6503,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryArrayTz(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -6540,7 +6540,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForVars always is {@link JsonPathType#INSTANCE}.
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryArrayTz(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -6560,7 +6560,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -6586,7 +6586,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryArrayTz(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -6624,7 +6624,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryArrayTz(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -6645,7 +6645,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_array_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -6673,7 +6673,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryFirstTz(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -6690,7 +6690,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -6715,7 +6715,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForPath always is {@link JsonPathType#INSTANCE}.
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryFirstTz(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -6752,7 +6752,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForVars always is {@link JsonPathType#INSTANCE}.
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryFirstTz(Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -6771,7 +6771,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -6797,7 +6797,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param path           non-null,it will be passed to funcRefForPath as the second argument of funcRefForPath
      * @param silent         in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryFirstTz(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -6834,7 +6834,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                       The first argument of funcRefForVars always is {@link JsonPathType#INSTANCE}.
      * @param vars           non-null,it will be passed to funcRefForVars as the second argument of funcRefForVars
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see #jsonbPathQueryFirstTz(Expression, Expression, Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
@@ -6855,7 +6855,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *
      * @param silent in most case {@link SQLs#TRUE} or {@link  SQLs#FALSE}
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_path_query_first_tz ( target jsonb, path jsonpath [, vars jsonb [, silent boolean ]] ) → jsonb<br/>
      *
      * </a>
@@ -6871,7 +6871,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_pretty ( jsonb ) → text<br/>
      *
      * </a>
@@ -6886,7 +6886,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">json_typeof ( json ) → text<br/>
      *
      * </a>
@@ -6901,7 +6901,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @throws CriteriaException throw when argument isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
-     *                           {@link SQLs#multiParam(TypeInfer, Collection)}
+     *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE">jsonb_typeof ( json ) → text<br/>
      *
      * </a>

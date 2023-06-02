@@ -8,7 +8,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface SubQuery extends DerivedTable, Query, RightOperand, SubStatement, RowElement {
+public interface SubQuery extends DerivedTable, Query, SubStatement, SQLColumnSet, RowElement {
 
 
 }
