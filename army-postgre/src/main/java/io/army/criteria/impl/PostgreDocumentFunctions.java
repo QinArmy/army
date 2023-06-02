@@ -2060,7 +2060,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_json ( anyelement ) → json</a>
      */
-    public static SimpleExpression toJson(ExpressionElement exp) {
+    public static SimpleExpression toJson(SQLExpression exp) {
         final String name = "TO_JSON";
         if (exp instanceof _SelectionGroup._TableFieldGroup) {
             throw CriteriaUtils.funcArgError(name, exp);
@@ -2081,7 +2081,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_jsonb ( anyelement ) → jsonb</a>
      */
-    public static SimpleExpression toJsonb(ExpressionElement exp) {
+    public static SimpleExpression toJsonb(SQLExpression exp) {
         final String name = "TO_JSONB";
         if (exp instanceof _SelectionGroup._TableFieldGroup) {
             throw CriteriaUtils.funcArgError(name, exp);
@@ -2123,14 +2123,14 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param record row expression or  composite expression; see<ul>
-     *               <li> {@link Postgres#row(ExpressionElement...)} </li>
+     *               <li> {@link Postgres#row(SQLExpression...)} </li>
      *               <li>{@link Postgres#row(Consumer)}</li>
      *               </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
      * Converts an SQL composite value to a JSON object. The behavior is the same as to_json except that line feeds will be added between top-level elements if the optional boolean parameter is true.
      * </a>
      */
-    public static SimpleExpression rowToJson(ExpressionElement record) {
+    public static SimpleExpression rowToJson(SQLExpression record) {
         return FunctionUtils.complexArgFunc("ROW_TO_JSON", JsonType.TEXT, record);
     }
 
@@ -2140,14 +2140,14 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * @param record row expression or  composite expression; see<ul>
-     *               <li> {@link Postgres#row(ExpressionElement...)} </li>
+     *               <li> {@link Postgres#row(SQLExpression...)} </li>
      *               <li>{@link Postgres#row(Consumer)}</li>
      *               </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
      * Converts an SQL composite value to a JSON object. The behavior is the same as to_json except that line feeds will be added between top-level elements if the optional boolean parameter is true.
      * </a>
      */
-    public static SimpleExpression rowToJson(ExpressionElement record, Expression lineFeed) {
+    public static SimpleExpression rowToJson(SQLExpression record, Expression lineFeed) {
         return FunctionUtils.complexArgFunc("ROW_TO_JSON", JsonType.TEXT, record, FuncWord.COMMA, lineFeed);
     }
 
@@ -2171,7 +2171,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(ExpressionElement... variadic) {
+    public static SimpleExpression jsonBuildArray(SQLExpression... variadic) {
         return FunctionUtils.varargsElementFunc("JSON_BUILD_ARRAY", false, JsonType.TEXT, variadic);
     }
 
@@ -2218,7 +2218,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(ExpressionElement... variadic) {
+    public static SimpleExpression jsonbBuildArray(SQLExpression... variadic) {
         return FunctionUtils.varargsElementFunc("JSONB_BUILD_ARRAY", false, JsonbType.TEXT, variadic);
     }
 
@@ -2265,7 +2265,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildObject(ExpressionElement... variadic) {
+    public static SimpleExpression jsonBuildObject(SQLExpression... variadic) {
         return FunctionUtils.varargsElementFunc("JSON_BUILD_OBJECT", true, JsonType.TEXT, variadic);
     }
 
@@ -2354,7 +2354,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(ExpressionElement... variadic) {
+    public static SimpleExpression jsonbBuildObject(SQLExpression... variadic) {
         return FunctionUtils.varargsElementFunc("JSONB_BUILD_OBJECT", true, JsonbType.TEXT, variadic);
     }
 

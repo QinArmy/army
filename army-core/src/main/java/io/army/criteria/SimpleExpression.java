@@ -9,6 +9,7 @@ import io.army.mapping.NoCastTextType;
 
 import java.util.Collection;
 import java.util.function.BiFunction;
+import java.util.function.UnaryOperator;
 
 import static io.army.dialect.Database.*;
 
@@ -34,7 +35,7 @@ public interface SimpleExpression extends Expression {
      * of {@link #equal(Expression)} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -64,7 +65,7 @@ public interface SimpleExpression extends Expression {
      * of {@link #equal(Expression)} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -96,7 +97,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -127,7 +128,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -157,7 +158,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -187,7 +188,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -217,7 +218,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -247,7 +248,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -280,7 +281,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by firstFuncRef and secondFuncRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
      * </p>
      *
      * @param firstFuncRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -328,7 +329,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -360,7 +361,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by firstFuncRef and secondFuncRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
      * </p>
      *
      * @param firstFuncRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -408,7 +409,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param modifier {@link SQLs#SYMMETRIC} or {@link SQLs#ASYMMETRIC}
@@ -442,7 +443,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by firstFuncRef and secondFuncRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
      * </p>
      *
      * @param firstFuncRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -491,7 +492,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param modifier {@link SQLs#SYMMETRIC} or {@link SQLs#ASYMMETRIC}
@@ -525,7 +526,7 @@ public interface SimpleExpression extends Expression {
      * {@link Expression} is returned by firstFuncRef and secondFuncRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of firstFuncRef and secondFuncRef always is <strong>this</strong>.
      * </p>
      *
      * @param firstFuncRef  the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -568,14 +569,13 @@ public interface SimpleExpression extends Expression {
     <T,U> CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first, SQLs.WordAnd and,BiFunction<SimpleExpression, U, Expression> secondFuncRef, U second);
 
 
-
     /**
      * <p>
      * Operator <strong>IS </strong> . This method is similar to {@link #notEqual(Expression)},except that the operand
      * {@link Expression} is returned by funcRef.
      * </p>
      * <p>
-     * <strong>Node</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
      * </p>
      *
      * @param funcRef the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -597,9 +597,9 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#multiParam(TypeInfer, Collection)}
      */
-    <T> CompoundPredicate is(SQLs.IsComparisonWord operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value);
+    <T> CompoundPredicate is(SQLs.IsComparisonWord operator, BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
-    <T> CompoundPredicate isNot(SQLs.IsComparisonWord operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value);
+    <T> CompoundPredicate isNot(SQLs.IsComparisonWord operator, BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
     <T extends Collection<?>> CompoundPredicate in(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
@@ -639,17 +639,111 @@ public interface SimpleExpression extends Expression {
     <T> CompoundExpression leftShift(BiFunction<SimpleExpression, T, Expression> funcRef, T value);
 
 
-    <T> CompoundExpression apply(BiFunction<SimpleExpression, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef, T value);
+    /*-------------------below dialect operator method-------------------*/
 
-    <M extends SQLWords, T> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef, T value, M modifier, Expression optionalExp);
 
-    <M extends SQLWords, T> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef, T value, M modifier, char escapeChar);
+    /**
+     * <p>
+     * This method is designed for dialect operator.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param value   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
 
-    <T> CompoundPredicate test(BiFunction<SimpleExpression, Expression, CompoundPredicate> operator, BiFunction<SimpleExpression, T, Expression> funcRef, T value);
+    <T> CompoundExpression space(BiFunction<SimpleExpression, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value);
 
-    <M extends SQLWords, T> CompoundPredicate test(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, Expression optionalExp);
+    /**
+     * <p>
+     * This method is designed for dialect operator.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param value   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    <M extends SQLWords, T> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value, M modifier, Expression optionalExp);
 
-    <M extends SQLWords, T> CompoundPredicate test(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, char escapeChar);
+    /**
+     * <p>
+     * This method is designed for dialect operator.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param value   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    <M extends SQLWords, T> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value, M modifier, char escapeChar);
+
+    /**
+     * <p>
+     * This method is designed for dialect operator that produce boolean type expression.
+     * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     * <p>
+     *
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param value   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    <T> CompoundPredicate whiteSpace(BiFunction<SimpleExpression, Expression, CompoundPredicate> operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value);
+
+    /**
+     * <p>
+     * This method is designed for dialect operator that produce boolean type expression.
+     * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     * <p>
+     *
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param value   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    <M extends SQLWords, T> CompoundPredicate whiteSpace(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, BiFunction<MappingType, T, Expression> funcRef, @Nullable T value, M modifier, Expression optionalExp);
+
+    /**
+     * <p>
+     * This method is designed for dialect operator that produce boolean type expression.
+     * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     * <p>
+     *
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param value   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    <M extends SQLWords, T> CompoundPredicate whiteSpace(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, BiFunction<MappingType, T, Expression> funcRef, @Nullable T value, M modifier, char escapeChar);
 
 
 }

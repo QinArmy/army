@@ -13,7 +13,7 @@ package io.army.criteria.impl;
  *
  * @since 1.0
  */
-interface FunctionArg extends ArmyExpressionElement {
+interface FunctionArg extends ArmySQLExpression {
 
     /**
      * <p>

@@ -46,8 +46,8 @@ abstract class CriteriaSupports {
         throw new UnsupportedOperationException();
     }
 
-    static ArmyExpressionElement derivedAsterisk(String derivedAlias, SQLs.SymbolPeriod period,
-                                                 SQLs.SymbolAsterisk asterisk) {
+    static ArmySQLExpression derivedAsterisk(String derivedAlias, SQLs.SymbolPeriod period,
+                                             SQLs.SymbolAsterisk asterisk) {
         return new DerivedAsterisk(derivedAlias, period, asterisk);
     }
 
@@ -69,34 +69,34 @@ abstract class CriteriaSupports {
     }
 
 
-    static ElementSpaceClause elementSpaceClause(boolean required, Consumer<? super ArmyExpressionElement> consumer) {
+    static ElementSpaceClause elementSpaceClause(boolean required, Consumer<? super ArmySQLExpression> consumer) {
         return new ElementSpaceClause(required, consumer);
     }
 
-    static ElementConsumer elementConsumer(boolean required, Consumer<? super ArmyExpressionElement> consumer) {
+    static ElementConsumer elementConsumer(boolean required, Consumer<? super ArmySQLExpression> consumer) {
         return new ElementConsumer(required, consumer);
     }
 
-    static ElementObjectSpaceClause elementObjectSpaceClause(Consumer<? super ArmyExpressionElement> consumer) {
+    static ElementObjectSpaceClause elementObjectSpaceClause(Consumer<? super ArmySQLExpression> consumer) {
         return new ElementObjectSpaceClause(consumer);
     }
 
-    static ElementObjectConsumer elementObjectConsumer(Consumer<? super ArmyExpressionElement> consumer) {
+    static ElementObjectConsumer elementObjectConsumer(Consumer<? super ArmySQLExpression> consumer) {
         return new ElementObjectConsumer(consumer);
     }
 
-    static RowExpression rowElement(final boolean required, final ExpressionElement... columns) {
+    static RowExpression rowElement(final boolean required, final SQLExpression... columns) {
         if (required && columns.length == 0) {
             throw CriteriaUtils.dontAddAnyItem();
         }
 
-        final List<ArmyExpressionElement> columnList;
+        final List<ArmySQLExpression> columnList;
         columnList = _Collections.arrayList(columns.length);
-        for (ExpressionElement exp : columns) {
-            if (!(exp instanceof ArmyExpressionElement)) {
+        for (SQLExpression exp : columns) {
+            if (!(exp instanceof ArmySQLExpression)) {
                 throw CriteriaUtils.funcArgError("ROW", exp);
             }
-            columnList.add((ArmyExpressionElement) exp);
+            columnList.add((ArmySQLExpression) exp);
         }
         return new RowExpressionImpl(columnList);
     }
@@ -104,7 +104,7 @@ abstract class CriteriaSupports {
 
     static RowExpression staticRowElement(final boolean required,
                                           final Consumer<Statement._ElementSpaceClause> consumer) {
-        final List<ArmyExpressionElement> columnList = _Collections.arrayList();
+        final List<ArmySQLExpression> columnList = _Collections.arrayList();
         final ElementSpaceClause clause;
         clause = elementSpaceClause(required, columnList::add);
 
@@ -116,7 +116,7 @@ abstract class CriteriaSupports {
 
     static RowExpression dynamicRowElement(final boolean required,
                                            final Consumer<Statement._ElementConsumer> consumer) {
-        final List<ArmyExpressionElement> columnList = _Collections.arrayList();
+        final List<ArmySQLExpression> columnList = _Collections.arrayList();
         final ElementConsumer clause;
         clause = elementConsumer(required, columnList::add);
 
@@ -1147,15 +1147,20 @@ abstract class CriteriaSupports {
     }//ReturningBuilderImpl
 
 
-    static final class RowExpressionImpl implements ArmyRowExpression, FunctionArg.SingleFunctionArg {
+    static final class RowExpressionImpl extends OperationRowExpression implements ArmyRowExpression, FunctionArg.SingleFunctionArg {
 
-        private final List<ArmyExpressionElement> columnList;
+        private final List<ArmySQLExpression> columnList;
 
-        private RowExpressionImpl(List<ArmyExpressionElement> columnList) {
+        private RowExpressionImpl(List<ArmySQLExpression> columnList) {
             assert columnList.size() > 0;
             this.columnList = columnList;
         }
 
+
+        @Override
+        public int columnSize() {
+            return this.columnList.size();
+        }
 
         @Override
         public void appendSql(final _SqlContext context) {
@@ -1163,7 +1168,7 @@ abstract class CriteriaSupports {
             sqlBuilder = context.sqlBuilder()
                     .append(" ROW(");
 
-            final List<ArmyExpressionElement> columnList = this.columnList;
+            final List<ArmySQLExpression> columnList = this.columnList;
             final int size;
             size = columnList.size();
             for (int i = 0; i < size; i++) {
@@ -1182,7 +1187,7 @@ abstract class CriteriaSupports {
             sqlBuilder = new StringBuilder()
                     .append(" ROW(");
 
-            final List<ArmyExpressionElement> columnList = this.columnList;
+            final List<ArmySQLExpression> columnList = this.columnList;
             final int size;
             size = columnList.size();
             for (int i = 0; i < size; i++) {
@@ -1299,17 +1304,17 @@ abstract class CriteriaSupports {
 
         private final boolean required;
 
-        private final Consumer<? super ArmyExpressionElement> consumer;
+        private final Consumer<? super ArmySQLExpression> consumer;
 
         private Boolean state;
 
-        private ElementSpaceClause(boolean required, Consumer<? super ArmyExpressionElement> consumer) {
+        private ElementSpaceClause(boolean required, Consumer<? super ArmySQLExpression> consumer) {
             this.required = required;
             this.consumer = consumer;
         }
 
         @Override
-        public Statement._ElementCommaClause space(ExpressionElement exp) {
+        public Statement._ElementCommaClause space(SQLExpression exp) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1338,15 +1343,15 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Statement._ElementCommaClause comma(final @Nullable ExpressionElement exp) {
+        public Statement._ElementCommaClause comma(final @Nullable SQLExpression exp) {
             if (this.state != Boolean.TRUE) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (exp == null) {
                 throw ContextStack.clearStackAndNullPointer();
-            } else if (!(exp instanceof ArmyExpressionElement)) {
+            } else if (!(exp instanceof ArmySQLExpression)) {
                 throw ContextStack.clearStackAndNonArmyExpression();
             }
-            this.consumer.accept((ArmyExpressionElement) exp);
+            this.consumer.accept((ArmySQLExpression) exp);
             return this;
         }
 
@@ -1377,17 +1382,17 @@ abstract class CriteriaSupports {
 
         private final boolean required;
 
-        private final Consumer<? super ArmyExpressionElement> consumer;
+        private final Consumer<? super ArmySQLExpression> consumer;
 
         private Boolean state;
 
-        private ElementConsumer(boolean required, Consumer<? super ArmyExpressionElement> consumer) {
+        private ElementConsumer(boolean required, Consumer<? super ArmySQLExpression> consumer) {
             this.required = required;
             this.consumer = consumer;
         }
 
         @Override
-        public Statement._ElementConsumer accept(final @Nullable ExpressionElement exp) {
+        public Statement._ElementConsumer accept(final @Nullable SQLExpression exp) {
             final Boolean state = this.state;
             if (state == null) {
                 this.state = Boolean.TRUE;
@@ -1396,10 +1401,10 @@ abstract class CriteriaSupports {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (exp == null) {
                 throw ContextStack.clearStackAndNullPointer();
-            } else if (!(exp instanceof ArmyExpressionElement)) {
+            } else if (!(exp instanceof ArmySQLExpression)) {
                 throw ContextStack.clearStackAndNonArmyExpression();
             }
-            this.consumer.accept((ArmyExpressionElement) exp);
+            this.consumer.accept((ArmySQLExpression) exp);
             return this;
         }
 
@@ -1427,16 +1432,16 @@ abstract class CriteriaSupports {
     static final class ElementObjectSpaceClause implements Statement._ElementObjectSpaceClause,
             Statement._ElementObjectCommaClause {
 
-        private final Consumer<? super ArmyExpressionElement> consumer;
+        private final Consumer<? super ArmySQLExpression> consumer;
 
         private Boolean state;
 
-        private ElementObjectSpaceClause(Consumer<? super ArmyExpressionElement> consumer) {
+        private ElementObjectSpaceClause(Consumer<? super ArmySQLExpression> consumer) {
             this.consumer = consumer;
         }
 
         @Override
-        public Statement._ElementObjectCommaClause space(String keName, ExpressionElement exp) {
+        public Statement._ElementObjectCommaClause space(String keName, SQLExpression exp) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1445,7 +1450,7 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Statement._ElementObjectCommaClause space(Expression key, ExpressionElement exp) {
+        public Statement._ElementObjectCommaClause space(Expression key, SQLExpression exp) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1476,13 +1481,13 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public Statement._ElementObjectCommaClause comma(String keName, ExpressionElement exp) {
+        public Statement._ElementObjectCommaClause comma(String keName, SQLExpression exp) {
             return this.comma(SQLs.literal(NoCastTextType.INSTANCE, keName), exp);
         }
 
         @Override
         public Statement._ElementObjectCommaClause comma(final @Nullable Expression key,
-                                                         final @Nullable ExpressionElement exp) {
+                                                         final @Nullable SQLExpression exp) {
             if (this.state != Boolean.TRUE) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (key == null) {
@@ -1492,14 +1497,14 @@ abstract class CriteriaSupports {
             } else if (!(key instanceof OperationExpression)) {
                 String m = String.format("don't support %s", key.getClass().getName());
                 throw ContextStack.clearStackAndCriteriaError(m);
-            } else if (!(exp instanceof ArmyExpressionElement)) {
+            } else if (!(exp instanceof ArmySQLExpression)) {
                 throw ContextStack.clearStackAndNonArmyExpression();
             } else if (exp instanceof _SelectionGroup._TableFieldGroup) {
                 String m = "error,don't support tableAlias.* ,you should use appropriate jsonObject method.";
                 throw ContextStack.clearStackAndCriteriaError(m);
             }
             this.consumer.accept((ArmyExpression) key);
-            this.consumer.accept((ArmyExpressionElement) exp);
+            this.consumer.accept((ArmySQLExpression) exp);
             return this;
         }
 
@@ -1527,22 +1532,22 @@ abstract class CriteriaSupports {
 
     static final class ElementObjectConsumer implements Statement._ElementObjectConsumer {
 
-        private final Consumer<? super ArmyExpressionElement> consumer;
+        private final Consumer<? super ArmySQLExpression> consumer;
 
         private boolean state;
 
-        private ElementObjectConsumer(Consumer<? super ArmyExpressionElement> consumer) {
+        private ElementObjectConsumer(Consumer<? super ArmySQLExpression> consumer) {
             this.consumer = consumer;
         }
 
         @Override
-        public Statement._ElementObjectConsumer accept(String keName, ExpressionElement value) {
+        public Statement._ElementObjectConsumer accept(String keName, SQLExpression value) {
             return this.accept(SQLs.literal(NoCastTextType.INSTANCE, keName), value);
         }
 
         @Override
         public Statement._ElementObjectConsumer accept(final @Nullable Expression key,
-                                                       final @Nullable ExpressionElement value) {
+                                                       final @Nullable SQLExpression value) {
             if (this.state) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (key == null) {
@@ -1552,7 +1557,7 @@ abstract class CriteriaSupports {
             } else if (!(key instanceof OperationExpression)) {
                 String m = String.format("don't support %s", key.getClass().getName());
                 throw ContextStack.clearStackAndCriteriaError(m);
-            } else if (!(value instanceof ArmyExpressionElement)) {
+            } else if (!(value instanceof ArmySQLExpression)) {
                 String m = String.format("don't support %s", value.getClass().getName());
                 throw ContextStack.clearStackAndCriteriaError(m);
             } else if (value instanceof _SelectionGroup._TableFieldGroup) {
@@ -1560,7 +1565,7 @@ abstract class CriteriaSupports {
                 throw ContextStack.clearStackAndCriteriaError(m);
             }
             this.consumer.accept((ArmyExpression) key);
-            this.consumer.accept((ArmyExpressionElement) value);
+            this.consumer.accept((ArmySQLExpression) value);
             return this;
         }
 
@@ -1674,7 +1679,7 @@ abstract class CriteriaSupports {
     }//StringObjectConsumer
 
 
-    private static final class DerivedAsterisk implements ArmyExpressionElement, FunctionArg.SingleFunctionArg {
+    private static final class DerivedAsterisk extends OperationRowExpression implements ArmySQLExpression, FunctionArg.SingleFunctionArg {
 
         private final String derivedAlias;
 

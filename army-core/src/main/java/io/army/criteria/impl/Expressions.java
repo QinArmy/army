@@ -104,7 +104,7 @@ abstract class Expressions {
         return new ExistsPredicate(not, operand);
     }
 
-    static CompoundPredicate inPredicate(final ExpressionElement left, final boolean not,
+    static CompoundPredicate inPredicate(final SQLExpression left, final boolean not,
                                          final @Nullable RowElement right) {
         if (right == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -118,11 +118,11 @@ abstract class Expressions {
                 throw ContextStack.clearStackAndCriteriaError(m);
             } else if (left instanceof RowExpression) {
                 if (left instanceof ArmyRowExpression.DelayRow) {
-                    //TODO
+                    ContextStack.peek().addEndEventListener(
+                            new DelayRowColumnValidator((ArmyRowExpression.DelayRow) left, rightSize)::onContextEnd
+                    );
                 } else if (rightSize != ((ArmyRowExpression) left).columnSize()) {
-                    String m = String.format("Left operand of IN  is row expression and column size is %s, but subquery selection count is %s",
-                            ((ArmyRowExpression) left).columnSize(), rightSize);
-                    throw ContextStack.clearStackAndCriteriaError(m);
+                    throw inOpeRowAndSubQueryNotMatch(((ArmyRowExpression) left).columnSize(), rightSize);
                 }
             }
         } else if (!(right instanceof ArmyRowExpression)) {
@@ -202,8 +202,8 @@ abstract class Expressions {
         return new BetweenPredicate(left, not, modifier, center, right);
     }
 
-    static CompoundPredicate compareQueryPredicate(OperationExpression left
-            , DualBooleanOperator operator, QueryOperator queryOperator, SubQuery subQuery) {
+    static CompoundPredicate compareQueryPredicate(OperationSQLExpression left, DualBooleanOperator operator,
+                                                   QueryOperator queryOperator, SubQuery subQuery) {
         switch (operator) {
             case LESS:
             case LESS_EQUAL:
@@ -217,12 +217,14 @@ abstract class Expressions {
                     case SOME:
                         break;
                     default:
+                        // no bug,never here
                         throw _Exceptions.unexpectedEnum(queryOperator);
                 }
                 assertColumnSubQuery(operator, queryOperator, subQuery);
             }
             break;
             default:
+                // no bug,never here
                 throw _Exceptions.unexpectedEnum(operator);
         }
         return new SubQueryPredicate(left, operator, queryOperator, subQuery);
@@ -551,6 +553,15 @@ abstract class Expressions {
             throw ContextStack.clearStackAndCriteriaError(builder.toString());
         }
 
+    }
+
+    /**
+     * @see #inPredicate(SQLExpression, boolean, RowElement)
+     */
+    private static CriteriaException inOpeRowAndSubQueryNotMatch(int leftSize, int rightSize) {
+        String m = String.format("Left operand of IN  is row expression and column size is %s, but subquery selection count is %s",
+                leftSize, rightSize);
+        throw ContextStack.clearStackAndCriteriaError(m);
     }
 
 
@@ -1472,7 +1483,7 @@ abstract class Expressions {
 
 
     private static final class SubQueryPredicate extends OperationPredicate.OperationCompoundPredicate {
-        private final ArmyExpression left;
+        private final ArmySQLExpression left;
 
         private final DualBooleanOperator operator;
 
@@ -1480,7 +1491,7 @@ abstract class Expressions {
 
         private final SubQuery subQuery;
 
-        private SubQueryPredicate(OperationExpression left, DualBooleanOperator operator,
+        private SubQueryPredicate(OperationSQLExpression left, DualBooleanOperator operator,
                                   QueryOperator queryOperator, SubQuery subQuery) {
             this.left = left;
             this.operator = operator;
@@ -1683,7 +1694,7 @@ abstract class Expressions {
 
     private static final class InOperationPredicate extends OperationPredicate.OperationCompoundPredicate {
 
-        private final ArmyExpressionElement left;
+        private final ArmySQLExpression left;
 
         private final boolean not;
 
@@ -1691,10 +1702,10 @@ abstract class Expressions {
 
 
         /**
-         * @see #inPredicate(ExpressionElement, boolean, RowElement)
+         * @see #inPredicate(SQLExpression, boolean, RowElement)
          */
-        private InOperationPredicate(ExpressionElement left, boolean not, RowElement right) {
-            this.left = (ArmyExpressionElement) left;
+        private InOperationPredicate(SQLExpression left, boolean not, RowElement right) {
+            this.left = (ArmySQLExpression) left;
             this.not = not;
             this.right = right;
         }
@@ -1734,6 +1745,37 @@ abstract class Expressions {
 
 
     }//InOperationPredicate
+
+
+    private static final class DelayRowColumnValidator {
+
+        private final ArmyRowExpression.DelayRow row;
+
+        private final int selectionSize;
+
+        /**
+         * @see #inPredicate(SQLExpression, boolean, RowElement)
+         */
+        private DelayRowColumnValidator(ArmyRowExpression.DelayRow row, int selectionSize) {
+            this.row = row;
+            this.selectionSize = selectionSize;
+        }
+
+        void onContextEnd() {
+            final ArmyRowExpression.DelayRow row = this.row;
+            if (!row.isDelay()) {
+                if (this.selectionSize != row.columnSize()) {
+                    throw inOpeRowAndSubQueryNotMatch(row.columnSize(), this.selectionSize);
+                }
+            } else if (ContextStack.isEmpty()) {
+                String m = String.format("unknown row %s", row);
+                throw new CriteriaException(m);
+            } else {
+                ContextStack.peek().addEndEventListener(this::onContextEnd);
+            }
+        }
+
+    }//DelayRowColumnValidator
 
 
     private static abstract class ArrayElementExpression extends OperationExpression.OperationSimpleExpression {

@@ -20,10 +20,11 @@ public class PostgreOperatorUnitTests extends PostgreUnitTests {
         stmt = Postgres.query()
                 .select(ChinaRegion_.id)
                 .from(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.name.test(Postgres::notSimilarTo, SQLs::literal, "%(b|d)%"))
-                .and(ChinaRegion_.name.test(Postgres::notSimilarTo, SQLs::literal, "%(b|d)%", SQLs.ESCAPE, '|'))
-                .and(ChinaRegion_.name.test(Postgres::similarTo, SQLs::literal, "Hong Kong"))
-                .and(ChinaRegion_.name.test(Postgres::similarTo, SQLs::literal, "Hong |_ong", SQLs.ESCAPE, '|'))
+                .where(ChinaRegion_.name::whiteSpace, Postgres::notSimilarTo, SQLs::literal, "%(b|d)%")
+                .and(ChinaRegion_.name::whiteSpace, Postgres::similarTo, SQLs::literal, "%(b|d)%")
+                .and(ChinaRegion_.name.whiteSpace(Postgres::notSimilarTo, SQLs::literal, "%(b|d)%", SQLs.ESCAPE, '|'))
+                .and(ChinaRegion_.name.whiteSpace(Postgres::similarTo, SQLs::literal, "Hong Kong"))
+                .and(ChinaRegion_.name.whiteSpace(Postgres::similarTo, SQLs::literal, "Hong |_ong", SQLs.ESCAPE, '|'))
                 .asQuery();
 
         printStmt(LOG, stmt);

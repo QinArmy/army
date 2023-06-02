@@ -9,6 +9,8 @@ import io.army.meta.TypeMeta;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static io.army.dialect.Database.*;
 
@@ -26,7 +28,7 @@ import static io.army.dialect.Database.*;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.TypeUpdateSpec, SortItem, RightOperand,
+public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpdateSpec, SortItem, RightOperand,
         AssignmentItem, SelectionSpec, ArraySubscript {
 
 
@@ -41,28 +43,8 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      */
     CompoundPredicate equal(Expression operand);
 
-    /**
-     * MySQL
-     *
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/comparison-operators.html#operator_equal-to">NULL-safe equal.</a>
-     */
-    @Support({MySQL})
-    CompoundPredicate nullSafeEqual(Expression operand);
 
 
-    /**
-     * <p>
-     * <strong>= ANY</strong> operator
-     * </p>
-     */
-    CompoundPredicate equalAny(SubQuery subQuery);
-
-    /**
-     * <p>
-     * <strong>= SOME</strong> operator
-     * </p>
-     */
-    CompoundPredicate equalSome(SubQuery subQuery);
 
     /**
      * <p>
@@ -75,47 +57,17 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
      */
     CompoundPredicate less(Expression operand);
 
-    CompoundPredicate lessAny(SubQuery subQuery);
-
-    CompoundPredicate lessSome(SubQuery subQuery);
-
-    CompoundPredicate lessAll(SubQuery subQuery);
-
 
     CompoundPredicate lessEqual(Expression operand);
 
 
-    CompoundPredicate lessEqualAny(SubQuery subQuery);
-
-
-    CompoundPredicate lessEqualSome(SubQuery subQuery);
-
-    CompoundPredicate lessEqualAll(SubQuery subQuery);
-
     CompoundPredicate greater(Expression operand);
-
-
-    CompoundPredicate greaterAny(SubQuery subQuery);
-
-    CompoundPredicate greaterSome(SubQuery subQuery);
-
-    CompoundPredicate greaterAll(SubQuery subQuery);
 
     CompoundPredicate greaterEqual(Expression operand);
 
-    CompoundPredicate greaterEqualAny(SubQuery subQuery);
-
-    CompoundPredicate greaterEqualSome(SubQuery subQuery);
-
-    CompoundPredicate greaterEqualAll(SubQuery subQuery);
 
     CompoundPredicate notEqual(Expression operand);
 
-    CompoundPredicate notEqualAny(SubQuery subQuery);
-
-    CompoundPredicate notEqualSome(SubQuery subQuery);
-
-    CompoundPredicate notEqualAll(SubQuery subQuery);
 
     /**
      * @param and {@link SQLs#AND}
@@ -170,10 +122,6 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
 
     CompoundPredicate isNot(SQLs.IsComparisonWord operator, Expression operand);
 
-    CompoundPredicate in(RowElement row);
-
-    CompoundPredicate notIn(RowElement row);
-
     CompoundPredicate like(Expression pattern);
 
     CompoundPredicate like(Expression pattern, SQLs.WordEscape escape, char escapeChar);
@@ -195,6 +143,7 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
     CompoundExpression minus(Expression minuend);
 
     CompoundExpression divide(Expression divisor);
+
 
     /**
      * Bitwise AND
@@ -241,7 +190,7 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
 
 
     /**
-     * @return this
+     * @return always this
      */
     @Override
     SortItem asSortItem();
@@ -257,20 +206,127 @@ public interface Expression extends ExpressionElement, TypeInfer, TypeInfer.Type
 
     /*-------------------below dialect operator method -------------------*/
 
+    /**
+     * <p>
+     * This method is designed for dialect key word syntax. For example : postgre using key word
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.using(Expression)}
+     */
+    <R extends UnaryResult> R space(Function<Expression, R> funcRef);
 
-    CompoundExpression apply(BiFunction<Expression, Expression, CompoundExpression> operator, Expression operand);
+
+    /**
+     * <p>
+     * This method is designed for dialect operator.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    CompoundExpression space(BiFunction<Expression, Expression, CompoundExpression> funcRef, Expression right);
 
 
-    <M extends SQLWords> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator, Expression right, M modifier, Expression optionalExp);
+    /**
+     * <p>
+     * This method is designed for dialect operator.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
 
-    <M extends SQLWords> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator, Expression right, M modifier, char escapeChar);
+    <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> funcRef, Expression right, M modifier, Expression optionalExp);
 
-    CompoundPredicate test(BiFunction<Expression, Expression, CompoundPredicate> operator, Expression operand);
+    /**
+     * <p>
+     * This method is designed for dialect operator.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> funcRef, Expression right, M modifier, char escapeChar);
 
 
-    <M extends SQLWords> CompoundPredicate test(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, Expression right, M modifier, Expression optionalExp);
+    /**
+     * <p>
+     * This method is designed for dialect operator that produce boolean type expression.
+     * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     * <p>
+     *
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    CompoundPredicate whiteSpace(BiFunction<Expression, Expression, CompoundPredicate> funcRef, Expression right);
 
-    <M extends SQLWords> CompoundPredicate test(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, Expression right, M modifier, char escapeChar);
+    /**
+     * <p>
+     * This method is designed for dialect operator that produce boolean type expression.
+     * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     * <p>
+     *
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+
+    <M extends SQLWords> CompoundPredicate whiteSpace(OptionalClauseOperator<M, Expression, CompoundPredicate> funcRef, Expression right, M modifier, Expression optionalExp);
+
+    /**
+     * <p>
+     * This method is designed for dialect operator that produce boolean type expression.
+     * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     * <p>
+     *
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+
+    <M extends SQLWords> CompoundPredicate whiteSpace(OptionalClauseOperator<M, Expression, CompoundPredicate> funcRef, Expression right, M modifier, char escapeChar);
 
 
 }

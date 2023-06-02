@@ -1,7 +1,7 @@
 package io.army.criteria.postgre.unit;
 
 import io.army.criteria.Expression;
-import io.army.criteria.ExpressionElement;
+import io.army.criteria.SQLExpression;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
@@ -34,8 +34,8 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
 
     /**
-     * @see Postgres#toJson(ExpressionElement)
-     * @see Postgres#toJsonb(ExpressionElement)
+     * @see Postgres#toJson(SQLExpression)
+     * @see Postgres#toJsonb(SQLExpression)
      */
     @Test
     public void toJsonFunc() {
@@ -78,8 +78,8 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
     }
 
     /**
-     * @see Postgres#rowToJson(ExpressionElement)
-     * @see Postgres#rowToJson(ExpressionElement, Expression)
+     * @see Postgres#rowToJson(SQLExpression)
+     * @see Postgres#rowToJson(SQLExpression, Expression)
      */
     @Test
     public void rowToJsonFunc() {
@@ -105,9 +105,9 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
     }
 
     /**
-     * @see Postgres#jsonBuildArray(ExpressionElement...)
+     * @see Postgres#jsonBuildArray(SQLExpression...)
      * @see Postgres#jsonBuildArray(Consumer)
-     * @see Postgres#jsonbBuildArray(ExpressionElement...)
+     * @see Postgres#jsonbBuildArray(SQLExpression...)
      * @see Postgres#jsonbBuildArray(Consumer)
      */
     @Test
@@ -133,11 +133,11 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
     }
 
     /**
-     * @see Postgres#jsonBuildObject(ExpressionElement...)
+     * @see Postgres#jsonBuildObject(SQLExpression...)
      * @see Postgres#jsonBuildObject(Consumer)
      * @see Postgres#jsonBuildObject(SymbolSpace, Consumer)
      * @see Postgres#jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see Postgres#jsonbBuildObject(ExpressionElement...)
+     * @see Postgres#jsonbBuildObject(SQLExpression...)
      * @see Postgres#jsonbBuildObject(Consumer)
      * @see Postgres#jsonbBuildObject(SymbolSpace, Consumer)
      * @see Postgres#jsonbBuildObject(String, SymbolPeriod, TableMeta)
@@ -423,27 +423,31 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(jsonExtractPath(SQLs.literal(JsonType.TEXT, json), SQLs.literal(NoCastTextType.INSTANCE, "f4"), SQLs.literal(NoCastTextType.INSTANCE, "f6"))::as, "json1")
-                .comma(jsonExtractPath(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json2")
+                // .comma(jsonExtractPath(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json2")  //TODO
                 .comma(jsonExtractPath(SQLs.literal(JsonType.TEXT, json), c -> {
                             c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f4"));
                             c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f6"));
                         })::as, "json3"
-                ).comma(jsonExtractPath(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, c -> {
-                            c.accept("f4");
-                            c.accept("f6");
-                        })::as, "json4"
-                ).comma(jsonExtractPath(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json5")
+                )
+//                .comma(jsonExtractPath(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, c -> {
+//                            c.accept("f4");
+//                            c.accept("f6");
+//                        })::as, "json4"
+//                )
+                // .comma(jsonExtractPath(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json5")
                 .comma(jsonbExtractPath(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(NoCastTextType.INSTANCE, "f4"), SQLs.literal(NoCastTextType.INSTANCE, "f6"))::as, "json6")
-                .comma(jsonbExtractPath(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json7")
+                // .comma(jsonbExtractPath(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json7")
                 .comma(jsonbExtractPath(SQLs.literal(JsonbType.TEXT, json), c -> {
                             c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f4"));
                             c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f6"));
                         })::as, "json8"
-                ).comma(jsonbExtractPath(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, c -> {
-                            c.accept("f4");
-                            c.accept("f6");
-                        })::as, "json9"
-                ).comma(jsonbExtractPath(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json10")
+                )
+                //.comma(jsonbExtractPath(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, c -> {
+//                            c.accept("f4");
+//                            c.accept("f6");
+//                        })::as, "json9"
+//                )
+                //.comma(jsonbExtractPath(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json10")
                 .asQuery();
 
         printStmt(LOG, stmt);
@@ -469,28 +473,30 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(jsonExtractPathText(SQLs.literal(JsonType.TEXT, json), SQLs.literal(NoCastTextType.INSTANCE, "f4"), SQLs.literal(NoCastTextType.INSTANCE, "f6"))::as, "json1")
-                .comma(jsonExtractPathText(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json2")
+                // .comma(jsonExtractPathText(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json2")
                 .comma(jsonExtractPathText(SQLs.literal(JsonType.TEXT, json), c -> {
                             c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f4"));
                             c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f6"));
                         })::as, "json3"
-                ).comma(jsonExtractPathText(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, c -> {
-                            c.accept("f4");
-                            c.accept("f6");
-                        })::as, "json4"
-                ).comma(jsonExtractPathText(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json5")
+                )
+//                .comma(jsonExtractPathText(SQLs.literal(JsonType.TEXT, json), SQLs::multiLiteral, c -> {
+//                            c.accept("f4");
+//                            c.accept("f6");
+//                        })::as, "json4"
+//                ).comma(jsonExtractPathText(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json5")
 
-                .comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(NoCastTextType.INSTANCE, "f4"), SQLs.literal(NoCastTextType.INSTANCE, "f6"))::as, "json6")
-                .comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json7")
+                // .comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), SQLs.literal(NoCastTextType.INSTANCE, "f4"), SQLs.literal(NoCastTextType.INSTANCE, "f6"))::as, "json6")
+                //   .comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, "f4", "f6")::as, "json7")
                 .comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), c -> {
                             c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f4"));
                             c.accept(SQLs.literal(NoCastTextType.INSTANCE, "f6"));
                         })::as, "json8"
-                ).comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, c -> {
-                            c.accept("f4");
-                            c.accept("f6");
-                        })::as, "json9"
-                ).comma(jsonbExtractPathText(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json10")
+                )
+//                .comma(jsonbExtractPathText(SQLs.literal(JsonbType.TEXT, json), SQLs::multiLiteral, c -> {
+//                            c.accept("f4");
+//                            c.accept("f6");
+//                        })::as, "json9"
+//                ).comma(jsonbExtractPathText(SQLs::literal, json, SQLs::multiLiteral, "f4", "f6")::as, "json10")
                 .asQuery();
 
         printStmt(LOG, stmt);

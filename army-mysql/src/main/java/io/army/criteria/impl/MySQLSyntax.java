@@ -1,9 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.Expression;
-import io.army.criteria.Query;
-import io.army.criteria.SQLIdentifier;
-import io.army.criteria.SQLWords;
+import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
@@ -350,6 +347,10 @@ abstract class MySQLSyntax extends MySQLFunctions {
      */
     public static Hint joinFixedOrder(@Nullable String queryBlockName) {
         return MySQLHints.joinFixedOrder(queryBlockName);
+    }
+
+    public static LogicalPredicate xor(IPredicate left, IPredicate right) {
+        throw new UnsupportedOperationException();
     }
 
     /**

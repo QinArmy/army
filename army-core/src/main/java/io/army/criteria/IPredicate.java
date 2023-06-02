@@ -4,16 +4,21 @@ import io.army.criteria.impl.SQLs;
 import io.army.function.*;
 import io.army.mapping.BooleanType;
 
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 
+/**
+ * <p>
+ * This interface representing sql predicate in WHERE clause or HAVING clause.
+ * This interface name is 'IPredicate' not 'Predicate', because of {@link java.util.function.Predicate}.
+ * </p>
+ *
+ * @since 1.0
+ */
 public interface IPredicate extends Expression, Statement._WhereAndClause<IPredicate> {
 
     /**
-     * @return always return {@link BooleanType}
+     * @return always return {@link BooleanType#INSTANCE}
      */
     @Override
     BooleanType typeMeta();
@@ -75,6 +80,46 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
                     Supplier<Integer> supplier);
 
     IPredicate ifOr(Consumer<Consumer<IPredicate>> consumer);
+
+
+    /**
+     * <p>
+     * This method is designed for dialect logical operator.
+     * This method name is 'blank' not 'whiteSpace' , because of distinguishing logical operator and other operator.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     * <p>
+     *
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect logical operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code MySQL.xor(IPredicate,IPredicate)}
+     * @param right   the right operand of dialect logical operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    LogicalPredicate blank(BiFunction<IPredicate, IPredicate, LogicalPredicate> funcRef, IPredicate right);
+
+
+    /**
+     * <p>
+     * This method is designed for dialect logical operator.
+     * This method name is 'blank' not 'whiteSpace' , because of distinguishing logical operator and other operator.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     * <p>
+     *
+     * </p>
+     *
+     * @param funcRef  the reference of the method of dialect logical operator,<strong>NOTE</strong>: not lambda.
+     *                 The first argument of funcRef always is <strong>this</strong>.
+     *                 For example: {@code MySQL.xor(IPredicate,IPredicate)}
+     * @param consumer the right operand of dialect logical operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    LogicalPredicate blank(BiFunction<IPredicate, Consumer<Consumer<IPredicate>>, LogicalPredicate> funcRef, Consumer<Consumer<IPredicate>> consumer);
 
 
 }

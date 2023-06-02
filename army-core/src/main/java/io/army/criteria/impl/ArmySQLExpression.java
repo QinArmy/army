@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.ExpressionElement;
+import io.army.criteria.SQLExpression;
 import io.army.criteria.impl.inner._SelfDescribed;
 
 /**
@@ -10,7 +10,7 @@ import io.army.criteria.impl.inner._SelfDescribed;
  *
  * @since 1.0
  */
-interface ArmyExpressionElement extends ExpressionElement, _SelfDescribed {
+interface ArmySQLExpression extends SQLExpression, _SelfDescribed {
 
 
 }

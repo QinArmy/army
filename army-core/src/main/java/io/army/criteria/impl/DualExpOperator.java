@@ -14,18 +14,25 @@ import io.army.dialect.Database;
 
      BITWISE_XOR(" ^", 85),  // for MySQL , BITWISE_XOR > TIMES
 
-    MOD(" %", 80),
-    TIMES(" *", 80),
-    DIVIDE(" /", 80),
+     MOD(" %", 80),
+     TIMES(" *", 80),
+     DIVIDE(" /", 80),
 
-    PLUS(" +", 70),
-    MINUS(" -", 70),
+     /**
+      * Integer division. Discards from the division result any fractional part to the right of the decimal point.
+      *
+      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/arithmetic-functions.html#operator_div">MySQL Integer division</a>
+      */
+     DIV(" DIV", 80),
 
-    LEFT_SHIFT(" <<", 60),
-    RIGHT_SHIFT(" >>", 60),
+     PLUS(" +", 70),
+     MINUS(" -", 70),
 
-    BITWISE_AND(" &", 40),
-    BITWISE_OR(" |", 30),
+     LEFT_SHIFT(" <<", 60),
+     RIGHT_SHIFT(" >>", 60),
+
+     BITWISE_AND(" &", 40),
+     BITWISE_OR(" |", 30),
 
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bytea || bytea → bytea</a>

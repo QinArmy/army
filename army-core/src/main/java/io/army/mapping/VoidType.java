@@ -6,15 +6,15 @@ import io.army.sqltype.SqlType;
 
 /**
  * <p>
- * This class representing the mapping from {@link Void} to nothing,that returned by some special {@link io.army.criteria.Expression}.
+ * This class representing the mapping from {@code  void} to nothing,that returned by some special {@link io.army.criteria.Expression}.
  * </p>
  *
  * @see Void
  */
-@Deprecated
+
 public final class VoidType extends _ArmyBuildInMapping {
 
-    public static final VoidType INSTANCE = new VoidType();
+    public static final VoidType VOID = new VoidType();
 
 
     private VoidType() {
@@ -23,7 +23,7 @@ public final class VoidType extends _ArmyBuildInMapping {
 
     @Override
     public Class<?> javaType() {
-        return Void.class;
+        return void.class;
     }
 
     @Override
@@ -33,7 +33,7 @@ public final class VoidType extends _ArmyBuildInMapping {
 
     @Override
     public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override

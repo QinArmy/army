@@ -116,7 +116,7 @@ public interface Statement extends Item {
 
     interface _ElementCommaClause {
 
-        _ElementCommaClause comma(ExpressionElement exp);
+        _ElementCommaClause comma(SQLExpression exp);
 
         _ElementCommaClause comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
@@ -126,7 +126,7 @@ public interface Statement extends Item {
 
     interface _ElementSpaceClause {
 
-        _ElementCommaClause space(ExpressionElement exp);
+        _ElementCommaClause space(SQLExpression exp);
 
         _ElementCommaClause space(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
@@ -136,7 +136,7 @@ public interface Statement extends Item {
 
     interface _ElementConsumer {
 
-        _ElementConsumer accept(ExpressionElement exp);
+        _ElementConsumer accept(SQLExpression exp);
 
         _ElementConsumer accept(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
@@ -146,9 +146,9 @@ public interface Statement extends Item {
 
     interface _ElementObjectCommaClause {
 
-        _ElementObjectCommaClause comma(String keName, ExpressionElement exp);
+        _ElementObjectCommaClause comma(String keName, SQLExpression exp);
 
-        _ElementObjectCommaClause comma(Expression key, ExpressionElement exp);
+        _ElementObjectCommaClause comma(Expression key, SQLExpression exp);
 
         _ElementObjectCommaClause comma(String keName, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
 
@@ -157,9 +157,9 @@ public interface Statement extends Item {
 
     interface _ElementObjectSpaceClause {
 
-        _ElementObjectCommaClause space(String keName, ExpressionElement exp);
+        _ElementObjectCommaClause space(String keName, SQLExpression exp);
 
-        _ElementObjectCommaClause space(Expression key, ExpressionElement exp);
+        _ElementObjectCommaClause space(Expression key, SQLExpression exp);
 
         _ElementObjectCommaClause space(String keName, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
 
@@ -168,9 +168,9 @@ public interface Statement extends Item {
 
     interface _ElementObjectConsumer {
 
-        _ElementObjectConsumer accept(String keName, ExpressionElement value);
+        _ElementObjectConsumer accept(String keName, SQLExpression value);
 
-        _ElementObjectConsumer accept(Expression key, ExpressionElement value);
+        _ElementObjectConsumer accept(Expression key, SQLExpression value);
 
         _ElementObjectConsumer accept(String keName, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
 
@@ -824,6 +824,9 @@ public interface Statement extends Item {
         <T> WA where(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                      BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
 
+        <T> WA where(DialectBooleanOperator<T> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                     BiFunction<SimpleExpression, T, Expression> func, @Nullable T value);
+
         // below in operator
         WA where(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
                  TeNamedOperator<SQLField> namedOperator, int size);
@@ -846,6 +849,9 @@ public interface Statement extends Item {
         <T> WA whereIf(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                        BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
+        <T> WA whereIf(DialectBooleanOperator<T> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                       BiFunction<SimpleExpression, T, Expression> func, Supplier<T> getter);
+
         WA whereIf(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
                    TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier);
 
@@ -853,6 +859,9 @@ public interface Statement extends Item {
 
         <K, V> WA whereIf(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
                           BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
+
+        <K, V> WA whereIf(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                          BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
 
         WA whereIf(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName,
                    Supplier<Integer> supplier);
@@ -868,6 +877,7 @@ public interface Statement extends Item {
 
         <K, V> WA whereIf(BetweenValueOperator<V> expOperator, BiFunction<SimpleExpression, V, Expression> operator,
                           Function<K, V> function, K firstKey, SQLs.WordAnd and, K secondKey);
+
 
     }
 
@@ -931,6 +941,9 @@ public interface Statement extends Item {
         <T> WA and(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                    BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
 
+        <T> WA and(DialectBooleanOperator<T> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                   BiFunction<SimpleExpression, T, Expression> func, @Nullable T value);
+
         // below in operator
         WA and(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
                TeNamedOperator<SQLField> namedOperator, int size);
@@ -953,6 +966,9 @@ public interface Statement extends Item {
         <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                      BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
+        <T> WA ifAnd(DialectBooleanOperator<T> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                     BiFunction<SimpleExpression, T, Expression> func, Supplier<T> getter);
+
         WA ifAnd(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
                  TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier);
 
@@ -960,6 +976,9 @@ public interface Statement extends Item {
 
         <K, V> WA ifAnd(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
                         BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
+
+        <K, V> WA ifAnd(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                        BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
 
         WA ifAnd(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName,
                  Supplier<Integer> supplier);

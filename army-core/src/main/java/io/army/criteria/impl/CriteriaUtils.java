@@ -524,32 +524,32 @@ abstract class CriteriaUtils {
 
     }
 
-    static List<ArmyExpressionElement> asExpElementList(final String name,
-                                                        final List<? extends ExpressionElement> columnList) {
+    static List<ArmySQLExpression> asExpElementList(final String name,
+                                                    final List<? extends SQLExpression> columnList) {
         final int columnSize;
         columnSize = columnList.size();
-        final List<ArmyExpressionElement> list;
+        final List<ArmySQLExpression> list;
 
         switch (columnSize) {
             case 0:
                 list = _Collections.emptyList();
                 break;
             case 1: {
-                final ExpressionElement exp;
+                final SQLExpression exp;
                 exp = columnList.get(0);
-                if (!(exp instanceof ArmyExpressionElement)) {
+                if (!(exp instanceof ArmySQLExpression)) {
                     throw CriteriaUtils.funcArgError(name, exp);
                 }
-                list = _Collections.singletonList((ArmyExpressionElement) exp);
+                list = _Collections.singletonList((ArmySQLExpression) exp);
             }
             break;
             default: {
                 list = _Collections.arrayList(columnSize);
-                for (ExpressionElement exp : columnList) {
-                    if (!(exp instanceof ArmyExpressionElement)) {
+                for (SQLExpression exp : columnList) {
+                    if (!(exp instanceof ArmySQLExpression)) {
                         throw CriteriaUtils.funcArgError(name, exp);
                     }
-                    list.add((ArmyExpressionElement) exp);
+                    list.add((ArmySQLExpression) exp);
                 }
             }
         }

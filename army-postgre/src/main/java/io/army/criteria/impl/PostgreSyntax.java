@@ -179,7 +179,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS">Row Constructors</a>
      */
-    public static RowExpression row(ExpressionElement... column) {
+    public static RowExpression row(SQLExpression... column) {
         return CriteriaSupports.rowElement(false, column);
     }
 
@@ -202,12 +202,12 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     }
 
 
-    public static ExpressionElement space(String derivedAlias, SqlSyntax.SymbolPeriod period,
-                                          SqlSyntax.SymbolAsterisk asterisk) {
+    public static SQLExpression space(String derivedAlias, SqlSyntax.SymbolPeriod period,
+                                      SqlSyntax.SymbolAsterisk asterisk) {
         return CriteriaSupports.derivedAsterisk(derivedAlias, period, asterisk);
     }
 
-    public static ExpressionElement space(String tableAlias, SqlSyntax.SymbolPeriod period, TableMeta<?> table) {
+    public static SQLExpression space(String tableAlias, SqlSyntax.SymbolPeriod period, TableMeta<?> table) {
         return ContextStack.peek().row(tableAlias, period, table); // register derived row
     }
 

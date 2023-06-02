@@ -304,6 +304,13 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
+    public final <T> IPredicate and(DialectBooleanOperator<T> fieldOperator,
+                                    BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                    BiFunction<SimpleExpression, T, Expression> func, @Nullable T value) {
+        return this.and(fieldOperator.apply(operator, func, value));
+    }
+
+    @Override
     public final <T> IPredicate and(BetweenValueOperator<T> expOperator,
                                     BiFunction<SimpleExpression, T, Expression> operator, T firstValue,
                                     SqlSyntax.WordAnd and, T secondValue) {
@@ -357,6 +364,20 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
+    public final <T> IPredicate ifAnd(DialectBooleanOperator<T> fieldOperator,
+                                      BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                      BiFunction<SimpleExpression, T, Expression> func, Supplier<T> getter) {
+        final IPredicate predicate;
+        final T operand;
+        if ((operand = getter.get()) == null) {
+            predicate = this;
+        } else {
+            predicate = this.and(fieldOperator.apply(operator, func, operand));
+        }
+        return predicate;
+    }
+
+    @Override
     public final IPredicate ifAnd(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
                                   TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier) {
         final IPredicate predicate;
@@ -378,6 +399,21 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             predicate = this;
         } else {
             predicate = this.and(expOperator.apply(operator, operand));
+        }
+        return predicate;
+    }
+
+    @Override
+    public final <K, V> IPredicate ifAnd(DialectBooleanOperator<V> fieldOperator,
+                                         BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                         BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function,
+                                         K key) {
+        final IPredicate predicate;
+        final V operand;
+        if ((operand = function.apply(key)) == null) {
+            predicate = this;
+        } else {
+            predicate = this.and(fieldOperator.apply(operator, func, operand));
         }
         return predicate;
     }
@@ -437,6 +473,27 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             predicate = this;
         } else {
             predicate = this.and(expOperator.apply(firstFuncRef, first, and, secondFuncRef, second));
+        }
+        return predicate;
+    }
+
+    @Override
+    public final LogicalPredicate blank(BiFunction<IPredicate, IPredicate, LogicalPredicate> funcRef, IPredicate right) {
+        final LogicalPredicate predicate;
+        predicate = funcRef.apply(this, right);
+        if (predicate == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return predicate;
+    }
+
+    @Override
+    public final LogicalPredicate blank(BiFunction<IPredicate, Consumer<Consumer<IPredicate>>, LogicalPredicate> funcRef,
+                                        Consumer<Consumer<IPredicate>> consumer) {
+        final LogicalPredicate predicate;
+        predicate = funcRef.apply(this, consumer);
+        if (predicate == null) {
+            throw ContextStack.clearStackAndNullPointer();
         }
         return predicate;
     }
@@ -549,6 +606,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         return new OrPredicate(left, Collections.unmodifiableList(list));
     }
 
+
     static AndPredicate andPredicate(OperationPredicate left, @Nullable IPredicate right) {
         assert right != null;
         return new AndPredicate(left, (OperationPredicate) right);
@@ -557,6 +615,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     static OperationPredicate notPredicate(final IPredicate predicate) {
         return new NotPredicate((OperationPredicate) predicate);
     }
+
 
     /**
      * @see SQLs#TRUE

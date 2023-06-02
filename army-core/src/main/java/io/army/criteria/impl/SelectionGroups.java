@@ -12,8 +12,8 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.TableMeta;
+import io.army.util._Collections;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -104,8 +104,11 @@ abstract class SelectionGroups {
 
     /**
      * for RETURNING clause
+     * <p>
+     * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
+     * </p>
      */
-    private static final class InsertTableGroup<T> implements _SelectionGroup._TableFieldGroup, ArmyRowExpression {
+    private static final class InsertTableGroup<T> extends OperationRowExpression implements _SelectionGroup._TableFieldGroup, ArmyRowExpression {
 
         private final TableMeta<T> insertTable;
 
@@ -188,7 +191,12 @@ abstract class SelectionGroups {
     }//InsertTableGroup
 
 
-    static final class TableFieldGroupImpl<T> implements _SelectionGroup._TableFieldGroup, ArmyRowExpression {
+    /**
+     * <p>
+     * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
+     * </p>
+     */
+    static final class TableFieldGroupImpl<T> extends OperationRowExpression implements _SelectionGroup._TableFieldGroup, ArmyRowExpression {
 
         private final String tableAlias;
 
@@ -201,7 +209,7 @@ abstract class SelectionGroups {
 
         private TableFieldGroupImpl(String tableAlias, ChildTableMeta<T> parent) {
             final List<FieldMeta<T>> fields = parent.fieldList();
-            final List<FieldMeta<T>> fieldList = new ArrayList<>(fields.size() - 1);
+            final List<FieldMeta<T>> fieldList = _Collections.arrayList(fields.size() - 1);
             for (FieldMeta<T> field : fields) {
                 if (field instanceof PrimaryFieldMeta) {
                     continue;
@@ -212,6 +220,11 @@ abstract class SelectionGroups {
             this.fieldList = Collections.unmodifiableList(fieldList);
         }
 
+
+        @Override
+        public int columnSize() {
+            return this.fieldList.size();
+        }
 
         @Override
         public String tableAlias() {
@@ -290,7 +303,12 @@ abstract class SelectionGroups {
     }//TableFieldGroup
 
 
-    private static final class DerivedSelectionGroup implements _SelectionGroup, ArmyRowExpression {
+    /**
+     * <p>
+     * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
+     * </p>
+     */
+    private static final class DerivedSelectionGroup extends OperationRowExpression implements _SelectionGroup, ArmyRowExpression {
 
         private final String derivedAlias;
 
@@ -299,6 +317,11 @@ abstract class SelectionGroups {
         DerivedSelectionGroup(_SelectionMap table, String alias) {
             this.derivedAlias = alias;
             this.selectionList = table.refAllSelection();
+        }
+
+        @Override
+        public int columnSize() {
+            return this.selectionList.size();
         }
 
         @Override
@@ -323,8 +346,12 @@ abstract class SelectionGroups {
 
     }//DerivedSelectionGroup
 
-
-    private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup, ArmyRowExpression,
+    /**
+     * <p>
+     * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
+     * </p>
+     */
+    private static final class DelayDerivedSelectionGroup extends OperationRowExpression implements DerivedFieldGroup, ArmyRowExpression,
             ArmyRowExpression.DelayRow {
 
         private final String derivedAlias;

@@ -19,13 +19,15 @@ import io.army.util._StringUtils;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * this class is base class of most implementation of {@link Expression}
  *
  * @since 1.0
  */
-abstract class OperationExpression implements FunctionArg.SingleFunctionArg, ArmyExpression {
+abstract class OperationExpression extends OperationSQLExpression
+        implements FunctionArg.SingleFunctionArg, ArmyExpression {
 
 
     /**
@@ -53,41 +55,8 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
     }
 
     @Override
-    public final CompoundPredicate nullSafeEqual(Expression operand) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.NULL_SAFE_EQUAL, operand);
-    }
-
-    @Override
-    public final CompoundPredicate equalAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.EQUAL, QueryOperator.ANY, subQuery);
-    }
-
-    @Override
-    public final CompoundPredicate equalSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.EQUAL, QueryOperator.SOME, subQuery);
-    }
-
-
-    @Override
     public final CompoundPredicate less(Expression operand) {
         return Expressions.dualPredicate(this, DualBooleanOperator.LESS, operand);
-    }
-
-
-    @Override
-    public final CompoundPredicate lessAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, QueryOperator.ANY, subQuery);
-    }
-
-
-    @Override
-    public final CompoundPredicate lessSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, QueryOperator.SOME, subQuery);
-    }
-
-    @Override
-    public final CompoundPredicate lessAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, QueryOperator.ALL, subQuery);
     }
 
 
@@ -96,46 +65,9 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         return Expressions.dualPredicate(this, DualBooleanOperator.LESS_EQUAL, operand);
     }
 
-
-    @Override
-    public final CompoundPredicate lessEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, QueryOperator.ANY, subQuery);
-    }
-
-
-    @Override
-    public final CompoundPredicate lessEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, QueryOperator.SOME, subQuery);
-    }
-
-
-    @Override
-    public final CompoundPredicate lessEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, QueryOperator.ALL, subQuery);
-    }
-
-
     @Override
     public final CompoundPredicate greater(Expression operand) {
         return Expressions.dualPredicate(this, DualBooleanOperator.GREATER, operand);
-    }
-
-
-    @Override
-    public final CompoundPredicate greaterAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, QueryOperator.ANY, subQuery);
-    }
-
-
-    @Override
-    public final CompoundPredicate greaterSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, QueryOperator.SOME, subQuery);
-    }
-
-
-    @Override
-    public final CompoundPredicate greaterAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, QueryOperator.ALL, subQuery);
     }
 
 
@@ -144,45 +76,11 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         return Expressions.dualPredicate(this, DualBooleanOperator.GREATER_EQUAL, operand);
     }
 
-
-    @Override
-    public final CompoundPredicate greaterEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, QueryOperator.ANY, subQuery);
-    }
-
-    @Override
-    public final CompoundPredicate greaterEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, QueryOperator.SOME, subQuery);
-    }
-
-
-    @Override
-    public final CompoundPredicate greaterEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, QueryOperator.ALL, subQuery);
-    }
-
-
     @Override
     public final CompoundPredicate notEqual(Expression operand) {
         return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, operand);
     }
 
-
-    @Override
-    public final CompoundPredicate notEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, QueryOperator.ANY, subQuery);
-    }
-
-
-    @Override
-    public final CompoundPredicate notEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, QueryOperator.SOME, subQuery);
-    }
-
-    @Override
-    public final CompoundPredicate notEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, QueryOperator.ALL, subQuery);
-    }
 
     @Override
     public final CompoundPredicate between(Expression first, SQLs.WordAnd and, Expression second) {
@@ -235,15 +133,6 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         return Expressions.isComparisonPredicate(this, true, operator, operand);
     }
 
-    @Override
-    public final CompoundPredicate in(RowElement row) {
-        return Expressions.inPredicate(this, false, row);
-    }
-
-    @Override
-    public final CompoundPredicate notIn(RowElement row) {
-        return Expressions.inPredicate(this, true, row);
-    }
 
     @Override
     public final CompoundPredicate like(Expression pattern) {
@@ -311,7 +200,6 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         return Expressions.dualExp(this, DualExpOperator.DIVIDE, operand);
     }
 
-
     @Override
     public final CompoundExpression bitwiseAnd(Expression operand) {
         return Expressions.dualExp(this, DualExpOperator.BITWISE_AND, operand);
@@ -340,7 +228,17 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
     }
 
     @Override
-    public final CompoundExpression apply(BiFunction<Expression, Expression, CompoundExpression> operator, Expression operand) {
+    public final <R extends UnaryResult> R space(Function<Expression, R> funcRef) {
+        final R result;
+        result = funcRef.apply(this);
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
+
+    @Override
+    public final CompoundExpression space(BiFunction<Expression, Expression, CompoundExpression> operator, Expression operand) {
         final CompoundExpression result;
         result = operator.apply(this, operand);
         if (result == null) {
@@ -350,7 +248,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
     }
 
     @Override
-    public final <M extends SQLWords> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator,
+    public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator,
                                                                Expression right, M modifier, Expression optionalExp) {
         final CompoundExpression result;
         result = operator.apply(this, right, modifier, optionalExp);
@@ -361,7 +259,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
     }
 
     @Override
-    public final <M extends SQLWords> CompoundExpression apply(OptionalClauseOperator<M, Expression, CompoundExpression> operator,
+    public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator,
                                                                Expression right, M modifier, char escapeChar) {
         final CompoundExpression result;
         result = operator.apply(this, right, modifier, SQLs.literal(StringType.INSTANCE, escapeChar));
@@ -373,7 +271,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
 
     @Override
-    public final CompoundPredicate test(BiFunction<Expression, Expression, CompoundPredicate> operator, Expression operand) {
+    public final CompoundPredicate whiteSpace(BiFunction<Expression, Expression, CompoundPredicate> operator, Expression operand) {
         final CompoundPredicate result;
         result = operator.apply(this, operand);
         if (result == null) {
@@ -384,7 +282,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
 
     @Override
-    public final <M extends SQLWords> CompoundPredicate test(
+    public final <M extends SQLWords> CompoundPredicate whiteSpace(
             OptionalClauseOperator<M, Expression, CompoundPredicate> operator, Expression right, M modifier,
             Expression optionalExp) {
         final CompoundPredicate result;
@@ -396,7 +294,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
     }
 
     @Override
-    public final <M extends SQLWords> CompoundPredicate test(
+    public final <M extends SQLWords> CompoundPredicate whiteSpace(
             OptionalClauseOperator<M, Expression, CompoundPredicate> operator, Expression right, M modifier, char escapeChar) {
         final CompoundPredicate result;
         result = operator.apply(this, right, modifier, SQLs.literal(StringType.INSTANCE, escapeChar));
@@ -710,7 +608,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
 
         @Override
-        public final <T> CompoundExpression apply(BiFunction<SimpleExpression, Expression, CompoundExpression> operator,
+        public final <T> CompoundExpression space(BiFunction<SimpleExpression, Expression, CompoundExpression> operator,
                                                   BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             final CompoundExpression result;
             result = operator.apply(this, funcRef.apply(this, value));
@@ -721,7 +619,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         }
 
         @Override
-        public final <M extends SQLWords, T> CompoundExpression apply(
+        public final <M extends SQLWords, T> CompoundExpression space(
                 OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef,
                 T value, M modifier, Expression optionalExp) {
             final CompoundExpression result;
@@ -734,15 +632,15 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
 
 
         @Override
-        public final <M extends SQLWords, T> CompoundExpression apply(
+        public final <M extends SQLWords, T> CompoundExpression space(
                 OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef,
                 T value, M modifier, char escapeChar) {
-            return this.apply(operator, funcRef, value, modifier, SQLs.literal(NoCastTextType.INSTANCE, escapeChar));
+            return this.space(operator, funcRef, value, modifier, SQLs.literal(NoCastTextType.INSTANCE, escapeChar));
         }
 
         @Override
-        public final <T> CompoundPredicate test(BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
-                                                BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
+        public final <T> CompoundPredicate whiteSpace(BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                                      BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
             final CompoundPredicate result;
             result = operator.apply(this, funcRef.apply(this, value));
             if (result == null) {
@@ -752,7 +650,7 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         }
 
         @Override
-        public final <M extends SQLWords, T> CompoundPredicate test(
+        public final <M extends SQLWords, T> CompoundPredicate whiteSpace(
                 OptionalClauseOperator<M, Expression, CompoundPredicate> operator,
                 BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, Expression optionalExp) {
             final CompoundPredicate result;
@@ -764,10 +662,10 @@ abstract class OperationExpression implements FunctionArg.SingleFunctionArg, Arm
         }
 
         @Override
-        public final <M extends SQLWords, T> CompoundPredicate test(
+        public final <M extends SQLWords, T> CompoundPredicate whiteSpace(
                 OptionalClauseOperator<M, Expression, CompoundPredicate> operator,
                 BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, char escapeChar) {
-            return this.test(operator, funcRef, value, modifier, SQLs.literal(NoCastTextType.INSTANCE, escapeChar));
+            return this.whiteSpace(operator, funcRef, value, modifier, SQLs.literal(NoCastTextType.INSTANCE, escapeChar));
         }
 
         /*-------------------below array operator method -------------------*/
