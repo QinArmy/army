@@ -7,12 +7,14 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.*;
+import io.army.mapping.MappingType;
+import io.army.mapping.NoCastIntegerType;
+import io.army.mapping.NoCastTextType;
+import io.army.mapping._MappingFactory;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -115,7 +117,6 @@ abstract class RowExpressions {
         if (delay) {
             row = new DelayRowConstructor(elementList);
         } else {
-            columnSize = rowElementColumnSize(element1) + rowElementColumnSize(element2);
             row = new ImmutableRowConstructor(elementList, columnSize);
         }
         return row;
@@ -162,12 +163,10 @@ abstract class RowExpressions {
 
     private static int rowElementColumnSize(final Object element) {
         final int columnSize;
-        if (!(element instanceof RowElement)) {
+        if (!(element instanceof RowElement) || element instanceof SQLExpression) {
             columnSize = 1;
         } else if (element instanceof SubQuery) {
             columnSize = ((ArmySubQuery) element).refAllSelection().size();
-        } else if (element instanceof ArmyRowExpression) {
-            columnSize = ((ArmyRowExpression) element).columnSize();
         } else if (element instanceof SelectionGroups.RowElementGroup) {
             columnSize = ((SelectionGroups.RowElementGroup) element).selectionList().size();
         } else {
@@ -306,13 +305,9 @@ abstract class RowExpressions {
                     outputColumnCount++;
                 } else if (!(element instanceof RowElement)) {
                     if (element instanceof Integer) {
-                        type = IntegerType.INSTANCE;
+                        type = NoCastIntegerType.INSTANCE;
                     } else if (element instanceof String) {
-                        type = StringType.INSTANCE;
-                    } else if (element instanceof Long) {
-                        type = LongType.INSTANCE;
-                    } else if (element instanceof BigDecimal) {
-                        type = BigDecimalType.INSTANCE;
+                        type = NoCastTextType.INSTANCE;
                     } else if ((type = _MappingFactory.getDefaultIfMatch(element.getClass())) == null) {
                         throw _Exceptions.notFoundMappingType(element);
                     }
@@ -322,11 +317,11 @@ abstract class RowExpressions {
                 } else if (element instanceof SubQuery) {
                     parser.subQuery((SubQuery) element, context);
                     outputColumnCount += ((ArmySubQuery) element).refAllSelection().size();
-                } else if (element instanceof ArmyRowExpression) {
-                    ((ArmyRowExpression) element).appendSql(context);
-                    outputColumnCount += ((ArmyRowExpression) element).columnSize();
+                } else if (element instanceof ArmySQLExpression) {
+                    ((ArmySQLExpression) element).appendSql(context);
+                    outputColumnCount++;
                 } else if (element instanceof SelectionGroups.RowElementGroup) {
-                    ((SelectionGroups.RowElementGroup) element).appendRowElement(context);
+                    ((SelectionGroups.RowElementGroup) element).appendRowElement(sqlBuilder, context);
                     outputColumnCount += ((SelectionGroups.RowElementGroup) element).selectionList().size();
                 } else {
                     throw _Exceptions.unknownRowElement(element);

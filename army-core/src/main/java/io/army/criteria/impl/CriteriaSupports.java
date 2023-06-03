@@ -7,7 +7,6 @@ import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.mapping.NoCastTextType;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.Stmt;
@@ -34,22 +33,6 @@ abstract class CriteriaSupports {
         return new ParenStringConsumerClause<>(context, function);
     }
 
-    @Deprecated
-    static <OR> Statement._StaticOrderByClause0<OR> orderByClause(CriteriaContext criteriaContext
-            , Function<List<ArmySortItem>, OR> function) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    static <OR> Statement._StaticOrderByClause0<OR> voidOrderByClause(CriteriaContext criteriaContext
-            , Function<List<ArmySortItem>, OR> function) {
-        throw new UnsupportedOperationException();
-    }
-
-    static ArmySQLExpression derivedAsterisk(String derivedAlias, SQLs.SymbolPeriod period,
-                                             SQLs.SymbolAsterisk asterisk) {
-        return new DerivedAsterisk(derivedAlias, period, asterisk);
-    }
 
     static StringObjectSpaceClause stringObjectSpace(boolean required, Consumer<String> consumer) {
         return new StringObjectSpaceClause(required, consumer);
@@ -60,23 +43,13 @@ abstract class CriteriaSupports {
     }
 
 
-
-    static ElementSpaceClause elementSpaceClause(boolean required, Consumer<? super ArmySQLExpression> consumer) {
-        return new ElementSpaceClause(required, consumer);
+    static StaticObjectConsumer staticObjectConsumer(boolean required, Consumer<Object> consumer) {
+        return new StaticObjectConsumer(required, consumer);
     }
 
-    static ElementConsumer elementConsumer(boolean required, Consumer<? super RowElement> consumer) {
-        return new ElementConsumer(required, consumer);
+    static DynamicObjectConsumer dynamicObjectConsumer(boolean required, Consumer<Object> consumer) {
+        return new DynamicObjectConsumer(required, consumer);
     }
-
-    static ElementObjectSpaceClause elementObjectSpaceClause(Consumer<? super ArmySQLExpression> consumer) {
-        return new ElementObjectSpaceClause(consumer);
-    }
-
-    static ElementObjectConsumer elementObjectConsumer(Consumer<? super ArmySQLExpression> consumer) {
-        return new ElementObjectConsumer(consumer);
-    }
-
 
 
     static Returnings returningBuilder(Consumer<_SelectItem> consumer) {
@@ -1156,397 +1129,6 @@ abstract class CriteriaSupports {
     }//RowExpressionImpl
 
 
-    static final class ExpressionSpaceClause implements Statement._ExpressionSpaceClause,
-            Statement._ExpressionCommaClause {
-
-        private final boolean required;
-        private final Consumer<? super ArmyExpression> consumer;
-
-        private Boolean state;
-
-        /**
-         * <p>
-         * private constructor and must be private constructor
-         * </p>
-         *
-         * @see #expressionConsumer(boolean, Consumer)
-         */
-        private ExpressionSpaceClause(boolean required, Consumer<? super ArmyExpression> consumer) {
-            this.required = required;
-            this.consumer = consumer;
-        }
-
-        @Override
-        public Statement._ExpressionCommaClause space(final Expression exp) {
-            if (this.state != null) {
-                throw ContextStack.clearStackAndCriteriaError("You can ony invoke space method for first expression.");
-            }
-            this.state = Boolean.TRUE;
-            return this.comma(exp);
-        }
-
-        @Override
-        public Statement._ExpressionCommaClause comma(final @Nullable Expression exp) {
-            if (this.state != Boolean.TRUE) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            } else if (exp == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            } else if (!(exp instanceof FunctionArg)) {
-                throw ContextStack.clearStackAndCriteriaError("not army expression");
-            }
-            this.consumer.accept((ArmyExpression) exp);
-            return this;
-        }
-
-
-        void endConsumer() {
-            if (this.state == null && this.required) {
-                throw CriteriaUtils.dontAddAnyItem();
-            }
-            this.state = Boolean.FALSE;
-        }
-
-
-    }//ExpressionSpaceClause
-
-    static final class ExpressionConsumer implements Statement._ExpressionConsumer {
-
-        private final boolean required;
-
-        private final Consumer<? super ArmyExpression> consumer;
-
-        private Boolean state;
-
-        private ExpressionConsumer(boolean required, Consumer<? super ArmyExpression> consumer) {
-            this.required = required;
-            this.consumer = consumer;
-        }
-
-        @Override
-        public Statement._ExpressionConsumer accept(final @Nullable Expression exp) {
-            final Boolean state = this.state;
-            if (state == null) {
-                this.state = Boolean.TRUE;
-            }
-            if (state == Boolean.FALSE) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            } else if (exp == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            } else if (!(exp instanceof FunctionArg)) {
-                String m = String.format("don't support %s", exp.getClass().getName());
-                throw ContextStack.clearStackAndCriteriaError(m);
-            }
-            this.consumer.accept((ArmyExpression) exp);
-            return this;
-        }
-
-        void endConsumer() {
-            if (this.required && this.state == null) {
-                throw CriteriaUtils.dontAddAnyItem();
-            }
-            this.state = Boolean.FALSE;
-        }
-
-
-    }//ExpressionConsumer
-
-
-    static final class ElementSpaceClause implements Statement._ElementSpaceClause,
-            Statement._ElementCommaClause {
-
-        private final boolean required;
-
-        private final Consumer<? super ArmySQLExpression> consumer;
-
-        private Boolean state;
-
-        private ElementSpaceClause(boolean required, Consumer<? super ArmySQLExpression> consumer) {
-            this.required = required;
-            this.consumer = consumer;
-        }
-
-        @Override
-        public Statement._ElementCommaClause space(SQLExpression exp) {
-            if (this.state != null) {
-                throw CriteriaUtils.spaceMethodNotFirst();
-            }
-            this.state = Boolean.TRUE;
-            return this.comma(exp);
-        }
-
-        @Override
-        public Statement._ElementCommaClause space(String tableAlias, SQLs.SymbolPeriod period,
-                                                   TableMeta<?> table) {
-            if (this.state != null) {
-                throw CriteriaUtils.spaceMethodNotFirst();
-            }
-            this.state = Boolean.TRUE;
-            return this.comma(ContextStack.peek().row(tableAlias, period, table));
-        }
-
-        @Override
-        public Statement._ElementCommaClause space(String derivedAlias, SQLs.SymbolPeriod period,
-                                                   SQLs.SymbolAsterisk asterisk) {
-            if (this.state != null) {
-                throw CriteriaUtils.spaceMethodNotFirst();
-            }
-            this.state = Boolean.TRUE;
-            return this.comma(derivedAsterisk(derivedAlias, period, asterisk));
-        }
-
-        @Override
-        public Statement._ElementCommaClause comma(final @Nullable SQLExpression exp) {
-            if (this.state != Boolean.TRUE) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            } else if (exp == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            } else if (!(exp instanceof ArmySQLExpression)) {
-                throw ContextStack.clearStackAndNonArmyExpression();
-            }
-            this.consumer.accept((ArmySQLExpression) exp);
-            return this;
-        }
-
-        @Override
-        public Statement._ElementCommaClause comma(String tableAlias, SQLs.SymbolPeriod period,
-                                                   TableMeta<?> table) {
-            return this.comma(ContextStack.peek().row(tableAlias, period, table));
-        }
-
-        @Override
-        public Statement._ElementCommaClause comma(String derivedAlias, SQLs.SymbolPeriod period,
-                                                   SQLs.SymbolAsterisk asterisk) {
-            return this.comma(derivedAsterisk(derivedAlias, period, asterisk));
-        }
-
-
-        void endClause() {
-            if (this.required && this.state == null) {
-                throw CriteriaUtils.dontAddAnyItem();
-            }
-            this.state = Boolean.FALSE;
-        }
-
-
-    }//ElementSpaceClause
-
-    static final class ElementConsumer implements Statement._ElementConsumer {
-
-        private final boolean required;
-
-        private final Consumer<? super RowElement> consumer;
-
-        private Boolean state;
-
-        private ElementConsumer(boolean required, Consumer<? super RowElement> consumer) {
-            this.required = required;
-            this.consumer = consumer;
-        }
-
-        @Override
-        public Statement._ElementConsumer accept(final @Nullable SQLExpression exp) {
-            final Boolean state = this.state;
-            if (state == null) {
-                this.state = Boolean.TRUE;
-            }
-            if (state == Boolean.FALSE) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            } else if (exp == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            } else if (!(exp instanceof ArmySQLExpression)) {
-                throw ContextStack.clearStackAndNonArmyExpression();
-            }
-            this.consumer.accept(exp);
-            return this;
-        }
-
-        @Override
-        public Statement._ElementConsumer accept(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-            return this.accept(ContextStack.peek().row(tableAlias, period, table));
-        }
-
-        @Override
-        public Statement._ElementConsumer accept(String derivedAlias, SQLs.SymbolPeriod period,
-                                                 SQLs.SymbolAsterisk asterisk) {
-            return this.accept(derivedAsterisk(derivedAlias, period, asterisk));
-        }
-
-
-        private Statement._ElementConsumer
-
-        void endConsumer() {
-            if (this.state == null && this.required) {
-                throw CriteriaUtils.dontAddAnyItem();
-            }
-            this.state = Boolean.FALSE;
-        }
-
-    }//ElementConsumer
-
-
-    static final class ElementObjectSpaceClause implements Statement._ElementObjectSpaceClause,
-            Statement._ElementObjectCommaClause {
-
-        private final Consumer<? super ArmySQLExpression> consumer;
-
-        private Boolean state;
-
-        private ElementObjectSpaceClause(Consumer<? super ArmySQLExpression> consumer) {
-            this.consumer = consumer;
-        }
-
-        @Override
-        public Statement._ElementObjectCommaClause space(String keName, SQLExpression exp) {
-            if (this.state != null) {
-                throw CriteriaUtils.spaceMethodNotFirst();
-            }
-            this.state = Boolean.TRUE;
-            return this.comma(SQLs.literal(NoCastTextType.INSTANCE, keName), exp);
-        }
-
-        @Override
-        public Statement._ElementObjectCommaClause space(Expression key, SQLExpression exp) {
-            if (this.state != null) {
-                throw CriteriaUtils.spaceMethodNotFirst();
-            }
-            this.state = Boolean.TRUE;
-            return this.comma(key, exp);
-        }
-
-        @Override
-        public Statement._ElementObjectCommaClause space(String keName, String derivedAlias, SQLs.SymbolPeriod period,
-                                                         SQLs.SymbolAsterisk asterisk) {
-            if (this.state != null) {
-                throw CriteriaUtils.spaceMethodNotFirst();
-            }
-            this.state = Boolean.TRUE;
-            return this.comma(SQLs.literal(NoCastTextType.INSTANCE, keName),
-                    derivedAsterisk(derivedAlias, period, asterisk)
-            );
-        }
-
-        @Override
-        public Statement._ElementObjectCommaClause space(Expression key, String derivedAlias, SQLs.SymbolPeriod period,
-                                                         SQLs.SymbolAsterisk asterisk) {
-            if (this.state != null) {
-                throw CriteriaUtils.spaceMethodNotFirst();
-            }
-            this.state = Boolean.TRUE;
-            return this.comma(key, derivedAsterisk(derivedAlias, period, asterisk));
-        }
-
-        @Override
-        public Statement._ElementObjectCommaClause comma(String keName, SQLExpression exp) {
-            return this.comma(SQLs.literal(NoCastTextType.INSTANCE, keName), exp);
-        }
-
-        @Override
-        public Statement._ElementObjectCommaClause comma(final @Nullable Expression key,
-                                                         final @Nullable SQLExpression exp) {
-            if (this.state != Boolean.TRUE) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            } else if (key == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            } else if (exp == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            } else if (!(key instanceof OperationExpression)) {
-                String m = String.format("don't support %s", key.getClass().getName());
-                throw ContextStack.clearStackAndCriteriaError(m);
-            } else if (!(exp instanceof ArmySQLExpression)) {
-                throw ContextStack.clearStackAndNonArmyExpression();
-            } else if (exp instanceof _SelectionGroup._TableFieldGroup) {
-                String m = "error,don't support tableAlias.* ,you should use appropriate jsonObject method.";
-                throw ContextStack.clearStackAndCriteriaError(m);
-            }
-            this.consumer.accept((ArmyExpression) key);
-            this.consumer.accept((ArmySQLExpression) exp);
-            return this;
-        }
-
-        @Override
-        public Statement._ElementObjectCommaClause comma(String keName, String derivedAlias, SQLs.SymbolPeriod period,
-                                                         SQLs.SymbolAsterisk asterisk) {
-            return this.comma(SQLs.literal(NoCastTextType.INSTANCE, keName),
-                    derivedAsterisk(derivedAlias, period, asterisk)
-            );
-        }
-
-        @Override
-        public Statement._ElementObjectCommaClause comma(Expression key, String derivedAlias, SQLs.SymbolPeriod period,
-                                                         SQLs.SymbolAsterisk asterisk) {
-            return this.comma(key, derivedAsterisk(derivedAlias, period, asterisk));
-        }
-
-        void endClause() {
-            this.state = Boolean.FALSE;
-        }
-
-
-    }//ElementObjectSpaceClause
-
-
-    static final class ElementObjectConsumer implements Statement._ElementObjectConsumer {
-
-        private final Consumer<? super ArmySQLExpression> consumer;
-
-        private boolean state;
-
-        private ElementObjectConsumer(Consumer<? super ArmySQLExpression> consumer) {
-            this.consumer = consumer;
-        }
-
-        @Override
-        public Statement._ElementObjectConsumer accept(String keName, SQLExpression value) {
-            return this.accept(SQLs.literal(NoCastTextType.INSTANCE, keName), value);
-        }
-
-        @Override
-        public Statement._ElementObjectConsumer accept(final @Nullable Expression key,
-                                                       final @Nullable SQLExpression value) {
-            if (this.state) {
-                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-            } else if (key == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            } else if (value == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            } else if (!(key instanceof OperationExpression)) {
-                String m = String.format("don't support %s", key.getClass().getName());
-                throw ContextStack.clearStackAndCriteriaError(m);
-            } else if (!(value instanceof ArmySQLExpression)) {
-                String m = String.format("don't support %s", value.getClass().getName());
-                throw ContextStack.clearStackAndCriteriaError(m);
-            } else if (value instanceof _SelectionGroup._TableFieldGroup) {
-                String m = "error,don't support tableAlias.* ,you should use appropriate jsonObject method.";
-                throw ContextStack.clearStackAndCriteriaError(m);
-            }
-            this.consumer.accept((ArmyExpression) key);
-            this.consumer.accept((ArmySQLExpression) value);
-            return this;
-        }
-
-        @Override
-        public Statement._ElementObjectConsumer accept(String keName, String derivedAlias, SQLs.SymbolPeriod period,
-                                                       SQLs.SymbolAsterisk asterisk) {
-            return this.accept(SQLs.literal(NoCastTextType.INSTANCE, keName),
-                    derivedAsterisk(derivedAlias, period, asterisk)
-            );
-        }
-
-        @Override
-        public Statement._ElementObjectConsumer accept(Expression key, String derivedAlias, SQLs.SymbolPeriod period,
-                                                       SQLs.SymbolAsterisk asterisk) {
-            return this.accept(key, derivedAsterisk(derivedAlias, period, asterisk));
-        }
-
-
-        void endConsumer() {
-            this.state = true;
-        }
-
-
-    }//ElementObjectConsumer
-
-
     static final class StringObjectSpaceClause implements Statement._StringObjectSpaceClause,
             Statement._StringObjectCommaClause {
 
@@ -1633,30 +1215,118 @@ abstract class CriteriaSupports {
 
     }//StringObjectConsumer
 
+    static final class StaticObjectConsumer implements Statement._StaticObjectSpaceClause
+            , Statement._StaticObjectCommaClause {
 
-    private static final class DerivedAsterisk extends OperationRowExpression implements ArmySQLExpression, FunctionArg.SingleFunctionArg {
+        private final boolean required;
 
-        private final String derivedAlias;
+        private final Consumer<Object> consumer;
 
-        /**
-         * @see #derivedAsterisk(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)
-         */
-        private DerivedAsterisk(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
-            ContextStack.peek().row(derivedAlias, period, asterisk);
-            this.derivedAlias = derivedAlias;
+        private Boolean state;
+
+        private StaticObjectConsumer(boolean required, Consumer<Object> consumer) {
+            this.required = required;
+            this.consumer = consumer;
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-            context.parser().identifier(this.derivedAlias, sqlBuilder)
-                    .append(_Constant.POINT)
-                    .append('*');
+        public Statement._StaticObjectCommaClause space(String keyName, Object value) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.onAddPair(keyName, value);
         }
 
-    }//DerivedAsterisk
+        @Override
+        public Statement._StaticObjectCommaClause space(Expression key, Object value) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.onAddPair(key, value);
+        }
+
+        @Override
+        public Statement._StaticObjectCommaClause comma(String keyName, Object value) {
+            return this.onAddPair(keyName, value);
+        }
+
+        @Override
+        public Statement._StaticObjectCommaClause comma(Expression key, Object value) {
+            return this.onAddPair(key, value);
+        }
+
+
+        void endConsumer() {
+            if (this.state == null && this.required) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            this.state = Boolean.FALSE;
+        }
+
+        private Statement._StaticObjectCommaClause onAddPair(final @Nullable Object key, final Object value) {
+            if (this.state != Boolean.TRUE) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (key == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.consumer.accept(key);
+            this.consumer.accept(value);
+            return this;
+        }
+
+
+    }//StaticObjectConsumer
+
+    static final class DynamicObjectConsumer implements Statement._DynamicObjectConsumer {
+
+        private final boolean required;
+
+        private final Consumer<Object> consumer;
+
+        private Boolean state;
+
+        private DynamicObjectConsumer(boolean required, Consumer<Object> consumer) {
+            this.required = required;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public Statement._DynamicObjectConsumer accept(String keyName, Object value) {
+            return this.onAddPair(keyName, value);
+        }
+
+        @Override
+        public Statement._DynamicObjectConsumer accept(Expression key, Object value) {
+            return this.onAddPair(key, value);
+        }
+
+        void endConsumer() {
+            if (this.state == null && this.required) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            this.state = Boolean.FALSE;
+        }
+
+
+        private Statement._DynamicObjectConsumer onAddPair(final @Nullable Object key, final Object value) {
+            final Boolean state = this.state;
+            if (state == Boolean.FALSE) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (state == null) {
+                this.state = Boolean.TRUE;
+            }
+            if (key == null) {
+                throw ContextStack.clearStackAndNullPointer();
+            }
+            this.consumer.accept(key);
+            this.consumer.accept(value);
+            return this;
+        }
+
+
+    }//DynamicObjectConsumer
 
 
 }

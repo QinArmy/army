@@ -245,18 +245,8 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-creation-functions.html#function_json-extract">JSON_EXTRACT(json_doc, path[, path] ...)</a>
      */
     public static SimpleExpression jsonExtract(final Expression jsonDoc, final String firstPath, String... paths) {
-
-        final Expression pathLiterals;
-        if (paths.length == 0) {
-            pathLiterals = SQLs.param(StringType.INSTANCE, firstPath);
-        } else {
-            final List<String> pathList;
-            pathList = new ArrayList<>(1 + paths.length);
-            pathList.add(firstPath);
-            Collections.addAll(pathList, paths);
-            pathLiterals = SQLs.rowParam(StringType.INSTANCE, pathList);
-        }
-        return FunctionUtils.twoOrMultiArgFunc("JSON_EXTRACT", jsonDoc, pathLiterals, StringType.INSTANCE);
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
     /**

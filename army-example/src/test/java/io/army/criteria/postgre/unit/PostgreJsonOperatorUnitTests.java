@@ -32,10 +32,10 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonType.TEXT, jsonText)
-                        .apply(Postgres::hyphenGt, SQLs.literalValue(2))::as, "jsonElement"
+                        .space(Postgres::hyphenGt, SQLs.literalValue(2))::as, "jsonElement"
                 )
                 .comma(SQLs.literal(JsonbType.TEXT, jsonText)
-                        .apply(Postgres::hyphenGt, SQLs.literalValue(-3))::as, "jsonbElement"
+                        .space(Postgres::hyphenGt, SQLs.literalValue(-3))::as, "jsonbElement"
                 )
                 .asQuery();
 
@@ -43,7 +43,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
 
         final TypeMeta expType;
         expType = SQLs.literal(JsonType.TEXT, jsonText)
-                .apply(Postgres::hyphenGt, SQLs.literalValue(2))
+                .space(Postgres::hyphenGt, SQLs.literalValue(2))
                 .typeMeta();
         Assert.assertTrue(expType instanceof JsonType);
     }
@@ -56,9 +56,9 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final String jsonText = "[{\"a\":\"foo\"},{\"b\":\"bar\"},{\"c\":\"baz\"}]";
         final Select stmt;
         stmt = Postgres.query()
-                .select(SQLs.literal(JsonType.TEXT, jsonText).apply(Postgres::hyphenGtGt, SQLs.literalValue(2))::as, "jsonElement"
+                .select(SQLs.literal(JsonType.TEXT, jsonText).space(Postgres::hyphenGtGt, SQLs.literalValue(2))::as, "jsonElement"
                 )
-                .comma(SQLs.literal(JsonbType.TEXT, jsonText).apply(Postgres::hyphenGtGt, SQLs.literalValue(-3))::as, "jsonbElement"
+                .comma(SQLs.literal(JsonbType.TEXT, jsonText).space(Postgres::hyphenGtGt, SQLs.literalValue(-3))::as, "jsonbElement"
                 )
                 .asQuery();
 
@@ -66,7 +66,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
 
         final TypeMeta expType;
         expType = SQLs.literal(JsonType.TEXT, jsonText)
-                .apply(Postgres::hyphenGtGt, SQLs.literalValue(2))
+                .space(Postgres::hyphenGtGt, SQLs.literalValue(2))
                 .typeMeta();
         Assert.assertTrue(expType instanceof TextType);
     }
@@ -79,9 +79,9 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final String jsonText = "{\"a\": {\"b\": [\"foo\",\"bar\"]}}";
         final Select stmt;
         stmt = Postgres.query()
-                .select(SQLs.literal(JsonType.TEXT, jsonText).apply(Postgres::poundGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))::as, "jsonElement"
+                .select(SQLs.literal(JsonType.TEXT, jsonText).space(Postgres::poundGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))::as, "jsonElement"
                 )
-                .comma(SQLs.literal(JsonbType.TEXT, jsonText).apply(Postgres::poundGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))::as, "jsonbElement"
+                .comma(SQLs.literal(JsonbType.TEXT, jsonText).space(Postgres::poundGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))::as, "jsonbElement"
                 )
                 .asQuery();
 
@@ -89,7 +89,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
 
         final TypeMeta expType;
         expType = SQLs.literal(JsonType.TEXT, jsonText)
-                .apply(Postgres::poundGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))
+                .space(Postgres::poundGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))
                 .typeMeta();
         Assert.assertTrue(expType instanceof JsonType);
     }
@@ -103,10 +103,10 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonType.TEXT, jsonText)
-                        .apply(Postgres::poundGtGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))::as, "jsonElement"
+                        .space(Postgres::poundGtGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))::as, "jsonElement"
                 )
                 .comma(SQLs.literal(JsonbType.TEXT, jsonText)
-                        .apply(Postgres::poundGtGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))::as, "jsonbElement"
+                        .space(Postgres::poundGtGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))::as, "jsonbElement"
                 )
                 .asQuery();
 
@@ -114,7 +114,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
 
         final TypeMeta expType;
         expType = SQLs.literal(JsonType.TEXT, jsonText)
-                .apply(Postgres::poundGtGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))
+                .space(Postgres::poundGtGt, SQLs.literal(TextArrayType.LINEAR, "{a,b,1}"))
                 .typeMeta();
         Assert.assertTrue(expType instanceof TextType);
 
@@ -130,7 +130,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonbType.TEXT, firstJson)
-                        .test(Postgres::atGt, SQLs.literal(JsonbType.TEXT, secondJson))::as, "match"
+                        .whiteSpace(Postgres::atGt, SQLs.literal(JsonbType.TEXT, secondJson))::as, "match"
                 )
                 .asQuery();
 
@@ -146,7 +146,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonbType.TEXT, secondJson)
-                        .test(Postgres::ltAt, SQLs.literal(JsonbType.TEXT, firstJson))::as, "match"
+                        .whiteSpace(Postgres::ltAt, SQLs.literal(JsonbType.TEXT, firstJson))::as, "match"
                 )
                 .asQuery();
 
@@ -162,7 +162,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonbType.TEXT, jsonb)
-                        .test(Postgres::question, SQLs.literal(TextType.INSTANCE, "b"))::as, "match"
+                        .whiteSpace(Postgres::question, SQLs.literal(TextType.INSTANCE, "b"))::as, "match"
                 )
                 .asQuery();
 
@@ -178,7 +178,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonbType.TEXT, jsonb)
-                        .test(Postgres::questionVertical, SQLs.literal(TextArrayType.LINEAR, "{b,d}"))::as, "match"
+                        .whiteSpace(Postgres::questionVertical, SQLs.literal(TextArrayType.LINEAR, "{b,d}"))::as, "match"
                 )
                 .asQuery();
 
@@ -194,7 +194,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonbType.TEXT, jsonb)
-                        .test(Postgres::questionAmp, SQLs.literal(TextArrayType.LINEAR, "{a,b}"))::as, "match"
+                        .whiteSpace(Postgres::questionAmp, SQLs.literal(TextArrayType.LINEAR, "{a,b}"))::as, "match"
                 )
                 .asQuery();
 
@@ -215,9 +215,9 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonbType.TEXT, leftArray)
-                        .apply(Postgres::doubleVertical, SQLs::literal, rightArray)::as, "concatArray"
+                        .space(Postgres::doubleVertical, SQLs::literal, rightArray)::as, "concatArray"
                 ).comma(SQLs.literal(JsonbType.TEXT, leftObject)
-                        .apply(Postgres::doubleVertical, SQLs::literal, rightObject)::as, "concatObject"
+                        .space(Postgres::doubleVertical, SQLs::literal, rightObject)::as, "concatObject"
                 )
                 .asQuery();
 
@@ -225,13 +225,13 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
 
         TypeMeta expType;
         expType = SQLs.literal(JsonbType.TEXT, leftArray)
-                .apply(Postgres::doubleVertical, SQLs::literal, rightArray)
+                .space(Postgres::doubleVertical, SQLs::literal, rightArray)
                 .typeMeta();
 
         Assert.assertSame(expType, JsonbType.TEXT);
 
         expType = SQLs.literal(JsonbType.TEXT, leftObject)
-                .apply(Postgres::doubleVertical, SQLs::literal, rightObject)
+                .space(Postgres::doubleVertical, SQLs::literal, rightObject)
                 .typeMeta();
 
         Assert.assertSame(expType, JsonbType.TEXT);
@@ -250,11 +250,11 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonbType.TEXT, leftArray)
-                        .apply(Postgres::minus, SQLs.literal(TextType.INSTANCE, "a"))::as, "minusArrayElement"
+                        .space(Postgres::minus, SQLs.literal(TextType.INSTANCE, "a"))::as, "minusArrayElement"
                 ).comma(SQLs.literal(JsonbType.TEXT, leftObject)
-                        .apply(Postgres::minus, SQLs.literal(TextType.INSTANCE, "b"))::as, "minusObjectKey"
+                        .space(Postgres::minus, SQLs.literal(TextType.INSTANCE, "b"))::as, "minusObjectKey"
                 ).comma(SQLs.literal(JsonbType.TEXT, leftArray)
-                        .apply(Postgres::minus, SQLs.literal(IntegerType.INSTANCE, 1))::as, "minusNumberElement"
+                        .space(Postgres::minus, SQLs.literal(IntegerType.INSTANCE, 1))::as, "minusNumberElement"
                 )
                 .asQuery();
 
@@ -262,20 +262,20 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
 
         TypeMeta expType;
         expType = SQLs.literal(JsonbType.TEXT, leftArray)
-                .apply(Postgres::minus, SQLs.literal(TextType.INSTANCE, "a"))
+                .space(Postgres::minus, SQLs.literal(TextType.INSTANCE, "a"))
                 .typeMeta();
 
         Assert.assertSame(expType, JsonbType.TEXT);
 
 
         expType = SQLs.literal(JsonbType.TEXT, leftObject)
-                .apply(Postgres::minus, SQLs.literal(TextType.INSTANCE, "b"))
+                .space(Postgres::minus, SQLs.literal(TextType.INSTANCE, "b"))
                 .typeMeta();
 
         Assert.assertSame(expType, JsonbType.TEXT);
 
         expType = SQLs.literal(JsonbType.TEXT, leftArray)
-                .apply(Postgres::minus, SQLs.literal(IntegerType.INSTANCE, 1))
+                .space(Postgres::minus, SQLs.literal(IntegerType.INSTANCE, 1))
                 .typeMeta();
 
         Assert.assertSame(expType, JsonbType.TEXT);
@@ -292,7 +292,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonbType.TEXT, jsonbArray)
-                        .apply(Postgres::poundHyphen, SQLs.literal(TextArrayType.LINEAR, "{1,b}"))::as, "minusArrayElement"
+                        .space(Postgres::poundHyphen, SQLs.literal(TextArrayType.LINEAR, "{1,b}"))::as, "minusArrayElement"
                 )
                 .asQuery();
 
@@ -300,7 +300,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
 
         TypeMeta expType;
         expType = SQLs.literal(JsonbType.TEXT, jsonbArray)
-                .apply(Postgres::poundHyphen, SQLs.literal(TextArrayType.LINEAR, "{1,b}"))
+                .space(Postgres::poundHyphen, SQLs.literal(TextArrayType.LINEAR, "{1,b}"))
                 .typeMeta();
 
         Assert.assertSame(expType, JsonbType.TEXT);
@@ -316,7 +316,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonbType.TEXT, json)
-                        .test(Postgres::atQuestion, SQLs.literal(JsonPathType.INSTANCE, "$.a[*] ? (@ > 2)"))::as, "match"
+                        .whiteSpace(Postgres::atQuestion, SQLs.literal(JsonPathType.INSTANCE, "$.a[*] ? (@ > 2)"))::as, "match"
                 )
                 .asQuery();
 
@@ -334,7 +334,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(SQLs.literal(JsonbType.TEXT, json)
-                        .test(Postgres::doubleAt, SQLs.literal(JsonPathType.INSTANCE, "$.a[*] > 2"))::as, "match"
+                        .whiteSpace(Postgres::doubleAt, SQLs.literal(JsonPathType.INSTANCE, "$.a[*] > 2"))::as, "match"
                 )
                 .asQuery();
 

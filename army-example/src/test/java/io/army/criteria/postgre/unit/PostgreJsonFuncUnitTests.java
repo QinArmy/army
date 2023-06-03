@@ -1,11 +1,10 @@
 package io.army.criteria.postgre.unit;
 
 import io.army.criteria.Expression;
-import io.army.criteria.SQLExpression;
+import io.army.criteria.RowElement;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
-import io.army.criteria.impl.SQLsSyntax;
 import io.army.criteria.postgre.mapping.MyRowType;
 import io.army.criteria.postgre.mapping.MySubRowType;
 import io.army.criteria.postgre.mapping.TwoIntType;
@@ -36,8 +35,8 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
 
     /**
-     * @see Postgres#toJson(SQLExpression)
-     * @see Postgres#toJsonb(SQLExpression)
+     * @see Postgres#toJson(Object)
+     * @see Postgres#toJsonb(Object)
      */
     @Test
     public void toJsonFunc() {
@@ -45,9 +44,9 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         stmt = Postgres.query()
                 .select(toJson(SQLs.literalValue("Fred said \"Hi.\""))::as, "json1")
                 .comma(toJsonb(SQLs.literalValue("Fred said \"Hi.\""))::as, "json2")
-                .comma(toJson(row(SQLs.literalValue(1), SQLs.literalValue(2), row(SQLs.literalValue(randomPerson()))))::as, "json3")
+                .comma(toJson(row(1, SQLs.literalValue(1), SQLs.literalValue(2), row(SQLs.literalValue(randomPerson()))))::as, "json3")
                 .comma(toJsonb(row(SQLs.literalValue(1), SQLs.literalValue(2), row(SQLs.literalValue(randomPerson()))))::as, "json4")
-                .comma(toJsonb(SQLsSyntax.space("b", PERIOD, ASTERISK))::as, "json5")
+                .comma(toJsonb(SQLs.space("b", PERIOD, ASTERISK))::as, "json5")
                 .from(Postgres.subQuery()
                         .select(ChinaRegion_.id, ChinaRegion_.name)
                         .from(ChinaRegion_.T, AS, "c")
@@ -80,8 +79,8 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
     }
 
     /**
-     * @see Postgres#rowToJson(SQLExpression)
-     * @see Postgres#rowToJson(SQLExpression, Expression)
+     * @see Postgres#rowToJson(RowElement)
+     * @see Postgres#rowToJson(RowElement, Expression)
      */
     @Test
     public void rowToJsonFunc() {
@@ -89,16 +88,19 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         stmt = Postgres.query()
                 .select(rowToJson(row(SQLs.literalValue(1), SQLs.literalValue("zoro"))
                         )::as, "json1"
-                )
-                .comma(rowToJson(row(SQLs.literalValue(2), SQLs.literalValue("zoro")), TRUE
+                ).comma(rowToJson(row(SQLs.literalValue(2), SQLs.literalValue("zoro")), TRUE
                         )::as, "json2"
                 ).comma(rowToJson(row(SQLs.literalValue(3)), TRUE
                         )::as, "json3"
-                ).comma(rowToJson(row(c -> c.space(SQLs.literalValue(randomPerson()))
-                                .comma(SQLs.literalValue(randomPerson()))
+                ).comma(rowToJson(row(c -> {
+                                    c.accept(SQLs.literalValue(randomPerson()));
+                                    c.accept(SQLs.literalValue(randomPerson()));
+                                }
                         )).as("json4")
-                ).comma(rowToJson(row(c -> c.space(SQLs.literalValue(randomPerson()))
-                                .comma(SQLs.literalValue(randomPerson()))
+                ).comma(rowToJson(row(c -> {
+                                    c.accept(SQLs.literalValue(randomPerson()));
+                                    c.accept(SQLs.literalValue(randomPerson()));
+                                }
                         ), TRUE).as("json5")
                 )
                 .asQuery();
@@ -107,9 +109,9 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
     }
 
     /**
-     * @see Postgres#jsonBuildArray(SQLExpression...)
+     * @see Postgres#jsonBuildArray(Object)
      * @see Postgres#jsonBuildArray(Consumer)
-     * @see Postgres#jsonbBuildArray(SQLExpression...)
+     * @see Postgres#jsonBuildArray(Object)
      * @see Postgres#jsonbBuildArray(Consumer)
      */
     @Test
@@ -119,10 +121,11 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         stmt = Postgres.query()
                 .select(jsonBuildArray(SQLs.literalValue(1), SQLs.literalValue("zoro"))::as, "json1")
                 .comma(jsonbBuildArray(SQLs.literalValue(2), SQLs.literalValue("zoro"))::as, "json3")
-                .comma(jsonBuildArray(c -> c.accept("c", PERIOD, ChinaRegion_.T))::as, "json9")
-                .comma(jsonBuildArray(c -> c.accept("b", PERIOD, ASTERISK))::as, "json10")
-                .comma(jsonbBuildArray(c -> c.accept("c", PERIOD, ChinaRegion_.T))::as, "json11")
-                .comma(jsonbBuildArray(c -> c.accept("b", PERIOD, ASTERISK))::as, "json12")
+                .comma(jsonBuildArray(space("b", PERIOD, ASTERISK))::as, "json10")
+                .comma(jsonbBuildArray(space("b", PERIOD, ASTERISK))::as, "json12")
+                .comma(jsonbBuildArray(c -> {
+
+                }).as("json13"))
                 .from(ChinaRegion_.T, AS, "c")
                 .join(Postgres.subQuery()
                         .select(SQLs.literalValue(5)::as, "id")
@@ -135,11 +138,9 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
     }
 
     /**
-     * @see Postgres#jsonBuildObject(SQLExpression...)
      * @see Postgres#jsonBuildObject(Consumer)
      * @see Postgres#jsonBuildObject(SymbolSpace, Consumer)
      * @see Postgres#jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see Postgres#jsonbBuildObject(SQLExpression...)
      * @see Postgres#jsonbBuildObject(Consumer)
      * @see Postgres#jsonbBuildObject(SymbolSpace, Consumer)
      * @see Postgres#jsonbBuildObject(String, SymbolPeriod, TableMeta)
@@ -149,31 +150,29 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         final Select stmt;
         stmt = Postgres.query()
                 .select(jsonBuildObject()::as, "json1")
-                .comma(jsonBuildObject(SQLs.literalValue("name"), SQLs.literalValue("zoro"))::as, "json2")
                 .comma(jsonBuildObject(c -> c.space("name", SQLs.literalValue("zoro"))
                                 .comma("region", ChinaRegion_.name)
                                 .comma("row", row(SQLs.literalValue(1), SQLs.literalValue("happy")))
-                                .comma("derivedFields", "b", PERIOD, ASTERISK)
+                                .comma("derivedFields", space("b", PERIOD, ASTERISK))
                                 .comma("regionFields", jsonBuildObject("c", PERIOD, ChinaRegion_.T))
                         ).as("json3")
                 ).comma(jsonBuildObject(SPACE, c -> c.accept("name", SQLs.literalValue("zoro"))
                                 .accept("region", ChinaRegion_.name)
                                 .accept("row", row(SQLs.literalValue(1), SQLs.literalValue("happy")))
-                                .accept("derivedFields", "b", PERIOD, ASTERISK)
+                                .accept("derivedFields", space("b", PERIOD, ASTERISK))
                                 .accept("regionFields", jsonBuildObject("c", PERIOD, ChinaRegion_.T))
                         ).as("json4")
                 ).comma(jsonbBuildObject()::as, "json5")
-                .comma(jsonbBuildObject(SQLs.literalValue("name"), SQLs.literalValue("zoro"))::as, "json6")
                 .comma(jsonbBuildObject(c -> c.space("name", SQLs.literalValue("zoro"))
                                 .comma("region", ChinaRegion_.name)
                                 .comma("row", row(SQLs.literalValue(1), SQLs.literalValue("happy")))
-                                .comma("derivedFields", "b", PERIOD, ASTERISK)
+                                .comma("derivedFields", space("b", PERIOD, ASTERISK))
                                 .comma("regionFields", jsonbBuildObject("c", PERIOD, ChinaRegion_.T))
                         ).as("json7")
                 ).comma(jsonbBuildObject(SPACE, c -> c.accept("name", SQLs.literalValue("zoro"))
                                 .accept("region", ChinaRegion_.name)
                                 .accept("row", row(SQLs.literalValue(1), SQLs.literalValue("happy")))
-                                .accept("derivedFields", "b", PERIOD, ASTERISK)
+                                .accept("derivedFields", space("b", PERIOD, ASTERISK))
                                 .accept("regionFields", jsonbBuildObject("c", PERIOD, ChinaRegion_.T))
                         ).as("json8")
                 )

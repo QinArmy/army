@@ -260,7 +260,7 @@ final class PostgreDialectParser extends PostgreParser {
         if ((symbolStar = stmt.symbolAsterisk()) != null) {
             assert symbolStar == SQLs.ASTERISK;
             sqlBuilder.append(_Constant.SPACE)
-                    .append(_Constant.STAR_CHAR);
+                    .append(_Constant.ASTERISK);
         }
 
         // 6. table alias

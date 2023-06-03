@@ -11,9 +11,9 @@ import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
-import io.army.mapping.TextType;
+import io.army.mapping.*;
 import io.army.meta.TypeMeta;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -32,13 +32,6 @@ abstract class FunctionUtils {
 
     }
 
-    interface OuterClause {
-
-        void appendOuterClause(StringBuilder sqlBuilder, _SqlContext context);
-
-        void outerClauseToString(StringBuilder builder);
-
-    }
 
     interface FunctionOuterClause {
 
@@ -455,92 +448,6 @@ abstract class FunctionUtils {
     }
 
 
-
-    static SimpleExpression dynamicVarargsElementFunc(String name, SqlSyntax.SymbolSpace space, final boolean required,
-                                                      Consumer<Statement._ElementConsumer> consumer,
-                                                      TypeMeta returnType) {
-        if (space != SQLs.SPACE) {
-            throw CriteriaUtils.errorSymbol(space);
-        }
-        final List<ArmySQLExpression> argList = _Collections.arrayList();
-
-        final CriteriaSupports.ElementConsumer elementConsumer;
-        elementConsumer = CriteriaSupports.elementConsumer(required, argList::add);
-        consumer.accept(elementConsumer);
-        elementConsumer.endConsumer();
-
-        final SimpleExpression func;
-        if (argList.size() == 0) {
-            func = new ZeroArgFunction(name, returnType);
-        } else {
-            func = new MultiArgFunctionExpression(name, argList, returnType);
-        }
-        return func;
-    }
-
-    static SimpleExpression staticObjectElementFunc(String name, Consumer<Statement._ElementObjectSpaceClause> consumer,
-                                                    TypeMeta returnType) {
-        final List<ArmySQLExpression> argList = _Collections.arrayList();
-        final CriteriaSupports.ElementObjectSpaceClause clause;
-        clause = CriteriaSupports.elementObjectSpaceClause(argList::add);
-        consumer.accept(clause);
-        clause.endClause();
-
-        final SimpleExpression func;
-        if (argList.size() == 0) {
-            func = new ZeroArgFunction(name, returnType);
-        } else {
-            func = new MultiArgFunctionExpression(name, argList, returnType);
-        }
-        return func;
-    }
-
-    static SimpleExpression dynamicObjectElementFunc(String name, SqlSyntax.SymbolSpace space,
-                                                     Consumer<Statement._ElementObjectConsumer> consumer,
-                                                     TypeMeta returnType) {
-        if (space != SQLs.SPACE) {
-            throw CriteriaUtils.errorSymbol(space);
-        }
-
-        final List<ArmySQLExpression> argList = _Collections.arrayList();
-        final CriteriaSupports.ElementObjectConsumer clause;
-        clause = CriteriaSupports.elementObjectConsumer(argList::add);
-        consumer.accept(clause);
-        clause.endConsumer();
-
-        final SimpleExpression func;
-        if (argList.size() == 0) {
-            func = new ZeroArgFunction(name, returnType);
-        } else {
-            func = new MultiArgFunctionExpression(name, argList, returnType);
-        }
-        return func;
-    }
-
-    static SimpleExpression varargsElementFunc(final String name, final boolean even, final TypeMeta returnType,
-                                               final SQLExpression... variadic) {
-        if (even && (variadic.length & 1) != 0) {
-            throw CriteriaUtils.nonEvenArgs(name);
-        }
-
-        final SimpleExpression func;
-        if (variadic.length == 0) {
-            func = zeroArgFunc(name, returnType);
-        } else {
-            final List<ArmySQLExpression> argList = _Collections.arrayList(variadic.length);
-            for (SQLExpression exp : variadic) {
-                if (!(exp instanceof ArmySQLExpression)) {
-                    throw CriteriaUtils.funcArgError(name, exp);
-                } else if (even && exp instanceof _SelectionGroup._TableFieldGroup) {
-                    throw CriteriaUtils.funcArgError(name, exp);
-                }
-                argList.add((ArmySQLExpression) exp);
-            }
-            func = new MultiArgFunctionExpression(name, argList, returnType);
-        }
-        return func;
-    }
-
     static SimpleExpression staticStringObjectStringFunc(final String name, final boolean required,
                                                          final BiFunction<MappingType, String[], Expression> funcRef,
                                                          final MappingType paramType,
@@ -786,6 +693,106 @@ abstract class FunctionUtils {
         return new NamedComplexArgFunc(name, argList, returnType, expAlias);
     }
 
+    static SimpleExpression oneArgRowElementFunc(String name, Object one, TypeMeta returnType) {
+        if (one instanceof _SelectionGroup._TableFieldGroup || one instanceof SubQuery) {
+            throw CriteriaUtils.funcArgError(name, one);
+        }
+        return new MultiArgRowElementFunc(name, true, _Collections.singletonList(one), returnType);
+    }
+
+    static SimpleExpression twoArgRowElementFunc(String name, Object one, Object two, TypeMeta returnType) {
+        if (one instanceof _SelectionGroup._TableFieldGroup || one instanceof SubQuery) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof _SelectionGroup._TableFieldGroup || two instanceof SubQuery) {
+            throw CriteriaUtils.funcArgError(name, two);
+        }
+        return new MultiArgRowElementFunc(name, true, ArrayUtils.asUnmodifiableList(one, two), returnType);
+    }
+
+    static SimpleExpression threeAndRestRowElementFunc(final String name, final TypeMeta returnType, final Object one,
+                                                       final Object two, final Object three, final Object... rest) {
+        if (one instanceof _SelectionGroup._TableFieldGroup || one instanceof SubQuery) {
+            throw CriteriaUtils.funcArgError(name, one);
+        } else if (two instanceof _SelectionGroup._TableFieldGroup || two instanceof SubQuery) {
+            throw CriteriaUtils.funcArgError(name, two);
+        } else if (three instanceof _SelectionGroup._TableFieldGroup || three instanceof SubQuery) {
+            throw CriteriaUtils.funcArgError(name, three);
+        }
+        final List<Object> argList = _Collections.arrayList(3 + rest.length);
+        argList.add(one);
+        argList.add(two);
+        argList.add(three);
+
+        for (Object arg : rest) {
+            if (arg instanceof _SelectionGroup._TableFieldGroup || arg instanceof SubQuery) {
+                throw CriteriaUtils.funcArgError(name, three);
+            }
+            argList.add(arg);
+        }
+        return new MultiArgRowElementFunc(name, true, argList, returnType);
+    }
+
+    static SimpleExpression rowElementFunc(final String name, final boolean required,
+                                           final Consumer<Consumer<Object>> consumer, final TypeMeta returnType) {
+        final List<Object> argList = _Collections.arrayList();
+        consumer.accept(e -> {
+            if (e instanceof _SelectionGroup._TableFieldGroup || e instanceof SubQuery) {
+                throw CriteriaUtils.funcArgError(name, e);
+            }
+            argList.add(e);
+        });
+        if (argList.size() == 0 && required) {
+            throw CriteriaUtils.dontAddAnyItem();
+        }
+        return new MultiArgRowElementFunc(name, true, argList, returnType);
+    }
+
+    static SimpleExpression objectElementFunc(final String name, final boolean required,
+                                              final Consumer<Statement._StaticObjectSpaceClause> consumer,
+                                              final TypeMeta returnType) {
+        final List<Object> argList = _Collections.arrayList();
+        final CriteriaSupports.StaticObjectConsumer objectConsumer;
+        objectConsumer = CriteriaSupports.staticObjectConsumer(required, e -> {
+            if (e instanceof SubQuery) {
+                throw CriteriaUtils.funcArgError(name, e);
+            }
+            argList.add(e);
+        });
+
+        consumer.accept(objectConsumer);
+
+        objectConsumer.endConsumer();
+        return new ObjectElementFunction(name, true, argList, returnType);
+
+    }
+
+    static SimpleExpression oneArgObjectElementFunc(String name, RowElement one, TypeMeta returnType) {
+        return new ObjectElementFunction(name, true, _Collections.singletonList(one), returnType);
+    }
+
+    static SimpleExpression objectElementFunc(SqlSyntax.SymbolSpace space, final String name, final boolean required,
+                                              final Consumer<Statement._DynamicObjectConsumer> consumer,
+                                              final TypeMeta returnType) {
+        if (space != SQLs.SPACE) {
+            throw CriteriaUtils.funcArgError(name, space);
+        }
+        final List<Object> argList = _Collections.arrayList();
+        final CriteriaSupports.DynamicObjectConsumer objectConsumer;
+        objectConsumer = CriteriaSupports.dynamicObjectConsumer(required, e -> {
+            if (e instanceof SubQuery) {
+                throw CriteriaUtils.funcArgError(name, e);
+            }
+            argList.add(e);
+        });
+
+        consumer.accept(objectConsumer);
+
+        objectConsumer.endConsumer();
+        return new ObjectElementFunction(name, true, argList, returnType);
+
+    }
+
+
     static OrderByOptionClause orderByOptionClause() {
         return new OrderByOptionClause();
     }
@@ -1019,7 +1026,6 @@ abstract class FunctionUtils {
     }
 
 
-
     static Map<String, Selection> createSelectionMapFrom(final @Nullable CriteriaContext context,
                                                          final List<? extends Selection> selectionList) {
         final Map<String, Selection> map = _Collections.hashMap((int) (selectionList.size() / 0.75F));
@@ -1079,12 +1085,7 @@ abstract class FunctionUtils {
 
     }
 
-    /**
-     * don't invoke <ul>
-     * <li>{@link OperationExpression.SqlFunctionExpression#appendFuncRest(StringBuilder, _SqlContext)}</li>
-     * <li>{@link OperationExpression.SqlFunctionExpression#funcRestToString(StringBuilder)} </li>
-     * </ul>
-     */
+
     interface SimpleFunction {
 
     }
@@ -1421,7 +1422,6 @@ abstract class FunctionUtils {
         FunctionExpression(String name, boolean buildIn, TypeMeta returnType) {
             super(name, buildIn, returnType);
         }
-
 
 
     }//FunctionExpression
@@ -2038,8 +2038,7 @@ abstract class FunctionUtils {
     /**
      * @see ComplexArgFuncPredicate
      */
-    private static class ComplexArgFuncExpression extends OperationExpression.SqlFunctionExpression
-            implements SimpleFunction {
+    private static class ComplexArgFuncExpression extends OperationExpression.SqlFunctionExpression {
         private final List<?> argList;
 
         /**
@@ -2637,6 +2636,167 @@ abstract class FunctionUtils {
 
 
     }//OrderByOptionClause
+
+
+    private static final class MultiArgRowElementFunc extends OperationExpression.SqlFunctionExpression {
+
+        private final List<Object> argList;
+
+        private MultiArgRowElementFunc(String name, boolean buildIn, List<Object> argList, TypeMeta returnType) {
+            super(name, buildIn, returnType);
+            this.argList = argList;
+        }
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final List<Object> argList = this.argList;
+            final int argSize;
+            argSize = argList.size();
+
+            Object arg;
+            MappingType type;
+            for (int i = 0; i < argSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+
+                arg = argList.get(i);
+                if (arg == null) {
+                    sqlBuilder.append(_Constant.NULL);
+                } else if (!(arg instanceof RowElement)) {
+                    if (arg instanceof String) {
+                        type = NoCastIntegerType.INSTANCE;
+                    } else if (arg instanceof Integer) {
+                        type = NoCastIntegerType.INSTANCE;
+                    } else if ((type = _MappingFactory.getDefaultIfMatch(arg.getClass())) == null) {
+                        throw _Exceptions.notFoundMappingType(arg);
+                    }
+                    context.appendLiteral(type, arg);
+                } else if (arg instanceof ArmySQLExpression) {
+                    ((ArmySQLExpression) arg).appendSql(context);
+                } else if (arg instanceof _SelectionGroup._TableFieldGroup || arg instanceof SubQuery) {
+                    String m = String.format("function[%s] don't support %s", this.name, arg);
+                    throw new CriteriaException(m);
+                } else if (arg instanceof SelectionGroups.RowElementGroup) {
+                    ((SelectionGroups.RowElementGroup) arg).appendRowElement(sqlBuilder, context);
+                } else {
+                    throw _Exceptions.unknownRowElement(arg);
+                }
+
+            }//for
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            final List<Object> argList = this.argList;
+            final int argSize;
+            argSize = argList.size();
+
+            Object arg;
+            for (int i = 0; i < argSize; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+
+                arg = argList.get(i);
+                if (arg == null) {
+                    builder.append(_Constant.NULL);
+                } else if (!(arg instanceof RowElement)) {
+                    builder.append(_Constant.SPACE)
+                            .append(arg);
+                } else if (arg instanceof ArmySQLExpression) {
+                    builder.append(arg);
+                } else if (arg instanceof _SelectionGroup._TableFieldGroup || arg instanceof SubQuery) {
+                    String m = String.format("function[%s] don't support %s", this.name, arg);
+                    throw new CriteriaException(m);
+                } else if (arg instanceof SelectionGroups.RowElementGroup) {
+                    ((SelectionGroups.RowElementGroup) arg).rowElementToString(builder);
+                } else {
+                    throw _Exceptions.unknownRowElement(arg);
+                }
+
+            }//for
+        }
+
+
+    }//MultiArgRowElementFunc
+
+    private static final class ObjectElementFunction extends OperationExpression.SqlFunctionExpression {
+
+        private final List<Object> argList;
+
+        private ObjectElementFunction(String name, boolean buildIn, List<Object> argList, TypeMeta returnType) {
+            super(name, buildIn, returnType);
+            this.argList = argList;
+        }
+
+        @Override
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final List<Object> argList = this.argList;
+            final int argSize;
+            argSize = argList.size();
+
+            Object arg;
+            MappingType type;
+            for (int i = 0; i < argSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                arg = argList.get(i);
+                if (arg == null) {
+                    sqlBuilder.append(_Constant.NULL);
+                } else if (!(arg instanceof RowElement)) {
+                    if (arg instanceof String) {
+                        type = NoCastTextType.INSTANCE;
+                    } else if (arg instanceof Integer) {
+                        type = NoCastIntegerType.INSTANCE;
+                    } else if ((type = _MappingFactory.getDefaultIfMatch(arg.getClass())) == null) {
+                        throw _Exceptions.notFoundMappingType(arg);
+                    }
+                    context.appendLiteral(type, arg);
+                } else if (arg instanceof ArmySQLExpression) {
+                    ((ArmySQLExpression) arg).appendSql(context);
+                } else if (arg instanceof SelectionGroups.ObjectElementGroup) {
+                    ((SelectionGroups.ObjectElementGroup) arg).appendObjectElement(sqlBuilder, context);
+                } else {
+                    throw _Exceptions.unknownRowElement(arg);
+                }
+
+            }//for
+
+        }
+
+        @Override
+        void argToString(final StringBuilder builder) {
+            final List<Object> argList = this.argList;
+            final int argSize;
+            argSize = argList.size();
+
+            Object arg;
+            for (int i = 0; i < argSize; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                arg = argList.get(i);
+                if (arg == null) {
+                    builder.append(_Constant.NULL);
+                } else if (!(arg instanceof RowElement)) {
+                    builder.append(_Constant.SPACE)
+                            .append(arg);
+                } else if (arg instanceof ArmySQLExpression) {
+                    builder.append(arg);
+                } else if (arg instanceof SelectionGroups.ObjectElementGroup) {
+                    ((SelectionGroups.ObjectElementGroup) arg).objectElementToString(builder);
+                } else {
+                    throw _Exceptions.unknownRowElement(arg);
+                }
+
+            }//for
+        }
+
+
+    }//JsonObjectFunction
 
 
 }

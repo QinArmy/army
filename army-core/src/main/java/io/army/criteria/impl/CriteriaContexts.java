@@ -2104,7 +2104,7 @@ abstract class CriteriaContexts {
                 String m = String.format("error,please check table alias[%s] in statement.", alias);
                 throw ContextStack.criteriaError(this, m);
             }
-            return group;
+            return (RowElement) group;
         }
 
 
@@ -2129,7 +2129,7 @@ abstract class CriteriaContexts {
                 String m = String.format("error,please check derived alias[%s] in statement.", alias);
                 throw ContextStack.criteriaError(this, m);
             }
-            return group;
+            return (RowElement) group;
         }
 
         @Override

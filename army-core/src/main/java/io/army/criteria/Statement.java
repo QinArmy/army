@@ -144,6 +144,7 @@ public interface Statement extends Item {
 
     }
 
+    @Deprecated
     interface _ElementObjectCommaClause {
 
         _ElementObjectCommaClause comma(String keName, SQLExpression exp);
@@ -155,6 +156,33 @@ public interface Statement extends Item {
         _ElementObjectCommaClause comma(Expression key, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
     }
 
+    interface _StaticObjectSpaceClause {
+
+        _StaticObjectCommaClause space(String keyName, Object value);
+
+        _StaticObjectCommaClause space(Expression key, Object value);
+
+    }
+
+    interface _StaticObjectCommaClause {
+
+        _StaticObjectCommaClause comma(String keyName, Object value);
+
+        _StaticObjectCommaClause comma(Expression key, Object value);
+
+    }
+
+
+    interface _DynamicObjectConsumer {
+
+        _DynamicObjectConsumer accept(String keyName, Object value);
+
+        _DynamicObjectConsumer accept(Expression key, Object value);
+
+    }
+
+
+    @Deprecated
     interface _ElementObjectSpaceClause {
 
         _ElementObjectCommaClause space(String keName, SQLExpression exp);

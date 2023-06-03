@@ -9,6 +9,7 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
+import io.army.mapping.NoCastTextType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
@@ -77,82 +78,25 @@ abstract class SelectionGroups {
         }
     }
 
-    private static void appendDerivedAsRow(final DerivedFieldGroup group, final _SqlContext context) {
-        final StringBuilder builder = context.sqlBuilder();
 
-        final DialectParser dialect = context.parser();
-        final String safeDerivedAlias = dialect.identifier(group.tableAlias());
-        final List<? extends Selection> selectionList;
-        selectionList = group.selectionList();
-        final int size = selectionList.size();
-        assert size > 0;
-
-        for (int i = 0; i < size; i++) {
-            if (i > 0) {
-                builder.append(_Constant.SPACE_COMMA);
-            }
-            builder.append(_Constant.SPACE)
-                    .append(safeDerivedAlias)
-                    .append(_Constant.POINT);
-
-            dialect.identifier(selectionList.get(i).alias(), builder);
-
-        }
-
-    }
-
-    private static <T> void appendTableAsRow(final TableFieldGroupImpl<T> group, final _SqlContext context) {
-        final List<FieldMeta<T>> fieldList;
-        fieldList = group.fieldList;
-        final int size = fieldList.size();
-        assert size > 0;
-        final StringBuilder builder = context.sqlBuilder();
-
-        final String tableAlias;
-        tableAlias = group.tableAlias;
-        for (int i = 0; i < size; i++) {
-            if (i > 0) {
-                builder.append(_Constant.SPACE_COMMA);
-            }
-            context.appendField(tableAlias, fieldList.get(i));
-        }
-
-    }
-
-
-    private static void appendGroupAsRowElement(final _SelectionGroup group, final _SqlContext context) {
-        switch (context.database()) {
-            case MySQL: {
-                if (group instanceof TableFieldGroupImpl) {
-                    appendTableAsRow((TableFieldGroupImpl<?>) group, context);
-                } else {
-                    appendDerivedAsRow((DerivedFieldGroup) group, context);
-                }
-            }
-            break;
-            case PostgreSQL: {
-                final StringBuilder sqlBuilder;
-                sqlBuilder = context.sqlBuilder()
-                        .append(_Constant.SPACE);
-                context.parser().identifier(group.tableAlias(), sqlBuilder);
-                sqlBuilder.append(_Constant.POINT)
-                        .append('*');
-            }
-            break;
-            case Oracle:
-            case H2:
-            default:
-                throw _Exceptions.unexpectedEnum(context.database());
-        }
-    }
 
 
     /*################################## blow static inner class  ##################################*/
 
+    interface ObjectElementGroup extends _SelectionGroup {
+
+        void appendObjectElement(StringBuilder sqlBuilder, _SqlContext context);
+
+        void objectElementToString(StringBuilder builder);
+
+    }
 
     interface RowElementGroup extends RowElement, _SelectionGroup {
 
-        void appendRowElement(_SqlContext context);
+        void appendRowElement(StringBuilder sqlBuilder, _SqlContext context);
+
+        void rowElementToString(StringBuilder builder);
+
 
     }
 
@@ -206,6 +150,7 @@ abstract class SelectionGroups {
 
         }
 
+
         @Override
         public List<? extends Selection> selectionList() {
             return this.insertTable.fieldList();
@@ -225,7 +170,8 @@ abstract class SelectionGroups {
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
      * </p>
      */
-    static final class TableFieldGroupImpl<T> implements _SelectionGroup._TableFieldGroup, RowElementGroup {
+    static final class TableFieldGroupImpl<T> implements _SelectionGroup._TableFieldGroup, RowElementGroup,
+            ObjectElementGroup {
 
         private final String tableAlias;
 
@@ -266,9 +212,29 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public void appendRowElement(final _SqlContext context) {
-            SelectionGroups.appendGroupAsRowElement(this, context);
+        public void appendRowElement(final StringBuilder slBuilder, final _SqlContext context) {
+            final List<FieldMeta<T>> fieldList = this.fieldList;
+            final int size = fieldList.size();
+            assert size > 0;
+
+            final String tableAlias = this.tableAlias;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    slBuilder.append(_Constant.SPACE_COMMA);
+                }
+                context.appendField(tableAlias, fieldList.get(i));
+            }
+
         }
+
+        @Override
+        public void rowElementToString(final StringBuilder builder) {
+            builder.append(_Constant.SPACE)
+                    .append(this.tableAlias)
+                    .append(_Constant.POINT)
+                    .append(_Constant.ASTERISK);
+        }
+
 
         @Override
         public void appendSelectItem(final _SqlContext context) {
@@ -314,6 +280,56 @@ abstract class SelectionGroups {
             return builder.toString();
         }
 
+
+        @Override
+        public void appendObjectElement(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final List<FieldMeta<T>> fieldList = this.fieldList;
+            final int size = fieldList.size();
+            assert size > 0;
+
+            final String tableAlias = this.tableAlias;
+            FieldMeta<T> field;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                field = fieldList.get(i);
+                context.appendLiteral(NoCastTextType.INSTANCE, field.columnName()); // here output column name not field name
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+                context.appendField(tableAlias, field);
+            }
+
+        }
+
+        @Override
+        public void objectElementToString(final StringBuilder builder) {
+            final List<FieldMeta<T>> fieldList = this.fieldList;
+            final int size = fieldList.size();
+            assert size > 0;
+
+            final String tableAlias = this.tableAlias;
+            String columnName;
+            FieldMeta<T> field;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                field = fieldList.get(i);
+                columnName = field.columnName();// here output column name not field name
+
+                builder.append(_Constant.SPACE)
+                        .append(_Constant.QUOTE)
+                        .append(columnName)
+                        .append(_Constant.QUOTE)
+                        .append(_Constant.SPACE_COMMA)
+                        .append(tableAlias)
+                        .append(_Constant.POINT)
+                        .append(columnName);
+            }
+
+        }
+
+
     }//TableFieldGroup
 
 
@@ -357,7 +373,7 @@ abstract class SelectionGroups {
      * </p>
      */
     private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup, RowElementGroup,
-            RowElement.DelayElement {
+            RowElement.DelayElement, ObjectElementGroup {
 
         private final String derivedAlias;
 
@@ -375,11 +391,99 @@ abstract class SelectionGroups {
 
 
         @Override
-        public void appendRowElement(final _SqlContext context) {
-            if (this.selectionList == null) {
+        public void appendRowElement(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final List<? extends Selection> selectionList = this.selectionList;
+            if (selectionList == null) {
                 throw _Exceptions.castCriteriaApi();
             }
-            SelectionGroups.appendGroupAsRowElement(this, context);
+            switch (context.database()) {
+                case MySQL:
+                    this.appendDerivedRowElement(sqlBuilder, context);
+                    break;
+                case PostgreSQL: {
+                    sqlBuilder.append(_Constant.SPACE);
+                    context.parser().identifier(this.derivedAlias, sqlBuilder);
+                    sqlBuilder.append(_Constant.POINT)
+                            .append(_Constant.ASTERISK);
+                }
+                break;
+                case Oracle:
+                case H2:
+                default:
+                    throw _Exceptions.unexpectedEnum(context.database());
+            }
+
+        }
+
+        @Override
+        public void rowElementToString(final StringBuilder builder) {
+            builder.append(_Constant.SPACE)
+                    .append(this.derivedAlias)
+                    .append(_Constant.POINT)
+                    .append(_Constant.ASTERISK);
+        }
+
+
+        @Override
+        public void appendObjectElement(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final List<? extends Selection> selectionList = this.selectionList;
+            if (selectionList == null) {
+                throw _Exceptions.castCriteriaApi();
+            }
+            final DialectParser parser = context.parser();
+            final String safeDerivedAlias = parser.identifier(this.derivedAlias);
+            final int size = selectionList.size();
+            assert size > 0;
+
+            String selectionAlias;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                selectionAlias = selectionList.get(i).alias();
+
+                context.appendLiteral(NoCastTextType.INSTANCE, selectionAlias);
+                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE)
+                        .append(safeDerivedAlias)
+                        .append(_Constant.POINT);
+                parser.identifier(selectionAlias, sqlBuilder);
+
+            }
+
+        }
+
+        @Override
+        public void objectElementToString(final StringBuilder builder) {
+            final List<? extends Selection> selectionList = this.selectionList;
+            if (selectionList == null) {
+                builder.append(_Constant.SPACE)
+                        .append(this.derivedAlias)
+                        .append(_Constant.POINT)
+                        .append(_Constant.ASTERISK);
+                return;
+            }
+
+            final int size = selectionList.size();
+            assert size > 0;
+            final String derivedAlias = this.derivedAlias;
+            String selectionAlias;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                selectionAlias = selectionList.get(i).alias();
+
+                builder.append(_Constant.SPACE)
+                        .append(_Constant.QUOTE)
+                        .append(selectionAlias)
+                        .append(_Constant.QUOTE)
+                        .append(_Constant.SPACE_COMMA_SPACE)
+                        .append(derivedAlias)
+                        .append(_Constant.POINT)
+                        .append(selectionAlias);
+
+            }
+
         }
 
         @Override
@@ -419,6 +523,27 @@ abstract class SelectionGroups {
             }
             appendDerivedFieldGroup(this.derivedAlias, selectionList, context);
 
+        }
+
+
+        private void appendDerivedRowElement(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final DialectParser dialect = context.parser();
+            final String safeDerivedAlias = dialect.identifier(this.derivedAlias);
+            final List<? extends Selection> selectionList = this.selectionList;
+            final int size = selectionList.size();
+            assert size > 0;
+
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(safeDerivedAlias)
+                        .append(_Constant.POINT);
+
+                dialect.identifier(selectionList.get(i).alias(), sqlBuilder);
+
+            }
         }
 
 

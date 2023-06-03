@@ -36,7 +36,6 @@ public interface _SelectionGroup extends _SelectItem {
 
     interface _TableFieldGroup extends _SelectionGroup {
 
-
         boolean isLegalGroup(@Nullable TableMeta<?> table);
 
     }

@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.dialect._DialectUtils;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
@@ -2053,19 +2052,28 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      *
-     * @throws CriteriaException throw when<ul>
-     *                           <li>exp is not operable expression,eg: {@link SQLs#DEFAULT}</li>
-     *                           <li>exp is multi value expression,eg:{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                           <li>exp is {@link SQLsSyntax#space(String, SymbolPeriod, TableMeta)},should use {@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *                           </ul>
+     * <p>
+     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     * </p>
+     *
+     * @param arg valid type:<ul>
+     *            <li>constant</li>
+     *            <li>{@link RowExpression}</li>
+     *            <li>{@link Expression}</li>
+     *            <li> {@link SQLs#row(Object)} </li>
+     *            <li>{@link SQLs#row(Consumer)}</li>
+     *            <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *            </ul>
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_json ( anyelement ) → json</a>
      */
-    public static SimpleExpression toJson(SQLExpression exp) {
-        final String name = "TO_JSON";
-        if (exp instanceof _SelectionGroup._TableFieldGroup) {
-            throw CriteriaUtils.funcArgError(name, exp);
-        }
-        return FunctionUtils.oneArgFunc(name, exp, JsonType.TEXT);
+    public static SimpleExpression toJson(Object arg) {
+        return FunctionUtils.oneArgRowElementFunc("to_json", arg, JsonType.TEXT);
     }
 
 
@@ -2074,19 +2082,27 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
      *
-     * @throws CriteriaException throw when<ul>
-     *                           <li>exp is not operable expression,eg: {@link SQLs#DEFAULT}</li>
-     *                           <li>exp is multi value expression,eg:{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                           <li>exp is {@link SQLsSyntax#space(String, SymbolPeriod, TableMeta)},should use {@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *                           </ul>
+     *<p>
+     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     *</p>
+     * @param arg  valid type:<ul>
+     *               <li>constant</li>
+     *               <li>{@link RowExpression}</li>
+     *               <li>{@link Expression}</li>
+     *               <li> {@link SQLs#row(Object)} </li>
+     *               <li>{@link SQLs#row(Consumer)}</li>
+     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               </ul>
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_jsonb ( anyelement ) → jsonb</a>
      */
-    public static SimpleExpression toJsonb(SQLExpression exp) {
-        final String name = "TO_JSONB";
-        if (exp instanceof _SelectionGroup._TableFieldGroup) {
-            throw CriteriaUtils.funcArgError(name, exp);
-        }
-        return FunctionUtils.oneArgFunc(name, exp, JsonbType.TEXT);
+    public static SimpleExpression toJsonb(Object arg) {
+        return FunctionUtils.oneArgRowElementFunc("to_jsonb", arg, JsonbType.TEXT);
     }
 
     /**
@@ -2100,7 +2116,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimpleExpression arrayToJson(Expression array) {
-        return FunctionUtils.oneArgFunc("ARRAY_TO_JSON", array, JsonType.TEXT);
+        return FunctionUtils.oneArgFunc("array_to_json", array, JsonType.TEXT);
     }
 
     /**
@@ -2114,41 +2130,64 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimpleExpression arrayToJson(Expression array, Expression lineFeed) {
-        return FunctionUtils.twoArgFunc("ARRAY_TO_JSON", array, lineFeed, JsonType.TEXT);
+        return FunctionUtils.twoArgFunc("array_to_json", array, lineFeed, JsonType.TEXT);
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
-     *
-     * @param record row expression or  composite expression; see<ul>
-     *               <li> {@link Postgres#row(SQLExpression...)} </li>
-     *               <li>{@link Postgres#row(Consumer)}</li>
+     *<p>
+     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     *</p>
+     * @param record  valid type:<ul>
+     *               <li>{@link RowExpression}</li>
+     *               <li>{@link Expression}</li>
+     *               <li> {@link SQLs#row(Object)} </li>
+     *               <li>{@link SQLs#row(Consumer)}</li>
+     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
      *               </ul>
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
      * Converts an SQL composite value to a JSON object. The behavior is the same as to_json except that line feeds will be added between top-level elements if the optional boolean parameter is true.
      * </a>
      */
-    public static SimpleExpression rowToJson(SQLExpression record) {
-        return FunctionUtils.complexArgFunc("ROW_TO_JSON", JsonType.TEXT, record);
+    public static SimpleExpression rowToJson(RowElement record) {
+        return FunctionUtils.oneArgRowElementFunc("row_to_json", record, JsonType.TEXT);
     }
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
-     *
-     * @param record row expression or  composite expression; see<ul>
-     *               <li> {@link Postgres#row(SQLExpression...)} </li>
-     *               <li>{@link Postgres#row(Consumer)}</li>
+     *<p>
+     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     *</p>
+     * @param record  valid type:<ul>
+     *               <li>{@link RowExpression}</li>
+     *               <li>{@link Expression}</li>
+     *               <li> {@link SQLs#row(Object)} </li>
+     *               <li>{@link SQLs#row(Consumer)}</li>
+     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
      *               </ul>
+     * @param lineFeed in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
      * Converts an SQL composite value to a JSON object. The behavior is the same as to_json except that line feeds will be added between top-level elements if the optional boolean parameter is true.
      * </a>
      */
-    public static SimpleExpression rowToJson(SQLExpression record, Expression lineFeed) {
-        return FunctionUtils.complexArgFunc("ROW_TO_JSON", JsonType.TEXT, record, FuncWord.COMMA, lineFeed);
+    public static SimpleExpression rowToJson(RowElement record, Expression lineFeed) {
+        return FunctionUtils.twoArgRowElementFunc("row_to_json", record, lineFeed, JsonType.TEXT);
     }
 
 
@@ -2156,23 +2195,84 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * <p>
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
+     * <p>
+     * create a empty json array
+     * </p>
      *
-     * @param variadic here,<ul>
-     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
-     *                 </ul> is allowed.
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(SQLExpression... variadic) {
-        return FunctionUtils.varargsElementFunc("JSON_BUILD_ARRAY", false, JsonType.TEXT, variadic);
+    public static SimpleExpression jsonBuildArray() {
+        return FunctionUtils.zeroArgFunc("json_build_array", JsonType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * </p>
+     * <p>
+     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     * </p>
+     *
+     * @param arg valid type:<ul>
+     *            <li>constant</li>
+     *            <li>{@link RowExpression}</li>
+     *            <li>{@link Expression}</li>
+     *            <li> {@link SQLs#row(Object)} </li>
+     *            <li>{@link SQLs#row(Consumer)}</li>
+     *            <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *            </ul>
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonBuildArray(Object arg) {
+        return FunctionUtils.oneArgRowElementFunc("json_build_array", arg, JsonType.TEXT);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * </p>
+     * <p>
+     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     * </p>
+     *
+     * @param arg1 valid type:<ul>
+     *             <li>constant</li>
+     *             <li>{@link RowExpression}</li>
+     *             <li>{@link Expression}</li>
+     *             <li> {@link SQLs#row(Object)} </li>
+     *             <li>{@link SQLs#row(Consumer)}</li>
+     *             <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *             </ul>
+     * @param arg2 valid type:<ul>
+     *             <li>constant</li>
+     *             <li>{@link RowExpression}</li>
+     *             <li>{@link Expression}</li>
+     *             <li> {@link SQLs#row(Object)} </li>
+     *             <li>{@link SQLs#row(Consumer)}</li>
+     *             <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *             </ul>
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonBuildArray(Object arg1, Object arg2) {
+        return FunctionUtils.twoArgRowElementFunc("json_build_array", arg1, arg2, JsonType.TEXT);
     }
 
 
@@ -2180,13 +2280,79 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * <p>
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
+     * <p>
+     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     * </p>
      *
-     * @param consumer here,<ul>
-     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
-     *                 </ul> is allowed.
+     * @param arg1     valid type:<ul>
+     *                 <li>constant</li>
+     *                 <li>{@link RowExpression}</li>
+     *                 <li>{@link Expression}</li>
+     *                 <li> {@link SQLs#row(Object)} </li>
+     *                 <li>{@link SQLs#row(Consumer)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 </ul>
+     * @param arg2     valid type:<ul>
+     *                 <li>constant</li>
+     *                 <li>{@link RowExpression}</li>
+     *                 <li>{@link Expression}</li>
+     *                 <li> {@link SQLs#row(Object)} </li>
+     *                 <li>{@link SQLs#row(Consumer)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 </ul>
+     * @param arg3     valid type:<ul>
+     *                 <li>constant</li>
+     *                 <li>{@link RowExpression}</li>
+     *                 <li>{@link Expression}</li>
+     *                 <li> {@link SQLs#row(Object)} </li>
+     *                 <li>{@link SQLs#row(Consumer)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 </ul>
+     * @param variadic valid type:<ul>
+     *                 <li>constant</li>
+     *                 <li>{@link RowExpression}</li>
+     *                 <li>{@link Expression}</li>
+     *                 <li> {@link SQLs#row(Object)} </li>
+     *                 <li>{@link SQLs#row(Consumer)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 </ul>
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonBuildArray(Object arg1, Object arg2, Object arg3, Object... variadic) {
+        return FunctionUtils.threeAndRestRowElementFunc("json_build_array", JsonType.TEXT, arg1, arg2, arg3, variadic);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * </p>
+     * <p>
+     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     * </p>
+     *
+     * @param consumer valid type:<ul>
+     *                 <li>constant</li>
+     *                 <li>{@link RowExpression}</li>
+     *                 <li>{@link Expression}</li>
+     *                 <li> {@link SQLs#row(Object)} </li>
+     *                 <li>{@link SQLs#row(Consumer)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 </ul>
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see SQLs#space(String, SymbolPeriod, SymbolAsterisk)
      * @see SQLs#space(String, SymbolPeriod, TableMeta)
      * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
@@ -2195,234 +2361,309 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildArray(Consumer<Statement._ElementConsumer> consumer) {
-        return FunctionUtils.dynamicVarargsElementFunc("JSON_BUILD_ARRAY", SQLs.SPACE, false, consumer, JsonType.TEXT);
+    public static SimpleExpression jsonBuildArray(Consumer<Consumer<Object>> consumer) {
+        return FunctionUtils.rowElementFunc("json_build_array", false, consumer, JsonType.TEXT);
     }
+
+    /*-------------------below jsonb_build_array-------------------*/
+
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
+     * <p>
+     * create a empty jsonb array
+     * </p>
      *
-     * @param variadic here,<ul>
-     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
-     *                 </ul> is allowed.
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(SQLExpression... variadic) {
-        return FunctionUtils.varargsElementFunc("JSONB_BUILD_ARRAY", false, JsonbType.TEXT, variadic);
+    public static SimpleExpression jsonbBuildArray() {
+        return FunctionUtils.zeroArgFunc("jsonb_build_array", JsonbType.TEXT);
     }
-
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
+     * <p>
+     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     * </p>
      *
-     * @param consumer here,<ul>
-     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
-     *                 </ul> is allowed.
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @param arg valid type:<ul>
+     *            <li>constant</li>
+     *            <li>{@link RowExpression}</li>
+     *            <li>{@link Expression}</li>
+     *            <li> {@link SQLs#row(Object)} </li>
+     *            <li>{@link SQLs#row(Consumer)}</li>
+     *            <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *            </ul>
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildArray(Consumer<Statement._ElementConsumer> consumer) {
-        return FunctionUtils.dynamicVarargsElementFunc("JSONB_BUILD_ARRAY", SQLs.SPACE, false, consumer, JsonbType.TEXT);
+    public static SimpleExpression jsonbBuildArray(Object arg) {
+        return FunctionUtils.oneArgRowElementFunc("jsonb_build_array", arg, JsonbType.TEXT);
     }
-
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
-     * </p>
-     *
-     * @param variadic here,<ul>
-     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
-     *                 </ul> is allowed.
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
-     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
-     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
-     * </a>
-     */
-    public static SimpleExpression jsonBuildObject(SQLExpression... variadic) {
-        return FunctionUtils.varargsElementFunc("JSON_BUILD_OBJECT", true, JsonType.TEXT, variadic);
-    }
-
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
-     * </p>
-     *
-     * @param consumer here,<ul>
-     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
-     *                 </ul> is allowed.
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
-     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
-     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
-     * </a>
-     */
-    public static SimpleExpression jsonBuildObject(Consumer<Statement._ElementObjectSpaceClause> consumer) {
-        return PostgreFunctionUtils.staticObjectElementFunc("JSON_BUILD_OBJECT", consumer, JsonType.TEXT);
-    }
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
-     * </p>
-     *
-     * @param consumer here,<ul>
-     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
-     *                 </ul> is allowed.
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
-     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
-     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
-     * </a>
-     */
-    public static SimpleExpression jsonBuildObject(SymbolSpace space, Consumer<Statement._ElementObjectConsumer> consumer) {
-        return PostgreFunctionUtils.dynamicObjectElementFunc("JSON_BUILD_OBJECT", space, consumer, JsonType.TEXT);
-    }
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
-     * </p>
-     *
-     * @param period see {@link SQLs#PERIOD}
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
-     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
-     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
-     * </a>
-     */
-    public static SimpleExpression jsonBuildObject(String tableAlias, SqlSyntax.SymbolPeriod period, TableMeta<?> table) {
-        return DialectFunctionUtils.jsonTableRowFunc("JSON_BUILD_OBJECT",
-                (_SelectionGroup._TableFieldGroup) ContextStack.peek().row(tableAlias, period, table), JsonType.TEXT
-        );
-    }
-
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
-     *
-     * @param variadic here,<ul>
-     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
-     *                 </ul> is allowed.
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
-     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → jsonb<br/>
-     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
-     * </a>
-     */
-    public static SimpleExpression jsonbBuildObject(SQLExpression... variadic) {
-        return FunctionUtils.varargsElementFunc("JSONB_BUILD_OBJECT", true, JsonbType.TEXT, variadic);
-    }
+     *<p>
+     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     *</p>
+     * @param arg1  valid type:<ul>
+     *               <li>constant</li>
+     *               <li>{@link RowExpression}</li>
+     *               <li>{@link Expression}</li>
+     *               <li> {@link SQLs#row(Object)} </li>
+     *               <li>{@link SQLs#row(Consumer)}</li>
+     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               </ul>
 
-
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
-     * </p>
-     *
-     * @param consumer here,<ul>
-     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
-     *                 </ul> is allowed.
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @param arg2  valid type:<ul>
+     *               <li>constant</li>
+     *               <li>{@link RowExpression}</li>
+     *               <li>{@link Expression}</li>
+     *               <li> {@link SQLs#row(Object)} </li>
+     *               <li>{@link SQLs#row(Consumer)}</li>
+     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               </ul>
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(Consumer<Statement._ElementObjectSpaceClause> consumer) {
-        return FunctionUtils.staticObjectElementFunc("JSONB_BUILD_OBJECT", consumer, JsonbType.TEXT);
+    public static SimpleExpression jsonbBuildArray(Object arg1, Object arg2) {
+        return FunctionUtils.twoArgRowElementFunc("jsonb_build_array", arg1, arg2, JsonbType.TEXT);
     }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
+     * </p>
+     *<p>
+     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     *</p>
+     * @param arg1  valid type:<ul>
+     *               <li>constant</li>
+     *               <li>{@link RowExpression}</li>
+     *               <li>{@link Expression}</li>
+     *               <li> {@link SQLs#row(Object)} </li>
+     *               <li>{@link SQLs#row(Consumer)}</li>
+     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               </ul>
+     * @param arg2  valid type:<ul>
+     *               <li>constant</li>
+     *               <li>{@link RowExpression}</li>
+     *               <li>{@link Expression}</li>
+     *               <li> {@link SQLs#row(Object)} </li>
+     *               <li>{@link SQLs#row(Consumer)}</li>
+     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               </ul>
+     * @param arg3  valid type:<ul>
+     *               <li>constant</li>
+     *               <li>{@link RowExpression}</li>
+     *               <li>{@link Expression}</li>
+     *               <li> {@link SQLs#row(Object)} </li>
+     *               <li>{@link SQLs#row(Consumer)}</li>
+     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               </ul>
+     * @param variadic  valid type:<ul>
+     *               <li>constant</li>
+     *               <li>{@link RowExpression}</li>
+     *               <li>{@link Expression}</li>
+     *               <li> {@link SQLs#row(Object)} </li>
+     *               <li>{@link SQLs#row(Consumer)}</li>
+     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               </ul>
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonbBuildArray(Object arg1, Object arg2, Object arg3, Object... variadic) {
+        return FunctionUtils.threeAndRestRowElementFunc("jsonb_build_array", JsonbType.TEXT, arg1, arg2, arg3, variadic);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
+     * </p>
+     *<p>
+     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     you should use
+     *     <ul>
+     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *     </ul>
+     *</p>
+     * @param consumer valid type:<ul>
+     *               <li>constant</li>
+     *               <li>{@link RowExpression}</li>
+     *               <li>{@link Expression}</li>
+     *               <li> {@link SQLs#row(Object)} </li>
+     *               <li>{@link SQLs#row(Consumer)}</li>
+     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               </ul>
+     * @see SQLs#space(String, SymbolPeriod, SymbolAsterisk)
+     * @see SQLs#space(String, SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonbBuildArray(Consumer<Consumer<Object>> consumer) {
+        return FunctionUtils.rowElementFunc("jsonb_build_array", false, consumer, JsonbType.TEXT);
+    }
+
+    public static SimpleExpression jsonBuildObject() {
+        return FunctionUtils.zeroArgFunc("json_build_object", JsonType.TEXT);
+    }
+
+    public static SimpleExpression jsonbBuildObject() {
+        return FunctionUtils.zeroArgFunc("jsonb_build_object", JsonbType.TEXT);
+    }
+
+
+    public static SimpleExpression jsonBuildObject(String tableAlias, SymbolPeriod period, TableMeta<?> table) {
+        return FunctionUtils.oneArgObjectElementFunc("json_build_object", ContextStack.peek().row(tableAlias, period, table),
+                JsonType.TEXT);
+    }
+
+    public static SimpleExpression jsonBuildObject(String derivedAlias, SymbolPeriod period, SymbolAsterisk asterisk) {
+        return FunctionUtils.oneArgObjectElementFunc("json_build_object", ContextStack.peek().row(derivedAlias, period, asterisk),
+                JsonType.TEXT);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * </p>
+     *
+     * @param consumer value valid type:<ul>
+     *                 <li>constant</li>
+     *                 <li>{@link RowExpression}</li>
+     *                 <li>{@link Expression}</li>
+     *                 <li> {@link SQLs#row(Object)} </li>
+     *                 <li>{@link SQLs#row(Consumer)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, TableMeta)}</li>
+     *                 </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonBuildObject(Consumer<Statement._StaticObjectSpaceClause> consumer) {
+        return FunctionUtils.objectElementFunc("json_build_object", false, consumer, JsonType.TEXT);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link JsonType#TEXT}
+     * </p>
+     *
+     * @param space    see {@link SQLs#SPACE}
+     * @param consumer value valid type:<ul>
+     *                 <li>constant</li>
+     *                 <li>{@link RowExpression}</li>
+     *                 <li>{@link Expression}</li>
+     *                 <li> {@link SQLs#row(Object)} </li>
+     *                 <li>{@link SQLs#row(Consumer)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, TableMeta)}</li>
+     *                 </ul>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
+     * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
+     * </a>
+     */
+    public static SimpleExpression jsonBuildObject(SymbolSpace space, Consumer<Statement._DynamicObjectConsumer> consumer) {
+        return FunctionUtils.objectElementFunc(space, "json_build_object", false, consumer, JsonType.TEXT);
+    }
+
+    public static SimpleExpression jsonbBuildObject(String tableAlias, SymbolPeriod period, TableMeta<?> table) {
+        return FunctionUtils.oneArgObjectElementFunc("jsonb_build_object", ContextStack.peek().row(tableAlias, period, table),
+                JsonbType.TEXT);
+    }
+
+    public static SimpleExpression jsonbBuildObject(String derivedAlias, SymbolPeriod period, SymbolAsterisk asterisk) {
+        return FunctionUtils.oneArgObjectElementFunc("jsonb_build_object", ContextStack.peek().row(derivedAlias, period, asterisk),
+                JsonbType.TEXT);
+    }
+
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
      *
-     * @param consumer here,<ul>
-     *                 <li>{@link SQLs#rowParam(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#rowLiteral(TypeInfer, Collection)}</li>
-     *                 <li>{@link SQLs#namedRowParam(TypeInfer, String, int)}</li>
-     *                 <li>{@link SQLs#namedRowLiteral(TypeInfer, String, int)}</li>
-     *                 </ul> is allowed.
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @param consumer value valid type:<ul>
+     *                 <li>constant</li>
+     *                 <li>{@link RowExpression}</li>
+     *                 <li>{@link Expression}</li>
+     *                 <li> {@link SQLs#row(Object)} </li>
+     *                 <li>{@link SQLs#row(Consumer)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, TableMeta)}</li>
+     *                 </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(SymbolSpace space, Consumer<Statement._ElementObjectConsumer> consumer) {
-        return PostgreFunctionUtils.dynamicObjectElementFunc("JSONB_BUILD_OBJECT", space, consumer, JsonbType.TEXT);
+    public static SimpleExpression jsonbBuildObject(Consumer<Statement._StaticObjectSpaceClause> consumer) {
+        return FunctionUtils.objectElementFunc("jsonb_build_object", false, consumer, JsonbType.TEXT);
     }
+
 
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
      *
-     * @param period see {@link SQLs#PERIOD}
-     * @see SQLsSyntax#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLsSyntax#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
+     * @param space    see {@link SQLs#SPACE}
+     * @param consumer value valid type:<ul>
+     *                 <li>constant</li>
+     *                 <li>{@link RowExpression}</li>
+     *                 <li>{@link Expression}</li>
+     *                 <li> {@link SQLs#row(Object)} </li>
+     *                 <li>{@link SQLs#row(Consumer)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SymbolPeriod, TableMeta)}</li>
+     *                 </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(String tableAlias, SqlSyntax.SymbolPeriod period, TableMeta<?> table) {
-        return DialectFunctionUtils.jsonTableRowFunc("JSONB_BUILD_OBJECT",
-                (_SelectionGroup._TableFieldGroup) ContextStack.peek().row(tableAlias, period, table), JsonbType.TEXT
-        );
+    public static SimpleExpression jsonbBuildObject(SymbolSpace space, Consumer<Statement._DynamicObjectConsumer> consumer) {
+        return FunctionUtils.objectElementFunc(space, "jsonb_build_object", false, consumer, JsonbType.TEXT);
     }
+
+
 
     /**
      * <p>
@@ -2436,8 +2677,9 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimpleExpression jsonObject(Expression pairArray) {
-        return FunctionUtils.oneArgFunc("JSON_OBJECT", pairArray, JsonType.TEXT);
+        return FunctionUtils.oneArgFunc("json_object", pairArray, JsonType.TEXT);
     }
+
 
     /**
      * <p>
@@ -2460,7 +2702,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression jsonObject(BiFunction<MappingType, String[], Expression> funcRef,
                                               Consumer<Statement._StringObjectSpaceClause> consumer) {
-        return FunctionUtils.staticStringObjectStringFunc("JSON_OBJECT", false, funcRef, TextArrayType.LINEAR, consumer,
+        return FunctionUtils.staticStringObjectStringFunc("json_object", false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonType.TEXT);
     }
 
@@ -2485,7 +2727,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression jsonObject(SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
                                               final Consumer<Statement._StringObjectConsumer> consumer) {
-        return FunctionUtils.dynamicStringObjectStringFunc("JSON_OBJECT", space, false, funcRef, TextArrayType.LINEAR, consumer,
+        return FunctionUtils.dynamicStringObjectStringFunc("json_object", space, false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonType.TEXT);
     }
 
@@ -2502,7 +2744,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimpleExpression jsonbObject(Expression pairArray) {
-        return FunctionUtils.oneArgFunc("JSONB_OBJECT", pairArray, JsonbType.TEXT);
+        return FunctionUtils.oneArgFunc("jsonb_object", pairArray, JsonbType.TEXT);
     }
 
     /**
@@ -2526,7 +2768,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression jsonbObject(BiFunction<MappingType, String[], Expression> funcRef,
                                                Consumer<Statement._StringObjectSpaceClause> consumer) {
-        return FunctionUtils.staticStringObjectStringFunc("JSONB_OBJECT", false, funcRef, TextArrayType.LINEAR, consumer,
+        return FunctionUtils.staticStringObjectStringFunc("jsonb_object", false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonbType.TEXT);
     }
 
@@ -2551,7 +2793,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     public static SimpleExpression jsonbObject(SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
                                                final Consumer<Statement._StringObjectConsumer> consumer) {
-        return FunctionUtils.dynamicStringObjectStringFunc("JSONB_OBJECT", space, false, funcRef, TextArrayType.LINEAR, consumer,
+        return FunctionUtils.dynamicStringObjectStringFunc("jsonb_object", space, false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonbType.TEXT);
     }
 
@@ -2567,7 +2809,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimpleExpression jsonObject(Expression keyArray, Expression valueArray) {
-        return FunctionUtils.twoArgFunc("JSON_OBJECT", keyArray, valueArray, JsonType.TEXT);
+        return FunctionUtils.twoArgFunc("json_object", keyArray, valueArray, JsonType.TEXT);
     }
 
     /**
@@ -2581,7 +2823,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimpleExpression jsonbObject(Expression keyArray, Expression valueArray) {
-        return FunctionUtils.twoArgFunc("JSONB_OBJECT", keyArray, valueArray, JsonbType.TEXT);
+        return FunctionUtils.twoArgFunc("jsonb_object", keyArray, valueArray, JsonbType.TEXT);
     }
 
     /**
