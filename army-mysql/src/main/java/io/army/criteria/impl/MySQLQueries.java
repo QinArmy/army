@@ -1222,7 +1222,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        public MySQLValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+        public MySQLValues._OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
             this.endDispatcher();
 
             return MySQLSimpleValues.fromDispatcher(this, this.function)
@@ -1270,7 +1270,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        public MySQLValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+        public MySQLValues._OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
             this.endDispatcher();
 
             return MySQLSimpleValues.fromSubDispatcher(this, this.function)

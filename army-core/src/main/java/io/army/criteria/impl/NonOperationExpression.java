@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
 import io.army.function.OptionalClauseOperator;
+import io.army.function.TeFunction;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 
@@ -36,6 +37,17 @@ abstract class NonOperationExpression implements ArmyExpression {
     public final CompoundPredicate equal(Expression operand) {
         throw unsupportedOperation(this);
     }
+
+    @Override
+    public final CompoundPredicate notEqual(Expression operand) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final CompoundPredicate nullSafeEqual(Expression operand) {
+        throw unsupportedOperation(this);
+    }
+
 
     @Override
     public final CompoundPredicate equalAny(SubQuery subQuery) {
@@ -135,12 +147,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     public final CompoundPredicate greaterEqualAll(SubQuery subQuery) {
         throw unsupportedOperation(this);
     }
-
-    @Override
-    public final CompoundPredicate notEqual(Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
 
     @Override
     public final CompoundPredicate notEqualAny(SubQuery subQuery) {
@@ -309,32 +315,37 @@ abstract class NonOperationExpression implements ArmyExpression {
 
 
     @Override
-    public final CompoundExpression space(BiFunction<Expression, Expression, CompoundExpression> operator, Expression operand) {
-        throw unsupportedOperation(this);
-    }
-
-    @Override
     public final <R extends UnaryResult> R space(Function<Expression, R> funcRef) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator, Expression right, M modifier, Expression optionalExp) {
+    public final <T extends RightOperand> CompoundExpression space(BiFunction<Expression, T, CompoundExpression> funcRef, T right) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator, Expression right, M modifier, char escapeChar) {
+    public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> funcRef, Expression right, M modifier, Expression optionalExp) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final CompoundPredicate whiteSpace(BiFunction<Expression, Expression, CompoundPredicate> operator, Expression operand) {
+    public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> funcRef, Expression right, M modifier, char escapeChar) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final <M extends SQLWords> CompoundPredicate whiteSpace(OptionalClauseOperator<M, Expression, CompoundPredicate> operator, Expression right, M modifier, Expression optionalExp) {
+    public final <T extends RightOperand> CompoundPredicate whiteSpace(BiFunction<Expression, T, CompoundPredicate> funcRef, T right) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final <M extends SQLWords, T extends RightOperand> CompoundPredicate whiteSpace(TeFunction<Expression, M, T, CompoundPredicate> funcRef, M modifier, T right) {
+        throw unsupportedOperation(this);
+    }
+
+    @Override
+    public final <M extends SQLWords> CompoundPredicate whiteSpace(OptionalClauseOperator<M, Expression, CompoundPredicate> funcRef, Expression right, M modifier, Expression optionalExp) {
         throw unsupportedOperation(this);
     }
 

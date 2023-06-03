@@ -64,14 +64,17 @@ abstract class PostgreExpressions {
         return new PostgreUnaryPredicate(operator, operand);
     }
 
-    static CompoundPredicate dualPredicate(final Expression left, final PostgreDualBooleanOperator operator,
-                                           final Expression right) {
-        if (!(left instanceof OperationExpression)) {
-            throw NonOperationExpression.nonOperationExpression(left);
-        } else if (!(right instanceof OperationExpression)) {
-            throw NonOperationExpression.nonOperationExpression(right);
+    static <T extends SQLExpression> CompoundPredicate dualPredicate(final T left, final PostgreDualBooleanOperator operator,
+                                                                     final T right) {
+        if (!(left instanceof OperationSQLExpression)) {
+            throw ContextStack.clearStackAndNonArmyExpression();
+        } else if (!(right instanceof OperationSQLExpression)) {
+            throw ContextStack.clearStackAndNonArmyExpression();
         }
-        return new PostgreDualPredicate((OperationExpression) left, operator, right);
+        if (left instanceof RowExpression && right instanceof RowExpression) {
+            RowExpressions.validateColumnSize((RowExpression) left, (RowExpression) right);
+        }
+        return new PostgreDualPredicate(left, operator, right);
     }
 
 
@@ -583,10 +586,10 @@ abstract class PostgreExpressions {
     private static final class PostgreDualPredicate extends Expressions.DualPredicate {
 
         /**
-         * @see #dualPredicate(Expression, PostgreDualBooleanOperator, Expression)
+         * @see #dualPredicate(SQLExpression, PostgreDualBooleanOperator, SQLExpression)
          */
-        private PostgreDualPredicate(OperationSQLExpression left, PostgreDualBooleanOperator operator, RightOperand right) {
-            super(left, operator, right);
+        private PostgreDualPredicate(SQLExpression left, PostgreDualBooleanOperator operator, RightOperand right) {
+            super((OperationSQLExpression) left, operator, right);
         }
 
 

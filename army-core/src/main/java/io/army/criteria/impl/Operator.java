@@ -9,6 +9,7 @@ interface Operator {
 
     String name();
 
+    @Deprecated
     String spaceRender();
 
     /**
@@ -19,7 +20,12 @@ interface Operator {
      *                                           <li>{@link SqlDualBooleanOperator} type</li>
      *                                       </ul>
      */
+    @Deprecated
     Database database();
+
+    default String spaceRender(Database database) {
+        throw new UnsupportedOperationException();
+    }
 
 
     @Override

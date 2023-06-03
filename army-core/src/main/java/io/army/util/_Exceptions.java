@@ -953,6 +953,11 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
+    public static CriteriaException operatorError(Object operator, Database database) {
+        String m = String.format("%s is not supported by %s.", operator, database);
+        return new CriteriaException(m);
+    }
+
     public static CriteriaException operatorError(Object operator, Dialect dialect) {
         String m = String.format("%s is not supported by %s.", operator, dialect);
         return new CriteriaException(m);

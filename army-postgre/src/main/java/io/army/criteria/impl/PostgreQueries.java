@@ -1049,7 +1049,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public PostgreValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+        public PostgreValues._OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromDispatcher(this, this.function)
@@ -1101,7 +1101,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public PostgreValues._OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+        public PostgreValues._OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromSubDispatcher(this, this.function)
@@ -1499,7 +1499,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public PostgreValues._OrderBySpec<_CteComma<I>> values(Consumer<RowConstructor> consumer) {
+        public PostgreValues._OrderBySpec<_CteComma<I>> values(Consumer<ValuesRowConstructor> consumer) {
             this.endDispatcher();
 
             return PostgreSimpleValues.fromSubDispatcher(this, this.function)

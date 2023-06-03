@@ -155,8 +155,9 @@ abstract class Expressions {
                                                    SQLsSyntax.IsComparisonWord operator, Expression right) {
         if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
+        } else if (!(operator instanceof SqlSyntax.ArmyKeyWord)) {
+            throw CriteriaUtils.notArmyOperator(operator);
         }
-        //TODO validate operator
         return new IsComparisonPredicate(left, not, operator, (ArmyExpression) right);
     }
 
@@ -210,32 +211,35 @@ abstract class Expressions {
         return new BetweenPredicate(left, not, modifier, center, right);
     }
 
-    static CompoundPredicate compareQueryPredicate(OperationSQLExpression left, DualBooleanOperator operator,
-                                                   QueryOperator queryOperator, SubQuery subQuery) {
+    static CompoundPredicate compareQueryPredicate(final SQLExpression left, final DualBooleanOperator operator,
+                                                   final SqlSyntax.QuantifiedWord queryOperator, final RightOperand right) {
+        if (!(left instanceof OperationSQLExpression)) {
+            throw ContextStack.clearStackAndNonArmyExpression();
+        }
         switch (operator) {
             case LESS:
             case LESS_EQUAL:
             case EQUAL:
             case NOT_EQUAL:
             case GREATER:
-            case GREATER_EQUAL: {
-                switch (queryOperator) {
-                    case ALL:
-                    case ANY:
-                    case SOME:
-                        break;
-                    default:
-                        // no bug,never here
-                        throw _Exceptions.unexpectedEnum(queryOperator);
-                }
-                assertColumnSubQuery(operator, queryOperator, subQuery);
-            }
-            break;
+            case GREATER_EQUAL:
+                break;
             default:
                 // no bug,never here
                 throw _Exceptions.unexpectedEnum(operator);
         }
-        return new SubQueryPredicate(left, operator, queryOperator, subQuery);
+        if (queryOperator != SQLs.ALL && queryOperator != SQLs.SOME && queryOperator != SQLs.ANY) {
+            throw CriteriaUtils.notArmyOperator(queryOperator);
+        }
+        if (right instanceof SubQuery) {
+            assertColumnSubQuery(operator, queryOperator, (SubQuery) right);
+        } else if (!(right instanceof ArrayExpression)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        } else if (!(right instanceof OperationExpression)) {
+            throw ContextStack.clearStackAndNonArmyExpression();
+        }
+        return new SubQueryPredicate(left, operator, queryOperator, right);
     }
 
 
@@ -552,20 +556,18 @@ abstract class Expressions {
 
 
     /**
-     * @see #compareQueryPredicate(OperationSQLExpression, DualBooleanOperator, QueryOperator, SubQuery)
+     * @see #compareQueryPredicate(SQLExpression, DualBooleanOperator, SqlSyntax.QuantifiedWord, RightOperand)
      */
     private static void assertColumnSubQuery(final DualBooleanOperator operator
-            , final @Nullable QueryOperator queryOperator, final SubQuery subQuery) {
+            , final SqlSyntax.QuantifiedWord queryOperator, final SubQuery subQuery) {
         validateSubQueryContext(subQuery);
         if (((_DerivedTable) subQuery).refAllSelection().size() != 1) {
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = _StringUtils.builder();
             builder.append("Operator ")
-                    .append(operator.name());
-            if (queryOperator != null) {
-                builder.append(_Constant.SPACE)
-                        .append(queryOperator.name());
-            }
-            builder.append(" only support column sub query.");
+                    .append(operator.name())
+                    .append(queryOperator)
+                    .append(operator)
+                    .append(" only support column sub query.");
             throw ContextStack.clearStackAndCriteriaError(builder.toString());
         }
 
@@ -1064,16 +1066,6 @@ abstract class Expressions {
 
         @Override
         public final void appendSql(final _SqlContext context) {
-            final Database database;
-            database = context.database();
-            final Operator.SqlDualBooleanOperator operator = this.operator;
-            if (!(operator instanceof DualBooleanOperator) && database != operator.database()) {
-                throw unsupportedOperator(operator, context.database());
-            }
-
-            if (operator == DualBooleanOperator.NULL_SAFE_EQUAL && database != Database.MySQL) {
-                throw _Exceptions.operatorError(operator, context.dialect());
-            }
 
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder();
@@ -1089,7 +1081,7 @@ abstract class Expressions {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
-            sqlBuilder.append(this.operator.spaceRender());
+            sqlBuilder.append(this.operator.spaceRender(context.database()));
 
             final ArmyRightOperand right = this.right;
             if (right instanceof SubQuery) {
@@ -1491,16 +1483,19 @@ abstract class Expressions {
 
         private final DualBooleanOperator operator;
 
-        private final QueryOperator queryOperator;
+        private final SqlSyntax.QuantifiedWord queryOperator;
 
-        private final SubQuery subQuery;
+        private final RightOperand right;
 
-        private SubQueryPredicate(OperationSQLExpression left, DualBooleanOperator operator,
-                                  QueryOperator queryOperator, SubQuery subQuery) {
-            this.left = left;
+        /**
+         * @see #compareQueryPredicate(SQLExpression, DualBooleanOperator, SqlSyntax.QuantifiedWord, RightOperand)
+         */
+        private SubQueryPredicate(SQLExpression left, DualBooleanOperator operator,
+                                  SqlSyntax.QuantifiedWord queryOperator, RightOperand right) {
+            this.left = (ArmySQLExpression) left;
             this.operator = operator;
             this.queryOperator = queryOperator;
-            this.subQuery = subQuery;
+            this.right = right;
         }
 
 
@@ -1510,8 +1505,18 @@ abstract class Expressions {
             this.left.appendSql(context);
             context.sqlBuilder()
                     .append(this.operator.spaceOperator)
-                    .append(this.queryOperator.spaceWord);
-            context.parser().subQuery(this.subQuery, context);
+                    .append(this.queryOperator.spaceRender());
+            final RightOperand right = this.left;
+
+            if (right instanceof SubQuery) {
+                context.parser().subQuery((SubQuery) right, context);
+            } else if (right instanceof ArrayExpression) {
+                ((ArmyExpression) right).appendSql(context);
+            } else {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+
         }
 
         @Override
@@ -1519,8 +1524,8 @@ abstract class Expressions {
             return _StringUtils.builder()
                     .append(this.left)
                     .append(this.operator.spaceOperator)
-                    .append(this.queryOperator.spaceWord)
-                    .append(this.subQuery)
+                    .append(this.queryOperator.spaceRender())
+                    .append(this.right)
                     .toString();
         }
 

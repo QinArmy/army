@@ -5,7 +5,7 @@ package io.army.criteria;
  * <p>
  * This interface is base interface of blow interface:
  * <ul>
- *     <li>{@link Expression}</li>
+ *     <li>{@link SQLExpression}</li>
  *     <li>{@link SQLColumnSet}</li>
  * </ul>
  * </p>

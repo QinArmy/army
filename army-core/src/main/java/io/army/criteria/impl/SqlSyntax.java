@@ -92,6 +92,10 @@ abstract class SqlSyntax {
 
     }
 
+    public interface QuantifiedWord extends SQLWords {
+
+    }
+
 
     /**
      * package interface,this interface only is implemented by class or enum,couldn't is extended by interface.

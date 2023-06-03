@@ -11,7 +11,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface SQLExpression extends RowElement {
+public interface SQLExpression extends RowElement, RightOperand {
 
 
     /**

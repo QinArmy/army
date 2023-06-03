@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.dialect.Database;
+import io.army.util._Exceptions;
 
 enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
 
@@ -219,7 +220,20 @@ enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
      * tsquery @@@ tsvector → boolean<br/>
      * </a>
      */
-    TRIPLE_AT(" @@@");
+    TRIPLE_AT(" @@@"),
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/15/functions-comparisons.html#ROW-WISE-COMPARISON">row_constructor IS DISTINCT FROM row_constructor<br/>
+     * </a>
+     */
+    IS_DISTINCT_FROM(" IS DISTINCT FROM"),
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/15/functions-comparisons.html#ROW-WISE-COMPARISON">row_constructor IS NOT DISTINCT FROM row_constructor<br/>
+     * </a>
+     */
+    IS_NOT_DISTINCT_FROM(" IS NOT DISTINCT FROM");
+
     private final String spaceOperator;
 
     PostgreDualBooleanOperator(String spaceOperator) {
@@ -238,9 +252,21 @@ enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
 
 
     @Override
+    public final String spaceRender(final Database database) {
+        if (database != Database.PostgreSQL) {
+            throw _Exceptions.operatorError(this, database);
+        }
+        return this.spaceOperator;
+    }
+
+
+    @Override
     public final String toString() {
         return CriteriaUtils.enumToString(this);
     }
+
+
+
 
 
 }

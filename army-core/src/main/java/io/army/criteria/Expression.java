@@ -2,6 +2,7 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
 import io.army.function.OptionalClauseOperator;
+import io.army.function.TeFunction;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
@@ -44,7 +45,9 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      */
     CompoundPredicate equal(Expression operand);
 
+    CompoundPredicate notEqual(Expression operand);
 
+    CompoundPredicate nullSafeEqual(Expression operand);
 
 
     /**
@@ -66,8 +69,6 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
 
     CompoundPredicate greaterEqual(Expression operand);
 
-
-    CompoundPredicate notEqual(Expression operand);
 
 
     /**
@@ -119,8 +120,20 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
 
     CompoundPredicate isNotNull();
 
+    /**
+     * @param operator see <u>
+     *                 <li>{@link SQLs#DISTINCT_FROM}</li>
+     *                 </u>
+     */
+    @Support({PostgreSQL, H2})
     CompoundPredicate is(SQLs.IsComparisonWord operator, Expression operand);
 
+    /**
+     * @param operator see <u>
+     *                 <li>{@link SQLs#DISTINCT_FROM}</li>
+     *                 </u>
+     */
+    @Support({PostgreSQL, H2})
     CompoundPredicate isNot(SQLs.IsComparisonWord operator, Expression operand);
 
     CompoundPredicate like(Expression pattern);
@@ -235,7 +248,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      *                For example: {@code Postgres.pound(Expression,Expression)}
      * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
      */
-    CompoundExpression space(BiFunction<Expression, Expression, CompoundExpression> funcRef, Expression right);
+    <T extends RightOperand> CompoundExpression space(BiFunction<Expression, T, CompoundExpression> funcRef, T right);
 
 
     /**
@@ -287,7 +300,27 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      *                For example: {@code Postgres.pound(Expression,Expression)}
      * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
      */
-    CompoundPredicate whiteSpace(BiFunction<Expression, Expression, CompoundPredicate> funcRef, Expression right);
+    <T extends RightOperand> CompoundPredicate whiteSpace(BiFunction<Expression, T, CompoundPredicate> funcRef, T right);
+
+
+    /**
+     * <p>
+     * This method is designed for dialect operator that produce boolean type expression.
+     * This method name is 'whiteSpace' not 'space' ,because of {@link Statement._WhereAndClause#and(UnaryOperator, IPredicate)} type infer.
+     * </p>
+     * <p>
+     * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.
+     * </p>
+     * <p>
+     *
+     * </p>
+     *
+     * @param funcRef the reference of the method of dialect operator,<strong>NOTE</strong>: not lambda.
+     *                The first argument of funcRef always is <strong>this</strong>.
+     *                For example: {@code Postgres.pound(Expression,Expression)}
+     * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
+     */
+    <M extends SQLWords, T extends RightOperand> CompoundPredicate whiteSpace(TeFunction<Expression, M, T, CompoundPredicate> funcRef, final M modifier, T right);
 
     /**
      * <p>

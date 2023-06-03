@@ -56,7 +56,7 @@ abstract class MySQLSimpleValues<I extends Item>
     }
 
     @Override
-    public final _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+    public final _OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
         consumer.accept(new RowConstructorImpl(this));
         return this;
     }
@@ -307,7 +307,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        public _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+        public _OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
             this.endDispatcher();
 
             return MySQLSimpleValues.fromDispatcher(this, this.function)
@@ -353,7 +353,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        public _OrderBySpec<I> values(Consumer<RowConstructor> consumer) {
+        public _OrderBySpec<I> values(Consumer<ValuesRowConstructor> consumer) {
             this.endDispatcher();
 
             return MySQLSimpleValues.fromSubDispatcher(this, this.function)

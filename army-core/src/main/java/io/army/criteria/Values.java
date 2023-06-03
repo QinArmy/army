@@ -70,7 +70,7 @@ public interface Values extends DqlStatement, DialectStatement, ValuesQuery {
 
     interface _DynamicValuesClause<VR> {
 
-        VR values(Consumer<RowConstructor> consumer);
+        VR values(Consumer<ValuesRowConstructor> consumer);
 
     }
 

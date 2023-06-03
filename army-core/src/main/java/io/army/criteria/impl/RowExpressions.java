@@ -259,12 +259,12 @@ abstract class RowExpressions {
 
     }//ColumnSetValidator
 
-    private static abstract class RowConstructor extends OperationRowExpression {
+    private static abstract class RowConstructorExpression extends OperationRowExpression {
 
         final List<Object> elementList;
 
 
-        private RowConstructor(final List<Object> elementList) {
+        private RowConstructorExpression(final List<Object> elementList) {
             this.elementList = elementList;
         }
 
@@ -375,7 +375,7 @@ abstract class RowExpressions {
 
     }//RowConstructor
 
-    private static final class ImmutableRowConstructor extends RowConstructor {
+    private static final class ImmutableRowConstructor extends RowConstructorExpression {
 
         private final int columnSize;
 
@@ -393,7 +393,7 @@ abstract class RowExpressions {
 
     }//ImmutableRowConstructor
 
-    private static final class DelayRowConstructor extends RowConstructor
+    private static final class DelayRowConstructor extends RowConstructorExpression
             implements RowElement.DelayElement {
 
         private int columnSize = -1;

@@ -42,7 +42,6 @@ import static io.army.dialect.Database.PostgreSQL;
 public abstract class SQLs extends SQLsSyntax {
 
 
-
     /**
      * private constructor
      */
@@ -50,9 +49,34 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
 
-    public static final WordAs AS = KeyWordAs.AS;
+    public static final WordAll ALL = SqlWords.KeyWordAll.ALL;
 
-    public static final WordAnd AND = KeyWordAnd.AND;
+    public static final WordDistinct DISTINCT = SqlWords.KeyWordDistinct.DISTINCT;
+    public static final WordLateral LATERAL = SqlWords.KeyWordLateral.LATERAL;
+    public static final WordFirst FIRST = SqlWords.KeyWordFirst.FIRST;
+    public static final WordNext NEXT = SqlWords.KeyWordNext.NEXT;
+    public static final WordPercent PERCENT = SqlWords.KeyWordPercent.PERCENT;
+    public static final Statement.NullsFirstLast NULLS_FIRST = SqlWords.KeyWordsNullsFirstLast.NULLS_FIRST;
+    public static final Statement.NullsFirstLast NULLS_LAST = SqlWords.KeyWordsNullsFirstLast.NULLS_LAST;
+    public static final WordOnly ONLY = SqlWords.KeyWordOny.ONLY;
+    public static final WordRow ROW = SqlWords.KeyWordRow.ROW;
+    public static final WordRows ROWS = SqlWords.KeyWordRows.ROWS;
+    public static final WordInterval INTERVAL = SqlWords.KeyWordInterval.INTERVAL;
+    public static final WordsWithTies WITH_TIES = SqlWords.KeyWordWithTies.WITH_TIES;
+    public static final BooleanTestWord UNKNOWN = SqlWords.KeyWordUnknown.UNKNOWN;
+    /**
+     * package field
+     */
+    static final Statement.AscDesc ASC = SqlWords.KeyWordAscDesc.ASC;
+    /**
+     * package field
+     */
+    static final Statement.AscDesc DESC = SqlWords.KeyWordAscDesc.DESC;
+
+
+    public static final WordAs AS = SqlWords.KeyWordAs.AS;
+
+    public static final WordAnd AND = SqlWords.KeyWordAnd.AND;
 
 
     public static final TrimPosition BOTH = SqlWords.WordTrimPosition.BOTH;
@@ -75,14 +99,14 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     @Support({PostgreSQL, H2})
-    public static final BetweenModifier SYMMETRIC = KeyWordSymmetric.SYMMETRIC;
+    public static final BetweenModifier SYMMETRIC = SqlWords.KeyWordSymmetric.SYMMETRIC;
 
     @Support({H2})
-    public static final BetweenModifier ASYMMETRIC = KeyWordSymmetric.ASYMMETRIC;
+    public static final BetweenModifier ASYMMETRIC = SqlWords.KeyWordSymmetric.ASYMMETRIC;
 
-    public static final SymbolAsterisk ASTERISK = SQLSymbolAsterisk.ASTERISK;
+    public static final SymbolAsterisk ASTERISK = SqlWords.SQLSymbolAsterisk.ASTERISK;
 
-    public static final SymbolPeriod PERIOD = SQLSymbolPeriod.PERIOD;
+    public static final SymbolPeriod PERIOD = SqlWords.SQLSymbolPeriod.PERIOD;
 
     public static final SymbolSpace SPACE = SqlWords.SymbolSpaceEnum.SPACE;
 
@@ -94,7 +118,13 @@ public abstract class SQLs extends SQLsSyntax {
 
     public static final WordNull NULL = OperationExpression.nullWord();
 
-    public static final WordEscape ESCAPE = KeyWordEscape.ESCAPE;
+
+    public static final QuantifiedWord SOME = SqlWords.QueryOperator.SOME;
+    public static final QuantifiedWord ANY = SqlWords.QueryOperator.ANY;
+
+    public static final IsComparisonWord DISTINCT_FROM = SqlWords.IsComparisonKeyWord.DISTINCT_FROM;
+
+    public static final WordEscape ESCAPE = SqlWords.KeyWordEscape.ESCAPE;
     /**
      * package field
      */
@@ -564,131 +594,6 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     }//SQLIdentifierImpl
-
-
-    private enum KeyWordAs implements WordAs, ArmyKeyWord {
-
-        AS(" AS");
-
-        private final String spaceWord;
-
-        KeyWordAs(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return sqlKeyWordsToString(this);
-        }
-
-    }//KeyWordAs
-
-    private enum KeyWordAnd implements WordAnd, ArmyKeyWord {
-
-        AND(" AND");
-
-        private final String spaceWord;
-
-        KeyWordAnd(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return sqlKeyWordsToString(this);
-        }
-
-    }//KeyWordAnd
-
-
-    private enum KeyWordSymmetric implements BetweenModifier, ArmyKeyWord {
-
-        SYMMETRIC(" SYMMETRIC"),
-        ASYMMETRIC(" ASYMMETRIC");
-
-        private final String spaceWord;
-
-        KeyWordSymmetric(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-        @Override
-        public final String toString() {
-            return sqlKeyWordsToString(this);
-        }
-
-    }//KeyWordSymmetric
-
-    private enum SQLSymbolPeriod implements SymbolPeriod {
-
-        PERIOD;
-
-        @Override
-        public final String toString() {
-            return sqlKeyWordsToString(this);
-        }
-
-    }//SQLSymbolPoint
-
-    private enum SQLSymbolAsterisk implements SymbolAsterisk, SQLWords {
-
-        ASTERISK(" *");
-
-        private final String spaceStar;
-
-        SQLSymbolAsterisk(String spaceStar) {
-            this.spaceStar = spaceStar;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceStar;
-        }
-
-        @Override
-        public final String toString() {
-            return sqlKeyWordsToString(this);
-        }
-
-    }//SQLSymbolStar
-
-    private enum KeyWordEscape implements WordEscape, ArmyKeyWord {
-
-        ESCAPE(" ESCAPE");
-
-        private final String spaceWord;
-
-        KeyWordEscape(String spaceWord) {
-            this.spaceWord = spaceWord;
-        }
-
-        @Override
-        public final String spaceRender() {
-            return this.spaceWord;
-        }
-
-
-        @Override
-        public final String toString() {
-            return sqlKeyWordsToString(this);
-        }
-
-    }//KeyWordEscape
 
 
     @Deprecated

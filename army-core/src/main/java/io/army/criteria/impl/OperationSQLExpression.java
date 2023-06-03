@@ -26,101 +26,101 @@ abstract class OperationSQLExpression implements ArmySQLExpression {
 
     @Override
     public final CompoundPredicate equalAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.EQUAL, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.EQUAL, SQLs.ANY, subQuery);
     }
 
     @Override
     public final CompoundPredicate equalSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.EQUAL, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.EQUAL, SQLs.SOME, subQuery);
     }
 
     @Override
     public final CompoundPredicate equalAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.EQUAL, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.EQUAL, SQLs.ALL, subQuery);
     }
 
     @Override
     public final CompoundPredicate notEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, SQLs.ANY, subQuery);
     }
 
 
     @Override
     public final CompoundPredicate notEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, SQLs.SOME, subQuery);
     }
 
     @Override
     public final CompoundPredicate notEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.NOT_EQUAL, SQLs.ALL, subQuery);
     }
 
 
     @Override
     public final CompoundPredicate lessAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, SQLs.ANY, subQuery);
     }
 
 
     @Override
     public final CompoundPredicate lessSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, SQLs.SOME, subQuery);
     }
 
     @Override
     public final CompoundPredicate lessAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS, SQLs.ALL, subQuery);
     }
 
 
     @Override
     public final CompoundPredicate lessEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, SQLs.ANY, subQuery);
     }
 
 
     @Override
     public final CompoundPredicate lessEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, SQLs.SOME, subQuery);
     }
 
 
     @Override
     public final CompoundPredicate lessEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.LESS_EQUAL, SQLs.ALL, subQuery);
     }
 
     @Override
     public final CompoundPredicate greaterAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, SQLs.ANY, subQuery);
     }
 
 
     @Override
     public final CompoundPredicate greaterSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, SQLs.SOME, subQuery);
     }
 
 
     @Override
     public final CompoundPredicate greaterAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER, SQLs.ALL, subQuery);
     }
 
     @Override
     public final CompoundPredicate greaterEqualAny(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, QueryOperator.ANY, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, SQLs.ANY, subQuery);
     }
 
     @Override
     public final CompoundPredicate greaterEqualSome(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, QueryOperator.SOME, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, SQLs.SOME, subQuery);
     }
 
 
     @Override
     public final CompoundPredicate greaterEqualAll(SubQuery subQuery) {
-        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, QueryOperator.ALL, subQuery);
+        return Expressions.compareQueryPredicate(this, DualBooleanOperator.GREATER_EQUAL, SQLs.ALL, subQuery);
     }
 
 

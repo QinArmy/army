@@ -8,6 +8,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
+import io.army.function.TeFunction;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
@@ -55,6 +56,16 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
+    public final CompoundPredicate notEqual(Expression operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, operand);
+    }
+
+    @Override
+    public final CompoundPredicate nullSafeEqual(Expression operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.NULL_SAFE_EQUAL, operand);
+    }
+
+    @Override
     public final CompoundPredicate less(Expression operand) {
         return Expressions.dualPredicate(this, DualBooleanOperator.LESS, operand);
     }
@@ -75,12 +86,6 @@ abstract class OperationExpression extends OperationSQLExpression
     public final CompoundPredicate greaterEqual(Expression operand) {
         return Expressions.dualPredicate(this, DualBooleanOperator.GREATER_EQUAL, operand);
     }
-
-    @Override
-    public final CompoundPredicate notEqual(Expression operand) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, operand);
-    }
-
 
     @Override
     public final CompoundPredicate between(Expression first, SQLs.WordAnd and, Expression second) {
@@ -238,7 +243,7 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
-    public final CompoundExpression space(BiFunction<Expression, Expression, CompoundExpression> operator, Expression operand) {
+    public final <T extends RightOperand> CompoundExpression space(BiFunction<Expression, T, CompoundExpression> operator, T operand) {
         final CompoundExpression result;
         result = operator.apply(this, operand);
         if (result == null) {
@@ -271,7 +276,7 @@ abstract class OperationExpression extends OperationSQLExpression
 
 
     @Override
-    public final CompoundPredicate whiteSpace(BiFunction<Expression, Expression, CompoundPredicate> operator, Expression operand) {
+    public final <T extends RightOperand> CompoundPredicate whiteSpace(BiFunction<Expression, T, CompoundPredicate> operator, T operand) {
         final CompoundPredicate result;
         result = operator.apply(this, operand);
         if (result == null) {
@@ -280,6 +285,15 @@ abstract class OperationExpression extends OperationSQLExpression
         return result;
     }
 
+    @Override
+    public final <M extends SQLWords, T extends RightOperand> CompoundPredicate whiteSpace(TeFunction<Expression, M, T, CompoundPredicate> funcRef, M modifier, T right) {
+        final CompoundPredicate result;
+        result = funcRef.apply(this, modifier, right);
+        if (result == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
+        return result;
+    }
 
     @Override
     public final <M extends SQLWords> CompoundPredicate whiteSpace(

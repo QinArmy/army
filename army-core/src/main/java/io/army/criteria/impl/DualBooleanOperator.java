@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 
 import io.army.dialect.Database;
+import io.army.util._Exceptions;
 
 /**
  * Interface representing sql dual operator.
@@ -10,6 +11,7 @@ enum DualBooleanOperator implements Operator.SqlDualBooleanOperator {
 
 
     EQUAL(" ="),
+    NOT_EQUAL(" !="),
 
     /**
      * MySQL
@@ -17,7 +19,7 @@ enum DualBooleanOperator implements Operator.SqlDualBooleanOperator {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/comparison-operators.html#operator_equal-to">NULL-safe equal.</a>
      */
     NULL_SAFE_EQUAL(" <=>"),
-    NOT_EQUAL(" !="),
+
     LESS(" <"),
     LESS_EQUAL(" <="),
     GREATER_EQUAL(" >="),
@@ -48,6 +50,27 @@ enum DualBooleanOperator implements Operator.SqlDualBooleanOperator {
     public final String spaceRender() {
         return this.spaceOperator;
     }
+
+    @Override
+    public final String spaceRender(final Database database) {
+        if (this != NULL_SAFE_EQUAL) {
+            return this.spaceOperator;
+        }
+        final String operator;
+        switch (database) {
+            case MySQL:
+                operator = " <=>";
+                break;
+            case PostgreSQL:
+            case H2:
+                operator = " IS NOT DISTINCT FROM";
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(database);
+        }
+        return operator;
+    }
+
 
     @Override
     public final Database database() {

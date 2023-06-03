@@ -638,8 +638,13 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException operandError(final Enum<?> operator, final @Nullable Expression operand) {
+    static CriteriaException operandError(final Object operator, final @Nullable Expression operand) {
         String m = String.format("%s don't support %s .", operator, _ClassUtils.safeClassName(operand));
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
+
+    static CriteriaException notArmyOperator(final Object operator) {
+        String m = String.format("%s is not army operator", operator);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
