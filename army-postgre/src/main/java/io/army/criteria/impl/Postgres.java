@@ -144,6 +144,15 @@ public abstract class Postgres extends PostgreSyntax {
      */
     public static final SimpleExpression CURRENT_CATALOG = FunctionUtils.noParensFunc("current_catalog", TextType.INSTANCE);
 
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  TextType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_user → name</a>
+     */
+    public static final SimpleExpression CURRENT_USER = FunctionUtils.noParensFunc("current_user", TextType.INSTANCE);
+
 
     /**
      * <p>

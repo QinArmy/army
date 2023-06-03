@@ -601,7 +601,7 @@ abstract class FunctionUtils {
     }
 
 
-    static SimplePredicate noArgFuncPredicate(final String name) {
+    static SimplePredicate zeroArgFuncPredicate(final String name) {
         return new NoArgFuncPredicate(name);
     }
 

@@ -90,7 +90,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case INTEGER:
             case BIGINT:
             case DECIMAL:
-            case DOUBLE:
+            case FLOAT8:
             case REAL:
             case TIME:
             case DATE:
@@ -268,12 +268,12 @@ abstract class PostgreParser extends _ArmyDialectParser {
                         .append("::DECIMAL");
             }
             break;
-            case DOUBLE: {
+            case FLOAT8: {
                 if (!(value instanceof Double)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
                 }
                 sqlBuilder.append(value)
-                        .append("::DOUBLE");
+                        .append("::FLOAT8");
             }
             break;
             case REAL: {

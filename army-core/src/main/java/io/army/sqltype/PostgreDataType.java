@@ -28,7 +28,7 @@ public enum PostgreDataType implements SqlType {
     DECIMAL,
 
     REAL,
-    DOUBLE,
+    FLOAT8,
 
     BIT,
     VARBIT,

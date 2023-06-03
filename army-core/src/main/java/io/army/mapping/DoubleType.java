@@ -54,7 +54,7 @@ public final class DoubleType extends _NumericType._FloatNumericType {
                 type = MySQLType.DOUBLE;
                 break;
             case PostgreSQL:
-                type = PostgreDataType.DOUBLE;
+                type = PostgreDataType.FLOAT8;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

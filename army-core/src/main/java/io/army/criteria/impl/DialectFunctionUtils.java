@@ -83,6 +83,13 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         return new MultiArgTabularFunction(name, argList, funcFieldList);
     }
 
+    static Functions._ColumnWithOrdinalityFunction zeroArgColumnFunction(final String name,
+                                                                         final @Nullable String fieldName,
+                                                                         final TypeMeta returnType) {
+
+        return new ZeroArgColumnFunction(name, fieldName, returnType);
+    }
+
 
     static Functions._ColumnWithOrdinalityFunction oneArgColumnFunction(final String name, final Expression one,
                                                                         final @Nullable String fieldName,
@@ -273,17 +280,29 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE);
 
-            if (context.isLowerFunctionName()) {
-                sqlBuilder.append(this.name.toLowerCase(Locale.ROOT));
-            } else {
-                sqlBuilder.append(this.name);
+            switch (context.funcNameMode()) {
+                case DEFAULT:
+                    sqlBuilder.append(this.name);
+                    break;
+                case LOWER_CASE:
+                    sqlBuilder.append(this.name.toLowerCase(Locale.ROOT));
+                    break;
+                case UPPER_CASE:
+                    sqlBuilder.append(this.name.toUpperCase(Locale.ROOT));
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(context.funcNameMode());
             }
-            sqlBuilder.append(_Constant.LEFT_PAREN);
 
-            appendArg(sqlBuilder, context);
+            if (this instanceof NoArgFunction) {
+                sqlBuilder.append(_Constant.PARENS);
+            } else {
+                sqlBuilder.append(_Constant.LEFT_PAREN);
 
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                appendArg(sqlBuilder, context);
 
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
             if (this.isWithOrdinality()) {
                 sqlBuilder.append(SPACE_WITH_ORDINALITY);
             }
@@ -304,10 +323,16 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         public final String toString() {
             final StringBuilder builder = new StringBuilder();
             builder.append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
-            argToString(builder);
-            builder.append(_Constant.SPACE_RIGHT_PAREN);
+                    .append(this.name);
+
+            if (this instanceof NoArgFunction) {
+                builder.append(_Constant.PARENS);
+            } else {
+                builder.append(_Constant.LEFT_PAREN);
+                argToString(builder);
+                builder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+
             if (this.isWithOrdinality()) {
                 builder.append(SPACE_WITH_ORDINALITY);
             }
@@ -505,7 +530,27 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
 
-    }//ScalarTabularFunction
+    }//ColumnFunction
+
+    private static final class ZeroArgColumnFunction extends ColumnFunction implements NoArgFunction {
+
+        private ZeroArgColumnFunction(String name, @Nullable String fieldName, TypeMeta returnType) {
+            super(name, fieldName, returnType);
+        }
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            //no-op
+        }
+
+
+    }//ZeroArgColumnFunction
+
 
     static final class OneArgColumnFunction extends ColumnFunction {
 

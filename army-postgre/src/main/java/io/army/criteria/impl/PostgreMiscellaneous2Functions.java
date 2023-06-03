@@ -4,9 +4,11 @@ import io.army.criteria.*;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
+import io.army.mapping.optional.IntArrayType;
 import io.army.mapping.optional.IntegerArrayType;
 import io.army.mapping.optional.ShortArrayType;
 import io.army.mapping.optional.TextArrayType;
+import io.army.mapping.postgre.PostgreInetType;
 import io.army.mapping.postgre.PostgreRangeType;
 import io.army.mapping.postgre.PostgreTsVectorType;
 import io.army.util._Collections;
@@ -1193,7 +1195,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE} rt
+     * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
      * </p>
      *
      * @param reverse in mose case {@link SQLs#TRUE} or {@link SQLs#FALSE}
@@ -1207,6 +1209,243 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     }
 
     /*-------------------below  System Information Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_database () → name<br/>
+     * </a>
+     */
+    public static SimpleExpression currentDatabase() {
+        return FunctionUtils.zeroArgFunc("current_database", TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_query () → text<br/>
+     * </a>
+     */
+    public static SimpleExpression currentQuery() {
+        return FunctionUtils.zeroArgFunc("current_query", TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">currentSchema () → name<br/>
+     * </a>
+     */
+    public static SimpleExpression currentSchema() {
+        return FunctionUtils.zeroArgFunc("current_schema", TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextArrayType#LINEAR}
+     * </p>
+     *
+     * @param includeImplicit in mose case {@link SQLs#TRUE} or {@link SQLs#FALSE}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">current_schemas ( include_implicit boolean ) → name[]<br/>
+     * </a>
+     */
+    public static SimpleExpression currentSchema(Expression includeImplicit) {
+        return FunctionUtils.oneArgFunc("current_schema", includeImplicit, TextArrayType.LINEAR);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link PostgreInetType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">inet_client_addr () → inet<br/>
+     * </a>
+     */
+    public static SimpleExpression inetClientAddr() {
+        return FunctionUtils.zeroArgFunc("inet_client_addr", PostgreInetType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">inet_client_port () → integer<br/>
+     * </a>
+     */
+    public static SimpleExpression inetClientPort() {
+        return FunctionUtils.zeroArgFunc("inet_client_port", IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link PostgreInetType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">inet_server_addr () → inet<br/>
+     * </a>
+     */
+    public static SimpleExpression inetServerAddr() {
+        return FunctionUtils.zeroArgFunc("inet_server_addr", PostgreInetType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">inet_server_port () → integer<br/>
+     * </a>
+     */
+    public static SimpleExpression inetServerPort() {
+        return FunctionUtils.zeroArgFunc("inet_server_port", IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_backend_pid () → integer<br/>
+     * </a>
+     */
+    public static SimpleExpression pgBackendPid() {
+        return FunctionUtils.zeroArgFunc("pg_backend_pid", IntegerType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link IntArrayType#LINEAR}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_blocking_pids ( integer ) → integer[]<br/>
+     * </a>
+     */
+    public static SimpleExpression pgBlockingPids(Expression exp) {
+        return FunctionUtils.oneArgFunc("pg_blocking_pids", exp, IntArrayType.LINEAR);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link OffsetDateTimeType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_conf_load_time () → timestamp with time zone<br/>
+     * </a>
+     */
+    public static SimpleExpression pgConfLoadTime() {
+        return FunctionUtils.zeroArgFunc("pg_conf_load_time", OffsetDateTimeType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_current_logfile ( [ text ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgCurrentLogFile() {
+        return FunctionUtils.zeroArgFunc("pg_current_logfile", TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_current_logfile ( [ text ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgCurrentLogFile(Expression exp) {
+        return FunctionUtils.oneArgFunc("pg_current_logfile", exp, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_my_temp_schema () → oid<br/>
+     * </a>
+     */
+    public static SimpleExpression pgMyTempSchema() {
+        return FunctionUtils.zeroArgFunc("pg_my_temp_schema", LongType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_is_other_temp_schema ( oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgIsOtherTempSchema(Expression exp) {
+        return FunctionUtils.oneArgFuncPredicate("pg_is_other_temp_schema", exp);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_jit_available () → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgJitAvailable() {
+        return FunctionUtils.zeroArgFuncPredicate("pg_jit_available");
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_listening_channels () → setof text<br/>
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction pgListeningChannels() {
+        return DialectFunctionUtils.zeroArgColumnFunction("pg_listening_channels", null, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link DoubleType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_notification_queue_usage () → double precision<br/>
+     * </a>
+     */
+    public static SimpleExpression pgNotificationQueueUsage() {
+        return FunctionUtils.zeroArgFunc("pg_notification_queue_usage", DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link OffsetDateTimeType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_postmaster_start_time () → timestamp with time zone<br/>
+     * </a>
+     */
+    public static SimpleExpression pgPostMasterStartTime() {
+        return FunctionUtils.zeroArgFunc("pg_postmaster_start_time", OffsetDateTimeType.INSTANCE);
+    }
+
 
 
     /*-------------------below private method -------------------*/
