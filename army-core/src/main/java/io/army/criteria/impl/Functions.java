@@ -48,10 +48,18 @@ abstract class Functions extends SqlSyntax {
     }
 
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-TABLEFUNCTIONS"> Table Functions<br/>
+     * </a>
+     */
     public interface _TabularFunction extends DerivedTable, SQLFunction {
 
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-TABLEFUNCTIONS"> Table Functions<br/>
+     * </a>
+     */
     public interface _ColumnFunction extends _TabularFunction, SelectionSpec, TypeInfer.TypeUpdateSpec {
 
         @Override

@@ -33,70 +33,6 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
     }
 
 
-    public static final ExtractTimeField CENTURY = PostgreWords.WordExtractTimeField.CENTURY;
-    public static final ExtractTimeField DAY = PostgreWords.WordExtractTimeField.DAY;
-    public static final ExtractTimeField DECADE = PostgreWords.WordExtractTimeField.DECADE;
-    public static final ExtractTimeField DOW = PostgreWords.WordExtractTimeField.DOW;
-    public static final ExtractTimeField DOY = PostgreWords.WordExtractTimeField.DOY;
-    public static final ExtractTimeField EPOCH = PostgreWords.WordExtractTimeField.EPOCH;
-    public static final ExtractTimeField HOUR = PostgreWords.WordExtractTimeField.HOUR;
-    public static final ExtractTimeField ISODOW = PostgreWords.WordExtractTimeField.ISODOW;
-    public static final ExtractTimeField ISOYEAR = PostgreWords.WordExtractTimeField.ISOYEAR;
-    public static final ExtractTimeField JULIAN = PostgreWords.WordExtractTimeField.JULIAN;
-    public static final ExtractTimeField MICROSECONDS = PostgreWords.WordExtractTimeField.MICROSECONDS;
-    public static final ExtractTimeField MILLENNIUM = PostgreWords.WordExtractTimeField.MILLENNIUM;
-    public static final ExtractTimeField MILLISECONDS = PostgreWords.WordExtractTimeField.MILLISECONDS;
-    public static final ExtractTimeField MINUTE = PostgreWords.WordExtractTimeField.MINUTE;
-    public static final ExtractTimeField MONTH = PostgreWords.WordExtractTimeField.MONTH;
-    public static final ExtractTimeField QUARTER = PostgreWords.WordExtractTimeField.QUARTER;
-    public static final ExtractTimeField SECOND = PostgreWords.WordExtractTimeField.SECOND;
-    public static final ExtractTimeField TIMEZONE = PostgreWords.WordExtractTimeField.TIMEZONE;
-    public static final ExtractTimeField TIMEZONE_HOUR = PostgreWords.WordExtractTimeField.TIMEZONE_HOUR;
-    public static final ExtractTimeField TIMEZONE_MINUTE = PostgreWords.WordExtractTimeField.TIMEZONE_MINUTE;
-    public static final ExtractTimeField WEEK = PostgreWords.WordExtractTimeField.WEEK;
-    public static final ExtractTimeField YEAR = PostgreWords.WordExtractTimeField.YEAR;
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LocalDateType}
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_date → date</a>
-     */
-    public static final Expression CURRENT_DATE = FunctionUtils.noParensFunc("CURRENT_DATE", LocalDateType.INSTANCE);
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  OffsetTimeType}
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_time</a>
-     */
-    public static final Expression CURRENT_TIME = FunctionUtils.noParensFunc("CURRENT_TIME", OffsetTimeType.INSTANCE);
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  OffsetDateTimeType}
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">current_timestamp → timestamp with time zone</a>
-     */
-    public static final Expression CURRENT_TIMESTAMP = FunctionUtils.noParensFunc("CURRENT_TIMESTAMP", OffsetDateTimeType.INSTANCE);
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LocalTimeType}
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtime → time</a>
-     */
-    public static final Expression LOCALTIME = FunctionUtils.noParensFunc("LOCALTIME", LocalTimeType.INSTANCE);
-    /**
-     * <p>
-     * The {@link MappingType} of function return type: {@link  LocalDateTimeType}
-     * </p>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtimestamp → timestamp</a>
-     */
-    public static final Expression LOCALTIMESTAMP = FunctionUtils.noParensFunc("LOCALTIMESTAMP", LocalDateTimeType.INSTANCE);
-
-
     /**
      * <p>
      * The {@link MappingType} of function return type: {@link OffsetDateTimeType}
@@ -338,7 +274,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * The {@link MappingType} of function return type: {@link LocalTimeType}
      * </p>
      *
-     * @see #LOCALTIME
+     * @see Postgres#LOCALTIME
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtime ( integer ) → time</a>
      */
     public static SimpleExpression localtime(Expression integer) {
@@ -350,7 +286,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * The {@link MappingType} of function return type: {@link LocalDateTimeType}
      * </p>
      *
-     * @see #LOCALTIMESTAMP
+     * @see Postgres#LOCALTIMESTAMP
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-TABLE">localtimestamp ( integer ) → timestamp</a>
      */
     public static SimpleExpression localtimestamp(Expression integer) {

@@ -1147,6 +1147,66 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         return FunctionUtils.oneArgFunc("multirange", anyRange, _returnType(anyRange, func));
     }
 
+    /*-------------------below Series Generating Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of start
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-srf.html">Set Returning Functions<br/>
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction generateSeries(Expression start, Expression stop) {
+        return DialectFunctionUtils.twoArgColumnFunction("generate_series", start, stop, null,
+                _returnType(start, Expressions::identityType)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: the {@link MappingType} of start
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-srf.html">Set Returning Functions<br/>
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction generateSeries(Expression start, Expression stop, Expression step) {
+        return DialectFunctionUtils.threeArgColumnFunction("generate_series", start, stop, step, null,
+                _returnType(start, Expressions::identityType)
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE} rt
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS">Subscript Generating Functions<br/>
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction generateSubscripts(Expression array, Expression dim) {
+        return DialectFunctionUtils.twoArgColumnFunction("generate_subscripts", array, dim, null,
+                IntegerType.INSTANCE
+        );
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE} rt
+     * </p>
+     *
+     * @param reverse in mose case {@link SQLs#TRUE} or {@link SQLs#FALSE}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS">Subscript Generating Functions<br/>
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction generateSubscripts(Expression array, Expression dim, Expression reverse) {
+        return DialectFunctionUtils.threeArgColumnFunction("generate_subscripts", array, dim, reverse, null,
+                IntegerType.INSTANCE
+        );
+    }
+
+    /*-------------------below  System Information Functions-------------------*/
 
 
     /*-------------------below private method -------------------*/
