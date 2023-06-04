@@ -1,4 +1,4 @@
-package io.army.mapping.optional;
+package io.army.mapping.array;
 
 import io.army.dialect._Constant;
 import io.army.function.TextFunction;

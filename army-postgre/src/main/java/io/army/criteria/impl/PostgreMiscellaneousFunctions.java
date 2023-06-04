@@ -2,7 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.mapping.*;
-import io.army.mapping.optional.StringArrayType;
+import io.army.mapping.array.StringArrayType;
+import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.mapping.postgre.PostgreCidrType;
 import io.army.mapping.postgre.PostgreInetType;
 

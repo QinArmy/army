@@ -2,7 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
-import io.army.mapping.optional.TextArrayType;
+import io.army.mapping.array.TextArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.MySQLType;

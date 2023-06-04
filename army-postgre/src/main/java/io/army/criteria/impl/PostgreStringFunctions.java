@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
-import io.army.mapping.optional.TextArrayType;
+import io.army.mapping.array.TextArrayType;
 import io.army.mapping.postgre.PostgreRangeType;
 
 import java.util.*;

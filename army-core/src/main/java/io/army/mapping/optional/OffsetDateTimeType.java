@@ -1,8 +1,11 @@
-package io.army.mapping;
+package io.army.mapping.optional;
 
 import io.army.criteria.CriteriaException;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
+import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.MySQLType;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
@@ -130,9 +133,6 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     static SqlType mapToSqlType(final ServerMeta meta, final MappingType type) {
         final SqlType sqlType;
         switch (meta.dialectDatabase()) {
-            case MySQL:
-                sqlType = MySQLType.DATETIME;
-                break;
             case PostgreSQL:
                 sqlType = PostgreDataType.TIMESTAMPTZ;
                 break;

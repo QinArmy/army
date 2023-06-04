@@ -1,4 +1,4 @@
-package io.army.mapping.optional;
+package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;

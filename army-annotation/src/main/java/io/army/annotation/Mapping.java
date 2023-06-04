@@ -16,6 +16,10 @@ public @interface Mapping {
      */
     String value();
 
+    String[] params() default {};
+
+    String func() default "";
+
     /**
      * <p>
      * If {@link #value()} is the class name

@@ -5,6 +5,8 @@ import io.army.criteria.Expression;
 import io.army.criteria.SimpleExpression;
 import io.army.mapping.*;
 import io.army.mapping.optional.IntervalType;
+import io.army.mapping.optional.OffsetDateTimeType;
+import io.army.mapping.optional.OffsetTimeType;
 import io.army.type.Interval;
 
 import java.util.Locale;

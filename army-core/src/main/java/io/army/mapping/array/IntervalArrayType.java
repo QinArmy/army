@@ -1,4 +1,4 @@
-package io.army.mapping.optional;
+package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
@@ -9,48 +9,20 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
-import io.army.util.ArrayUtils;
 
-public final class IntArrayType extends _ArmyNoInjectionMapping
-        implements MappingType.SqlIntegerType, MappingType.SqlArrayType {
+public class IntervalArrayType extends _ArmyNoInjectionMapping {
 
-    public static IntArrayType from(final Class<?> javaType) {
-        final IntArrayType instance;
-        if (javaType == int[].class) {
-            instance = LINEAR;
-        } else if (ArrayUtils.underlyingComponent(javaType) == int.class) {
-            instance = new IntArrayType(javaType);
-        } else {
-            throw errorJavaType(IntArrayType.class, javaType);
-        }
-        return instance;
+    public static final IntervalArrayType LINEAR = new IntervalArrayType();
+
+
+    private IntervalArrayType() {
     }
 
-    public static IntArrayType LINEAR = new IntArrayType(int[].class);
-
-
-    private final Class<?> javaType;
-
-    private IntArrayType(Class<?> javaType) {
-        this.javaType = javaType;
-    }
 
     @Override
     public Class<?> javaType() {
-        return this.javaType;
-    }
-
-
-    @Override
-    public LengthType lengthType() {
         return null;
     }
-
-    @Override
-    public MappingType elementType() {
-        return null;
-    }
-
 
     @Override
     public SqlType map(ServerMeta meta) throws NotSupportDialectException {
@@ -76,6 +48,4 @@ public final class IntArrayType extends _ArmyNoInjectionMapping
     public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return null;
     }
-
-
 }

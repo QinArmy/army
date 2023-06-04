@@ -1,4 +1,4 @@
-package io.army.mapping.optional;
+package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
@@ -16,21 +16,22 @@ import io.army.util.ArrayUtils;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public final class StringArrayType extends _ArmyBuildInMapping {
+public final class XmlArrayType extends _ArmyBuildInMapping {
 
-    public static StringArrayType from(final Class<?> javaType) {
+
+    public static XmlArrayType from(final Class<?> javaType) {
         if (!javaType.isArray()) {
-            throw errorJavaType(StringArrayType.class, javaType);
+            throw errorJavaType(XmlArrayType.class, javaType);
         }
 
-        return INSTANCE_MAP.computeIfAbsent(javaType, StringArrayType::new);
+        return INSTANCE_MAP.computeIfAbsent(javaType, XmlArrayType::new);
     }
 
-    public static final StringArrayType UNLIMITED = new StringArrayType();
+    public static final XmlArrayType UNLIMITED = new XmlArrayType();
 
-    public static final StringArrayType LINEAR = new StringArrayType(String[].class);
+    public static final XmlArrayType TEXT_LINEAR = new XmlArrayType(String[].class);
 
-    private static final ConcurrentMap<Class<?>, StringArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, XmlArrayType> INSTANCE_MAP = new ConcurrentHashMap<>();
 
 
     private final Class<?> javaType;
@@ -40,12 +41,12 @@ public final class StringArrayType extends _ArmyBuildInMapping {
     /**
      * @see #UNLIMITED
      */
-    private StringArrayType() {
+    private XmlArrayType() {
         this.javaType = Object.class;
         this.underlyingType = Object.class;
     }
 
-    private StringArrayType(Class<?> javaType) {
+    private XmlArrayType(Class<?> javaType) {
         this.javaType = javaType;
         this.underlyingType = ArrayUtils.underlyingComponent(javaType);
     }

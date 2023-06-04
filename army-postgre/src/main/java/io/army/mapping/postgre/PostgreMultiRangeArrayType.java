@@ -1,5 +1,6 @@
 package io.army.mapping.postgre;
 
+import io.army.annotation.Mapping;
 import io.army.criteria.CriteriaException;
 import io.army.dialect._Constant;
 import io.army.function.TextFunction;
@@ -8,12 +9,15 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.UnaryGenericsMapping;
-import io.army.mapping.optional.PostgreArrays;
+import io.army.mapping.array.PostgreArrays;
+import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -26,59 +30,237 @@ import java.util.function.Function;
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">Built-in Range and Multirange Types</a>
  * @since 1.0
  */
-public abstract class PostgreMultiRangeArrayType<T> extends ArmyPostgreRangeType<T>
-        implements MappingType.SqlArrayType {
+public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType implements MappingType.SqlArrayType {
+
 
     /**
-     * package constructor
+     * @param javaType 2 dimension or higher dimension array class. If javaType isn't String array,then must declare static 'create' factory method.
+     *                 see {@link ArmyPostgreRange}
+     * @param param    from {@link Mapping#params()} ,it's the name of <ul>
+     *                 <li>{@link PostgreDataType#INT4MULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#INT8MULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#NUMMULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#DATEMULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#TSMULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#TSTZMULTIRANGE_ARRAY}</li>
+     *                 </ul>
+     * @throws IllegalArgumentException throw when javaType error
+     * @throws MetaException            throw when param error.
      */
-    PostgreMultiRangeArrayType(Class<?> javaType, Class<T> elementType, @Nullable RangeFunction<T, ?> rangeFunc,
-                               Function<String, T> parseFunc) {
-        super(javaType, elementType, rangeFunc, parseFunc);
+    public static PostgreMultiRangeArrayType from(final Class<?> javaType, final String param) throws MetaException {
+        final PostgreDataType sqlType;
+        try {
+            sqlType = PostgreDataType.valueOf(param);
+        } catch (IllegalArgumentException e) {
+            throw new MetaException(e.getMessage(), e);
+        }
+        if (isNotMultiRangeType(sqlType)) {
+            throw new MetaException(sqlTypeErrorMessage(sqlType));
+        }
+        return from(javaType, sqlType);
+    }
+
+
+    /**
+     * @param javaType 2 dimension or higher dimension array class. If javaType isn't String array,then must declare static 'create' factory method.
+     *                 see {@link ArmyPostgreRange}
+     * @param sqlType  <ul>
+     *                 <li>{@link PostgreDataType#INT4MULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#INT8MULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#NUMMULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#DATEMULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#TSMULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#TSTZMULTIRANGE_ARRAY}</li>
+     *                 </ul>
+     */
+    public static PostgreMultiRangeArrayType from(final Class<?> javaType, final PostgreDataType sqlType)
+            throws IllegalArgumentException {
+
+        final RangeFunction<?, ?> rangeFunc;
+        final Class<?> componentType;
+
+        final PostgreMultiRangeArrayType instance;
+        if (isNotMultiRangeType(sqlType)) {
+            throw new IllegalArgumentException(sqlTypeErrorMessage(sqlType));
+        } else if (!javaType.isArray()) {
+            throw errorJavaType(PostgreMultiRangeArrayType.class, javaType);
+        } else if (javaType == String[][].class) {
+            instance = linearInstance(sqlType);
+        } else if (ArrayUtils.dimensionOf(javaType) < 2) {
+            throw errorJavaType(PostgreMultiRangeArrayType.class, javaType);
+        } else if ((componentType = ArrayUtils.underlyingComponent(javaType)) == String.class) {
+            instance = new PostgreMultiRangeArrayType(sqlType, javaType, null);
+        } else if ((rangeFunc = tryCreateDefaultRangeFunc(componentType, boundJavaType(sqlType))) == null) {
+            throw errorJavaType(PostgreMultiRangeArrayType.class, javaType);
+        } else {
+            instance = new PostgreMultiRangeArrayType(sqlType, javaType, rangeFunc);
+        }
+        return instance;
+    }
+
+
+    /**
+     * @param javaType 2 dimension or higher dimension non-string array class
+     *                 see {@link ArmyPostgreRange}
+     * @param sqlType  <ul>
+     *                 <li>{@link PostgreDataType#INT4MULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#INT8MULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#NUMMULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#DATEMULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#TSMULTIRANGE_ARRAY}</li>
+     *                 <li>{@link PostgreDataType#TSTZMULTIRANGE_ARRAY}</li>
+     *                 </ul>
+     * @throws IllegalArgumentException throw when javaType or sqlType error
+     */
+    public static PostgreMultiRangeArrayType fromFunc(final Class<?> javaType, final PostgreDataType sqlType,
+                                                      final RangeFunction<?, ?> rangeFunc)
+            throws IllegalArgumentException {
+        Objects.requireNonNull(rangeFunc);
+        if (isNotMultiRangeType(sqlType)) {
+            throw new IllegalArgumentException(sqlTypeErrorMessage(sqlType));
+        } else if (!javaType.isArray()) {
+            throw errorJavaType(PostgreMultiRangeArrayType.class, javaType);
+        } else if (ArrayUtils.dimensionOf(javaType) < 2) {
+            throw errorJavaType(PostgreMultiRangeArrayType.class, javaType);
+        } else if (ArrayUtils.underlyingComponent(javaType) == String.class) {
+            throw errorJavaType(PostgreMultiRangeArrayType.class, javaType);
+        }
+        return new PostgreMultiRangeArrayType(sqlType, javaType, rangeFunc);
+    }
+
+
+    /**
+     * @param javaType   2 dimension or higher dimension non-string array class
+     *                   see {@link ArmyPostgreRange}
+     * @param param      from {@link Mapping#params()} ,it's the name of <ul>
+     *                   <li>{@link PostgreDataType#INT4MULTIRANGE_ARRAY}</li>
+     *                   <li>{@link PostgreDataType#INT8MULTIRANGE_ARRAY}</li>
+     *                   <li>{@link PostgreDataType#NUMMULTIRANGE_ARRAY}</li>
+     *                   <li>{@link PostgreDataType#DATEMULTIRANGE_ARRAY}</li>
+     *                   <li>{@link PostgreDataType#TSMULTIRANGE_ARRAY}</li>
+     *                   <li>{@link PostgreDataType#TSTZMULTIRANGE_ARRAY}</li>
+     *                   </ul>
+     * @param methodName from {@link Mapping#func()}
+     * @throws IllegalArgumentException throw when javaType error
+     * @throws MetaException            throw when param or methodName error.
+     */
+    public static PostgreMultiRangeArrayType fromMethod(final Class<?> javaType, final String param,
+                                                        final String methodName) throws MetaException {
+
+        final PostgreDataType sqlType;
+        try {
+            sqlType = PostgreDataType.valueOf(param);
+        } catch (IllegalArgumentException e) {
+            throw new MetaException(e.getMessage(), e);
+        }
+
+        final Class<?> componentType;
+        if (isNotMultiRangeType(sqlType)) {
+            throw new MetaException(sqlTypeErrorMessage(sqlType));
+        } else if (!javaType.isArray()) {
+            throw errorJavaType(PostgreMultiRangeArrayType.class, javaType);
+        } else if (ArrayUtils.dimensionOf(javaType) < 2) {
+            throw errorJavaType(PostgreMultiRangeArrayType.class, javaType);
+        } else if ((componentType = ArrayUtils.underlyingComponent(javaType)) == String.class) {
+            throw errorJavaType(PostgreMultiRangeArrayType.class, javaType);
+        }
+        final RangeFunction<?, ?> rangeFunc;
+        rangeFunc = PostgreRangeType.createRangeFunction(componentType, boundJavaType(sqlType), methodName);
+        return new PostgreMultiRangeArrayType(sqlType, javaType, rangeFunc);
+    }
+
+
+    public static final PostgreMultiRangeArrayType INT4_MULTI_RANGE_LINEAR = new PostgreMultiRangeArrayType(PostgreDataType.INT4MULTIRANGE_ARRAY, String[][].class, null);
+
+    public static final PostgreMultiRangeArrayType INT8_MULTI_RANGE_LINEAR = new PostgreMultiRangeArrayType(PostgreDataType.INT8MULTIRANGE_ARRAY, String[][].class, null);
+
+    public static final PostgreMultiRangeArrayType NUM_MULTI_RANGE_LINEAR = new PostgreMultiRangeArrayType(PostgreDataType.NUMMULTIRANGE_ARRAY, String[][].class, null);
+
+    public static final PostgreMultiRangeArrayType DATE_MULTI_RANGE_LINEAR = new PostgreMultiRangeArrayType(PostgreDataType.DATEMULTIRANGE_ARRAY, String[][].class, null);
+
+    public static final PostgreMultiRangeArrayType TS_MULTI_RANGE_LINEAR = new PostgreMultiRangeArrayType(PostgreDataType.TSMULTIRANGE_ARRAY, String[][].class, null);
+
+    public static final PostgreMultiRangeArrayType TS_TZ_MULTI_RANGE_LINEAR = new PostgreMultiRangeArrayType(PostgreDataType.TSTZMULTIRANGE_ARRAY, String[][].class, null);
+
+
+    /**
+     * <p>
+     * package constructor
+     * </p>
+     */
+    private PostgreMultiRangeArrayType(final PostgreDataType sqlType, final Class<?> javaType,
+                                       final @Nullable RangeFunction<?, ?> rangeFunc) {
+        super(sqlType, javaType, rangeFunc);
     }
 
 
     @Override
-    public final <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
+    public <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
 
-        final RangeFunction<T, ?> rangeFunc;
+        final int targetDimension;
+
         if (!targetType.isArray()) {
             throw noMatchCompatibleMapping(this, targetType);
-        } else if (ArrayUtils.dimensionOf(targetType) == ArrayUtils.dimensionOf(this.javaType)) {
-            rangeFunc = PostgreRangeType.tryCreateDefaultRangeFunc(ArrayUtils.underlyingComponent(targetType),
-                    boundJavaType());
+        } else if ((targetDimension = ArrayUtils.dimensionOf(targetType)) < 2) {
+            throw noMatchCompatibleMapping(this, targetType);
+        }
+
+        final Class<?> componentType;
+        componentType = ArrayUtils.underlyingComponent(targetType);
+
+        final PostgreMultiRangeArrayType instance;
+        if (componentType != String.class) {
+            final RangeFunction<?, ?> rangeFunc;
+            if ((rangeFunc = tryCreateDefaultRangeFunc(componentType, boundJavaType(this.sqlType))) == null) {
+                throw noMatchCompatibleMapping(this, targetType);
+            }
+            instance = new PostgreMultiRangeArrayType(this.sqlType, targetType, rangeFunc);
+        } else if (targetDimension > 2) {
+            instance = new PostgreMultiRangeArrayType(this.sqlType, targetType, null);
         } else {
-            throw noMatchCompatibleMapping(this, targetType);
+            instance = linearInstance(this.sqlType);
         }
-        if (rangeFunc == null) {
-            throw noMatchCompatibleMapping(this, targetType);
+        return instance;
+    }
+
+
+    @Override
+    public MappingType arrayTypeOfThis() throws CriteriaException {
+        return new PostgreMultiRangeArrayType(this.sqlType, ArrayUtils.arrayClassOf(this.javaType), this.rangeFunc);
+    }
+
+    @Override
+    public MappingType elementType() {
+        final MappingType instance;
+        if (this.javaType == String[][][].class) {
+            instance = linearInstance(this.sqlType);
+        } else if (ArrayUtils.dimensionOf(this.javaType) > 2) {
+            instance = new PostgreMultiRangeArrayType(this.sqlType, this.javaType.getComponentType(), this.rangeFunc);
+        } else {
+            final PostgreMultiRangeType rangeType;
+            rangeType = PostgreMultiRangeType.INT4_MULTI_RANGE_TEXT.fromMultiArray(this);
+            assert rangeType.sqlType == this.sqlType;
+            instance = rangeType;
         }
-        return compatibleFor(targetType, rangeFunc);
+        return instance;
     }
 
 
     @Override
-    public final Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
-        return arrayConvert(nonNull, this.rangeFunc, this.parseFunc, map(env.serverMeta()), this, PARAM_ERROR_HANDLER);
+    public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
+        return arrayConvert(nonNull, this.rangeFunc, this::deserialize, map(env.serverMeta()), this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public final Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
-        return arrayBeforeBind(nonNull, this::boundToText, type, this, PARAM_ERROR_HANDLER);
+    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+        return arrayBeforeBind(nonNull, this::serialize, type, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public final Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
-        return arrayAfterGet(nonNull, this.rangeFunc, this.parseFunc, type, this, ACCESS_ERROR_HANDLER);
+    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+        return arrayAfterGet(nonNull, this.rangeFunc, this::deserialize, type, this, ACCESS_ERROR_HANDLER);
     }
 
-    @Override
-    public final boolean isSameType(MappingType type) {
-        return super.isSameType(type);
-    }
-
-    abstract MappingType compatibleFor(Class<?> targetType, RangeFunction<T, ?> rangeFunc)
-            throws NoMatchMappingException;
 
     /**
      * @param rangeFunc null when {@link MappingType#javaType()} of type is {@link String#getClass()}
@@ -154,6 +336,55 @@ public abstract class PostgreMultiRangeArrayType<T> extends ArmyPostgreRangeType
             throw handler.apply(type, sqlType, text, new IllegalArgumentException("Not multi-ranage array"));
         }
         return array;
+    }
+
+
+    private static PostgreMultiRangeArrayType linearInstance(final PostgreDataType sqlType) {
+        final PostgreMultiRangeArrayType instance;
+        switch (sqlType) {
+            case INT4MULTIRANGE_ARRAY:
+                instance = PostgreMultiRangeArrayType.INT4_MULTI_RANGE_LINEAR;
+                break;
+            case INT8MULTIRANGE_ARRAY:
+                instance = PostgreMultiRangeArrayType.INT8_MULTI_RANGE_LINEAR;
+                break;
+            case NUMMULTIRANGE_ARRAY:
+                instance = PostgreMultiRangeArrayType.NUM_MULTI_RANGE_LINEAR;
+                break;
+            case DATEMULTIRANGE_ARRAY:
+                instance = PostgreMultiRangeArrayType.DATE_MULTI_RANGE_LINEAR;
+                break;
+            case TSMULTIRANGE_ARRAY:
+                instance = PostgreMultiRangeArrayType.TS_MULTI_RANGE_LINEAR;
+                break;
+            case TSTZMULTIRANGE_ARRAY:
+                instance = PostgreMultiRangeArrayType.TS_TZ_MULTI_RANGE_LINEAR;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(sqlType);
+        }
+        return instance;
+    }
+
+    private static boolean isNotMultiRangeType(final PostgreDataType sqlType) {
+        final boolean match;
+        switch (sqlType) {
+            case INT4MULTIRANGE_ARRAY:
+            case INT8MULTIRANGE_ARRAY:
+            case NUMMULTIRANGE_ARRAY:
+            case DATEMULTIRANGE_ARRAY:
+            case TSMULTIRANGE_ARRAY:
+            case TSTZMULTIRANGE_ARRAY:
+                match = false;
+                break;
+            default:
+                match = true;
+        }
+        return match;
+    }
+
+    private static String sqlTypeErrorMessage(PostgreDataType sqlType) {
+        return String.format("%s isn't postgre multi-range array type", sqlType);
     }
 
 

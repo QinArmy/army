@@ -2,7 +2,7 @@ package io.army.mapping;
 
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
-import io.army.mapping.optional.IntegerArrayType;
+import io.army.mapping.array.IntegerArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreDataType;

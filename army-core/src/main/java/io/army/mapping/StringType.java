@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
-import io.army.mapping.optional.StringArrayType;
+import io.army.mapping.array.StringArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.OracleDataType;

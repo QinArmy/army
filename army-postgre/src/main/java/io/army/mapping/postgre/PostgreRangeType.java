@@ -3,10 +3,13 @@ package io.army.mapping.postgre;
 import io.army.criteria.CriteriaException;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingType;
+import io.army.mapping.*;
+import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.meta.MetaException;
+import io.army.sqltype.PostgreDataType;
 import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
+import io.army.util._Exceptions;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -25,25 +28,52 @@ import java.util.function.Function;
  *     </ul>
  * </p>
  *
- * @param <T> java class of subtype of range
  * @see <a href="https://www.postgresql.org/docs/15/rangetypes.html#RANGETYPES-BUILTIN">Built-in Range and Multirange Types</a>
  */
-public abstract class PostgreRangeType<T> extends ArmyPostgreRangeType<T> {
+public abstract class PostgreRangeType extends _ArmyPostgreRangeType {
 
     public static final String INFINITY = "infinity";
     public static final String EMPTY = "empty";
     private static final Object INFINITY_BOUND = new Object();
 
-    /**
-     * package constructor
-     */
-    PostgreRangeType(Class<?> javaType, Class<T> elementType, @Nullable RangeFunction<T, ?> rangeFunc,
-                     Function<String, T> parseFunc) {
-        super(javaType, elementType, rangeFunc, parseFunc);
+
+    PostgreRangeType(final PostgreDataType sqlType, final Class<?> javaType, final @Nullable RangeFunction<?, ?> rangeFunc) {
+        super(sqlType, javaType, rangeFunc);
     }
 
 
-    public abstract MappingType subtype();
+    public final MappingType subtype() {
+        final MappingType type;
+        switch (this.sqlType) {
+            case INT4RANGE:
+            case INT4MULTIRANGE:
+                type = IntegerType.INSTANCE;
+                break;
+            case INT8RANGE:
+            case INT8MULTIRANGE:
+                type = LongType.INSTANCE;
+                break;
+            case NUMRANGE:
+            case NUMMULTIRANGE:
+                type = BigDecimalType.INSTANCE;
+                break;
+            case DATERANGE:
+            case DATEMULTIRANGE:
+                type = LocalDateType.INSTANCE;
+                break;
+            case TSRANGE:
+            case TSMULTIRANGE:
+                type = LocalDateTimeType.INSTANCE;
+                break;
+            case TSTZRANGE:
+            case TSTZMULTIRANGE:
+                type = OffsetDateTimeType.INSTANCE;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this.sqlType);
+        }
+        return type;
+    }
 
 
     public static <T> MockRangeFunction<T> createMockFunction(Class<?> javaType, Class<T> elementType) {
@@ -259,17 +289,6 @@ public abstract class PostgreRangeType<T> extends ArmyPostgreRangeType<T> {
     }
 
 
-    @Nullable
-    static <T, R> RangeFunction<T, R> tryCreateDefaultRangeFunc(final Class<R> targetType, final Class<T> elementType) {
-        RangeFunction<T, R> rangeFunc;
-        try {
-            rangeFunc = createRangeFunction(targetType, elementType, CREATE);
-        } catch (Throwable e) {
-            rangeFunc = null;
-        }
-        return rangeFunc;
-    }
-
     /**
      * @throws IllegalArgumentException            when rangeFunc is null and {@link MappingType#javaType()} isn't {@link String#getClass()}
      * @throws CriteriaException                   when text error and handler throw this type.
@@ -335,7 +354,7 @@ public abstract class PostgreRangeType<T> extends ArmyPostgreRangeType<T> {
         } else {
             final MockRangeFunction<T> mockFunction;
             if (type instanceof PostgreSingleRangeType) {
-                mockFunction = ((PostgreSingleRangeType<T>) type).mockFunction;
+                mockFunction = (MockRangeFunction<T>) ((PostgreSingleRangeType) type).mockFunction;
                 assert mockFunction != null;
             } else if (type instanceof UserDefinedRangeType) {
                 mockFunction = ((UserDefinedRangeType<T>) type).mockFunction();

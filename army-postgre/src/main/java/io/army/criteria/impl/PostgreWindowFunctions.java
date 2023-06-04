@@ -7,8 +7,8 @@ import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
-import io.army.mapping.optional.DoubleArrayType;
-import io.army.mapping.optional.IntervalArrayType;
+import io.army.mapping.array.DoubleArrayType;
+import io.army.mapping.array.IntervalArrayType;
 import io.army.mapping.optional.IntervalType;
 import io.army.meta.TypeMeta;
 

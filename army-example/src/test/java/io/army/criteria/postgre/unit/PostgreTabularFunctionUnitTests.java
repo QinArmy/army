@@ -6,7 +6,7 @@ import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
-import io.army.mapping.optional.IntegerArrayType;
+import io.army.mapping.array.IntegerArrayType;
 import io.army.mapping.postgre.PostgreTsVectorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

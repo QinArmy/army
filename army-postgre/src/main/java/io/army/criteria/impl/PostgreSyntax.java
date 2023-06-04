@@ -4,6 +4,9 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.mapping.*;
+import io.army.mapping.array.TextArrayType;
+import io.army.mapping.optional.OffsetDateTimeType;
+import io.army.mapping.optional.OffsetTimeType;
 import io.army.meta.FieldMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._StringUtils;
@@ -61,7 +64,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * <p>
-     * Static array constructor, array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * Static array constructor, array is {@link TextArrayType#LINEAR} type.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
@@ -90,7 +93,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * <p>
-     * Static array constructor, array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * Static array constructor, array is {@link TextArrayType#LINEAR} type.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
@@ -101,7 +104,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * <p>
-     * Static array constructor, array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * Static array constructor, array is {@link TextArrayType#LINEAR} type.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
@@ -112,7 +115,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * <p>
-     * Static array constructor, array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * Static array constructor, array is {@link TextArrayType#LINEAR} type.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
@@ -125,7 +128,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * <p>
-     * Static array constructor, array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * Static array constructor, array is {@link TextArrayType#LINEAR} type.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
@@ -139,7 +142,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     /**
      * <p>
-     * Dynamic array constructor, if empty,then array is {@link io.army.mapping.optional.TextArrayType#LINEAR} type.
+     * Dynamic array constructor, if empty,then array is {@link TextArrayType#LINEAR} type.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>

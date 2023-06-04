@@ -1,4 +1,4 @@
-package io.army.mapping.optional;
+package io.army.mapping.array;
 
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
@@ -10,14 +10,13 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 
-public class IntervalArrayType extends _ArmyNoInjectionMapping {
+public class DoubleArrayType extends _ArmyNoInjectionMapping {
 
-    public static final IntervalArrayType LINEAR = new IntervalArrayType();
+    public static final DoubleArrayType LINEAR = new DoubleArrayType();
 
 
-    private IntervalArrayType() {
+    private DoubleArrayType() {
     }
-
 
     @Override
     public Class<?> javaType() {

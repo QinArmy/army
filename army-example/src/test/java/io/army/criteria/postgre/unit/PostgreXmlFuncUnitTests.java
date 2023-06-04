@@ -7,7 +7,7 @@ import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.mapping.*;
-import io.army.mapping.optional.TextArrayType;
+import io.army.mapping.array.TextArrayType;
 import io.army.meta.TableMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

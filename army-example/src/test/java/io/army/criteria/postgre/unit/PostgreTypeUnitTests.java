@@ -4,8 +4,8 @@ import io.army.criteria.Expression;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
-import io.army.mapping.postgre.PostgreInt4RangeType;
 import io.army.mapping.postgre.PostgreSingleRangeType;
+import io.army.sqltype.PostgreDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -25,10 +25,12 @@ public class PostgreTypeUnitTests extends PostgreUnitTests {
      */
     @Test
     public void rangeSubtypeForLowerAndUpperFunc() {
+        final PostgreSingleRangeType int4RangeType;
+        int4RangeType = PostgreSingleRangeType.from(String.class, PostgreDataType.INT4RANGE);
         final Select stmt;
         stmt = Postgres.query()
-                .select(lower(SQLs.literal(PostgreInt4RangeType.TEXT, "[1,4]")).as("lower subtype"))
-                .comma(upper(SQLs.literal(PostgreInt4RangeType.TEXT, "[1,4]")).as("upper subtype"))
+                .select(lower(SQLs.literal(int4RangeType, "[1,4]")).as("lower subtype"))
+                .comma(upper(SQLs.literal(int4RangeType, "[1,4]")).as("upper subtype"))
                 .asQuery();
 
         printStmt(LOG, stmt);
