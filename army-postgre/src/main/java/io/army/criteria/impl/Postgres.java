@@ -158,6 +158,24 @@ public abstract class Postgres extends PostgreSyntax {
 
     /**
      * <p>
+     * The {@link MappingType} of function return type: {@link  TextType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">session_user → name</a>
+     */
+    public static final SimpleExpression SESSION_USER = FunctionUtils.noParensFunc("session_user", TextType.INSTANCE);
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: {@link  TextType}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">user → name</a>
+     */
+    public static final SimpleExpression USER = FunctionUtils.noParensFunc("user", TextType.INSTANCE);
+
+    /**
+     * <p>
      * create single-table INSERT statement that is primary statement.
      * </p>
      */

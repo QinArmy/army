@@ -9,9 +9,11 @@ import io.army.mapping.array.IntegerArrayType;
 import io.army.mapping.array.ShortArrayType;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.OffsetDateTimeType;
+import io.army.mapping.postgre.PostgreAclItemType;
 import io.army.mapping.postgre.PostgreInetType;
 import io.army.mapping.postgre.PostgreRangeType;
 import io.army.mapping.postgre.PostgreTsVectorType;
+import io.army.mapping.postgre.array.PostgreAclItemArrayType;
 import io.army.util._Collections;
 
 import java.util.Collection;
@@ -1446,6 +1448,463 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     public static SimpleExpression pgPostMasterStartTime() {
         return FunctionUtils.zeroArgFunc("pg_postmaster_start_time", OffsetDateTimeType.INSTANCE);
     }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link IntArrayType#LINEAR}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_safe_snapshot_blocking_pids ( integer ) → integer[]<br/>
+     * </a>
+     */
+    public static SimpleExpression pgSafeSnapshotBlockingPids(Expression exp) {
+        return FunctionUtils.oneArgFunc("pg_safe_snapshot_blocking_pids", exp, IntArrayType.LINEAR);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">pg_trigger_depth () → integer<br/>
+     * </a>
+     */
+    public static SimpleExpression pgTriggerDepth() {
+        return FunctionUtils.zeroArgFunc("pg_trigger_depth", IntegerType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SESSION-TABLE">version () → text<br/>
+     * </a>
+     */
+    public static SimpleExpression version() {
+        return FunctionUtils.zeroArgFunc("version", TextType.INSTANCE);
+    }
+
+
+    /*-------------------below Access Privilege Inquiry Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_any_column_privilege ( [ user name or oid, ] table text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasAnyColumnPrivilege(Expression table, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_any_column_privilege", table, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_any_column_privilege ( [ user name or oid, ] table text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasAnyColumnPrivilege(Expression user, Expression table, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_any_column_privilege", user, table, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_column_privilege ( [ user name or oid, ] table text or oid, column text or smallint, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasColumnPrivilege(Expression table, Expression column, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_column_privilege", table, column, privilege);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_column_privilege ( [ user name or oid, ] table text or oid, column text or smallint, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasColumnPrivilege(Expression user, Expression table, Expression column, Expression privilege) {
+        return FunctionUtils.fourArgPredicateFunc("has_column_privilege", user, table, column, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_database_privilege ( [ user name or oid, ] database text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasDatabasePrivilege(Expression database, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_database_privilege", database, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_database_privilege ( [ user name or oid, ] database text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasDatabasePrivilege(Expression user, Expression database, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_database_privilege", user, database, privilege);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_foreign_data_wrapper_privilege ( [ user name or oid, ] fdw text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasForeignDataWrapperPrivilege(Expression fdw, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_foreign_data_wrapper_privilege", fdw, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_foreign_data_wrapper_privilege ( [ user name or oid, ] fdw text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasForeignDataWrapperPrivilege(Expression user, Expression fdw, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_foreign_data_wrapper_privilege", user, fdw, privilege);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_function_privilege ( [ user name or oid, ] function text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasFunctionPrivilege(Expression function, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_function_privilege", function, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_function_privilege ( [ user name or oid, ] function text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasFunctionPrivilege(Expression user, Expression function, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_function_privilege", user, function, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_language_privilege ( [ user name or oid, ] language text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasLanguagePrivilege(Expression language, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_language_privilege", language, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_language_privilege ( [ user name or oid, ] language text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasLanguagePrivilege(Expression user, Expression language, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_language_privilege", user, language, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_parameter_privilege ( [ user name or oid, ] parameter text, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasParameterPrivilege(Expression parameter, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_parameter_privilege", parameter, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_parameter_privilege ( [ user name or oid, ] parameter text, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasParameterPrivilege(Expression user, Expression parameter, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_parameter_privilege", user, parameter, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_schema_privilege ( [ user name or oid, ] schema text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasSchemaPrivilege(Expression schema, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_schema_privilege", schema, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_schema_privilege ( [ user name or oid, ] schema text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasSchemaPrivilege(Expression user, Expression schema, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_schema_privilege", user, schema, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_sequence_privilege ( [ user name or oid, ] sequence text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasSequencePrivilege(Expression sequence, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_sequence_privilege", sequence, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_sequence_privilege ( [ user name or oid, ] sequence text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasSequencePrivilege(Expression user, Expression sequence, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_sequence_privilege", user, sequence, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_server_privilege ( [ user name or oid, ] server text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasServerPrivilege(Expression server, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_server_privilege", server, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_server_privilege ( [ user name or oid, ] server text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasServerPrivilege(Expression user, Expression server, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_server_privilege", user, server, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_table_privilege ( [ user name or oid, ] table text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasTablePrivilege(Expression table, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_table_privilege", table, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_table_privilege ( [ user name or oid, ] table text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasTablePrivilege(Expression user, Expression table, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_table_privilege", user, table, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_tablespace_privilege ( [ user name or oid, ] tablespace text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasTablespacePrivilege(Expression tablespace, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_tablespace_privilege", tablespace, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_tablespace_privilege ( [ user name or oid, ] tablespace text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasTablespacePrivilege(Expression user, Expression tablespace, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_tablespace_privilege", user, tablespace, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_type_privilege ( [ user name or oid, ] type text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasTypePrivilege(Expression type, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("has_type_privilege", type, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">has_type_privilege ( [ user name or oid, ] type text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate hasTypePrivilege(Expression user, Expression type, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("has_type_privilege", user, type, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">pg_has_role ( [ user name or oid, ] role text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgHasRole(Expression role, Expression privilege) {
+        return FunctionUtils.twoArgPredicateFunc("pg_has_role", role, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">pg_has_role ( [ user name or oid, ] role text or oid, privilege text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgHasRole(Expression user, Expression role, Expression privilege) {
+        return FunctionUtils.threeArgPredicateFunc("pg_has_role", user, role, privilege);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE">row_security_active ( table text or oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate rowSecurityActive(Expression table) {
+        return FunctionUtils.oneArgFuncPredicate("row_security_active", table);
+    }
+
+    /*-------------------below aclitem Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link PostgreAclItemArrayType#LINEAR}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-ACLITEM-FN-TABLE">acldefault ( type "char", ownerId oid ) → aclitem[]<br/>
+     * </a>
+     */
+    public static SimpleExpression aclDefault(Expression type, Expression ownerId) {
+        return FunctionUtils.twoArgFunc("acldefault", type, ownerId, PostgreAclItemArrayType.LINEAR);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: <ul>
+     * <li>grantor : {@link LongType#INSTANCE}</li>
+     * <li>grantee : {@link LongType#INSTANCE}</li>
+     * <li>privilege_type : {@link TextType#INSTANCE}</li>
+     * <li>is_grantable : {@link BooleanType#INSTANCE}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-ACLITEM-FN-TABLE">aclexplode ( aclitem[] ) → setof record ( grantor oid, grantee oid, privilege_type text, is_grantable boolean )<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction aclExplode(Expression exp) {
+        final List<Selection> fieldList = _Collections.arrayList(4);
+
+        fieldList.add(ArmySelections.forName("grantor", LongType.INSTANCE));
+        fieldList.add(ArmySelections.forName("grantee", LongType.INSTANCE));
+        fieldList.add(ArmySelections.forName("privilege_type", TextType.INSTANCE));
+        fieldList.add(ArmySelections.forName("is_grantable", BooleanType.INSTANCE));
+
+        return DialectFunctionUtils.oneArgTabularFunc("aclexplode", exp, fieldList);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link PostgreAclItemType#TEXT}
+     * </p>
+     *
+     * @param isGrantable in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-ACLITEM-FN-TABLE">makeaclitem ( grantee oid, grantor oid, privileges text, is_grantable boolean ) → aclitem<br/>
+     * </a>
+     */
+    public static SimpleExpression makeAclItem(Expression grantee, Expression grantor, Expression privileges, Expression isGrantable) {
+        return FunctionUtils.fourArgFunc("makeaclitem", grantee, grantor, privileges, isGrantable, PostgreAclItemType.TEXT);
+    }
+
+
+    /*-------------------below  Schema Visibility Inquiry Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_collation_is_visible ( collation oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgCollationIsVisible(Expression collation) {
+        return FunctionUtils.oneArgFuncPredicate("pg_collation_is_visible", collation);
+    }
+
 
 
 

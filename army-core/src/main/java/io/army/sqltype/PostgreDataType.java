@@ -89,7 +89,9 @@ public enum PostgreDataType implements SqlType {
 
     REF_CURSOR,
 
+    ACLITEM,
 
+    ACLITEM_ARRAY,
     BOOLEAN_ARRAY,
 
 
