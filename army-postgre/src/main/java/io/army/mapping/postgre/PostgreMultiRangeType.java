@@ -9,6 +9,7 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.array.PostgreArrays;
+import io.army.mapping.postgre.array.PostgreMultiRangeArrayType;
 import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
@@ -303,7 +304,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
     @Override
-    protected PostgreMultiRangeType fromMultiArray(final PostgreMultiRangeArrayType type) {
+    public PostgreMultiRangeType _fromMultiArray(final PostgreMultiRangeArrayType type) {
         final PostgreDataType sqlType;
         switch (type.sqlType) {
             case INT4MULTIRANGE_ARRAY:
@@ -401,21 +402,6 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
             throw handler.apply(type, sqlType, nonNull, null);
         }
         return parseMultiRange((String) nonNull, rangeFunc, parseFunc, sqlType, type, handler);
-    }
-
-
-    static <T> TextFunction<?> multiRangeParseFunc(final Object nonNull, final RangeFunction<T, ?> rangeFunc,
-                                                   final Function<String, T> parseFunc, final SqlType sqlType,
-                                                   final MappingType type, final ErrorHandler handler) {
-        return (str, offset, end) -> {
-            char ch;
-            if (offset + 5 == end && ((ch = str.charAt(offset)) == 'e' || ch == 'E')
-                    && str.regionMatches(true, offset, PostgreRangeType.EMPTY, 0, 5)) {
-                String m = "multi-range must be non-empty and non-null";
-                throw handler.apply(type, sqlType, nonNull, new IllegalArgumentException(m));
-            }
-            return PostgreRangeType.parseNonEmptyRange(str, offset, end, rangeFunc, parseFunc);
-        };
     }
 
 

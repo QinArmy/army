@@ -7,6 +7,7 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingSupport;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
+import io.army.mapping.postgre.array.PostgreSingleRangeArrayType;
 import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
@@ -288,7 +289,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
 
 
     @Override
-    protected PostgreSingleRangeType fromSingleArray(final PostgreSingleRangeArrayType type) {
+    public PostgreSingleRangeType _fromSingleArray(final PostgreSingleRangeArrayType type) {
         final PostgreDataType sqlType;
         switch (type.sqlType) {
             case INT4RANGE_ARRAY:

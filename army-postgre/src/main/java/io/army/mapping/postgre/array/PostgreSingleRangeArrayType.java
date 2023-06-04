@@ -1,4 +1,4 @@
-package io.army.mapping.postgre;
+package io.army.mapping.postgre.array;
 
 import io.army.annotation.Mapping;
 import io.army.criteria.CriteriaException;
@@ -10,6 +10,7 @@ import io.army.mapping.MappingSupport;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.array.PostgreArrays;
+import io.army.mapping.postgre.*;
 import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreDataType;
@@ -237,7 +238,7 @@ public final class PostgreSingleRangeArrayType extends _ArmyPostgreRangeType imp
             instance = new PostgreSingleRangeArrayType(this.sqlType, this.javaType.getComponentType(), this.rangeFunc);
         } else {
             final PostgreSingleRangeType rangeType;
-            rangeType = PostgreSingleRangeType.INT4_RANGE_TEXT.fromSingleArray(this);
+            rangeType = PostgreSingleRangeType.INT4_RANGE_TEXT._fromSingleArray(this);
             assert rangeType.sqlType == this.sqlType;
             instance = rangeType;
         }

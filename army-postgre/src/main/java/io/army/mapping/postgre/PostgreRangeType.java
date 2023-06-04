@@ -1,22 +1,16 @@
 package io.army.mapping.postgre;
 
-import io.army.criteria.CriteriaException;
 import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.meta.MetaException;
 import io.army.sqltype.PostgreDataType;
-import io.army.sqltype.SqlType;
-import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -289,191 +283,6 @@ public abstract class PostgreRangeType extends _ArmyPostgreRangeType {
     }
 
 
-    /**
-     * @throws IllegalArgumentException            when rangeFunc is null and {@link MappingType#javaType()} isn't {@link String#getClass()}
-     * @throws CriteriaException                   when text error and handler throw this type.
-     * @throws io.army.session.DataAccessException when text error and handler throw this type.
-     */
-    @SuppressWarnings("unchecked")
-    static <T, R> R parseRange(final String text, final @Nullable RangeFunction<T, R> rangeFunc,
-                               final Function<String, T> parseFunc, final SqlType sqlType,
-                               final MappingType type, final ErrorHandler handler) {
-        final Class<?> javaType;
-        javaType = type.javaType();
-        final Object value;
-        if (rangeFunc == null) {
-            if (javaType != String.class) {
-                String m = String.format("function is null,but %s.javaType() isn't %s",
-                        MappingType.class.getName(), String.class.getName());
-                throw new IllegalArgumentException(m);
-            }
-            value = text;
-        } else if (EMPTY.equalsIgnoreCase(text)) {
-            value = emptyRange(javaType);
-        } else {
-            try {
-                value = parseNonEmptyRange(text, 0, text.length(), rangeFunc, parseFunc);
-            } catch (Throwable e) {
-                throw handler.apply(type, sqlType, text, e);
-            }
-        }
-        return (R) value;
-    }
-
-    @SuppressWarnings("unchecked")
-    static <T> void rangeToText(final Object nonNull, final BiConsumer<T, Consumer<String>> consumer,
-                                final MappingType type, final Consumer<String> appendConsumer) {
-        if (nonNull instanceof ArmyPostgreRange) {
-            final ArmyPostgreRange<T> range = (ArmyPostgreRange<T>) nonNull;
-            if (range.isEmpty()) {
-                appendConsumer.accept(EMPTY);
-            } else {
-                if (range.isIncludeLowerBound()) {
-                    appendConsumer.accept(String.valueOf(_Constant.LEFT_SQUARE_BRACKET));
-                } else {
-                    appendConsumer.accept(String.valueOf(_Constant.LEFT_PAREN));
-                }
-                final T lowerBound, upperBound;
-                lowerBound = range.getLowerBound();
-                upperBound = range.getUpperBound();
-
-                if (lowerBound != null) {
-                    consumer.accept(lowerBound, appendConsumer);
-                }
-                appendConsumer.accept(String.valueOf(_Constant.COMMA));
-                if (upperBound != null) {
-                    consumer.accept(upperBound, appendConsumer);
-                }
-
-                if (range.isIncludeUpperBound()) {
-                    appendConsumer.accept(String.valueOf(_Constant.RIGHT_SQUARE_BRACKET));
-                } else {
-                    appendConsumer.accept(String.valueOf(_Constant.RIGHT_PAREN));
-                }
-            }
-        } else {
-            final MockRangeFunction<T> mockFunction;
-            if (type instanceof PostgreSingleRangeType) {
-                mockFunction = (MockRangeFunction<T>) ((PostgreSingleRangeType) type).mockFunction;
-                assert mockFunction != null;
-            } else if (type instanceof UserDefinedRangeType) {
-                mockFunction = ((UserDefinedRangeType<T>) type).mockFunction();
-            } else {
-                String m = String.format("either %s is %s type or %s is %s type.",
-                        type.javaType().getName(),
-                        ArmyPostgreRange.class.getName(),
-                        type,
-                        UserDefinedRangeType.class.getName()
-                );
-                throw new IllegalArgumentException(m);
-            }
-            if (mockFunction.isEmpty.apply(nonNull)) {
-                appendConsumer.accept(EMPTY);
-            } else {
-                if (mockFunction.isIncludeLowerBound.apply(nonNull)) {
-                    appendConsumer.accept(String.valueOf(_Constant.LEFT_SQUARE_BRACKET));
-                } else {
-                    appendConsumer.accept(String.valueOf(_Constant.LEFT_PAREN));
-                }
-                final T lowerBound, upperBound;
-                lowerBound = mockFunction.getLowerBound.apply(nonNull);
-                upperBound = mockFunction.getUpperBound.apply(nonNull);
-
-                if (lowerBound != null) {
-                    consumer.accept(lowerBound, appendConsumer);
-                }
-                appendConsumer.accept(String.valueOf(_Constant.COMMA));
-                if (upperBound != null) {
-                    consumer.accept(upperBound, appendConsumer);
-                }
-
-                if (mockFunction.isIncludeUpperBound.apply(nonNull)) {
-                    appendConsumer.accept(String.valueOf(_Constant.RIGHT_SQUARE_BRACKET));
-                } else {
-                    appendConsumer.accept(String.valueOf(_Constant.RIGHT_PAREN));
-                }
-            }
-
-        }
-
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <R> Function<Object, R> rangeBeanFunc(final Class<?> javaType, final String methodName,
-                                                         final Class<R> resultType) {
-        try {
-            final Method method;
-            method = javaType.getMethod(methodName);
-            return instance -> {
-                try {
-                    final Object result;
-                    result = method.invoke(instance);
-                    if (!resultType.isInstance(result)) {
-                        String m = String.format("%s isn't instance of %s.", _ClassUtils.safeClassName(result),
-                                resultType.getName());
-                        throw new MetaException(m);
-                    }
-                    return (R) result;
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        } catch (NoSuchMethodException e) {
-            throw new MetaException(e.getMessage(), e);
-        }
-    }
-
-    private static Constructor<?> loadConstructor(final Class<?> javaType, final String methodName, final int colonIndex,
-                                                  final Class<?> elementType) throws MetaException {
-
-        if (!javaType.getName().equals(methodName.substring(0, colonIndex))) {
-            String m = String.format("%s isn't the constructor of %s", methodName, javaType.getName());
-            throw new MetaException(m);
-        }
-        try {
-            return javaType.getConstructor(boolean.class, elementType, elementType, boolean.class);
-        } catch (NoSuchMethodException e) {
-            String m = String.format("constructor[%s] error", methodName);
-            throw new MetaException(m, e);
-        }
-    }
-
-    /**
-     * @param colonIndex -2 or positive
-     */
-    private static Method loadFactoryMethod(final Class<?> javaType, final String methodName, final int colonIndex,
-                                            final Class<?> elementType) {
-        try {
-            final Class<?> classOfMethod;
-            final String name;
-            if (colonIndex == -2) {
-                classOfMethod = javaType;
-                name = methodName;
-            } else {
-                classOfMethod = Class.forName(methodName.substring(0, colonIndex));
-                name = methodName.substring(colonIndex + 2);
-            }
-            final Method method;
-            method = classOfMethod.getMethod(name, boolean.class, elementType, elementType, boolean.class);
-            final int modifier;
-            modifier = method.getModifiers();
-            if (!(Modifier.isPublic(modifier)
-                    && Modifier.isStatic(modifier)
-                    && javaType.isAssignableFrom(method.getReturnType()))) {
-                String m = String.format("%s isn't public static factory method.", methodName);
-                throw new MetaException(m);
-            }
-            return method;
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            throw new MetaException(e.getMessage(), e);
-        }
-    }
-
-    private static IllegalArgumentException nearbyError(String text) {
-        return new IllegalArgumentException(String.format("'%s' nearby error.", text));
-    }
-
-
     public interface RangeType {
 
         /**
@@ -509,15 +318,15 @@ public abstract class PostgreRangeType extends _ArmyPostgreRangeType {
 
     public static final class MockRangeFunction<T> {
 
-        private final Function<Object, Boolean> isEmpty;
+         final Function<Object, Boolean> isEmpty;
 
-        private final Function<Object, Boolean> isIncludeLowerBound;
+        final Function<Object, Boolean> isIncludeLowerBound;
 
-        private final Function<Object, T> getLowerBound;
+        final Function<Object, T> getLowerBound;
 
-        private final Function<Object, T> getUpperBound;
+        final Function<Object, T> getUpperBound;
 
-        private final Function<Object, Boolean> isIncludeUpperBound;
+        final Function<Object, Boolean> isIncludeUpperBound;
 
         /**
          * private constructor
