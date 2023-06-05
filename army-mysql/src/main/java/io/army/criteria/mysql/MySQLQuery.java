@@ -57,7 +57,10 @@ public interface MySQLQuery extends Query, MySQLStatement {
     }
 
 
-    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryWithComplexSpec<I>>, _AsQueryClause<I> {
+    interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryWithComplexSpec<I>>,
+            _StaticIntersectClause<_QueryWithComplexSpec<I>>,
+            _StaticExceptClause<_QueryWithComplexSpec<I>>,
+            _AsQueryClause<I> {
 
     }
 

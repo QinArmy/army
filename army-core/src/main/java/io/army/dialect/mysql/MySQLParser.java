@@ -464,8 +464,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean isValidateUnionType() {
-        // MySQL 80 add INTERSECT and EXCEPT
-        return !this.asOf80;
+        // MySQL 8.0 add INTERSECT and EXCEPT
+        return ((MySQLDialect) this.dialect).compareWith(MySQLDialect.MySQL80) < 0;
     }
 
     @Override

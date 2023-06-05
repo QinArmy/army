@@ -16,6 +16,7 @@ public enum MySQLDialect implements Dialect {
     private final byte version;
 
     MySQLDialect(int version) {
+        assert version <= Byte.MAX_VALUE;
         this.version = (byte) version;
     }
 
@@ -24,10 +25,6 @@ public enum MySQLDialect implements Dialect {
         return Database.MySQL;
     }
 
-    @Override
-    public final int version() {
-        return this.version;
-    }
 
     public final int compareWith(MySQLDialect o) {
         return this.version - o.version;

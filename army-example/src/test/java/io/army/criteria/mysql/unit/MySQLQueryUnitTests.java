@@ -124,11 +124,30 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                         .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
                         .limit(SQLs::literal, 0, 10)
                         .asQuery()
-                )
+                ).intersect()// as of 8.0
+                .select(PillUser_.id)
+                .from(PillUser_.T, AS, "p")
+                .where(PillUser_.id::equal, SQLs::literal, 2)
+                .ifAnd(PillUser_.nickName::equal, SQLs::param, this::randomPerson)
+                .and(PillUser_.version.equal(SQLs::literal, 2))
+                //.and(User_.version::equal, SQLs::literal, 2)
+                .groupBy(PillUser_.userType)
+                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
+
+                .except() // as of 8.0
+
+                .select(PillUser_.id)
+                .from(PillUser_.T, AS, "p")
+                .where(PillUser_.id::equal, SQLs::literal, 2)
+                .ifAnd(PillUser_.nickName::equal, SQLs::param, this::randomPerson)
+                .and(PillUser_.version.equal(SQLs::literal, 2))
+                //.and(User_.version::equal, SQLs::literal, 2)
+                .groupBy(PillUser_.userType)
+                .having(PillUser_.userType.equal(SQLs::literal, PillUserType.PERSON))
 
                 .asQuery();
 
-        printStmt(LOG, stmt);
+        print80Stmt(LOG, stmt);
     }
 
     @Test
