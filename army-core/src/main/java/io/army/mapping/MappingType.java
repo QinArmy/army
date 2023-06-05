@@ -351,6 +351,11 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     }//LengthType
 
+
+    public interface SqlBooleanType {
+
+    }
+
     /**
      * <p>
      * This interface is base interface of below:
