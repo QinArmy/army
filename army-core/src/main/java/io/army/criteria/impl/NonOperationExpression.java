@@ -320,22 +320,22 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final <T extends RightOperand> CompoundExpression space(BiFunction<Expression, T, CompoundExpression> funcRef, T right) {
+    public final <T, R extends ResultExpression> R space(BiFunction<Expression, T, R> funcRef, T right) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> funcRef, Expression right, M modifier, Expression optionalExp) {
+    public final <M extends SQLWords, R extends ResultExpression> R space(OptionalClauseOperator<M, Expression, R> funcRef, Expression right, M modifier, Expression optionalExp) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> funcRef, Expression right, M modifier, char escapeChar) {
+    public final <M extends SQLWords, R extends ResultExpression> R space(OptionalClauseOperator<M, Expression, R> funcRef, Expression right, M modifier, char escapeChar) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final <T extends RightOperand> CompoundPredicate whiteSpace(BiFunction<Expression, T, CompoundPredicate> funcRef, T right) {
+    public final <T> CompoundPredicate whiteSpace(BiFunction<Expression, T, CompoundPredicate> funcRef, T right) {
         throw unsupportedOperation(this);
     }
 

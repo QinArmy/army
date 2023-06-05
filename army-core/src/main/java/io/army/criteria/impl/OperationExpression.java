@@ -240,8 +240,8 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
-    public final <T extends RightOperand> CompoundExpression space(BiFunction<Expression, T, CompoundExpression> operator, T operand) {
-        final CompoundExpression result;
+    public final <T, R extends ResultExpression> R space(BiFunction<Expression, T, R> operator, T operand) {
+        final R result;
         result = operator.apply(this, operand);
         if (result == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -250,9 +250,9 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
-    public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator,
-                                                               Expression right, M modifier, Expression optionalExp) {
-        final CompoundExpression result;
+    public final <M extends SQLWords, R extends ResultExpression> R space(OptionalClauseOperator<M, Expression, R> operator,
+                                                                          Expression right, M modifier, Expression optionalExp) {
+        final R result;
         result = operator.apply(this, right, modifier, optionalExp);
         if (result == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -261,9 +261,9 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
-    public final <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator,
-                                                               Expression right, M modifier, char escapeChar) {
-        final CompoundExpression result;
+    public final <M extends SQLWords, R extends ResultExpression> R space(OptionalClauseOperator<M, Expression, R> operator,
+                                                                          Expression right, M modifier, char escapeChar) {
+        final R result;
         result = operator.apply(this, right, modifier, SQLs.literal(StringType.INSTANCE, escapeChar));
         if (result == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -273,7 +273,7 @@ abstract class OperationExpression extends OperationSQLExpression
 
 
     @Override
-    public final <T extends RightOperand> CompoundPredicate whiteSpace(BiFunction<Expression, T, CompoundPredicate> operator, T operand) {
+    public final <T> CompoundPredicate whiteSpace(BiFunction<Expression, T, CompoundPredicate> operator, T operand) {
         final CompoundPredicate result;
         result = operator.apply(this, operand);
         if (result == null) {
@@ -619,9 +619,9 @@ abstract class OperationExpression extends OperationSQLExpression
 
 
         @Override
-        public final <T> CompoundExpression space(BiFunction<SimpleExpression, Expression, CompoundExpression> operator,
-                                                  BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
-            final CompoundExpression result;
+        public final <T, R extends ResultExpression> R space(BiFunction<SimpleExpression, Expression, R> operator,
+                                                             BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value) {
+            final R result;
             result = operator.apply(this, funcRef.apply(this, value));
             if (result == null) {
                 throw ContextStack.clearStackAndNullPointer();
@@ -630,10 +630,10 @@ abstract class OperationExpression extends OperationSQLExpression
         }
 
         @Override
-        public final <M extends SQLWords, T> CompoundExpression space(
-                OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef,
-                T value, M modifier, Expression optionalExp) {
-            final CompoundExpression result;
+        public final <M extends SQLWords, T, R extends ResultExpression> R space(
+                OptionalClauseOperator<M, Expression, R> operator, BiFunction<SimpleExpression, T, Expression> funcRef,
+                @Nullable T value, M modifier, Expression optionalExp) {
+            final R result;
             result = operator.apply(this, funcRef.apply(this, value), modifier, optionalExp);
             if (result == null) {
                 throw ContextStack.clearStackAndNullPointer();
@@ -643,15 +643,15 @@ abstract class OperationExpression extends OperationSQLExpression
 
 
         @Override
-        public final <M extends SQLWords, T> CompoundExpression space(
-                OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef,
-                T value, M modifier, char escapeChar) {
+        public final <M extends SQLWords, T, R extends ResultExpression> R space(
+                OptionalClauseOperator<M, Expression, R> operator, BiFunction<SimpleExpression, T, Expression> funcRef,
+                @Nullable T value, M modifier, char escapeChar) {
             return this.space(operator, funcRef, value, modifier, SQLs.literal(NoCastTextType.INSTANCE, escapeChar));
         }
 
         @Override
         public final <T> CompoundPredicate whiteSpace(BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
-                                                      BiFunction<SimpleExpression, T, Expression> funcRef, T value) {
+                                                      BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value) {
             final CompoundPredicate result;
             result = operator.apply(this, funcRef.apply(this, value));
             if (result == null) {
@@ -663,7 +663,7 @@ abstract class OperationExpression extends OperationSQLExpression
         @Override
         public final <M extends SQLWords, T> CompoundPredicate whiteSpace(
                 OptionalClauseOperator<M, Expression, CompoundPredicate> operator,
-                BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, Expression optionalExp) {
+                BiFunction<MappingType, T, Expression> funcRef, @Nullable T value, M modifier, Expression optionalExp) {
             final CompoundPredicate result;
             result = operator.apply(this, funcRef.apply(NoCastTextType.INSTANCE, value), modifier, optionalExp);
             if (result == null) {
@@ -675,7 +675,7 @@ abstract class OperationExpression extends OperationSQLExpression
         @Override
         public final <M extends SQLWords, T> CompoundPredicate whiteSpace(
                 OptionalClauseOperator<M, Expression, CompoundPredicate> operator,
-                BiFunction<MappingType, T, Expression> funcRef, T value, M modifier, char escapeChar) {
+                BiFunction<MappingType, T, Expression> funcRef, @Nullable T value, M modifier, char escapeChar) {
             return this.whiteSpace(operator, funcRef, value, modifier, SQLs.literal(NoCastTextType.INSTANCE, escapeChar));
         }
 

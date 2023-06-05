@@ -1,5 +1,5 @@
 package io.army.criteria;
 
-public interface CompoundExpression extends Expression {
+public interface CompoundExpression extends ResultExpression {
 
 }

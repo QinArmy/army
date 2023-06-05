@@ -66,6 +66,23 @@ abstract class Expressions {
         return dialectDualExp(left, operator, right, inferFunc);
     }
 
+    static SimpleResultExpression collateExp(final Expression exp, final @Nullable String collation) {
+        if (!(exp instanceof OperationExpression)) {
+            throw NonOperationExpression.nonOperationExpression(exp);
+        } else if (collation == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        } else if (!_StringUtils.hasText(collation)) {
+            throw ContextStack.clearStackAndCriteriaError("collation must have text");
+        }
+        final CollateExpression expression;
+        if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
+            expression = new DelayCollateExpression(exp, collation);
+        } else {
+            expression = new ImmutableCollateExpression(exp, collation);
+        }
+        return expression;
+    }
+
     static CompoundExpression dialectDualExp(final Expression left, final DualExpOperator operator,
                                              final Expression right, final BinaryOperator<MappingType> inferFunc) {
         if (!(left instanceof OperationExpression)) {
@@ -2539,6 +2556,97 @@ abstract class Expressions {
 
 
     }//SubQueryArrayConstructor
+
+
+    private static abstract class CollateExpression extends OperationExpression.OperationSimpleExpression
+            implements SimpleResultExpression {
+
+        final ArmyExpression exp;
+
+        private final String collation;
+
+        private CollateExpression(Expression exp, String collation) {
+            this.exp = (ArmyExpression) exp;
+            this.collation = collation;
+        }
+
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            this.exp.appendSql(context);
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(" COLLATE ");
+            context.parser().identifier(this.collation, sqlBuilder);
+        }
+
+        @Override
+        public final String toString() {
+            return _StringUtils.builder()
+                    .append(this.exp)
+                    .append(" COLLATE ")
+                    .append(this.collation)
+                    .toString();
+
+        }
+
+
+    }//CollateExpression
+
+
+    private static final class ImmutableCollateExpression extends CollateExpression {
+
+        private ImmutableCollateExpression(Expression exp, String collation) {
+            super(exp, collation);
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            final TypeMeta typeMeta;
+            typeMeta = this.exp.typeMeta();
+            final MappingType type;
+            if (typeMeta instanceof MappingType) {
+                type = (MappingType) typeMeta;
+            } else {
+                type = typeMeta.mappingType();
+            }
+            return type;
+        }
+
+    }//ImmutableCollateExpression
+
+
+    private static final class DelayCollateExpression extends CollateExpression implements TypeInfer.DelayTypeInfer {
+
+        private MappingType type;
+
+        private DelayCollateExpression(Expression exp, String collation) {
+            super(exp, collation);
+        }
+
+        @Override
+        public boolean isDelay() {
+            return this.type == null && ((DelayTypeInfer) this.exp).isDelay();
+        }
+
+        @Override
+        public MappingType typeMeta() {
+            MappingType type = this.type;
+            if (type != null) {
+                return type;
+            }
+            final TypeMeta typeMeta;
+            if ((typeMeta = this.exp.typeMeta()) instanceof MappingType) {
+                type = (MappingType) typeMeta;
+            } else {
+                type = typeMeta.mappingType();
+            }
+            this.type = type;
+            return type;
+        }
+
+
+    }//DelayCollateExpression
 
 
 }

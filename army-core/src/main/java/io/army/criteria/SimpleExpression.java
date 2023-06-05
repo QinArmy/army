@@ -694,7 +694,7 @@ public interface SimpleExpression extends Expression {
      * @param value   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
      */
 
-    <T> CompoundExpression space(BiFunction<SimpleExpression, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value);
+    <T, R extends ResultExpression> R space(BiFunction<SimpleExpression, Expression, R> operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value);
 
     /**
      * <p>
@@ -709,7 +709,7 @@ public interface SimpleExpression extends Expression {
      *                For example: {@code Postgres.pound(Expression,Expression)}
      * @param value   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
      */
-    <M extends SQLWords, T> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value, M modifier, Expression optionalExp);
+    <M extends SQLWords, T, R extends ResultExpression> R space(OptionalClauseOperator<M, Expression, R> operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value, M modifier, Expression optionalExp);
 
     /**
      * <p>
@@ -724,7 +724,7 @@ public interface SimpleExpression extends Expression {
      *                For example: {@code Postgres.pound(Expression,Expression)}
      * @param value   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
      */
-    <M extends SQLWords, T> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value, M modifier, char escapeChar);
+    <M extends SQLWords, T, R extends ResultExpression> R space(OptionalClauseOperator<M, Expression, R> operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value, M modifier, char escapeChar);
 
     /**
      * <p>

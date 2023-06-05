@@ -248,7 +248,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      *                For example: {@code Postgres.pound(Expression,Expression)}
      * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
      */
-    <T extends RightOperand> CompoundExpression space(BiFunction<Expression, T, CompoundExpression> funcRef, T right);
+    <T, R extends ResultExpression> R space(BiFunction<Expression, T, R> funcRef, T right);
 
 
     /**
@@ -265,7 +265,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
      */
 
-    <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> funcRef, Expression right, M modifier, Expression optionalExp);
+    <M extends SQLWords, R extends ResultExpression> R space(OptionalClauseOperator<M, Expression, R> funcRef, Expression right, M modifier, Expression optionalExp);
 
     /**
      * <p>
@@ -280,7 +280,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      *                For example: {@code Postgres.pound(Expression,Expression)}
      * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
      */
-    <M extends SQLWords> CompoundExpression space(OptionalClauseOperator<M, Expression, CompoundExpression> funcRef, Expression right, M modifier, char escapeChar);
+    <M extends SQLWords, R extends ResultExpression> R space(OptionalClauseOperator<M, Expression, R> funcRef, Expression right, M modifier, char escapeChar);
 
 
     /**
@@ -300,7 +300,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      *                For example: {@code Postgres.pound(Expression,Expression)}
      * @param right   the right operand of dialect operator.  It will be passed to funcRef as the second argument of funcRef
      */
-    <T extends RightOperand> CompoundPredicate whiteSpace(BiFunction<Expression, T, CompoundPredicate> funcRef, T right);
+    <T> CompoundPredicate whiteSpace(BiFunction<Expression, T, CompoundPredicate> funcRef, T right);
 
 
     /**

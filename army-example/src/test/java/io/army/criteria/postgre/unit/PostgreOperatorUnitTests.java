@@ -1,5 +1,6 @@
 package io.army.criteria.postgre.unit;
 
+import io.army.criteria.Expression;
 import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
@@ -25,6 +26,19 @@ public class PostgreOperatorUnitTests extends PostgreUnitTests {
                 .and(ChinaRegion_.name.whiteSpace(Postgres::notSimilarTo, SQLs::literal, "%(b|d)%", SQLs.ESCAPE, '|'))
                 .and(ChinaRegion_.name.whiteSpace(Postgres::similarTo, SQLs::literal, "Hong Kong"))
                 .and(ChinaRegion_.name.whiteSpace(Postgres::similarTo, SQLs::literal, "Hong |_ong", SQLs.ESCAPE, '|'))
+                .asQuery();
+
+        printStmt(LOG, stmt);
+    }
+
+    /**
+     * @see Postgres#collate(Expression, String)
+     */
+    @Test
+    public void collateOpe() {
+        Select stmt;
+        stmt = Postgres.query()
+                .select(SQLs.literalValue("zoro").space(Postgres::collate, "de_DE").as("name"))
                 .asQuery();
 
         printStmt(LOG, stmt);
