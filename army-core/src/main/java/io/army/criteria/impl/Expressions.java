@@ -12,6 +12,7 @@ import io.army.mapping.*;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.JsonPathType;
 import io.army.meta.TypeMeta;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -230,7 +231,7 @@ abstract class Expressions {
     static CompoundPredicate compareQueryPredicate(final SQLExpression left, final DualBooleanOperator operator,
                                                    final SqlSyntax.QuantifiedWord queryOperator, final RightOperand right) {
         if (!(left instanceof OperationSQLExpression)) {
-            throw ContextStack.clearStackAndNonArmyExpression();
+            throw ContextStack.clearStackAndNonArmyItem(left);
         }
         switch (operator) {
             case LESS:
@@ -253,7 +254,7 @@ abstract class Expressions {
             // no bug,never here
             throw new IllegalArgumentException();
         } else if (!(right instanceof OperationExpression)) {
-            throw ContextStack.clearStackAndNonArmyExpression();
+            throw ContextStack.clearStackAndNonArmyItem(right);
         }
         return new SubQueryPredicate(left, operator, queryOperator, right);
     }
@@ -444,6 +445,99 @@ abstract class Expressions {
 
     static SqlSyntax._ArrayConstructorSpec array(final SubQuery subQuery) {
         return new SubQueryArrayConstructor(subQuery, validateScalarSubQuery(subQuery));
+    }
+
+
+    static GroupByItem.ExpressionGroup emptyParens() {
+        return EmptyParensGroupByItem.INSTANCE;
+    }
+
+
+    static GroupByItem parens(final @Nullable GroupingModifier modifier, final @Nullable GroupByItem exp) {
+        if (!(exp instanceof ArmyGroupByItem)) {
+            throw ContextStack.clearStackAndNonArmyItem(exp);
+        }
+        final List<ArmyGroupByItem> list;
+        list = _Collections.singletonList((ArmyGroupByItem) exp);
+        final GroupByItem item;
+        if (modifier == null) {
+            item = new ParensGroupByItemGroup(null, list);
+        } else {
+            item = new ParensGroupByItem(modifier, list);
+        }
+        return item;
+    }
+
+    static GroupByItem parens(final @Nullable GroupingModifier modifier, final GroupByItem exp1,
+                              final GroupByItem exp2) {
+        if (!(exp1 instanceof ArmyGroupByItem)) {
+            throw ContextStack.clearStackAndNonArmyItem(exp1);
+        } else if (!(exp2 instanceof ArmyGroupByItem)) {
+            throw ContextStack.clearStackAndNonArmyItem(exp2);
+        }
+
+        final List<ArmyGroupByItem> list;
+        list = ArrayUtils.asUnmodifiableList((ArmyGroupByItem) exp1, (ArmyGroupByItem) exp2);
+        final GroupByItem item;
+        if (modifier == null) {
+            item = new ParensGroupByItemGroup(null, list);
+        } else {
+            item = new ParensGroupByItem(modifier, list);
+        }
+        return item;
+    }
+
+    static GroupByItem parens(final @Nullable GroupingModifier modifier, final GroupByItem exp1,
+                              final GroupByItem exp2, final GroupByItem exp3, GroupByItem... rest) {
+        if (!(exp1 instanceof ArmyGroupByItem)) {
+            throw ContextStack.clearStackAndNonArmyItem(exp1);
+        } else if (!(exp2 instanceof ArmyGroupByItem)) {
+            throw ContextStack.clearStackAndNonArmyItem(exp2);
+        } else if (!(exp3 instanceof ArmyGroupByItem)) {
+            throw ContextStack.clearStackAndNonArmyItem(exp3);
+        }
+        final List<ArmyGroupByItem> list = _Collections.arrayList(3 + rest.length);
+
+        list.add((ArmyGroupByItem) exp1);
+        list.add((ArmyGroupByItem) exp2);
+        list.add((ArmyGroupByItem) exp3);
+
+        for (GroupByItem e : rest) {
+            if (!(e instanceof ArmyGroupByItem)) {
+                throw ContextStack.clearStackAndNonArmyItem(e);
+            }
+            list.add((ArmyGroupByItem) e);
+        }
+        final GroupByItem item;
+        if (modifier == null) {
+            item = new ParensGroupByItemGroup(null, list);
+        } else {
+            item = new ParensGroupByItem(modifier, list);
+        }
+        return item;
+    }
+
+    static <T extends GroupByItem> GroupByItem parens(final @Nullable GroupingModifier modifier,
+                                                      final Consumer<Consumer<T>> consumer) {
+        final List<ArmyGroupByItem> list = _Collections.arrayList();
+        consumer.accept(e -> {
+            if (!(e instanceof ArmyGroupByItem)) {
+                throw ContextStack.clearStackAndNonArmyItem(e);
+            }
+            list.add((ArmyGroupByItem) e);
+        });
+        final GroupByItem item;
+        if (list.size() == 0) {
+            if (modifier != null) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            item = EmptyParensGroupByItem.INSTANCE;
+        } else if (modifier == null) {
+            item = new ParensGroupByItemGroup(null, list);
+        } else {
+            item = new ParensGroupByItem(modifier, list);
+        }
+        return item;
     }
 
 
@@ -2647,6 +2741,113 @@ abstract class Expressions {
 
 
     }//DelayCollateExpression
+
+
+    private static final class EmptyParensGroupByItem implements ArmyGroupByItem, GroupByItem.ExpressionGroup {
+
+        private static final EmptyParensGroupByItem INSTANCE = new EmptyParensGroupByItem();
+
+        private EmptyParensGroupByItem() {
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            context.sqlBuilder().append(" ()");
+        }
+
+        @Override
+        public String toString() {
+            return " ()";
+        }
+
+
+    }//EmptyParensGroupByItem
+
+    enum GroupingModifier {
+        ROLLUP(" ROLLUP"),
+        CUBE(" CUBE"),
+        GROUPING_SETS(" GROUPING SETS");
+
+        private final String spaceWords;
+
+        GroupingModifier(String spaceWords) {
+            this.spaceWords = spaceWords;
+        }
+
+
+        @Override
+        public final String toString() {
+            return CriteriaUtils.enumToString(this);
+        }
+
+    }//GroupingModifier
+
+    private static class ParensGroupByItem implements ArmyGroupByItem {
+
+        private final GroupingModifier modifier;
+
+        private final List<? extends ArmyGroupByItem> itemList;
+
+        private ParensGroupByItem(@Nullable GroupingModifier modifier, List<? extends ArmyGroupByItem> itemList) {
+            assert modifier == null || itemList.size() > 0;
+            this.modifier = modifier;
+            this.itemList = itemList;
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder();
+            if (this.modifier == null) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+            } else {
+                sqlBuilder.append(this.modifier.spaceWords)
+                        .append(_Constant.LEFT_PAREN);
+            }
+            final List<? extends ArmyGroupByItem> itemList = this.itemList;
+
+            final int itemSize = itemList.size();
+            for (int i = 0; i < itemSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                itemList.get(i).appendSql(context);
+            }
+
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+        @Override
+        public final String toString() {
+            final List<? extends ArmyGroupByItem> itemList = this.itemList;
+
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder()
+                    .append(_Constant.SPACE_LEFT_PAREN);
+
+            final int itemSize = itemList.size();
+            for (int i = 0; i < itemSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                sqlBuilder.append(itemList.get(i));
+            }
+            return sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+
+    }//ParensGroupByItem
+
+    private static final class ParensGroupByItemGroup extends ParensGroupByItem implements GroupByItem.ExpressionGroup {
+
+        private ParensGroupByItemGroup(@Nullable GroupingModifier modifier, List<? extends ArmyGroupByItem> itemList) {
+            super(modifier, itemList);
+        }
+
+
+    }//ParensGroupByItemGroup
 
 
 }

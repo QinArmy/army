@@ -8,7 +8,7 @@ import io.army.criteria.impl.inner._Expression;
  * Package interface
  * </p>
  */
-interface ArmyExpression extends _Expression, ArmySortItem, ArmySQLExpression {
+interface ArmyExpression extends _Expression, ArmySortItem, ArmyGroupByItem, ArmySQLExpression {
 
 
 }

@@ -52,7 +52,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     private List<_TabularBlock> tableBlockList;
 
 
-    private List<ArmySortItem> groupByList;
+    private List<ArmyGroupByItem> groupByList;
 
     private List<_Predicate> havingList;
 
@@ -371,74 +371,74 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
 
     @Override
-    public final GR groupBy(Expression sortItem) {
-        this.addGroupByItem(sortItem);
+    public final GR groupBy(GroupByItem item) {
+        this.addGroupByItem(item);
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(Expression sortItem1, Expression sortItem2) {
-        this.addGroupByItem(sortItem1);
-        this.addGroupByItem(sortItem2);
+    public final GR groupBy(GroupByItem item1, GroupByItem item2) {
+        this.addGroupByItem(item1);
+        this.addGroupByItem(item2);
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3) {
-        this.addGroupByItem(sortItem1);
-        this.addGroupByItem(sortItem2);
-        this.addGroupByItem(sortItem3);
+    public final GR groupBy(GroupByItem item1, GroupByItem item2, GroupByItem item3) {
+        this.addGroupByItem(item1);
+        this.addGroupByItem(item2);
+        this.addGroupByItem(item3);
         return (GR) this;
     }
 
     @Override
-    public final GR groupBy(Expression sortItem1, Expression sortItem2, Expression sortItem3, Expression sortItem4) {
-        this.addGroupByItem(sortItem1);
-        this.addGroupByItem(sortItem2);
-        this.addGroupByItem(sortItem3);
-        this.addGroupByItem(sortItem4);
+    public final GR groupBy(GroupByItem item1, GroupByItem item2, GroupByItem item3, GroupByItem item4) {
+        this.addGroupByItem(item1);
+        this.addGroupByItem(item2);
+        this.addGroupByItem(item3);
+        this.addGroupByItem(item4);
         return (GR) this;
     }
 
     @Override
-    public final GR commaSpace(Expression sortItem) {
-        this.addGroupByItem(sortItem);
+    public final GR commaSpace(GroupByItem item) {
+        this.addGroupByItem(item);
         return (GR) this;
     }
 
     @Override
-    public final GR commaSpace(Expression sortItem1, Expression sortItem2) {
-        this.addGroupByItem(sortItem1);
-        this.addGroupByItem(sortItem2);
+    public final GR commaSpace(GroupByItem item1, GroupByItem item2) {
+        this.addGroupByItem(item1);
+        this.addGroupByItem(item2);
         return (GR) this;
     }
 
     @Override
-    public final GR commaSpace(Expression sortItem1, Expression sortItem2, Expression sortItem3) {
-        this.addGroupByItem(sortItem1);
-        this.addGroupByItem(sortItem2);
-        this.addGroupByItem(sortItem3);
+    public final GR commaSpace(GroupByItem item1, GroupByItem item2, GroupByItem item3) {
+        this.addGroupByItem(item1);
+        this.addGroupByItem(item2);
+        this.addGroupByItem(item3);
         return (GR) this;
     }
 
     @Override
-    public final GR commaSpace(Expression sortItem1, Expression sortItem2, Expression sortItem3, Expression sortItem4) {
-        this.addGroupByItem(sortItem1);
-        this.addGroupByItem(sortItem2);
-        this.addGroupByItem(sortItem3);
-        this.addGroupByItem(sortItem4);
+    public final GR commaSpace(GroupByItem item1, GroupByItem item2, GroupByItem item3, GroupByItem item4) {
+        this.addGroupByItem(item1);
+        this.addGroupByItem(item2);
+        this.addGroupByItem(item3);
+        this.addGroupByItem(item4);
         return (GR) this;
     }
 
     @Override
-    public final GD groupBy(Consumer<Consumer<Expression>> consumer) {
+    public final GD groupBy(Consumer<Consumer<GroupByItem>> consumer) {
         consumer.accept(this::addGroupByItem);
         return this.endGroupBy(true);
     }
 
 
     @Override
-    public final GD ifGroupBy(Consumer<Consumer<Expression>> consumer) {
+    public final GD ifGroupBy(Consumer<Consumer<GroupByItem>> consumer) {
         consumer.accept(this::addGroupByItem);
         return this.endGroupBy(false);
     }
@@ -652,8 +652,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
 
     @Override
-    public final List<? extends SortItem> groupByList() {
-        final List<? extends SortItem> list = this.groupByList;
+    public final List<? extends GroupByItem> groupByList() {
+        final List<ArmyGroupByItem> list = this.groupByList;
         if (list == null || list instanceof ArrayList) {
             throw ContextStack.castCriteriaApi(this.context);
         }
@@ -734,6 +734,11 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         this.endQueryStatement(true);
     }
 
+    final boolean hasGroupByClause() {
+        final List<ArmyGroupByItem> itemList = this.groupByList;
+        return itemList != null && itemList.size() > 0;
+    }
+
 
     private void endQueryStatement(final boolean beforeSelect) {
         _Assert.nonPrepared(this.prepared);
@@ -774,22 +779,22 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
-    private void addGroupByItem(final @Nullable SortItem sortItem) {
-        if (sortItem == null) {
+    private void addGroupByItem(final @Nullable GroupByItem item) {
+        if (item == null) {
             throw ContextStack.nullPointer(this.context);
         }
-        List<ArmySortItem> itemList = this.groupByList;
+        List<ArmyGroupByItem> itemList = this.groupByList;
         if (itemList == null) {
             itemList = _Collections.arrayList();
             this.groupByList = itemList;
         } else if (!(itemList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        itemList.add((ArmySortItem) sortItem);
+        itemList.add((ArmyGroupByItem) item);
     }
 
     private GD endGroupBy(final boolean required) {
-        final List<ArmySortItem> itemList = this.groupByList;
+        final List<ArmyGroupByItem> itemList = this.groupByList;
         if (itemList instanceof ArrayList) {
             this.groupByList = _Collections.unmodifiableList(itemList);
         } else if (itemList == null) {

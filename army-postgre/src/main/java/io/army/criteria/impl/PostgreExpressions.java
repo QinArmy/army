@@ -67,9 +67,9 @@ abstract class PostgreExpressions {
     static <T extends SQLExpression> CompoundPredicate dualPredicate(final T left, final PostgreDualBooleanOperator operator,
                                                                      final T right) {
         if (!(left instanceof OperationSQLExpression)) {
-            throw ContextStack.clearStackAndNonArmyExpression();
+            throw ContextStack.clearStackAndNonArmyItem(left);
         } else if (!(right instanceof OperationSQLExpression)) {
-            throw ContextStack.clearStackAndNonArmyExpression();
+            throw ContextStack.clearStackAndNonArmyItem(right);
         }
         if (left instanceof RowExpression && right instanceof RowExpression) {
             RowExpressions.validateColumnSize((RowExpression) left, (RowExpression) right);

@@ -1520,7 +1520,7 @@ abstract class ArmyParser implements DialectParser {
                 .append(_MetaBridge.ID);
     }
 
-    protected final void groupByClause(final List<? extends SortItem> groupByList, final _SqlContext context) {
+    protected final void groupByClause(final List<? extends GroupByItem> groupByList, final _SqlContext context) {
         final int size = groupByList.size();
         if (size == 0) {
             return;
@@ -1550,6 +1550,15 @@ abstract class ArmyParser implements DialectParser {
             havingList.get(i).appendSql(context);
         }
 
+    }
+
+    protected final void groupByAndHavingClause(final _Query stmt, final _SqlContext context) {
+        final List<? extends GroupByItem> groupByList;
+        groupByList = stmt.groupByList();
+        if (groupByList.size() > 0) {
+            this.groupByClause(groupByList, context);
+            this.havingClause(stmt.havingList(), context);
+        }
     }
 
 
@@ -2735,7 +2744,7 @@ abstract class ArmyParser implements DialectParser {
      * @see #handleSelect(_SqlContext, Select, Visible)
      * @see #handleSubQuery(SubQuery, _SqlContext)
      */
-    private void parseStandardQuery(final _StandardQuery query, final _SimpleQueryContext context) {
+    private void parseStandardQuery(final _StandardQuery stmt, final _SimpleQueryContext context) {
 
         final StringBuilder builder;
         if ((builder = context.sqlBuilder()).length() > 0) {
@@ -2743,34 +2752,30 @@ abstract class ArmyParser implements DialectParser {
         }
         builder.append(_Constant.SELECT);
         //1. select clause
-        this.standardSelectClause(query.modifierList(), builder);
+        this.standardSelectClause(stmt.modifierList(), builder);
         //2. select list clause
         this.selectionListClause(context);
         //3. from clause
         final List<_TabularBlock> blockList;
-        blockList = query.tableBlockList();
+        blockList = stmt.tableBlockList();
         if (blockList.size() > 0) {
             context.sqlBuilder()
                     .append(_Constant.SPACE_FROM);
             this.standardTableReferences(blockList, context, false);
         }
         //4. where clause
-        this.queryWhereClause(blockList, query.wherePredicateList(), context);
+        this.queryWhereClause(blockList, stmt.wherePredicateList(), context);
 
         //5. groupBy clause
-        final List<? extends SortItem> groupByList = query.groupByList();
-        if (groupByList.size() > 0) {
-            this.groupByClause(groupByList, context);
-            this.havingClause(query.havingList(), context);
-        }
+        this.groupByAndHavingClause(stmt, context);
         //6. orderBy clause
-        this.orderByClause(query.orderByList(), context);
+        this.orderByClause(stmt.orderByList(), context);
 
         //7. limit clause
-        this.standardLimitClause(query.offsetExp(), query.rowCountExp(), context);
+        this.standardLimitClause(stmt.offsetExp(), stmt.rowCountExp(), context);
 
         //8. lock clause
-        final SQLWords lock = query.lockStrength();
+        final SQLWords lock = stmt.lockStrength();
         if (lock != null) {
             this.standardLockClause(lock, context);
         }

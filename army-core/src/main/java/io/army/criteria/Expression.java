@@ -30,8 +30,8 @@ import static io.army.dialect.Database.PostgreSQL;
  * @since 1.0
  */
 @SuppressWarnings("unused")
-public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpdateSpec, SortItem, RightOperand,
-        AssignmentItem, SelectionSpec, ArraySubscript {
+public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpdateSpec, SortItem,
+        GroupByItem.ExpressionItem, RightOperand, AssignmentItem, SelectionSpec, ArraySubscript {
 
 
     /**

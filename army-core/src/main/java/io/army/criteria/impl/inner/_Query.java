@@ -1,8 +1,8 @@
 package io.army.criteria.impl.inner;
 
+import io.army.criteria.GroupByItem;
 import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
-import io.army.criteria.SortItem;
 import io.army.criteria.dialect.Hint;
 import io.army.lang.Nullable;
 
@@ -32,7 +32,7 @@ public interface _Query extends Query, _PartRowSet, _RowSet._SelectItemListSpec 
     /**
      * @return a unmodifiable list
      */
-    List<? extends SortItem> groupByList();
+    List<? extends GroupByItem> groupByList();
 
     /**
      * @return a unmodifiable list

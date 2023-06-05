@@ -12,6 +12,6 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface RightOperand {
+public interface RightOperand extends Item {
 
 }

@@ -1,6 +1,7 @@
 package io.army.criteria.postgre;
 
 import io.army.criteria.Expression;
+import io.army.criteria.GroupByItem;
 import io.army.criteria.Item;
 import io.army.criteria.Query;
 import io.army.criteria.dialect.Window;
@@ -20,37 +21,6 @@ import java.util.function.*;
  * @since 1.0
  */
 public interface PostgreQuery extends Query, PostgreStatement {
-
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-GROUPBY">GROUP BY Clause</a>
-     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUP">The GROUP BY and HAVING Clauses</a>
-     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS">GROUPING SETS, CUBE, and ROLLUP</a>
-     */
-    interface _PostgreStaticGroupByClause<R extends Item> {
-
-        R groupBy(@Nullable SQLs.Modifier modifier, Expression sortItem);
-
-        R groupBy(@Nullable SQLs.Modifier modifier, Expression sortItem1, Expression sortItem2);
-
-        R groupBy(@Nullable SQLs.Modifier modifier, Expression sortItem1, Expression sortItem2, Expression sortItem3);
-
-        R groupBy(@Nullable SQLs.Modifier modifier, Expression sortItem1, Expression sortItem2, Expression sortItem3, Expression sortItem4);
-
-
-    }
-
-    /**
-     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-GROUPBY">GROUP BY Clause</a>
-     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUP">The GROUP BY and HAVING Clauses</a>
-     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS">GROUPING SETS, CUBE, and ROLLUP</a>
-     */
-    interface _PostgreDynamicGroupByClause<R extends Item> {
-
-        R groupBy(@Nullable SQLs.Modifier modifier, Consumer<Consumer<Expression>> consumer);
-
-        R ifGroupBy(@Nullable SQLs.Modifier modifier, Consumer<Consumer<Expression>> consumer);
-    }
 
 
     interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryWithComplexSpec<I>>,
@@ -185,11 +155,27 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
-
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-GROUPBY">GROUP BY Clause</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUP">The GROUP BY and HAVING Clauses</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS">GROUPING SETS, CUBE, and ROLLUP</a>
+     */
     interface _GroupBySpec<I extends Item> extends _StaticGroupByClause<_GroupByCommaSpec<I>>,
             _DynamicGroupByClause<_HavingSpec<I>>,
             _WindowSpec<I> {
-        //TODO add dialect method
+
+        _GroupByCommaSpec<I> groupBy(@Nullable SQLs.Modifier modifier, GroupByItem item);
+
+        _GroupByCommaSpec<I> groupBy(@Nullable SQLs.Modifier modifier, GroupByItem item1, GroupByItem item2);
+
+        _GroupByCommaSpec<I> groupBy(@Nullable SQLs.Modifier modifier, GroupByItem item1, GroupByItem item2, GroupByItem item3);
+
+        _GroupByCommaSpec<I> groupBy(@Nullable SQLs.Modifier modifier, GroupByItem item1, GroupByItem item2, GroupByItem item3, GroupByItem item4);
+
+        _HavingSpec<I> groupBy(@Nullable SQLs.Modifier modifier, Consumer<Consumer<GroupByItem>> consumer);
+
+        _HavingSpec<I> ifGroupBy(@Nullable SQLs.Modifier modifier, Consumer<Consumer<GroupByItem>> consumer);
+
     }
 
 

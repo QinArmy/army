@@ -1072,6 +1072,128 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     }
 
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem.ExpressionGroup parens() {
+        return Expressions.emptyParens();
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem.ExpressionGroup parens(Expression exp) {
+        return (GroupByItem.ExpressionGroup) Expressions.parens(null, exp);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem.ExpressionGroup parens(Expression exp1, Expression exp2) {
+        return (GroupByItem.ExpressionGroup) Expressions.parens(null, exp1, exp2);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem.ExpressionGroup parens(Expression exp1, Expression exp2, Expression exp3,
+                                                     Expression... rest) {
+        return (GroupByItem.ExpressionGroup) Expressions.parens(null, exp1, exp2, exp3, rest);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem.ExpressionGroup parens(Consumer<Consumer<Expression>> consumer) {
+        return (GroupByItem.ExpressionGroup) Expressions.parens(null, consumer);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem rollup(GroupByItem.ExpressionItem exp) {
+        return Expressions.parens(Expressions.GroupingModifier.ROLLUP, exp);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem rollup(GroupByItem.ExpressionItem exp1, GroupByItem.ExpressionItem exp2) {
+        return Expressions.parens(Expressions.GroupingModifier.ROLLUP, exp1, exp2);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem rollup(GroupByItem.ExpressionItem exp1, GroupByItem.ExpressionItem exp2,
+                                     GroupByItem.ExpressionItem exp3, GroupByItem.ExpressionItem... rest) {
+        return Expressions.parens(Expressions.GroupingModifier.ROLLUP, exp1, exp2, exp3, rest);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem rollup(Consumer<Consumer<GroupByItem.ExpressionItem>> consumer) {
+        return Expressions.parens(Expressions.GroupingModifier.ROLLUP, consumer);
+    }
+
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem cube(GroupByItem.ExpressionItem exp) {
+        return Expressions.parens(Expressions.GroupingModifier.CUBE, exp);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem cube(GroupByItem.ExpressionItem exp1, GroupByItem.ExpressionItem exp2) {
+        return Expressions.parens(Expressions.GroupingModifier.CUBE, exp1, exp2);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem cube(GroupByItem.ExpressionItem exp1, GroupByItem.ExpressionItem exp2,
+                                   GroupByItem.ExpressionItem exp3, GroupByItem.ExpressionItem... rest) {
+        return Expressions.parens(Expressions.GroupingModifier.CUBE, exp1, exp2, exp3, rest);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem cube(Consumer<Consumer<GroupByItem.ExpressionItem>> consumer) {
+        return Expressions.parens(Expressions.GroupingModifier.CUBE, consumer);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem groupingSets(GroupByItem item) {
+        return Expressions.parens(Expressions.GroupingModifier.GROUPING_SETS, item);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem groupingSets(GroupByItem item1, GroupByItem item2) {
+        return Expressions.parens(Expressions.GroupingModifier.GROUPING_SETS, item1, item2);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem groupingSets(GroupByItem item1, GroupByItem item2, GroupByItem item3, GroupByItem... rest) {
+        return Expressions.parens(Expressions.GroupingModifier.GROUPING_SETS, item1, item2, item3, rest);
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">grouping_element</a>
+     */
+    public static GroupByItem groupingSets(Consumer<Consumer<GroupByItem>> consumer) {
+        return Expressions.parens(Expressions.GroupingModifier.GROUPING_SETS, consumer);
+    }
 
 
     /*-------------------below package method -------------------*/

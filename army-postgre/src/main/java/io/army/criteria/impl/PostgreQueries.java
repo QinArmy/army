@@ -93,6 +93,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         return new StaticCteComma<>(context, recursive, function);
     }
 
+    private SQLsSyntax.Modifier groupByModifier;
+
     private List<_Window> windowList;
 
     private List<_LockBlock> lockBlockList;
@@ -323,6 +325,72 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }
 
     @Override
+    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLsSyntax.Modifier modifier, GroupByItem item) {
+        if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
+        this.groupByModifier = modifier;
+        return this.groupBy(item);
+    }
+
+    @Override
+    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLsSyntax.Modifier modifier, GroupByItem item1,
+                                              GroupByItem item2) {
+        if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
+        this.groupByModifier = modifier;
+        return this.groupBy(item1, item2);
+    }
+
+    @Override
+    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLsSyntax.Modifier modifier, GroupByItem item1,
+                                              GroupByItem item2, GroupByItem item3) {
+        if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
+        this.groupByModifier = modifier;
+        return this.groupBy(item1, item2, item3);
+    }
+
+    @Override
+    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLsSyntax.Modifier modifier, GroupByItem item1,
+                                              GroupByItem item2, GroupByItem item3, GroupByItem item4) {
+        if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
+        this.groupByModifier = modifier;
+        return this.groupBy(item1, item2, item3, item4);
+    }
+
+    @Override
+    public final _HavingSpec<I> groupBy(@Nullable SQLsSyntax.Modifier modifier,
+                                        Consumer<Consumer<GroupByItem>> consumer) {
+        if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
+        this.groupByModifier = modifier;
+        return this.groupBy(consumer);
+    }
+
+    @Override
+    public final _HavingSpec<I> ifGroupBy(@Nullable SQLsSyntax.Modifier modifier,
+                                          Consumer<Consumer<GroupByItem>> consumer) {
+        if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
+            throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
+
+        this.groupBy(consumer);
+
+        if (this.hasGroupByClause()) {
+            this.groupByModifier = modifier;
+        } else {
+            this.groupByModifier = null;
+        }
+        return this;
+    }
+
+    @Override
     public final Window._WindowAsClause<PostgreWindow._PartitionBySpec, _WindowCommaSpec<I>> window(String name) {
         return new NamedWindowAsClause<>(this.context, name, this::onAddWindow);
     }
@@ -378,6 +446,10 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         return this;
     }
 
+    @Override
+    public final SQLs.Modifier groupByModifier() {
+        return this.groupByModifier;
+    }
 
     @Override
     public final List<_Window> windowList() {
@@ -399,8 +471,18 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     @Override
     final void onEndQuery() {
-        this.windowList = _Collections.safeUnmodifiableList(this.windowList);
-        this.lockBlockList = _Collections.safeUnmodifiableList(this.lockBlockList);
+        final List<_LockBlock> lockBlockList = this.lockBlockList;
+        final List<_Window> windowList = this.windowList;
+        if (lockBlockList != null && lockBlockList.size() > 0) {
+            if (this.hasGroupByClause()) {
+                throw lockWithErrorClause("GROUP BY");
+            } else if (windowList != null && windowList.size() > 0) {
+                throw lockWithErrorClause("WINDOW");
+            }
+        }
+
+        this.windowList = _Collections.safeUnmodifiableList(windowList);
+        this.lockBlockList = _Collections.safeUnmodifiableList(lockBlockList);
     }
 
 
@@ -609,6 +691,12 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
         lockBlockList.add(block);
         return this;
+    }
+
+
+    private static CriteriaException lockWithErrorClause(final String clause) {
+        String m = String.format("Currently, FOR NO KEY UPDATE, FOR UPDATE, FOR SHARE and FOR KEY SHARE cannot be specified with %s.", clause);
+        return ContextStack.clearStackAndCriteriaError(m);
     }
 
 

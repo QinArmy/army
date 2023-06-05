@@ -134,12 +134,21 @@ final class PostgreDialectParser extends PostgreParser {
         // 7. WHERE clause
         this.queryWhereClause(tableBlockList, stmt.wherePredicateList(), context);
 
-        // 8. GROUP BY clause
-        final List<? extends SortItem> groupByList;
-        groupByList = stmt.groupByList();
-        if (groupByList.size() > 0) {
-            this.groupByClause(groupByList, context);
-            //8.1 HAVING clause
+        // 8. GROUP BY and having clause
+        final List<? extends GroupByItem> groupByItemList;
+        final int groupItemSize;
+        if ((groupItemSize = (groupByItemList = stmt.groupByList()).size()) > 0) {
+            sqlBuilder.append(_Constant.SPACE_GROUP_BY);
+            final SQLs.Modifier modifier = stmt.groupByModifier();
+            if (modifier != null) {
+                sqlBuilder.append(modifier.spaceRender());
+            }
+            for (int i = 0; i < groupItemSize; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                ((_SelfDescribed) groupByItemList.get(i)).appendSql(context);
+            }
             this.havingClause(stmt.havingList(), context);
         }
 

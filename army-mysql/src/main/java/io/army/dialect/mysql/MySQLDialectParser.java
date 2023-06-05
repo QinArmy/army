@@ -189,7 +189,7 @@ final class MySQLDialectParser extends MySQLParser {
         //7. WHERE clause
         this.queryWhereClause(tableBlockList, stmt.wherePredicateList(), context);
         //8. GROUP clause
-        final List<? extends SortItem> groupByList;
+        final List<? extends GroupByItem> groupByList;
         groupByList = stmt.groupByList();
         if (groupByList.size() > 0) {
             this.groupByClause(groupByList, context);

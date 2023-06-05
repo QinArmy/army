@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
+import io.army.criteria.Item;
 import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
@@ -192,21 +193,28 @@ abstract class ContextStack {
     }
 
     static CriteriaException clearStackAndCriteriaError(String msg) {
-        final Stack stack = HOLDER.get();
-        if (stack != null) {
+        final Stack stack;
+        if ((stack = HOLDER.get()) != null) {
             HOLDER.remove();
             stack.clear();
         }
         return new CriteriaException(msg);
     }
 
-    static CriteriaException clearStackAndNonArmyExpression() {
-        final Stack stack = HOLDER.get();
-        if (stack != null) {
+
+    static RuntimeException clearStackAndNonArmyItem(final @Nullable Item exp) {
+        final Stack stack;
+        if ((stack = HOLDER.get()) != null) {
             HOLDER.remove();
             stack.clear();
         }
-        return new CriteriaException("non-army expression");
+        final RuntimeException e;
+        if (exp == null) {
+            e = new NullPointerException();
+        } else {
+            e = new CriteriaException(String.format("%s non-army item", exp));
+        }
+        return e;
     }
 
 
