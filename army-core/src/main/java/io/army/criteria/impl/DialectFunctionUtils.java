@@ -20,7 +20,6 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -716,7 +715,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
                 assert ordinality != null && ordinality;
                 assert actualFieldsSize - this.funcFieldList.size() == 1;
-                assert actualFieldList.get(actualFieldsSize - 1).alias().equals(ORDINALITY);
+                assert actualFieldList.get(actualFieldsSize - 1) == ORDINALITY_FIELD;
             }
             return actualFieldList;
         }
@@ -726,9 +725,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             if (this.ordinality != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
-            final List<Selection> list = new ArrayList<>(this.funcFieldList.size() + 1);
+            final List<Selection> list = _Collections.arrayList(this.funcFieldList.size() + 1);
             list.addAll(this.funcFieldList);
-            list.add(ArmySelections.forName(ORDINALITY, LongType.INSTANCE));
+            list.add(ORDINALITY_FIELD);
             this.actualFuncFieldList = Collections.unmodifiableList(list);
 
             this.ordinality = Boolean.TRUE;
