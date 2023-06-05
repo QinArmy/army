@@ -22,6 +22,35 @@ import java.util.function.*;
 public interface PostgreQuery extends Query, PostgreStatement {
 
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-GROUPBY">GROUP BY Clause</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUP">The GROUP BY and HAVING Clauses</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS">GROUPING SETS, CUBE, and ROLLUP</a>
+     */
+    interface _PostgreStaticGroupByClause<R extends Item> {
+
+        R groupBy(@Nullable SQLs.Modifier modifier, Expression sortItem);
+
+        R groupBy(@Nullable SQLs.Modifier modifier, Expression sortItem1, Expression sortItem2);
+
+        R groupBy(@Nullable SQLs.Modifier modifier, Expression sortItem1, Expression sortItem2, Expression sortItem3);
+
+        R groupBy(@Nullable SQLs.Modifier modifier, Expression sortItem1, Expression sortItem2, Expression sortItem3, Expression sortItem4);
+
+
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-GROUPBY">GROUP BY Clause</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUP">The GROUP BY and HAVING Clauses</a>
+     * @see <a href="https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS">GROUPING SETS, CUBE, and ROLLUP</a>
+     */
+    interface _PostgreDynamicGroupByClause<R extends Item> {
+
+        R groupBy(@Nullable SQLs.Modifier modifier, Consumer<Consumer<Expression>> consumer);
+
+        R ifGroupBy(@Nullable SQLs.Modifier modifier, Consumer<Consumer<Expression>> consumer);
+    }
 
 
     interface _UnionSpec<I extends Item> extends _StaticUnionClause<_QueryWithComplexSpec<I>>,
@@ -156,11 +185,13 @@ public interface PostgreQuery extends Query, PostgreStatement {
     }
 
 
+
     interface _GroupBySpec<I extends Item> extends _StaticGroupByClause<_GroupByCommaSpec<I>>,
             _DynamicGroupByClause<_HavingSpec<I>>,
             _WindowSpec<I> {
         //TODO add dialect method
     }
+
 
     interface _WhereAndSpec<I extends Item> extends _WhereAndClause<_WhereAndSpec<I>>, _GroupBySpec<I> {
 
