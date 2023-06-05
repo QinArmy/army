@@ -1,5 +1,6 @@
 package io.army.env;
 
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.session.DdlMode;
@@ -16,6 +17,8 @@ public class ArmyKey<T> {
     public static final ArmyKey<Boolean> READ_ONLY = new ArmyKey<>("readonly", Boolean.class, Boolean.FALSE);
 
     public static final ArmyKey<DdlMode> DDL_MODE = new ArmyKey<>("ddl.mode", DdlMode.class, DdlMode.VALIDATE_UNIQUE);
+
+    public static final ArmyKey<Database> DATABASE = new ArmyKey<>("database", Database.class, null);
 
     public static final ArmyKey<Dialect> DIALECT = new ArmyKey<>("dialect", Dialect.class, null);
 

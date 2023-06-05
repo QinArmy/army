@@ -18,7 +18,6 @@ import io.army.util._StringUtils;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -989,7 +988,7 @@ abstract class Expressions {
 
         @Override
         public void appendSql(final _SqlContext context) {
-            context.parser().subQuery(this.subQuery, context);
+            context.appendSubQuery(this.subQuery);
         }
 
 
@@ -1030,7 +1029,7 @@ abstract class Expressions {
                 sqlBuilder.append(_Constant.SPACE_NOT);
             }
             sqlBuilder.append(_Constant.SPACE_EXISTS);
-            context.parser().subQuery(this.subQuery, context);
+            context.appendSubQuery(this.subQuery);
         }
 
         @Override
@@ -1085,7 +1084,7 @@ abstract class Expressions {
 
             final ArmyRightOperand right = this.right;
             if (right instanceof SubQuery) {
-                context.parser().subQuery((SubQuery) right, context);
+                context.appendSubQuery((SubQuery) right);
             } else {
                 final boolean rightOuterParens = !(right instanceof ArmySimpleSQLExpression);
                 if (rightOuterParens) {
@@ -1509,7 +1508,7 @@ abstract class Expressions {
             final RightOperand right = this.left;
 
             if (right instanceof SubQuery) {
-                context.parser().subQuery((SubQuery) right, context);
+                context.appendSubQuery((SubQuery) right);
             } else if (right instanceof ArrayExpression) {
                 ((ArmyExpression) right).appendSql(context);
             } else {
@@ -1733,7 +1732,7 @@ abstract class Expressions {
 
             final SQLColumnSet right = this.right;
             if (right instanceof SubQuery) {
-                context.parser().subQuery((SubQuery) right, context);
+                context.appendSubQuery((SubQuery) right);
             } else {
                 ((ArmyRowExpression) right).appendSql(context);
             }
@@ -2282,7 +2281,7 @@ abstract class Expressions {
 
             switch (context.database()) {
                 case MySQL: {
-                    if (context.dialect().version() < MySQLDialect.MySQL80.version()) {
+                    if (((MySQLDialect) context.dialect()).compareWith(MySQLDialect.MySQL80) < 0) {
                         throw dontSupportJsonPathError(context.dialect());
                     }
                     this.appendJson(sqlBuilder, context);
@@ -2302,12 +2301,8 @@ abstract class Expressions {
                         funcName = "JSONB_PATH_QUERY";
                     }
 
-                    sqlBuilder.append(_Constant.SPACE);
-                    if (context.isLowerFunctionName()) {
-                        sqlBuilder.append(funcName.toLowerCase(Locale.ROOT));
-                    } else {
-                        sqlBuilder.append(funcName);
-                    }
+                    context.appendFuncName(true, funcName);
+
                     sqlBuilder.append(_Constant.LEFT_PAREN);
                     this.json.appendSql(context);
                     sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -2529,7 +2524,7 @@ abstract class Expressions {
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
                     .append(" ARRAY[");
-            context.parser().subQuery(this.query, context);
+            context.appendSubQuery(this.query);
             sqlBuilder.append(_Constant.SPACE_RIGHT_SQUARE_BRACKET);
         }
 

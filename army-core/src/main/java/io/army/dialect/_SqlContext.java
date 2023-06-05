@@ -1,10 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.NamedLiteral;
-import io.army.criteria.QualifiedField;
-import io.army.criteria.SQLParam;
-import io.army.criteria.Visible;
-import io.army.env.NameMode;
+import io.army.criteria.*;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
@@ -24,11 +20,8 @@ public interface _SqlContext {
 
     Dialect dialect();
 
-    NameMode funcNameMode();
 
-    @Deprecated
-    boolean isLowerFunctionName();
-
+    StringBuilder appendFuncName(boolean buildIn, String name);
 
     /**
      * <p>
@@ -57,6 +50,8 @@ public interface _SqlContext {
      * </p>
      */
     void appendField(FieldMeta<?> field);
+
+    void appendSubQuery(SubQuery query);
 
     DialectParser parser();
 

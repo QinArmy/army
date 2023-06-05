@@ -1,5 +1,7 @@
 package io.army.env;
 
+import io.army.dialect.Database;
+import io.army.dialect.Dialect;
 import io.qinarmy.env.convert.Converter;
 import io.qinarmy.env.convert.ConverterManager;
 import io.qinarmy.env.convert.ImmutableConverterManager;
@@ -52,10 +54,15 @@ public final class StandardEnvironment implements ArmyEnvironment {
         return converter.convert(textValue);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T getRequired(final ArmyKey<T> key) {
         final T value;
-        value = this.get(key);
+        if (key == ArmyKey.DIALECT) {
+            value = (T) getDialect();
+        } else {
+            value = this.get(key);
+        }
         if (value == null) {
             String m = String.format("value of %s is null", key.name);
             throw new IllegalStateException(m);
@@ -74,6 +81,37 @@ public final class StandardEnvironment implements ArmyEnvironment {
         final T value;
         value = get(key);
         return value == null ? defaultValue : value;
+    }
+
+
+    private Dialect getDialect() {
+        String textValue;
+        textValue = this.map.get(ArmyKey.DATABASE.name);
+        if (textValue == null) {
+            String m = String.format("Not specified %s value,couldn't get %s.", ArmyKey.DATABASE, ArmyKey.DIALECT);
+            throw new IllegalStateException(m);
+        }
+        final Database database;
+        try {
+            database = Database.valueOf(textValue);
+        } catch (IllegalArgumentException e) {
+            String m = String.format("%s value error,couldn't get %s.", ArmyKey.DATABASE, ArmyKey.DIALECT);
+            throw new IllegalStateException(m);
+        }
+
+        textValue = this.map.get(ArmyKey.DIALECT.name);
+
+        if (textValue == null) {
+            String m = String.format("%s value is null,couldn't get %s.", ArmyKey.DIALECT.name, ArmyKey.DIALECT);
+            throw new IllegalStateException(m);
+        }
+        try {
+            return database.dialectOf(textValue);
+        } catch (IllegalArgumentException e) {
+            String m = String.format("%s value error,couldn't get %s.", ArmyKey.DIALECT.name, ArmyKey.DIALECT);
+            throw new IllegalStateException(m);
+        }
+
     }
 
 

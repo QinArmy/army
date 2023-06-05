@@ -349,7 +349,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createQueryUnion(final UnionType unionType) {
+        _SelectSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SimpleSelect<>(null, unionFunc, this.context);
@@ -386,7 +386,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createQueryUnion(final UnionType unionType) {
+        _SelectSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SimpleSubQuery<>(this.context.getNonNullOuterContext(), unionFunc, this.context);
@@ -440,7 +440,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createUnionRowSet(final UnionType unionType) {
+        _SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SimpleSelect<>(null, unionFunc, this.context);
@@ -465,7 +465,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         }
 
         @Override
-        _SelectSpec<I> createUnionRowSet(final UnionType unionType) {
+        _SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SimpleSubQuery<>(this.context.getNonNullOuterContext(), unionFunc, this.context);

@@ -1034,7 +1034,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/json-attribute-functions.html#function_json-valid">JSON_VALID(val)</a>
      */
     public static IPredicate jsonValid(final Expression val) {
-        return FunctionUtils.oneArgFuncPredicate("JSON_VALID", val);
+        return FunctionUtils.oneArgPredicateFunc("JSON_VALID", val);
     }
 
     /*-------------------below JSON Table Functions-------------------*/

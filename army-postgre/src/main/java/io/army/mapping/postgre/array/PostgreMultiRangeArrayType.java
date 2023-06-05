@@ -5,10 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect._Constant;
 import io.army.function.TextFunction;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
-import io.army.mapping.UnaryGenericsMapping;
+import io.army.mapping.*;
 import io.army.mapping.array.PostgreArrays;
 import io.army.mapping.postgre.*;
 import io.army.meta.MetaException;
@@ -199,18 +196,16 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
     public <Z> MappingType compatibleFor(final Class<Z> targetType) throws NoMatchMappingException {
 
         final int targetDimension;
+        final Class<?> componentType;
 
-        if (!targetType.isArray()) {
+        final MappingType instance;
+        if (targetType == String.class) {
+            instance = TextType.INSTANCE;
+        } else if (!targetType.isArray()) {
             throw noMatchCompatibleMapping(this, targetType);
         } else if ((targetDimension = ArrayUtils.dimensionOf(targetType)) < 2) {
             throw noMatchCompatibleMapping(this, targetType);
-        }
-
-        final Class<?> componentType;
-        componentType = ArrayUtils.underlyingComponent(targetType);
-
-        final PostgreMultiRangeArrayType instance;
-        if (componentType != String.class) {
+        } else if ((componentType = ArrayUtils.underlyingComponent(targetType)) != String.class) {
             final RangeFunction<?, ?> rangeFunc;
             if ((rangeFunc = tryCreateDefaultRangeFunc(componentType, boundJavaType(this.sqlType))) == null) {
                 throw noMatchCompatibleMapping(this, targetType);

@@ -626,7 +626,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * </a>
      */
     public static SimplePredicate isClosed(Expression path) {
-        return FunctionUtils.oneArgFuncPredicate("ISCLOSED", path);
+        return FunctionUtils.oneArgPredicateFunc("ISCLOSED", path);
     }
 
     /**
@@ -665,7 +665,7 @@ abstract class PostgreGeometricFunctions extends PostgreDateTimeFunctions {
      * </a>
      */
     public static SimplePredicate isOpen(Expression path) {
-        return FunctionUtils.oneArgFuncPredicate("ISOPEN", path);
+        return FunctionUtils.oneArgPredicateFunc("ISOPEN", path);
     }
 
 

@@ -5,7 +5,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
-import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
@@ -14,11 +13,9 @@ import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonPathType;
 import io.army.meta.TypeMeta;
-import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.Collection;
-import java.util.Locale;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -907,26 +904,7 @@ abstract class OperationExpression extends OperationSQLExpression
         @Override
         public final void appendSql(final _SqlContext context) {
             final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-
-            final String name = this.name;
-            if (!this.buildIn && (context.parser().isKeyWords(name) || !_DialectUtils.isSimpleIdentifier(name))) {
-                throw CriteriaUtils.userDefinedFuncNameError(name, context.dialect());
-            }
-            switch (context.funcNameMode()) {
-                case DEFAULT:
-                    sqlBuilder.append(name);
-                    break;
-                case LOWER_CASE:
-                    sqlBuilder.append(name.toLowerCase(Locale.ROOT));
-                    break;
-                case UPPER_CASE:
-                    sqlBuilder.append(name.toUpperCase(Locale.ROOT));
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(context.funcNameMode());
-            }
+            sqlBuilder = context.appendFuncName(this.buildIn, this.name);
 
             if (!(this instanceof FunctionUtils.NoParensFunction)) {
                 if (this instanceof FunctionUtils.NoArgFunction) {

@@ -532,64 +532,64 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final SP union() {
-        return this.onUnion(UnionType.UNION);
+        return this.onUnion(_UnionType.UNION);
     }
 
     @Override
     public final SP unionAll() {
-        return this.onUnion(UnionType.UNION_ALL);
+        return this.onUnion(_UnionType.UNION_ALL);
     }
 
     @Override
     public final SP unionDistinct() {
-        return this.onUnion(UnionType.UNION_DISTINCT);
+        return this.onUnion(_UnionType.UNION_DISTINCT);
     }
 
     @Override
     public final SP intersect() {
-        return this.onUnion(UnionType.INTERSECT);
+        return this.onUnion(_UnionType.INTERSECT);
     }
 
 
     @Override
     public final SP intersectAll() {
-        return this.onUnion(UnionType.INTERSECT_ALL);
+        return this.onUnion(_UnionType.INTERSECT_ALL);
     }
 
     @Override
     public final SP intersectDistinct() {
-        return this.onUnion(UnionType.INTERSECT_DISTINCT);
+        return this.onUnion(_UnionType.INTERSECT_DISTINCT);
     }
 
     @Override
     public final SP except() {
-        return this.onUnion(UnionType.EXCEPT);
+        return this.onUnion(_UnionType.EXCEPT);
     }
 
 
     @Override
     public final SP exceptAll() {
-        return this.onUnion(UnionType.EXCEPT_ALL);
+        return this.onUnion(_UnionType.EXCEPT_ALL);
     }
 
     @Override
     public final SP exceptDistinct() {
-        return this.onUnion(UnionType.EXCEPT_DISTINCT);
+        return this.onUnion(_UnionType.EXCEPT_DISTINCT);
     }
 
     @Override
     public final SP minus() {
-        return this.onUnion(UnionType.MINUS);
+        return this.onUnion(_UnionType.MINUS);
     }
 
     @Override
     public final SP minusAll() {
-        return this.onUnion(UnionType.MINUS_ALL);
+        return this.onUnion(_UnionType.MINUS_ALL);
     }
 
     @Override
     public final SP minusDistinct() {
-        return this.onUnion(UnionType.MINUS_DISTINCT);
+        return this.onUnion(_UnionType.MINUS_DISTINCT);
     }
 
 
@@ -699,7 +699,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         this.onClear();
     }
 
-    abstract SP createQueryUnion(UnionType unionType);
+    abstract SP createQueryUnion(_UnionType unionType);
 
     abstract void onEndQuery();
 
@@ -715,7 +715,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     abstract boolean isErrorModifier(W modifier);
 
 
-    private SP onUnion(UnionType unionType) {
+    private SP onUnion(_UnionType unionType) {
         this.endQueryStatement(false);
         return this.createQueryUnion(unionType);
     }
@@ -1568,7 +1568,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     static final class UnionSubQuery extends UnionSubRowSet implements ArmySubQuery {
 
-        UnionSubQuery(SubQuery left, UnionType unionType, RowSet right) {
+        UnionSubQuery(SubQuery left, _UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 
@@ -1578,7 +1578,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     static final class UnionSelect extends UnionRowSet implements ArmySelect {
 
 
-        UnionSelect(Select left, UnionType unionType, RowSet right) {
+        UnionSelect(Select left, _UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 

@@ -305,69 +305,69 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
 
     @Override
     public final SP union() {
-        return this.onUnion(UnionType.UNION);
+        return this.onUnion(_UnionType.UNION);
     }
 
     @Override
     public final SP unionAll() {
-        return this.onUnion(UnionType.UNION_ALL);
+        return this.onUnion(_UnionType.UNION_ALL);
     }
 
     @Override
     public final SP unionDistinct() {
-        return this.onUnion(UnionType.UNION_DISTINCT);
+        return this.onUnion(_UnionType.UNION_DISTINCT);
     }
 
     @Override
     public final SP except() {
-        return this.onUnion(UnionType.EXCEPT);
+        return this.onUnion(_UnionType.EXCEPT);
     }
 
     @Override
     public final SP exceptAll() {
-        return this.onUnion(UnionType.EXCEPT_ALL);
+        return this.onUnion(_UnionType.EXCEPT_ALL);
     }
 
     @Override
     public final SP exceptDistinct() {
-        return this.onUnion(UnionType.EXCEPT_DISTINCT);
+        return this.onUnion(_UnionType.EXCEPT_DISTINCT);
     }
 
     @Override
     public final SP intersect() {
-        return this.onUnion(UnionType.INTERSECT);
+        return this.onUnion(_UnionType.INTERSECT);
     }
 
     @Override
     public final SP intersectAll() {
-        return this.onUnion(UnionType.INTERSECT_ALL);
+        return this.onUnion(_UnionType.INTERSECT_ALL);
     }
 
     @Override
     public final SP intersectDistinct() {
-        return this.onUnion(UnionType.INTERSECT_DISTINCT);
+        return this.onUnion(_UnionType.INTERSECT_DISTINCT);
     }
 
     @Override
     public final SP minus() {
-        return this.onUnion(UnionType.MINUS);
+        return this.onUnion(_UnionType.MINUS);
     }
 
     @Override
     public final SP minusAll() {
-        return this.onUnion(UnionType.MINUS_ALL);
+        return this.onUnion(_UnionType.MINUS_ALL);
     }
 
     @Override
     public final SP minusDistinct() {
-        return this.onUnion(UnionType.MINUS_DISTINCT);
+        return this.onUnion(_UnionType.MINUS_DISTINCT);
     }
 
     abstract String columnAlias(int columnIndex);
 
     abstract I onAsValues();
 
-    abstract SP createUnionValues(UnionType unionType);
+    abstract SP createUnionValues(_UnionType unionType);
 
 
     final void endStmtBeforeCommand() {
@@ -375,7 +375,7 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
     }
 
 
-    private SP onUnion(UnionType unionType) {
+    private SP onUnion(_UnionType unionType) {
         this.endValuesStatement(false);
         return this.createUnionValues(unionType);
     }
@@ -582,7 +582,7 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
 
     static final class UnionSubValues extends UnionSubRowSet implements ArmySubValues {
 
-        UnionSubValues(RowSet left, UnionType unionType, RowSet right) {
+        UnionSubValues(RowSet left, _UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 
@@ -591,7 +591,7 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
 
     static final class UnionValues extends UnionRowSet implements ArmyValues {
 
-        UnionValues(Values left, UnionType unionType, RowSet right) {
+        UnionValues(Values left, _UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 

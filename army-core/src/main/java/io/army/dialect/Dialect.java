@@ -7,7 +7,9 @@ public interface Dialect {
     Database database();
 
     @Deprecated
-    int version();
+    default int version() {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     String toString();

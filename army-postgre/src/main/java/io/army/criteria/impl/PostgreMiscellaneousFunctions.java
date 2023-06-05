@@ -499,7 +499,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static IPredicate isFinite(Expression exp) {
-        return FunctionUtils.oneArgFuncPredicate("ISFINITE", exp);
+        return FunctionUtils.oneArgPredicateFunc("ISFINITE", exp);
     }
 
 

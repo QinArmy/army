@@ -653,14 +653,64 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
         final String name;
 
-        SqlFunctionPredicate(String name) {
+        private final boolean buildIn;
+
+        SqlFunctionPredicate(String name, boolean buildIn) {
             this.name = name;
+            this.buildIn = buildIn;
         }
 
         @Override
         public final String name() {
             return this.name;
         }
+
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.appendFuncName(this.buildIn, this.name);
+
+            if (!(this instanceof FunctionUtils.NoParensFunction)) {
+                if (this instanceof FunctionUtils.NoArgFunction) {
+                    sqlBuilder.append(_Constant.RIGHT_PAREN);
+                } else {
+                    sqlBuilder.append(_Constant.LEFT_PAREN);
+                    this.appendArg(sqlBuilder, context);
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+                }
+
+                if (this instanceof FunctionUtils.FunctionOuterClause) {
+                    ((FunctionUtils.FunctionOuterClause) this).appendFuncRest(sqlBuilder, context);
+                }
+            }
+        }
+
+        @Override
+        public final String toString() {
+            final StringBuilder builder = new StringBuilder();
+
+            builder.append(_Constant.SPACE)
+                    .append(this.name); // function name
+            if (!(this instanceof FunctionUtils.NoParensFunction)) {
+                if (this instanceof FunctionUtils.NoArgFunction) {
+                    builder.append(_Constant.RIGHT_PAREN);
+                } else {
+                    builder.append(_Constant.LEFT_PAREN);
+                    argToString(builder);
+                    builder.append(_Constant.SPACE_RIGHT_PAREN);
+                }
+            }
+            if (this instanceof FunctionUtils.FunctionOuterClause) {
+                ((FunctionUtils.FunctionOuterClause) this).funcRestToString(builder);
+            }
+            return builder.toString();
+        }
+
+        abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
+
+
+        abstract void argToString(StringBuilder builder);
 
 
     }//SqlFunctionPredicate

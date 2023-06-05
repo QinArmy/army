@@ -1,6 +1,7 @@
 package io.army.dialect.mysql;
 
 import io.army.criteria.*;
+import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleDelete;
@@ -44,7 +45,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
     MySQLParser(DialectEnv environment, MySQLDialect dialect) {
         super(environment, dialect);
         // Prior to / as of
-        this.asOf80 = this.dialect().version() >= MySQLDialect.MySQL80.version();
+        this.asOf80 = ((MySQLDialect) this.dialect).compareWith(MySQLDialect.MySQL80) >= 0;
     }
 
 
@@ -459,6 +460,34 @@ abstract class MySQLParser extends _ArmyDialectParser {
     protected final boolean isSupportUpdateDerivedField() {
         //MySQL don't support update derive field
         return false;
+    }
+
+    @Override
+    protected final boolean isValidateUnionType() {
+        // MySQL 80 add INTERSECT and EXCEPT
+        return !this.asOf80;
+    }
+
+    @Override
+    protected final void validateUnionType(final _UnionType unionType) {
+        switch (unionType) {
+            case UNION:
+            case UNION_ALL:
+            case UNION_DISTINCT:
+                break;
+            case EXCEPT:
+            case EXCEPT_ALL:
+            case EXCEPT_DISTINCT:
+            case INTERSECT:
+            case INTERSECT_ALL:
+            case INTERSECT_DISTINCT: {
+                String m = String.format("%s don't support %s", this.dialect, unionType.name());
+                throw new CriteriaException(m);
+            }
+            default:
+                //no bug,never here
+                throw _Exceptions.unexpectedEnum(unionType);
+        }
     }
 
     /**

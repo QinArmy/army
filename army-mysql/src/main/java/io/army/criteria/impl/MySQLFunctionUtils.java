@@ -160,7 +160,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }
 
 
-    private static abstract class MySQLWindowFunction extends WindowFunction<MySQLWindow._PartitionBySpec>
+    private static abstract class MySQLWindowFunction extends WindowFunctionUtils.WindowFunction<MySQLWindow._PartitionBySpec>
             implements MySQLWindowFunctions._OverSpec, MySQLFunction {
 
 

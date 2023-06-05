@@ -35,9 +35,6 @@ public interface DialectParser {
     SimpleStmt values(Values values, Visible visible);
 
 
-    void subQuery(SubQuery query, _SqlContext original);
-
-
     default Stmt dialectDml(DmlStatement statement, Visible visible) {
         throw new UnsupportedOperationException();
     }

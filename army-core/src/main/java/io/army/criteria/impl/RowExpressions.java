@@ -315,7 +315,7 @@ abstract class RowExpressions {
 
                     outputColumnCount++;
                 } else if (element instanceof SubQuery) {
-                    parser.subQuery((SubQuery) element, context);
+                    context.appendSubQuery((SubQuery) element);
                     outputColumnCount += ((ArmySubQuery) element).refAllSelection().size();
                 } else if (element instanceof ArmySQLExpression) {
                     ((ArmySQLExpression) element).appendSql(context);

@@ -1397,7 +1397,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimplePredicate xmlIsWellFormed(Expression text) {
-        return FunctionUtils.oneArgFuncPredicate("XML_IS_WELL_FORMED", text);
+        return FunctionUtils.oneArgPredicateFunc("XML_IS_WELL_FORMED", text);
     }
 
 
@@ -1410,7 +1410,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimplePredicate xmlIsWellFormedDocument(Expression text) {
-        return FunctionUtils.oneArgFuncPredicate("XML_IS_WELL_FORMED_DOCUMENT", text);
+        return FunctionUtils.oneArgPredicateFunc("XML_IS_WELL_FORMED_DOCUMENT", text);
     }
 
     /**
@@ -1422,7 +1422,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimplePredicate xmlIsWellFormedContent(Expression text) {
-        return FunctionUtils.oneArgFuncPredicate("XML_IS_WELL_FORMED_CONTENT", text);
+        return FunctionUtils.oneArgPredicateFunc("XML_IS_WELL_FORMED_CONTENT", text);
     }
 
     /**

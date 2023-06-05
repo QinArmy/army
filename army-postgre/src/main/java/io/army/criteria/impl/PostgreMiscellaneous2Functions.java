@@ -9,11 +9,9 @@ import io.army.mapping.array.IntegerArrayType;
 import io.army.mapping.array.ShortArrayType;
 import io.army.mapping.array.TextArrayType;
 import io.army.mapping.optional.OffsetDateTimeType;
-import io.army.mapping.postgre.PostgreAclItemType;
-import io.army.mapping.postgre.PostgreInetType;
-import io.army.mapping.postgre.PostgreRangeType;
-import io.army.mapping.postgre.PostgreTsVectorType;
+import io.army.mapping.postgre.*;
 import io.army.mapping.postgre.array.PostgreAclItemArrayType;
+import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 
 import java.util.Collection;
@@ -1034,7 +1032,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static SimplePredicate isEmpty(Expression exp) {
-        return FunctionUtils.oneArgFuncPredicate("ISEMPTY", exp);
+        return FunctionUtils.oneArgPredicateFunc("ISEMPTY", exp);
     }
 
     /**
@@ -1051,7 +1049,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static SimplePredicate lowerInc(Expression exp) {
-        return FunctionUtils.oneArgFuncPredicate("LOWER_INC", exp);
+        return FunctionUtils.oneArgPredicateFunc("LOWER_INC", exp);
     }
 
     /**
@@ -1068,7 +1066,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static SimplePredicate upperInc(Expression exp) {
-        return FunctionUtils.oneArgFuncPredicate("UPPER_INC", exp);
+        return FunctionUtils.oneArgPredicateFunc("UPPER_INC", exp);
     }
 
     /**
@@ -1085,7 +1083,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static SimplePredicate lowerInf(Expression exp) {
-        return FunctionUtils.oneArgFuncPredicate("LOWER_INF", exp);
+        return FunctionUtils.oneArgPredicateFunc("LOWER_INF", exp);
     }
 
     /**
@@ -1102,7 +1100,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static SimplePredicate upperInf(Expression exp) {
-        return FunctionUtils.oneArgFuncPredicate("UPPER_INF", exp);
+        return FunctionUtils.oneArgPredicateFunc("UPPER_INF", exp);
     }
 
     /**
@@ -1398,7 +1396,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static SimplePredicate pgIsOtherTempSchema(Expression exp) {
-        return FunctionUtils.oneArgFuncPredicate("pg_is_other_temp_schema", exp);
+        return FunctionUtils.oneArgPredicateFunc("pg_is_other_temp_schema", exp);
     }
 
     /**
@@ -1836,7 +1834,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static SimplePredicate rowSecurityActive(Expression table) {
-        return FunctionUtils.oneArgFuncPredicate("row_security_active", table);
+        return FunctionUtils.oneArgPredicateFunc("row_security_active", table);
     }
 
     /*-------------------below aclitem Functions-------------------*/
@@ -1902,9 +1900,1349 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static SimplePredicate pgCollationIsVisible(Expression collation) {
-        return FunctionUtils.oneArgFuncPredicate("pg_collation_is_visible", collation);
+        return FunctionUtils.oneArgPredicateFunc("pg_collation_is_visible", collation);
     }
 
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_conversion_is_visible ( conversion oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgConversionIsVisible(Expression conversion) {
+        return FunctionUtils.oneArgPredicateFunc("pg_conversion_is_visible", conversion);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_function_is_visible ( function oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgFunctionIsVisible(Expression function) {
+        return FunctionUtils.oneArgPredicateFunc("pg_function_is_visible", function);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_opclass_is_visible ( opclass oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgOpClassIsVisible(Expression opclass) {
+        return FunctionUtils.oneArgPredicateFunc("pg_opclass_is_visible", opclass);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_operator_is_visible ( operator oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgOperatorIsVisible(Expression operator) {
+        return FunctionUtils.oneArgPredicateFunc("pg_operator_is_visible", operator);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_opfamily_is_visible ( opclass oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgOpFamilyIsVisible(Expression opClass) {
+        return FunctionUtils.oneArgPredicateFunc("pg_opfamily_is_visible", opClass);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_statistics_obj_is_visible ( stat oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgStatisticsObjIsVisible(Expression stat) {
+        return FunctionUtils.oneArgPredicateFunc("pg_statistics_obj_is_visible", stat);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_table_is_visible ( table oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgTableIsVisible(Expression table) {
+        return FunctionUtils.oneArgPredicateFunc("pg_table_is_visible", table);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_ts_config_is_visible ( config oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgTsConfigIsVisible(Expression config) {
+        return FunctionUtils.oneArgPredicateFunc("pg_ts_config_is_visible", config);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_ts_dict_is_visible ( dict oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgTsDictIsVisible(Expression dict) {
+        return FunctionUtils.oneArgPredicateFunc("pg_ts_dict_is_visible", dict);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_ts_parser_is_visible ( parser oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgTsParserIsVisible(Expression parser) {
+        return FunctionUtils.oneArgPredicateFunc("pg_ts_parser_is_visible", parser);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_ts_template_is_visible ( template oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgTsTemplateIsVisible(Expression template) {
+        return FunctionUtils.oneArgPredicateFunc("pg_ts_template_is_visible", template);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE">pg_type_is_visible ( type oid ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgTypeIsVisible(Expression type) {
+        return FunctionUtils.oneArgPredicateFunc("pg_type_is_visible", type);
+    }
+
+
+    /*-------------------below System Catalog Information Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">format_type ( type oid, typemod integer ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression formatType(Expression type, Expression typeMode) {
+        return FunctionUtils.twoArgFunc("format_type", type, typeMode, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link IntegerType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_char_to_encoding ( encoding name ) → integer<br/>
+     * </a>
+     */
+    public static SimpleExpression pgCharToEncoding(Expression encoding) {
+        return FunctionUtils.oneArgFunc("pg_char_to_encoding", encoding, IntegerType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_encoding_to_char ( encoding integer ) → name<br/>
+     * </a>
+     */
+    public static SimpleExpression pgEncodingToChar(Expression encoding) {
+        return FunctionUtils.oneArgFunc("pg_encoding_to_char", encoding, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: <ul>
+     * <li>fktable : {@link TextType#INSTANCE}</li>
+     * <li>fkcols : {@link TextArrayType#LINEAR}</li>
+     * <li>pktable : {@link TextType#INSTANCE}</li>
+     * <li>pkcols : {@link TextArrayType#LINEAR}</li>
+     * <li>is_array : {@link BooleanType#INSTANCE}</li>
+     * <li>is_opt : {@link BooleanType#INSTANCE}</li>
+     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_catalog_foreign_keys () → setof record ( fktable regclass, fkcols text[], pktable regclass, pkcols text[], is_array boolean, is_opt boolean )<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgGetCatalogForeignKeys() {
+        final List<Selection> fieldList = _Collections.arrayList(6);
+
+        fieldList.add(ArmySelections.forName("fktable", TextType.INSTANCE));
+        fieldList.add(ArmySelections.forName("fkcols", TextArrayType.LINEAR));
+        fieldList.add(ArmySelections.forName("pktable", TextType.INSTANCE));
+        fieldList.add(ArmySelections.forName("pkcols", TextArrayType.LINEAR));
+
+        fieldList.add(ArmySelections.forName("is_array", BooleanType.INSTANCE));
+        fieldList.add(ArmySelections.forName("is_opt", BooleanType.INSTANCE));
+        return DialectFunctionUtils.zeroArgTabularFunc("pg_get_catalog_foreign_keys", fieldList);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_constraintdef ( constraint oid [, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetConstraintDef(Expression constraint) {
+        return FunctionUtils.oneArgFunc("pg_get_constraintdef", constraint, TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @param pretty in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_constraintdef ( constraint oid [, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetConstraintDef(Expression constraint, Expression pretty) {
+        return FunctionUtils.twoArgFunc("pg_get_constraintdef", constraint, pretty, TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @param pretty in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_expr ( expr pg_node_tree, relation oid [, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetExpr(Expression expr, Expression relation, Expression pretty) {
+        // TODO hwo to pg_node_tree ?
+        return FunctionUtils.threeArgFunc("pg_get_expr", expr, relation, pretty, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_functiondef ( func oid ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetFunctionDef(Expression func) {
+        return FunctionUtils.oneArgFunc("pg_get_functiondef", func, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_function_arguments ( func oid ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetFunctionArguments(Expression func) {
+        return FunctionUtils.oneArgFunc("pg_get_function_arguments", func, TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_function_identity_arguments ( func oid ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetFunctionIdentityArguments(Expression func) {
+        return FunctionUtils.oneArgFunc("pg_get_function_identity_arguments", func, TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_function_result ( func oid ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetFunctionResult(Expression func) {
+        return FunctionUtils.oneArgFunc("pg_get_function_result", func, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_indexdef ( index oid [, column integer, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetIndexDef(Expression func) {
+        return FunctionUtils.oneArgFunc("pg_get_indexdef", func, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @param pretty in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_indexdef ( index oid [, column integer, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetIndexDef(Expression func, Expression column, Expression pretty) {
+        return FunctionUtils.threeArgFunc("pg_get_indexdef", func, column, pretty, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: <ul>
+     * <li>word : {@link TextType#INSTANCE}</li>
+     * <li>catcode : {@link CharacterType#INSTANCE}</li>
+     * <li>barelabel : {@link BooleanType#INSTANCE}</li>
+     * <li>catdesc : {@link TextType#INSTANCE}</li>
+     * <li>baredesc : {@link TextType#INSTANCE}</li>
+     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_keywords () → setof record ( word text, catcode "char", barelabel boolean, catdesc text, baredesc text )<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgGetKeywords() {
+        final List<Selection> fieldList = _Collections.arrayList(5);
+
+        fieldList.add(ArmySelections.forName("word", TextType.INSTANCE));
+        fieldList.add(ArmySelections.forName("catcode", CharacterType.INSTANCE));
+        fieldList.add(ArmySelections.forName("barelabel", BooleanType.INSTANCE));
+        fieldList.add(ArmySelections.forName("catdesc", TextType.INSTANCE));
+
+        fieldList.add(ArmySelections.forName("baredesc", TextType.INSTANCE));
+        return DialectFunctionUtils.zeroArgTabularFunc("pg_get_keywords", fieldList);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_ruledef ( rule oid [, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetRuleDef(Expression rule) {
+        return FunctionUtils.oneArgFunc("pg_get_ruledef", rule, TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @param pretty in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_ruledef ( rule oid [, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetRuleDef(Expression rule, Expression pretty) {
+        return FunctionUtils.twoArgFunc("pg_get_ruledef", rule, pretty, TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_serial_sequence ( table text, column text ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetSerialSequence(Expression table, Expression column) {
+        return FunctionUtils.twoArgFunc("pg_get_serial_sequence", table, column, TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_statisticsobjdef ( statobj oid ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetStatisticsObjDef(Expression statObj) {
+        return FunctionUtils.oneArgFunc("pg_get_statisticsobjdef", statObj, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_triggerdef ( trigger oid [, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetTriggerDef(Expression trigger) {
+        return FunctionUtils.oneArgFunc("pg_get_triggerdef", trigger, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @param pretty in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_triggerdef ( trigger oid [, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetTriggerDef(Expression trigger, Expression pretty) {
+        return FunctionUtils.twoArgFunc("pg_get_triggerdef", trigger, pretty, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_userbyid ( role oid ) → name<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetUserById(Expression role) {
+        return FunctionUtils.oneArgFunc("pg_get_userbyid", role, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_viewdef ( view oid [, pretty boolean ] ) → text<br/>
+     * pg_get_viewdef ( view oid, wrap_column integer ) → text<br/>
+     * pg_get_viewdef ( view text [, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetViewDef(Expression view) {
+        return FunctionUtils.oneArgFunc("pg_get_viewdef", view, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_get_viewdef ( view oid [, pretty boolean ] ) → text<br/>
+     * pg_get_viewdef ( view oid, wrap_column integer ) → text<br/>
+     * pg_get_viewdef ( view text [, pretty boolean ] ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgGetViewDef(Expression view, Expression exp) {
+        return FunctionUtils.twoArgFunc("pg_get_viewdef", view, exp, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_index_column_has_property ( index regclass, column integer, property text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgIndexColumnHasProperty(Expression index, Expression column, Expression property) {
+        return FunctionUtils.threeArgPredicateFunc("pg_index_column_has_property", index, column, property);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_index_has_property ( index regclass, property text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgIndexHasProperty(Expression index, Expression property) {
+        return FunctionUtils.twoArgPredicateFunc("pg_index_has_property", index, property);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_indexam_has_property ( am oid, property text ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgIndexAmHasProperty(Expression am, Expression property) {
+        return FunctionUtils.twoArgPredicateFunc("pg_indexam_has_property", am, property);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: <ul>
+     * <li>option_name : {@link TextType#INSTANCE}</li>
+     * <li>option_value : {@link TextType#INSTANCE}</li>
+     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_options_to_table ( options_array text[] ) → setof record ( option_name text, option_value text )<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgOptionsToTable(Expression optionsArray) {
+        final List<Selection> fieldList;
+        fieldList = ArrayUtils.asUnmodifiableList(
+                ArmySelections.forName("option_name", TextType.INSTANCE),
+                ArmySelections.forName("option_value", TextType.INSTANCE)
+        );
+        return DialectFunctionUtils.oneArgTabularFunc("pg_options_to_table", optionsArray, fieldList);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextArrayType#LINEAR}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_settings_get_flags ( guc text ) → text[]<br/>
+     * </a>
+     */
+    public static SimpleExpression pgSettingsGetFlags(Expression guc) {
+        return FunctionUtils.oneArgFunc("pg_settings_get_flags", guc, TextArrayType.LINEAR);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: <ul>
+     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#INSTANCE}</li>
+     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_tablespace_databases ( tablespace oid ) → setof oid<br/>
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction pgTablespaceDatabases(Expression tablespace) {
+        return DialectFunctionUtils.oneArgColumnFunction("pg_tablespace_databases", tablespace, null, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_tablespace_location ( tablespace oid ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgTablespaceLocation(Expression tablespace) {
+        return FunctionUtils.oneArgFunc("pg_tablespace_location", tablespace, TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">pg_typeof ( "any" ) → regtype<br/>
+     * </a>
+     */
+    public static SimpleExpression pgTypeOf(Expression any) {
+        return FunctionUtils.oneArgFunc("pg_typeof", any, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">COLLATION FOR ( "any" ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression collationSpaceFor(Expression any) {
+        return FunctionUtils.oneArgFunc("COLLATION FOR", any, TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regclass ( text ) → regclass<br/>
+     * </a>
+     */
+    public static SimpleExpression toRegClass(Expression exp) {
+        return FunctionUtils.oneArgFunc("to_regclass", exp, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regcollation ( text ) → regcollation<br/>
+     * </a>
+     */
+    public static SimpleExpression toRegCollation(Expression exp) {
+        return FunctionUtils.oneArgFunc("to_regcollation", exp, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regnamespace ( text ) → regnamespace<br/>
+     * </a>
+     */
+    public static SimpleExpression toRegNamespace(Expression exp) {
+        return FunctionUtils.oneArgFunc("to_regnamespace", exp, TextType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">o_regoper ( text ) → regoper<br/>
+     * </a>
+     */
+    public static SimpleExpression toRegOper(Expression exp) {
+        return FunctionUtils.oneArgFunc("to_regoper", exp, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regoperator ( text ) → regoperator<br/>
+     * </a>
+     */
+    public static SimpleExpression toRegOperator(Expression exp) {
+        return FunctionUtils.oneArgFunc("to_regoperator", exp, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regproc ( text ) → regproc<br/>
+     * </a>
+     */
+    public static SimpleExpression toRegProc(Expression exp) {
+        return FunctionUtils.oneArgFunc("to_regproc", exp, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regprocedure ( text ) → regprocedure<br/>
+     * </a>
+     */
+    public static SimpleExpression toRegProcedure(Expression exp) {
+        return FunctionUtils.oneArgFunc("to_regprocedure", exp, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regrole ( text ) → regrole<br/>
+     * </a>
+     */
+    public static SimpleExpression toRegRole(Expression exp) {
+        return FunctionUtils.oneArgFunc("to_regrole", exp, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE">to_regtype ( text ) → regtype<br/>
+     * </a>
+     */
+    public static SimpleExpression toRegType(Expression exp) {
+        return FunctionUtils.oneArgFunc("to_regtype", exp, TextType.INSTANCE);
+    }
+
+    /*-------------------below Object Information and Addressing Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-OBJECT-TABLE">pg_describe_object ( classid oid, objid oid, objsubid integer ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgDescribeObject(Expression classId, Expression objId, Expression objSubId) {
+        return FunctionUtils.threeArgFunc("pg_describe_object", classId, objId, objSubId, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>type : {@link TextType#INSTANCE}</li>
+     *     <li>schema : {@link TextType#INSTANCE}</li>
+     *     <li>name : {@link TextType#INSTANCE}</li>
+     *     <li>identity : {@link TextType#INSTANCE}</li>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-OBJECT-TABLE">pg_identify_object ( classid oid, objid oid, objsubid integer ) → record ( type text, schema text, name text, identity text )<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgIdentifyObject(Expression classId, Expression objId, Expression objSubId) {
+        final List<Selection> fieldList;
+        fieldList = ArrayUtils.asUnmodifiableList(
+                ArmySelections.forName("type", TextType.INSTANCE),
+                ArmySelections.forName("schema", TextType.INSTANCE),
+                ArmySelections.forName("name", TextType.INSTANCE),
+                ArmySelections.forName("identity", TextType.INSTANCE)
+        );
+        return DialectFunctionUtils.threeArgTabularFunc("pg_identify_object", classId, objId, objSubId, fieldList);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>type : {@link TextType#INSTANCE}</li>
+     *     <li>object_names : {@link TextArrayType#LINEAR}</li>
+     *     <li>object_args : {@link TextArrayType#LINEAR}</li>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-OBJECT-TABLE">pg_identify_object_as_address ( classid oid, objid oid, objsubid integer ) → record ( type text, object_names text[], object_args text[] )<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgIdentifyObjectAsAddress(Expression classId, Expression objId, Expression objSubId) {
+        final List<Selection> fieldList;
+        fieldList = ArrayUtils.asUnmodifiableList(
+                ArmySelections.forName("type", TextType.INSTANCE),
+                ArmySelections.forName("object_names", TextArrayType.LINEAR),
+                ArmySelections.forName("object_args", TextArrayType.LINEAR)
+        );
+        return DialectFunctionUtils.threeArgTabularFunc("pg_identify_object_as_address", classId, objId, objSubId, fieldList);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>classid : {@link LongType#INSTANCE}</li>
+     *     <li>objid : {@link LongType#INSTANCE}</li>
+     *     <li>objsubid : {@link IntegerType#INSTANCE}</li>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-OBJECT-TABLE">pg_get_object_address ( type text, object_names text[], object_args text[] ) → record ( classid oid, objid oid, objsubid integer )<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgGetObjectAddress(Expression type, Expression objectNames, Expression objectArgs) {
+        final List<Selection> fieldList;
+        fieldList = ArrayUtils.asUnmodifiableList(
+                ArmySelections.forName("classid", LongType.INSTANCE),
+                ArmySelections.forName("objid", LongType.INSTANCE),
+                ArmySelections.forName("objsubid", IntegerType.INSTANCE)
+        );
+        return DialectFunctionUtils.threeArgTabularFunc("pg_get_object_address", type, objectNames, objectArgs, fieldList);
+    }
+
+    /*-------------------below Comment Information Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE">col_description ( table oid, column integer ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression colDescription(Expression table, Expression column) {
+        return FunctionUtils.twoArgFunc("col_description", table, column, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE">obj_description ( object oid, catalog name ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression objDescription(Expression object, Expression catalog) {
+        return FunctionUtils.twoArgFunc("obj_description", object, catalog, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE">obj_description ( object oid ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression objDescription(Expression object) {
+        return FunctionUtils.oneArgFunc("obj_description", object, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE">shobj_description ( object oid, catalog name ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression shObjDescription(Expression object, Expression catalog) {
+        return FunctionUtils.twoArgFunc("shobj_description", object, catalog, TextType.INSTANCE);
+    }
+
+    /*-------------------below Transaction ID and Snapshot Information Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BinaryType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_current_xact_id () → xid8<br/>
+     * </a>
+     */
+    public static SimpleExpression pgCurrentXactId() {
+        return FunctionUtils.zeroArgFunc("pg_current_xact_id", BinaryType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BinaryType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_current_xact_id_if_assigned () → xid8<br/>
+     * </a>
+     */
+    public static SimpleExpression pgCurrentXactIdIfAssigned() {
+        //TODO xid8 is binary ?
+        return FunctionUtils.zeroArgFunc("pg_current_xact_id_if_assigned", BinaryType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_xact_status ( xid8 ) → text<br/>
+     * </a>
+     */
+    public static SimpleExpression pgXactStatus(Expression xid8) {
+        return FunctionUtils.oneArgFunc("pg_xact_status", xid8, TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_current_snapshot () → pg_snapshot<br/>
+     * </a>
+     */
+    public static SimpleExpression pgCurrentSnapshot() {
+        //TODO pg_snapshot what type?
+        return FunctionUtils.zeroArgFunc("pg_current_snapshot", TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: <ul>
+     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link BinaryType#INSTANCE}</li>
+     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_snapshot_xip ( pg_snapshot ) → setof xid8<br/>
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction pgSnapshotXip(Expression pgSnapshot) {
+        return DialectFunctionUtils.oneArgColumnFunction("pg_snapshot_xip", pgSnapshot, null, BinaryType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BinaryType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_snapshot_xmax ( pg_snapshot ) → xid8<br/>
+     * </a>
+     */
+    public static SimpleExpression pgSnapshotXMax(Expression pgSnapshot) {
+        return FunctionUtils.oneArgFunc("pg_snapshot_xmax", pgSnapshot, BinaryType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BinaryType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_snapshot_xmin ( pg_snapshot ) → xid8<br/>
+     * </a>
+     */
+    public static SimpleExpression pgSnapshotXMin(Expression pgSnapshot) {
+        return FunctionUtils.oneArgFunc("pg_snapshot_xmin", pgSnapshot, BinaryType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_visible_in_snapshot ( xid8, pg_snapshot ) → boolean<br/>
+     * </a>
+     */
+    public static SimplePredicate pgVisibleInSnapshot(Expression xid8, Expression pgSnapshot) {
+        return FunctionUtils.twoArgPredicateFunc("pg_visible_in_snapshot", xid8, pgSnapshot);
+    }
+
+
+    /*-------------------below Deprecated Transaction ID and Snapshot Information Functions-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * </p>
+     * <p>
+     * <strong>Deprecated</strong> as of postgre 13
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_current () → bigint<br/>
+     * See pg_current_xact_id().
+     * </a>
+     */
+    public static SimpleExpression txidCurrent() {
+        return FunctionUtils.zeroArgFunc("txid_current", LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * </p>
+     * <p>
+     * <strong>Deprecated</strong> as of postgre 13
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_current_if_assigned () → bigint<br/>
+     * See pg_current_xact_id_if_assigned().
+     * </a>
+     */
+    public static SimpleExpression txidCurrentIfAssigned() {
+        return FunctionUtils.zeroArgFunc("txid_current_if_assigned", LongType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     * <p>
+     * <strong>Deprecated</strong> as of postgre 13
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_current_snapshot () → txid_snapshot<br/>
+     * See pg_current_snapshot().
+     * </a>
+     */
+    public static SimpleExpression txidCurrentSnapshot() {
+        //TODO what type is txid_snapshot ?
+        return FunctionUtils.zeroArgFunc("txid_current_snapshot", TextType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type: <ul>
+     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#INSTANCE}</li>
+     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     * <p>
+     * <strong>Deprecated</strong> as of postgre 13
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_snapshot_xip ( txid_snapshot ) → setof bigint<br/>
+     * see pg_snapshot_xip()
+     * </a>
+     */
+    public static _ColumnWithOrdinalityFunction txidSnapshotXip(Expression txidSnapshot) {
+        return DialectFunctionUtils.oneArgColumnFunction("txid_snapshot_xip", txidSnapshot, null, LongType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * </p>
+     * <p>
+     * <strong>Deprecated</strong> as of postgre 13
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_snapshot_xmax ( txid_snapshot ) → bigint<br/>
+     * See pg_snapshot_xmax().
+     * </a>
+     */
+    public static SimpleExpression txidSnapshotXMax(Expression txidSnapshot) {
+        return FunctionUtils.oneArgFunc("txid_snapshot_xmax", txidSnapshot, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * </p>
+     * <p>
+     * <strong>Deprecated</strong> as of postgre 13
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_snapshot_xmin ( txid_snapshot ) → bigint<br/>
+     * See pg_snapshot_xmin().
+     * </a>
+     */
+    public static SimpleExpression txidSnapshotXMin(Expression txidSnapshot) {
+        return FunctionUtils.oneArgFunc("txid_snapshot_xmin", txidSnapshot, LongType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link BooleanType#INSTANCE}
+     * </p>
+     * <p>
+     * <strong>Deprecated</strong> as of postgre 13
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_visible_in_snapshot ( bigint, txid_snapshot ) → boolean<br/>
+     * See pg_visible_in_snapshot().
+     * </a>
+     */
+    public static SimplePredicate txidVisibleInSnapshot(Expression exp1, Expression exp2) {
+        return FunctionUtils.twoArgPredicateFunc("txid_visible_in_snapshot", exp1, exp2);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link TextType#INSTANCE}
+     * </p>
+     * <p>
+     * <strong>Deprecated</strong> as of postgre 13
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-TXID-SNAPSHOT">txid_status ( bigint ) → text<br/>
+     * See pg_xact_status().
+     * </a>
+     */
+    public static SimpleExpression txidStatus(Expression exp) {
+        return FunctionUtils.oneArgFunc("txid_status", exp, TextType.INSTANCE);
+    }
+
+
+    /*-------------------below Committed Transaction Information Functions -------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link OffsetDateTimeType#INSTANCE}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_xact_commit_timestamp ( xid ) → timestamp with time zone<br/>
+     * </a>
+     */
+    public static SimpleExpression pgXactCommitTimestamp(Expression xid) {
+        return FunctionUtils.oneArgFunc("pg_xact_commit_timestamp", xid, OffsetDateTimeType.INSTANCE);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>timestamp : {@link OffsetDateTimeType#INSTANCE}</li>
+     *     <li>roident : {@link LongType#INSTANCE}</li>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_xact_commit_timestamp_origin ( xid ) → record ( timestamp timestamp with time zone, roident oid)<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgXactCommitTimestampOrigin(Expression xid) {
+        final List<Selection> fieldList;
+        fieldList = ArrayUtils.asUnmodifiableList(
+                ArmySelections.forName("timestamp", OffsetDateTimeType.INSTANCE),
+                ArmySelections.forName("roident", LongType.INSTANCE)
+        );
+        return DialectFunctionUtils.oneArgTabularFunc("pg_xact_commit_timestamp_origin", xid, fieldList);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>xid : {@link BinaryType#INSTANCE}</li>
+     *     <li>timestamp : {@link OffsetDateTimeType#INSTANCE}</li>
+     *     <li>roident : {@link LongType#INSTANCE}</li>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_last_committed_xact () → record ( xid xid, timestamp timestamp with time zone, roident oid )<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgLastCommittedXact() {
+        final List<Selection> fieldList;
+        fieldList = ArrayUtils.asUnmodifiableList(
+                ArmySelections.forName("xid", BinaryType.INSTANCE), //TODO xid is binary ?
+                ArmySelections.forName("timestamp", OffsetDateTimeType.INSTANCE),
+                ArmySelections.forName("roident", LongType.INSTANCE)
+        );
+        return DialectFunctionUtils.zeroArgTabularFunc("pg_last_committed_xact", fieldList);
+    }
+
+
+    /*-------------------below Control Data Functions-------------------*/
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>checkpoint_lsn : {@link PostgrePgLsnType#LONG}</li>
+     *     <li>redo_lsn : {@link PostgrePgLsnType#LONG}</li>
+     *     <li>redo_wal_file : {@link TextType#INSTANCE}</li>
+     *     <li>timeline_id : {@link IntegerType#INSTANCE}</li>
+     *     <br/>
+     *     <li>prev_timeline_id : {@link IntegerType#INSTANCE}</li>
+     *     <li>full_page_writes : {@link BooleanType#INSTANCE}</li>
+     *     <li>next_xid : {@link TextType#INSTANCE}</li>
+     *     <li>next_oid : {@link LongType#INSTANCE}</li>
+     *     <br/>
+     *     <li>next_multixact_id : {@link BinaryType#INSTANCE}</li>
+     *     <li>next_multi_offset : {@link BinaryType#INSTANCE}</li>
+     *     <li>oldest_xid : {@link BinaryType#INSTANCE}</li>
+     *     <li>oldest_xid_dbid : {@link LongType#INSTANCE}</li>
+     *     <br/>
+     *     <li>oldest_active_xid : {@link BinaryType#INSTANCE}</li>
+     *     <li>oldest_multi_xid : {@link BinaryType#INSTANCE}</li>
+     *     <li>oldest_multi_dbid : {@link LongType#INSTANCE}</li>
+     *     <li>oldest_commit_ts_xid : {@link BinaryType#INSTANCE}</li>
+     *     <br/>
+     *     <li>newest_commit_ts_xid : {@link BinaryType#INSTANCE}</li>
+     *     <li>checkpoint_time : {@link OffsetDateTimeType#INSTANCE}</li>
+     *     <br/>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_control_checkpoint () → record<br/>
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-CONTROL-CHECKPOINT">pg_control_checkpoint Output Columns<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgControlCheckpoint() {
+        final List<Selection> fieldList;
+        fieldList = _Collections.arrayList(18);
+
+        fieldList.add(ArmySelections.forName("checkpoint_lsn", PostgrePgLsnType.LONG));
+        fieldList.add(ArmySelections.forName("redo_lsn", PostgrePgLsnType.LONG));
+        fieldList.add(ArmySelections.forName("redo_wal_file", TextType.INSTANCE));
+        fieldList.add(ArmySelections.forName("timeline_id", IntegerType.INSTANCE));
+
+        fieldList.add(ArmySelections.forName("prev_timeline_id", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("full_page_writes", BooleanType.INSTANCE));
+        fieldList.add(ArmySelections.forName("next_xid", TextType.INSTANCE));
+        fieldList.add(ArmySelections.forName("next_oid", LongType.INSTANCE));
+
+        fieldList.add(ArmySelections.forName("next_multixact_id", BinaryType.INSTANCE)); //TODO xid is binary ?
+        fieldList.add(ArmySelections.forName("next_multi_offset", BinaryType.INSTANCE));
+        fieldList.add(ArmySelections.forName("oldest_xid", BinaryType.INSTANCE));
+        fieldList.add(ArmySelections.forName("oldest_xid_dbid", LongType.INSTANCE));
+
+        fieldList.add(ArmySelections.forName("oldest_active_xid", BinaryType.INSTANCE));
+        fieldList.add(ArmySelections.forName("oldest_multi_xid", BinaryType.INSTANCE));
+        fieldList.add(ArmySelections.forName("oldest_multi_dbid", LongType.INSTANCE));
+        fieldList.add(ArmySelections.forName("oldest_commit_ts_xid", BinaryType.INSTANCE));
+
+        fieldList.add(ArmySelections.forName("newest_commit_ts_xid", BinaryType.INSTANCE));
+        fieldList.add(ArmySelections.forName("checkpoint_time", OffsetDateTimeType.INSTANCE));
+
+        return DialectFunctionUtils.zeroArgTabularFunc("pg_control_checkpoint", fieldList);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>pg_control_version : {@link IntegerType#INSTANCE}</li>
+     *     <li>catalog_version_no : {@link IntegerType#INSTANCE}</li>
+     *     <li>system_identifier : {@link LongType#INSTANCE}</li>
+     *     <li>pg_control_last_modified : {@link OffsetDateTimeType#INSTANCE}</li>
+     *     <br/>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_control_system () → record<br/>
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-CONTROL-SYSTEM">pg_control_system Output Columns<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgControlSystem() {
+        final List<Selection> fieldList;
+        fieldList = ArrayUtils.asUnmodifiableList(
+                ArmySelections.forName("pg_control_version", IntegerType.INSTANCE),
+                ArmySelections.forName("catalog_version_no", IntegerType.INSTANCE),
+                ArmySelections.forName("system_identifier", LongType.INSTANCE),
+                ArmySelections.forName("pg_control_last_modified", OffsetDateTimeType.INSTANCE)
+        );
+
+        return DialectFunctionUtils.zeroArgTabularFunc("pg_control_system", fieldList);
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>max_data_alignment : {@link IntegerType#INSTANCE}</li>
+     *     <li>database_block_size : {@link IntegerType#INSTANCE}</li>
+     *     <li>blocks_per_segment : {@link IntegerType#INSTANCE}</li>
+     *     <li>wal_block_size : {@link IntegerType#INSTANCE}</li>
+     *     <br/>
+     *     <li>bytes_per_wal_segment : {@link IntegerType#INSTANCE}</li>
+     *     <li>max_identifier_length : {@link IntegerType#INSTANCE}</li>
+     *     <li>max_index_columns : {@link IntegerType#INSTANCE}</li>
+     *     <li>max_toast_chunk_size : {@link IntegerType#INSTANCE}</li>
+     *     <br/>
+     *     <li>large_object_chunk_size : {@link IntegerType#INSTANCE}</li>
+     *     <li>float8_pass_by_value : {@link BooleanType#INSTANCE}</li>
+     *     <li>data_page_checksum_version : {@link IntegerType#INSTANCE}</li>
+     *     <br/>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_control_init () → record<br/>
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-CONTROL-INIT">pg_control_init Output Columns<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgControlInit() {
+        final List<Selection> fieldList;
+        fieldList = _Collections.arrayList(11);
+
+        fieldList.add(ArmySelections.forName("max_data_alignment", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("database_block_size", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("blocks_per_segment", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("wal_block_size", IntegerType.INSTANCE));
+
+        fieldList.add(ArmySelections.forName("bytes_per_wal_segment", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("max_identifier_length", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("max_index_columns", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("max_toast_chunk_size", IntegerType.INSTANCE));
+
+        fieldList.add(ArmySelections.forName("large_object_chunk_size", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("float8_pass_by_value", BooleanType.INSTANCE));
+        fieldList.add(ArmySelections.forName("data_page_checksum_version", IntegerType.INSTANCE));
+
+        return DialectFunctionUtils.zeroArgTabularFunc("pg_control_init", fieldList);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:
+     * <ul>
+     *     <li>min_recovery_end_lsn : {@link PostgrePgLsnType#LONG}</li>
+     *     <li>min_recovery_end_timeline : {@link IntegerType#INSTANCE}</li>
+     *     <li>backup_start_lsn : {@link PostgrePgLsnType#LONG}</li>
+     *     <li>backup_end_lsn : {@link PostgrePgLsnType#LONG}</li>
+     *     <br/>
+     *     <li>end_of_backup_record_required : {@link BooleanType#INSTANCE}</li>
+     *     <br/>
+     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * </ul>
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP">pg_control_recovery () → record<br/>
+     * </a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-CONTROL-RECOVERY">pg_control_recovery Output Columns<br/>
+     * </a>
+     */
+    public static _TabularWithOrdinalityFunction pgControlRecovery() {
+        final List<Selection> fieldList;
+        fieldList = _Collections.arrayList(5);
+
+        fieldList.add(ArmySelections.forName("min_recovery_end_lsn", PostgrePgLsnType.LONG));
+        fieldList.add(ArmySelections.forName("min_recovery_end_timeline", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("backup_start_lsn", PostgrePgLsnType.LONG));
+        fieldList.add(ArmySelections.forName("backup_end_lsn", PostgrePgLsnType.LONG));
+
+        fieldList.add(ArmySelections.forName("end_of_backup_record_required", BooleanType.INSTANCE));
+
+        return DialectFunctionUtils.zeroArgTabularFunc("pg_control_recovery", fieldList);
+    }
 
 
 
@@ -1926,7 +3264,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         fieldList.add(ArmySelections.forName("dictionary", TextType.INSTANCE));
         fieldList.add(ArmySelections.forName("lexemes", TextArrayType.LINEAR));
 
-        final String name = "TS_DEBUG";
+        final String name = "ts_debug";
         final _TabularWithOrdinalityFunction func;
         if (config == null) {
             func = DialectFunctionUtils.oneArgTabularFunc(name, document, fieldList);
@@ -1960,7 +3298,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         fieldList.add(ArmySelections.forName("ndoc", IntegerType.INSTANCE));
         fieldList.add(ArmySelections.forName("nentry", IntegerType.INSTANCE));
 
-        final String name = "TS_STAT";
+        final String name = "ts_stat";
         _TabularWithOrdinalityFunction func;
         if (weights == null) {
             func = DialectFunctionUtils.oneArgTabularFunc(name, sqlQuery, fieldList);
@@ -1978,7 +3316,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     private static SimpleExpression _arrayFill(final Expression anyElement, final Expression dimensions,
                                                final @Nullable Expression bounds) {
 
-        final String name = "ARRAY_FILL";
+        final String name = "array_fill";
         final SimpleExpression func;
         if (bounds == null) {
             func = FunctionUtils.twoArgFunc(name, anyElement, dimensions,

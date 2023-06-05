@@ -1,10 +1,8 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.criteria.impl.inner._Window;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect.*;
 import io.army.function.BetweenOperator;
@@ -266,7 +264,7 @@ abstract class FunctionUtils {
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
         }
-        return new MultiArgFuncPredicate(name, null, twoExpList(name, one, two));
+        return new MultiArgFuncPredicate(name, true, null, twoExpList(name, one, two));
     }
 
     static SimplePredicate threeArgPredicateFunc(final String name, final Expression one, final Expression two,
@@ -278,7 +276,7 @@ abstract class FunctionUtils {
         } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, three);
         }
-        return new MultiArgFuncPredicate(name, null, threeExpList(name, one, two, three));
+        return new MultiArgFuncPredicate(name, true, null, threeExpList(name, one, two, three));
     }
 
     static SimplePredicate fourArgPredicateFunc(final String name, final Expression one, final Expression two,
@@ -298,12 +296,12 @@ abstract class FunctionUtils {
         argList.add((ArmyExpression) two);
         argList.add((ArmyExpression) three);
         argList.add((ArmyExpression) four);
-        return new MultiArgFuncPredicate(name, null, argList);
+        return new MultiArgFuncPredicate(name, true, null, argList);
     }
 
 
     static SimpleExpression zeroArgFunc(String name, TypeMeta returnType) {
-        return new ZeroArgFunction(name, returnType);
+        return new ZeroArgFunction(name, true, returnType);
     }
 
     static SimpleExpression noParensFunc(String name, TypeMeta returnType) {
@@ -462,7 +460,7 @@ abstract class FunctionUtils {
 
         final SimpleExpression func;
         if (pairList.size() == 0) {
-            func = new ZeroArgFunction(name, returnType);
+            func = new ZeroArgFunction(name, true, returnType);
         } else {
             final Expression arg;
             arg = funcRef.apply(paramType, pairList.toArray(new String[0]));
@@ -492,7 +490,7 @@ abstract class FunctionUtils {
 
         final SimpleExpression func;
         if (pairList.size() == 0) {
-            func = new ZeroArgFunction(name, returnType);
+            func = new ZeroArgFunction(name, true, returnType);
         } else {
             final Expression arg;
             arg = funcRef.apply(paramType, pairList.toArray(new String[0]));
@@ -602,14 +600,14 @@ abstract class FunctionUtils {
 
 
     static SimplePredicate zeroArgFuncPredicate(final String name) {
-        return new NoArgFuncPredicate(name);
+        return new ZeroArgFuncPredicate(name, true);
     }
 
-    static SimplePredicate oneArgFuncPredicate(final String name, final Expression argument) {
+    static SimplePredicate oneArgPredicateFunc(final String name, final Expression argument) {
         if (argument instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, argument);
         }
-        return new OneArgFuncPredicate(name, (ArmyExpression) argument);
+        return new OneArgFuncPredicate(name, true, argument);
     }
 
     static SimplePredicate multiArgFuncPredicate(String name, List<Expression> expList) {
@@ -619,12 +617,12 @@ abstract class FunctionUtils {
             case 0:
                 throw CriteriaUtils.funcArgError(name, expList);
             case 1:
-                function = new OneArgFuncPredicate(name, (ArmyExpression) expList.get(0));
+                function = new OneArgFuncPredicate(name, true, expList.get(0));
                 break;
             default: {
                 final List<ArmyExpression> argList = new ArrayList<>(size);
                 appendExpList(argList, expList);
-                function = new MultiArgFuncPredicate(name, null, argList);
+                function = new MultiArgFuncPredicate(name, true, null, argList);
             }
         }
         return function;
@@ -633,12 +631,12 @@ abstract class FunctionUtils {
 
     static SimplePredicate twoAndMultiArgFuncPredicate(final String name, final Expression exp1, Expression exp2
             , final List<Expression> expList) {
-        return new MultiArgFuncPredicate(name, null, twoAndMultiExpList(name, exp1, exp2, expList));
+        return new MultiArgFuncPredicate(name, true, null, twoAndMultiExpList(name, exp1, exp2, expList));
     }
 
 
     static SimplePredicate complexArgPredicate(final String name, List<?> argList) {
-        return new ComplexArgFuncPredicate(name, argList);
+        return new ComplexArgFuncPredicate(name, true, argList);
     }
 
     static SimplePredicate oneAndRestFuncPredicate(String name, Expression first, Expression... rest) {
@@ -647,12 +645,12 @@ abstract class FunctionUtils {
         }
         final SimplePredicate func;
         if (rest.length == 0) {
-            func = new OneArgFuncPredicate(name, (ArmyExpression) first);
+            func = new OneArgFuncPredicate(name, true, first);
         } else {
             final List<ArmyExpression> argList = new ArrayList<>(1 + rest.length);
             argList.add((ArmyExpression) first);
             addRestExp(name, argList, rest);
-            func = new MultiArgFuncPredicate(name, null, argList);
+            func = new MultiArgFuncPredicate(name, true, null, argList);
         }
         return func;
     }
@@ -670,12 +668,12 @@ abstract class FunctionUtils {
                 }
             }
         }
-        return new ComplexArgFuncPredicate(name, argList);
+        return new ComplexArgFuncPredicate(name, true, argList);
     }
 
 
     static SimpleExpression complexArgFunc(String name, List<?> argList, TypeMeta returnType) {
-        return new ComplexArgFuncExpression(name, argList, returnType);
+        return new ComplexArgFuncExpression(name, true, argList, returnType);
     }
 
     static SimpleExpression complexArgFunc(String name, TypeMeta returnType, Object... args) {
@@ -686,11 +684,11 @@ abstract class FunctionUtils {
             argList = _Collections.arrayList(args.length);
             Collections.addAll(argList, args);
         }
-        return new ComplexArgFuncExpression(name, argList, returnType);
+        return new ComplexArgFuncExpression(name, true, argList, returnType);
     }
 
     static NamedExpression namedComplexArgFunc(String name, List<?> argList, TypeMeta returnType, String expAlias) {
-        return new NamedComplexArgFunc(name, argList, returnType, expAlias);
+        return new NamedComplexArgFunc(name, true, argList, returnType, expAlias);
     }
 
     static SimpleExpression oneArgRowElementFunc(String name, Object one, TypeMeta returnType) {
@@ -805,36 +803,6 @@ abstract class FunctionUtils {
     @Deprecated
     static SimpleExpression jsonObjectFunc(String name, Map<String, Expression> expMap, TypeMeta returnType) {
         throw new UnsupportedOperationException();
-    }
-
-
-    /**
-     * @param name function name
-     * @return a unmodified list
-     */
-    static List<String> pairMapToList(final String name, final Map<String, String> map) {
-        final int pairSize;
-        if ((pairSize = map.size()) == 0) {
-            String m = String.format("function[%s] pair map must be non-empty.", name);
-            throw ContextStack.clearStackAndCriteriaError(m);
-        }
-        final List<String> pairList;
-        pairList = _Collections.arrayList(pairSize << 1);
-        for (Map.Entry<String, String> pair : map.entrySet()) {
-            pairList.add(pair.getKey());
-            pairList.add(pair.getValue());
-        }
-        return Collections.unmodifiableList(pairList);
-    }
-
-    static List<String> pairConsumerToList(final Consumer<BiConsumer<String, String>> consumer) {
-        final List<String> pairList;
-        pairList = _Collections.arrayList();
-        consumer.accept((key, value) -> {
-            pairList.add(key);
-            pairList.add(value);
-        });
-        return Collections.unmodifiableList(pairList);
     }
 
 
@@ -1143,148 +1111,6 @@ abstract class FunctionUtils {
     }//FromFirstLast
 
 
-    static abstract class WindowFunction<T extends Window._WindowSpec> extends OperationExpression.SqlFunctionExpression
-            implements Window._OverWindowClause<T>, FunctionOuterClause {
-
-        private static final String GLOBAL_PLACE_HOLDER = "";
-
-        final CriteriaContext outerContext;
-
-        private String existingWindowName;
-
-        private _Window anonymousWindow;
-
-        WindowFunction(String name, TypeMeta returnType) {
-            super(name, returnType);
-            this.outerContext = ContextStack.peek();
-        }
-
-        @Override
-        public final SimpleExpression over() {
-            if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            this.anonymousWindow = GlobalWindow.INSTANCE;
-            return this;
-        }
-
-        @Override
-        public final SimpleExpression over(final @Nullable String existingWindowName) {
-            if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            if (existingWindowName == null) {
-                this.existingWindowName = GLOBAL_PLACE_HOLDER;
-            } else {
-                // context don't allow empty existingWindowName
-                this.outerContext.onRefWindow(existingWindowName);
-                this.existingWindowName = existingWindowName;
-            }
-            return this;
-        }
-
-        @Override
-        public final SimpleExpression over(Consumer<T> consumer) {
-            return this.over(null, consumer);
-        }
-
-        @Override
-        public final SimpleExpression over(@Nullable String existingWindowName, Consumer<T> consumer) {
-            final T window;
-            window = this.createAnonymousWindow(existingWindowName);
-            consumer.accept(window);
-            if (this.existingWindowName != null || this.anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            }
-            ((ArmyWindow) window).endWindowClause();
-            this.anonymousWindow = (ArmyWindow) window;
-            return this;
-        }
-
-        @Override
-        public final void appendFuncRest(final StringBuilder sqlBuilder, final _SqlContext context) {
-
-            if (this instanceof SQLFunction._OuterClauseBeforeOver) {
-                this.appendClauseBeforeOver(sqlBuilder, context);
-            }
-
-            final String existingWindowName = this.existingWindowName;
-            final _Window anonymousWindow = this.anonymousWindow;
-
-            final DialectParser parser;
-            if (existingWindowName == null && anonymousWindow == null) {
-                if (!(this instanceof SQLFunction.AggregateFunction)) {
-                    throw _Exceptions.castCriteriaApi();
-                }
-            } else if (existingWindowName != null && anonymousWindow != null) {
-                throw _Exceptions.castCriteriaApi();
-            } else if (this.isDontSupportWindow((parser = context.parser()).dialect())) {
-                String m = String.format("%s don't support %s window function.", parser.dialect(), this.name);
-                throw new CriteriaException(m);
-            } else {
-                sqlBuilder.append(_Constant.SPACE_OVER);
-                if (anonymousWindow == GlobalWindow.INSTANCE || GLOBAL_PLACE_HOLDER.equals(existingWindowName)) {
-                    sqlBuilder.append(_Constant.PARENS);
-                } else if (existingWindowName != null) {
-                    sqlBuilder.append(_Constant.SPACE);
-                    parser.identifier(existingWindowName, sqlBuilder);
-                } else {
-                    anonymousWindow.appendSql(context);
-                }
-            }
-        }
-
-        @Override
-        public final void funcRestToString(final StringBuilder builder) {
-            if (this instanceof SQLFunction._OuterClauseBeforeOver) {
-                this.outerClauseToString(builder);
-            }
-            final String existingWindowName = this.existingWindowName;
-            final _Window anonymousWindow = this.anonymousWindow;
-
-            if (existingWindowName == null && anonymousWindow == null) {
-                if (!(this instanceof SQLFunction.AggregateFunction)) {
-                    throw ContextStack.castCriteriaApi(this.outerContext);
-                }
-            } else if (existingWindowName != null && anonymousWindow != null) {
-                throw ContextStack.castCriteriaApi(this.outerContext);
-            } else {
-                //2. OVER clause
-                builder.append(_Constant.SPACE_OVER);
-                if (anonymousWindow == GlobalWindow.INSTANCE || GLOBAL_PLACE_HOLDER.equals(existingWindowName)) {
-                    builder.append(_Constant.PARENS);
-                } else if (existingWindowName != null) {
-                    builder.append(_Constant.SPACE)
-                            .append(existingWindowName);
-                } else {
-                    builder.append(anonymousWindow);
-                }
-            }
-        }
-
-
-        abstract T createAnonymousWindow(@Nullable String existingWindowName);
-
-        abstract boolean isDontSupportWindow(Dialect dialect);
-
-        void appendClauseBeforeOver(StringBuilder sqlBuilder, _SqlContext context) {
-            throw new UnsupportedOperationException();
-        }
-
-        void outerClauseToString(StringBuilder builder) {
-            throw new UnsupportedOperationException();
-        }
-
-        final CriteriaException dialectError(Dialect dialect) {
-            String m = String.format("%s window function[%s]don't support %s.",
-                    this.getClass().getName(), this.name, dialect);
-            throw ContextStack.criteriaError(this.outerContext, m);
-        }
-
-
-    }//AggregateOverClause
-
-
     static final class NamedNotation extends NonOperationExpression {
 
         final String name;
@@ -1396,8 +1222,8 @@ abstract class FunctionUtils {
         /**
          * @see #zeroArgFunc(String, TypeMeta)
          */
-        private ZeroArgFunction(String name, TypeMeta returnType) {
-            super(name, returnType);
+        private ZeroArgFunction(String name, boolean buildIn, TypeMeta returnType) {
+            super(name, buildIn, returnType);
         }
 
         @Override
@@ -1823,125 +1649,46 @@ abstract class FunctionUtils {
     }//MultiArgFunctionExpression
 
 
-    /**
-     * <p>
-     * This class is base class of below:
-     *     <ul>
-     *         <li>{@link NoArgFuncPredicate}</li>
-     *         <li>{@link OneArgFuncPredicate}</li>
-     *         <li>{@link MultiArgFuncPredicate}</li>
-     *     </ul>
-     * </p>
-     */
-    private static abstract class FunctionPredicate extends OperationPredicate.SqlFunctionPredicate
-            implements SQLFunction {
+    private static final class ZeroArgFuncPredicate extends OperationPredicate.SqlFunctionPredicate
+            implements NoArgFunction {
 
-
-        FunctionPredicate(String name) {
-            super(name);
-        }
-
-
-        @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
-
-            if (this instanceof OneArgFuncPredicate) {
-                ((OneArgFuncPredicate) this).argument.appendSql(context);
-            } else if (this instanceof MultiArgFuncPredicate) {
-                final MultiArgFuncPredicate p = (MultiArgFuncPredicate) this;
-                FunctionUtils.appendArguments(p.option, p.argList, context);
-            } else if (!(this instanceof NoArgFuncPredicate)) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        private ZeroArgFuncPredicate(String name, boolean buildIn) {
+            super(name, buildIn);
         }
 
         @Override
-        public final String toString() {
-            final StringBuilder builder;
-            builder = new StringBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
-                    .append(_Constant.LEFT_PAREN);
-            if (this instanceof OneArgFuncPredicate) {
-                builder.append(((OneArgFuncPredicate) this).argument);
-            } else if (this instanceof MultiArgFuncPredicate) {
-                final MultiArgFuncPredicate p = (MultiArgFuncPredicate) this;
-                FunctionUtils.argumentsToString(p.option, p.argList, builder);
-            } else if (!(this instanceof NoArgFuncPredicate)) {
-                //no bug,never here
-                throw new IllegalStateException();
-            }
-            return builder.append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
-        }
-
-    }//FunctionPredicate
-
-
-    private static final class NoArgFuncPredicate extends FunctionPredicate implements NoArgFunction {
-
-        private NoArgFuncPredicate(String name) {
-            super(name);
-        }
-
-
-        @Override
-        public int hashCode() {
-            return this.name.hashCode();
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
         }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof NoArgFuncPredicate) {
-                match = ((NoArgFuncPredicate) obj).name.equals(this.name);
-            } else {
-                match = false;
-            }
-            return match;
+        void argToString(StringBuilder builder) {
+            //no-op
         }
 
 
     }//NoArgFuncPredicate
 
 
-    private static final class OneArgFuncPredicate extends FunctionPredicate {
+    private static final class OneArgFuncPredicate extends OperationPredicate.SqlFunctionPredicate {
 
 
-        private final ArmyExpression argument;
+        private final ArmyExpression one;
 
-        private OneArgFuncPredicate(String name, ArmyExpression argument) {
-            super(name);
-            this.argument = argument;
+        private OneArgFuncPredicate(String name, final boolean buildIn, Expression one) {
+            super(name, buildIn);
+            this.one = (ArmyExpression) one;
+        }
+
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            this.one.appendSql(context);
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.argument);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof OneArgFuncPredicate) {
-                final OneArgFuncPredicate o = (OneArgFuncPredicate) obj;
-                match = o.name.equals(this.name)
-                        && o.argument.equals(this.argument);
-            } else {
-                match = false;
-            }
-            return match;
+        void argToString(StringBuilder builder) {
+            builder.append(this.one);
         }
 
 
@@ -1950,38 +1697,28 @@ abstract class FunctionUtils {
     /**
      * @see #threeArgPredicateFunc(String, Expression, Expression, Expression)
      */
-    private static final class MultiArgFuncPredicate extends FunctionPredicate {
+    private static final class MultiArgFuncPredicate extends OperationPredicate.SqlFunctionPredicate {
 
         private final SQLWords option;
 
         private final List<ArmyExpression> argList;
 
-        MultiArgFuncPredicate(String name, @Nullable SQLWords option, List<ArmyExpression> argList) {
-            super(name);
+        MultiArgFuncPredicate(String name, boolean buildIn, @Nullable SQLWords option, List<ArmyExpression> argList) {
+            super(name, buildIn);
             assert argList.size() > 0;
             this.option = option;
             this.argList = argList;
         }
 
+
         @Override
-        public int hashCode() {
-            return Objects.hash(this.name, this.option, this.argList);
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            FunctionUtils.appendArguments(this.option, this.argList, context);
         }
 
         @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof MultiArgFuncPredicate) {
-                final MultiArgFuncPredicate o = (MultiArgFuncPredicate) obj;
-                match = o.name.equals(this.name)
-                        && Objects.equals(o.option, this.option)
-                        && o.argList.equals(this.argList);
-            } else {
-                match = false;
-            }
-            return match;
+        void argToString(StringBuilder builder) {
+            FunctionUtils.argumentsToString(this.option, this.argList, builder);
         }
 
 
@@ -1999,36 +1736,20 @@ abstract class FunctionUtils {
         /**
          * @see #complexArgPredicate(String, List)
          */
-        private ComplexArgFuncPredicate(String name, List<?> argumentList) {
-            super(name);
+        private ComplexArgFuncPredicate(String name, boolean buildIn, List<?> argumentList) {
+            super(name, buildIn);
             this.argumentList = argumentList;
         }
 
+
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(name)
-                    .append(_Constant.LEFT_PAREN);
-
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
             FunctionUtils.appendComplexArg(this.argumentList, context);
-
-            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
-
         @Override
-        public String toString() {
-            final StringBuilder builder;
-            builder = new StringBuilder()
-                    .append(_Constant.SPACE)
-                    .append(name)
-                    .append(_Constant.LEFT_PAREN);
-
+        void argToString(StringBuilder builder) {
             FunctionUtils.complexArgToString(this.argumentList, builder);
-            return builder.append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
         }
 
 
@@ -2044,8 +1765,8 @@ abstract class FunctionUtils {
         /**
          * @see #complexArgFunc(String, TypeMeta, Object...)
          */
-        private ComplexArgFuncExpression(String name, List<?> argList, TypeMeta returnType) {
-            super(name, returnType);
+        private ComplexArgFuncExpression(String name, boolean buildIn, List<?> argList, TypeMeta returnType) {
+            super(name, buildIn, returnType);
             assert argList.size() > 0;
             this.argList = argList;
         }
@@ -2069,8 +1790,8 @@ abstract class FunctionUtils {
 
         private final String expAlias;
 
-        private NamedComplexArgFunc(String name, List<?> argList, TypeMeta returnType, String expAlias) {
-            super(name, argList, returnType);
+        private NamedComplexArgFunc(String name, boolean buildIn, List<?> argList, TypeMeta returnType, String expAlias) {
+            super(name, buildIn, argList, returnType);
             this.expAlias = expAlias;
         }
 
@@ -2131,7 +1852,7 @@ abstract class FunctionUtils {
 
         private ArmyExpression elseExpression;
 
-        private TypeMeta returnType = TextType.INSTANCE;
+        private TypeMeta returnType;
 
         private boolean dynamicWhenSpace;
 
@@ -2510,34 +2231,36 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public SimpleExpression end() {
-            this.endCaseFunction();
-            return this;
+        public Expression end() {
+            return this.endCaseFunction(TextType.INSTANCE);
         }
 
 
         @Override
-        public SimpleExpression end(final @Nullable TypeInfer type) {
+        public Expression end(final @Nullable TypeInfer type) {
             if (type == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             }
-            this.endCaseFunction();
+            final TypeMeta typeMeta;
             if (type instanceof MappingType) {
-                this.returnType = (MappingType) type;
+                typeMeta = (MappingType) type;
             } else if (type instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) type).isDelay()) {
-                this.returnType = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) type, Expressions::identityType);
+                typeMeta = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) type, Expressions::identityType);
             } else if (type instanceof TypeMeta.DelayTypeMeta) {
-                this.returnType = (TypeMeta) type;
+                typeMeta = (TypeMeta) type;
             } else {
-                this.returnType = type.typeMeta().mappingType();
+                typeMeta = type.typeMeta().mappingType();
             }
-            return this;
+            return this.endCaseFunction(typeMeta);
         }
 
-        private void endCaseFunction() {
+        private Expression endCaseFunction(final TypeMeta type) {
             if (this.whenExpression != null) {
                 throw lastWhenClauseNotEnd();
+            } else if (this.returnType != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
+
             final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
             if (expPairList == null) {
                 throw noWhenClause();
@@ -2546,6 +2269,8 @@ abstract class FunctionUtils {
             } else {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
+            this.returnType = type;
+            return this;
         }
 
         private CriteriaException noWhenClause() {
@@ -2558,41 +2283,6 @@ abstract class FunctionUtils {
 
 
     }//CaseFunc
-
-
-    private static final class GlobalWindow implements ArmyWindow {
-
-        private static final GlobalWindow INSTANCE = new GlobalWindow();
-
-        private GlobalWindow() {
-        }
-
-        @Override
-        public void appendSql(final _SqlContext context) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ArmyWindow endWindowClause() {
-            return this;
-        }
-
-        @Override
-        public String windowName() {
-            throw new IllegalStateException("this is global window");
-        }
-
-        @Override
-        public void prepared() {
-            //no-op
-        }
-
-        @Override
-        public void clear() {
-            //no-op
-        }
-
-    }//GlobalWindow
 
 
     static final class OrderByOptionClause

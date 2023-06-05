@@ -665,7 +665,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4">IS_IPV4(expr)</a>
      */
     public static IPredicate isIpv4(final Expression expr) {
-        return FunctionUtils.oneArgFuncPredicate("IS_IPV4", expr);
+        return FunctionUtils.oneArgPredicateFunc("IS_IPV4", expr);
     }
 
 
@@ -679,7 +679,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4-compat">IS_IPV4_COMPAT(expr)</a>
      */
     public static IPredicate isIpv4Compat(final Expression expr) {
-        return FunctionUtils.oneArgFuncPredicate("IS_IPV4_COMPAT", expr);
+        return FunctionUtils.oneArgPredicateFunc("IS_IPV4_COMPAT", expr);
     }
 
     /**
@@ -692,7 +692,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv4-mapped">IS_IPV4_MAPPED(expr)</a>
      */
     public static IPredicate isIpv4Mapped(final Expression expr) {
-        return FunctionUtils.oneArgFuncPredicate("IS_IPV4_MAPPED", expr);
+        return FunctionUtils.oneArgPredicateFunc("IS_IPV4_MAPPED", expr);
     }
 
     /**
@@ -705,7 +705,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-ipv6">IS_IPV6(expr)</a>
      */
     public static IPredicate isIpv6(final Expression expr) {
-        return FunctionUtils.oneArgFuncPredicate("IS_IPV6", expr);
+        return FunctionUtils.oneArgPredicateFunc("IS_IPV6", expr);
     }
 
     /**
@@ -718,7 +718,7 @@ abstract class MySQLMiscellaneousFunctions extends MySQLSpatialFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/miscellaneous-functions.html#function_is-uuid">IS_UUID(string_uuid)</a>
      */
     public static IPredicate isUuid(final Expression stringUuid) {
-        return FunctionUtils.oneArgFuncPredicate("IS_UUID", stringUuid);
+        return FunctionUtils.oneArgPredicateFunc("IS_UUID", stringUuid);
     }
 
     /**

@@ -4,6 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLWords;
 import io.army.criteria.Statement;
 import io.army.criteria.Visible;
+import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
@@ -556,6 +557,17 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
+    protected final boolean isValidateUnionType() {
+        // false
+        return false;
+    }
+
+    @Override
+    protected final void validateUnionType(_UnionType unionType) {
+        //no-op, no bug never here
+    }
+
+    @Override
     protected final String qualifiedSchemaName(final ServerMeta meta) {
         final String catalog, schema;
         catalog = meta.catalog();
@@ -1058,7 +1070,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
         }
         PostgreLiterals.postgreBackslashEscapes(typeMeta, type, value, sqlBuilder);
     }
-
 
 
     private static final class Standard extends PostgreParser {

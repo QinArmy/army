@@ -839,7 +839,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        _QueryWithComplexSpec<I> createQueryUnion(final UnionType unionType) {
+        _QueryWithComplexSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SelectDispatcher<>(this.context, unionFunc);
@@ -877,7 +877,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        _QueryWithComplexSpec<I> createQueryUnion(final UnionType unionType) {
+        _QueryWithComplexSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SubQueryDispatcher<>(this.context, unionFunc);
@@ -953,7 +953,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        PostgreQuery._QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
+        PostgreQuery._QueryWithComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
             return new SelectDispatcher<>(this.context, unionFunc);
@@ -978,7 +978,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        PostgreQuery._QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
+        PostgreQuery._QueryWithComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
             return new SubQueryDispatcher<>(this.context, unionFunc);
@@ -1077,8 +1077,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
 
     /**
-     * @see #createQueryUnion(UnionType)
-     * @see #createQueryUnion(UnionType)
+     * @see #createQueryUnion(_UnionType)
+     * @see #createQueryUnion(_UnionType)
      */
     private static final class SubQueryDispatcher<I extends Item> extends PostgreQueryDispatcher<I> {
 

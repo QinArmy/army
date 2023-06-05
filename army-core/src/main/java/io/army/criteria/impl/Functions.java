@@ -654,7 +654,7 @@ abstract class Functions extends SqlSyntax {
         if (!FUN_NAME_PATTER.matcher(name).matches()) {
             throw _customFuncNameError(name);
         }
-        return FunctionUtils.oneArgFuncPredicate(name, expr);
+        return FunctionUtils.oneArgPredicateFunc(name, expr);
     }
 
     public static SimpleExpression customFunc(String name, Expression expr1, Expression expr2, TypeMeta returnType) {

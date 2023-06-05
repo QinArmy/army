@@ -852,7 +852,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _QueryWithComplexSpec<I> createQueryUnion(final UnionType unionType) {
+        _QueryWithComplexSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSelect(this, unionType, rowSet));
             return new SelectDispatcher<>(this.context, unionFunc);
@@ -887,7 +887,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _QueryWithComplexSpec<I> createQueryUnion(final UnionType unionType) {
+        _QueryWithComplexSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubQuery(this, unionType, rowSet));
             return new SubQueryDispatcher<>(this.context, unionFunc);
@@ -1121,7 +1121,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
+        _QueryWithComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSelect(this, unionType, rowSet));
             return new SelectDispatcher<>(this.context, unionFunc);
@@ -1147,7 +1147,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         }
 
         @Override
-        _QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
+        _QueryWithComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubQuery(this, unionType, rowSet));
             return new SubQueryDispatcher<>(this.context, unionFunc);

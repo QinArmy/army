@@ -958,7 +958,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/spatial-convenience-functions.html#function_st-isvalid">ST_IsValid(g)</a>
      */
     public static IPredicate stIsValid(final Expression g) {
-        return FunctionUtils.oneArgFuncPredicate("ST_IsValid", g);
+        return FunctionUtils.oneArgPredicateFunc("ST_IsValid", g);
     }
 
     /**
@@ -2122,7 +2122,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-isempty">ST_IsEmpty(g)</a>
      */
     public static IPredicate stIsEmpty(final Expression g) {
-        return FunctionUtils.oneArgFuncPredicate("ST_IsEmpty", g);
+        return FunctionUtils.oneArgPredicateFunc("ST_IsEmpty", g);
     }
 
 
@@ -2136,7 +2136,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-issimple">ST_IsSimple(g)</a>
      */
     public static IPredicate stIsSimple(final Expression g) {
-        return FunctionUtils.oneArgFuncPredicate("ST_IsSimple", g);
+        return FunctionUtils.oneArgPredicateFunc("ST_IsSimple", g);
     }
 
     /**

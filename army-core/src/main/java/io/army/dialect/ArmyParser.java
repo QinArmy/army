@@ -6,6 +6,7 @@ import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._SQLConsultant;
+import io.army.criteria.impl._UnionType;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardDelete;
 import io.army.criteria.standard.StandardInsert;
@@ -108,6 +109,8 @@ abstract class ArmyParser implements DialectParser {
 
     private final boolean columnNameUpper;
 
+    private final boolean validateUnionType;
+
     ArmyParser(final DialectEnv dialectEnv, final Dialect dialect) {
         this.dialect = dialect; // first
         this.database = this.dialect.database();
@@ -137,7 +140,7 @@ abstract class ArmyParser implements DialectParser {
         this.supportUpdateDerivedField = this.isSupportUpdateDerivedField();
 
         this.supportRowAlias = this.isSupportRowAlias();
-
+        this.validateUnionType = this.isValidateUnionType();
 
         this.keyWordSet = Collections.unmodifiableSet(this.createKeyWordSet());
         if (this.mockEnv) {
@@ -228,12 +231,6 @@ abstract class ArmyParser implements DialectParser {
     public final SimpleStmt values(final Values values, final Visible visible) {
         return this.handleValues(null, values, visible)
                 .build();
-    }
-
-
-    @Override
-    public final void subQuery(final SubQuery query, final _SqlContext original) {
-        this.handleSubQuery(query, original);
     }
 
 
@@ -376,11 +373,17 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract boolean isSupportUpdateDerivedField();
 
+    protected abstract boolean isValidateUnionType();
+
+    protected abstract void validateUnionType(_UnionType unionType);
+
     protected abstract String qualifiedSchemaName(ServerMeta meta);
 
     protected abstract IdentifierMode identifierMode(String identifier);
 
     protected abstract void escapesIdentifier(String identifier, StringBuilder sqlBuilder);
+
+
 
 
     /*################################## blow dialect template method ##################################*/
@@ -901,7 +904,6 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #subQuery(SubQuery, _SqlContext)
      * @see #standardTableReferences(List, _MultiTableStmtContext, boolean)
      */
     protected final void handleSubQuery(final SubQuery query, final _SqlContext original) {
@@ -959,7 +961,14 @@ abstract class ArmyParser implements DialectParser {
         } else if (values instanceof _UnionRowSet) {
             final _UnionRowSet union = (_UnionRowSet) values;
             this.handleValuesQuery((ValuesQuery) union.leftRowSet(), original);
-            ((StatementContext) original).sqlBuilder.append(union.unionType().spaceRender());
+
+            final _UnionType unionType;
+            unionType = union.unionType();
+            if (this.validateUnionType) {
+                this.validateUnionType(unionType);
+            }
+            ((StatementContext) original).sqlBuilder.append(unionType.spaceRender());
+
             this.handleRowSet(union.rightRowSet(), original);
         } else {
             assert values instanceof _ParensRowSet;
@@ -1109,7 +1118,6 @@ abstract class ArmyParser implements DialectParser {
     /**
      * @see #handleSelect(_SqlContext, Select, Visible)
      * @see #handleRowSet(RowSet, _SqlContext)
-     * @see #subQuery(SubQuery, _SqlContext)
      * @see #handleSubQuery(SubQuery, _SqlContext)
      * @see #withSubQuery(boolean, List, _SqlContext, Consumer)
      */
@@ -1135,7 +1143,14 @@ abstract class ArmyParser implements DialectParser {
             _SQLConsultant.assertUnionRowSet(query);
             final _UnionRowSet unionRowSet = (_UnionRowSet) query;
             this.handleQuery((Query) unionRowSet.leftRowSet(), original);
-            original.sqlBuilder().append(unionRowSet.unionType().spaceRender());
+
+            final _UnionType unionType;
+            unionType = unionRowSet.unionType();
+            if (this.validateUnionType) {
+                this.validateUnionType(unionType);
+            }
+            ((StatementContext) original).sqlBuilder.append(unionType.spaceRender());
+
             this.handleRowSet(unionRowSet.rightRowSet(), original);
         } else if (query instanceof _ParensRowSet) {
             if (query instanceof StandardQuery) {
@@ -2069,7 +2084,12 @@ abstract class ArmyParser implements DialectParser {
             context = ParensSelectContext.create(outerContext, stmt, this, visible);
             final _UnionRowSet union = (_UnionRowSet) stmt;
             this.handleQuery((Query) union.leftRowSet(), context);
+
+            if (this.validateUnionType) {
+
+            }
             context.sqlBuilder().append(union.unionType().spaceRender());
+
             this.handleRowSet(union.rightRowSet(), context);
         } else if (stmt instanceof _ParensRowSet) {
             if (stmt instanceof StandardQuery) {
@@ -2078,8 +2098,7 @@ abstract class ArmyParser implements DialectParser {
                 this.assertRowSet(stmt);
             }
             final _ParenRowSetContext parenContext;
-            if (stmt instanceof _Statement._WithClauseSpec
-                    && ((_Statement._WithClauseSpec) stmt).cteList().size() > 0) {
+            if (((_Statement._WithClauseSpec) stmt).cteList().size() > 0) {
                 context = ParensSelectContext.create(outerContext, stmt, this, visible);
 
                 this.parseWithClause((_Statement._WithClauseSpec) stmt, context);

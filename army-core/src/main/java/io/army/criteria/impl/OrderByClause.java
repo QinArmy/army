@@ -184,11 +184,11 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
 
         final RowSet left;
 
-        private final UnionType unionType;
+        private final _UnionType unionType;
 
         private final RowSet right;
 
-        UnionRowSet(RowSet left, UnionType unionType, RowSet right) {
+        UnionRowSet(RowSet left, _UnionType unionType, RowSet right) {
             if (((_RowSet) right).selectionSize() != ((_RowSet) left).selectionSize()) {
                 throw leftAndRightNotMatch(left, right);
             }
@@ -208,7 +208,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
         }
 
         @Override
-        public final SQLWords unionType() {
+        public final _UnionType unionType() {
             return this.unionType;
         }
 
@@ -300,7 +300,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
     static abstract class UnionSubRowSet extends UnionRowSet
             implements _DerivedTable {
 
-        UnionSubRowSet(RowSet left, UnionType unionType, RowSet right) {
+        UnionSubRowSet(RowSet left, _UnionType unionType, RowSet right) {
             super(left, unionType, right);
         }
 

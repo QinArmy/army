@@ -5,10 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect._Constant;
 import io.army.function.TextFunction;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingSupport;
-import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
+import io.army.mapping.*;
 import io.army.mapping.array.PostgreArrays;
 import io.army.mapping.postgre.*;
 import io.army.meta.MetaException;
@@ -192,8 +189,10 @@ public final class PostgreSingleRangeArrayType extends _ArmyPostgreRangeType imp
         final Class<?> targetComponentType;
         final RangeFunction<?, ?> rangeFunc;
 
-        final PostgreSingleRangeArrayType instance;
-        if (targetType == String[].class) {
+        final MappingType instance;
+        if (targetType == String.class) {
+            instance = TextType.INSTANCE;
+        } else if (targetType == String[].class) {
             instance = linearInstance(this.sqlType);
         } else if (!targetType.isArray()) {
             throw noMatchCompatibleMapping(this, targetType);

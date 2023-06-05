@@ -36,7 +36,7 @@ public enum Database {
         return this.supplier.get();
     }
 
-    public final Dialect dialectOf(String name) {
+    public final Dialect dialectOf(String name) throws IllegalArgumentException {
         return this.function.apply(name);
     }
 

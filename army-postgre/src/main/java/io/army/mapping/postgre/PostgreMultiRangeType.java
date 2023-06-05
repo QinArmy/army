@@ -8,6 +8,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
+import io.army.mapping.TextType;
 import io.army.mapping.array.PostgreArrays;
 import io.army.mapping.postgre.array.PostgreMultiRangeArrayType;
 import io.army.meta.MetaException;
@@ -232,8 +233,9 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
 
         final RangeFunction<?, ?> rangeFunc;
         final MappingType instance;
-
-        if (targetType == String[].class) {
+        if (targetType == String.class) {
+            instance = TextType.INSTANCE;
+        } else if (targetType == String[].class) {
             instance = textInstance(this.sqlType);
         } else if (!targetType.isArray()) {
             throw noMatchCompatibleMapping(this, targetType);

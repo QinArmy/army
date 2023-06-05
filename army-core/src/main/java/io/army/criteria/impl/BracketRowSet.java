@@ -45,62 +45,62 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
 
     @Override
     public final SP union() {
-        return this.unionQuery(UnionType.UNION);
+        return this.unionQuery(_UnionType.UNION);
     }
 
     @Override
     public final SP unionAll() {
-        return this.unionQuery(UnionType.UNION_ALL);
+        return this.unionQuery(_UnionType.UNION_ALL);
     }
 
     @Override
     public final SP unionDistinct() {
-        return this.unionQuery(UnionType.UNION_DISTINCT);
+        return this.unionQuery(_UnionType.UNION_DISTINCT);
     }
 
     @Override
     public final SP intersect() {
-        return this.unionQuery(UnionType.INTERSECT);
+        return this.unionQuery(_UnionType.INTERSECT);
     }
 
     @Override
     public final SP intersectAll() {
-        return this.unionQuery(UnionType.INTERSECT_ALL);
+        return this.unionQuery(_UnionType.INTERSECT_ALL);
     }
 
     @Override
     public final SP intersectDistinct() {
-        return this.unionQuery(UnionType.INTERSECT_DISTINCT);
+        return this.unionQuery(_UnionType.INTERSECT_DISTINCT);
     }
 
     @Override
     public final SP except() {
-        return this.unionQuery(UnionType.EXCEPT);
+        return this.unionQuery(_UnionType.EXCEPT);
     }
 
     @Override
     public final SP exceptAll() {
-        return this.unionQuery(UnionType.EXCEPT_ALL);
+        return this.unionQuery(_UnionType.EXCEPT_ALL);
     }
 
     @Override
     public final SP exceptDistinct() {
-        return this.unionQuery(UnionType.EXCEPT_DISTINCT);
+        return this.unionQuery(_UnionType.EXCEPT_DISTINCT);
     }
 
     @Override
     public final SP minus() {
-        return this.unionQuery(UnionType.MINUS);
+        return this.unionQuery(_UnionType.MINUS);
     }
 
     @Override
     public final SP minusAll() {
-        return this.unionQuery(UnionType.MINUS_ALL);
+        return this.unionQuery(_UnionType.MINUS_ALL);
     }
 
     @Override
     public final SP minusDistinct() {
-        return this.unionQuery(UnionType.MINUS_DISTINCT);
+        return this.unionQuery(_UnionType.MINUS_DISTINCT);
     }
 
     @Override
@@ -204,10 +204,10 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
     abstract I onAsQuery();
 
 
-    abstract SP createUnionRowSet(UnionType unionType);
+    abstract SP createUnionRowSet(_UnionType unionType);
 
 
-    private SP unionQuery(final UnionType unionType) {
+    private SP unionQuery(final _UnionType unionType) {
         this.endQueryStatement();
         return this.createUnionRowSet(unionType);
     }

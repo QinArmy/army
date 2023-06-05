@@ -1,7 +1,6 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
-import io.army.env.NameMode;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
@@ -13,6 +12,7 @@ import io.army.util._Exceptions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 
 /**
@@ -91,15 +91,35 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
         return this.parser.dialect;
     }
 
-    @Override
-    public final NameMode funcNameMode() {
-        return this.parser.funcNameMode;
-    }
 
     @Override
-    public final boolean isLowerFunctionName() {
-        //TODO
-        return false;
+    public final StringBuilder appendFuncName(final boolean buildIn, final String name) {
+        if (!buildIn && (this.parser.isKeyWords(name) || !_DialectUtils.isSimpleIdentifier(name))) {
+            String m = String.format("user defined function name[%s] for %s", name, this.parser.dialect);
+            throw new CriteriaException(m);
+        }
+        final StringBuilder sqlBuilder = this.sqlBuilder;
+        sqlBuilder.append(_Constant.SPACE);
+        switch (this.parser.funcNameMode) {
+            case DEFAULT:
+                sqlBuilder.append(name);
+                break;
+            case LOWER_CASE:
+                sqlBuilder.append(name.toLowerCase(Locale.ROOT));
+                break;
+            case UPPER_CASE:
+                sqlBuilder.append(name.toUpperCase(Locale.ROOT));
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this.parser.funcNameMode);
+        }
+        return sqlBuilder;
+    }
+
+
+    @Override
+    public final void appendSubQuery(final SubQuery query) {
+        this.parser.handleSubQuery(query, this);
     }
 
     @Override

@@ -113,10 +113,10 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        _ValueWithComplexSpec<I> createUnionValues(final UnionType unionType) {
+        _ValueWithComplexSpec<I> createUnionValues(final _UnionType unionType) {
 
             final Function<RowSet, I> unionFunc;
-            unionFunc = rowSet -> this.function.apply(new UnionValues( this, unionType, rowSet));
+            unionFunc = rowSet -> this.function.apply(new UnionValues(this, unionType, rowSet));
             return new ValuesDispatcher<>(this.context, unionFunc);
         }
 
@@ -150,7 +150,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        _ValueWithComplexSpec<I> createUnionValues(final UnionType unionType) {
+        _ValueWithComplexSpec<I> createUnionValues(final _UnionType unionType) {
 
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubValues(this, unionType, rowSet));
@@ -207,9 +207,9 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        _ValueWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
+        _ValueWithComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<RowSet, I> unionFunc;
-            unionFunc = rowSet -> this.function.apply(new UnionValues( this, unionType, rowSet));
+            unionFunc = rowSet -> this.function.apply(new UnionValues(this, unionType, rowSet));
             return new ValuesDispatcher<>(this.context, unionFunc);
         }
 
@@ -231,7 +231,7 @@ abstract class MySQLSimpleValues<I extends Item>
         }
 
         @Override
-        _ValueWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
+        _ValueWithComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
 
             final Function<RowSet, I> unionFunc;
             unionFunc = rowSet -> this.function.apply(new UnionSubValues(this, unionType, rowSet));

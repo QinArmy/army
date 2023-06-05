@@ -145,7 +145,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        _QueryWithComplexSpec<I> createUnionValues(final UnionType unionType) {
+        _QueryWithComplexSpec<I> createUnionValues(final _UnionType unionType) {
             final Function<RowSet, I> unionFun;
             unionFun = right -> this.function.apply(new UnionValues(this, unionType, right));
             return new ValuesDispatcher<>(this.context, unionFun);
@@ -181,7 +181,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        _QueryWithComplexSpec<I> createUnionValues(final UnionType unionType) {
+        _QueryWithComplexSpec<I> createUnionValues(final _UnionType unionType) {
             final Function<RowSet, I> unionFun;
             unionFun = rowSet -> this.function.apply(new UnionSubValues(this, unionType, rowSet));
             return new SubValuesDispatcher<>(this.context, unionFun);
@@ -240,7 +240,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        _QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
+        _QueryWithComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<RowSet, I> unionFun;
             unionFun = rowSet -> this.function.apply(new UnionValues(this, unionType, rowSet));
             return new ValuesDispatcher<>(this.context, unionFun);
@@ -266,7 +266,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
         }
 
         @Override
-        _QueryWithComplexSpec<I> createUnionRowSet(final UnionType unionType) {
+        _QueryWithComplexSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<RowSet, I> unionFun;
             unionFun = rowSet -> this.function.apply(new UnionSubValues(this, unionType, rowSet));
             return new SubValuesDispatcher<>(this.context, unionFun);

@@ -20,7 +20,10 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 abstract class DialectFunctionUtils extends FunctionUtils {
@@ -29,19 +32,14 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }
 
 
-    static SimpleExpression jsonTableRowFunc(String name, _SelectionGroup._TableFieldGroup group,
-                                             MappingType returnType) {
-        return new JsonObjectTableRowFunc(name, group, returnType);
-    }
-
-
-    static Functions._TabularFunction compositeTabularFunc(String name, List<?> argList, List<? extends Selection> selectionList) {
-        return new CompositeTabularFunction(name, argList, selectionList, null);
-    }
-
     static Functions._TabularFunction compositeTabularFunc(String name, List<?> argList, List<? extends Selection> selectionList,
                                                            Map<String, Selection> selectionMap) {
-        return new CompositeTabularFunction(name, argList, selectionList, selectionMap);
+        return new CompositeTabularFunction(name, true, argList, selectionList, selectionMap);
+    }
+
+    static Functions._TabularWithOrdinalityFunction zeroArgTabularFunc(final String name,
+                                                                       final List<Selection> funcFieldList) {
+        return new ZeroArgTabularFunction(name, true, funcFieldList);
     }
 
     static Functions._TabularWithOrdinalityFunction oneArgTabularFunc(final String name, final Expression one,
@@ -49,7 +47,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
-        return new OneArgTabularFunction(name, one, funcFieldList);
+        return new OneArgTabularFunction(name, true, one, funcFieldList);
     }
 
     static Functions._TabularWithOrdinalityFunction twoArgTabularFunc(final String name, final Expression one,
@@ -60,7 +58,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
         }
-        return new TwoArgTabularFunction(name, one, two, funcFieldList);
+        return new TwoArgTabularFunction(name, true, one, two, funcFieldList);
     }
 
     static Functions._TabularWithOrdinalityFunction threeArgTabularFunc(final String name, final Expression one,
@@ -73,21 +71,21 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, three);
         }
-        return new ThreeArgTabularFunction(name, one, two, three, funcFieldList);
+        return new ThreeArgTabularFunction(name, true, one, two, three, funcFieldList);
     }
 
 
     static Functions._TabularWithOrdinalityFunction multiArgTabularFunc(final String name,
                                                                         final List<ArmyExpression> argList,
                                                                         final List<Selection> funcFieldList) {
-        return new MultiArgTabularFunction(name, argList, funcFieldList);
+        return new MultiArgTabularFunction(name, true, argList, funcFieldList);
     }
 
     static Functions._ColumnWithOrdinalityFunction zeroArgColumnFunction(final String name,
                                                                          final @Nullable String fieldName,
                                                                          final TypeMeta returnType) {
 
-        return new ZeroArgColumnFunction(name, fieldName, returnType);
+        return new ZeroArgColumnFunction(name, true, fieldName, returnType);
     }
 
 
@@ -97,7 +95,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
-        return new OneArgColumnFunction(name, fieldName, one, returnType);
+        return new OneArgColumnFunction(name, true, fieldName, one, returnType);
     }
 
     static Functions._ColumnWithOrdinalityFunction twoArgColumnFunction(
@@ -108,7 +106,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         } else if (!(two instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, two);
         }
-        return new TwoArgColumnFunction(name, fieldName, one, two, returnType);
+        return new TwoArgColumnFunction(name, true, fieldName, one, two, returnType);
     }
 
     static Functions._ColumnWithOrdinalityFunction threeArgColumnFunction(
@@ -121,7 +119,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         } else if (!(three instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, three);
         }
-        return new ThreeArgColumnFunction(name, fieldName, one, two, three, returnType);
+        return new ThreeArgColumnFunction(name, true, fieldName, one, two, three, returnType);
     }
 
     static Functions._ColumnWithOrdinalityFunction fourArgColumnFunction(
@@ -137,7 +135,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         } else if (!(four instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, four);
         }
-        return new FourArgColumnFunction(name, fieldName, one, two, three, four, returnType);
+        return new FourArgColumnFunction(name, true, fieldName, one, two, three, four, returnType);
     }
 
     static List<Selection> compositeFieldList(final String name, final Expression compositeExp) {
@@ -181,7 +179,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         if (!(one instanceof FunctionArg.SingleFunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
-        return new OneArgUndoneFunction(name, one);
+        return new OneArgUndoneFunction(name, true, one);
     }
 
 
@@ -197,16 +195,19 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         private final String name;
 
+        private final boolean buildIn;
+
         private final List<?> argList;
 
         private final List<? extends Selection> selectionList;
 
         private Map<String, Selection> selectionMap;
 
-        private CompositeTabularFunction(String name, List<?> argList, List<? extends Selection> selectionList,
+        private CompositeTabularFunction(String name, boolean buildIn, List<?> argList, List<? extends Selection> selectionList,
                                          @Nullable Map<String, Selection> selectionMap) {
             assert selectionMap == null || selectionMap.size() == selectionList.size();
             this.name = name;
+            this.buildIn = buildIn;
             this.argList = argList;
             this.selectionList = selectionList;
             this.selectionMap = selectionMap;
@@ -220,9 +221,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         public void appendSql(final _SqlContext context) {
             final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
-                    .append(this.name)
+            sqlBuilder = context.appendFuncName(this.buildIn, this.name)
                     .append(_Constant.LEFT_PAREN);
             FunctionUtils.appendComplexArg(this.argList, context);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -253,20 +252,27 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         static final String ORDINALITY = "ordinality";
 
+        static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.INSTANCE);
+
         private static final String SPACE_WITH_ORDINALITY = " WITH ORDINALITY";
+
 
         final CriteriaContext outerContext;
 
         final String name;
 
-        private TabularSqlFunction(String name) {
+        final boolean buildIn;
+
+        private TabularSqlFunction(String name, boolean buildI) {
             this.name = name;
+            this.buildIn = buildI;
             this.outerContext = ContextStack.peek();
         }
 
         private TabularSqlFunction(ColumnFunction columnFunction) {
-            this.outerContext = columnFunction.outerContext;
             this.name = columnFunction.name;
+            this.buildIn = columnFunction.buildIn;
+            this.outerContext = columnFunction.outerContext;
         }
 
         @Override
@@ -277,22 +283,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         public final void appendSql(final _SqlContext context) {
             final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-
-            switch (context.funcNameMode()) {
-                case DEFAULT:
-                    sqlBuilder.append(this.name);
-                    break;
-                case LOWER_CASE:
-                    sqlBuilder.append(this.name.toLowerCase(Locale.ROOT));
-                    break;
-                case UPPER_CASE:
-                    sqlBuilder.append(this.name.toUpperCase(Locale.ROOT));
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(context.funcNameMode());
-            }
+            sqlBuilder = context.appendFuncName(this.buildIn, this.name);
 
             if (this instanceof NoArgFunction) {
                 sqlBuilder.append(_Constant.PARENS);
@@ -348,10 +339,8 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             if (this instanceof MultiFieldTabularFunction) {
                 final Boolean v = ((MultiFieldTabularFunction) this).ordinality;
                 withOrdinality = v != null && v;
-            } else if (this instanceof ColumnTabularFunctionWrapper) {
-                withOrdinality = true;
             } else if (this instanceof ColumnFunction) {
-                withOrdinality = false;
+                withOrdinality = ((ColumnFunction) this).fieldList.size() > 1;
             } else {
                 // no bug, never here
                 throw new IllegalArgumentException();
@@ -362,77 +351,24 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
     }//TabularSqlFunction
 
-    private static final class ColumnTabularFunctionWrapper extends TabularSqlFunction
-            implements ArmyTabularFunction {
-
-        private final ColumnFunction columnFunction;
-
-        private final List<Selection> funcFieldList;
-
-        private Map<String, Selection> selectionMap;
-
-        private ColumnTabularFunctionWrapper(final ColumnFunction columnFunction) {
-            super(columnFunction);
-            this.columnFunction = columnFunction;
-            this.funcFieldList = ArrayUtils.asUnmodifiableList(columnFunction.field,
-                    ArmySelections.forName(ORDINALITY, LongType.INSTANCE)
-            );
-        }
-
-        @Override
-        public boolean hasAnonymousField() {
-            return this.columnFunction.hasAnonymousField();
-        }
-
-
-        @Override
-        public Selection refSelection(final @Nullable String name) {
-            if (name == null) {
-                throw ContextStack.nullPointer(this.outerContext);
-            }
-            Map<String, Selection> selectionMap = this.selectionMap;
-            if (selectionMap == null) {
-                selectionMap = createSelectionMapFrom(this.outerContext, this.funcFieldList);
-                this.selectionMap = selectionMap;
-            }
-            return selectionMap.get(name);
-        }
-
-        @Override
-        public List<? extends Selection> refAllSelection() {
-            return this.funcFieldList;
-        }
-
-        @Override
-        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.columnFunction.appendArg(sqlBuilder, context);
-        }
-
-        @Override
-        void argToString(StringBuilder builder) {
-            this.columnFunction.argToString(builder);
-        }
-
-
-    }//ColumnTabularFunctionWrapper
 
     private static abstract class ColumnFunction extends TabularSqlFunction
             implements ArmyTabularFunction, Functions._ColumnWithOrdinalityFunction {
 
         private final TypeMeta returnType;
 
-        private final Selection field;
+        private List<Selection> fieldList;
 
         private String userDefinedAlias;
 
         private TypeMeta userDefinedType;
 
-        private ColumnFunction(String name, @Nullable String fieldName, TypeMeta returnType) {
-            super(name);
+        private ColumnFunction(String name, boolean buildIn, @Nullable String fieldName, TypeMeta returnType) {
+            super(name, buildIn);
             if (fieldName == null) {
-                this.field = ArmySelections.forAnonymous(returnType);
+                this.fieldList = _Collections.singletonList(ArmySelections.forAnonymous(returnType));
             } else {
-                this.field = ArmySelections.forName(fieldName, returnType);
+                this.fieldList = _Collections.singletonList(ArmySelections.forName(fieldName, returnType));
             }
             this.returnType = returnType;
         }
@@ -440,7 +376,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         @Override
         public final boolean hasAnonymousField() {
-            return this.field instanceof AnonymousSelection;
+            return this.fieldList.get(0) instanceof AnonymousSelection;
         }
 
         @Override
@@ -464,7 +400,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
             this.userDefinedType = this.returnType;
-            return new ColumnTabularFunctionWrapper(this);
+            return this.addOrdinalityField();
         }
 
         @Override
@@ -472,20 +408,28 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             if (this.userDefinedType != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
-            final Functions._TabularFunction function;
-            if (predicate.getAsBoolean()) {
-                function = new ColumnTabularFunctionWrapper(this);
-            } else {
-                function = this;
-            }
             this.userDefinedType = this.returnType;
-            return function;
+            if (predicate.getAsBoolean()) {
+                this.addOrdinalityField();
+            }
+            return this;
+        }
+
+        private Functions._TabularFunction addOrdinalityField() {
+            List<Selection> fieldList = this.fieldList;
+            if (fieldList.size() != 1) {
+                throw ContextStack.castCriteriaApi(this.outerContext);
+            }
+            this.fieldList = ArrayUtils.asUnmodifiableList(fieldList.get(0), ORDINALITY_FIELD);
+            return this;
         }
 
         @Override
         public final Selection refSelection(final @Nullable String name) {
-            final Selection field = this.field, selection;
-            if (field instanceof AnonymousSelection) {
+            final List<Selection> fieldList = this.fieldList;
+            final Selection selection;
+            Selection field;
+            if ((field = fieldList.get(0)) instanceof AnonymousSelection) {
                 //no bug,never here
                 throw new UnsupportedOperationException();
             } else if (this.userDefinedAlias != null) {
@@ -493,6 +437,8 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             } else if (name == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             } else if (name.equals(field.alias())) {
+                selection = field;
+            } else if (fieldList.size() > 1 && (field = fieldList.get(1)).alias().equals(name)) {
                 selection = field;
             } else {
                 selection = null;
@@ -505,7 +451,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             if (this.userDefinedAlias != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
-            return _Collections.singletonList(this.field);
+            return this.fieldList;
         }
 
         @Override
@@ -534,8 +480,8 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
     private static final class ZeroArgColumnFunction extends ColumnFunction implements NoArgFunction {
 
-        private ZeroArgColumnFunction(String name, @Nullable String fieldName, TypeMeta returnType) {
-            super(name, fieldName, returnType);
+        private ZeroArgColumnFunction(String name, boolean buildIn, @Nullable String fieldName, TypeMeta returnType) {
+            super(name, buildIn, fieldName, returnType);
         }
 
         @Override
@@ -559,8 +505,8 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         /**
          * @see #oneArgColumnFunction(String, Expression, String, TypeMeta)
          */
-        private OneArgColumnFunction(String name, @Nullable String fieldName, Expression one, TypeMeta returnType) {
-            super(name, fieldName, returnType);
+        private OneArgColumnFunction(String name, boolean buildIn, @Nullable String fieldName, Expression one, TypeMeta returnType) {
+            super(name, buildIn, fieldName, returnType);
             this.one = (ArmyExpression) one;
         }
 
@@ -584,9 +530,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         private final ArmyExpression two;
 
-        private TwoArgColumnFunction(String name, @Nullable String fieldName, Expression one, Expression two,
+        private TwoArgColumnFunction(String name, boolean buildIn, @Nullable String fieldName, Expression one, Expression two,
                                      TypeMeta returnType) {
-            super(name, fieldName, returnType);
+            super(name, buildIn, fieldName, returnType);
             this.one = (ArmyExpression) one;
             this.two = (ArmyExpression) two;
         }
@@ -617,9 +563,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         private final ArmyExpression three;
 
-        private ThreeArgColumnFunction(String name, @Nullable String fieldName, Expression one, Expression two,
+        private ThreeArgColumnFunction(String name, boolean buildIn, @Nullable String fieldName, Expression one, Expression two,
                                        Expression three, TypeMeta returnType) {
-            super(name, fieldName, returnType);
+            super(name, buildIn, fieldName, returnType);
             this.one = (ArmyExpression) one;
             this.two = (ArmyExpression) two;
             this.three = (ArmyExpression) three;
@@ -664,9 +610,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         /**
          * @see #fourArgColumnFunction(String, Expression, Expression, Expression, Expression, String, TypeMeta)
          */
-        private FourArgColumnFunction(String name, @Nullable String fieldName, Expression one, Expression two,
+        private FourArgColumnFunction(String name, boolean buildIn, @Nullable String fieldName, Expression one, Expression two,
                                       Expression three, Expression four, TypeMeta returnType) {
-            super(name, fieldName, returnType);
+            super(name, buildIn, fieldName, returnType);
             this.one = (ArmyExpression) one;
             this.two = (ArmyExpression) two;
             this.three = (ArmyExpression) three;
@@ -717,8 +663,8 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         private Boolean ordinality;
 
 
-        private MultiFieldTabularFunction(String name, List<Selection> funcFieldList) {
-            super(name);
+        private MultiFieldTabularFunction(String name, boolean buildIn, List<Selection> funcFieldList) {
+            super(name, buildIn);
             assert funcFieldList.size() > 0;
             this.funcFieldList = Collections.unmodifiableList(funcFieldList);
             this.actualFuncFieldList = this.funcFieldList;
@@ -804,6 +750,26 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
     }//MultiFieldTabularFunction
 
+
+    private static final class ZeroArgTabularFunction extends MultiFieldTabularFunction implements NoArgFunction {
+
+        private ZeroArgTabularFunction(String name, boolean buildIn, List<Selection> funcFieldList) {
+            super(name, buildIn, funcFieldList);
+        }
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            //no-op
+        }
+
+
+    }//ZeroArgTabularFunction
+
     private static final class OneArgTabularFunction extends MultiFieldTabularFunction {
 
         private final FunctionArg one;
@@ -811,8 +777,8 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         /**
          * @see DialectFunctionUtils#oneArgTabularFunc(String, Expression, List)
          */
-        private OneArgTabularFunction(String name, Expression one, List<Selection> funcFieldList) {
-            super(name, funcFieldList);
+        private OneArgTabularFunction(String name, boolean buildIn, Expression one, List<Selection> funcFieldList) {
+            super(name, buildIn, funcFieldList);
             this.one = (FunctionArg) one;
         }
 
@@ -839,8 +805,8 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         /**
          * @see DialectFunctionUtils#twoArgTabularFunc(String, Expression, Expression, List)
          */
-        private TwoArgTabularFunction(String name, Expression one, Expression two, List<Selection> funcFieldList) {
-            super(name, funcFieldList);
+        private TwoArgTabularFunction(String name, boolean buildIn, Expression one, Expression two, List<Selection> funcFieldList) {
+            super(name, buildIn, funcFieldList);
             this.one = (FunctionArg) one;
             this.two = (FunctionArg) two;
         }
@@ -875,9 +841,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         /**
          * @see DialectFunctionUtils#twoArgTabularFunc(String, Expression, Expression, List)
          */
-        private ThreeArgTabularFunction(String name, Expression one, Expression two, Expression three,
+        private ThreeArgTabularFunction(String name, boolean buildIn, Expression one, Expression two, Expression three,
                                         List<Selection> funcFieldList) {
-            super(name, funcFieldList);
+            super(name, buildIn, funcFieldList);
             this.one = (FunctionArg) one;
             this.two = (FunctionArg) two;
             this.three = (FunctionArg) three;
@@ -910,9 +876,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         private final List<? extends ArmyExpression> argList;
 
-        private MultiArgTabularFunction(String name, List<? extends ArmyExpression> argList,
+        private MultiArgTabularFunction(String name, boolean buildIn, List<? extends ArmyExpression> argList,
                                         List<Selection> funcFieldList) {
-            super(name, funcFieldList);
+            super(name, buildIn, funcFieldList);
             assert argList.size() > 0;
             this.argList = argList;
         }
@@ -950,8 +916,11 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         private final String name;
 
-        private TabularUndoneFunction(String name) {
+        private final boolean buildIn;
+
+        private TabularUndoneFunction(String name, boolean buildIn) {
             this.name = name;
+            this.buildIn = buildIn;
         }
 
         @Override
@@ -962,24 +931,16 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         public void appendSql(final _SqlContext context) {
             final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
+            sqlBuilder = context.appendFuncName(this.buildIn, this.name)
+                    .append(_Constant.LEFT_PAREN);
 
-            if (context.isLowerFunctionName()) {
-                sqlBuilder.append(this.name.toLowerCase(Locale.ROOT));
-            } else {
-                sqlBuilder.append(this.name);
-            }
-
-            sqlBuilder.append(_Constant.LEFT_PAREN);
-
-            this.appendArg(context);
+            this.appendArg(sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
         }
 
-        abstract void appendArg(_SqlContext context);
+        abstract void appendArg(StringBuilder sqlBuilder, _SqlContext context);
 
         abstract void argToString(StringBuilder builder);
 
@@ -1006,13 +967,13 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         /**
          * @see #oneArgUndoneFunc(String, Expression)
          */
-        private OneArgUndoneFunction(String name, Expression one) {
-            super(name);
+        private OneArgUndoneFunction(String name, boolean buildIn, Expression one) {
+            super(name, buildIn);
             this.one = (ArmyExpression) one;
         }
 
         @Override
-        void appendArg(final _SqlContext context) {
+        void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
             this.one.appendSql(context);
         }
 
