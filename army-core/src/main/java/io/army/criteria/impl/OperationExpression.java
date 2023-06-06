@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
@@ -849,7 +848,7 @@ abstract class OperationExpression extends OperationSQLExpression
 
 
     static abstract class SqlFunctionExpression extends OperationSimpleExpression
-            implements SQLFunction, TypeInfer.DelayTypeInfer {
+            implements ArmySQLFunction, TypeInfer.DelayTypeInfer {
 
         final String name;
 

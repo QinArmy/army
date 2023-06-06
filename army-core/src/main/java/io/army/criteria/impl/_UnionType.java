@@ -20,7 +20,7 @@ public enum _UnionType implements SQLWords {
     MINUS_ALL(" MINUS ALL"),
     MINUS_DISTINCT(" MINUS DISTINCT");
 
-    final String spaceWords;
+    private final String spaceWords;
 
     _UnionType(String keyWords) {
         this.spaceWords = keyWords;

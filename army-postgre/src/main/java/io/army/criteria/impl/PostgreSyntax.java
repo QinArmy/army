@@ -1196,6 +1196,14 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     }
 
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">ROWS FROM</a>
+     */
+    public static _TabularWithOrdinalityFunction rowsFrom(Consumer<Postgres._RowsFromSpaceClause> consumer) {
+        return PostgreFunctionUtils.rowsFrom(consumer);
+    }
+
+
     /*-------------------below package method -------------------*/
 
     static String keyWordToString(Enum<?> keyWordEnum) {

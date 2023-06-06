@@ -6,7 +6,11 @@ import io.army.criteria.UndoneFunction;
 import io.army.criteria.impl.inner._FunctionField;
 import io.army.criteria.impl.inner._ParensRowSet;
 import io.army.criteria.impl.inner._RowSet;
+import io.army.criteria.postgre.FuncColumnDefCommaClause;
 import io.army.criteria.postgre.PostgreStatement;
+import io.army.criteria.postgre.RowsFromCommaClause;
+import io.army.dialect._Constant;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.util._Collections;
@@ -46,11 +50,24 @@ abstract class PostgreUtils extends CriteriaUtils {
         };
     }
 
+    static Postgres._RowsFromAsClause rowsFromUndoneFunc(
+            final UndoneFunction func, final Function<DoneFunc, RowsFromCommaClause> function) {
+        return c -> {
+            final FuncColumnDefinitionClause clause;
+            clause = new FuncColumnDefinitionClause();
+
+            c.accept(clause);
+
+            clause.endClause(); // end clause
+            return function.apply(new DoneFunc(func, clause.fieldList, clause.fieldMap));
+        };
+    }
+
     /*-------------------below inner class -------------------*/
 
     private static final class FuncColumnDefinitionClause
             implements PostgreStatement._FuncColumnDefinitionSpaceClause,
-            PostgreStatement.FuncColumnDefCommaClause {
+            FuncColumnDefCommaClause {
 
         private List<_FunctionField> fieldList = _Collections.arrayList();
 
@@ -62,7 +79,7 @@ abstract class PostgreUtils extends CriteriaUtils {
         }
 
         @Override
-        public PostgreStatement.FuncColumnDefCommaClause space(String name, MappingType type) {
+        public FuncColumnDefCommaClause space(String name, MappingType type) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -71,8 +88,8 @@ abstract class PostgreUtils extends CriteriaUtils {
         }
 
         @Override
-        public PostgreStatement.FuncColumnDefCommaClause comma(final @Nullable String name,
-                                                               @Nullable final MappingType type) {
+        public FuncColumnDefCommaClause comma(final @Nullable String name,
+                                              @Nullable final MappingType type) {
             final List<_FunctionField> fieldList = this.fieldList;
             if (this.state != Boolean.TRUE || !(fieldList instanceof ArrayList)) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
@@ -110,7 +127,7 @@ abstract class PostgreUtils extends CriteriaUtils {
     }//FuncColumnDefinitionClause
 
 
-    static final class DoneFunc {
+    static final class DoneFunc implements ArmySQLFunction {
 
         final UndoneFunction funcItem;
 
@@ -128,6 +145,39 @@ abstract class PostgreUtils extends CriteriaUtils {
             this.fieldList = fieldList;
             this.fieldMap = fieldMap;
 
+        }
+
+        @Override
+        public String name() {
+            return this.funcItem.name();
+        }
+
+        /**
+         * this method for ROWS FROM( ... ) syntax.
+         */
+        @Override
+        public void appendSql(final _SqlContext context) {
+            ((ArmySQLFunction) this.funcItem).appendSql(context);
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_AS)
+                    .append(_Constant.LEFT_PAREN);
+            CriteriaUtils.appendSelfDescribedList(this.fieldList, sqlBuilder, context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(this.funcItem)
+                    .append(_Constant.SPACE_AS)
+                    .append(_Constant.LEFT_PAREN);
+
+            CriteriaUtils.selfDescribedListToString(this.fieldList, builder);
+
+            return builder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
         }
 
 

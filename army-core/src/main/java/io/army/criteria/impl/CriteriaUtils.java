@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
+import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
@@ -37,8 +38,29 @@ abstract class CriteriaUtils {
      */
     static final List<String> EMPTY_STRING_LIST = Collections.unmodifiableList(new ArrayList<>(0));
 
-    static final Item NONE_ITEM = new Item() {
-    };
+
+    static void appendSelfDescribedList(final List<? extends _SelfDescribed> list, final StringBuilder sqlBuilder,
+                                        final _SqlContext context) {
+        final int fieldSize = list.size();
+        for (int i = 0; i < fieldSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA);
+            }
+            list.get(i).appendSql(context);
+        }
+
+    }
+
+    static void selfDescribedListToString(final List<? extends _SelfDescribed> list, final StringBuilder builder) {
+        final int fieldSize = list.size();
+        for (int i = 0; i < fieldSize; i++) {
+            if (i > 0) {
+                builder.append(_Constant.SPACE_COMMA);
+            }
+            builder.append(list.get(i));
+        }
+
+    }
 
     @Deprecated
     static List<String> columnAliasList(final boolean required, Consumer<Consumer<String>> consumer) {

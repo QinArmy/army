@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Predicate;
-import io.army.criteria.standard.SQLFunction;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.function.*;
@@ -649,7 +648,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }//OperationSimplePredicate
 
 
-    static abstract class SqlFunctionPredicate extends OperationSimplePredicate implements SQLFunction {
+    static abstract class SqlFunctionPredicate extends OperationSimplePredicate implements ArmySQLFunction {
 
         final String name;
 

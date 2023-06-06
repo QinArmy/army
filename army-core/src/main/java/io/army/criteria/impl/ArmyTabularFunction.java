@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.impl.inner._DerivedTable;
-import io.army.criteria.impl.inner._SelfDescribed;
 
 /**
  * <p>
@@ -10,10 +9,12 @@ import io.army.criteria.impl.inner._SelfDescribed;
  *
  * @since 1.0
  */
-interface ArmyTabularFunction extends _DerivedTable, _SelfDescribed, Functions._TabularFunction {
+interface ArmyTabularFunction extends _DerivedTable, ArmySQLFunction, Functions._TabularFunction {
 
 
     boolean hasAnonymousField();
+
+    boolean hasWithOrdinality();
 
 
 }

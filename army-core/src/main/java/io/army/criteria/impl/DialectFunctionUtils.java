@@ -247,16 +247,16 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//CompositeTabularFunction
 
 
-    private static abstract class TabularSqlFunction implements ArmyTabularFunction {
+     static abstract class TabularSqlFunction implements ArmyTabularFunction {
 
-        static final String ORDINALITY = "ordinality";
+         static final String ORDINALITY = "ordinality";
 
-        static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.INSTANCE);
+         static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.INSTANCE);
 
-        private static final String SPACE_WITH_ORDINALITY = " WITH ORDINALITY";
+         private static final String SPACE_WITH_ORDINALITY = " WITH ORDINALITY";
 
 
-        final CriteriaContext outerContext;
+         final CriteriaContext outerContext;
 
         final String name;
 
@@ -376,6 +376,11 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         public final boolean hasAnonymousField() {
             return this.fieldList.get(0) instanceof AnonymousSelection;
+        }
+
+        @Override
+        public final boolean hasWithOrdinality() {
+            return this.fieldList.size() > 1;
         }
 
         @Override
@@ -683,6 +688,12 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
+        public final boolean hasWithOrdinality() {
+            final Boolean ordinality = this.ordinality;
+            return ordinality != null && ordinality;
+        }
+
+        @Override
         public final Selection refSelection(final @Nullable String name) {
             if (this.ordinality == null) {
                 this.ordinality = Boolean.FALSE;
@@ -728,7 +739,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             final List<Selection> list = _Collections.arrayList(this.funcFieldList.size() + 1);
             list.addAll(this.funcFieldList);
             list.add(ORDINALITY_FIELD);
-            this.actualFuncFieldList = Collections.unmodifiableList(list);
+            this.actualFuncFieldList = _Collections.unmodifiableList(list);
 
             this.ordinality = Boolean.TRUE;
             return this;
@@ -911,7 +922,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
     }//MultiArgTabularFunction
 
-    private static abstract class TabularUndoneFunction implements UndoneFunction, _SelfDescribed {
+    private static abstract class TabularUndoneFunction implements UndoneFunction, ArmySQLFunction {
 
         private final String name;
 
@@ -1070,7 +1081,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
     }//FunctionField
 
 
-    private static final class JsonObjectTableRowFunc extends FunctionUtils.FunctionExpression {
+    private static final class JsonObjectTableRowFunc extends OperationExpression.SqlFunctionExpression {
 
         private final _SelectionGroup._TableFieldGroup group;
 

@@ -1,10 +1,12 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._FunctionField;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableNameElement;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreWindow;
+import io.army.criteria.postgre.RowsFromCommaClause;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.*;
 import io.army.dialect.postgre.PostgreDialect;
@@ -207,6 +209,13 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         return new BiOrderedSetType(exp, function);
     }
 
+    static Functions._TabularWithOrdinalityFunction rowsFrom(Consumer<Postgres._RowsFromSpaceClause> consumer) {
+        final PostgreRowsFromFunction func;
+        func = new PostgreRowsFromFunction();
+        consumer.accept(func);
+        return func.endFunc();
+    }
+
     /**
      * @see #oneArgAggFunc(String, SqlSyntax.ArgDistinct, Expression, Consumer, TypeMeta)
      */
@@ -241,6 +250,10 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     private static SimpleExpression onXmlForestEnd(ArmyFuncClause clause) {
         assert clause instanceof XmlNamedElementPart;
         return FunctionUtils.clauseFunc("XMLFOREST", clause, XmlType.TEXT);
+    }
+
+    private static CriteriaException noWithGroupClause() {
+        return ContextStack.clearStackAndCriteriaError("error,you don't invoke WITHIN GROUP clause");
     }
 
     @Nullable
@@ -1773,9 +1786,222 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }//BiOrderedSetType
 
 
-    private static CriteriaException noWithGroupClause() {
-        return ContextStack.clearStackAndCriteriaError("error,you don't invoke WITHIN GROUP clause");
-    }
+    private static final class PostgreRowsFromFunction implements Functions._TabularWithOrdinalityFunction,
+            Postgres._RowsFromSpaceClause,
+            RowsFromCommaClause,
+            ArmyTabularFunction {
+
+        private static final String ROWS_FROM = "ROWS FROM";
+
+        private List<ArmySQLFunction> functionList = _Collections.arrayList();
+
+        private List<Selection> fieldList = _Collections.arrayList();
+
+        private Map<String, Selection> fieldMap = _Collections.hashMap();
+
+        private boolean existsAnonymousField;
+
+        private Boolean state;
+
+        /**
+         * @see #rowsFrom(Consumer)
+         */
+        private PostgreRowsFromFunction() {
+        }
+
+        @Override
+        public String name() {
+            return ROWS_FROM;
+        }
+
+        @Override
+        public RowsFromCommaClause space(SimpleExpression func) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.onAddFuncExp(func);
+        }
+
+        @Override
+        public RowsFromCommaClause space(SimplePredicate func) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.onAddFuncExp(func);
+        }
+
+        @Override
+        public RowsFromCommaClause space(Functions._TabularFunction func) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.onAddFuncExp(func);
+        }
+
+        @Override
+        public Postgres._RowsFromAsClause space(UndoneFunction func) {
+            if (this.state != null) {
+                throw CriteriaUtils.spaceMethodNotFirst();
+            }
+            this.state = Boolean.TRUE;
+            return this.comma(func);
+        }
+
+
+        @Override
+        public RowsFromCommaClause comma(SimpleExpression func) {
+            return this.onAddFuncExp(func);
+        }
+
+        @Override
+        public RowsFromCommaClause comma(SimplePredicate func) {
+            return this.onAddFuncExp(func);
+        }
+
+        @Override
+        public RowsFromCommaClause comma(Functions._TabularFunction func) {
+            return this.onAddFuncExp(func);
+        }
+
+        @Override
+        public Postgres._RowsFromAsClause comma(final UndoneFunction func) {
+            final Boolean state = this.state;
+            if (state != Boolean.TRUE) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (!(func instanceof ArmySQLFunction)) {
+                throw ContextStack.clearStackAndNonArmyItem(func);
+            }
+            return PostgreUtils.rowsFromUndoneFunc(func, this::onFuncDone);
+        }
+
+        @Override
+        public Functions._TabularFunction withOrdinality() {
+            if (this.state != Boolean.FALSE) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            final List<Selection> fieldList = this.fieldList;
+            if (!(fieldList instanceof ArrayList)
+                    || fieldList.get(fieldList.size() - 1) == TabularSqlFunction.ORDINALITY_FIELD) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            fieldList.add(TabularSqlFunction.ORDINALITY_FIELD);
+            return this;
+        }
+
+        @Override
+        public Functions._TabularFunction ifWithOrdinality(BooleanSupplier predicate) {
+            if (predicate.getAsBoolean()) {
+                this.withOrdinality();
+            }
+            return this;
+        }
+
+
+        @Override
+        public boolean hasAnonymousField() {
+            return this.existsAnonymousField;
+        }
+
+        @Override
+        public boolean hasWithOrdinality() {
+            final List<Selection> fieldList = this.fieldList;
+            return fieldList.get(fieldList.size() - 1) == TabularSqlFunction.ORDINALITY_FIELD;
+        }
+
+        @Override
+        public Selection refSelection(final @Nullable String name) {
+            if (this.existsAnonymousField) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            return this.fieldMap.get(name);
+        }
+
+        @Override
+        public List<? extends Selection> refAllSelection() {
+            List<Selection> fieldList = this.fieldList;
+            if (fieldList instanceof ArrayList) {
+                fieldList = _Collections.unmodifiableList(fieldList);
+                this.fieldList = fieldList;
+            }
+            return fieldList;
+        }
+
+        @Override
+        public void appendSql(final _SqlContext context) {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE)
+                    .append(ROWS_FROM)
+                    .append(_Constant.LEFT_PAREN);
+            CriteriaUtils.appendSelfDescribedList(this.functionList, sqlBuilder, context);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+        }
+
+
+        @Override
+        public String toString() {
+            final StringBuilder sqlBuilder;
+            sqlBuilder = new StringBuilder()
+                    .append(_Constant.SPACE)
+                    .append(ROWS_FROM)
+                    .append(_Constant.LEFT_PAREN);
+            CriteriaUtils.selfDescribedListToString(this.functionList, sqlBuilder);
+            return sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
+
+        private RowsFromCommaClause onAddFuncExp(final @Nullable Item func) {
+            final Boolean state = this.state;
+            final List<ArmySQLFunction> funcList = this.functionList;
+            if (state != Boolean.TRUE || !(funcList instanceof ArrayList)) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            } else if (!(func instanceof ArmySQLFunction)) {
+                throw ContextStack.clearStackAndNonArmyItem(func);
+            } else if (func instanceof PostgreRowsFromFunction) {
+                throw ContextStack.clearStackAndCriteriaError("Don't support ROWS FROM() inside ROWS FROM()");
+            } else if (func instanceof Functions._TabularFunction && ((ArmyTabularFunction) func).hasWithOrdinality()) {
+                throw ContextStack.clearStackAndCriteriaError("Don't support WITH ORDINALITY inside ROWS FROM()");
+            } else if (func instanceof Expression
+                    && func instanceof TypeInfer.DelayTypeInfer
+                    && ((TypeInfer.DelayTypeInfer) func).isDelay()) {
+
+                throw ContextStack.clearStackAndCriteriaError("error,delay function[%s]");
+            }
+            funcList.add((ArmySQLFunction) func);
+            final List<Selection> fieldList = this.fieldList;
+            if (func instanceof Expression) {
+                this.existsAnonymousField = true;
+            }
+            return this;
+        }
+
+        private RowsFromCommaClause onFuncDone(final PostgreUtils.DoneFunc func) {
+            final List<ArmySQLFunction> funcList = this.functionList;
+            if (!(funcList instanceof ArrayList)) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            funcList.add(func);
+
+            final List<Selection> fieldList = this.fieldList;
+            final Map<String, Selection> fieldMap = this.fieldMap;
+            for (_FunctionField field : func.fieldList) {
+                fieldMap.put(field.fieldName(), field); // override
+                fieldList.add(field);
+            }
+            return this;
+        }
+
+
+        private PostgreRowsFromFunction endFunc() {
+            return this;
+        }
+
+
+    }//PostgreRowsFromSpaceClause
 
 
 }

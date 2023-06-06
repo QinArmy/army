@@ -12,6 +12,7 @@ import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.mapping.optional.OffsetTimeType;
 
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 /**
  * <p>
@@ -304,6 +305,13 @@ public abstract class Postgres extends PostgreSyntax {
 
     }
 
+    /**
+     * <p>
+     * This interface not start with underscore, so this interface can present in application developer code.
+     * </p>
+     *
+     * @since 1.0
+     */
     public interface XmlTableCommaClause {
 
         XmlTableCommaClause comma(String name, MappingType type, WordPath path, Expression columnExp, WordDefault wordDefault, Expression defaultExp, NullOption nullOption);
@@ -332,6 +340,25 @@ public abstract class Postgres extends PostgreSyntax {
 
         XmlTableCommaClause comma(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, WordDefault wordDefault, Expression defaultExp);
 
+
+    }
+
+
+    public interface _RowsFromAsClause {
+
+        RowsFromCommaClause as(Consumer<PostgreStatement._FuncColumnDefinitionSpaceClause> consumer);
+
+    }
+
+    public interface _RowsFromSpaceClause {
+
+        RowsFromCommaClause space(SimpleExpression func);
+
+        RowsFromCommaClause space(SimplePredicate func);
+
+        RowsFromCommaClause space(_TabularFunction func);
+
+        _RowsFromAsClause space(UndoneFunction func);
 
     }
 

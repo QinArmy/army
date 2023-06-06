@@ -2805,34 +2805,19 @@ abstract class Expressions {
                 sqlBuilder.append(this.modifier.spaceWords)
                         .append(_Constant.LEFT_PAREN);
             }
-            final List<? extends ArmyGroupByItem> itemList = this.itemList;
 
-            final int itemSize = itemList.size();
-            for (int i = 0; i < itemSize; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
-                }
-                itemList.get(i).appendSql(context);
-            }
+            CriteriaUtils.appendSelfDescribedList(this.itemList, sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
         @Override
         public final String toString() {
-            final List<? extends ArmyGroupByItem> itemList = this.itemList;
-
             final StringBuilder sqlBuilder;
             sqlBuilder = new StringBuilder()
                     .append(_Constant.SPACE_LEFT_PAREN);
 
-            final int itemSize = itemList.size();
-            for (int i = 0; i < itemSize; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
-                }
-                sqlBuilder.append(itemList.get(i));
-            }
+            CriteriaUtils.selfDescribedListToString(this.itemList, sqlBuilder);
             return sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
                     .toString();
         }

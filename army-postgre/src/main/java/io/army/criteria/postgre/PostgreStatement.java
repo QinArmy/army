@@ -22,19 +22,6 @@ public interface PostgreStatement extends DialectStatement {
 
     }
 
-    /**
-     * <p>
-     * This interface not start with underscore, so this interface can present in application developer code.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface FuncColumnDefCommaClause {
-
-        FuncColumnDefCommaClause comma(String name, MappingType type);
-
-    }
-
 
     interface _FuncColumnDefinitionParensClause<R> {
 
@@ -151,7 +138,7 @@ public interface PostgreStatement extends DialectStatement {
                       BiFunction<MappingType, Object, Expression> valueOperator, Function<String, ?> function,
                       String keyName);
 
-        R ifTableSample(Supplier<Expression> supplier);
+        R ifTableSample(Supplier<Expression> supplier); //TODO add function
 
         <E> R ifTableSample(BiFunction<BiFunction<MappingType, E, Expression>, E, Expression> method,
                             BiFunction<MappingType, E, Expression> valueOperator, Supplier<E> supplier);

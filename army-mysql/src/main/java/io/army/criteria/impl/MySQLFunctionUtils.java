@@ -424,7 +424,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     /**
      * @see #groupConcatFunc(SQLs.ArgDistinct, List, GroupConcatInnerClause)
      */
-    private static final class GroupConcatFunction extends FunctionUtils.FunctionExpression {
+    private static final class GroupConcatFunction extends OperationExpression.SqlFunctionExpression {
 
         private final SqlSyntax.ArgDistinct distinct;
 
@@ -559,7 +559,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
     }//GroupConcatClause
 
-    private static final class StatementDigestFunc extends FunctionUtils.FunctionExpression {
+    private static final class StatementDigestFunc extends OperationExpression.SqlFunctionExpression {
 
 
         private final PrimaryStatement statement;
@@ -884,7 +884,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//JsonValueClause
 
 
-    private static final class JsonValueFunction extends FunctionUtils.FunctionExpression implements MySQLFunction {
+    private static final class JsonValueFunction extends OperationExpression.SqlFunctionExpression implements MySQLFunction {
 
         private final ArmyExpression jsonDoc;
 

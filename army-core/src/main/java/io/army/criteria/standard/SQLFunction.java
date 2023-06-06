@@ -8,7 +8,7 @@ import io.army.function.ExpressionOperator;
 
 import java.util.function.*;
 
-public interface SQLFunction {
+public interface SQLFunction extends Item {
 
     String name();
 

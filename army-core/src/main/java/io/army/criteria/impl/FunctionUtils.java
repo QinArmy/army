@@ -1239,20 +1239,7 @@ abstract class FunctionUtils {
     }//NoArgFuncExpression
 
 
-    static abstract class FunctionExpression extends OperationExpression.SqlFunctionExpression {
-
-        FunctionExpression(String name, TypeMeta returnType) {
-            super(name, returnType);
-        }
-
-        FunctionExpression(String name, boolean buildIn, TypeMeta returnType) {
-            super(name, buildIn, returnType);
-        }
-
-
-    }//FunctionExpression
-
-    private static final class OneArgFunction extends FunctionExpression {
+    private static final class OneArgFunction extends OperationExpression.SqlFunctionExpression {
 
         private final ArmySQLExpression argument;
 
@@ -1275,7 +1262,7 @@ abstract class FunctionUtils {
 
     }//OneArgFunction
 
-    private static final class TwoArgFunction extends FunctionExpression {
+    private static final class TwoArgFunction extends OperationExpression.SqlFunctionExpression {
 
         private final ArmySQLExpression one;
 
@@ -1309,7 +1296,7 @@ abstract class FunctionUtils {
     }//TwoArgFunction
 
 
-    private static final class ThreeArgFunction extends FunctionExpression {
+    private static final class ThreeArgFunction extends OperationExpression.SqlFunctionExpression {
 
         private final ArmySQLExpression one;
 
@@ -1354,7 +1341,7 @@ abstract class FunctionUtils {
     }//ThreeArgFunction
 
 
-    private static final class FourArgFunction extends FunctionExpression {
+    private static final class FourArgFunction extends OperationExpression.SqlFunctionExpression {
 
         private final ArmySQLExpression one;
 
@@ -1407,7 +1394,7 @@ abstract class FunctionUtils {
 
     }//FourArgFunction
 
-    private static final class FiveArgFunction extends FunctionExpression {
+    private static final class FiveArgFunction extends OperationExpression.SqlFunctionExpression {
 
         private final ArmySQLExpression one;
 
@@ -1470,7 +1457,7 @@ abstract class FunctionUtils {
     }//FiveArgFunction
 
 
-    private static final class SixArgFunction extends FunctionExpression {
+    private static final class SixArgFunction extends OperationExpression.SqlFunctionExpression {
 
         private final ArmySQLExpression one;
 
@@ -1543,7 +1530,7 @@ abstract class FunctionUtils {
     }//SixArgFunction
 
 
-    private static final class SevenArgFunction extends FunctionExpression {
+    private static final class SevenArgFunction extends OperationExpression.SqlFunctionExpression {
 
         private final ArmySQLExpression one;
 
@@ -1624,7 +1611,7 @@ abstract class FunctionUtils {
     }//SevenArgFunction
 
 
-    private static final class MultiArgFunctionExpression extends FunctionExpression {
+    private static final class MultiArgFunctionExpression extends OperationExpression.SqlFunctionExpression {
 
 
         private final List<? extends ArmySQLExpression> argList;
@@ -1805,7 +1792,7 @@ abstract class FunctionUtils {
     }//NamedComplexArgFunc
 
 
-    private static final class ArmyFuncClauseFunction extends FunctionUtils.FunctionExpression {
+    private static final class ArmyFuncClauseFunction extends OperationExpression.SqlFunctionExpression {
 
         private final ArmyFuncClause clause;
 
@@ -1839,7 +1826,7 @@ abstract class FunctionUtils {
             CaseWhens,
             SQLFunction._DynamicCaseThenClause,
             SQLFunction._DynamicWhenSpaceClause,
-            SQLFunction,
+            ArmySQLFunction,
             TypeInfer.DelayTypeInfer {
 
         private final ArmyExpression caseValue;

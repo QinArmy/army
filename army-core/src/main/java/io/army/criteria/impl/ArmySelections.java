@@ -229,7 +229,6 @@ abstract class ArmySelections implements _Selection {
     }//FieldSelectionImpl
 
 
-
     private static final class RenameSelection extends ArmySelections {
 
         private final Selection selection;
@@ -289,16 +288,8 @@ abstract class ArmySelections implements _Selection {
 
         @Override
         public final void appendSelectItem(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
-
-            final String safeAlias;
-            safeAlias = context.parser().identifier(this.alias);
-
-            sqlBuilder.append(safeAlias)
-                    .append(_Constant.SPACE_AS_SPACE)
-                    .append(safeAlias);
+            //no-bug ,never here
+            throw new UnsupportedOperationException();
 
         }
 
