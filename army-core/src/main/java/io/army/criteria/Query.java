@@ -3,6 +3,7 @@ package io.army.criteria;
 
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.SQLs;
+import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
@@ -80,7 +81,6 @@ public interface Query extends RowSet {
         <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
                       String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
-        SR select(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
 
     }
 
@@ -113,29 +113,21 @@ public interface Query extends RowSet {
 
     interface _DynamicDistinctOnExpClause<SR extends Item> {
 
-        _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp);
+        _StaticSelectSpaceClause<SR> select(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer);
 
-        _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp1, Expression exp2);
-
-        _StaticSelectSpaceClause<SR> selectDistinctOn(Expression exp1, Expression exp2, Expression exp3);
-
-        _StaticSelectSpaceClause<SR> selectDistinctOn(Consumer<Consumer<Expression>> consumer);
-
-        _StaticSelectSpaceClause<SR> selectDistinctIfOn(Consumer<Consumer<Expression>> consumer);
+        _StaticSelectSpaceClause<SR> selectIf(@Nullable SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer);
 
     }
 
     interface _DynamicDistinctOnAndSelectsClause<SD extends Item> {
 
-        SD selectDistinctOn(Expression exp, Consumer<SelectionConsumer> consumer);
+        SD select(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer);
 
-        SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<SelectionConsumer> consumer);
+        SD selects(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer);
 
-        SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<SelectionConsumer> consumer);
+        SD selectIf(@Nullable SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer);
 
-        SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer);
-
-        SD selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer);
+        SD selectsIf(@Nullable SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer);
     }
 
 
@@ -194,15 +186,18 @@ public interface Query extends RowSet {
         _DeferSelectCommaSpace comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
     }
 
-    interface _DeferSelectSpaceClause extends _StaticSelectSpaceClause<_DeferSelectCommaSpace> {
 
-        _DeferSelectCommaSpace space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
-
-        DerivedField cteField(String derivedAlias, String selectionAlias);
+    interface _DeferSelectSpec {
 
         DerivedField refThis(String derivedAlias, String selectionAlias);
 
         DerivedField refOuter(String derivedAlias, String selectionAlias);
+    }
+
+    interface _DeferSelectSpaceClause extends _StaticSelectSpaceClause<_DeferSelectCommaSpace>, _DeferSelectSpec {
+
+        _DeferSelectCommaSpace space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
+
 
     }
 

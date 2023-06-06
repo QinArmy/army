@@ -333,6 +333,10 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
+    public interface WordOn extends Modifier {
+
+    }
+
     public interface SymbolSpace {
 
     }

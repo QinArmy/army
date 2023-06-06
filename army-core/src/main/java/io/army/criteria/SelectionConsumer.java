@@ -7,7 +7,7 @@ import io.army.meta.TableMeta;
 
 import java.util.function.Function;
 
-public interface SelectionConsumer extends Item {
+public interface SelectionConsumer extends Query._DeferSelectSpec {
 
     SelectionConsumer accept(Selection selection);
 
@@ -32,11 +32,6 @@ public interface SelectionConsumer extends Item {
 
     SelectionConsumer accept(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
 
-    DerivedField cteField(String derivedAlias, String selectionAlias);
-
-    DerivedField refThis(String derivedAlias, String selectionAlias);
-
-    DerivedField refOuter(String derivedAlias, String selectionAlias);
 
 
 }

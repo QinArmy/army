@@ -611,18 +611,6 @@ abstract class SQLsSyntax extends Functions {
      * Reference a derived field from current statement.
      * </p>
      *
-     * @param cteAlis   cte alias,
-     * @param fieldName cte field name
-     */
-    public static DerivedField cteField(String cteAlis, String fieldName) {
-        return ContextStack.peek().cteField(cteAlis, fieldName);
-    }
-
-    /**
-     * <p>
-     * Reference a derived field from current statement.
-     * </p>
-     *
      * @param derivedAlias   derived table alias,
      * @param selectionAlias derived field alias
      */

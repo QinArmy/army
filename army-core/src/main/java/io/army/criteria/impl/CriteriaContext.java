@@ -68,8 +68,10 @@ interface CriteriaContext {
 
     void addEndEventListener(Runnable listener);
 
+    void addSelectClauseEndListener(Runnable listener);
 
-    DerivedField cteField(String derivedAlias, String selectionAlias);
+    void registerDeferSelectClause(Runnable deferSelectClause);
+
 
     DerivedField refThis(String derivedAlias, String selectionAlias);
 

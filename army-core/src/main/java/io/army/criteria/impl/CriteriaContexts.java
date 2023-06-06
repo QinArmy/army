@@ -811,6 +811,12 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public void registerDeferSelectClause(Runnable deferSelectClause) {
+            // no bug,never here
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public DerivedField refThis(String derivedAlias, String selectionAlias) {
             String m = "current context don't support refThis(derivedAlias,selectionAlias)";
             throw ContextStack.criteriaError(this, m);
@@ -2053,6 +2059,8 @@ abstract class CriteriaContexts {
 
         private Map<String, Boolean> refWindowNameMap;
 
+        private Runnable deferSelectClause;
+
         private boolean orderByStart;
 
         private SimpleQueryContext(final @Nullable CriteriaContext outerContext,
@@ -2091,6 +2099,14 @@ abstract class CriteriaContexts {
                 throw ContextStack.nullPointer(this);
             }
 
+        }
+
+        @Override
+        public final void registerDeferSelectClause(final Runnable deferSelectClause) {
+            if (this.deferSelectClause != null || this.selectItemList != null) {
+                throw ContextStack.castCriteriaApi(this);
+            }
+            this.deferSelectClause = deferSelectClause;
         }
 
         @Override
@@ -2819,6 +2835,7 @@ abstract class CriteriaContexts {
             return (QualifiedField<T>) fieldMap.computeIfAbsent(tableAlias, k -> new HashMap<>())
                     .computeIfAbsent(field, k -> QualifiedFieldImpl.create(tableAlias, k));
         }
+
 
         @Override
         public final DerivedField refThis(final String derivedAlias, final String selectionAlias) {
