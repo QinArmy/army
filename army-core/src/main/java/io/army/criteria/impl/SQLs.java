@@ -321,6 +321,142 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
 
+    public interface Modifier extends Query.SelectModifier {
+
+    }
+
+    public interface WordAll extends Modifier, QuantifiedWord {
+
+    }
+
+    public interface WordDistinct extends Modifier, ArgDistinct {
+
+    }
+
+    public interface SymbolSpace {
+
+    }
+
+    public interface SymbolPeriod {
+
+    }
+
+    /**
+     * @see SQLs#DISTINCT
+     */
+    public interface ArgDistinct extends SQLWords {
+
+    }
+
+    public interface SymbolAsterisk {
+
+    }
+
+    public interface WordNull extends BooleanTestWord, Expression, NullOption { // extends Expression not SimpleExpression
+
+    }
+
+    public interface WordAs extends SQLWords {
+
+    }
+
+    public interface WordDefault extends Expression {
+
+    }
+
+    public interface WordBooleans extends BooleanTestWord, SimplePredicate {
+
+    }
+
+    public interface QuantifiedWord extends SQLWords {
+
+    }
+
+    public interface WordAnd {
+
+    }
+
+    public interface WordEscape extends SQLWords {
+
+    }
+
+    public interface NullOption {
+
+    }
+
+    public interface BooleanTestWord extends SQLWords {
+
+    }
+
+    public interface DocumentValueOption extends SQLWords {
+
+    }
+
+    public interface WordDocument extends BooleanTestWord, DocumentValueOption {
+
+    }
+
+    public interface WordContent extends DocumentValueOption {
+
+    }
+
+    /**
+     * package interface,this interface only is implemented by class or enum,couldn't is extended by interface.
+     */
+    interface ArmyKeyWord extends SQLWords {
+
+    }
+
+    public interface _ArrayConstructorSpec extends ArrayExpression {
+
+        ArrayExpression castTo(MappingType type);
+
+    }
+
+    public interface IsComparisonWord extends SQLWords {
+
+    }
+
+    public interface BetweenModifier extends SQLWords {
+
+    }
+
+    public interface WordInterval extends SQLWords {
+
+    }
+
+    public interface WordPercent {
+
+    }
+
+    public interface WordOnly extends Query.TableModifier, Query.FetchOnlyWithTies, SQLWords {
+
+    }
+
+    public interface WordFirst extends Query.FetchFirstNext {
+
+    }
+
+    public interface WordNext extends Query.FetchFirstNext {
+
+    }
+
+    public interface WordRow extends Query.FetchRow {
+
+    }
+
+    public interface WordRows extends Query.FetchRow {
+
+    }
+
+    public interface WordLateral extends Query.DerivedModifier {
+
+    }
+
+    public interface WordsWithTies extends Query.FetchOnlyWithTies {
+
+    }
+
 
 
 

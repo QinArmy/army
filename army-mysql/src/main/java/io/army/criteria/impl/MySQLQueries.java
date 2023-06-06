@@ -485,6 +485,16 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
     }
 
     @Override
+    final MySQLs.Modifier allModifier() {
+        return MySQLs.ALL;
+    }
+
+    @Override
+    final MySQLs.Modifier distinctModifier() {
+        return MySQLs.DISTINCT;
+    }
+
+    @Override
     final List<Hint> asHintList(@Nullable List<Hint> hints) {
         return MySQLUtils.asHintList(this.context, hints, MySQLHints::castHint);
     }

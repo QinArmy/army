@@ -73,12 +73,12 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     }
 
     @Override
-    public final FT from(TableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
+    public final FT from(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
         return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
     }
 
     @Override
-    public final FT from(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs,
+    public final FT from(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs,
                          String tableAlias) {
         if (modifier != null && this.isIllegalTableModifier(modifier)) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
@@ -136,7 +136,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     }
 
     @Override
-    public final FC from(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
+    public final FC from(String cteName, SQLs.WordAs wordAs, String alias) {
         return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), this.cteAlias(alias));
     }
 
@@ -146,17 +146,17 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     }
 
     @Override
-    public final FC from(Query.DerivedModifier modifier, String cteName, SQLsSyntax.WordAs wordAs, String alias) {
+    public final FC from(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias) {
         return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), this.cteAlias(alias));
     }
 
     @Override
-    public final FT using(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
+    public final FT using(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
         return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
     }
 
     @Override
-    public final FT using(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
+    public final FT using(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
         if (modifier != null && this.isIllegalTableModifier(modifier)) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }
@@ -212,7 +212,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     }
 
     @Override
-    public final FC using(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
+    public final FC using(String cteName, SQLs.WordAs wordAs, String alias) {
         return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), this.cteAlias(alias));
     }
 
@@ -222,7 +222,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     }
 
     @Override
-    public final FC using(Query.DerivedModifier modifier, String cteName, SQLsSyntax.WordAs wordAs, String alias) {
+    public final FC using(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias) {
         return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), this.cteAlias(alias));
     }
 
@@ -754,7 +754,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         }
 
         @Override
-        public final LT leftParen(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
+        public final LT leftParen(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
             return this.onLeftTable(null, table, tableAlias);
         }
 
@@ -816,7 +816,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         }
 
         @Override
-        public final LC leftParen(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
+        public final LC leftParen(String cteName, SQLs.WordAs wordAs, String alias) {
             return this.onLeftCte(this.context.refCte(cteName), alias);
         }
 
@@ -1062,13 +1062,13 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         }
 
         @Override
-        public final FT space(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String alias) {
+        public final FT space(TableMeta<?> table, SQLs.WordAs wordAs, String alias) {
             this.checkStart();
             return this.onTable(null, table, alias);
         }
 
         @Override
-        public final FT space(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLsSyntax.WordAs wordAs,
+        public final FT space(@Nullable Query.TableModifier modifier, TableMeta<?> table, SQLs.WordAs wordAs,
                               String alias) {
             this.checkStart();
             if (modifier != null && this.isIllegalTableModifier(modifier)) {
@@ -1132,7 +1132,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         }
 
         @Override
-        public final FC space(String cteName, SQLsSyntax.WordAs as, String alias) {
+        public final FC space(String cteName, SQLs.WordAs as, String alias) {
             this.checkStart();
             return this.onCte(this.context.refCte(cteName), alias);
         }

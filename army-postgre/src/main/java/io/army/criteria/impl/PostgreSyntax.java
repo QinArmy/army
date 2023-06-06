@@ -37,7 +37,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
 
     }
 
-    public interface WordDistinct extends Modifier, SqlSyntax.ArgDistinct {
+    public interface WordDistinct extends Modifier, SQLs.ArgDistinct {
 
     }
 
@@ -69,7 +69,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
-    public static _ArrayConstructorSpec array() {
+    public static SQLs._ArrayConstructorSpec array() {
         return Expressions.array();
     }
 
@@ -80,8 +80,8 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
-    public static _ArrayConstructorSpec array(Object element) {
-        _ArrayConstructorSpec array;
+    public static SQLs._ArrayConstructorSpec array(Object element) {
+        SQLs._ArrayConstructorSpec array;
         if (element instanceof SubQuery) {
             array = Expressions.array((SubQuery) element);
         } else {
@@ -98,7 +98,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
-    public static _ArrayConstructorSpec array(Object one, Object two) {
+    public static SQLs._ArrayConstructorSpec array(Object one, Object two) {
         return Expressions.array(Expressions::nonNullFirstArrayType, ArrayUtils.asUnmodifiableList(one, two));
     }
 
@@ -109,7 +109,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
-    public static _ArrayConstructorSpec array(Object one, Object two, Object three) {
+    public static SQLs._ArrayConstructorSpec array(Object one, Object two, Object three) {
         return Expressions.array(Expressions::nonNullFirstArrayType, ArrayUtils.asUnmodifiableList(one, two, three));
     }
 
@@ -120,7 +120,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
-    public static _ArrayConstructorSpec array(Object one, Object two, Object three, Object four) {
+    public static SQLs._ArrayConstructorSpec array(Object one, Object two, Object three, Object four) {
         return Expressions.array(Expressions::nonNullFirstArrayType,
                 ArrayUtils.asUnmodifiableList(one, two, three, four)
         );
@@ -133,8 +133,8 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
-    public static _ArrayConstructorSpec array(Object one, Object two, Object three, Object four, Object five,
-                                              Object... rest) {
+    public static SQLs._ArrayConstructorSpec array(Object one, Object two, Object three, Object four, Object five,
+                                                   Object... rest) {
         return Expressions.array(Expressions::nonNullFirstArrayType,
                 ArrayUtils.asUnmodifiableList(one, two, three, four, five, rest)
         );
@@ -147,7 +147,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
-    public static _ArrayConstructorSpec array(Consumer<Consumer<Object>> consumer) {
+    public static SQLs._ArrayConstructorSpec array(Consumer<Consumer<Object>> consumer) {
         return Expressions.array(Expressions::nonNullFirstArrayType, consumer);
     }
 
@@ -955,7 +955,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
      */
-    public static CompoundPredicate similarTo(Expression exp, Expression pattern, WordEscape escape, Expression escapeChar) {
+    public static CompoundPredicate similarTo(Expression exp, Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
         return Expressions.likePredicate(exp, DualBooleanOperator.SIMILAR_TO, pattern, escape, escapeChar);
     }
 
@@ -969,7 +969,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     /**
      * @see <a href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP">SIMILAR TO Regular Expressions</a>
      */
-    public static CompoundPredicate notSimilarTo(Expression exp, Expression pattern, WordEscape escape, Expression escapeChar) {
+    public static CompoundPredicate notSimilarTo(Expression exp, Expression pattern, SQLs.WordEscape escape, Expression escapeChar) {
         return Expressions.likePredicate(exp, DualBooleanOperator.NOT_SIMILAR_TO, pattern, escape, escapeChar);
     }
 
@@ -998,7 +998,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
      */
-    public static CompoundPredicate equal(Expression left, QuantifiedWord word, ArrayExpression array) {
+    public static CompoundPredicate equal(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.EQUAL, word, array);
     }
 
@@ -1010,7 +1010,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
      */
-    public static CompoundPredicate notEqual(Expression left, QuantifiedWord word, ArrayExpression array) {
+    public static CompoundPredicate notEqual(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.NOT_EQUAL, word, array);
     }
 
@@ -1023,7 +1023,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
      */
-    public static CompoundPredicate less(Expression left, QuantifiedWord word, ArrayExpression array) {
+    public static CompoundPredicate less(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.LESS, word, array);
     }
 
@@ -1036,7 +1036,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
      */
-    public static CompoundPredicate lessEqual(Expression left, QuantifiedWord word, ArrayExpression array) {
+    public static CompoundPredicate lessEqual(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.LESS_EQUAL, word, array);
     }
 
@@ -1048,7 +1048,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
      */
-    public static CompoundPredicate greater(Expression left, QuantifiedWord word, ArrayExpression array) {
+    public static CompoundPredicate greater(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.GREATER, word, array);
     }
 
@@ -1060,7 +1060,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *             </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparisons.html#id-1.5.8.30.16">ANY/SOME (array)<br/>
      */
-    public static CompoundPredicate greaterEqual(Expression left, QuantifiedWord word, ArrayExpression array) {
+    public static CompoundPredicate greaterEqual(Expression left, SQLs.QuantifiedWord word, ArrayExpression array) {
         return Expressions.compareQueryPredicate(left, DualBooleanOperator.GREATER_EQUAL, word, array);
     }
 

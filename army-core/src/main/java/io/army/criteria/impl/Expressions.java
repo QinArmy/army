@@ -156,7 +156,7 @@ abstract class Expressions {
 
 
     static CompoundPredicate booleanTestPredicate(final OperationExpression expression,
-                                                  boolean not, SQLsSyntax.BooleanTestWord operand) {
+                                                  boolean not, SQLs.BooleanTestWord operand) {
         if (!(operand == SQLs.NULL
                 || operand == SQLs.TRUE
                 || operand == SQLs.FALSE
@@ -169,10 +169,10 @@ abstract class Expressions {
     }
 
     static CompoundPredicate isComparisonPredicate(final OperationExpression left, boolean not,
-                                                   SQLsSyntax.IsComparisonWord operator, Expression right) {
+                                                   SQLs.IsComparisonWord operator, Expression right) {
         if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
-        } else if (!(operator instanceof SqlSyntax.ArmyKeyWord)) {
+        } else if (!(operator instanceof SQLs.ArmyKeyWord)) {
             throw CriteriaUtils.notArmyOperator(operator);
         }
         return new IsComparisonPredicate(left, not, operator, (ArmyExpression) right);
@@ -193,7 +193,7 @@ abstract class Expressions {
     }
 
     static CompoundPredicate likePredicate(final Expression left, final DualBooleanOperator operator,
-                                           final @Nullable Expression right, SqlSyntax.WordEscape escape,
+                                           final @Nullable Expression right, SQLs.WordEscape escape,
                                            @Nullable final Expression escapeChar) {
         switch (operator) {
             case LIKE:
@@ -217,7 +217,7 @@ abstract class Expressions {
 
 
     static CompoundPredicate betweenPredicate(OperationExpression left, boolean not,
-                                              @Nullable SQLsSyntax.BetweenModifier modifier,
+                                              @Nullable SQLs.BetweenModifier modifier,
                                               Expression center, Expression right) {
         if (!(center instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(center);
@@ -229,7 +229,7 @@ abstract class Expressions {
     }
 
     static CompoundPredicate compareQueryPredicate(final SQLExpression left, final DualBooleanOperator operator,
-                                                   final SqlSyntax.QuantifiedWord queryOperator, final RightOperand right) {
+                                                   final SQLs.QuantifiedWord queryOperator, final RightOperand right) {
         if (!(left instanceof OperationSQLExpression)) {
             throw ContextStack.clearStackAndNonArmyItem(left);
         }
@@ -412,13 +412,13 @@ abstract class Expressions {
     }
 
 
-    static SqlSyntax._ArrayConstructorSpec array() {
+    static SQLs._ArrayConstructorSpec array() {
         return new SimpleArrayConstructor(Collections.emptyList(), TextArrayType.LINEAR);
     }
 
 
-    static SqlSyntax._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
-                                                 List<Object> elementList) {
+    static SQLs._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
+                                            List<Object> elementList) {
         final TypeMeta type;
         if (elementList.size() == 0) {
             elementList = Collections.emptyList();
@@ -429,8 +429,8 @@ abstract class Expressions {
         return new SimpleArrayConstructor(elementList, type);
     }
 
-    static SqlSyntax._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
-                                                 final Consumer<Consumer<Object>> consumer) {
+    static SQLs._ArrayConstructorSpec array(final Function<List<Object>, TypeMeta> inferFunc,
+                                            final Consumer<Consumer<Object>> consumer) {
         List<Object> elementList = _Collections.arrayList();
         consumer.accept(elementList::add);
         final TypeMeta type;
@@ -443,7 +443,7 @@ abstract class Expressions {
         return new SimpleArrayConstructor(elementList, type);
     }
 
-    static SqlSyntax._ArrayConstructorSpec array(final SubQuery subQuery) {
+    static SQLs._ArrayConstructorSpec array(final SubQuery subQuery) {
         return new SubQueryArrayConstructor(subQuery, validateScalarSubQuery(subQuery));
     }
 
@@ -666,10 +666,10 @@ abstract class Expressions {
 
 
     /**
-     * @see #compareQueryPredicate(SQLExpression, DualBooleanOperator, SqlSyntax.QuantifiedWord, RightOperand)
+     * @see #compareQueryPredicate(SQLExpression, DualBooleanOperator, SQLs.QuantifiedWord, RightOperand)
      */
     private static void assertColumnSubQuery(final DualBooleanOperator operator
-            , final SqlSyntax.QuantifiedWord queryOperator, final SubQuery subQuery) {
+            , final SQLs.QuantifiedWord queryOperator, final SubQuery subQuery) {
         validateSubQueryContext(subQuery);
         if (((_DerivedTable) subQuery).refAllSelection().size() != 1) {
             StringBuilder builder = _StringUtils.builder();
@@ -1272,7 +1272,7 @@ abstract class Expressions {
         private final ArmyExpression escapeChar;
 
         /**
-         * @see #likePredicate(Expression, DualBooleanOperator, Expression, SqlSyntax.WordEscape, Expression)
+         * @see #likePredicate(Expression, DualBooleanOperator, Expression, SQLs.WordEscape, Expression)
          */
         private LikePredicate(OperationExpression left, DualBooleanOperator operator, Expression right,
                               @Nullable Expression escapeChar) {
@@ -1387,7 +1387,7 @@ abstract class Expressions {
 
         private final boolean not;
 
-        private final SQLsSyntax.BetweenModifier modifier;
+        private final SQLs.BetweenModifier modifier;
 
         private final ArmyExpression left;
 
@@ -1396,9 +1396,9 @@ abstract class Expressions {
         private final ArmyExpression right;
 
         /**
-         * @see #betweenPredicate(OperationExpression, boolean, SQLsSyntax.BetweenModifier, Expression, Expression)
+         * @see #betweenPredicate(OperationExpression, boolean, SQLs.BetweenModifier, Expression, Expression)
          */
-        private BetweenPredicate(Expression left, boolean not, @Nullable SQLsSyntax.BetweenModifier modifier,
+        private BetweenPredicate(Expression left, boolean not, @Nullable SQLs.BetweenModifier modifier,
                                  Expression center, Expression right) {
             this.not = not;
             this.modifier = modifier;
@@ -1593,15 +1593,15 @@ abstract class Expressions {
 
         private final DualBooleanOperator operator;
 
-        private final SqlSyntax.QuantifiedWord queryOperator;
+        private final SQLs.QuantifiedWord queryOperator;
 
         private final RightOperand right;
 
         /**
-         * @see #compareQueryPredicate(SQLExpression, DualBooleanOperator, SqlSyntax.QuantifiedWord, RightOperand)
+         * @see #compareQueryPredicate(SQLExpression, DualBooleanOperator, SQLs.QuantifiedWord, RightOperand)
          */
         private SubQueryPredicate(SQLExpression left, DualBooleanOperator operator,
-                                  SqlSyntax.QuantifiedWord queryOperator, RightOperand right) {
+                                  SQLs.QuantifiedWord queryOperator, RightOperand right) {
             this.left = (ArmySQLExpression) left;
             this.operator = operator;
             this.queryOperator = queryOperator;
@@ -1650,12 +1650,12 @@ abstract class Expressions {
         private final boolean not;
 
 
-        private final SQLsSyntax.BooleanTestWord operand;
+        private final SQLs.BooleanTestWord operand;
 
         /**
-         * @see #booleanTestPredicate(OperationExpression, boolean, SQLsSyntax.BooleanTestWord)
+         * @see #booleanTestPredicate(OperationExpression, boolean, SQLs.BooleanTestWord)
          */
-        private BooleanTestPredicate(OperationExpression expression, boolean not, SQLsSyntax.BooleanTestWord operand) {
+        private BooleanTestPredicate(OperationExpression expression, boolean not, SQLs.BooleanTestWord operand) {
             this.expression = expression;
             this.not = not;
             this.operand = operand;
@@ -1721,15 +1721,15 @@ abstract class Expressions {
 
         private final boolean not;
 
-        private final SQLsSyntax.IsComparisonWord operator;
+        private final SQLs.IsComparisonWord operator;
 
         private final ArmyExpression right;
 
 
         /**
-         * @see #isComparisonPredicate(OperationExpression, boolean, SQLsSyntax.IsComparisonWord, Expression)
+         * @see #isComparisonPredicate(OperationExpression, boolean, SQLs.IsComparisonWord, Expression)
          */
-        private IsComparisonPredicate(OperationExpression left, boolean not, SQLsSyntax.IsComparisonWord operator,
+        private IsComparisonPredicate(OperationExpression left, boolean not, SQLs.IsComparisonWord operator,
                                       ArmyExpression right) {
             this.left = left;
             this.not = not;
@@ -2475,7 +2475,7 @@ abstract class Expressions {
      * </p>
      */
     private static abstract class ArrayConstructor extends OperationExpression.OperationSimpleExpression
-            implements ArmyArrayExpression, SqlSyntax._ArrayConstructorSpec {
+            implements ArmyArrayExpression, SQLs._ArrayConstructorSpec {
 
         final TypeMeta inferType;
 

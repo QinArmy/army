@@ -93,7 +93,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         return new StaticCteComma<>(context, recursive, function);
     }
 
-    private SQLsSyntax.Modifier groupByModifier;
+    private SQLs.Modifier groupByModifier;
 
     private List<_Window> windowList;
 
@@ -325,7 +325,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }
 
     @Override
-    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLsSyntax.Modifier modifier, GroupByItem item) {
+    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLs.Modifier modifier, GroupByItem item) {
         if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }
@@ -334,7 +334,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }
 
     @Override
-    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLsSyntax.Modifier modifier, GroupByItem item1,
+    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLs.Modifier modifier, GroupByItem item1,
                                               GroupByItem item2) {
         if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
@@ -344,7 +344,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }
 
     @Override
-    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLsSyntax.Modifier modifier, GroupByItem item1,
+    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLs.Modifier modifier, GroupByItem item1,
                                               GroupByItem item2, GroupByItem item3) {
         if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
@@ -354,7 +354,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }
 
     @Override
-    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLsSyntax.Modifier modifier, GroupByItem item1,
+    public final _GroupByCommaSpec<I> groupBy(@Nullable SQLs.Modifier modifier, GroupByItem item1,
                                               GroupByItem item2, GroupByItem item3, GroupByItem item4) {
         if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
@@ -364,7 +364,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }
 
     @Override
-    public final _HavingSpec<I> groupBy(@Nullable SQLsSyntax.Modifier modifier,
+    public final _HavingSpec<I> groupBy(@Nullable SQLs.Modifier modifier,
                                         Consumer<Consumer<GroupByItem>> consumer) {
         if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
@@ -374,7 +374,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }
 
     @Override
-    public final _HavingSpec<I> ifGroupBy(@Nullable SQLsSyntax.Modifier modifier,
+    public final _HavingSpec<I> ifGroupBy(@Nullable SQLs.Modifier modifier,
                                           Consumer<Consumer<GroupByItem>> consumer) {
         if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
@@ -497,10 +497,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         return PostgreDialect.POSTGRE15;
     }
 
-    @Override
-    final Postgres.Modifier distinctModifier() {
-        return Postgres.DISTINCT;
-    }
 
     @Override
     final List<Postgres.Modifier> asModifierList(@Nullable List<Postgres.Modifier> modifiers) {
@@ -511,6 +507,17 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     final boolean isErrorModifier(Postgres.Modifier modifier) {
         return _PostgreConsultant.queryModifier(modifier) < 0;
     }
+
+    @Override
+    final Postgres.Modifier allModifier() {
+        return Postgres.ALL;
+    }
+
+    @Override
+    final Postgres.Modifier distinctModifier() {
+        return Postgres.DISTINCT;
+    }
+
 
     @Override
     final List<Hint> asHintList(@Nullable List<Hint> hints) {
@@ -1514,7 +1521,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(
-                TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
+                TableMeta<T> table, SQLs.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreUpdates.subSimpleUpdate(this.context.getNonNullOuterContext(), this.function)
@@ -1523,7 +1530,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(
-                @Nullable SQLs.WordOnly only, TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
+                @Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreUpdates.subSimpleUpdate(this.context.getNonNullOuterContext(), this.function)
@@ -1532,7 +1539,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(
-                TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star, SQLsSyntax.WordAs as, String tableAlias) {
+                TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreUpdates.subSimpleUpdate(this.context.getNonNullOuterContext(), this.function)
@@ -1541,8 +1548,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(
-                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star,
-                SQLsSyntax.WordAs as, String tableAlias) {
+                @Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star,
+                SQLs.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreUpdates.subSimpleUpdate(this.context.getNonNullOuterContext(), this.function)
@@ -1551,7 +1558,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
-                TableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
+                TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
@@ -1560,7 +1567,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
-                @Nullable SQLs.WordOnly only, TableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
+                @Nullable SQLs.WordOnly only, TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
@@ -1569,7 +1576,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
-                TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star, SQLsSyntax.WordAs as, String tableAlias) {
+                TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
@@ -1578,8 +1585,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
-                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star,
-                SQLsSyntax.WordAs as, String tableAlias) {
+                @Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star,
+                SQLs.WordAs as, String tableAlias) {
             this.endDispatcher();
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)

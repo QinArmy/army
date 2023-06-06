@@ -96,7 +96,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
     final TableMeta<?> targetTable;
 
-    private final SqlSyntax.SymbolAsterisk starModifier;
+    private final SQLs.SymbolAsterisk starModifier;
 
     final String targetTableAlias;
 
@@ -522,7 +522,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(String derivedAlias, SQLs.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
+        public final _StaticReturningCommaSpec<Q> returning(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
             this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }
@@ -536,7 +536,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
         @Override
         public final <P> _StaticReturningCommaSpec<Q> returning(
                 String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
-                String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+                String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
                 throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
             }
@@ -608,14 +608,14 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(String derivedAlias, SQLsSyntax.SymbolPeriod period,
-                                                        SqlSyntax.SymbolAsterisk star) {
+        public final _StaticReturningCommaSpec<Q> comma(String derivedAlias, SQLs.SymbolPeriod period,
+                                                        SQLs.SymbolAsterisk star) {
             this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(String tableAlias, SQLsSyntax.SymbolPeriod period,
+        public final _StaticReturningCommaSpec<Q> comma(String tableAlias, SQLs.SymbolPeriod period,
                                                         TableMeta<?> table) {
             this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
             return this;
@@ -623,8 +623,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
         @Override
         public final <P> _StaticReturningCommaSpec<Q> comma(
-                String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
-                String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+                String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
                 throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
             }
@@ -758,7 +758,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
             }
             List<_SelectItem> list = this.returningList;
             if (list == null) {
-                list = new ArrayList<>();
+                list = _Collections.arrayList();
                 this.returningList = list;
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -954,22 +954,22 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(
-                String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
+                String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
             this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return new BatchParamClause(this);
         }
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(
-                String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+                String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
             return new BatchParamClause(this);
         }
 
         @Override
         public <P> _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(
-                String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
-                String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+                String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
                 throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
             }
@@ -1207,19 +1207,19 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
             this.statement.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+        public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             this.statement.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
             return this;
         }
 
         @Override
-        public <P> _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+        public <P> _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
                 throw CriteriaUtils.childParentNotMatch(this.statement.context, parent, child);
             }
@@ -1270,11 +1270,11 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
     private static abstract class PostgreUpdateClause<WE extends Item>
             extends CriteriaSupports.WithClause<PostgreCtes, WE> {
 
-        private SQLsSyntax.WordOnly onlyModifier;
+        private SQLs.WordOnly onlyModifier;
 
         private TableMeta<?> targetTable;
 
-        private SqlSyntax.SymbolAsterisk starModifier;
+        private SQLs.SymbolAsterisk starModifier;
 
         private String targetTableAlias;
 
@@ -1285,8 +1285,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
         }
 
 
-        final void doUpdate(@Nullable SQLsSyntax.WordOnly only, final @Nullable TableMeta<?> table,
-                            @Nullable SqlSyntax.SymbolAsterisk star, SQLsSyntax.WordAs as,
+        final void doUpdate(@Nullable SQLs.WordOnly only, final @Nullable TableMeta<?> table,
+                            @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as,
                             final @Nullable String tableAlias) {
             if (this.targetTable != null) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -1335,19 +1335,19 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
         }
 
         @Override
-        public final <T> _SingleSetClause<I, Q, T> update(TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
+        public final <T> _SingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs as, String tableAlias) {
             return this.update(null, table, null, as, tableAlias);
         }
 
         @Override
-        public final <T> _SingleSetClause<I, Q, T> update(@Nullable SQLsSyntax.WordOnly only, TableMeta<T> table,
-                                                          SQLsSyntax.WordAs as, String tableAlias) {
+        public final <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table,
+                                                          SQLs.WordAs as, String tableAlias) {
             return this.update(only, table, null, as, tableAlias);
         }
 
         @Override
-        public final <T> _SingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star,
-                                                          SQLsSyntax.WordAs as, String tableAlias) {
+        public final <T> _SingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star,
+                                                          SQLs.WordAs as, String tableAlias) {
             return this.update(null, table, star, as, tableAlias);
         }
 
@@ -1366,8 +1366,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
         @Override
         public <T> _SingleSetClause<Update, ReturningUpdate, T> update(
-                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star,
-                SQLsSyntax.WordAs as, String tableAlias) {
+                @Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star,
+                SQLs.WordAs as, String tableAlias) {
             this.doUpdate(only, table, star, as, tableAlias);
             return new PrimarySimpleUpdate<>(this);
         }
@@ -1387,8 +1387,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
         @Override
         public <T> _SingleSetClause<I, I, T> update(
-                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star,
-                SQLsSyntax.WordAs as, String tableAlias) {
+                @Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star,
+                SQLs.WordAs as, String tableAlias) {
             this.doUpdate(only, table, star, as, tableAlias);
             return new PrimarySimpleUpdateForMultiStmt<>(this);
         }
@@ -1407,8 +1407,8 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
         @Override
         public <T> _SingleSetClause<I, I, T> update(
-                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star,
-                SQLsSyntax.WordAs as, String tableAlias) {
+                @Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star,
+                SQLs.WordAs as, String tableAlias) {
             this.doUpdate(only, table, star, as, tableAlias);
             return new SubSimpleUpdate<>(this);
         }
@@ -1439,26 +1439,26 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
         @Override
         public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(
-                TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
+                TableMeta<T> table, SQLs.WordAs as, String tableAlias) {
             return this.update(null, table, null, as, tableAlias);
         }
 
         @Override
         public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(
-                @Nullable SQLsSyntax.WordOnly only, TableMeta<T> table, SQLsSyntax.WordAs as, String tableAlias) {
+                @Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as, String tableAlias) {
             return this.update(only, table, null, as, tableAlias);
         }
 
         @Override
         public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(
-                TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star, SQLsSyntax.WordAs as, String tableAlias) {
+                TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias) {
             return this.update(null, table, star, as, tableAlias);
         }
 
         @Override
         public <T> _BatchSingleSetClause<BatchUpdate, BatchReturningUpdate, T> update(
-                @Nullable SQLsSyntax.WordOnly only, TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star,
-                SQLsSyntax.WordAs as, String tableAlias) {
+                @Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star,
+                SQLs.WordAs as, String tableAlias) {
             this.doUpdate(only, table, star, as, tableAlias);
             return new PrimaryBatchUpdate<>(this);
         }
@@ -1505,7 +1505,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
         private final List<_Cte> cteList;
 
-        private final SQLsSyntax.WordOnly only;
+        private final SQLs.WordOnly only;
 
         private final TableMeta<?> targetTable;
 

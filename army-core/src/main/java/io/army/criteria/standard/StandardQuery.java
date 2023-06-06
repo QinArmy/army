@@ -314,7 +314,7 @@ public interface StandardQuery extends Query, StandardStatement {
      * @since 1.0
      */
     interface _StandardSelectClause<I extends Item>
-            extends _ModifierSelectClause<SQLs.Modifier, _StandardSelectCommaClause<I>>,
+            extends _ModifierListSelectClause<SQLs.Modifier, _StandardSelectCommaClause<I>>,
             _DynamicModifierSelectClause<SQLs.Modifier, _FromSpec<I>> {
 
     }

@@ -123,7 +123,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         return new TwoArgAggWindowFunc(name, one, two, returnType);
     }
 
-    static PostgreWindowFunctions._PgAggFunc oneArgAggFunc(final String name, final @Nullable SqlSyntax.ArgDistinct modifier,
+    static PostgreWindowFunctions._PgAggFunc oneArgAggFunc(final String name, final @Nullable SQLs.ArgDistinct modifier,
                                                            final Expression one,
                                                            final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
                                                            final TypeMeta returnType) {
@@ -131,14 +131,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         return _oneArgAggFunc(name, true, modifier, one, consumer, returnType);
     }
 
-    static PostgreWindowFunctions._PgAggFunc twoArgAggFunc(final String name, final @Nullable SqlSyntax.ArgDistinct modifier,
+    static PostgreWindowFunctions._PgAggFunc twoArgAggFunc(final String name, final @Nullable SQLs.ArgDistinct modifier,
                                                            final Expression one, final Expression two,
                                                            final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
                                                            final TypeMeta returnType) {
         return _twoArgAggFunc(name, true, modifier, one, two, consumer, returnType);
     }
 
-    static PostgreWindowFunctions._PgAggFunc oneUserArgAggFunc(final String name, final @Nullable SqlSyntax.ArgDistinct modifier,
+    static PostgreWindowFunctions._PgAggFunc oneUserArgAggFunc(final String name, final @Nullable SQLs.ArgDistinct modifier,
                                                                final Expression one,
                                                                final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
                                                                final TypeMeta returnType) {
@@ -146,7 +146,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         return _oneArgAggFunc(name, false, modifier, one, consumer, returnType);
     }
 
-    static PostgreWindowFunctions._PgAggFunc twoUserArgAggFunc(final String name, final @Nullable SqlSyntax.ArgDistinct modifier,
+    static PostgreWindowFunctions._PgAggFunc twoUserArgAggFunc(final String name, final @Nullable SQLs.ArgDistinct modifier,
                                                                final Expression one, final Expression two,
                                                                final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
                                                                final TypeMeta returnType) {
@@ -217,10 +217,10 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }
 
     /**
-     * @see #oneArgAggFunc(String, SqlSyntax.ArgDistinct, Expression, Consumer, TypeMeta)
+     * @see #oneArgAggFunc(String, SQLs.ArgDistinct, Expression, Consumer, TypeMeta)
      */
     private static PostgreWindowFunctions._PgAggFunc _oneArgAggFunc(final String name, final boolean buildIn,
-                                                                    final @Nullable SqlSyntax.ArgDistinct modifier,
+                                                                    final @Nullable SQLs.ArgDistinct modifier,
                                                                     final Expression one,
                                                                     final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
                                                                     final TypeMeta returnType) {
@@ -231,10 +231,10 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }
 
     /**
-     * @see #twoArgAggFunc(String, SqlSyntax.ArgDistinct, Expression, Expression, Consumer, TypeMeta)
+     * @see #twoArgAggFunc(String, SQLs.ArgDistinct, Expression, Expression, Consumer, TypeMeta)
      */
     private static PostgreWindowFunctions._PgAggFunc _twoArgAggFunc(final String name, final boolean buildIn,
-                                                                    final @Nullable SqlSyntax.ArgDistinct modifier,
+                                                                    final @Nullable SQLs.ArgDistinct modifier,
                                                                     final Expression one, final Expression two,
                                                                     final @Nullable Consumer<Statement._SimpleOrderByClause> consumer,
                                                                     final TypeMeta returnType) {
@@ -386,7 +386,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         public Postgres._XmlNamedElementFieldClause accept(
-                final @Nullable Expression attValue, SqlSyntax.WordAs as, final @Nullable String attName) {
+                final @Nullable Expression attValue, SQLs.WordAs as, final @Nullable String attName) {
 
             List<Object> attValueList = this.attValueList;
             if (attValueList == null) {
@@ -410,7 +410,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres._XmlNamedElementFieldClause accept(BiFunction<MappingType, String, Expression> funcRef, String attValue, SqlSyntax.WordAs as, String attName) {
+        public Postgres._XmlNamedElementFieldClause accept(BiFunction<MappingType, String, Expression> funcRef, String attValue, SQLs.WordAs as, String attName) {
             return this.accept(funcRef.apply(TextType.INSTANCE, attValue), as, attName);
         }
 
@@ -529,38 +529,38 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
-                                                    Expression columnExp, SqlSyntax.WordDefault wordDefault,
+                                                    Expression columnExp, SQLs.WordDefault wordDefault,
                                                     Expression defaultExp,
-                                                    SqlSyntax.NullOption nullOption) {
+                                                    SQLs.NullOption nullOption) {
             return this.comma(name, type, path, columnExp, wordDefault, defaultExp, nullOption);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SqlSyntax.WordDefault wordDefault,
-                                                    Expression defaultExp, SqlSyntax.NullOption nullOption) {
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SQLs.WordDefault wordDefault,
+                                                    Expression defaultExp, SQLs.NullOption nullOption) {
             return this.comma(name, type, wordDefault, defaultExp, nullOption);
         }
 
         @Override
         public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
-                                                    Expression columnExp, SqlSyntax.NullOption nullOption) {
+                                                    Expression columnExp, SQLs.NullOption nullOption) {
             return this.comma(name, type, path, columnExp, nullOption);
         }
 
         @Override
         public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
-                                                    Expression columnExp, SqlSyntax.WordDefault wordDefault,
+                                                    Expression columnExp, SQLs.WordDefault wordDefault,
                                                     Expression defaultExp) {
             return this.comma(name, type, path, columnExp, wordDefault, defaultExp);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SqlSyntax.NullOption nullOption) {
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SQLs.NullOption nullOption) {
             return this.comma(name, type, nullOption);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SqlSyntax.WordDefault wordDefault,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SQLs.WordDefault wordDefault,
                                                     Expression defaultExp) {
             return this.comma(name, type, wordDefault, defaultExp);
         }
@@ -584,31 +584,31 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         @Override
         public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
                                                     BiFunction<MappingType, String, Expression> funcRefForColumnExp,
-                                                    String columnExp, SqlSyntax.WordDefault wordDefault,
-                                                    Expression defaultExp, SqlSyntax.NullOption nullOption) {
+                                                    String columnExp, SQLs.WordDefault wordDefault,
+                                                    Expression defaultExp, SQLs.NullOption nullOption) {
             return this.comma(name, type, path, funcRefForColumnExp, columnExp, wordDefault, defaultExp, nullOption);
         }
 
         @Override
         public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
                                                     BiFunction<MappingType, String, Expression> funcRefForColumnExp,
-                                                    String columnExp, SqlSyntax.NullOption nullOption) {
+                                                    String columnExp, SQLs.NullOption nullOption) {
             return this.comma(name, type, path, funcRefForColumnExp, columnExp, nullOption);
         }
 
         @Override
         public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
                                                     BiFunction<MappingType, String, Expression> funcRefForColumnExp,
-                                                    String columnExp, SqlSyntax.WordDefault wordDefault,
+                                                    String columnExp, SQLs.WordDefault wordDefault,
                                                     Expression defaultExp) {
             return this.comma(name, type, path, funcRefForColumnExp, columnExp, wordDefault, defaultExp);
         }
 
         @Override
         public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
-                                                  @Nullable Expression columnExp, SqlSyntax.WordDefault wordDefault,
+                                                  @Nullable Expression columnExp, SQLs.WordDefault wordDefault,
                                                   @Nullable Expression defaultExp,
-                                                  @Nullable SqlSyntax.NullOption nullOption) {
+                                                  @Nullable SQLs.NullOption nullOption) {
             if (columnExp == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             } else if (defaultExp == null) {
@@ -620,9 +620,9 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SqlSyntax.WordDefault wordDefault,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SQLs.WordDefault wordDefault,
                                                   @Nullable Expression defaultExp,
-                                                  @Nullable SqlSyntax.NullOption nullOption) {
+                                                  @Nullable SQLs.NullOption nullOption) {
             if (defaultExp == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             } else if (nullOption == null) {
@@ -634,7 +634,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         @Override
         public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   @Nullable Expression columnExp,
-                                                  @Nullable SqlSyntax.NullOption nullOption) {
+                                                  @Nullable SQLs.NullOption nullOption) {
             if (columnExp == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             } else if (nullOption == null) {
@@ -645,7 +645,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
-                                                  @Nullable Expression columnExp, SqlSyntax.WordDefault wordDefault,
+                                                  @Nullable Expression columnExp, SQLs.WordDefault wordDefault,
                                                   @Nullable Expression defaultExp) {
             if (columnExp == null) {
                 throw ContextStack.nullPointer(this.outerContext);
@@ -657,7 +657,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         public Postgres.XmlTableCommaClause comma(String name, MappingType type,
-                                                  @Nullable SqlSyntax.NullOption nullOption) {
+                                                  @Nullable SQLs.NullOption nullOption) {
             if (nullOption == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             }
@@ -665,7 +665,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SqlSyntax.WordDefault wordDefault,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SQLs.WordDefault wordDefault,
                                                   @Nullable Expression defaultExp) {
             if (defaultExp == null) {
                 throw ContextStack.nullPointer(this.outerContext);
@@ -702,8 +702,8 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         @Override
         public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   BiFunction<MappingType, String, Expression> funcRefForColumnExp,
-                                                  String columnExp, SqlSyntax.WordDefault wordDefault,
-                                                  Expression defaultExp, SqlSyntax.NullOption nullOption) {
+                                                  String columnExp, SQLs.WordDefault wordDefault,
+                                                  Expression defaultExp, SQLs.NullOption nullOption) {
             return this.comma(name, type, path, funcRefForColumnExp.apply(TextType.INSTANCE, columnExp),
                     wordDefault, defaultExp, nullOption);
         }
@@ -711,14 +711,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         @Override
         public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   BiFunction<MappingType, String, Expression> funcRefForColumnExp,
-                                                  String columnExp, SqlSyntax.NullOption nullOption) {
+                                                  String columnExp, SQLs.NullOption nullOption) {
             return this.comma(name, type, path, funcRefForColumnExp.apply(TextType.INSTANCE, columnExp), nullOption);
         }
 
         @Override
         public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
                                                   BiFunction<MappingType, String, Expression> funcRefForColumnExp,
-                                                  String columnExp, SqlSyntax.WordDefault wordDefault,
+                                                  String columnExp, SQLs.WordDefault wordDefault,
                                                   Expression defaultExp) {
             return this.comma(name, type, path, funcRefForColumnExp.apply(TextType.INSTANCE, columnExp),
                     wordDefault, defaultExp);
@@ -756,8 +756,8 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         private Postgres.XmlTableCommaClause onAdd(
                 final @Nullable String name, @Nullable final MappingType type, final Functions.WordPath path,
-                final @Nullable Expression columnExp, final SqlSyntax.WordDefault wordDefault,
-                final @Nullable Expression defaultExp, final @Nullable SqlSyntax.NullOption nullOption) {
+                final @Nullable Expression columnExp, final SQLs.WordDefault wordDefault,
+                final @Nullable Expression defaultExp, final @Nullable SQLs.NullOption nullOption) {
 
             if (name == null) {
                 throw ContextStack.nullPointer(this.outerContext);
@@ -855,12 +855,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         private final ArmyExpression defaultExp;
 
-        private final SqlSyntax.NullOption nullOption;
+        private final SQLs.NullOption nullOption;
 
 
         private XmlTableDataColumn(String name, MappingType type, @Nullable Expression columnExp,
                                    @Nullable Expression defaultExp,
-                                   @Nullable SqlSyntax.NullOption nullOption) {
+                                   @Nullable SQLs.NullOption nullOption) {
             super(name, type);
             this.columnExp = (ArmyExpression) columnExp;
             this.defaultExp = (ArmyExpression) defaultExp;
@@ -892,7 +892,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 defaultExp.appendSql(context);
             }
 
-            final SqlSyntax.NullOption nullOption = this.nullOption;
+            final SQLs.NullOption nullOption = this.nullOption;
             if (nullOption != null) {
                 sqlBuilder.append(((SQLWords) nullOption).spaceRender());
             }
@@ -1349,14 +1349,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     private static abstract class NonOrderedSetAggregateFunction extends PostgreAggregateFunction
             implements PostgreWindowFunctions._PgAggFunc {
 
-        private final SqlSyntax.ArgDistinct modifier;
+        private final SQLs.ArgDistinct modifier;
 
         private final OrderByOptionClause orderByClause;
 
-        private NonOrderedSetAggregateFunction(String name, boolean buildIn, @Nullable SqlSyntax.ArgDistinct modifier,
+        private NonOrderedSetAggregateFunction(String name, boolean buildIn, @Nullable SQLs.ArgDistinct modifier,
                                                final @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
             super(name, buildIn, returnType, orderByClause == null ? ContextStack.peek() : orderByClause.context);
-            if (!(modifier == null || modifier instanceof SqlSyntax.ArmyKeyWord)) {
+            if (!(modifier == null || modifier instanceof SQLs.ArmyKeyWord)) {
                 throw CriteriaUtils.funcArgError(name, modifier);
             }
             this.modifier = modifier;
@@ -1366,7 +1366,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            final SqlSyntax.ArgDistinct modifier = this.modifier;
+            final SQLs.ArgDistinct modifier = this.modifier;
             if (modifier != null) {
                 sqlBuilder.append(modifier.spaceRender());
             }
@@ -1381,7 +1381,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         final void argToString(final StringBuilder builder) {
-            final SqlSyntax.ArgDistinct modifier = this.modifier;
+            final SQLs.ArgDistinct modifier = this.modifier;
             if (modifier != null) {
                 builder.append(modifier.spaceRender());
             }
@@ -1408,9 +1408,9 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         private final ArmyExpression one;
 
         /**
-         * @see #_oneArgAggFunc(String, boolean, SqlSyntax.ArgDistinct, Expression, Consumer, TypeMeta)
+         * @see #_oneArgAggFunc(String, boolean, SQLs.ArgDistinct, Expression, Consumer, TypeMeta)
          */
-        private OneArgAggFunc(String name, boolean buildIn, @Nullable SqlSyntax.ArgDistinct modifier, Expression one,
+        private OneArgAggFunc(String name, boolean buildIn, @Nullable SQLs.ArgDistinct modifier, Expression one,
                               @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
             super(name, buildIn, modifier, orderByClause, returnType);
             this.one = (ArmyExpression) one;
@@ -1436,9 +1436,9 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         private final ArmyExpression two;
 
         /**
-         * @see #_twoArgAggFunc(String, boolean, SqlSyntax.ArgDistinct, Expression, Expression, Consumer, TypeMeta)
+         * @see #_twoArgAggFunc(String, boolean, SQLs.ArgDistinct, Expression, Expression, Consumer, TypeMeta)
          */
-        private TwoArgAggFunc(String name, boolean buildIn, @Nullable SqlSyntax.ArgDistinct modifier, Expression one, Expression two,
+        private TwoArgAggFunc(String name, boolean buildIn, @Nullable SQLs.ArgDistinct modifier, Expression one, Expression two,
                               @Nullable OrderByOptionClause orderByClause, TypeMeta returnType) {
             super(name, buildIn, modifier, orderByClause, returnType);
             this.one = (ArmyExpression) one;

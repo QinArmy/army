@@ -31,66 +31,6 @@ abstract class SQLsSyntax extends Functions {
     }
 
 
-
-    public interface Modifier extends Query.SelectModifier {
-
-    }
-
-    public interface IsComparisonWord extends SQLWords {
-
-    }
-
-    public interface BetweenModifier extends SQLWords {
-
-    }
-
-
-    public interface WordAll extends Modifier, QuantifiedWord {
-
-    }
-
-    public interface WordDistinct extends Modifier, SqlSyntax.ArgDistinct {
-
-    }
-
-    public interface WordInterval extends SQLWords {
-
-    }
-
-    public interface WordPercent {
-
-    }
-
-    public interface WordOnly extends Query.TableModifier, Query.FetchOnlyWithTies, SQLWords {
-
-    }
-
-    public interface WordFirst extends Query.FetchFirstNext {
-
-    }
-
-
-    public interface WordNext extends Query.FetchFirstNext {
-
-    }
-
-    public interface WordRow extends Query.FetchRow {
-
-    }
-
-    public interface WordRows extends Query.FetchRow {
-
-    }
-
-    public interface WordLateral extends Query.DerivedModifier {
-
-    }
-
-    public interface WordsWithTies extends Query.FetchOnlyWithTies {
-
-    }
-
-
     /**
      * <p>
      * Value must be below types:
@@ -642,12 +582,12 @@ abstract class SQLsSyntax extends Functions {
         return RowExpressions.row(consumer);
     }
 
-    public static RowElement space(String derivedAlias, SymbolPeriod period,
-                                   SymbolAsterisk asterisk) {
+    public static RowElement space(String derivedAlias, SQLs.SymbolPeriod period,
+                                   SQLs.SymbolAsterisk asterisk) {
         return ContextStack.peek().row(derivedAlias, period, asterisk);
     }
 
-    public static RowElement space(String tableAlias, SymbolPeriod period, TableMeta<?> table) {
+    public static RowElement space(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
         return ContextStack.peek().row(tableAlias, period, table); // register derived row
     }
 
@@ -664,6 +604,18 @@ abstract class SQLsSyntax extends Functions {
      */
     public static <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
         return ContextStack.peek().field(tableAlias, field);
+    }
+
+    /**
+     * <p>
+     * Reference a derived field from current statement.
+     * </p>
+     *
+     * @param cteAlis   cte alias,
+     * @param fieldName cte field name
+     */
+    public static DerivedField cteField(String cteAlis, String fieldName) {
+        return ContextStack.peek().cteField(cteAlis, fieldName);
     }
 
     /**

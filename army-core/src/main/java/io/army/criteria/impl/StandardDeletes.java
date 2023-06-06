@@ -226,7 +226,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         }
 
         @Override
-        public _BatchWhereSpec<BatchDelete> deleteFrom(SingleTableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
+        public _BatchWhereSpec<BatchDelete> deleteFrom(SingleTableMeta<?> table, SQLs.WordAs as, String tableAlias) {
             return this.deleteFrom(table, tableAlias);
         }
 
@@ -241,7 +241,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         }
 
         @Override
-        public _BatchWhereSpec<BatchDelete> deleteFrom(TableMeta<?> table, SQLsSyntax.WordAs as, String tableAlias) {
+        public _BatchWhereSpec<BatchDelete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
             return this.deleteFrom(table, tableAlias);
         }
 

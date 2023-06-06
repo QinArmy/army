@@ -35,7 +35,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
 
     }
 
-    public interface WordDistinct extends Modifier, SqlSyntax.ArgDistinct {
+    public interface WordDistinct extends Modifier, SQLs.ArgDistinct {
 
     }
 

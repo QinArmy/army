@@ -58,6 +58,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         printStmt(LOG, stmt);
     }
 
+
     @Test
     public void scalarSubQuery() {
         Select stmt;
@@ -120,6 +121,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         printStmt(LOG, stmt);
 
     }
+
 
     @Test
     public void unionSelect() {

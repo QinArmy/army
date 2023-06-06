@@ -472,7 +472,7 @@ abstract class FunctionUtils {
         return func;
     }
 
-    static SimpleExpression dynamicStringObjectStringFunc(final String name, final SqlSyntax.SymbolSpace space,
+    static SimpleExpression dynamicStringObjectStringFunc(final String name, final SQLs.SymbolSpace space,
                                                           final boolean required,
                                                           final BiFunction<MappingType, String[], Expression> funcRef,
                                                           final MappingType paramType,
@@ -768,7 +768,7 @@ abstract class FunctionUtils {
         return new ObjectElementFunction(name, true, _Collections.singletonList(one), returnType);
     }
 
-    static SimpleExpression objectElementFunc(SqlSyntax.SymbolSpace space, final String name, final boolean required,
+    static SimpleExpression objectElementFunc(SQLs.SymbolSpace space, final String name, final boolean required,
                                               final Consumer<Statement._DynamicObjectConsumer> consumer,
                                               final TypeMeta returnType) {
         if (space != SQLs.SPACE) {
@@ -864,7 +864,7 @@ abstract class FunctionUtils {
             } else if (o == Functions.FuncWord.LEFT_PAREN) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
             } else if (o instanceof SQLWords) {
-                if (!(o instanceof SqlSyntax.ArmyKeyWord)) {
+                if (!(o instanceof SQLs.ArmyKeyWord)) {
                     throw new CriteriaException(String.format("%s non-army words", o));
                 }
                 sqlBuilder.append(((SQLWords) o).spaceRender());
@@ -1994,7 +1994,7 @@ abstract class FunctionUtils {
         @Override
         public <T> CaseFunction when(BetweenValueOperator<T> expOperator,
                                      BiFunction<SimpleExpression, T, Expression> operator, T firstValue,
-                                     SqlSyntax.WordAnd and, T secondValue) {
+                                     SQLs.WordAnd and, T secondValue) {
             return this.when(expOperator.apply(operator, firstValue, and, secondValue));
         }
 
@@ -2054,7 +2054,7 @@ abstract class FunctionUtils {
         @Override
         public <T> _SqlCaseThenClause space(BetweenValueOperator<T> expOperator,
                                             BiFunction<SimpleExpression, T, Expression> operator, T firstValue,
-                                            SqlSyntax.WordAnd and, T secondValue) {
+                                            SQLs.WordAnd and, T secondValue) {
             return this.space(expOperator.apply(operator, firstValue, and, secondValue));
         }
 

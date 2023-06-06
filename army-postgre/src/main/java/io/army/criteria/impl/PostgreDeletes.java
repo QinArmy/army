@@ -69,11 +69,11 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
     }
 
 
-    private SQLsSyntax.WordOnly onlyModifier;
+    private SQLs.WordOnly onlyModifier;
 
     private TableMeta<?> targetTable;
 
-    private SqlSyntax.SymbolAsterisk starModifier;
+    private SQLs.SymbolAsterisk starModifier;
 
     private String targetTableAlias;
 
@@ -94,13 +94,13 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
     }
 
     @Override
-    public final DR deleteFrom(TableMeta<?> table, @Nullable SqlSyntax.SymbolAsterisk star, SQLsSyntax.WordAs as, String tableAlias) {
+    public final DR deleteFrom(TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias) {
         return this.deleteFrom(null, table, star, as, tableAlias);
     }
 
     @Override
-    public final DR deleteFrom(final @Nullable SQLsSyntax.WordOnly only, final @Nullable TableMeta<?> table,
-                               final @Nullable SqlSyntax.SymbolAsterisk star, SQLsSyntax.WordAs as,
+    public final DR deleteFrom(final @Nullable SQLs.WordOnly only, final @Nullable TableMeta<?> table,
+                               final @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as,
                                final @Nullable String tableAlias) {
         if (this.targetTable != null) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -315,7 +315,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
     }
 
     @Override
-    public final SQLsSyntax.WordOnly modifier() {
+    public final SQLs.WordOnly modifier() {
         return this.onlyModifier;
     }
 
@@ -329,7 +329,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
     }
 
     @Override
-    public final SqlSyntax.SymbolAsterisk symbolAsterisk() {
+    public final SQLs.SymbolAsterisk symbolAsterisk() {
         return this.starModifier;
     }
 
@@ -532,23 +532,23 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> returning(String derivedAlias, SQLsSyntax.SymbolPeriod period,
-                                                            SqlSyntax.SymbolAsterisk star) {
+        public final _StaticReturningCommaSpec<Q> returning(String derivedAlias, SQLs.SymbolPeriod period,
+                                                            SQLs.SymbolAsterisk star) {
             this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> returning(
-                String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+                String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
             return this;
         }
 
         @Override
         public final <P> _StaticReturningCommaSpec<Q> returning(
-                String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
-                String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+                String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
                 throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
             }
@@ -619,23 +619,23 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
         }
 
         @Override
-        public final _StaticReturningCommaSpec<Q> comma(String derivedAlias, SQLsSyntax.SymbolPeriod period,
-                                                        SqlSyntax.SymbolAsterisk star) {
+        public final _StaticReturningCommaSpec<Q> comma(String derivedAlias, SQLs.SymbolPeriod period,
+                                                        SQLs.SymbolAsterisk star) {
             this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }
 
         @Override
         public final _StaticReturningCommaSpec<Q> comma(
-                String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+                String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
             return this;
         }
 
         @Override
         public final <P> _StaticReturningCommaSpec<Q> comma(
-                String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
-                String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+                String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
                 throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
             }
@@ -998,19 +998,19 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
+        public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
             this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return new BatchParamClause(this);
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+        public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
             return new BatchParamClause(this);
         }
 
         @Override
-        public <P> _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+        public <P> _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
                 throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
             }
@@ -1238,19 +1238,19 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
 
         @Override
-        public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
+        public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
             this.statement.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }
 
         @Override
-        public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+        public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             this.statement.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
             return this;
         }
 
         @Override
-        public <P> _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+        public <P> _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent, String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
                 throw CriteriaUtils.childParentNotMatch(this.statement.context, parent, child);
             }
@@ -1323,11 +1323,11 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
         private final List<_Cte> cteList;
 
-        private final SQLsSyntax.WordOnly only;
+        private final SQLs.WordOnly only;
 
         private final TableMeta<?> targetTable;
 
-        private final SqlSyntax.SymbolAsterisk starModifier;
+        private final SQLs.SymbolAsterisk starModifier;
 
         private final String tableAlias;
 
@@ -1377,7 +1377,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
         }
 
         @Override
-        public final SQLsSyntax.WordOnly modifier() {
+        public final SQLs.WordOnly modifier() {
             return this.only;
         }
 
@@ -1388,7 +1388,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
 
         @Override
-        public final SqlSyntax.SymbolAsterisk symbolAsterisk() {
+        public final SQLs.SymbolAsterisk symbolAsterisk() {
             return this.starModifier;
         }
 

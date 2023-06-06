@@ -88,7 +88,7 @@ abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, W
     }
 
     @Override
-    public final DT from(SingleTableMeta<?> table, SQLsSyntax.WordAs wordAs, String alias) {
+    public final DT from(SingleTableMeta<?> table, SQLs.WordAs wordAs, String alias) {
         return this.deleteFrom(table, wordAs, alias);
     }
 

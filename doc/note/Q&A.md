@@ -174,5 +174,7 @@
 38. 为什么要设计 io.army.criteria.CompoundExpression 和 io.army.criteria.CompoundPredicate ?
     * 为了 io.army.criteria.Expression.apply() 和 io.army.criteria.Expression.test() 的调用是类型安全的.
 
+39. 为什么设计 io.army.criteria.TypeInfer.DelayTypeInfer 而不直接使用 io.army.meta.TypeMeta.DelayTypeMeta ?
+    * 因为 io.army.meta.TypeMeta.DelayTypeMeta 会导致 来自于 子查询的 codec field 无法解码
     
 

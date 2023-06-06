@@ -67,14 +67,14 @@ abstract class MySQLMultiUpdates<I extends Item, WE extends Item, FT extends Ite
 
     @Override
     public final FT update(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers,
-                           TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
+                           TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
         this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
         return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
     }
 
     @Override
-    public final FT update(TableMeta<?> table, SQLsSyntax.WordAs wordAs, String tableAlias) {
+    public final FT update(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
         return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
     }
 
@@ -119,7 +119,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE extends Item, FT extends Ite
 
     @Override
     public final FC update(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers, String cteName,
-                           SQLsSyntax.WordAs wordAs, String alias) {
+                           SQLs.WordAs wordAs, String alias) {
         this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
         return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), alias);
@@ -131,7 +131,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE extends Item, FT extends Ite
     }
 
     @Override
-    public final FC update(String cteName, SQLsSyntax.WordAs wordAs, String alias) {
+    public final FC update(String cteName, SQLs.WordAs wordAs, String alias) {
         return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), alias);
     }
 

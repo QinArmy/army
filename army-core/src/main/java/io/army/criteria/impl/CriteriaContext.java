@@ -47,6 +47,8 @@ interface CriteriaContext {
 
     _Cte refCte(String cteName);
 
+    void onAddDerivedGroup(String derivedAlis);
+
     CriteriaContext onAddSelectItem(SelectItem selectItem);
 
 
@@ -67,11 +69,12 @@ interface CriteriaContext {
     void addEndEventListener(Runnable listener);
 
 
+    DerivedField cteField(String derivedAlias, String selectionAlias);
+
     DerivedField refThis(String derivedAlias, String selectionAlias);
 
 
     <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);
-
 
     /**
      * <p>

@@ -426,13 +426,13 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
      */
     private static final class GroupConcatFunction extends OperationExpression.SqlFunctionExpression {
 
-        private final SqlSyntax.ArgDistinct distinct;
+        private final SQLs.ArgDistinct distinct;
 
         private final List<ArmyExpression> expList;
 
         private final GroupConcatInnerClause clause;
 
-        private GroupConcatFunction(@Nullable SqlSyntax.ArgDistinct distinct, List<ArmyExpression> expList
+        private GroupConcatFunction(@Nullable SQLs.ArgDistinct distinct, List<ArmyExpression> expList
                 , @Nullable GroupConcatInnerClause clause) {
             super("GROUP_CONCAT", StringType.INSTANCE);
             assert expList.size() > 0;

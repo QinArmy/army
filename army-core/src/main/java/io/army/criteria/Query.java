@@ -108,7 +108,6 @@ public interface Query extends RowSet {
         <P> SR space(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
                      String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
-        SR space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
     }
 
 
@@ -128,28 +127,31 @@ public interface Query extends RowSet {
 
     interface _DynamicDistinctOnAndSelectsClause<SD extends Item> {
 
-        SD selectDistinctOn(Expression exp, Consumer<Selections> consumer);
+        SD selectDistinctOn(Expression exp, Consumer<SelectionConsumer> consumer);
 
-        SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer);
+        SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<SelectionConsumer> consumer);
 
-        SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer);
+        SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<SelectionConsumer> consumer);
 
-        SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer);
+        SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer);
 
-        SD selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer);
+        SD selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer);
     }
 
 
-    interface _ModifierSelectClause<W extends SelectModifier, SR extends Item> extends _StaticSelectClause<SR> {
+    interface _ModifierSelectClause<SR extends Item> extends _StaticSelectClause<SR> {
 
-        _StaticSelectSpaceClause<SR> select(W modifier);
+        _StaticSelectSpaceClause<SR> selectAll();
+
+        _StaticSelectSpaceClause<SR> selectDistinct();
 
     }
 
     interface _ModifierListSelectClause<W extends SelectModifier, SR extends Item>
-            extends _ModifierSelectClause<W, SR> {
+            extends _ModifierSelectClause<SR> {
 
         _StaticSelectSpaceClause<SR> select(List<W> modifiers);
+
 
     }
 
@@ -157,6 +159,7 @@ public interface Query extends RowSet {
             extends _ModifierListSelectClause<W, SR> {
 
         _StaticSelectSpaceClause<SR> select(Supplier<List<Hint>> hints, List<W> modifiers);
+
     }
 
 
@@ -183,22 +186,39 @@ public interface Query extends RowSet {
         <P> SR comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
                      String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
-        SR comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
-
     }
 
 
+    interface _DeferSelectCommaSpace extends _StaticSelectCommaClause<_DeferSelectCommaSpace> {
+
+        _DeferSelectCommaSpace comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
+    }
+
+    interface _DeferSelectSpaceClause extends _StaticSelectSpaceClause<_DeferSelectCommaSpace> {
+
+        _DeferSelectCommaSpace space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
+
+        DerivedField cteField(String derivedAlias, String selectionAlias);
+
+        DerivedField refThis(String derivedAlias, String selectionAlias);
+
+        DerivedField refOuter(String derivedAlias, String selectionAlias);
+
+    }
+
     interface _DynamicSelectClause<SD> {
 
+        SD select(Consumer<_DeferSelectSpaceClause> consumer);
 
-        SD selects(Consumer<Selections> consumer);
-
+        SD selects(Consumer<SelectionConsumer> consumer);
 
     }
 
     interface _DynamicModifierSelectClause<W extends SelectModifier, SD> extends _DynamicSelectClause<SD> {
 
-        SD selects(W modifier, Consumer<Selections> consumer);
+        SD select(W modifier, Consumer<_DeferSelectSpaceClause> consumer);
+
+        SD selects(W modifier, Consumer<SelectionConsumer> consumer);
 
     }
 
@@ -206,15 +226,18 @@ public interface Query extends RowSet {
     interface _DynamicModifierListSelectClause<W extends SelectModifier, SD>
             extends _DynamicModifierSelectClause<W, SD> {
 
-        SD selects(List<W> modifierList, Consumer<Selections> consumer);
+        SD select(List<W> modifiers, Consumer<_DeferSelectSpaceClause> consumer);
+
+        SD selects(List<W> modifierList, Consumer<SelectionConsumer> consumer);
 
     }
 
     interface _DynamicHintModifierSelectClause<W extends SelectModifier, SD>
             extends _DynamicModifierListSelectClause<W, SD> {
 
+        SD select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<_DeferSelectSpaceClause> consumer);
 
-        SD selects(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Selections> consumer);
+        SD selects(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<SelectionConsumer> consumer);
 
     }
 
@@ -370,8 +393,6 @@ public interface Query extends RowSet {
             extends DialectStatement._DynamicWithClause<B, WE>, _SelectDispatcher<W, SR, SD> {
 
     }
-
-
 
 
 }

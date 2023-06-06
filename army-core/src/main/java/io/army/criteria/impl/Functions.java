@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  * @see SQLs
  */
 @SuppressWarnings("unused")
-abstract class Functions extends SqlSyntax {
+abstract class Functions {
 
 
     /**
@@ -130,7 +130,7 @@ abstract class Functions extends SqlSyntax {
     }
 
 
-    enum FuncWord implements ArmyKeyWord {
+    enum FuncWord implements SQLs.ArmyKeyWord {
 
         INTERVAL(" INTERVAL"),
         COMMA(_Constant.SPACE_COMMA),

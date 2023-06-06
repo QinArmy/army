@@ -245,7 +245,7 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
 
     interface _PostgreSelectClause<I extends Item>
-            extends _ModifierSelectClause<Postgres.Modifier, _PostgreSelectCommaSpec<I>>,
+            extends _ModifierSelectClause<_PostgreSelectCommaSpec<I>>,
             _DynamicModifierSelectClause<Postgres.Modifier, _FromSpec<I>>,
             _DynamicDistinctOnExpClause<_PostgreSelectCommaSpec<I>>,
             _DynamicDistinctOnAndSelectsClause<_FromSpec<I>> {

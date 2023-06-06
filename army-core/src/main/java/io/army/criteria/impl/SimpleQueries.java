@@ -125,14 +125,14 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR select(String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+    public final SR select(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
         this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
         return (SR) this;
     }
 
     @Override
-    public final <P> SR select(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
-                               String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+    public final <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                               String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
         if (child.parentMeta() != parent) {
             throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
         }
@@ -142,14 +142,21 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR select(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
+    public final SR select(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
         this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
         return (SR) this;
     }
 
+
     @Override
-    public final _StaticSelectSpaceClause<SR> select(W modifier) {
-        this.modifierList = this.asSingleModifier(modifier);
+    public final _StaticSelectSpaceClause<SR> selectAll() {
+        this.modifierList = _Collections.singletonList(this.allModifier());
+        return this;
+    }
+
+    @Override
+    public final _StaticSelectSpaceClause<SR> selectDistinct() {
+        this.modifierList = _Collections.singletonList(this.distinctModifier());
         return this;
     }
 
@@ -158,6 +165,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         this.modifierList = this.asModifierList(modifiers);
         return this;
     }
+
 
     @Override
     public final _StaticSelectSpaceClause<SR> select(Supplier<List<Hint>> hints, List<W> modifiers) {
@@ -170,30 +178,50 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     /*-------------------below dynamic select clause method -------------------*/
 
     @Override
-    public final SD selects(Consumer<Selections> consumer) {
-        consumer.accept(new SelectionsImpl(this.context));
+    public final SD select(Consumer<_DeferSelectSpaceClause> consumer) {
         return (SD) this;
     }
 
     @Override
-    public final SD selects(W modifier, Consumer<Selections> consumer) {
+    public final SD selects(Consumer<SelectionConsumer> consumer) {
+        consumer.accept(new SelectionConsumerImpl(this.context));
+        return (SD) this;
+    }
+
+    @Override
+    public final SD select(W modifier, Consumer<_DeferSelectSpaceClause> consumer) {
+        return (SD) this;
+    }
+
+    @Override
+    public final SD selects(W modifier, Consumer<SelectionConsumer> consumer) {
         this.modifierList = this.asSingleModifier(modifier);
-        consumer.accept(new SelectionsImpl(this.context));
+        consumer.accept(new SelectionConsumerImpl(this.context));
         return (SD) this;
     }
 
     @Override
-    public final SD selects(List<W> modifierList, Consumer<Selections> consumer) {
+    public final SD select(List<W> modifiers, Consumer<_DeferSelectSpaceClause> consumer) {
+        return (SD) this;
+    }
+
+    @Override
+    public final SD selects(List<W> modifierList, Consumer<SelectionConsumer> consumer) {
         this.modifierList = this.asModifierList(modifierList);
-        consumer.accept(new SelectionsImpl(this.context));
+        consumer.accept(new SelectionConsumerImpl(this.context));
         return (SD) this;
     }
 
     @Override
-    public final SD selects(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Selections> consumer) {
+    public final SD select(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<_DeferSelectSpaceClause> consumer) {
+        return (SD) this;
+    }
+
+    @Override
+    public final SD selects(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<SelectionConsumer> consumer) {
         this.hintList = this.asHintList(hints.get());
         this.modifierList = this.asModifierList(modifiers);
-        consumer.accept(new SelectionsImpl(this.context));
+        consumer.accept(new SelectionConsumerImpl(this.context));
         return (SD) this;
     }
 
@@ -260,19 +288,19 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR space(String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+    public final SR space(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
         this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
         return (SR) this;
     }
 
     @Override
-    public final <P> SR space(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
-                              String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+    public final <P> SR space(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                              String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
         return this.select(parenAlias, period1, parent, childAlias, period2, child);
     }
 
     @Override
-    public final SR space(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
+    public final SR space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
         this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
         return (SR) this;
     }
@@ -338,14 +366,14 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR comma(String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+    public final SR comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
         this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
         return (SR) this;
     }
 
     @Override
-    public final <P> SR comma(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
-                              String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+    public final <P> SR comma(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                              String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
         if (child.parentMeta() != parent) {
             throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
         }
@@ -355,7 +383,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final SR comma(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
+    public final SR comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
         this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
         return (SR) this;
     }
@@ -714,6 +742,10 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     abstract boolean isErrorModifier(W modifier);
 
+    abstract W allModifier();
+
+    abstract W distinctModifier();
+
 
     private SP onUnion(_UnionType unionType) {
         this.endQueryStatement(false);
@@ -981,13 +1013,13 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public final SD selectDistinctOn(Expression exp, Consumer<Selections> consumer) {
+        public final SD selectDistinctOn(Expression exp, Consumer<SelectionConsumer> consumer) {
             this.onDistinctOnExpList(Collections.singletonList((ArmyExpression) exp));
             return this.selects(consumer);
         }
 
         @Override
-        public final SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer) {
+        public final SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<SelectionConsumer> consumer) {
             this.onDistinctOnExpList(
                     ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2)
             );
@@ -995,7 +1027,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public final SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer) {
+        public final SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<SelectionConsumer> consumer) {
             this.onDistinctOnExpList(
                     ArrayUtils.asUnmodifiableList((ArmyExpression) exp1, (ArmyExpression) exp2, (ArmyExpression) exp3)
             );
@@ -1003,7 +1035,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public final SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+        public final SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
             this.onDistinctOnExpList(
                     CriteriaUtils.expressionList(this.context, true, expConsumer)
             );
@@ -1011,7 +1043,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public final SD selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+        public final SD selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
             this.onDistinctOnExpList(
                     CriteriaUtils.expressionList(this.context, false, expConsumer)
             );
@@ -1029,9 +1061,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
 
-        abstract W distinctModifier();
-
-
         /**
          * @param list a unmodified list
          */
@@ -1039,7 +1068,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (this.distinctOnExpList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.select(this.distinctModifier());
+            this.selectDistinct();
             this.distinctOnExpList = list;
         }
 
@@ -1331,28 +1360,34 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public final SR select(String tableAlias, SQLsSyntax.SymbolPeriod period, TableMeta<?> table) {
+        public final SR select(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             return this.createSelectClause()
                     .select(tableAlias, period, table);
         }
 
         @Override
-        public <P> SR select(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
-                             String childAlias, SQLsSyntax.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+        public <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                             String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
             return this.createSelectClause()
                     .select(parenAlias, period1, parent, childAlias, period2, child);
         }
 
         @Override
-        public final SR select(String derivedAlias, SQLsSyntax.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
+        public final SR select(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
             return this.createSelectClause()
                     .select(derivedAlias, period, star);
         }
 
         @Override
-        public final _StaticSelectSpaceClause<SR> select(W modifier) {
+        public final _StaticSelectSpaceClause<SR> selectAll() {
             return this.createSelectClause()
-                    .select(modifier);
+                    .selectAll();
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinct() {
+            return this.createSelectClause()
+                    .selectDistinct();
         }
 
         @Override
@@ -1368,22 +1403,22 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public final SD selects(Consumer<Selections> consumer) {
+        public final SD selects(Consumer<SelectionConsumer> consumer) {
             return this.createSelectClause().selects(consumer);
         }
 
         @Override
-        public final SD selects(W modifier, Consumer<Selections> consumer) {
+        public final SD selects(W modifier, Consumer<SelectionConsumer> consumer) {
             return this.createSelectClause().selects(modifier, consumer);
         }
 
         @Override
-        public final SD selects(List<W> modifierList, Consumer<Selections> consumer) {
+        public final SD selects(List<W> modifierList, Consumer<SelectionConsumer> consumer) {
             return this.createSelectClause().selects(modifierList, consumer);
         }
 
         @Override
-        public final SD selects(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<Selections> consumer) {
+        public final SD selects(Supplier<List<Hint>> hints, List<W> modifiers, Consumer<SelectionConsumer> consumer) {
             return this.createSelectClause().selects(hints, modifiers, consumer);
         }
 
@@ -1535,31 +1570,31 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public final SD selectDistinctOn(Expression exp, Consumer<Selections> consumer) {
+        public final SD selectDistinctOn(Expression exp, Consumer<SelectionConsumer> consumer) {
             return this.createSelectClause()
                     .selectDistinctOn(exp, consumer);
         }
 
         @Override
-        public final SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<Selections> consumer) {
+        public final SD selectDistinctOn(Expression exp1, Expression exp2, Consumer<SelectionConsumer> consumer) {
             return this.createSelectClause()
                     .selectDistinctOn(exp1, exp2, consumer);
         }
 
         @Override
-        public final SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<Selections> consumer) {
+        public final SD selectDistinctOn(Expression exp1, Expression exp2, Expression exp3, Consumer<SelectionConsumer> consumer) {
             return this.createSelectClause()
                     .selectDistinctOn(exp1, exp2, exp3, consumer);
         }
 
         @Override
-        public final SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+        public final SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
             return this.createSelectClause()
                     .selectDistinctOn(expConsumer, consumer);
         }
 
         @Override
-        public final SD selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<Selections> consumer) {
+        public final SD selectDistinctIfOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
             return this.createSelectClause()
                     .selectDistinctIfOn(expConsumer, consumer);
         }
@@ -1596,7 +1631,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }//UnionSelect
 
 
-    private static final class SelectionsImpl implements Selections {
+    private static final class SelectionConsumerImpl implements SelectionConsumer, Query._DeferSelectSpaceClause,
+            Query._DeferSelectCommaSpace {
 
         private final CriteriaContext context;
 
@@ -1604,53 +1640,53 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         /**
          * @see #selects(Consumer)
          */
-        private SelectionsImpl(CriteriaContext context) {
+        private SelectionConsumerImpl(CriteriaContext context) {
             this.context = context;
         }
 
         @Override
-        public Selections selection(Selection selection) {
+        public _DeferSelectCommaSpace space(Selection selection) {
             this.context.onAddSelectItem(selection);
             return this;
         }
 
         @Override
-        public Selections selection(Function<String, Selection> function, String alias) {
+        public _DeferSelectCommaSpace space(Function<String, Selection> function, String alias) {
             this.context.onAddSelectItem(function.apply(alias));
             return this;
         }
 
         @Override
-        public Selections selection(Selection selection1, Selection selection2) {
+        public _DeferSelectCommaSpace space(Selection selection1, Selection selection2) {
             this.context.onAddSelectItem(selection1)
                     .onAddSelectItem(selection2);
             return this;
         }
 
         @Override
-        public Selections selection(Function<String, Selection> function, String alias, Selection selection) {
+        public _DeferSelectCommaSpace space(Function<String, Selection> function, String alias, Selection selection) {
             this.context.onAddSelectItem(function.apply(alias))
                     .onAddSelectItem(selection);
             return this;
         }
 
         @Override
-        public Selections selection(Selection selection, Function<String, Selection> function, String alias) {
+        public _DeferSelectCommaSpace space(Selection selection, Function<String, Selection> function, String alias) {
             this.context.onAddSelectItem(selection)
                     .onAddSelectItem(function.apply(alias));
             return this;
         }
 
         @Override
-        public Selections selection(Function<String, Selection> function1, String alias1,
-                                    Function<String, Selection> function2, String alias2) {
+        public _DeferSelectCommaSpace space(Function<String, Selection> function1, String alias1,
+                                            Function<String, Selection> function2, String alias2) {
             this.context.onAddSelectItem(function1.apply(alias1))
                     .onAddSelectItem(function2.apply(alias2));
             return this;
         }
 
         @Override
-        public Selections selection(SQLField field1, SQLField field2, SQLField field3) {
+        public _DeferSelectCommaSpace space(SQLField field1, SQLField field2, SQLField field3) {
             this.context.onAddSelectItem(field1)
                     .onAddSelectItem(field2)
                     .onAddSelectItem(field3);
@@ -1658,7 +1694,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public Selections selection(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+        public _DeferSelectCommaSpace space(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
             this.context.onAddSelectItem(field1)
                     .onAddSelectItem(field2)
                     .onAddSelectItem(field3)
@@ -1667,15 +1703,15 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public Selections selection(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+        public _DeferSelectCommaSpace space(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
             return this;
         }
 
         @Override
-        public <P> Selections selection(String parenAlias, SQLsSyntax.SymbolPeriod period1, ParentTableMeta<P> parent,
-                                        String childAlias, SQLsSyntax.SymbolPeriod period2,
-                                        ComplexTableMeta<P, ?> child) {
+        public <P> _DeferSelectCommaSpace space(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                                                String childAlias, SQLs.SymbolPeriod period2,
+                                                ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
                 throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
             }
@@ -1685,7 +1721,152 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public Selections selection(String derivedAlias, SQLs.SymbolPeriod period, SqlSyntax.SymbolAsterisk star) {
+        public _DeferSelectCommaSpace space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
+
+            this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
+            return this;
+        }
+
+        @Override
+        public _DeferSelectCommaSpace comma(Selection selection) {
+            return this;
+        }
+
+        @Override
+        public _DeferSelectCommaSpace comma(Function<String, Selection> function, String alias) {
+            return this;
+        }
+
+        @Override
+        public _DeferSelectCommaSpace comma(Selection selection1, Selection selection2) {
+            return this;
+        }
+
+        @Override
+        public _DeferSelectCommaSpace comma(Function<String, Selection> function, String alias, Selection selection) {
+            return this;
+        }
+
+        @Override
+        public _DeferSelectCommaSpace comma(Selection selection, Function<String, Selection> function, String alias) {
+            return this;
+        }
+
+        @Override
+        public _DeferSelectCommaSpace comma(Function<String, Selection> function1, String alias1,
+                                            Function<String, Selection> function2, String alias2) {
+            return this;
+        }
+
+        @Override
+        public _DeferSelectCommaSpace comma(SQLField field1, SQLField field2, SQLField field3) {
+            return this;
+        }
+
+        @Override
+        public _DeferSelectCommaSpace comma(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+            return this;
+        }
+
+        @Override
+        public _DeferSelectCommaSpace comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+            return this;
+        }
+
+        @Override
+        public <P> _DeferSelectCommaSpace comma(String parenAlias, SQLs.SymbolPeriod p1, ParentTableMeta<P> parent,
+                                                String childAlias, SQLs.SymbolPeriod p2, ComplexTableMeta<P, ?> child) {
+            if (child.parentMeta() != parent) {
+                throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
+            }
+            this.context.onAddSelectItem(SelectionGroups.singleGroup(parent, parenAlias))
+                    .onAddSelectItem(SelectionGroups.groupWithoutId(child, childAlias));
+            return this;
+        }
+
+        @Override
+        public _DeferSelectCommaSpace comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
+            return this;
+        }
+
+        @Override
+        public SelectionConsumer accept(Selection selection) {
+            this.context.onAddSelectItem(selection);
+            return this;
+        }
+
+        @Override
+        public SelectionConsumer accept(Function<String, Selection> function, String alias) {
+            this.context.onAddSelectItem(function.apply(alias));
+            return this;
+        }
+
+        @Override
+        public SelectionConsumer accept(Selection selection1, Selection selection2) {
+            this.context.onAddSelectItem(selection1)
+                    .onAddSelectItem(selection2);
+            return this;
+        }
+
+        @Override
+        public SelectionConsumer accept(Function<String, Selection> function, String alias, Selection selection) {
+            this.context.onAddSelectItem(function.apply(alias))
+                    .onAddSelectItem(selection);
+            return this;
+        }
+
+        @Override
+        public SelectionConsumer accept(Selection selection, Function<String, Selection> function, String alias) {
+            this.context.onAddSelectItem(selection)
+                    .onAddSelectItem(function.apply(alias));
+            return this;
+        }
+
+        @Override
+        public SelectionConsumer accept(Function<String, Selection> function1, String alias1,
+                                        Function<String, Selection> function2, String alias2) {
+            this.context.onAddSelectItem(function1.apply(alias1))
+                    .onAddSelectItem(function2.apply(alias2));
+            return this;
+        }
+
+        @Override
+        public SelectionConsumer accept(SQLField field1, SQLField field2, SQLField field3) {
+            this.context.onAddSelectItem(field1)
+                    .onAddSelectItem(field2)
+                    .onAddSelectItem(field3);
+            return this;
+        }
+
+        @Override
+        public SelectionConsumer accept(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+            this.context.onAddSelectItem(field1)
+                    .onAddSelectItem(field2)
+                    .onAddSelectItem(field3)
+                    .onAddSelectItem(field4);
+            return this;
+        }
+
+        @Override
+        public SelectionConsumer accept(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+            this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
+            return this;
+        }
+
+        @Override
+        public <P> SelectionConsumer accept(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                                            String childAlias, SQLs.SymbolPeriod period2,
+                                            ComplexTableMeta<P, ?> child) {
+            if (child.parentMeta() != parent) {
+                throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
+            }
+            this.context.onAddSelectItem(SelectionGroups.singleGroup(parent, parenAlias))
+                    .onAddSelectItem(SelectionGroups.groupWithoutId(child, childAlias));
+            return this;
+        }
+
+        @Override
+        public SelectionConsumer accept(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
             this.context.onAddSelectItem(SelectionGroups.derivedGroup(derivedAlias));
             return this;
         }

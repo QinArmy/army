@@ -61,7 +61,7 @@ abstract class PostgreStringFunctions extends Functions {
     }
 
 
-    private enum KeyWordNormalizeForm implements WordNormalizeForm, ArmyKeyWord, SQLWords {
+    private enum KeyWordNormalizeForm implements WordNormalizeForm, SQLs.ArmyKeyWord, SQLWords {
 
         NFC(" NFC"),
         NFD(" NFD"),
@@ -87,7 +87,7 @@ abstract class PostgreStringFunctions extends Functions {
 
     }//KeyWordNormalizeForm
 
-    private enum KeyWordPlacing implements WordPlacing, ArmyKeyWord, SQLWords {
+    private enum KeyWordPlacing implements WordPlacing, SQLs.ArmyKeyWord, SQLWords {
 
         PLACING(" PLACING");
 
@@ -789,7 +789,7 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">parse_ident ( qualified_identifier text [, strict_mode boolean DEFAULT true ] ) → text[]</a>
      */
-    public static SimpleExpression parseIdent(Expression qualifiedIdentifier, SQLsSyntax.WordBooleans strictMode) {
+    public static SimpleExpression parseIdent(Expression qualifiedIdentifier, SQLs.WordBooleans strictMode) {
         final String name = "PARSE_IDENT";
         if (strictMode != SQLs.TRUE && strictMode != SQLs.FALSE) {
             throw CriteriaUtils.funcArgError(name, strictMode);

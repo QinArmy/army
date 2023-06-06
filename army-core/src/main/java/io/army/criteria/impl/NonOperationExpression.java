@@ -186,22 +186,22 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final CompoundPredicate is(SQLsSyntax.BooleanTestWord operand) {
+    public final CompoundPredicate is(SQLs.BooleanTestWord operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final CompoundPredicate isNot(SQLsSyntax.BooleanTestWord operand) {
+    public final CompoundPredicate isNot(SQLs.BooleanTestWord operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final CompoundPredicate is(SQLsSyntax.IsComparisonWord operator, Expression operand) {
+    public final CompoundPredicate is(SQLs.IsComparisonWord operator, Expression operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final CompoundPredicate isNot(SQLsSyntax.IsComparisonWord operator, Expression operand) {
+    public final CompoundPredicate isNot(SQLs.IsComparisonWord operator, Expression operand) {
         throw unsupportedOperation(this);
     }
 

@@ -29,7 +29,7 @@ import java.util.function.Function;
  */
 abstract class StandardQueries<I extends Item> extends SimpleQueries<
         I,
-        SQLsSyntax.Modifier,
+        SQLs.Modifier,
         StandardQuery._StandardSelectCommaClause<I>, // SR
         StandardQuery._FromSpec<I>, // SD
         StandardQuery._JoinSpec<I>,// FT
@@ -187,7 +187,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     @Override
-    final List<SQLs.Modifier> asModifierList(final @Nullable List<SQLsSyntax.Modifier> modifiers) {
+    final List<SQLs.Modifier> asModifierList(final @Nullable List<SQLs.Modifier> modifiers) {
         if (modifiers == null) {
             throw ContextStack.nullPointer(this.context);
         }
@@ -199,6 +199,15 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         return CriteriaUtils.standardModifier(modifier) < 0;
     }
 
+    @Override
+    final SQLs.Modifier allModifier() {
+        return SQLs.ALL;
+    }
+
+    @Override
+    final SQLs.Modifier distinctModifier() {
+        return SQLs.DISTINCT;
+    }
 
     @Override
     final _JoinSpec<I> onFromTable(_JoinType joinType, @Nullable TableModifier modifier, TableMeta<?> table,

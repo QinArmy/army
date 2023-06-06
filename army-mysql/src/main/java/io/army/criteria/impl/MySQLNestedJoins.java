@@ -457,7 +457,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
             implements MySQLQuery._NestedIndexHintJoinSpec<I> {
 
         /**
-         * @see MySQLNestedJoins#leftParen(TableMeta, SQLsSyntax.WordAs, String)
+         * @see MySQLNestedJoins#leftParen(TableMeta, SQLs.WordAs, String)
          */
         private FromClauseTableBlock(CriteriaContext context, Consumer<_TabularBlock> blockConsumer,
                                      _JoinType joinType, TableMeta<?> table, String alias, Supplier<I> ender) {

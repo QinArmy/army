@@ -12,7 +12,7 @@ abstract class PostgreWords {
     }
 
 
-    enum WordExtractTimeField implements PostgreDateTimeFunctions.ExtractTimeField, SqlSyntax.ArmyKeyWord {
+    enum WordExtractTimeField implements PostgreDateTimeFunctions.ExtractTimeField, SQLs.ArmyKeyWord {
 
         CENTURY(" CENTURY"),
         DAY(" DAY"),
@@ -62,7 +62,7 @@ abstract class PostgreWords {
     }//WordTimeField
 
 
-    enum KeyWordName implements PostgreSyntax.WordName, SqlSyntax.ArmyKeyWord {
+    enum KeyWordName implements PostgreSyntax.WordName, SQLs.ArmyKeyWord {
 
         NAME(" NAME");
 
@@ -84,7 +84,7 @@ abstract class PostgreWords {
 
     }
 
-    enum KeyWordVersion implements PostgreStringFunctions.WordVersion, SqlSyntax.ArmyKeyWord {
+    enum KeyWordVersion implements PostgreStringFunctions.WordVersion, SQLs.ArmyKeyWord {
 
         VERSION(" VERSION");
 
@@ -106,7 +106,7 @@ abstract class PostgreWords {
 
     }//KeyWordVersion
 
-    enum KeyWordStandalone implements PostgreStringFunctions.WordStandalone, SqlSyntax.ArmyKeyWord {
+    enum KeyWordStandalone implements PostgreStringFunctions.WordStandalone, SQLs.ArmyKeyWord {
 
         STANDALONE(" STANDALONE");
 
@@ -128,7 +128,7 @@ abstract class PostgreWords {
 
     }//KeyWordStandalone
 
-    enum KeyWordStandaloneOption implements PostgreStringFunctions.StandaloneOption, SqlSyntax.ArmyKeyWord {
+    enum KeyWordStandaloneOption implements PostgreStringFunctions.StandaloneOption, SQLs.ArmyKeyWord {
 
         YES(" YES"),
         NO(" NO");
@@ -151,7 +151,7 @@ abstract class PostgreWords {
 
     }//KeyWordStandaloneOption
 
-    enum KeyWordsNoValue implements PostgreStringFunctions.WordsNoValue, SqlSyntax.ArmyKeyWord {
+    enum KeyWordsNoValue implements PostgreStringFunctions.WordsNoValue, SQLs.ArmyKeyWord {
 
         NO_VALUE(" NO VALUE");
 
@@ -173,7 +173,7 @@ abstract class PostgreWords {
 
     }// KeyWordsNoValue
 
-    enum KeyWordPassing implements PostgreStringFunctions.WordPassing, SqlSyntax.ArmyKeyWord {
+    enum KeyWordPassing implements PostgreStringFunctions.WordPassing, SQLs.ArmyKeyWord {
 
         PASSING(" PASSING");
 
@@ -195,7 +195,7 @@ abstract class PostgreWords {
 
     }// KeyWordPassing
 
-    enum WordPassingOption implements PostgreStringFunctions.PassingOption, SqlSyntax.ArmyKeyWord {
+    enum WordPassingOption implements PostgreStringFunctions.PassingOption, SQLs.ArmyKeyWord {
         BY_REF(" BY REF"),
         BY_VALUE(" BY VALUE");
 
@@ -289,7 +289,7 @@ abstract class PostgreWords {
 
     }//KeyWordMaterialized
 
-    enum FromNormalizedWord implements SQLsSyntax.BooleanTestWord, SqlSyntax.ArmyKeyWord {
+    enum FromNormalizedWord implements SQLs.BooleanTestWord, SQLs.ArmyKeyWord {
         FROM_NORMALIZED(" FROM NORMALIZED"),
         NORMALIZED(" NORMALIZED");
 

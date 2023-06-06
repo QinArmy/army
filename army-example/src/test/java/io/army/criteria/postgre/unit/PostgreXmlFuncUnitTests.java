@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-import static io.army.criteria.impl.Postgres.DocumentValueOption;
-import static io.army.criteria.impl.Postgres.WordAs;
 import static io.army.criteria.impl.Postgres.*;
 import static io.army.criteria.impl.SQLs.*;
 

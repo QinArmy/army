@@ -331,7 +331,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     }
 
     @Override
-    public final BR between(final RowModifier frameStart, SqlSyntax.WordAnd and, final RowModifier frameEnd) {
+    public final BR between(final RowModifier frameStart, SQLs.WordAnd and, final RowModifier frameEnd) {
         if (this.frameUnits == null
                 || this.betweenExtent != Boolean.TRUE
                 || this.frameStartBound != null
@@ -350,7 +350,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     }
 
     @Override
-    public final BR between(final Expression startExp, final ExpModifier startModifier, SqlSyntax.WordAnd and,
+    public final BR between(final Expression startExp, final ExpModifier startModifier, SQLs.WordAnd and,
                             final Expression endExp, final ExpModifier endModifier) {
         if (this.frameUnits == null
                 || this.betweenExtent != Boolean.TRUE
@@ -374,7 +374,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     }
 
     @Override
-    public final BR between(final RowModifier frameStart, SqlSyntax.WordAnd and, final Expression endExp,
+    public final BR between(final RowModifier frameStart, SQLs.WordAnd and, final Expression endExp,
                             final ExpModifier endModifier) {
         if (this.frameUnits == null
                 || this.betweenExtent != Boolean.TRUE
@@ -396,7 +396,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     }
 
     @Override
-    public final BR between(final Expression startExp, final ExpModifier startModifier, SqlSyntax.WordAnd and,
+    public final BR between(final Expression startExp, final ExpModifier startModifier, SQLs.WordAnd and,
                             final RowModifier frameEnd) {
         if (this.frameUnits == null
                 || this.betweenExtent != Boolean.TRUE
@@ -436,31 +436,31 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     @Override
     public final <T> BR between(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier startModifier,
-                                SqlSyntax.WordAnd and, RowModifier frameEnd) {
+                                SQLs.WordAnd and, RowModifier frameEnd) {
         return this.between(funcRef.apply(IntegerType.INSTANCE, value), startModifier, and, frameEnd);
     }
 
     @Override
-    public final <T> BR between(RowModifier frameStart, SqlSyntax.WordAnd and,
+    public final <T> BR between(RowModifier frameStart, SQLs.WordAnd and,
                                 BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier endModifier) {
         return this.between(frameStart, and, funcRef.apply(IntegerType.INSTANCE, value), endModifier);
     }
 
     @Override
     public final <T> BR between(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier startModifier,
-                                SqlSyntax.WordAnd and, Expression endExp, ExpModifier endModifier) {
+                                SQLs.WordAnd and, Expression endExp, ExpModifier endModifier) {
         return this.between(funcRef.apply(IntegerType.INSTANCE, value), startModifier, and, endExp, endModifier);
     }
 
     @Override
-    public final <T> BR between(Expression startExp, ExpModifier startModifier, SqlSyntax.WordAnd and,
+    public final <T> BR between(Expression startExp, ExpModifier startModifier, SQLs.WordAnd and,
                                 BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier endModifier) {
         return this.between(startExp, startModifier, and, funcRef.apply(IntegerType.INSTANCE, value), endModifier);
     }
 
     @Override
     public final <T, U> BR between(BiFunction<IntegerType, T, Expression> funcRefForStart, T startValue,
-                                   ExpModifier startModifier, SqlSyntax.WordAnd and,
+                                   ExpModifier startModifier, SQLs.WordAnd and,
                                    BiFunction<IntegerType, U, Expression> funcRefForEnd, U endValue,
                                    ExpModifier endModifier) {
         return this.between(funcRefForStart.apply(IntegerType.INSTANCE, startValue), startModifier, and,

@@ -10,14 +10,14 @@ abstract class SqlWords {
     }
 
 
-    enum SymbolSpaceEnum implements SqlSyntax.SymbolSpace {
+    enum SymbolSpaceEnum implements SQLs.SymbolSpace {
 
         SPACE;
 
 
     }//SymbolSpaceEnum
 
-    enum KeyWordNotNull implements SqlSyntax.NullOption, SqlSyntax.ArmyKeyWord {
+    enum KeyWordNotNull implements SQLs.NullOption, SQLs.ArmyKeyWord {
 
         NOT_NULL(" NOT NULL");
 
@@ -40,7 +40,7 @@ abstract class SqlWords {
     }//KeyWordNotNull
 
 
-    enum KeyWordIn implements Functions.WordIn, SqlSyntax.ArmyKeyWord {
+    enum KeyWordIn implements Functions.WordIn, SQLs.ArmyKeyWord {
 
         IN(" IN");
 
@@ -63,7 +63,7 @@ abstract class SqlWords {
 
     }//KeyWordIn
 
-    enum KeyWordSimilar implements Functions.WordSimilar, SqlSyntax.ArmyKeyWord {
+    enum KeyWordSimilar implements Functions.WordSimilar, SQLs.ArmyKeyWord {
 
         SIMILAR(" SIMILAR");
 
@@ -86,7 +86,7 @@ abstract class SqlWords {
 
     }//KeyWordSimilar
 
-    enum KeyWordFrom implements Functions.WordFrom, SqlSyntax.ArmyKeyWord {
+    enum KeyWordFrom implements Functions.WordFrom, SQLs.ArmyKeyWord {
 
         FROM(" FROM");
 
@@ -109,7 +109,7 @@ abstract class SqlWords {
 
     }//KeyWordFrom
 
-    enum KeyWordFor implements Functions.WordFor, SqlSyntax.ArmyKeyWord {
+    enum KeyWordFor implements Functions.WordFor, SQLs.ArmyKeyWord {
 
         FOR(" FOR");
 
@@ -132,7 +132,7 @@ abstract class SqlWords {
 
     }//KeyWordFor
 
-    enum WordTrimPosition implements Functions.TrimPosition, SqlSyntax.ArmyKeyWord, SQLWords {
+    enum WordTrimPosition implements Functions.TrimPosition, SQLs.ArmyKeyWord, SQLWords {
 
         BOTH(" BOTH"),
         LEADING(" LEADING"),
@@ -158,7 +158,7 @@ abstract class SqlWords {
     }//WordTrimPosition
 
 
-    enum KeyWordPath implements Functions.WordPath, SqlSyntax.ArmyKeyWord {
+    enum KeyWordPath implements Functions.WordPath, SQLs.ArmyKeyWord {
 
         PATH(" PATH");
 
@@ -181,7 +181,7 @@ abstract class SqlWords {
 
     }//KeyWordPath
 
-    enum KeyWordsForOrdinality implements Functions.WordsForOrdinality, SqlSyntax.ArmyKeyWord {
+    enum KeyWordsForOrdinality implements Functions.WordsForOrdinality, SQLs.ArmyKeyWord {
 
         FOR_ORDINALITY(" FOR ORDINALITY");
 
@@ -204,7 +204,7 @@ abstract class SqlWords {
 
     }//KeyWordsForOrdinality
 
-    enum KeyWordDocument implements SqlSyntax.WordDocument, SqlSyntax.ArmyKeyWord {
+    enum KeyWordDocument implements SQLs.WordDocument, SQLs.ArmyKeyWord {
 
         /**
          * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PREDICATES">xml IS DOCUMENT → boolean<br/>
@@ -231,7 +231,7 @@ abstract class SqlWords {
 
     }//KeyWordDocument
 
-    enum KeyWordContent implements SqlSyntax.WordContent, SqlSyntax.ArmyKeyWord {
+    enum KeyWordContent implements SQLs.WordContent, SQLs.ArmyKeyWord {
 
         CONTENT(" CONTENT");
 
@@ -262,7 +262,7 @@ abstract class SqlWords {
      *
      * @since 1.0
      */
-    enum BooleanTestKeyWord implements SQLsSyntax.BooleanTestWord, Functions.ArmyKeyWord {
+    enum BooleanTestKeyWord implements SQLs.BooleanTestWord, SQLs.ArmyKeyWord {
 
         JSON(" JSON");
 
@@ -287,7 +287,7 @@ abstract class SqlWords {
 
     }
 
-    enum IsComparisonKeyWord implements SQLsSyntax.IsComparisonWord, Functions.ArmyKeyWord {
+    enum IsComparisonKeyWord implements SQLs.IsComparisonWord, SQLs.ArmyKeyWord {
 
         DISTINCT_FROM(" DISTINCT FROM");
 
@@ -312,7 +312,7 @@ abstract class SqlWords {
     }//IsComparisonKeyWord
 
 
-    enum KeyWordAll implements SQLWords, SQLsSyntax.WordAll, SqlSyntax.ArmyKeyWord {
+    enum KeyWordAll implements SQLWords, SQLs.WordAll, SQLs.ArmyKeyWord {
 
         ALL(" ALL");
 
@@ -335,7 +335,7 @@ abstract class SqlWords {
 
     }//KeyWordAll
 
-    enum KeyWordDistinct implements SQLWords, SQLsSyntax.WordDistinct {
+    enum KeyWordDistinct implements SQLWords, SQLs.WordDistinct {
 
         DISTINCT(" DISTINCT");
 
@@ -358,7 +358,7 @@ abstract class SqlWords {
 
     }//KeyWordDistinct
 
-    enum KeyWordInterval implements SQLsSyntax.WordInterval {
+    enum KeyWordInterval implements SQLs.WordInterval {
 
         INTERVAL(" INTERVAL");
 
@@ -380,7 +380,7 @@ abstract class SqlWords {
 
     }//KeyWordInterval
 
-    enum KeyWordPercent implements SQLsSyntax.WordPercent, SQLWords {
+    enum KeyWordPercent implements SQLs.WordPercent, SQLWords {
 
         PERCENT(" PERCENT");
 
@@ -402,7 +402,7 @@ abstract class SqlWords {
 
     }//KeyWordPercent
 
-    enum KeyWordUnknown implements SqlSyntax.BooleanTestWord, Functions.ArmyKeyWord {
+    enum KeyWordUnknown implements SQLs.BooleanTestWord, SQLs.ArmyKeyWord {
 
         UNKNOWN(" UNKNOWN");
 
@@ -447,7 +447,7 @@ abstract class SqlWords {
 
     }//KeyWordAscDesc
 
-    enum KeyWordLateral implements SQLsSyntax.WordLateral {
+    enum KeyWordLateral implements SQLs.WordLateral {
 
         LATERAL(" LATERAL");
 
@@ -469,7 +469,7 @@ abstract class SqlWords {
 
     }//KeyWordLateral
 
-    enum KeyWordFirst implements SQLsSyntax.WordFirst, SQLWords {
+    enum KeyWordFirst implements SQLs.WordFirst, SQLWords {
 
         FIRST(" FIRST");
 
@@ -491,7 +491,7 @@ abstract class SqlWords {
 
     }//KeyWordFirst
 
-    enum KeyWordNext implements SQLsSyntax.WordNext, SQLWords {
+    enum KeyWordNext implements SQLs.WordNext, SQLWords {
 
         NEXT(" NEXT");
 
@@ -536,7 +536,7 @@ abstract class SqlWords {
 
     }//KeyWordsNullsFirstLast
 
-    enum KeyWordRow implements SQLsSyntax.WordRow, SQLWords {
+    enum KeyWordRow implements SQLs.WordRow, SQLWords {
 
         ROW(" ROW");
 
@@ -558,7 +558,7 @@ abstract class SqlWords {
 
     }//KeyWordRow
 
-    enum KeyWordRows implements SQLsSyntax.WordRows, SQLWords {
+    enum KeyWordRows implements SQLs.WordRows, SQLWords {
 
         ROWS(" ROWS");
 
@@ -580,7 +580,7 @@ abstract class SqlWords {
 
     }//KeyWordRows
 
-    enum KeyWordWithTies implements SQLsSyntax.WordsWithTies, SQLWords {
+    enum KeyWordWithTies implements SQLs.WordsWithTies, SQLWords {
 
         WITH_TIES(" WITH TIES");
 
@@ -602,7 +602,7 @@ abstract class SqlWords {
 
     }//KeyWordNext
 
-    enum KeyWordOny implements SQLsSyntax.WordOnly, SQLWords {
+    enum KeyWordOny implements SQLs.WordOnly, SQLWords {
 
         ONLY(" ONLY");
 
@@ -624,7 +624,7 @@ abstract class SqlWords {
 
     }//KeyWordOny
 
-    enum KeyWordAs implements SqlSyntax.WordAs, SqlSyntax.ArmyKeyWord {
+    enum KeyWordAs implements SQLs.WordAs, SQLs.ArmyKeyWord {
 
         AS(" AS");
 
@@ -646,7 +646,7 @@ abstract class SqlWords {
 
     }//KeyWordAs
 
-    enum KeyWordAnd implements SqlSyntax.WordAnd, SqlSyntax.ArmyKeyWord {
+    enum KeyWordAnd implements SQLs.WordAnd, SQLs.ArmyKeyWord {
 
         AND(" AND");
 
@@ -668,7 +668,7 @@ abstract class SqlWords {
 
     }//KeyWordAnd
 
-    enum KeyWordSymmetric implements SQLsSyntax.BetweenModifier, SqlSyntax.ArmyKeyWord {
+    enum KeyWordSymmetric implements SQLs.BetweenModifier, SQLs.ArmyKeyWord {
 
         SYMMETRIC(" SYMMETRIC"),
         ASYMMETRIC(" ASYMMETRIC");
@@ -691,7 +691,7 @@ abstract class SqlWords {
 
     }//KeyWordSymmetric
 
-    enum SQLSymbolPeriod implements SqlSyntax.SymbolPeriod {
+    enum SQLSymbolPeriod implements SQLs.SymbolPeriod {
 
         PERIOD;
 
@@ -702,7 +702,7 @@ abstract class SqlWords {
 
     }//SQLSymbolPoint
 
-    enum SQLSymbolAsterisk implements SqlSyntax.SymbolAsterisk, SQLWords {
+    enum SQLSymbolAsterisk implements SQLs.SymbolAsterisk, SQLWords {
 
         ASTERISK(" *");
 
@@ -724,7 +724,7 @@ abstract class SqlWords {
 
     }//SQLSymbolStar
 
-    enum KeyWordEscape implements SqlSyntax.WordEscape, SqlSyntax.ArmyKeyWord {
+    enum KeyWordEscape implements SQLs.WordEscape, SQLs.ArmyKeyWord {
 
         ESCAPE(" ESCAPE");
 
@@ -750,7 +750,7 @@ abstract class SqlWords {
     /**
      * @see SQLs#ALL
      */
-    enum QueryOperator implements SqlSyntax.QuantifiedWord {
+    enum QueryOperator implements SQLs.QuantifiedWord {
 
         ANY(" ANY"),
         SOME(" SOME");

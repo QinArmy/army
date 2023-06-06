@@ -987,11 +987,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                </ul>.
      *                The first argument of funcRef always is {@link TextType#INSTANCE}.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
-     * @see #xmlParse(DocumentValueOption, Expression)
+     * @see #xmlParse(SQLs.DocumentValueOption, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/datatype-xml.html#id-1.5.7.21.6">XMLPARSE ( { DOCUMENT | CONTENT } value)<br/>
      * </a>
      */
-    public static SimpleExpression xmlParse(final DocumentValueOption option, BiFunction<MappingType, String, Expression> funcRef, String value) {
+    public static SimpleExpression xmlParse(final SQLs.DocumentValueOption option, BiFunction<MappingType, String, Expression> funcRef, String value) {
         return xmlParse(option, funcRef.apply(TextType.INSTANCE, value));
     }
 
@@ -1000,7 +1000,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/datatype-xml.html#id-1.5.7.21.6">XMLPARSE ( { DOCUMENT | CONTENT } value)<br/>
      * </a>
      */
-    public static SimpleExpression xmlParse(final DocumentValueOption option, final Expression value) {
+    public static SimpleExpression xmlParse(final SQLs.DocumentValueOption option, final Expression value) {
         final String name = "XMLPARSE";
         if (!(option == Postgres.DOCUMENT || option == Postgres.CONTENT)) {
             throw CriteriaUtils.funcArgError(name, option);
@@ -1015,7 +1015,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @see <a href="https://www.postgresql.org/docs/current/datatype-xml.html#id-1.5.7.21.6">XMLSERIALIZE ( { DOCUMENT | CONTENT } value AS type )<br/>
      * </a>
      */
-    public static SimpleExpression xmlSerialize(final DocumentValueOption option, final Expression value, final WordAs as,
+    public static SimpleExpression xmlSerialize(final SQLs.DocumentValueOption option, final Expression value, final SQLs.WordAs as,
                                                 final MappingType type) {
         final String name = "XMLSERIALIZE";
         if (!(option == Postgres.DOCUMENT || option == Postgres.CONTENT)) {
@@ -1494,11 +1494,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                           <li>{@link Expression} returned by funcRef isn't operable {@link Expression},for example {@link SQLs#DEFAULT}</li>
      *                           <li>namespaceName isn't simple identifier</li>
      *                           </ul>
-     * @see #xmlNamespaces(Expression, WordAs, String)
+     * @see #xmlNamespaces(Expression, SQLs.WordAs, String)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLNAMESPACES ( namespace_uri AS namespace_name [, ...] )<br/>
      * </a>
      */
-    public static XmlNameSpaces xmlNamespaces(BiFunction<MappingType, String, Expression> funcRef, String namespaceUri, WordAs as, String namespaceName) {
+    public static XmlNameSpaces xmlNamespaces(BiFunction<MappingType, String, Expression> funcRef, String namespaceUri, SQLs.WordAs as, String namespaceName) {
         return xmlNamespaces(funcRef.apply(TextType.INSTANCE, namespaceUri), as, namespaceName);
     }
 
@@ -1507,12 +1507,12 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * @param namespaceUri  a text expression
      * @param as            see {@link SQLs#AS}
      * @param namespaceName a simple identifier
-     * @see #xmlNamespaces(BiFunction, String, WordAs, String)
+     * @see #xmlNamespaces(BiFunction, String, SQLs.WordAs, String)
      * @see #xmlNamespaces(Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLNAMESPACES ( namespace_uri AS namespace_name [, ...] )<br/>
      * </a>
      */
-    public static XmlNameSpaces xmlNamespaces(Expression namespaceUri, WordAs as, String namespaceName) {
+    public static XmlNameSpaces xmlNamespaces(Expression namespaceUri, SQLs.WordAs as, String namespaceName) {
         final PostgreFunctionUtils.XmlNamedElementPart<XmlNameSpaces> clause;
         clause = PostgreFunctionUtils.xmlNamespaces();
         clause.accept(namespaceUri, as, namespaceName);
@@ -1521,7 +1521,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
 
     /**
-     * @see #xmlNamespaces(BiFunction, String, WordAs, String)
+     * @see #xmlNamespaces(BiFunction, String, SQLs.WordAs, String)
      * @see #xmlNamespaces(Consumer)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-XML-PROCESSING">XMLNAMESPACES ( namespace_uri AS namespace_name [, ...] )<br/>
      * </a>
@@ -2053,11 +2053,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      * <p>
-     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      * you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      * </p>
      *
@@ -2067,7 +2067,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *            <li>{@link Expression}</li>
      *            <li> {@link SQLs#row(Object)} </li>
      *            <li>{@link SQLs#row(Consumer)}</li>
-     *            <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *            <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *            </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_json ( anyelement ) → json</a>
@@ -2083,11 +2083,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </p>
      *
      *<p>
-     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      *     you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      *</p>
      * @param arg  valid type:<ul>
@@ -2096,7 +2096,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *               <li>{@link Expression}</li>
      *               <li> {@link SQLs#row(Object)} </li>
      *               <li>{@link SQLs#row(Consumer)}</li>
-     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *               </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">to_jsonb ( anyelement ) → jsonb</a>
@@ -2138,11 +2138,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      *<p>
-     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      *     you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      *</p>
      * @param record  valid type:<ul>
@@ -2150,7 +2150,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *               <li>{@link Expression}</li>
      *               <li> {@link SQLs#row(Object)} </li>
      *               <li>{@link SQLs#row(Consumer)}</li>
-     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *               </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">row_to_json ( record [, boolean ] ) → json<br/>
@@ -2166,11 +2166,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      *<p>
-     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      *     you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      *</p>
      * @param record  valid type:<ul>
@@ -2178,7 +2178,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *               <li>{@link Expression}</li>
      *               <li> {@link SQLs#row(Object)} </li>
      *               <li>{@link SQLs#row(Consumer)}</li>
-     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *               </ul>
      * @param lineFeed in most case {@link SQLs#TRUE} or {@link SQLs#FALSE}
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
@@ -2212,11 +2212,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      * <p>
-     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      * you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      * </p>
      *
@@ -2226,7 +2226,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *            <li>{@link Expression}</li>
      *            <li> {@link SQLs#row(Object)} </li>
      *            <li>{@link SQLs#row(Consumer)}</li>
-     *            <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *            <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *            </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
@@ -2242,11 +2242,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      * <p>
-     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      * you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      * </p>
      *
@@ -2256,7 +2256,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *             <li>{@link Expression}</li>
      *             <li> {@link SQLs#row(Object)} </li>
      *             <li>{@link SQLs#row(Consumer)}</li>
-     *             <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *             <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *             </ul>
      * @param arg2 valid type:<ul>
      *             <li>constant</li>
@@ -2264,7 +2264,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *             <li>{@link Expression}</li>
      *             <li> {@link SQLs#row(Object)} </li>
      *             <li>{@link SQLs#row(Consumer)}</li>
-     *             <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *             <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *             </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
@@ -2281,11 +2281,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      * <p>
-     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      * you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      * </p>
      *
@@ -2295,7 +2295,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link Expression}</li>
      *                 <li> {@link SQLs#row(Object)} </li>
      *                 <li>{@link SQLs#row(Consumer)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *                 </ul>
      * @param arg2     valid type:<ul>
      *                 <li>constant</li>
@@ -2303,7 +2303,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link Expression}</li>
      *                 <li> {@link SQLs#row(Object)} </li>
      *                 <li>{@link SQLs#row(Consumer)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *                 </ul>
      * @param arg3     valid type:<ul>
      *                 <li>constant</li>
@@ -2311,7 +2311,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link Expression}</li>
      *                 <li> {@link SQLs#row(Object)} </li>
      *                 <li>{@link SQLs#row(Consumer)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *                 </ul>
      * @param variadic valid type:<ul>
      *                 <li>constant</li>
@@ -2319,7 +2319,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link Expression}</li>
      *                 <li> {@link SQLs#row(Object)} </li>
      *                 <li>{@link SQLs#row(Consumer)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *                 </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
@@ -2336,11 +2336,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonType#TEXT}
      * </p>
      * <p>
-     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      * you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      * </p>
      *
@@ -2350,13 +2350,13 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link Expression}</li>
      *                 <li> {@link SQLs#row(Object)} </li>
      *                 <li>{@link SQLs#row(Consumer)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *                 </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
-     * @see SQLs#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLs#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     * @see SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)
+     * @see SQLs#space(String, SQLs.SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2389,11 +2389,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
      * <p>
-     * This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      * you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      * </p>
      *
@@ -2403,7 +2403,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *            <li>{@link Expression}</li>
      *            <li> {@link SQLs#row(Object)} </li>
      *            <li>{@link SQLs#row(Consumer)}</li>
-     *            <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *            <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *            </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
@@ -2419,11 +2419,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
      *<p>
-     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      *     you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      *</p>
      * @param arg1  valid type:<ul>
@@ -2432,7 +2432,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *               <li>{@link Expression}</li>
      *               <li> {@link SQLs#row(Object)} </li>
      *               <li>{@link SQLs#row(Consumer)}</li>
-     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *               </ul>
 
      * @param arg2  valid type:<ul>
@@ -2441,7 +2441,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *               <li>{@link Expression}</li>
      *               <li> {@link SQLs#row(Object)} </li>
      *               <li>{@link SQLs#row(Consumer)}</li>
-     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *               </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
@@ -2458,11 +2458,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
      *<p>
-     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     *     This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
      *     you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
      *</p>
      * @param arg1  valid type:<ul>
@@ -2471,7 +2471,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *               <li>{@link Expression}</li>
      *               <li> {@link SQLs#row(Object)} </li>
      *               <li>{@link SQLs#row(Consumer)}</li>
-     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *               </ul>
      * @param arg2  valid type:<ul>
      *               <li>constant</li>
@@ -2479,7 +2479,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *               <li>{@link Expression}</li>
      *               <li> {@link SQLs#row(Object)} </li>
      *               <li>{@link SQLs#row(Consumer)}</li>
-     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *               </ul>
      * @param arg3  valid type:<ul>
      *               <li>constant</li>
@@ -2487,7 +2487,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *               <li>{@link Expression}</li>
      *               <li> {@link SQLs#row(Object)} </li>
      *               <li>{@link SQLs#row(Consumer)}</li>
-     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *               </ul>
      * @param variadic  valid type:<ul>
      *               <li>constant</li>
@@ -2495,7 +2495,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *               <li>{@link Expression}</li>
      *               <li> {@link SQLs#row(Object)} </li>
      *               <li>{@link SQLs#row(Consumer)}</li>
-     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
+     *               <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
      *               </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
@@ -2511,27 +2511,28 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * <p>
      * The {@link MappingType} of function return type: {@link JsonbType#TEXT}
      * </p>
-     *<p>
-     *     This method don't support {@link SQLs#space(String, SymbolPeriod, TableMeta)},because it will output non-mapping column .
-     *     you should use
+     * <p>
+     * This method don't support {@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)},because it will output non-mapping column .
+     * you should use
      *     <ul>
-     *         <li>{@link #jsonBuildObject(String, SymbolPeriod, TableMeta)}</li>
-     *         <li>{@link #jsonbBuildObject(String, SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
+     *         <li>{@link #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *     </ul>
-     *</p>
+     * </p>
+     *
      * @param consumer valid type:<ul>
-     *               <li>constant</li>
-     *               <li>{@link RowExpression}</li>
-     *               <li>{@link Expression}</li>
-     *               <li> {@link SQLs#row(Object)} </li>
-     *               <li>{@link SQLs#row(Consumer)}</li>
-     *               <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
-     *               </ul>
-     * @see SQLs#space(String, SymbolPeriod, SymbolAsterisk)
-     * @see SQLs#space(String, SymbolPeriod, TableMeta)
-     * @see #jsonBuildObject(String, SymbolPeriod, TableMeta)
-     * @see #jsonbBuildObject(String, SymbolPeriod, TableMeta)
+     *                 <li>constant</li>
+     *                 <li>{@link RowExpression}</li>
+     *                 <li>{@link Expression}</li>
+     *                 <li> {@link SQLs#row(Object)} </li>
+     *                 <li>{@link SQLs#row(Consumer)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
+     *                 </ul>
      * @throws CriteriaException throw when arg type error , but probably defer if arg is {@link SQLs#refThis(String, String)}
+     * @see SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)
+     * @see SQLs#space(String, SQLs.SymbolPeriod, TableMeta)
+     * @see #jsonBuildObject(String, SQLs.SymbolPeriod, TableMeta)
+     * @see #jsonbBuildObject(String, SQLs.SymbolPeriod, TableMeta)
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_array ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
@@ -2549,12 +2550,12 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     }
 
 
-    public static SimpleExpression jsonBuildObject(String tableAlias, SymbolPeriod period, TableMeta<?> table) {
+    public static SimpleExpression jsonBuildObject(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
         return FunctionUtils.oneArgObjectElementFunc("json_build_object", ContextStack.peek().row(tableAlias, period, table),
                 JsonType.TEXT);
     }
 
-    public static SimpleExpression jsonBuildObject(String derivedAlias, SymbolPeriod period, SymbolAsterisk asterisk) {
+    public static SimpleExpression jsonBuildObject(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
         return FunctionUtils.oneArgObjectElementFunc("json_build_object", ContextStack.peek().row(derivedAlias, period, asterisk),
                 JsonType.TEXT);
     }
@@ -2571,8 +2572,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link Expression}</li>
      *                 <li> {@link SQLs#row(Object)} </li>
      *                 <li>{@link SQLs#row(Consumer)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, TableMeta)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *                 </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
@@ -2595,23 +2596,23 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link Expression}</li>
      *                 <li> {@link SQLs#row(Object)} </li>
      *                 <li>{@link SQLs#row(Consumer)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, TableMeta)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *                 </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">json_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonBuildObject(SymbolSpace space, Consumer<Statement._DynamicObjectConsumer> consumer) {
+    public static SimpleExpression jsonBuildObject(SQLs.SymbolSpace space, Consumer<Statement._DynamicObjectConsumer> consumer) {
         return FunctionUtils.objectElementFunc(space, "json_build_object", false, consumer, JsonType.TEXT);
     }
 
-    public static SimpleExpression jsonbBuildObject(String tableAlias, SymbolPeriod period, TableMeta<?> table) {
+    public static SimpleExpression jsonbBuildObject(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
         return FunctionUtils.oneArgObjectElementFunc("jsonb_build_object", ContextStack.peek().row(tableAlias, period, table),
                 JsonbType.TEXT);
     }
 
-    public static SimpleExpression jsonbBuildObject(String derivedAlias, SymbolPeriod period, SymbolAsterisk asterisk) {
+    public static SimpleExpression jsonbBuildObject(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk) {
         return FunctionUtils.oneArgObjectElementFunc("jsonb_build_object", ContextStack.peek().row(derivedAlias, period, asterisk),
                 JsonbType.TEXT);
     }
@@ -2628,8 +2629,8 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link Expression}</li>
      *                 <li> {@link SQLs#row(Object)} </li>
      *                 <li>{@link SQLs#row(Consumer)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, TableMeta)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *                 </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
@@ -2652,14 +2653,14 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      *                 <li>{@link Expression}</li>
      *                 <li> {@link SQLs#row(Object)} </li>
      *                 <li>{@link SQLs#row(Consumer)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, SymbolAsterisk)}</li>
-     *                 <li>{@link SQLs#space(String, SymbolPeriod, TableMeta)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, SQLs.SymbolAsterisk)}</li>
+     *                 <li>{@link SQLs#space(String, SQLs.SymbolPeriod, TableMeta)}</li>
      *                 </ul>
      * @see <a href="https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-CREATION-TABLE">jsonb_build_object ( VARIADIC "any" ) → json<br/>
      * Builds a possibly-heterogeneously-typed JSON array out of a variadic argument list. Each argument is converted as per to_json or to_jsonb.
      * </a>
      */
-    public static SimpleExpression jsonbBuildObject(SymbolSpace space, Consumer<Statement._DynamicObjectConsumer> consumer) {
+    public static SimpleExpression jsonbBuildObject(SQLs.SymbolSpace space, Consumer<Statement._DynamicObjectConsumer> consumer) {
         return FunctionUtils.objectElementFunc(space, "jsonb_build_object", false, consumer, JsonbType.TEXT);
     }
 
@@ -2725,7 +2726,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonObject(SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
+    public static SimpleExpression jsonObject(SQLs.SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
                                               final Consumer<Statement._StringObjectConsumer> consumer) {
         return FunctionUtils.dynamicStringObjectStringFunc("json_object", space, false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonType.TEXT);
@@ -2791,7 +2792,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * converted to JSON strings.
      * </a>
      */
-    public static SimpleExpression jsonbObject(SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
+    public static SimpleExpression jsonbObject(SQLs.SymbolSpace space, final BiFunction<MappingType, String[], Expression> funcRef,
                                                final Consumer<Statement._StringObjectConsumer> consumer) {
         return FunctionUtils.dynamicStringObjectStringFunc("jsonb_object", space, false, funcRef, TextArrayType.LINEAR, consumer,
                 JsonbType.TEXT);

@@ -105,12 +105,12 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
-    public final CompoundPredicate is(SQLsSyntax.BooleanTestWord operand) {
+    public final CompoundPredicate is(SQLs.BooleanTestWord operand) {
         return Expressions.booleanTestPredicate(this, false, operand);
     }
 
     @Override
-    public final CompoundPredicate isNot(SQLsSyntax.BooleanTestWord operand) {
+    public final CompoundPredicate isNot(SQLs.BooleanTestWord operand) {
         return Expressions.booleanTestPredicate(this, true, operand);
     }
 
@@ -125,12 +125,12 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
-    public final CompoundPredicate is(SQLsSyntax.IsComparisonWord operator, Expression operand) {
+    public final CompoundPredicate is(SQLs.IsComparisonWord operator, Expression operand) {
         return Expressions.isComparisonPredicate(this, false, operator, operand);
     }
 
     @Override
-    public final CompoundPredicate isNot(SQLsSyntax.IsComparisonWord operator, Expression operand) {
+    public final CompoundPredicate isNot(SQLs.IsComparisonWord operator, Expression operand) {
         return Expressions.isComparisonPredicate(this, true, operator, operand);
     }
 
@@ -374,7 +374,7 @@ abstract class OperationExpression extends OperationSQLExpression
     /**
      * @see SQLs#NULL
      */
-    static SqlSyntax.WordNull nullWord() {
+    static SQLs.WordNull nullWord() {
         return NullWord.INSTANCE;
     }
 
@@ -437,7 +437,7 @@ abstract class OperationExpression extends OperationSQLExpression
 
         @Override
         public final <T, U> CompoundPredicate between(BiFunction<SimpleExpression, T, Expression> firstFuncRef,
-                                                      T first, SqlSyntax.WordAnd and,
+                                                      T first, SQLs.WordAnd and,
                                                       BiFunction<SimpleExpression, U, Expression> secondFuncRef,
                                                       U second) {
             return Expressions.betweenPredicate(this, false, null, firstFuncRef.apply(this, first),
@@ -455,7 +455,7 @@ abstract class OperationExpression extends OperationSQLExpression
 
         @Override
         public final <T, U> CompoundPredicate notBetween(BiFunction<SimpleExpression, T, Expression> firstFuncRef,
-                                                         T first, SqlSyntax.WordAnd and,
+                                                         T first, SQLs.WordAnd and,
                                                          BiFunction<SimpleExpression, U, Expression> secondFuncRef,
                                                          U second) {
             return Expressions.betweenPredicate(this, true, null, firstFuncRef.apply(this, first),
@@ -464,18 +464,18 @@ abstract class OperationExpression extends OperationSQLExpression
         }
 
         @Override
-        public final <T> CompoundPredicate between(@Nullable SQLsSyntax.BetweenModifier modifier,
+        public final <T> CompoundPredicate between(@Nullable SQLs.BetweenModifier modifier,
                                                    BiFunction<SimpleExpression, T, Expression> funcRef, T first,
-                                                   SQLsSyntax.WordAnd and, T second) {
+                                                   SQLs.WordAnd and, T second) {
             return Expressions.betweenPredicate(this, false, modifier, funcRef.apply(this, first),
                     funcRef.apply(this, second)
             );
         }
 
         @Override
-        public final <T, U> CompoundPredicate between(@Nullable SQLsSyntax.BetweenModifier modifier,
+        public final <T, U> CompoundPredicate between(@Nullable SQLs.BetweenModifier modifier,
                                                       BiFunction<SimpleExpression, T, Expression> firstFuncRef,
-                                                      T first, SqlSyntax.WordAnd and,
+                                                      T first, SQLs.WordAnd and,
                                                       BiFunction<SimpleExpression, U, Expression> secondFuncRef,
                                                       U second) {
             return Expressions.betweenPredicate(this, false, modifier, firstFuncRef.apply(this, first),
@@ -484,16 +484,16 @@ abstract class OperationExpression extends OperationSQLExpression
         }
 
         @Override
-        public final <T> CompoundPredicate notBetween(@Nullable SQLsSyntax.BetweenModifier modifier,
+        public final <T> CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier,
                                                       BiFunction<SimpleExpression, T, Expression> funcRef, T first,
-                                                      SQLsSyntax.WordAnd and, T second) {
+                                                      SQLs.WordAnd and, T second) {
             return Expressions.betweenPredicate(this, true, modifier, funcRef.apply(this, first), funcRef.apply(this, second));
         }
 
         @Override
-        public final <T, U> CompoundPredicate notBetween(@Nullable SQLsSyntax.BetweenModifier modifier,
+        public final <T, U> CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier,
                                                          BiFunction<SimpleExpression, T, Expression> firstFuncRef,
-                                                         T first, SqlSyntax.WordAnd and,
+                                                         T first, SQLs.WordAnd and,
                                                          BiFunction<SimpleExpression, U, Expression> secondFuncRef,
                                                          U second) {
             return Expressions.betweenPredicate(this, true, modifier, firstFuncRef.apply(this, first),
@@ -503,13 +503,13 @@ abstract class OperationExpression extends OperationSQLExpression
 
 
         @Override
-        public final <T> CompoundPredicate is(SQLsSyntax.IsComparisonWord operator,
+        public final <T> CompoundPredicate is(SQLs.IsComparisonWord operator,
                                               BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value) {
             return Expressions.isComparisonPredicate(this, false, operator, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T> CompoundPredicate isNot(SQLsSyntax.IsComparisonWord operator,
+        public final <T> CompoundPredicate isNot(SQLs.IsComparisonWord operator,
                                                  BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value) {
             return Expressions.isComparisonPredicate(this, true, operator, funcRef.apply(this, value));
         }
@@ -545,7 +545,7 @@ abstract class OperationExpression extends OperationSQLExpression
 
         @Override
         public final <T> CompoundPredicate like(BiFunction<NoCastTextType, T, Expression> funcRef, T value,
-                                                SqlSyntax.WordEscape escape, char escapeChar) {
+                                                SQLs.WordEscape escape, char escapeChar) {
             return Expressions.likePredicate(this, DualBooleanOperator.LIKE, funcRef.apply(NoCastTextType.INSTANCE, value),
                     escape, SQLs.literal(NoCastTextType.INSTANCE, escapeChar)
             );
@@ -560,7 +560,7 @@ abstract class OperationExpression extends OperationSQLExpression
 
         @Override
         public final <T> CompoundPredicate notLike(BiFunction<NoCastTextType, T, Expression> funcRef, T value,
-                                                   SqlSyntax.WordEscape escape, char escapeChar) {
+                                                   SQLs.WordEscape escape, char escapeChar) {
             return Expressions.likePredicate(this, DualBooleanOperator.NOT_LIKE, funcRef.apply(NoCastTextType.INSTANCE, value),
                     escape, SQLs.literal(NoCastTextType.INSTANCE, escapeChar)
             );
@@ -1060,8 +1060,8 @@ abstract class OperationExpression extends OperationSQLExpression
     private static final class NullWord extends OperationExpression
             implements SqlValueParam.SingleAnonymousValue,
             ArmySimpleExpression,
-            SqlSyntax.WordNull,
-            SqlSyntax.ArmyKeyWord {
+            SQLs.WordNull,
+            SQLs.ArmyKeyWord {
 
         private static final NullWord INSTANCE = new NullWord();
 

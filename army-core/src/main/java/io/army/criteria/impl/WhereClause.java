@@ -111,14 +111,14 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
 
     @Override
     public final <T> WA where(BetweenValueOperator<T> expOperator, BiFunction<SimpleExpression, T, Expression> operator,
-                              T firstValue, SqlSyntax.WordAnd and, T secondValue) {
+                              T firstValue, SQLs.WordAnd and, T secondValue) {
         return this.where(expOperator.apply(operator, firstValue, and, secondValue));
     }
 
     @Override
     public final <T, U> WA where(BetweenDualOperator<T, U> expOperator,
                                  BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first,
-                                 SqlSyntax.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondRef,
+                                 SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondRef,
                                  U second) {
         return this.where(expOperator.apply(firstFuncRef, first, and, secondRef, second));
     }
@@ -218,7 +218,7 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     @Override
     public final <T, U> WA whereIf(BetweenDualOperator<T, U> expOperator,
                                    BiFunction<SimpleExpression, T, Expression> firstFuncRef,
-                                   Supplier<T> firstGetter, SqlSyntax.WordAnd and,
+                                   Supplier<T> firstGetter, SQLs.WordAnd and,
                                    BiFunction<SimpleExpression, U, Expression> secondFuncRef, Supplier<U> secondGetter) {
         if (this.predicateList != null) {
             throw duplicationWhere();
@@ -228,7 +228,7 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
 
     @Override
     public final <K, V> WA whereIf(BetweenValueOperator<V> expOperator, BiFunction<SimpleExpression, V, Expression> operator,
-                                   Function<K, V> function, K firstKey, SqlSyntax.WordAnd and, K secondKey) {
+                                   Function<K, V> function, K firstKey, SQLs.WordAnd and, K secondKey) {
         if (this.predicateList != null) {
             throw duplicationWhere();
         }
@@ -313,14 +313,14 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
 
     @Override
     public final <T> WA and(BetweenValueOperator<T> expOperator, BiFunction<SimpleExpression, T, Expression> operator,
-                            T firstValue, SqlSyntax.WordAnd and, T secondValue) {
+                            T firstValue, SQLs.WordAnd and, T secondValue) {
         return this.and(expOperator.apply(operator, firstValue, and, secondValue));
     }
 
     @Override
     public final <T, U> WA and(BetweenDualOperator<T, U> expOperator,
                                BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first,
-                               SqlSyntax.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondRef, U second) {
+                               SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondRef, U second) {
         return this.and(expOperator.apply(firstFuncRef, first, and, secondRef, second));
     }
 
@@ -434,7 +434,7 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
     @Override
     public final <T, U> WA ifAnd(BetweenDualOperator<T, U> expOperator,
                                  BiFunction<SimpleExpression, T, Expression> firstFuncRef, Supplier<T> firstGetter,
-                                 SqlSyntax.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFuncRef,
+                                 SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFuncRef,
                                  Supplier<U> secondGetter) {
         final T first;
         final U second;
@@ -446,7 +446,7 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
 
     @Override
     public final <K, V> WA ifAnd(BetweenValueOperator<V> expOperator, BiFunction<SimpleExpression, V, Expression> operator,
-                                 Function<K, V> function, K firstKey, SqlSyntax.WordAnd and, K secondKey) {
+                                 Function<K, V> function, K firstKey, SQLs.WordAnd and, K secondKey) {
         final V first, second;
         if ((first = function.apply(firstKey)) != null && (second = function.apply(secondKey)) != null) {
             this.and(expOperator.apply(operator, first, and, second));

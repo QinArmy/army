@@ -754,6 +754,13 @@ abstract class CriteriaContexts {
             return this.onEndContext();
         }
 
+
+        @Override
+        public void onAddDerivedGroup(String derivedAlis) {
+            //no bug ,never here
+            throw new UnsupportedOperationException();
+        }
+
         @Override
         public CriteriaContext onAddSelectItem(SelectItem selectItem) {
             throw ContextStack.criteriaError(this, "current context don't support onAddSelectItem(selectItem)");
@@ -1274,6 +1281,34 @@ abstract class CriteriaContexts {
             return blockList;
         }
 
+        final _SelectionMap derivedSelectionMap(final @Nullable String derivedAlis) {
+            if (derivedAlis == null) {
+                throw ContextStack.nullPointer(this);
+            }
+            this.flushBufferDerivedBlock();
+
+            final Map<String, _TabularBlock> blockMap = this.aliasToBlock;
+            final _TabularBlock block;
+            block = blockMap.get(derivedAlis);
+
+            final _SelectionMap selectionMap;
+            final TabularItem item;
+            if (block == null) {
+                if (this instanceof SimpleQueryContext) {
+                    throw ((SimpleQueryContext) this).handleInvalidDerivedGroup(derivedAlis);
+                }
+                String m = String.format("Invalid derived table[%s]", derivedAlis);
+                throw ContextStack.criteriaError(this, m);
+            } else if (block instanceof _SelectionMap) {
+                selectionMap = (_SelectionMap) block;
+            } else if ((item = block.tableItem()) instanceof _SelectionMap) {
+                selectionMap = (_SelectionMap) item;
+            } else {
+                String m = String.format("error,'%s' isn't derived table alias or cte alias", derivedAlis);
+                throw ContextStack.criteriaError(this, m);
+            }
+            return selectionMap;
+        }
 
         /**
          * @see #onEndContext()
@@ -2051,6 +2086,14 @@ abstract class CriteriaContexts {
 
 
         @Override
+        public final void onAddDerivedGroup(final @Nullable String derivedAlis) {
+            if (derivedAlis == null) {
+                throw ContextStack.nullPointer(this);
+            }
+
+        }
+
+        @Override
         public final CriteriaContext onAddSelectItem(final @Nullable SelectItem selectItem) {
             if (selectItem == null) {
                 throw ContextStack.nullPointer(this);
@@ -2485,6 +2528,10 @@ abstract class CriteriaContexts {
             }
             this.selectionMap = selectionMap;
             return selectionMap;
+        }
+
+        private CriteriaException handleInvalidDerivedGroup(final String derivedAlias) {
+            return new CriteriaException("");
         }
 
 

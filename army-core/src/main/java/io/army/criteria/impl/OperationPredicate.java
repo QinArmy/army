@@ -87,14 +87,14 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     @Override
     public final <T> SimplePredicate or(BetweenValueOperator<T> expOperator,
                                         BiFunction<SimpleExpression, T, Expression> operator, T firstValue,
-                                        SQLsSyntax.WordAnd and, T secondValue) {
+                                        SQLs.WordAnd and, T secondValue) {
         return this.or(expOperator.apply(operator, firstValue, and, secondValue));
     }
 
     @Override
     public final <T, U> SimplePredicate or(BetweenDualOperator<T, U> expOperator,
                                            BiFunction<SimpleExpression, T, Expression> firstFunc, T firstValue,
-                                           SqlSyntax.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFunc,
+                                           SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFunc,
                                            U secondValue) {
         return this.or(expOperator.apply(firstFunc, firstValue, and, secondFunc, secondValue));
     }
@@ -185,7 +185,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     @Override
     public final <T> IPredicate ifOr(BetweenValueOperator<T> expOperator,
                                      BiFunction<SimpleExpression, T, Expression> operator,
-                                     Supplier<T> firstGetter, SqlSyntax.WordAnd and, Supplier<T> secondGetter) {
+                                     Supplier<T> firstGetter, SQLs.WordAnd and, Supplier<T> secondGetter) {
         final IPredicate predicate;
         final T first, second;
         if ((first = firstGetter.get()) == null || (second = secondGetter.get()) == null) {
@@ -199,7 +199,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     @Override
     public final <T, U> IPredicate ifOr(BetweenDualOperator<T, U> expOperator,
                                         BiFunction<SimpleExpression, T, Expression> firstFunc, Supplier<T> firstGetter,
-                                        SqlSyntax.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFunc,
+                                        SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFunc,
                                         Supplier<U> secondGetter) {
         final IPredicate predicate;
         final T first;
@@ -312,14 +312,14 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     @Override
     public final <T> IPredicate and(BetweenValueOperator<T> expOperator,
                                     BiFunction<SimpleExpression, T, Expression> operator, T firstValue,
-                                    SqlSyntax.WordAnd and, T secondValue) {
+                                    SQLs.WordAnd and, T secondValue) {
         return this.and(expOperator.apply(operator, firstValue, and, secondValue));
     }
 
     @Override
     public final <T, U> IPredicate and(BetweenDualOperator<T, U> expOperator,
                                        BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first,
-                                       SqlSyntax.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondRef,
+                                       SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondRef,
                                        U second) {
         return this.and(expOperator.apply(firstFuncRef, first, and, secondRef, second));
     }
@@ -462,7 +462,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     @Override
     public final <T, U> IPredicate ifAnd(BetweenDualOperator<T, U> expOperator,
                                          BiFunction<SimpleExpression, T, Expression> firstFuncRef,
-                                         Supplier<T> firstGetter, SqlSyntax.WordAnd and,
+                                         Supplier<T> firstGetter, SQLs.WordAnd and,
                                          BiFunction<SimpleExpression, U, Expression> secondFuncRef,
                                          Supplier<U> secondGetter) {
         final IPredicate predicate;
@@ -620,7 +620,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
      * @see SQLs#TRUE
      * @see SQLs#FALSE
      */
-    static SqlSyntax.WordBooleans booleanWord(final boolean value) {
+    static SQLs.WordBooleans booleanWord(final boolean value) {
         return value ? BooleanWord.TRUE : BooleanWord.FALSE;
     }
 
@@ -971,7 +971,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
      * @see SQLs#FALSE
      */
     private static final class BooleanWord extends OperationSimplePredicate
-            implements SqlSyntax.WordBooleans, SqlSyntax.ArmyKeyWord {
+            implements SQLs.WordBooleans, SQLs.ArmyKeyWord {
 
         private static final BooleanWord TRUE = new BooleanWord(true);
 
