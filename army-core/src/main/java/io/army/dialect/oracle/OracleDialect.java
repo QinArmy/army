@@ -3,10 +3,11 @@ package io.army.dialect.oracle;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.meta.ServerMeta;
+import io.army.util._StringUtils;
 
 public enum OracleDialect implements Dialect {
 
-    // ORACLE10(10)
+    ORACLE10(10)
     ;
 
 
@@ -22,13 +23,22 @@ public enum OracleDialect implements Dialect {
     }
 
     @Override
-    public final int version() {
-        return this.version;
+    public final int compareWith(Dialect o) throws IllegalArgumentException {
+        if (!(o instanceof OracleDialect)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        return this.version - ((OracleDialect) o).version;
+    }
+
+    @Override
+    public final boolean isFamily(Dialect o) {
+        return o instanceof OracleDialect;
     }
 
     @Override
     public final String toString() {
-        return String.format("%s.%s", OracleDialect.class.getSimpleName(), this.name());
+        return _StringUtils.enumToString(this);
     }
 
 

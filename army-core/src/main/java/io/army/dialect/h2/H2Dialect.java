@@ -22,8 +22,17 @@ public enum H2Dialect implements Dialect {
     }
 
     @Override
-    public final int version() {
-        return this.version;
+    public final int compareWith(Dialect o) throws IllegalArgumentException {
+        if (!(o instanceof H2Dialect)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        return this.version - ((H2Dialect) o).version;
+    }
+
+    @Override
+    public final boolean isFamily(Dialect o) {
+        return o instanceof H2Dialect;
     }
 
 

@@ -774,4 +774,13 @@ abstract class SqlWords {
 
 
     }
+
+    enum KeyWordOn implements SQLs.WordOn {
+
+        ON;
+
+
+    }//KeyWordOn
+
+
 }

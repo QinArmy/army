@@ -2262,7 +2262,7 @@ abstract class Expressions {
 
             switch (context.database()) {
                 case MySQL: {
-                    if (context.dialect().version() < MySQLDialect.MySQL80.version()) {
+                    if (context.dialect().compareWith(MySQLDialect.MySQL80) < 0) {
                         throw dontSupportJsonObjectAttrError(context.dialect());
                     }
                     sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator);
@@ -2330,7 +2330,7 @@ abstract class Expressions {
 
             switch (context.database()) {
                 case MySQL: {
-                    if (context.dialect().version() < MySQLDialect.MySQL80.version()) {
+                    if (context.dialect().compareWith(MySQLDialect.MySQL80) < 0) {
                         throw dontSupportJsonArrayError(context.dialect());
                     }
                     sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator)

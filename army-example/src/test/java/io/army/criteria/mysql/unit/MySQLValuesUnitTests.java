@@ -48,10 +48,10 @@ public class MySQLValuesUnitTests {
     public void simpleSubValues() {
         Select stmt;
         stmt = MySQLs.query()
-                .select("s", PERIOD, ASTERISK)
-                .from(() -> this.createSimpleValues(MySQLs::subValues)
-                        .asValues())
-                .as("c")
+                .select(s -> s.space("s", PERIOD, ASTERISK))
+                .from(this.createSimpleValues(MySQLs::subValues)
+                        ::asValues
+                ).as("c")
                 .join(ChinaRegion_.T, AS, "c").on(SQLs.refThis("s", "column_0")::equal, ChinaRegion_.id)
                 .where(ChinaRegion_.id::equal, SQLs::literal, "1")
                 .asQuery();
@@ -64,7 +64,7 @@ public class MySQLValuesUnitTests {
     public void unionSubValues() {
         Select stmt;
         stmt = MySQLs.query()
-                .select("s", PERIOD, ASTERISK)
+                .select(s -> s.space("s", PERIOD, ASTERISK))
                 .from(() -> this.createSimpleValues(MySQLs::subValues)
                         .asValues())
                 .as("s")
@@ -112,7 +112,7 @@ public class MySQLValuesUnitTests {
     private void printStmt(final PrimaryStatement statement) {
         String sql;
         for (MySQLDialect dialect : MySQLDialect.values()) {
-            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+            if (dialect.compareWith(MySQLDialect.MySQL80) < 0) {
                 continue;
             }
             sql = statement.mockAsString(dialect, Visible.ONLY_VISIBLE, true);

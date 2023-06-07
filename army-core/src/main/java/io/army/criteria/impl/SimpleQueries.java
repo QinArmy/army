@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
+import io.army.function.TeFunction;
 import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
@@ -1023,18 +1024,6 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return list;
         }
 
-
-        /**
-         * @param list a unmodified list
-         */
-        private void onDistinctOnExpList(final List<_Expression> list) {
-            if (this.distinctOnExpList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.selectDistinct();
-            this.distinctOnExpList = list;
-        }
-
         private void registerDistinctOn(final boolean required, final @Nullable SQLs.WordDistinct distinct,
                                         final Consumer<Consumer<Expression>> expConsumer) {
 
@@ -1247,48 +1236,60 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }//LockClauseBlock
 
 
-    static abstract class SimpleWindowAsClause<T extends Item, R extends Item>
+    static final class NamedWindowAsClause<T extends Item, R extends Item>
             implements Window._WindowAsClause<T, R> {
 
-        final CriteriaContext context;
+        private final CriteriaContext context;
 
-        final String name;
+        private final String name;
 
-        final Function<ArmyWindow, R> function;
+        private final Function<ArmyWindow, R> function;
 
-        SimpleWindowAsClause(CriteriaContext context, String name, Function<ArmyWindow, R> function) {
+        private final TeFunction<String, CriteriaContext, String, T> constructor;
+
+        /**
+         * @param name        window name
+         * @param function    end function
+         * @param constructor constructor of window. arguments:
+         *                    <ul>
+         *                      <li>first : window name</li>
+         *                      <li>second : {@link CriteriaContext}</li>
+         *                      <li>third : nullable existingWindowName </li>
+         *                    </ul>
+         */
+        NamedWindowAsClause(CriteriaContext context, String name, Function<ArmyWindow, R> function,
+                            TeFunction<String, CriteriaContext, String, T> constructor) {
             this.context = context;
             this.name = name;
             this.function = function;
+            this.constructor = constructor;
         }
 
         @Override
-        public final R as() {
+        public R as() {
             return this.function.apply(SQLWindow.namedGlobalWindow(this.context, this.name));
         }
 
         @Override
-        public final R as(@Nullable String existingWindowName) {
+        public R as(@Nullable String existingWindowName) {
             return this.function.apply(SQLWindow.namedRefWindow(this.context, this.name, existingWindowName));
         }
 
         @Override
-        public final R as(Consumer<T> consumer) {
+        public R as(Consumer<T> consumer) {
             return this.as(null, consumer);
         }
 
         @Override
-        public final R as(@Nullable String existingWindowName, Consumer<T> consumer) {
+        public R as(@Nullable String existingWindowName, Consumer<T> consumer) {
             final T window;
-            window = this.createNameWindow(existingWindowName);
+            window = this.constructor.apply(this.name, this.context, existingWindowName);
             consumer.accept(window);
             return this.function.apply((ArmyWindow) window);
         }
 
-        abstract T createNameWindow(@Nullable String existingWindowName);
 
-
-    }//WindowAsClause
+    }//NamedWindowAsClause
 
 
     static abstract class SelectClauseDispatcher<W extends Query.SelectModifier, SR extends Item, SD>

@@ -338,13 +338,13 @@ abstract class SelectionGroups {
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
      * </p>
      */
-    private static final class DerivedSelectionGroup implements _SelectionGroup {
+    static final class DerivedSelectionGroup implements _SelectionGroup {
 
         private final String derivedAlias;
 
         private final List<? extends Selection> selectionList;
 
-        DerivedSelectionGroup(_SelectionMap table, String alias) {
+        private DerivedSelectionGroup(_SelectionMap table, String alias) {
             this.derivedAlias = alias;
             this.selectionList = table.refAllSelection();
         }

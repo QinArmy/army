@@ -430,7 +430,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
     @Override
     protected final boolean isSupportRowAlias() {
-        return this.dialect.version() >= MySQLDialect.MySQL80.version();
+        // MySQL 8.0 add insert row alias
+        return this.dialect.compareWith(MySQLDialect.MySQL80) >= 0;
     }
 
     @Override
@@ -465,7 +466,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
     @Override
     protected final boolean isValidateUnionType() {
         // MySQL 8.0 add INTERSECT and EXCEPT
-        return ((MySQLDialect) this.dialect).compareWith(MySQLDialect.MySQL80) < 0;
+        return this.dialect.compareWith(MySQLDialect.MySQL80) < 0;
     }
 
     @Override

@@ -87,6 +87,8 @@ public abstract class SQLs extends SQLsSyntax {
     public static final WordFrom FROM = SqlWords.KeyWordFrom.FROM;
     public static final WordSimilar SIMILAR = SqlWords.KeyWordSimilar.SIMILAR;
 
+    public static final WordOn ON = SqlWords.KeyWordOn.ON;
+
     public static final Window.RowModifier UNBOUNDED_PRECEDING = SQLWindow.WindowRowModifier.UNBOUNDED_PRECEDING;
 
     public static final Window.RowModifier CURRENT_ROW = SQLWindow.WindowRowModifier.CURRENT_ROW;
@@ -333,7 +335,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
-    public interface WordOn extends Modifier {
+    public interface WordOn {
 
     }
 

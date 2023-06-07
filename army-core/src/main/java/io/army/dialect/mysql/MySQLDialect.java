@@ -26,8 +26,18 @@ public enum MySQLDialect implements Dialect {
     }
 
 
-    public final int compareWith(MySQLDialect o) {
-        return this.version - o.version;
+    @Override
+    public final int compareWith(final Dialect o) {
+        if (!(o instanceof MySQLDialect)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        return this.version - ((MySQLDialect) o).version;
+    }
+
+    @Override
+    public final boolean isFamily(final Dialect o) {
+        return o instanceof MySQLDialect;
     }
 
 

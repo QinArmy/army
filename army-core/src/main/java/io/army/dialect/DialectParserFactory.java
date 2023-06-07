@@ -86,9 +86,9 @@ public abstract class DialectParserFactory {
         targetDialect = environment.environment().get(ArmyKey.DIALECT);
         if (targetDialect == null) {
             targetDialect = Database.from(meta);
-        } else if (targetDialect.database() != serverDialect.database()) {
+        } else if (!targetDialect.isFamily(serverDialect)) {
             throw _Exceptions.dialectDatabaseNotMatch(targetDialect, meta);
-        } else if (targetDialect.version() > serverDialect.version()) {
+        } else if (targetDialect.compareWith(serverDialect) > 0) {
             throw _Exceptions.dialectVersionNotCompatibility(targetDialect, meta);
         }
         return targetDialect;

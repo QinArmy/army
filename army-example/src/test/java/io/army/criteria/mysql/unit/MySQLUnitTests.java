@@ -30,7 +30,7 @@ abstract class MySQLUnitTests extends CriteriaUnitTests {
     static void print80Stmt(Logger logger, PrimaryStatement statement, Visible visible) {
 
         for (MySQLDialect dialect : MySQLDialect.values()) {
-            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+            if (dialect.compareWith(MySQLDialect.MySQL80) < 0) {
                 continue;
             }
             logger.debug("{}:\n{}", dialect.name(), statement.mockAsString(dialect, visible, true));

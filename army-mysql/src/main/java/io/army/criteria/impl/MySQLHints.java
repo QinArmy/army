@@ -186,7 +186,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
             final DialectParser parser = context.parser();
             final Dialect dialect;
             dialect = parser.dialect();
-            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+            if (dialect.compareWith(MySQLDialect.MySQL80) < 0) {
                 throw _Exceptions.dontSupportHint(dialect, HintType.JOIN_FIXED_ORDER);
             }
             final StringBuilder builder;
@@ -245,7 +245,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
         public void appendSql(final _SqlContext context) {
             final DialectParser parser = context.parser();
             final Dialect dialect = parser.dialect();
-            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+            if (dialect.compareWith(MySQLDialect.MySQL80) < 0) {
                 throw _Exceptions.dontSupportHint(dialect, this.hintType);
             }
             final StringBuilder builder;
@@ -336,7 +336,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     break;
                 default: {
                     final Dialect dialect = parser.dialect();
-                    if (dialect.version() < MySQLDialect.MySQL80.version()) {
+                    if (dialect.compareWith(MySQLDialect.MySQL80) < 0) {
                         throw _Exceptions.dontSupportHint(dialect, this.hintType);
                     }
                 }
@@ -432,7 +432,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
                     break;
                 default: {
                     final Dialect dialect = parser.dialect();
-                    if (dialect.version() < MySQLDialect.MySQL80.version()) {
+                    if (dialect.compareWith(MySQLDialect.MySQL80) < 0) {
                         throw _Exceptions.dontSupportHint(dialect, this.hintType);
                     }
                 }
@@ -569,7 +569,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
         @Override
         public void appendSql(final _SqlContext context) {
             final Dialect dialect = context.parser().dialect();
-            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+            if (dialect.compareWith(MySQLDialect.MySQL80) < 0) {
                 throw _Exceptions.dontSupportHint(dialect, HintType.SET_VAR);
             }
             context.sqlBuilder()
@@ -595,7 +595,7 @@ abstract class MySQLHints implements Hint, _SelfDescribed {
         @Override
         public void appendSql(final _SqlContext context) {
             final Dialect dialect = context.parser().dialect();
-            if (dialect.version() < MySQLDialect.MySQL80.version()) {
+            if (dialect.compareWith(MySQLDialect.MySQL80) < 0) {
                 throw _Exceptions.dontSupportHint(dialect, HintType.SET_VAR);
             }
             context.sqlBuilder()

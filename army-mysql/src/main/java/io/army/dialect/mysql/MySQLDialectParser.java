@@ -510,7 +510,7 @@ final class MySQLDialectParser extends MySQLParser {
         if (hintList.size() == 0) {
             return;
         }
-        if (this.dialect.version() < MySQLDialect.MySQL57.version()) {
+        if (this.dialect.compareWith(MySQLDialect.MySQL57) < 0) {
             throw _Exceptions.dontSupportHint(this.dialect);
         }
         sqlBuilder.append(SPACE_HINT_START);

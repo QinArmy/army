@@ -392,12 +392,12 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     @Override
     public final Window._WindowAsClause<PostgreWindow._PartitionBySpec, _WindowCommaSpec<I>> window(String name) {
-        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow);
+        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow, PostgreSupports::namedWindow);
     }
 
     @Override
     public final Window._WindowAsClause<PostgreWindow._PartitionBySpec, _WindowCommaSpec<I>> comma(String name) {
-        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow);
+        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow, PostgreSupports::namedWindow);
     }
 
     @Override
@@ -684,7 +684,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
      * @see #ifWindows(Consumer)
      */
     private Window._WindowAsClause<PostgreWindow._PartitionBySpec, Item> createDynamicWindow(String name) {
-        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow);
+        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow, PostgreSupports::namedWindow);
     }
 
 
@@ -706,24 +706,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-
-    private static final class NamedWindowAsClause<R extends Item>
-            extends SimpleWindowAsClause<PostgreWindow._PartitionBySpec, R> {
-
-        /**
-         * @see #window(String)
-         */
-        private NamedWindowAsClause(CriteriaContext context, String name, Function<ArmyWindow, R> function) {
-            super(context, name, function);
-        }
-
-        @Override
-        PostgreWindow._PartitionBySpec createNameWindow(@Nullable String existingWindowName) {
-            return PostgreSupports.namedWindow(this.name, this.context, existingWindowName);
-        }
-
-
-    }//NamedWindowAsClause
 
 
     private static final class JonClauseTableBlock<I extends Item> extends PostgreSupports.PostgreTableOnBlock<

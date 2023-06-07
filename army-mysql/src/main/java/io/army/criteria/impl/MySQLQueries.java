@@ -339,12 +339,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     public final Window._WindowAsClause<MySQLWindow._PartitionBySpec, _WindowCommaSpec<I>> window(String windowName) {
-        return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow);
+        return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow, MySQLSupports::namedWindow);
     }
 
     @Override
     public final Window._WindowAsClause<MySQLWindow._PartitionBySpec, _WindowCommaSpec<I>> comma(String windowName) {
-        return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow);
+        return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow, MySQLSupports::namedWindow);
     }
 
 
@@ -653,7 +653,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
      * @see #ifWindows(Consumer)
      */
     private Window._WindowAsClause<MySQLWindow._PartitionBySpec, Item> createDynamicWindow(String name) {
-        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow);
+        return new NamedWindowAsClause<>(this.context, name, this::onAddWindow, MySQLSupports::namedWindow);
     }
 
 
@@ -906,24 +906,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     }//SimpleSubQuery
 
-
-    private static final class NamedWindowAsClause<R extends Item>
-            extends SimpleWindowAsClause<MySQLWindow._PartitionBySpec, R> {
-
-
-        /**
-         * @see #window(String)
-         */
-        private NamedWindowAsClause(CriteriaContext context, String name, Function<ArmyWindow, R> function) {
-            super(context, name, function);
-        }
-
-        @Override
-        MySQLWindow._PartitionBySpec createNameWindow(@Nullable String existingWindowName) {
-            return MySQLSupports.namedWindow(this.name, this.context, existingWindowName);
-        }
-
-    }//NamedWindowAsClause
 
 
     private static final class PartitionJoinClause<I extends Item>

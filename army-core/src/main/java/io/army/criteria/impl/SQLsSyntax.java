@@ -636,6 +636,9 @@ abstract class SQLsSyntax extends Functions {
      * Reference a {@link  Selection} of current statement ,eg: ORDER BY clause.
      * The {@link Expression} returned don't support {@link Expression#as(String)} method.
      * </p>
+     * <p>
+     * <strong>NOTE</strong> : override,if selection alias duplication.
+     * </p>
      *
      * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link TypeMeta#mappingType()} of {@link Selection#typeMeta()} .
      * @throws CriteriaException then when <ul>

@@ -16,7 +16,8 @@ public enum PostgreDialect implements Dialect {
 
     private final byte version;
 
-    PostgreDialect(int version) {
+    PostgreDialect(final int version) {
+        assert version <= Byte.MAX_VALUE;
         this.version = (byte) version;
     }
 
@@ -26,14 +27,21 @@ public enum PostgreDialect implements Dialect {
         return Database.PostgreSQL;
     }
 
+
     @Override
-    public final int version() {
-        return this.version;
+    public final int compareWith(final Dialect o) {
+        if (!(o instanceof PostgreDialect)) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        return this.version - ((PostgreDialect) o).version;
     }
 
-    public final int compareWith(PostgreDialect o) {
-        return this.version - o.version;
+    @Override
+    public final boolean isFamily(final Dialect o) {
+        return o instanceof PostgreDialect;
     }
+
 
     @Override
     public final String toString() {
