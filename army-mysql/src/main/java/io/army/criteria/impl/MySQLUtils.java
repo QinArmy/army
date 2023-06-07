@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
 import io.army.criteria.mysql.MySQLCastType;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 
 import java.util.ArrayList;
@@ -14,6 +15,10 @@ abstract class MySQLUtils extends CriteriaUtils {
     private MySQLUtils() {
     }
 
+    /**
+     * reference last dialect
+     */
+    static final MySQLDialect DIALECT = MySQLDialect.MySQL80;
 
 
     @Deprecated

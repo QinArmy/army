@@ -17,19 +17,21 @@ import java.util.function.Function;
 
 interface CriteriaContext {
 
- Dialect dialect();
+   Dialect dialect();
 
- <T> T dialect(Class<T> type);
+   <T> T dialect(Class<T> type);
 
- @Nullable
- CriteriaContext getOuterContext();
+   void validateDialect(CriteriaContext context);
 
- CriteriaContext getNonNullOuterContext();
+   @Nullable
+   CriteriaContext getOuterContext();
 
- @Nullable
- CriteriaContext getLeftContext();
+   CriteriaContext getNonNullOuterContext();
 
- CriteriaContext getNonNullLeftContext();
+   @Nullable
+   CriteriaContext getLeftContext();
+
+   CriteriaContext getNonNullLeftContext();
 
     void onBeforeWithClause(boolean recursive);
 

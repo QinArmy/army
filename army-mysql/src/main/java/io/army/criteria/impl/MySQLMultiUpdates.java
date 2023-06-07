@@ -9,7 +9,6 @@ import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiUpdate;
 import io.army.criteria.mysql.*;
 import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
@@ -309,7 +308,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE extends Item, FT extends Ite
 
     @Override
     final Dialect statementDialect() {
-        return MySQLDialect.MySQL80;
+        return MySQLUtils.DIALECT;
     }
 
     @Override

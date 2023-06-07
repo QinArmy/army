@@ -32,8 +32,8 @@ abstract class StandardInserts extends InsertSupports {
     }
 
 
-    static StandardInsert._PrimaryOptionSpec singleInsert() {
-        return new PrimaryInsertIntoClause();
+    static StandardInsert._PrimaryOptionSpec singleInsert(StandardDialect dialect) {
+        return new PrimaryInsertIntoClause(dialect);
     }
 
 
@@ -89,8 +89,8 @@ abstract class StandardInserts extends InsertSupports {
             extends NonQueryInsertOptionsImpl<StandardInsert._PrimaryNullOptionSpec>
             implements StandardInsert._PrimaryOptionSpec {
 
-        private PrimaryInsertIntoClause() {
-            super(CriteriaContexts.primaryInsertContext(null));
+        private PrimaryInsertIntoClause(StandardDialect dialect) {
+            super(CriteriaContexts.primaryInsertContext(dialect, null));
             ContextStack.push(this.context);
         }
 
@@ -118,7 +118,7 @@ abstract class StandardInserts extends InsertSupports {
 
         private ChildInsertIntoClause(ValueSyntaxOptions options,
                                       Function<StandardComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, CriteriaContexts.primaryInsertContext(null));
+            super(options, CriteriaContexts.primaryInsertContext(options.getContext().dialect(), null));
             ContextStack.push(this.context);
             this.dmlFunction = dmlFunction;
         }
@@ -189,7 +189,9 @@ abstract class StandardInserts extends InsertSupports {
 
         @Override
         public StandardQuery._SelectSpec<Statement._DmlInsertClause<I>> space() {
-            return StandardQueries.subQuery(this.context, this::spaceQueryEnd);
+            return StandardQueries.subQuery(this.context.dialect(StandardDialect.class),
+                    this.context, this::spaceQueryEnd
+            );
         }
 
         @Override
@@ -199,7 +201,9 @@ abstract class StandardInserts extends InsertSupports {
 
         @Override
         public Statement._DmlInsertClause<I> space(Function<StandardQuery._SelectSpec<Statement._DmlInsertClause<I>>, Statement._DmlInsertClause<I>> function) {
-            return function.apply(StandardQueries.subQuery(this.context, this::spaceQueryEnd));
+            return function.apply(StandardQueries.subQuery(this.context.dialect(StandardDialect.class),
+                    this.context, this::spaceQueryEnd)
+            );
         }
 
         @Override

@@ -9,7 +9,6 @@ import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.impl.inner.mysql._MySQLMultiDelete;
 import io.army.criteria.mysql.*;
 import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;
@@ -69,7 +68,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE extends Item, DT, FU extends
     _TabularBlock fromCrossBlock;
 
     private MySQLMultiDeletes(@Nullable ArmyStmtSpec spec) {
-        super(spec, CriteriaContexts.primaryMultiDmlContext(spec));
+        super(spec, CriteriaContexts.primaryMultiDmlContext(MySQLUtils.DIALECT, spec));
     }
 
     @Override
@@ -364,7 +363,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE extends Item, DT, FU extends
 
     @Override
     final Dialect statementDialect() {
-        return MySQLDialect.MySQL80;
+        return MySQLUtils.DIALECT;
     }
 
 

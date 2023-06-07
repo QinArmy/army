@@ -1011,6 +1011,7 @@ abstract class InsertSupports {
             } else if (!this.migration) {
                 throw queryInsetSupportOnlyMigration();
             }
+            Expressions.validateSubQueryContext(subQuery);
             this.endColumnDefaultClause();
 
             this.subQuery = subQuery;

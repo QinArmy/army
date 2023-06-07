@@ -30,8 +30,8 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         extends SingleUpdateStatement<I, F, SR, WR, WA, Object, Object, Object, Object, Object>
         implements StandardUpdate, UpdateStatement {
 
-    static _SingleUpdateClause<Update> singleUpdate() {
-        return new PrimarySimpleSingleUpdateClause<>(null, SQLs::identity);
+    static _SingleUpdateClause<Update> singleUpdate(StandardDialect dialect) {
+        return new PrimarySimpleSingleUpdateClause<>(dialect, null, SQLs::identity);
     }
 
     static _DomainUpdateClause simpleDomain() {
@@ -39,8 +39,8 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
     }
 
 
-    static _BatchSingleUpdateClause batchSingle() {
-        return new BatchSingleUpdateClause();
+    static _BatchSingleUpdateClause batchSingle(StandardDialect dialect) {
+        return new BatchSingleUpdateClause(dialect);
     }
 
     static _BatchDomainUpdateClause batchDomain() {
@@ -292,8 +292,9 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
 
         private final Function<? super Update, I> function;
 
-        private PrimarySimpleSingleUpdateClause(@Nullable ArmyStmtSpec spec, Function<? super Update, I> function) {
-            this.context = CriteriaContexts.primarySingleDmlContext(spec);
+        private PrimarySimpleSingleUpdateClause(StandardDialect dialect, @Nullable ArmyStmtSpec spec,
+                                                Function<? super Update, I> function) {
+            this.context = CriteriaContexts.primarySingleDmlContext(dialect, spec);
             ContextStack.push(this.context);
             this.function = function;
         }
@@ -319,7 +320,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         private final CriteriaContext context;
 
         private SimpleDomainUpdateClause() {
-            this.context = CriteriaContexts.primarySingleDmlContext(null);
+            this.context = CriteriaContexts.primarySingleDmlContext(StandardDialect.STANDARD10, null);
             ContextStack.push(this.context);
         }
 
@@ -346,8 +347,8 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
 
         private final CriteriaContext context;
 
-        private BatchSingleUpdateClause() {
-            this.context = CriteriaContexts.primarySingleDmlContext(null);
+        private BatchSingleUpdateClause(StandardDialect dialect) {
+            this.context = CriteriaContexts.primarySingleDmlContext(dialect, null);
             ContextStack.push(this.context);
         }
 
@@ -373,7 +374,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         private final CriteriaContext context;
 
         private BatchDomainUpdateClause() {
-            this.context = CriteriaContexts.primarySingleDmlContext(null);
+            this.context = CriteriaContexts.primarySingleDmlContext(StandardDialect.STANDARD10, null);
             ContextStack.push(this.context);
         }
 

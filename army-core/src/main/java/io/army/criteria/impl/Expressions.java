@@ -635,10 +635,15 @@ abstract class Expressions {
         if (subQuery == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
-        if (((CriteriaContextSpec) subQuery).getContext().getOuterContext() != ContextStack.peek()) {
+        final CriteriaContext context, currentContext;
+        context = ((CriteriaContextSpec) subQuery).getContext();
+        currentContext = ContextStack.peek();
+        if (context.getOuterContext() != currentContext) {
             String m = String.format("outer context of %s don't match.", subQuery);
             throw ContextStack.clearStackAndCriteriaError(m);
         }
+        currentContext.validateDialect(context);
+
     }
 
 

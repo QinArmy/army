@@ -494,7 +494,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     @Override
     final Dialect statementDialect() {
-        return PostgreDialect.POSTGRE15;
+        return PostgreUtils.DIALECT;
     }
 
 
@@ -896,7 +896,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         private SimpleSelect(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
                              Function<? super Select, I> function) {
-            super(spec, CriteriaContexts.primaryQueryContext(spec, outerBracketContext, null));
+            super(spec, CriteriaContexts.primaryQueryContext(PostgreUtils.DIALECT, spec, outerBracketContext, null));
             this.function = function;
         }
 
@@ -933,7 +933,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         private SimpleSubQuery(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext,
                                Function<? super SubQuery, I> function) {
-            super(spec, CriteriaContexts.subQueryContext(spec, outerContext, null));
+            super(spec, CriteriaContexts.subQueryContext(PostgreUtils.DIALECT, spec, outerContext, null));
             this.function = function;
         }
 

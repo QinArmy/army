@@ -106,7 +106,7 @@ abstract class CriteriaContexts {
     }
 
 
-    static CriteriaContext primaryInsertContext(@Nullable ArmyStmtSpec spec) {
+    static CriteriaContext primaryInsertContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryDispatcherContext multiStmtContext;
         if (spec == null) {
             multiStmtContext = null;
@@ -115,7 +115,7 @@ abstract class CriteriaContexts {
         }
 
         final PrimaryInsertContext context;
-        context = new PrimaryInsertContext();
+        context = new PrimaryInsertContext(dialect);
 
         if (multiStmtContext != null) {
             migrateContext(context, multiStmtContext);
@@ -146,27 +146,27 @@ abstract class CriteriaContexts {
         return context;
     }
 
-    static CriteriaContext primarySingleDmlContext(@Nullable ArmyStmtSpec spec) {
-        final PrimaryDispatcherContext multiStmtContext;
+    static CriteriaContext primarySingleDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
+        final PrimaryDispatcherContext ctx;
         if (spec == null) {
-            multiStmtContext = null;
+            ctx = null;
         } else {
-            multiStmtContext = (PrimaryDispatcherContext) spec.getContext();
+            ctx = (PrimaryDispatcherContext) spec.getContext();
         }
         final StatementContext context;
-        context = new PrimarySingleDmlContext(multiStmtContext);
+        context = new PrimarySingleDmlContext(dialect, ctx);
 
-        if (multiStmtContext != null) {
-            migrateContext(context, multiStmtContext);
-            assertNonQueryContext(multiStmtContext);
+        if (ctx != null) {
+            migrateContext(context, ctx);
+            assertNonQueryContext(ctx);
         }
         return context;
     }
 
 
-    static CriteriaContext primaryMultiDmlContext(final @Nullable ArmyStmtSpec spec) {
+    static CriteriaContext primaryMultiDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryMultiDmlContext context;
-        context = new PrimaryMultiDmlContext();
+        context = new PrimaryMultiDmlContext(dialect);
 
         if (spec != null) {
             final DispatcherContext dispatcherContext;
@@ -399,7 +399,6 @@ abstract class CriteriaContexts {
     }
 
 
-
     private static String createNotFoundAllDerivedFieldMessage(Map<String, Map<String, MutableDerivedField>> aliasToRefSelection) {
         final StringBuilder builder = new StringBuilder()
                 .append("Not found derived field[");
@@ -511,6 +510,24 @@ abstract class CriteriaContexts {
         @Override
         public final <T> T dialect(Class<T> type) {
             return (T) this.dialect;
+        }
+
+        @Override
+        public final void validateDialect(final CriteriaContext context) {
+            final Dialect d;
+            d = ((StatementContext) context).dialect;
+            if (this.dialect instanceof StandardDialect) {
+                if (!this.dialect.isFamily(d)) {
+                    String m;
+                    m = String.format("error,standard and domain api couldn't mixe %s api.", d.database().name());
+                    throw ContextStack.clearStackAndCriteriaError(m);
+                }
+            } else if (!(d instanceof StandardDialect) && !this.dialect.isFamily(d)) {
+                String m;
+                m = String.format("error,%s api couldn't mixe %s api.", this.dialect.database(), d.database().name());
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+
         }
 
         @Override
@@ -1858,7 +1875,7 @@ abstract class CriteriaContexts {
     private static final class PrimaryInsertContext extends InsertContext implements PrimaryContext {
 
         /**
-         * @see #primaryInsertContext(ArmyStmtSpec)
+         * @see #primaryInsertContext(Dialect, ArmyStmtSpec)
          */
         private PrimaryInsertContext(Dialect dialect) {
             super(dialect, null);

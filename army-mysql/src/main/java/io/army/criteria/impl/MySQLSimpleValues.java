@@ -83,7 +83,7 @@ abstract class MySQLSimpleValues<I extends Item>
 
     @Override
     final Dialect statementDialect() {
-        return MySQLDialect.MySQL80;
+        return MySQLUtils.DIALECT;
     }
 
     private static final class SimplePrimaryValues<I extends Item> extends MySQLSimpleValues<I>

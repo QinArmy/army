@@ -28,12 +28,12 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         extends SingleDeleteStatement<I, WR, WA, Object, Object, Object, Object, Object>
         implements StandardDelete, DeleteStatement {
 
-    static _StandardDeleteClause<Delete> singleDelete() {
-        return new SimpleSingleDelete<>(null, SQLs::identity);
+    static _StandardDeleteClause<Delete> singleDelete(StandardDialect dialect) {
+        return new SimpleSingleDelete<>(dialect, null, SQLs::identity);
     }
 
-    static _BatchDeleteClause batchSingleDelete() {
-        return new BatchSingleDelete();
+    static _BatchDeleteClause batchSingleDelete(StandardDialect dialect) {
+        return new BatchSingleDelete(dialect);
     }
 
     static _DomainDeleteClause domainDelete() {
@@ -49,8 +49,8 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
 
     private String tableAlias;
 
-    private StandardDeletes(@Nullable ArmyStmtSpec spec) {
-        super(CriteriaContexts.primarySingleDmlContext(spec));
+    private StandardDeletes(StandardDialect dialect, @Nullable ArmyStmtSpec spec) {
+        super(CriteriaContexts.primarySingleDmlContext(dialect, spec));
     }
 
 
@@ -114,8 +114,9 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         private final Function<? super Delete, I> function;
 
 
-        private SimpleSingleDelete(@Nullable ArmyStmtSpec spec, Function<? super Delete, I> function) {
-            super(spec);
+        private SimpleSingleDelete(StandardDialect dialect, @Nullable ArmyStmtSpec spec,
+                                   Function<? super Delete, I> function) {
+            super(dialect, spec);
             this.function = function;
         }
 
@@ -147,7 +148,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
 
 
         private SimpleDomainDelete() {
-            super(null);
+            super(StandardDialect.STANDARD10, null);
         }
 
 
@@ -177,8 +178,8 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         private List<?> paramList;
 
 
-        private StandardBatchDelete() {
-            super(null);
+        private StandardBatchDelete(StandardDialect dialect) {
+            super(dialect, null);
         }
 
 
@@ -222,7 +223,8 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
     private static final class BatchSingleDelete extends StandardBatchDelete
             implements _BatchDeleteClause {
 
-        private BatchSingleDelete() {
+        private BatchSingleDelete(StandardDialect dialect) {
+            super(dialect);
         }
 
         @Override
@@ -238,6 +240,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
             _BatchDomainDeleteClause {
 
         private BatchDomainDelete() {
+            super(StandardDialect.STANDARD10);
         }
 
         @Override

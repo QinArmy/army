@@ -569,7 +569,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
     @Override
     final Dialect statementDialect() {
-        return MySQLDialect.MySQL80;
+        return MySQLUtils.DIALECT;
     }
 
     /*################################## blow private method ##################################*/
@@ -842,7 +842,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         private SimpleSelect(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerBracketContext,
                              Function<? super Select, I> function) {
-            super(spec, CriteriaContexts.primaryQueryContext(spec, outerBracketContext, null));
+            super(spec, CriteriaContexts.primaryQueryContext(MySQLUtils.DIALECT, spec, outerBracketContext, null));
             this.function = function;
         }
 
@@ -877,7 +877,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
 
         private SimpleSubQuery(@Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext,
                                Function<? super SubQuery, I> function) {
-            super(spec, CriteriaContexts.subQueryContext(spec, outerContext, null));
+            super(spec, CriteriaContexts.subQueryContext(MySQLUtils.DIALECT, spec, outerContext, null));
             this.function = function;
         }
 

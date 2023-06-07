@@ -14,7 +14,6 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLStatement;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
@@ -181,7 +180,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
     @Override
     final Dialect statementDialect() {
-        return MySQLDialect.MySQL80;
+        return MySQLUtils.DIALECT;
     }
 
     abstract I asMySQLUpdate();

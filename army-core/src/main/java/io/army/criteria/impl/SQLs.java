@@ -147,7 +147,11 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     public static StandardInsert._PrimaryOptionSpec singleInsert() {
-        return StandardInserts.singleInsert();
+        return StandardInserts.singleInsert(StandardDialect.STANDARD10);
+    }
+
+    public static StandardInsert._PrimaryOptionSpec singleInsert20() {
+        return StandardInserts.singleInsert(StandardDialect.STANDARD20);
     }
 
     public static StandardUpdate._DomainUpdateClause domainUpdate() {
@@ -156,7 +160,11 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     public static StandardUpdate._SingleUpdateClause<Update> singleUpdate() {
-        return StandardUpdates.singleUpdate();
+        return StandardUpdates.singleUpdate(StandardDialect.STANDARD10);
+    }
+
+    public static StandardUpdate._SingleUpdateClause<Update> singleUpdate20() {
+        return StandardUpdates.singleUpdate(StandardDialect.STANDARD20);
     }
 
 
@@ -176,12 +184,25 @@ public abstract class SQLs extends SQLsSyntax {
      * </p>
      */
     public static StandardUpdate._BatchSingleUpdateClause batchSingleUpdate() {
-        return StandardUpdates.batchSingle();
+        return StandardUpdates.batchSingle(StandardDialect.STANDARD10);
+    }
+
+    /**
+     * <p>
+     * Batch domain update
+     * </p>
+     */
+    public static StandardUpdate._BatchSingleUpdateClause batchSingleUpdate20() {
+        return StandardUpdates.batchSingle(StandardDialect.STANDARD20);
     }
 
 
     public static StandardDelete._StandardDeleteClause<Delete> singleDelete() {
-        return StandardDeletes.singleDelete();
+        return StandardDeletes.singleDelete(StandardDialect.STANDARD10);
+    }
+
+    public static StandardDelete._StandardDeleteClause<Delete> singleDelete20() {
+        return StandardDeletes.singleDelete(StandardDialect.STANDARD20);
     }
 
     public static StandardDelete._DomainDeleteClause domainDelete() {
@@ -194,7 +215,16 @@ public abstract class SQLs extends SQLsSyntax {
      * </p>
      */
     public static StandardDelete._BatchDeleteClause batchSingleDelete() {
-        return StandardDeletes.batchSingleDelete();
+        return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD10);
+    }
+
+    /**
+     * <p>
+     * Batch domain delete
+     * </p>
+     */
+    public static StandardDelete._BatchDeleteClause batchSingleDelete20() {
+        return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD20);
     }
 
     public static StandardDelete._BatchDomainDeleteClause batchDomainDelete() {

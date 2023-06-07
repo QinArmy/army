@@ -9,7 +9,6 @@ import io.army.criteria.mysql.MySQLDelete;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLStatement;
 import io.army.dialect.Dialect;
-import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.SingleTableMeta;
 import io.army.util.ArrayUtils;
@@ -193,7 +192,7 @@ abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, W
 
     @Override
     final Dialect statementDialect() {
-        return MySQLDialect.MySQL80;
+        return MySQLUtils.DIALECT;
     }
 
 
