@@ -88,9 +88,6 @@ interface CriteriaContext {
     DerivedField refOuter(String derivedAlias, String fieldName);
 
 
-    @Deprecated
-    void onOrderByStart();
-
     Expression refSelection(String selectionAlias);
 
     /**

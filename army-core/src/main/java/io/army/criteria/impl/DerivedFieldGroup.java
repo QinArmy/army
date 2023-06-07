@@ -4,6 +4,7 @@ import io.army.criteria.RowElement;
 import io.army.criteria.impl.inner._SelectionGroup;
 import io.army.criteria.impl.inner._SelectionMap;
 
+@Deprecated
 interface DerivedFieldGroup extends _SelectionGroup, RowElement.DelayElement {
 
 

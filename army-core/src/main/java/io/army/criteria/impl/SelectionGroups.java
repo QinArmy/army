@@ -45,7 +45,7 @@ abstract class SelectionGroups {
         return new DelayDerivedSelectionGroup(alias);
     }
 
-    static _SelectionGroup derivedGroup(_SelectionMap table, String alias) {
+    static DerivedSelectionGroup derivedGroup(_SelectionMap table, String alias) {
         return new DerivedSelectionGroup(table, alias);
     }
 
@@ -338,7 +338,7 @@ abstract class SelectionGroups {
      * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
      * </p>
      */
-    static final class DerivedSelectionGroup implements _SelectionGroup {
+    static final class DerivedSelectionGroup implements _SelectionGroup, RowElementGroup, ObjectElementGroup {
 
         private final String derivedAlias;
 
@@ -353,42 +353,6 @@ abstract class SelectionGroups {
         public void appendSelectItem(final _SqlContext context) {
             appendDerivedFieldGroup(this.derivedAlias, this.selectionList, context);
         }
-
-
-        @Override
-        public String tableAlias() {
-            return this.derivedAlias;
-        }
-
-        @Override
-        public List<? extends Selection> selectionList() {
-            return this.selectionList;
-        }
-
-    }//DerivedSelectionGroup
-
-    /**
-     * <p>
-     * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
-     * </p>
-     */
-    private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup, RowElementGroup,
-            RowElement.DelayElement, ObjectElementGroup {
-
-        private final String derivedAlias;
-
-        private List<? extends Selection> selectionList;
-
-        private DelayDerivedSelectionGroup(String derivedAlias) {
-            this.derivedAlias = derivedAlias;
-        }
-
-
-        @Override
-        public boolean isDelay() {
-            return this.selectionList == null;
-        }
-
 
         @Override
         public void appendRowElement(final StringBuilder sqlBuilder, final _SqlContext context) {
@@ -422,7 +386,6 @@ abstract class SelectionGroups {
                     .append(_Constant.POINT)
                     .append(_Constant.ASTERISK);
         }
-
 
         @Override
         public void appendObjectElement(final StringBuilder sqlBuilder, final _SqlContext context) {
@@ -486,6 +449,88 @@ abstract class SelectionGroups {
 
         }
 
+
+        @Override
+        public String tableAlias() {
+            return this.derivedAlias;
+        }
+
+        @Override
+        public List<? extends Selection> selectionList() {
+            return this.selectionList;
+        }
+
+        private void appendDerivedRowElement(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final DialectParser dialect = context.parser();
+            final String safeDerivedAlias = dialect.identifier(this.derivedAlias);
+            final List<? extends Selection> selectionList = this.selectionList;
+            final int size = selectionList.size();
+            assert size > 0;
+
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(safeDerivedAlias)
+                        .append(_Constant.POINT);
+
+                dialect.identifier(selectionList.get(i).alias(), sqlBuilder);
+
+            }
+        }
+
+
+    }//DerivedSelectionGroup
+
+    /**
+     * <p>
+     * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
+     * </p>
+     */
+    @Deprecated
+    private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup, RowElementGroup,
+            RowElement.DelayElement, ObjectElementGroup {
+
+        private final String derivedAlias;
+
+        private List<? extends Selection> selectionList;
+
+        private DelayDerivedSelectionGroup(String derivedAlias) {
+            this.derivedAlias = derivedAlias;
+        }
+
+
+        @Override
+        public boolean isDelay() {
+            return this.selectionList == null;
+        }
+
+
+        @Override
+        public void appendRowElement(final StringBuilder sqlBuilder, final _SqlContext context) {
+            throw new UnsupportedOperationException();
+
+        }
+
+        @Override
+        public void rowElementToString(final StringBuilder builder) {
+            throw new UnsupportedOperationException();
+        }
+
+
+        @Override
+        public void appendObjectElement(final StringBuilder sqlBuilder, final _SqlContext context) {
+            throw new UnsupportedOperationException();
+
+        }
+
+        @Override
+        public void objectElementToString(final StringBuilder builder) {
+            throw new UnsupportedOperationException();
+
+        }
+
         @Override
         public void finish(final _SelectionMap table, final String alias) {
             if (this.selectionList != null) {
@@ -527,23 +572,7 @@ abstract class SelectionGroups {
 
 
         private void appendDerivedRowElement(final StringBuilder sqlBuilder, final _SqlContext context) {
-            final DialectParser dialect = context.parser();
-            final String safeDerivedAlias = dialect.identifier(this.derivedAlias);
-            final List<? extends Selection> selectionList = this.selectionList;
-            final int size = selectionList.size();
-            assert size > 0;
-
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    sqlBuilder.append(_Constant.SPACE_COMMA);
-                }
-                sqlBuilder.append(_Constant.SPACE)
-                        .append(safeDerivedAlias)
-                        .append(_Constant.POINT);
-
-                dialect.identifier(selectionList.get(i).alias(), sqlBuilder);
-
-            }
+            throw new UnsupportedOperationException();
         }
 
 
