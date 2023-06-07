@@ -132,7 +132,7 @@ public abstract class SQLs extends SQLsSyntax {
      */
     static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
 
-    private static final Function<? extends Item, ? extends Item> _IDENTITY = SQLs::_identity;
+    private static final Function<? extends Item, ? extends Item> _IDENTITY = SQLs::identity;
 
     static final Function<InsertStatement, InsertStatement> _INSERT_IDENTITY = _getIdentity();
 
@@ -203,16 +203,29 @@ public abstract class SQLs extends SQLsSyntax {
 
 
     public static StandardQuery._SelectSpec<Select> query() {
-        return StandardQueries.simpleQuery();
+        return StandardQueries.simpleQuery(StandardDialect.STANDARD10);
     }
 
     public static StandardQuery._SelectSpec<SubQuery> subQuery() {
-        return StandardQueries.subQuery(ContextStack.peek(), SQLs::_identity);
+        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SQLs::identity);
     }
 
 
     public static StandardQuery._SelectSpec<Expression> scalarSubQuery() {
-        return StandardQueries.subQuery(ContextStack.peek(), Expressions::scalarExpression);
+        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), Expressions::scalarExpression);
+    }
+
+    public static StandardQuery._SelectSpec<Select> query20() {
+        return StandardQueries.simpleQuery(StandardDialect.STANDARD20);
+    }
+
+    public static StandardQuery._SelectSpec<SubQuery> subQuery20() {
+        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SQLs::identity);
+    }
+
+
+    public static StandardQuery._SelectSpec<Expression> scalarSubQuery20() {
+        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), Expressions::scalarExpression);
     }
 
 
@@ -261,7 +274,7 @@ public abstract class SQLs extends SQLsSyntax {
      *
      * @see Function#identity()
      */
-    static <T extends Item> T _identity(T t) {
+    static <T extends Item> T identity(T t) {
         return t;
     }
 

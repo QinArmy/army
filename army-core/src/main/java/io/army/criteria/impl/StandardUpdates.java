@@ -31,7 +31,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         implements StandardUpdate, UpdateStatement {
 
     static _SingleUpdateClause<Update> singleUpdate() {
-        return new PrimarySimpleSingleUpdateClause<>(null, SQLs::_identity);
+        return new PrimarySimpleSingleUpdateClause<>(null, SQLs::identity);
     }
 
     static _DomainUpdateClause simpleDomain() {

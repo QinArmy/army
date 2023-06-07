@@ -47,13 +47,13 @@ abstract class StandardInserts extends InsertSupports {
         mode = clause.getInsertMode();
         switch (mode) {
             case DOMAIN:
-                spec = new PrimaryParentDomainInsertStatement<>(clause, SQLs::_identity);
+                spec = new PrimaryParentDomainInsertStatement<>(clause, SQLs::identity);
                 break;
             case VALUES:
-                spec = new PrimaryParentValueInsertStatement<>(clause, SQLs::_identity);
+                spec = new PrimaryParentValueInsertStatement<>(clause, SQLs::identity);
                 break;
             case QUERY:
-                spec = new PrimaryParentQueryInsertStatement<>(clause, SQLs::_identity);
+                spec = new PrimaryParentQueryInsertStatement<>(clause, SQLs::identity);
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(mode);

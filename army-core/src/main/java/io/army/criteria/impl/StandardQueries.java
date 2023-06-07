@@ -63,13 +63,13 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         ArmyStmtSpec {
 
 
-    static _SelectSpec<Select> simpleQuery() {
-        return new SimpleSelect<>(null, SQLs._SELECT_IDENTITY, null);
+    static _SelectSpec<Select> simpleQuery(StandardDialect dialect) {
+        return new SimpleSelect<>(dialect, null, SQLs._SELECT_IDENTITY, null);
     }
 
-    static <I extends Item> _SelectSpec<I> subQuery(CriteriaContext outerContext,
+    static <I extends Item> _SelectSpec<I> subQuery(StandardDialect dialect, CriteriaContext outerContext,
                                                     Function<? super SubQuery, I> function) {
-        return new SimpleSubQuery<>(outerContext, function, null);
+        return new SimpleSubQuery<>(dialect, outerContext, function, null);
     }
 
 
@@ -334,9 +334,9 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
          * Primary constructor
          * </p>
          */
-        private SimpleSelect(@Nullable CriteriaContext outerBracketContext, Function<? super Select, I> function,
-                             @Nullable CriteriaContext leftContext) {
-            super(CriteriaContexts.primaryQueryContext(null, outerBracketContext, leftContext));
+        private SimpleSelect(StandardDialect dialect, @Nullable CriteriaContext outerBracketContext,
+                             Function<? super Select, I> function, @Nullable CriteriaContext leftContext) {
+            super(CriteriaContexts.primaryQueryContext(dialect, null, outerBracketContext, leftContext));
             this.function = function;
         }
 
@@ -348,7 +348,9 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             final BracketSelect<I> bracket;
             bracket = new BracketSelect<>(this, this.function);
 
-            return function.apply(new SimpleSelect<>(bracket.context, bracket::parensEnd, null));
+            return function.apply(new SimpleSelect<>(this.context.dialect(StandardDialect.class), bracket.context,
+                    bracket::parensEnd, null)
+            );
         }
 
 
@@ -361,7 +363,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         _SelectSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
-            return new SimpleSelect<>(null, unionFunc, this.context);
+            return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, unionFunc, this.context);
         }
 
 
@@ -373,9 +375,9 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
         private final Function<? super SubQuery, I> function;
 
-        private SimpleSubQuery(CriteriaContext outerContext, Function<? super SubQuery, I> function,
-                               @Nullable CriteriaContext leftContext) {
-            super(CriteriaContexts.subQueryContext(null, outerContext, leftContext));
+        private SimpleSubQuery(StandardDialect dialect, CriteriaContext outerContext,
+                               Function<? super SubQuery, I> function, @Nullable CriteriaContext leftContext) {
+            super(CriteriaContexts.subQueryContext(dialect, null, outerContext, leftContext));
             this.function = function;
         }
 
@@ -386,7 +388,9 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
             final BracketSubQuery<I> bracket;
             bracket = new BracketSubQuery<>(this, this.function);
-            return function.apply(StandardQueries.subQuery(bracket.context, bracket::parensEnd));
+            return function.apply(StandardQueries.subQuery(this.context.dialect(StandardDialect.class),
+                    bracket.context, bracket::parensEnd)
+            );
         }
 
         @Override
@@ -398,7 +402,9 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         _SelectSpec<I> createQueryUnion(final _UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
-            return new SimpleSubQuery<>(this.context.getNonNullOuterContext(), unionFunc, this.context);
+            return new SimpleSubQuery<>(this.context.dialect(StandardDialect.class), this.context.getNonNullOuterContext(),
+                    unionFunc, this.context
+            );
         }
 
 
@@ -452,7 +458,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         _SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<Select, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSelect(this, unionType, right));
-            return new SimpleSelect<>(null, unionFunc, this.context);
+            return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, unionFunc, this.context);
         }
 
 
@@ -477,7 +483,9 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         _SelectSpec<I> createUnionRowSet(final _UnionType unionType) {
             final Function<SubQuery, I> unionFunc;
             unionFunc = right -> this.function.apply(new UnionSubQuery(this, unionType, right));
-            return new SimpleSubQuery<>(this.context.getNonNullOuterContext(), unionFunc, this.context);
+            return new SimpleSubQuery<>(this.context.dialect(StandardDialect.class),
+                    this.context.getNonNullOuterContext(), unionFunc, this.context
+            );
         }
 
 

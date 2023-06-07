@@ -34,7 +34,7 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLQuery._WithSpec<SubQuery> subQuery() {
-        return MySQLQueries.subQuery(ContextStack.peek(), SQLs::_identity);
+        return MySQLQueries.subQuery(ContextStack.peek(), SQLs::identity);
     }
 
 
@@ -44,17 +44,17 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLValues._ValueSpec<Values> primaryValues() {
-        return MySQLSimpleValues.simpleValues(SQLs::_identity);
+        return MySQLSimpleValues.simpleValues(SQLs::identity);
     }
 
 
     public static MySQLValues._ValueSpec<SubValues> subValues() {
-        return MySQLSimpleValues.subValues(ContextStack.peek(), SQLs::_identity);
+        return MySQLSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
     }
 
 
     public static MySQLUpdate._SingleWithSpec<Update> singleUpdate() {
-        return MySQLSingleUpdates.simple(null, SQLs::_identity);
+        return MySQLSingleUpdates.simple(null, SQLs::identity);
     }
 
 
@@ -63,7 +63,7 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
     public static MySQLUpdate._MultiWithSpec<Update> multiUpdate() {
-        return MySQLMultiUpdates.simple(null, SQLs::_identity);
+        return MySQLMultiUpdates.simple(null, SQLs::identity);
     }
 
 
@@ -72,7 +72,7 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
     public static MySQLDelete._SingleWithSpec<Delete> singleDelete() {
-        return MySQLSingleDeletes.simple(null, SQLs::_identity);
+        return MySQLSingleDeletes.simple(null, SQLs::identity);
     }
 
 
@@ -81,7 +81,7 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
     public static MySQLDelete._MultiWithSpec<Delete> multiDelete() {
-        return MySQLMultiDeletes.simple(null, SQLs::_identity);
+        return MySQLMultiDeletes.simple(null, SQLs::identity);
     }
 
 
@@ -91,7 +91,7 @@ public abstract class MySQLs extends MySQLSyntax {
 
 
     public static MySQLLoadData._LoadDataClause<SQLCommand> loadDataCommand() {
-        return MySQLLoads.loadDataCommand(SQLs::_identity);
+        return MySQLLoads.loadDataCommand(SQLs::identity);
     }
 
 

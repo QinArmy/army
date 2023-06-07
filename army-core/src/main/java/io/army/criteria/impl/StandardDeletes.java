@@ -29,7 +29,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         implements StandardDelete, DeleteStatement {
 
     static _StandardDeleteClause<Delete> singleDelete() {
-        return new SimpleSingleDelete<>(null, SQLs::_identity);
+        return new SimpleSingleDelete<>(null, SQLs::identity);
     }
 
     static _BatchDeleteClause batchSingleDelete() {

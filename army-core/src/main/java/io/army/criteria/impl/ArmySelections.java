@@ -11,17 +11,15 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
-import java.util.Objects;
-
 abstract class ArmySelections implements _Selection {
 
     static _Selection forExp(final Expression exp, final String alias) {
         final _Selection selection;
-        if (exp instanceof TableField) {
-            if (((TableField) exp).fieldName().equals(alias)) {
+        if (exp instanceof FieldSelection) {
+            if (((FieldSelection) exp).alias().equals(alias)) {
                 selection = (_Selection) exp;
             } else {
-                selection = new FieldSelectionImpl((TableField) exp, alias);
+                selection = new FieldSelectionImpl((FieldSelection) exp, alias);
             }
         } else if (exp instanceof SQLField && ((SQLField) exp).fieldName().equals(alias)) {
             selection = (_Selection) exp;
@@ -31,9 +29,15 @@ abstract class ArmySelections implements _Selection {
         return selection;
     }
 
-    static Selection renameSelection(Selection selection, String alias) {
+    static Selection renameSelection(final Selection selection, final String alias) {
         final Selection s;
-        if (selection instanceof AnonymousSelection || !selection.alias().equals(alias)) {
+        if (selection instanceof FieldSelection) {
+            if (selection.alias().equals(alias)) {
+                s = selection;
+            } else {
+                s = new FieldSelectionImpl((FieldSelection) selection, alias);
+            }
+        } else if (selection instanceof AnonymousSelection || !selection.alias().equals(alias)) {
             s = new RenameSelection(selection, alias);
         } else {
             s = selection;
@@ -49,12 +53,10 @@ abstract class ArmySelections implements _Selection {
             throw ContextStack.clearStackAndNullPointer();
         }
         final Selection selection;
-        if (typeMeta instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) typeMeta).isDelay()) {
-            selection = new DelaySelectionForName(alias, (TypeMeta.DelayTypeMeta) typeMeta);
-        } else if (typeMeta instanceof MappingType) {
-            selection = new ImmutableSelectionForName(alias, (MappingType) typeMeta);
+        if (typeMeta instanceof MappingType) {
+            selection = new SelectionForName(alias, (MappingType) typeMeta);
         } else {
-            selection = new ImmutableSelectionForName(alias, typeMeta.mappingType());
+            selection = new SelectionForName(alias, typeMeta.mappingType());
         }
         return selection;
     }
@@ -131,20 +133,20 @@ abstract class ArmySelections implements _Selection {
     }//ExpressionSelection
 
 
-    private static final class FieldSelectionImpl extends ArmySelections implements FieldSelection {
+    private static final class FieldSelectionImpl extends ArmySelections implements FieldSelection, _SelfDescribed {
 
-        private final TableField field;
+        private final FieldSelection selection;
 
-        private FieldSelectionImpl(TableField field, String alias) {
+        private FieldSelectionImpl(FieldSelection selection, String alias) {
             super(alias);
-            this.field = field;
+            this.selection = selection;
         }
 
         final
 
         @Override
         public FieldMeta<?> fieldMeta() {
-            final TableField field = this.field;
+            final FieldSelection field = this.selection;
             final FieldMeta<?> fieldMeta;
             if (field instanceof FieldMeta) {
                 fieldMeta = (FieldMeta<?>) field;
@@ -156,18 +158,13 @@ abstract class ArmySelections implements _Selection {
 
         @Override
         public TypeMeta typeMeta() {
-            return this.field;
+            return this.fieldMeta();
         }
 
         @Override
         public void appendSelectItem(final _SqlContext context) {
-            //here couldn't invoke appendSql() of this.field,avoid  visible field.
-            if (this.field instanceof FieldMeta) {
-                context.appendField((FieldMeta<?>) this.field);
-            } else {
-                final QualifiedFieldImpl<?> qualifiedField = (QualifiedFieldImpl<?>) this.field;
-                context.appendField(qualifiedField.tableAlias, qualifiedField.field);
-            }
+            this.appendSql(context);
+
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
                     .append(_Constant.SPACE_AS_SPACE);
@@ -176,52 +173,50 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
+        public void appendSql(final _SqlContext context) {
+
+            final FieldSelection field = this.selection;
+            if (field instanceof FieldMeta) {
+                //here couldn't invoke appendSql() of this.field,avoid  visible field.
+                context.appendField((FieldMeta<?>) this.selection);
+            } else if (field instanceof QualifiedField) {
+                //here couldn't invoke appendSql() of this.field,avoid  visible field.
+                final QualifiedFieldImpl<?> qualifiedField = (QualifiedFieldImpl<?>) this.selection;
+                context.appendField(qualifiedField.tableAlias, qualifiedField.field);
+            } else {
+                ((_SelfDescribed) field).appendSql(context);
+            }
+        }
+
+        @Override
         public Expression underlyingExp() {
-            return this.field;
+            final FieldSelection selection = this.selection;
+            final Expression exp;
+            if (selection instanceof TableField) {
+                exp = (TableField) selection;
+            } else {
+                exp = ((_Selection) selection).underlyingExp();
+            }
+            return exp;
         }
 
         @Override
         public TableField tableField() {
-            return this.field;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.field, this.alias);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof FieldSelectionImpl) {
-                final FieldSelectionImpl selection = (FieldSelectionImpl) obj;
-                match = selection.field.equals(this.field) && selection.alias.equals(this.alias);
+            final FieldSelection selection = this.selection;
+            final TableField field;
+            if (selection instanceof TableField) {
+                field = (TableField) selection;
             } else {
-                match = false;
+                field = ((_Selection) selection).tableField();
             }
-            return match;
+            return field;
         }
 
         @Override
         public String toString() {
-            final StringBuilder builder = new StringBuilder()
-                    .append(_Constant.SPACE);
-
-            final TableField field = this.field;
-
-            if (field instanceof FieldMeta) {
-                builder.append(field.columnName());
-            } else if (field instanceof QualifiedField) {
-                final QualifiedField<?> qualifiedField = (QualifiedField<?>) field;
-                builder.append(qualifiedField.tableAlias())
-                        .append(_Constant.POINT)
-                        .append(field.columnName());
-            } else {
-                throw new IllegalStateException(String.format("field[%s] error", this.field));
-            }
-            return builder.append(_Constant.SPACE_AS_SPACE)
+            return _StringUtils.builder()
+                    .append(this.selection)
+                    .append(_Constant.SPACE_AS_SPACE)
                     .append(this.alias)
                     .toString();
         }
@@ -278,33 +273,42 @@ abstract class ArmySelections implements _Selection {
 
     }//RenameSelection
 
-    private static abstract class SelectionForName extends ArmySelections {
+    private static final class SelectionForName extends ArmySelections {
 
 
-        private SelectionForName(String alias) {
+        private final MappingType type;
+
+        private SelectionForName(String alias, MappingType type) {
             super(alias);
+            this.type = type;
         }
 
 
         @Override
-        public final void appendSelectItem(final _SqlContext context) {
+        public void appendSelectItem(final _SqlContext context) {
             //no-bug ,never here
             throw new UnsupportedOperationException();
 
         }
 
         @Override
-        public final TableField tableField() {
+        public TypeMeta typeMeta() {
+            return this.type;
+        }
+
+
+        @Override
+        public TableField tableField() {
             return null;
         }
 
         @Override
-        public final Expression underlyingExp() {
+        public Expression underlyingExp() {
             return null;
         }
 
         @Override
-        public final String toString() {
+        public String toString() {
             return _StringUtils.builder()
                     .append(_Constant.SPACE)
                     .append(this.alias)
@@ -316,53 +320,6 @@ abstract class ArmySelections implements _Selection {
 
     }//SelectionForName
 
-    private static final class ImmutableSelectionForName extends SelectionForName {
-
-        private final MappingType type;
-
-        private ImmutableSelectionForName(String alias, MappingType type) {
-            super(alias);
-            this.type = type;
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.type;
-        }
-
-
-    }//ImmutableSelectionForName
-
-
-    private static final class DelaySelectionForName extends SelectionForName implements TypeInfer.DelayTypeInfer {
-
-        private final TypeMeta.DelayTypeMeta delay;
-
-        private MappingType type;
-
-        private DelaySelectionForName(String alias, TypeMeta.DelayTypeMeta delay) {
-            super(alias);
-            this.delay = delay;
-            ContextStack.peek().addEndEventListener(this::typeMeta);
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            MappingType type = this.type;
-            if (type == null) {
-                type = this.delay.mappingType();
-                this.type = type;
-            }
-            return type;
-        }
-
-        @Override
-        public boolean isDelay() {
-            return this.type == null && this.delay.isDelay();
-        }
-
-
-    }//DelaySelectionForName
 
     private static final class ColumnFuncSelection extends ArmySelections {
 

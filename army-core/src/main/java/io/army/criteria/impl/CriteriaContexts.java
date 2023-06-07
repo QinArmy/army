@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.VarExpression;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
+import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
@@ -45,19 +46,19 @@ abstract class CriteriaContexts {
      * @param outerBracketContext if non-null,then spec and leftContext both must be null.
      * @param leftContext         if non-null,then spec and outerBracketContext both must be null.
      */
-    static CriteriaContext primaryQueryContext(final @Nullable ArmyStmtSpec spec,
+    static CriteriaContext primaryQueryContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
                                                final @Nullable CriteriaContext outerBracketContext,
                                                final @Nullable CriteriaContext leftContext) {
         final PrimaryQueryContext context;
         if (spec == null) {
             assert !(outerBracketContext != null && leftContext != null);
             assert outerBracketContext == null || outerBracketContext instanceof BracketContext;
-            context = new PrimaryQueryContext(outerBracketContext, leftContext);
+            context = new PrimaryQueryContext(dialect, outerBracketContext, leftContext);
         } else {
             final DispatcherContext dispatcherContext;
             dispatcherContext = (DispatcherContext) spec.getContext();
 
-            context = new PrimaryQueryContext(dispatcherContext.outerContext, dispatcherContext.leftContext);
+            context = new PrimaryQueryContext(dialect, dispatcherContext.outerContext, dispatcherContext.leftContext);
             migrateContext(context, dispatcherContext);
             migrateToQueryContext(context, dispatcherContext);
         }
@@ -69,19 +70,19 @@ abstract class CriteriaContexts {
      * @param outerContext if non-null,then spec must be null.
      * @param leftContext  if non-null,then outerContext must be non-null spec must be null.
      */
-    static CriteriaContext subQueryContext(final @Nullable ArmyStmtSpec spec,
+    static CriteriaContext subQueryContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
                                            final @Nullable CriteriaContext outerContext,
                                            final @Nullable CriteriaContext leftContext) {
         final SubQueryContext context;
         if (spec == null) {
             assert outerContext != null && (leftContext == null || leftContext.getOuterContext() == outerContext);
-            context = new SubQueryContext(outerContext, leftContext);
+            context = new SubQueryContext(dialect, outerContext, leftContext);
         } else {
             assert outerContext == null && leftContext == null;
             final DispatcherContext dispatcherContext;
             dispatcherContext = (DispatcherContext) spec.getContext();
             assert dispatcherContext.outerContext != null;
-            context = new SubQueryContext(dispatcherContext.outerContext, dispatcherContext.leftContext);
+            context = new SubQueryContext(dialect, dispatcherContext.outerContext, dispatcherContext.leftContext);
 
             migrateContext(context, dispatcherContext);
             migrateToQueryContext(context, dispatcherContext);
@@ -91,16 +92,16 @@ abstract class CriteriaContexts {
 
 
     static CriteriaContext bracketContext(final ArmyStmtSpec spec) {
-        final StatementContext migratedContext;
-        migratedContext = (StatementContext) spec.getContext();
+        final StatementContext ctx;
+        ctx = (StatementContext) spec.getContext();
 
         final BracketContext context;
-        if (migratedContext instanceof PrimaryContext) {
-            context = new PrimaryBracketContext(migratedContext.outerContext, migratedContext.getLeftContext());
+        if (ctx instanceof PrimaryContext) {
+            context = new PrimaryBracketContext(ctx.dialect, ctx.outerContext, ctx.getLeftContext());
         } else {
-            context = new SubBracketContext(migratedContext.outerContext, migratedContext.getLeftContext());
+            context = new SubBracketContext(ctx.dialect, ctx.outerContext, ctx.getLeftContext());
         }
-        migrateContext(context, migratedContext);
+        migrateContext(context, ctx);
         return context;
     }
 
@@ -279,14 +280,12 @@ abstract class CriteriaContexts {
         ((JoinableContext) queryContext).fieldsFromSubContext = migrated.fieldsFromSubContext;
 
         queryContext.refWindowNameMap = migrated.refWindowNameMap;
-        queryContext.refSelectionMap = migrated.refSelectionMap;
 
 
         migrated.aliasFieldMap = null;
         migrated.refWindowNameMap = null;
         migrated.fieldsFromSubContext = null;
 
-        migrated.refSelectionMap = null;
         migrated.migrated = true;
 
     }
@@ -400,37 +399,6 @@ abstract class CriteriaContexts {
     }
 
 
-    private static UnknownDerivedFieldException unknownRestDerivedField(CriteriaContext context
-            , Map<String, Map<String, MutableDerivedField>> aliasToRefSelection) {
-        return ContextStack.criteriaError(context, UnknownDerivedFieldException::new,
-                createNotFoundAllDerivedFieldMessage(aliasToRefSelection));
-    }
-
-    private static UnknownDerivedFieldException unknownDerivedFields(CriteriaContext context, Map<String, MutableDerivedField> map) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("Not found derived field[");
-        appendFoundDerivedFieldsMessage(map, builder, 0);
-        builder.append(']');
-        return ContextStack.criteriaError(context, UnknownDerivedFieldException::new,
-                builder.toString());
-    }
-
-    private static UnknownFieldGroupException unknownFieldDerivedGroups(final CriteriaContext currentContext,
-                                                                        final Collection<? extends _SelectionGroup> groupList) {
-        final StringBuilder builder = new StringBuilder()
-                .append("Not found derived table")
-                .append('[');
-        int count = 0;
-        for (_SelectionGroup group : groupList) {
-            if (count > 0) {
-                builder.append(_Constant.SPACE_COMMA);
-            }
-            builder.append(group.tableAlias());
-            count++;
-        }
-        builder.append(']');
-        return ContextStack.criteriaError(currentContext, UnknownFieldGroupException::new, builder.toString());
-    }
 
     private static String createNotFoundAllDerivedFieldMessage(Map<String, Map<String, MutableDerivedField>> aliasToRefSelection) {
         final StringBuilder builder = new StringBuilder()
@@ -518,6 +486,8 @@ abstract class CriteriaContexts {
 
     private static abstract class StatementContext implements CriteriaContext {
 
+        final Dialect dialect;
+
         final StatementContext outerContext;
 
         private Map<String, VarExpression> varMap;
@@ -527,8 +497,20 @@ abstract class CriteriaContexts {
         private WithCteContext withCteContext;
 
 
-        private StatementContext(@Nullable CriteriaContext outerContext) {
+        private StatementContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+            this.dialect = dialect;
             this.outerContext = (StatementContext) outerContext;
+        }
+
+        @Override
+        public final Dialect dialect() {
+            return this.dialect;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final <T> T dialect(Class<T> type) {
+            return (T) this.dialect;
         }
 
         @Override
@@ -637,10 +619,7 @@ abstract class CriteriaContexts {
                     String m = String.format("recursive cte[%s] not end", recursiveCte.name);
                     throw ContextStack.criteriaError(this, m);
                 }
-                final String errorMsg;
-                if ((errorMsg = recursiveCte.onRecursiveCteEnd(cte)) != null) {
-                    throw ContextStack.criteriaError(this, UnknownDerivedFieldException::new, errorMsg);
-                }
+                recursiveCte.onRecursiveCteEnd(cte);
             }
 
             if (cteMap.putIfAbsent(currentName, cte) != null) {
@@ -1075,8 +1054,6 @@ abstract class CriteriaContexts {
 
         private Map<String, _TabularBlock> aliasToBlock;
 
-        private Map<String, Map<String, MutableDerivedField>> aliasToRefDerivedField;
-
         private Map<String, Map<String, DerivedField>> aliasToDerivedField;
 
         /**
@@ -1088,8 +1065,8 @@ abstract class CriteriaContexts {
 
         private boolean refOuter;
 
-        private JoinableContext(@Nullable CriteriaContext outerContext) {
-            super(outerContext);
+        private JoinableContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+            super(dialect, outerContext);
         }
 
 
@@ -1226,10 +1203,7 @@ abstract class CriteriaContexts {
         @Override
         public final void endContextBeforeCommand() {
             assert this instanceof SimpleQueryContext;
-            if (this.aliasToRefDerivedField != null) {
-                String m = String.format("You couldn't reference %s before SELECT clause.", DerivedField.class.getName());
-                throw ContextStack.criteriaError(this, m);
-            } else if (this.aliasToBlock != null
+            if (this.aliasToBlock != null
                     || this.bufferDerivedBlock != null
                     || this.tableBlockList != null
                     || this.aliasFieldMap != null
@@ -1314,11 +1288,11 @@ abstract class CriteriaContexts {
             }
             assert aliasToBlock.size() >= blockSize;// nested items
 
-
-            //5. validate aliasToRefSelection
-            if (this.aliasToRefDerivedField != null) {
-                this.validateDerivedFieldMap();
+            //5 end SimpleQueryContext ,possibly trigger defer SELECT clause.
+            if (this instanceof SimpleQueryContext) {
+                ((SimpleQueryContext) this).endQueryContext();
             }
+
 
             //6. validate QualifiedField map
             if (this.aliasFieldMap != null) {
@@ -1337,10 +1311,6 @@ abstract class CriteriaContexts {
                 this.aliasToDerivedField = null;//clear
             }
 
-            // end SimpleQueryContext
-            if (this instanceof SimpleQueryContext) {
-                ((SimpleQueryContext) this).endQueryContext();
-            }
             return blockList;
         }
 
@@ -1349,22 +1319,22 @@ abstract class CriteriaContexts {
             if (derivedAlis == null) {
                 throw ContextStack.nullPointer(this);
             }
+            // first flush buffer
             this.flushBufferDerivedBlock();
 
             final Map<String, _TabularBlock> blockMap = this.aliasToBlock;
-            if (blockMap == null) {
-                throw ContextStack.nullPointer(this);
-            }
+
+            final TabularItem item;
             final _TabularBlock block;
-            block = blockMap.get(derivedAlis);
 
             final _SelectionMap selectionMap;
-            final TabularItem item;
-            if (block == null) {
+            if (blockMap == null || (block = blockMap.get(derivedAlis)) == null) {
                 selectionMap = null;
+            } else if ((item = block.tableItem()) instanceof _Cte) {
+                selectionMap = (_SelectionMap) item;
             } else if (block instanceof _SelectionMap) {
                 selectionMap = (_SelectionMap) block;
-            } else if ((item = block.tableItem()) instanceof _SelectionMap) {
+            } else if (item instanceof _SelectionMap) {
                 selectionMap = (_SelectionMap) item;
             } else {
                 String m = String.format("error,'%s' isn't derived table alias or cte alias", derivedAlis);
@@ -1375,7 +1345,7 @@ abstract class CriteriaContexts {
 
 
         /**
-         * @see #refThis(String, String)
+         * @see JoinableContext#refThis(String, String)
          */
         private DerivedField createDerivedField(final String derivedAlias, final String selectionAlias) {
             //1. flush buffer _DerivedBlock
@@ -1395,7 +1365,7 @@ abstract class CriteriaContexts {
                 throw ContextStack.castCriteriaApi(this);
             } else if ((block = aliasToBlock.get(derivedAlias)) == null) {
                 selectionMap = null;
-            } else if ((tabularItem = block.tableItem()) instanceof RecursiveCte) {
+            } else if ((tabularItem = block.tableItem()) instanceof _Cte) {
                 selectionMap = (_SelectionMap) tabularItem;
             } else if (block instanceof _SelectionMap) {
                 selectionMap = (_SelectionMap) block;
@@ -1425,44 +1395,15 @@ abstract class CriteriaContexts {
                         if (selection == null) {
                             throw invalidRef(this, derivedAlias, fieldNameKey);
                         }
-                        return new ImmutableDerivedField(derivedAlias, selection);
+                        final DerivedField field;
+                        if (selection instanceof FieldSelection) { // for codec field
+                            field = new FieldSelectionField(derivedAlias, (FieldSelection) selection);
+                        } else {
+                            field = new ImmutableDerivedField(derivedAlias, selection);
+                        }
+                        return field;
                     });
 
-        }
-
-        /**
-         * @see #onEndContext()
-         */
-        private void validateDerivedFieldMap() {
-            final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
-            final Map<String, Map<String, MutableDerivedField>> aliasToRefDerivedField = this.aliasToRefDerivedField;
-            assert aliasToRefDerivedField != null;
-            if (aliasToBlock == null) {
-                throw unknownRestDerivedField(this, aliasToRefDerivedField);
-            }
-
-            _TabularBlock block;
-            TabularItem tabularItem;
-            Map<String, MutableDerivedField> refFieldMap;
-            for (String itemAlias : aliasToRefDerivedField.keySet()) {
-                block = aliasToBlock.get(itemAlias);
-                if (block == null) {
-                    throw unknownDerivedFields(this, aliasToRefDerivedField.get(itemAlias));
-                }
-                tabularItem = block.tableItem();
-                if (!(tabularItem instanceof RecursiveCte)) {
-                    continue;
-                }
-                refFieldMap = aliasToRefDerivedField.remove(itemAlias);
-                if (refFieldMap != null && refFieldMap.size() > 0) {
-                    ((RecursiveCte) tabularItem).addRefFields(refFieldMap.values());
-                }
-            }
-
-            if (aliasToRefDerivedField.size() > 0) {
-                throw unknownRestDerivedField(this, aliasToRefDerivedField);
-            }
-            this.aliasToRefDerivedField = null;//clear
         }
 
 
@@ -1649,32 +1590,19 @@ abstract class CriteriaContexts {
          * @see #addNestedItems(_NestedItems)
          */
         private void onAddDerived(final _TabularBlock block, final _SelectionMap derivedTable, final String alias) {
-            if (derivedTable instanceof DerivedTable && derivedTable instanceof CriteriaContextSpec) {
-                final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getContext();
-                if (context.getOuterContext() != this) {
-                    String m = String.format("%s[%s] context not match.", DerivedTable.class.getSimpleName(), alias);
-                    throw ContextStack.criteriaError(this, CriteriaException::new, m);
-                } else if (context instanceof JoinableContext
-                        && ((JoinableContext) context).refOuter
-                        && (!(block instanceof _ModifierTabularBlock) || ((_ModifierTabularBlock) block).modifier() != SQLs.LATERAL)) {
-                    String m = String.format("DerivedTable[%s] isn't LATERAL,couldn't reference outer field.", alias);
-                    throw ContextStack.criteriaError(this, NonLateralException::new, m);
-                }
+            if (!(derivedTable instanceof DerivedTable && derivedTable instanceof CriteriaContextSpec)) {
+                return;
             }
-            final Map<String, Map<String, MutableDerivedField>> aliasToRefSelection = this.aliasToRefDerivedField;
-            if (aliasToRefSelection != null) {
-                final Map<String, MutableDerivedField> fieldMap;
-                fieldMap = aliasToRefSelection.remove(alias);
-                if (fieldMap != null) {
-                    if (block instanceof _SelectionMap) {
-                        this.finishRefSelections((_SelectionMap) block, alias, fieldMap);
-                    } else {
-                        this.finishRefSelections(derivedTable, alias, fieldMap);
-                    }
-                    fieldMap.clear();
-                }
+            final CriteriaContext context = ((CriteriaContextSpec) derivedTable).getContext();
+            if (context.getOuterContext() != this) {
+                String m = String.format("%s[%s] context not match.", DerivedTable.class.getSimpleName(), alias);
+                throw ContextStack.criteriaError(this, CriteriaException::new, m);
+            } else if (context instanceof JoinableContext
+                    && ((JoinableContext) context).refOuter
+                    && (!(block instanceof _ModifierTabularBlock) || ((_ModifierTabularBlock) block).modifier() != SQLs.LATERAL)) {
+                String m = String.format("DerivedTable[%s] isn't LATERAL,couldn't reference outer field.", alias);
+                throw ContextStack.criteriaError(this, NonLateralException::new, m);
             }
-
 
         }
 
@@ -1781,8 +1709,8 @@ abstract class CriteriaContexts {
 
         private Map<String, FieldMeta<?>> columnMap;
 
-        private InsertContext(@Nullable CriteriaContext outerContext) {
-            super(outerContext);
+        private InsertContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+            super(dialect, outerContext);
         }
 
 
@@ -1932,8 +1860,8 @@ abstract class CriteriaContexts {
         /**
          * @see #primaryInsertContext(ArmyStmtSpec)
          */
-        private PrimaryInsertContext() {
-            super(null);
+        private PrimaryInsertContext(Dialect dialect) {
+            super(dialect, null);
         }
 
 
@@ -1945,8 +1873,8 @@ abstract class CriteriaContexts {
      */
     private static final class SubInsertContext extends InsertContext implements SubContext {
 
-        private SubInsertContext(CriteriaContext outerContext) {
-            super(outerContext);
+        private SubInsertContext(Dialect dialect, CriteriaContext outerContext) {
+            super(dialect, outerContext);
         }
 
     }//SubInsertContext
@@ -1958,8 +1886,8 @@ abstract class CriteriaContexts {
 
         private String tableAlias;
 
-        private SingleDmlContext(@Nullable CriteriaContext outerContext) {
-            super(outerContext);
+        private SingleDmlContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+            super(dialect, outerContext);
         }
 
         @Override
@@ -1992,8 +1920,8 @@ abstract class CriteriaContexts {
      */
     private static final class PrimarySingleDmlContext extends SingleDmlContext implements PrimaryContext {
 
-        private PrimarySingleDmlContext(@Nullable PrimaryDispatcherContext outerContext) {
-            super(outerContext);
+        private PrimarySingleDmlContext(Dialect dialect, @Nullable PrimaryDispatcherContext outerContext) {
+            super(dialect, outerContext);
         }
 
     }//PrimarySingleDmlContext
@@ -2007,8 +1935,8 @@ abstract class CriteriaContexts {
      */
     private static abstract class MultiDmlContext extends JoinableContext {
 
-        private MultiDmlContext(@Nullable CriteriaContext outerContext) {
-            super(outerContext);
+        private MultiDmlContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+            super(dialect, outerContext);
         }
 
 
@@ -2016,8 +1944,8 @@ abstract class CriteriaContexts {
 
     private static final class PrimaryMultiDmlContext extends MultiDmlContext implements PrimaryContext {
 
-        private PrimaryMultiDmlContext() {
-            super(null);
+        private PrimaryMultiDmlContext(Dialect dialect) {
+            super(dialect, null);
         }
 
     }//PrimaryMultiDmlContext
@@ -2029,8 +1957,8 @@ abstract class CriteriaContexts {
 
         private String tableAlias;
 
-        private JoinableSingleDmlContext(@Nullable CriteriaContext outerContext) {
-            super(outerContext);
+        private JoinableSingleDmlContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+            super(dialect, outerContext);
         }
 
         @Override
@@ -2053,8 +1981,8 @@ abstract class CriteriaContexts {
     private static final class PrimaryJoinableSingleDmlContext extends JoinableSingleDmlContext
             implements PrimaryContext {
 
-        private PrimaryJoinableSingleDmlContext() {
-            super(null);
+        private PrimaryJoinableSingleDmlContext(Dialect dialect) {
+            super(dialect, null);
         }
 
     }//PrimaryJoinableSingleDmlContext
@@ -2062,8 +1990,9 @@ abstract class CriteriaContexts {
     private static final class SubJoinableSingleDmlContext extends JoinableSingleDmlContext
             implements SubContext {
 
-        private SubJoinableSingleDmlContext(CriteriaContext outerContext) {
-            super(outerContext);
+        private SubJoinableSingleDmlContext(Dialect dialect, CriteriaContext outerContext) {
+            super(dialect, outerContext);
+            Objects.requireNonNull(outerContext);
         }
 
     }//SubJoinableSingleDmlContext
@@ -2102,16 +2031,14 @@ abstract class CriteriaContexts {
 
         private Runnable selectClauseEndListener;
 
-        private boolean orderByStart;
-
         /**
          * @see #callDeferSelectClauseIfNeed()
          */
         private boolean deferSelectClauseIng;
 
-        private SimpleQueryContext(final @Nullable CriteriaContext outerContext,
+        private SimpleQueryContext(Dialect dialect, final @Nullable CriteriaContext outerContext,
                                    final @Nullable CriteriaContext leftContext) {
-            super(outerContext);
+            super(dialect, outerContext);
             this.leftContext = (StatementContext) leftContext;
             assert leftContext == null || this.leftContext.outerContext == outerContext;
         }
@@ -2370,7 +2297,7 @@ abstract class CriteriaContexts {
             if (selectItemSize == 1 && (selectItem = selectItemList.get(0)) instanceof Selection) {
                 selectionList = Collections.singletonList((Selection) selectItem);
             } else {
-                selectionList = new ArrayList<>(selectItemSize);
+                selectionList = _Collections.arrayList(selectItemSize);
 
                 for (int i = 0; i < selectItemSize; i++) {
                     selectItem = selectItemList.get(i);
@@ -2381,7 +2308,7 @@ abstract class CriteriaContexts {
                     }
                 }//for
 
-                selectionList = Collections.unmodifiableList(selectionList);
+                selectionList = _Collections.unmodifiableList(selectionList);
 
             }// else
             this.flatSelectionList = selectionList;
@@ -2446,27 +2373,20 @@ abstract class CriteriaContexts {
             if (leftContext != null) {
                 selectionMap = leftContext.refNonRecursivePart(cte);
             } else if (cte.sourceContext == this) {
-                if (outerContext == cte.topContextOfCte) {
+                if (outerContext == cte.topContextOfCte || !this.hasOuterLeftContext(cte.topContextOfCte)) {
                     throw notExistsNonRecursivePart(cte.name);
                 }
                 selectionMap = outerContext.refNonRecursivePart(cte);
             } else if (outerContext == cte.topContextOfCte) {
-                selectionMap = new _SelectionMap() {
-                    @Override
-                    public Selection refSelection(String name) {
-                        return SimpleQueryContext.this.selection(name);
-                    }
-
-                    @Override
-                    public List<? extends Selection> refAllSelection() {
-                        return SimpleQueryContext.this.flatSelectItems();
-                    }
-                };
-            } else {
+                selectionMap = this.createNonRecursiveSelectionMap();
+            } else if (this.hasOuterLeftContext(cte.topContextOfCte)) {
                 selectionMap = outerContext.refNonRecursivePart(cte);
+            } else {
+                selectionMap = this.createNonRecursiveSelectionMap();
             }
             return selectionMap;
         }
+
 
         private void onAddTable(final TableMeta<?> table, final String alias) {
             final Map<String, _SelectionGroup> groupMap = this.selectionGroupMap;
@@ -2484,13 +2404,47 @@ abstract class CriteriaContexts {
 
         }
 
+        /**
+         * @see SimpleQueryContext#recursiveNoNonRecursivePart(CriteriaContext, RecursiveCte)
+         */
+        private boolean hasOuterLeftContext(final CriteriaContext topContext) {
+            StatementContext temp = this.outerContext;
+            boolean enable = false;
+            while (temp != null && temp != topContext) {
+                if (temp.getLeftContext() != null) {
+                    enable = true;
+                    break;
+                }
+                temp = temp.outerContext;
+            }
+            return enable;
+        }
+
+        /**
+         * @see SimpleQueryContext#recursiveNoNonRecursivePart(CriteriaContext, RecursiveCte)
+         */
+        private _SelectionMap createNonRecursiveSelectionMap() {
+            return new _SelectionMap() {
+                @Override
+                public Selection refSelection(String name) {
+                    return SimpleQueryContext.this.selection(name);
+                }
+
+                @Override
+                public List<? extends Selection> refAllSelection() {
+                    return SimpleQueryContext.this.flatSelectItems();
+                }
+            };
+
+        }
+
 
         /**
          * select statement end event handler.
          * This method is triggered by {@link #onEndContext()}
          */
         private void endQueryContext() {
-
+            // firstly
             this.callDeferSelectClauseIfNeed();
 
             //validate DerivedGroup list
@@ -2505,6 +2459,9 @@ abstract class CriteriaContexts {
             }
 
             this.endSelectClauseIfNeed();
+
+            final List<_SelectItem> selectItemList = this.selectItemList;
+            assert selectItemList != null && selectItemList.size() > 0;
 
             this.selectionGroupMap = null;
             this.refWindowNameMap = null;
@@ -2542,18 +2499,17 @@ abstract class CriteriaContexts {
          * @see #refSelection(String)
          * @see #onAddBlock(_TabularBlock)
          * @see #addTableBlock(_TabularBlock)
-         * @see #callDeferSelectClauseIfNeed()
          */
         @SuppressWarnings("unchecked")
         private void endSelectClauseIfNeed() {
             final List<_SelectItem> selectItemList = this.selectItemList;
             if ((selectItemList != null && !(selectItemList instanceof ArrayList))
-                    || (selectItemList == null && this.deferSelectClause != null)) {
+                    || (selectItemList == null && this.deferSelectClause != null)
+                    || this.deferSelectClauseIng) {
                 // have ended or defer select clause not run
                 return;
             }
 
-            assert !this.deferSelectClauseIng;
 
             final int selectItemSize;
             if (!(selectItemList != null && (selectItemSize = selectItemList.size()) > 0)) {
@@ -2683,10 +2639,10 @@ abstract class CriteriaContexts {
 
 
         /**
-         * @see #primaryQueryContext(ArmyStmtSpec, CriteriaContext, CriteriaContext)
+         * @see #primaryQueryContext(Dialect, ArmyStmtSpec, CriteriaContext, CriteriaContext)
          */
-        private PrimaryQueryContext(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
-            super(outerContext, leftContext);
+        private PrimaryQueryContext(Dialect dialect, @Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
+            super(dialect, outerContext, leftContext);
         }
 
 
@@ -2698,10 +2654,10 @@ abstract class CriteriaContexts {
 
 
         /**
-         * @see #subQueryContext(ArmyStmtSpec, CriteriaContext, CriteriaContext)
+         * @see #subQueryContext(Dialect, ArmyStmtSpec, CriteriaContext, CriteriaContext)
          */
-        SubQueryContext(CriteriaContext outerContext, final @Nullable CriteriaContext leftContext) {
-            super(outerContext, leftContext);
+        SubQueryContext(Dialect dialect, CriteriaContext outerContext, final @Nullable CriteriaContext leftContext) {
+            super(dialect, outerContext, leftContext);
             Objects.requireNonNull(outerContext);
         }
 
@@ -2716,9 +2672,9 @@ abstract class CriteriaContexts {
         private CriteriaContext innerContext;
 
 
-        private BracketContext(final @Nullable CriteriaContext outerContext,
+        private BracketContext(Dialect dialect, final @Nullable CriteriaContext outerContext,
                                final @Nullable CriteriaContext leftContext) {
-            super(outerContext);
+            super(dialect, outerContext);
             this.leftContext = (StatementContext) leftContext;
         }
 
@@ -2825,8 +2781,9 @@ abstract class CriteriaContexts {
         /**
          * @see #bracketContext(ArmyStmtSpec)
          */
-        private PrimaryBracketContext(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
-            super(outerContext, leftContext);
+        private PrimaryBracketContext(Dialect dialect, @Nullable CriteriaContext outerContext,
+                                      @Nullable CriteriaContext leftContext) {
+            super(dialect, outerContext, leftContext);
         }
 
     }//PrimaryBracketContext
@@ -2837,8 +2794,8 @@ abstract class CriteriaContexts {
         /**
          * @see #bracketContext(ArmyStmtSpec)
          */
-        private SubBracketContext(CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
-            super(outerContext, leftContext);
+        private SubBracketContext(Dialect dialect, CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
+            super(dialect, outerContext, leftContext);
         }
 
     }//SubBracketContext
@@ -2860,8 +2817,8 @@ abstract class CriteriaContexts {
          */
         private Map<String, ImmutableNameRefSelection> refSelectionMap;
 
-        private ValuesContext(@Nullable CriteriaContext outerContext) {
-            super(outerContext);
+        private ValuesContext(Dialect dialect, @Nullable CriteriaContext outerContext) {
+            super(dialect, outerContext);
         }
 
 
@@ -2897,8 +2854,8 @@ abstract class CriteriaContexts {
 
     private static final class OtherPrimaryContext extends StatementContext {
 
-        private OtherPrimaryContext() {
-            super(null);
+        private OtherPrimaryContext(Dialect dialect) {
+            super(dialect, null);
         }
 
 
@@ -2924,11 +2881,6 @@ abstract class CriteriaContexts {
          */
         private List<QualifiedField<?>> fieldsFromSubContext;
 
-        /**
-         * @see #migrateToQueryContext(SimpleQueryContext, DispatcherContext)
-         */
-        private Map<Object, SelectionReference> refSelectionMap;
-
         private boolean refOuter;
 
         private boolean migrated;
@@ -2936,8 +2888,10 @@ abstract class CriteriaContexts {
         /**
          * @see #dispatcherContext(CriteriaContext, CriteriaContext)
          */
-        private DispatcherContext(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
-            super(outerContext);
+        private DispatcherContext(Dialect dialect, @Nullable CriteriaContext outerContext,
+                                  @Nullable CriteriaContext leftContext) {
+            super(dialect, outerContext);
+            assert leftContext == null || leftContext.getOuterContext() == outerContext;
             this.leftContext = leftContext;
         }
 
@@ -2965,7 +2919,7 @@ abstract class CriteriaContexts {
                 fieldMap = _Collections.hashMap();
                 this.aliasFieldMap = fieldMap;
             }
-            return (QualifiedField<T>) fieldMap.computeIfAbsent(tableAlias, k -> new HashMap<>())
+            return (QualifiedField<T>) fieldMap.computeIfAbsent(tableAlias, _Collections::hashMapIgnoreKey)
                     .computeIfAbsent(field, k -> QualifiedFieldImpl.create(tableAlias, k));
         }
 
@@ -3024,18 +2978,7 @@ abstract class CriteriaContexts {
             } else if (selectionAlias == null) {
                 throw ContextStack.nullPointer(this);
             }
-            Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
-            if (refSelectionMap == null) {
-                refSelectionMap = _Collections.hashMap();
-                this.refSelectionMap = refSelectionMap;
-            }
-            SelectionReference refSelection;
-            refSelection = refSelectionMap.get(selectionAlias);
-            if (refSelection == null) {
-                refSelection = new MutableNameRefSelection(selectionAlias);
-                refSelectionMap.put(selectionAlias, refSelection);
-            }
-            return refSelection;
+            throw invokeRefSelectionInSelectionClause(this);
         }
 
         /**
@@ -3048,18 +2991,7 @@ abstract class CriteriaContexts {
             } else if (selectionOrdinal < 1) {
                 throw CriteriaUtils.unknownSelection(this, selectionOrdinal);
             }
-            Map<Object, SelectionReference> refSelectionMap = this.refSelectionMap;
-            if (refSelectionMap == null) {
-                refSelectionMap = _Collections.hashMap();
-                this.refSelectionMap = refSelectionMap;
-            }
-            SelectionReference refSelection;
-            refSelection = refSelectionMap.get(selectionOrdinal);
-            if (refSelection == null) {
-                refSelection = new MutableOrdinalRefSelection(selectionOrdinal);
-                refSelectionMap.put(selectionOrdinal, refSelection);
-            }
-            return refSelection;
+            throw invokeRefSelectionInSelectionClause(this);
         }
 
         @Override
@@ -3071,7 +3003,7 @@ abstract class CriteriaContexts {
             }
             List<QualifiedField<?>> list = this.fieldsFromSubContext;
             if (list == null) {
-                list = new ArrayList<>();
+                list = _Collections.arrayList();
                 this.fieldsFromSubContext = list;
             }
             list.add(field);
@@ -3084,8 +3016,9 @@ abstract class CriteriaContexts {
     private static final class SubDispatcherContext extends DispatcherContext
             implements SubContext {
 
-        private SubDispatcherContext(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
-            super(outerContext, leftContext);
+        private SubDispatcherContext(Dialect dialect, @Nullable CriteriaContext outerContext,
+                                     @Nullable CriteriaContext leftContext) {
+            super(dialect, outerContext, leftContext);
         }
 
 
@@ -3098,8 +3031,8 @@ abstract class CriteriaContexts {
         /**
          * @see #dispatcherContext(CriteriaContext, CriteriaContext)
          */
-        private PrimaryDispatcherContext(@Nullable CriteriaContext leftContext) {
-            super(null, leftContext);
+        private PrimaryDispatcherContext(Dialect dialect, @Nullable CriteriaContext leftContext) {
+            super(dialect, null, leftContext);
         }
 
 
@@ -3129,7 +3062,7 @@ abstract class CriteriaContexts {
 
         @Override
         public final Expression underlyingExp() {
-            return this;
+            return ((_Selection) this.selection).underlyingExp();
         }
 
         @Override
@@ -3179,25 +3112,6 @@ abstract class CriteriaContexts {
 
         }
 
-        @Override
-        public final int hashCode() {
-            return Objects.hash(this.tableName, this.selection);
-        }
-
-        @Override
-        public final boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof ImmutableDerivedField) {
-                final ImmutableDerivedField o = (ImmutableDerivedField) obj;
-                match = o.tableName.equals(this.tableName)
-                        && o.selection.equals(this.selection);
-            } else {
-                match = false;
-            }
-            return match;
-        }
 
         @Override
         public final String toString() {
@@ -3210,6 +3124,28 @@ abstract class CriteriaContexts {
         }
 
     }//ImmutableDerivedField
+
+
+    /**
+     * <p>
+     * This class is designed for codec field.
+     * </p>
+     *
+     * @since 1.0
+     */
+    private static final class FieldSelectionField extends ImmutableDerivedField implements FieldSelection {
+
+        private FieldSelectionField(String tableName, FieldSelection selection) {
+            super(tableName, selection);
+        }
+
+        @Override
+        public FieldMeta<?> fieldMeta() {
+            return ((FieldSelection) this.selection).fieldMeta();
+        }
+
+
+    }//FieldSelectionField
 
 
     private static final class MutableDerivedField extends OperationDataField
@@ -3625,65 +3561,16 @@ abstract class CriteriaContexts {
                     .toString();
         }
 
-        /**
-         * @see JoinableContext#validateDerivedFieldMap()
-         */
-        private void addRefFields(final Collection<MutableDerivedField> refFields) {
-
-            List<MutableDerivedField> refFieldList = this.refFieldList;
-            if (refFieldList == null) {
-                refFieldList = _Collections.arrayList(refFields.size());
-                this.refFieldList = refFieldList;
-            }
-            refFieldList.addAll(refFields);
-
-        }
-
 
         /**
          * @return not found derived field message
          * @see StatementContext#onAddCte(_Cte)
          */
         @Nullable
-        private String onRecursiveCteEnd(final _Cte cte) {
+        private void onRecursiveCteEnd(final _Cte cte) {
             assert this.actualCte == null;
             assert cte.name().equals(this.name);
             this.actualCte = cte;
-
-
-            final List<MutableDerivedField> refFieldList = this.refFieldList;
-            if (refFieldList == null) {
-                return null;
-            }
-
-            Selection selection;
-            StringBuilder builder = null;
-            for (MutableDerivedField field : refFieldList) {
-                selection = cte.refSelection(field.fieldName);
-                if (selection != null) {
-                    assert field.targetSelection == null;
-                    field.targetSelection = selection;
-                    continue;
-                }
-
-                if (builder == null) {
-                    builder = new StringBuilder();
-                    builder.append("unknown derived fields[").append(field);
-                } else {
-                    builder.append(_Constant.SPACE_COMMA_SPACE)
-                            .append(field);
-                }
-            }
-
-            this.refFieldList = null;
-
-            final String errorMsg;
-            if (builder == null) {
-                errorMsg = null;
-            } else {
-                errorMsg = builder.append(']').toString();
-            }
-            return errorMsg;
         }
 
 

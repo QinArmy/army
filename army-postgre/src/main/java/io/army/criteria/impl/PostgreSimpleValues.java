@@ -43,7 +43,7 @@ abstract class PostgreSimpleValues<I extends Item> extends SimpleValues.WithSimp
      * </p>
      */
     static PostgreValues._WithSpec<Values> simpleValues() {
-        return new SimplePrimaryValues<>(null, null, SQLs::_identity);
+        return new SimplePrimaryValues<>(null, null, SQLs::identity);
     }
 
     /**

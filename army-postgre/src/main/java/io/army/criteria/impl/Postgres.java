@@ -199,7 +199,7 @@ public abstract class Postgres extends PostgreSyntax {
      * </p>
      */
     public static PostgreQuery._WithSpec<SubQuery> subQuery() {
-        return PostgreQueries.subQuery(ContextStack.peek(), SQLs::_identity);
+        return PostgreQueries.subQuery(ContextStack.peek(), SQLs::identity);
     }
 
     /**
@@ -252,7 +252,7 @@ public abstract class Postgres extends PostgreSyntax {
     }
 
     public static PostgreValues._WithSpec<SubValues> subValues() {
-        return PostgreSimpleValues.subValues(ContextStack.peek(), SQLs::_identity);
+        return PostgreSimpleValues.subValues(ContextStack.peek(), SQLs::identity);
     }
 
     public interface _XmlNamedElementClause {

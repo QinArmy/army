@@ -6,6 +6,7 @@ import io.army.criteria.impl.inner._AliasDerivedBlock;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SelectItem;
 import io.army.criteria.impl.inner._TabularBlock;
+import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -16,15 +17,19 @@ import java.util.function.Function;
 
 interface CriteriaContext {
 
-    @Nullable
-    CriteriaContext getOuterContext();
+ Dialect dialect();
 
-    CriteriaContext getNonNullOuterContext();
+ <T> T dialect(Class<T> type);
 
-    @Nullable
-    CriteriaContext getLeftContext();
+ @Nullable
+ CriteriaContext getOuterContext();
 
-    CriteriaContext getNonNullLeftContext();
+ CriteriaContext getNonNullOuterContext();
+
+ @Nullable
+ CriteriaContext getLeftContext();
+
+ CriteriaContext getNonNullLeftContext();
 
     void onBeforeWithClause(boolean recursive);
 
