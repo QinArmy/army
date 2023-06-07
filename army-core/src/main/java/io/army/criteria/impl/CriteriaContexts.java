@@ -334,6 +334,12 @@ abstract class CriteriaContexts {
 
     }
 
+    private static NotExistsNonRecursiveException notExistsNonRecursivePart(String cteName) {
+        String m = String.format("couldn't reference recursive cte[%s],because not exists non-recursive part.",
+                cteName);
+        return new NotExistsNonRecursiveException(m);
+    }
+
     /**
      * @see JoinableContext#validateQualifiedFieldMap()
      * @see StatementContext#validateFieldFromSubContext(QualifiedField)
@@ -959,7 +965,7 @@ abstract class CriteriaContexts {
          * <li>else fieldName is unknown.</li>
          * </ul>
          */
-        final int indexOfField(final String cteName, final String fieldName) {
+        final int indexOfCteField(final String cteName, final String fieldName) {
             final WithCteContext withContext = this.withCteContext;
             if (withContext == null || !cteName.equals(withContext.currentName)) {
                 // no bug,never here
@@ -984,11 +990,8 @@ abstract class CriteriaContexts {
             return index;
         }
 
-        /**
-         * @param topContextOfCte the top context of recursive cte.
-         * @param cteName         the name of recursive cte.
-         */
-        _SelectionMap refNonRecursivePart(CriteriaContext topContextOfCte, String cteName) {
+
+        _SelectionMap refNonRecursivePart(RecursiveCte cte) {
             // no bug,never here
             throw new UnsupportedOperationException();
         }
@@ -1393,7 +1396,7 @@ abstract class CriteriaContexts {
             } else if ((block = aliasToBlock.get(derivedAlias)) == null) {
                 selectionMap = null;
             } else if ((tabularItem = block.tableItem()) instanceof RecursiveCte) {
-                selectionMap = ((RecursiveCte) tabularItem).nonRecursivePart;
+                selectionMap = (_SelectionMap) tabularItem;
             } else if (block instanceof _SelectionMap) {
                 selectionMap = (_SelectionMap) block;
             } else if (tabularItem instanceof _SelectionMap) {
@@ -2427,16 +2430,27 @@ abstract class CriteriaContexts {
             refWindowNameMap.putIfAbsent(windowName, Boolean.TRUE);
         }
 
+
+        /**
+         * @see RecursiveCte#RecursiveCte(CriteriaContext, String, CriteriaContext)
+         * @see BracketContext#refNonRecursivePart(RecursiveCte)
+         */
         @Override
-        final _SelectionMap refNonRecursivePart(final CriteriaContext topContextOfCte, final String cteName) {
+        final _SelectionMap refNonRecursivePart(final RecursiveCte cte) {
             if (!this.isSelectClauseEnd()) {
                 throw ContextStack.castCriteriaApi(this);
             }
             final StatementContext outerContext = this.outerContext, leftContext = this.leftContext;
+            assert outerContext != null; // fail ,bug
             final _SelectionMap selectionMap;
             if (leftContext != null) {
-                selectionMap = leftContext.refNonRecursivePart(topContextOfCte, cteName);
-            } else if (outerContext == topContextOfCte) {
+                selectionMap = leftContext.refNonRecursivePart(cte);
+            } else if (cte.sourceContext == this) {
+                if (outerContext == cte.topContextOfCte) {
+                    throw notExistsNonRecursivePart(cte.name);
+                }
+                selectionMap = outerContext.refNonRecursivePart(cte);
+            } else if (outerContext == cte.topContextOfCte) {
                 selectionMap = new _SelectionMap() {
                     @Override
                     public Selection refSelection(String name) {
@@ -2449,11 +2463,9 @@ abstract class CriteriaContexts {
                     }
                 };
             } else {
-                assert outerContext != null;
-                outerContext.refNonRecursivePart(topContextOfCte, cteName);
+                selectionMap = outerContext.refNonRecursivePart(cte);
             }
-
-            return super.refNonRecursivePart(topContextOfCte, cteName);
+            return selectionMap;
         }
 
         private void onAddTable(final TableMeta<?> table, final String alias) {
@@ -2699,7 +2711,7 @@ abstract class CriteriaContexts {
 
     private static abstract class BracketContext extends StatementContext {
 
-        private final CriteriaContext leftContext;
+        private final StatementContext leftContext;
 
         private CriteriaContext innerContext;
 
@@ -2707,7 +2719,7 @@ abstract class CriteriaContexts {
         private BracketContext(final @Nullable CriteriaContext outerContext,
                                final @Nullable CriteriaContext leftContext) {
             super(outerContext);
-            this.leftContext = leftContext;
+            this.leftContext = (StatementContext) leftContext;
         }
 
         @Override
@@ -2770,6 +2782,29 @@ abstract class CriteriaContexts {
                 throw unknownQualifiedField(null, field);
             }
             outerContext.validateFieldFromSubContext(field);
+        }
+
+
+        /**
+         * @see RecursiveCte#RecursiveCte(CriteriaContext, String, CriteriaContext)
+         * @see SimpleQueryContext#refNonRecursivePart(RecursiveCte)
+         */
+        @Override
+        final _SelectionMap refNonRecursivePart(final RecursiveCte cte) {
+            final StatementContext outerContext = this.outerContext, leftContext = this.leftContext;
+            final CriteriaContext innerContext = this.innerContext;
+            assert outerContext != null; // fail ,bug
+            final _SelectionMap selectionMap;
+            if (leftContext != null) {
+                selectionMap = leftContext.refNonRecursivePart(cte);
+            } else if (outerContext != cte.topContextOfCte) {
+                selectionMap = outerContext.refNonRecursivePart(cte);
+            } else if (innerContext == null) {
+                throw notExistsNonRecursivePart(cte.name);
+            } else {
+                selectionMap = ((StatementContext) innerContext).refNonRecursivePart(cte);
+            }
+            return selectionMap;
         }
 
         @Override
@@ -3493,7 +3528,7 @@ abstract class CriteriaContexts {
 
     static final class RecursiveCte implements _Cte {
 
-        private final CriteriaContext topContextOfCte;
+        private final StatementContext topContextOfCte;
 
         private final String name;
 
@@ -3504,6 +3539,7 @@ abstract class CriteriaContexts {
 
         /**
          * this instance must be anonymous class.
+         * see {@link SimpleQueryContext#refNonRecursivePart(RecursiveCte)}
          */
         private final _SelectionMap nonRecursivePart;
 
@@ -3516,12 +3552,13 @@ abstract class CriteriaContexts {
 
         /**
          * @see StatementContext#refCte(String)
+         * @see StatementContext#doRefCte(CriteriaContext, String)
          */
         private RecursiveCte(CriteriaContext topContextOfCte, String name, CriteriaContext sourceContext) {
-            this.topContextOfCte = topContextOfCte;
+            this.topContextOfCte = (StatementContext) topContextOfCte;
             this.name = name;
             this.sourceContext = sourceContext;
-            this.nonRecursivePart = ((StatementContext) sourceContext).refNonRecursivePart(topContextOfCte, name);
+            this.nonRecursivePart = ((StatementContext) sourceContext).refNonRecursivePart(this);
         }
 
         @Override
@@ -3544,17 +3581,36 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public Selection refSelection(String name) {
+        public Selection refSelection(final String name) {
             final _Cte actual = this.actualCte;
-            assert actual != null;
-            return actual.refSelection(name);
+            final Selection selection;
+            final int index;
+            final List<? extends Selection> selectionList;
+            if (actual != null) {
+                selection = actual.refSelection(name);
+            } else if ((index = this.topContextOfCte.indexOfCteField(this.name, name)) == Integer.MIN_VALUE) {
+                selection = this.nonRecursivePart.refSelection(name);
+            } else if (index < 0) {
+                selection = null;
+            } else if (index >= (selectionList = this.nonRecursivePart.refAllSelection()).size()) {
+                String m = String.format("cte[%s] column alias count and query selection count not match.", this.name);
+                throw ContextStack.criteriaError(this.sourceContext, m);
+            } else {
+                selection = selectionList.get(index);
+            }
+            return selection;
         }
 
         @Override
         public List<? extends Selection> refAllSelection() {
             final _Cte actual = this.actualCte;
-            assert actual != null;
-            return actual.refAllSelection();
+            final List<? extends Selection> list;
+            if (actual == null) {
+                list = this.nonRecursivePart.refAllSelection();
+            } else {
+                list = actual.refAllSelection();
+            }
+            return list;
         }
 
 
