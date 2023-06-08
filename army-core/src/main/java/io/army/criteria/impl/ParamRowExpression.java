@@ -8,9 +8,12 @@ import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
+import io.army.util._Collections;
 import io.army.util._StringUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -38,7 +41,6 @@ abstract class ParamRowExpression extends OperationRowExpression
      * @see SQLs#rowParam(TypeInfer, Collection)
      */
     static ParamRowExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
-        final AnonymousMultiParam expression;
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -46,14 +48,10 @@ abstract class ParamRowExpression extends OperationRowExpression
             throw ContextStack.clearStackAndNullPointer();
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
-        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
-            expression = new DelayAnonymousMultiParam((DelayTypeInfer) infer, values);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw ParamExpression.typeInferReturnCodecField("encodingMultiParam");
-        } else {
-            expression = new ImmutableAnonymousMultiParam(type, values);
         }
-        return expression;
+        return new AnonymousMultiParam(type, values);
     }
 
     /**
@@ -65,7 +63,6 @@ abstract class ParamRowExpression extends OperationRowExpression
      * @see SQLs#namedRowParam(TypeInfer, String, int)
      */
     static ParamRowExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
-        final NamedMultiParam expression;
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -73,14 +70,10 @@ abstract class ParamRowExpression extends OperationRowExpression
             throw nameHaveNoText();
         } else if (size < 1) {
             throw sizeLessThanOne(size);
-        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
-            expression = new DelayNamedMultiParam((DelayTypeInfer) infer, name, size);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw ParamExpression.typeInferReturnCodecField("encodingNamedMultiParam");
-        } else {
-            expression = new ImmutableNamedMultiParam(type, name, size);
         }
-        return expression;
+        return new NamedMultiParam(type, name, size);
     }
 
     /**
@@ -100,7 +93,7 @@ abstract class ParamRowExpression extends OperationRowExpression
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw ParamExpression.typeInferIsNotCodecField("multiParam");
         }
-        return new ImmutableAnonymousMultiParam((TableField) infer, values);
+        return new AnonymousMultiParam((TableField) infer, values);
     }
 
     /**
@@ -121,7 +114,7 @@ abstract class ParamRowExpression extends OperationRowExpression
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw ParamExpression.typeInferIsNotCodecField("namedMultiParam");
         }
-        return new ImmutableNamedMultiParam((TableField) infer, name, size);
+        return new NamedMultiParam((TableField) infer, name, size);
     }
 
     private static CriteriaException valuesIsEmpty() {
@@ -148,60 +141,35 @@ abstract class ParamRowExpression extends OperationRowExpression
         context.appendParam(this);
     }
 
-    private static abstract class AnonymousMultiParam extends ParamRowExpression implements MultiParam {
-
-        final List<?> valueList;
-
-        public AnonymousMultiParam(Collection<?> values) {
-            this.valueList = Collections.unmodifiableList(new ArrayList<>(values));
-        }
-
-
-        @Override
-        public final int columnSize() {
-            return this.valueList.size();
-        }
-
-        @Override
-        public final List<?> valueList() {
-            return this.valueList;
-        }
-
-        @Override
-        public final String toString() {
-            final int valueSize;
-            valueSize = this.valueList.size();
-            final StringBuilder builder = new StringBuilder(valueSize << 2);
-            for (int i = 0; i < valueSize; i++) {
-                if (i > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                builder.append(" ?");
-            }
-            return builder.toString();
-        }
-
-
-    }//AnonymousMultiParam
-
-
-    private static final class ImmutableAnonymousMultiParam extends AnonymousMultiParam {
+    private static final class AnonymousMultiParam extends ParamRowExpression implements MultiParam {
 
         private final TypeMeta type;
 
-        private ImmutableAnonymousMultiParam(TypeMeta type, Collection<?> values) {
-            super(values);
+        final List<?> valueList;
+
+        private AnonymousMultiParam(TypeMeta type, Collection<?> values) {
             if (type instanceof QualifiedField) {
                 this.type = ((QualifiedField<?>) type).fieldMeta();
             } else {
                 assert type instanceof FieldMeta || type instanceof MappingType;
                 this.type = type;
             }
+            this.valueList = _Collections.asUnmodifiableList(values);
         }
 
         @Override
         public TypeMeta typeMeta() {
             return this.type;
+        }
+
+        @Override
+        public int columnSize() {
+            return this.valueList.size();
+        }
+
+        @Override
+        public List<?> valueList() {
+            return this.valueList;
         }
 
         @Override
@@ -214,8 +182,8 @@ abstract class ParamRowExpression extends OperationRowExpression
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof ImmutableAnonymousMultiParam) {
-                final ImmutableAnonymousMultiParam o = (ImmutableAnonymousMultiParam) obj;
+            } else if (obj instanceof AnonymousMultiParam) {
+                final AnonymousMultiParam o = (AnonymousMultiParam) obj;
                 match = o.type.equals(this.type)
                         && o.valueList.equals(this.valueList);
             } else {
@@ -225,100 +193,72 @@ abstract class ParamRowExpression extends OperationRowExpression
         }
 
 
-    }//ImmutableAnonymousMultiParam
+        @Override
+        public String toString() {
+            final int valueSize;
+            valueSize = this.valueList.size();
+            final StringBuilder builder;
+            builder = new StringBuilder((valueSize << 2) + 4)
+                    .append(_Constant.SPACE_LEFT_PAREN);
+            for (int i = 0; i < valueSize; i++) {
+                if (i > 0) {
+                    builder.append(_Constant.SPACE_COMMA);
+                }
+                builder.append(" ?");
+            }
+            return builder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
 
-    private static final class DelayAnonymousMultiParam extends AnonymousMultiParam
-            implements TypeInfer.DelayTypeInfer {
 
-        private final TypeInfer.DelayTypeInfer infer;
+    }//AnonymousMultiParam
 
-        private TypeMeta type;
+
+    private static final class NamedMultiParam extends ParamRowExpression implements NamedParam.NamedMulti {
+
+        private final String name;
+
+        private final TypeMeta type;
+
+        private final int valueSize;
 
         /**
-         * @see #multi(TypeInfer, Collection)
+         * @see #named(TypeInfer, String, int)
+         * @see #encodingNamed(TypeInfer, String, int)
          */
-        private DelayAnonymousMultiParam(DelayTypeInfer infer, Collection<?> values) {
-            super(values);
-            this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::onContextEnd);
-        }
-
-        @Override
-        public boolean isDelay() {
-            return this.type == null && this.infer.isDelay();
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            TypeMeta type = this.type;
-            if (type == null) {
-                type = ParamExpression.inferDelayType(this.infer, "encodingMultiParam");
+        private NamedMultiParam(TypeMeta type, String name, int valueSize) {
+            assert valueSize > 0;
+            if (type instanceof QualifiedField) {
+                this.type = ((QualifiedField<?>) type).fieldMeta();
+            } else {
+                assert type instanceof FieldMeta || type instanceof MappingType;
                 this.type = type;
             }
-            return type;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.infer, this.valueList);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof DelayAnonymousMultiParam) {
-                final DelayAnonymousMultiParam o = (DelayAnonymousMultiParam) obj;
-                match = o.infer.equals(this.infer)
-                        && o.valueList.equals(this.valueList);
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        private void onContextEnd() {
-            if (!this.infer.isDelay()) {
-                this.typeMeta();
-            } else if (ContextStack.isEmpty()) {
-                throw CriteriaUtils.delayTypeInfer(this.infer);
-            } else {
-                //here, possibly recursive reference in WITH RECURSIVE clause
-                ContextStack.peek().addEndEventListener(this::onContextEnd);
-            }
-        }
-
-
-    }//DelayAnonymousMultiParam
-
-
-    private static abstract class NamedMultiParam extends ParamRowExpression implements NamedParam.NamedMulti {
-
-        final String name;
-
-        final int valueSize;
-
-        private NamedMultiParam(String name, int valueSize) {
-            assert valueSize > 0;
             this.name = name;
             this.valueSize = valueSize;
         }
 
         @Override
-        public final String name() {
+        public TypeMeta typeMeta() {
+            return this.type;
+        }
+
+        @Override
+        public String name() {
             return this.name;
         }
 
         @Override
-        public final int columnSize() {
+        public int columnSize() {
             return this.valueSize;
         }
 
         @Override
-        public final String toString() {
+        public String toString() {
             final int valueSize = this.valueSize;
-            final StringBuilder builder = new StringBuilder((5 + this.name.length()) * valueSize);
+            final StringBuilder builder;
+            builder = new StringBuilder((5 + this.name.length()) * valueSize + 4)
+                    .append(_Constant.SPACE_LEFT_PAREN);
             for (int i = 0; i < valueSize; i++) {
                 if (i > 0) {
                     builder.append(_Constant.SPACE_COMMA);
@@ -326,34 +266,8 @@ abstract class ParamRowExpression extends OperationRowExpression
                 builder.append(" ?:")
                         .append(this.name);
             }
-            return builder.toString();
-        }
-
-
-    }//NamedMultiParam
-
-
-    private static final class ImmutableNamedMultiParam extends NamedMultiParam {
-
-        private final TypeMeta type;
-
-        /**
-         * @see #named(TypeInfer, String, int)
-         * @see #encodingNamed(TypeInfer, String, int)
-         */
-        private ImmutableNamedMultiParam(TypeMeta type, String name, int valueSize) {
-            super(name, valueSize);
-            if (type instanceof QualifiedField) {
-                this.type = ((QualifiedField<?>) type).fieldMeta();
-            } else {
-                assert type instanceof FieldMeta || type instanceof MappingType;
-                this.type = type;
-            }
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            return this.type;
+            return builder.append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
         }
 
         @Override
@@ -366,8 +280,8 @@ abstract class ParamRowExpression extends OperationRowExpression
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof ImmutableNamedMultiParam) {
-                final ImmutableNamedMultiParam o = (ImmutableNamedMultiParam) obj;
+            } else if (obj instanceof NamedMultiParam) {
+                final NamedMultiParam o = (NamedMultiParam) obj;
                 match = o.type.equals(this.type)
                         && o.name.equals(this.name)
                         && o.valueSize == this.valueSize;
@@ -378,72 +292,7 @@ abstract class ParamRowExpression extends OperationRowExpression
         }
 
 
-    }//ImmutableNamedMultiParam
-
-    private static final class DelayNamedMultiParam extends NamedMultiParam implements TypeInfer.DelayTypeInfer {
-
-        private final TypeInfer.DelayTypeInfer infer;
-
-        private TypeMeta type;
-
-        /**
-         * @see #named(TypeInfer, String, int)
-         */
-        private DelayNamedMultiParam(DelayTypeInfer infer, String name, int valueSize) {
-            super(name, valueSize);
-            this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::onContextEnd);
-        }
-
-        @Override
-        public boolean isDelay() {
-            return this.type == null && this.infer.isDelay();
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            TypeMeta type = this.type;
-            if (type == null) {
-                type = ParamExpression.inferDelayType(this.infer, "encodingNamedMultiParam");
-                this.type = type;
-            }
-            return type;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.infer, this.name, this.valueSize);
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof DelayNamedMultiParam) {
-                final DelayNamedMultiParam o = (DelayNamedMultiParam) obj;
-                match = o.infer.equals(this.infer)
-                        && o.name.equals(this.name)
-                        && o.valueSize == this.valueSize;
-            } else {
-                match = false;
-            }
-            return match;
-        }
-
-        private void onContextEnd() {
-            if (!this.infer.isDelay()) {
-                this.typeMeta();
-            } else if (ContextStack.isEmpty()) {
-                throw CriteriaUtils.delayTypeInfer(this.infer);
-            } else {
-                //here, possibly recursive reference in WITH RECURSIVE clause
-                ContextStack.peek().addEndEventListener(this::onContextEnd);
-            }
-        }
-
-
-    }//DelayNamedMultiParam
+    }//NamedMultiParam
 
 
 }

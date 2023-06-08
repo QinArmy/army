@@ -40,7 +40,7 @@ abstract class SqlWords {
     }//KeyWordNotNull
 
 
-    enum KeyWordIn implements Functions.WordIn, SQLs.ArmyKeyWord {
+    enum KeyWordIn implements SQLs.WordIn, SQLs.ArmyKeyWord {
 
         IN(" IN");
 
@@ -63,7 +63,7 @@ abstract class SqlWords {
 
     }//KeyWordIn
 
-    enum KeyWordSimilar implements Functions.WordSimilar, SQLs.ArmyKeyWord {
+    enum KeyWordSimilar implements SQLs.WordSimilar, SQLs.ArmyKeyWord {
 
         SIMILAR(" SIMILAR");
 
@@ -86,7 +86,7 @@ abstract class SqlWords {
 
     }//KeyWordSimilar
 
-    enum KeyWordFrom implements Functions.WordFrom, SQLs.ArmyKeyWord {
+    enum KeyWordFrom implements SQLs.WordFrom, SQLs.ArmyKeyWord {
 
         FROM(" FROM");
 
@@ -109,7 +109,7 @@ abstract class SqlWords {
 
     }//KeyWordFrom
 
-    enum KeyWordFor implements Functions.WordFor, SQLs.ArmyKeyWord {
+    enum KeyWordFor implements SQLs.WordFor, SQLs.ArmyKeyWord {
 
         FOR(" FOR");
 
@@ -132,7 +132,7 @@ abstract class SqlWords {
 
     }//KeyWordFor
 
-    enum WordTrimPosition implements Functions.TrimPosition, SQLs.ArmyKeyWord, SQLWords {
+    enum WordTrimPosition implements SQLs.TrimPosition, SQLs.ArmyKeyWord, SQLWords {
 
         BOTH(" BOTH"),
         LEADING(" LEADING"),
@@ -158,7 +158,7 @@ abstract class SqlWords {
     }//WordTrimPosition
 
 
-    enum KeyWordPath implements Functions.WordPath, SQLs.ArmyKeyWord {
+    enum KeyWordPath implements SQLs.WordPath, SQLs.ArmyKeyWord {
 
         PATH(" PATH");
 
@@ -181,7 +181,7 @@ abstract class SqlWords {
 
     }//KeyWordPath
 
-    enum KeyWordsForOrdinality implements Functions.WordsForOrdinality, SQLs.ArmyKeyWord {
+    enum KeyWordsForOrdinality implements SQLs.WordsForOrdinality, SQLs.ArmyKeyWord {
 
         FOR_ORDINALITY(" FOR ORDINALITY");
 

@@ -340,7 +340,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
      * @param date nullable parameter or {@link Expression}
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_extract">EXTRACT(date)</a>
      */
-    public static SimpleExpression extract(final MySQLTimeUnit unit, final WordFrom from, final Expression date) {
+    public static SimpleExpression extract(final MySQLTimeUnit unit, final SQLs.WordFrom from, final Expression date) {
         final String name = "EXTRACT";
         if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);

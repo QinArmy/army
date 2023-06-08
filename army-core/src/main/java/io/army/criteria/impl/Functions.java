@@ -100,36 +100,6 @@ abstract class Functions {
     }
 
 
-    public interface WordPath extends SQLWords {
-
-    }
-
-    public interface WordsForOrdinality extends SQLWords {
-
-    }
-
-
-    public interface WordIn {
-
-    }
-
-    public interface WordFrom {
-
-    }
-
-    public interface WordFor {
-
-    }
-
-    public interface WordSimilar {
-
-    }
-
-    public interface TrimPosition {
-
-    }
-
-
     enum FuncWord implements SQLs.ArmyKeyWord {
 
         INTERVAL(" INTERVAL"),
@@ -699,30 +669,31 @@ abstract class Functions {
 
 
     static TypeMeta _returnType(final Expression left, final Expression right,
-                                BinaryOperator<MappingType> function) {
-        final TypeMeta returnType;
-        if ((left instanceof TypeInfer.DelayTypeInfer && !((TypeInfer.DelayTypeInfer) left).isDelay())
-                || (right instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) right).isDelay())) {
-            returnType = CriteriaSupports.dualInfer(left, right, function);
-        } else {
-            returnType = function.apply(left.typeMeta().mappingType(), right.typeMeta().mappingType());
+                                final BinaryOperator<MappingType> function) {
+        TypeMeta leftType, rightType;
+        leftType = left.typeMeta();
+        rightType = right.typeMeta();
+
+        if (!(leftType instanceof MappingType)) {
+            leftType = leftType.mappingType();
         }
-        return returnType;
+        if (!(rightType instanceof MappingType)) {
+            rightType = rightType.mappingType();
+        }
+        return function.apply((MappingType) leftType, (MappingType) rightType);
     }
 
     static TypeMeta _returnType(final Expression exp, final UnaryOperator<MappingType> function) {
-        final TypeMeta returnType, expType;
-        if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
-            returnType = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) exp, function);
-        } else if ((expType = exp.typeMeta()) instanceof MappingType) {
-            returnType = function.apply((MappingType) expType);
-        } else {
-            returnType = function.apply(expType.mappingType());
+        TypeMeta expType;
+        expType = exp.typeMeta();
+        if (!(expType instanceof MappingType)) {
+            expType = expType.mappingType();
         }
-        return returnType;
+        return function.apply((MappingType) expType);
     }
 
 
+    @Deprecated
     static List<Object> _createSimpleMultiArgList(final List<Expression> expList) {
         final int expSize = expList.size();
         assert expSize > 1;
@@ -743,6 +714,7 @@ abstract class Functions {
     }
 
 
+    @Deprecated
     static SimpleExpression _simpleTowArgFunc(final String name, final Expression g1,
                                               final Expression g2, final TypeMeta returnType) {
         if (g1 instanceof SqlValueParam.MultiValue) {
@@ -758,6 +730,7 @@ abstract class Functions {
         return FunctionUtils.complexArgFunc(name, argList, returnType);
     }
 
+    @Deprecated
     static Expression _simpleThreeArgFunc(final String name, final Expression e1
             , final Expression e2, final Expression e3, final TypeMeta returnType) {
         if (e1 instanceof SqlValueParam.MultiValue) {
@@ -780,6 +753,7 @@ abstract class Functions {
         return FunctionUtils.complexArgFunc(name, argList, returnType);
     }
 
+    @Deprecated
     static Expression _simpleMaxThreeArgFunc(final String name, final List<Expression> expList
             , final TypeMeta returnType) {
         final Expression func;
@@ -799,6 +773,7 @@ abstract class Functions {
         return func;
     }
 
+    @Deprecated
     static Expression _simpleMaxTwoArgFunc(final String name, final List<Expression> expList
             , final TypeMeta returnType) {
         final Expression func;
@@ -815,6 +790,7 @@ abstract class Functions {
         return func;
     }
 
+    @Deprecated
     static Expression _singleAndMultiArgFunc(final String name, final Expression single, final Expression multi
             , final TypeMeta returnType) {
         if (single instanceof SqlValueParam.MultiValue) {
@@ -827,7 +803,7 @@ abstract class Functions {
         return FunctionUtils.complexArgFunc(name, argLit, returnType);
     }
 
-
+    @Deprecated
     static Expression _singleAndListFunc(final String name, final Expression expr
             , final TypeMeta elementType, final Object exprList, final TypeMeta returnType) {
         if (expr instanceof SqlValueParam.MultiValue) {
@@ -998,6 +974,7 @@ abstract class Functions {
 
     /*-------------------below private method-------------------*/
 
+    @Deprecated
     private static String functionsKeyWordToString(final Enum<?> e) {
         return _StringUtils.builder()
                 .append(Functions.class.getName())

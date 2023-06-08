@@ -169,15 +169,15 @@ public abstract class _Collections {
         final List<T> list;
         switch (collection.size()) {
             case 0:
-                list = Collections.emptyList();
+                list = emptyList();
                 break;
             case 1: {
                 if (collection instanceof List) {
-                    list = Collections.singletonList(((List<T>) collection).get(0));
+                    list = singletonList(((List<T>) collection).get(0));
                 } else {
                     List<T> temp = null;
                     for (T v : collection) {
-                        temp = Collections.singletonList(v);
+                        temp = singletonList(v);
                         break;
                     }
                     list = temp;
@@ -186,7 +186,7 @@ public abstract class _Collections {
             }
             break;
             default: {
-                list = Collections.unmodifiableList(new ArrayList<>(collection));
+                list = unmodifiableList(arrayList(collection));
             }
 
         }

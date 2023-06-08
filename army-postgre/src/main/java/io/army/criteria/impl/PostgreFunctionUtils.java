@@ -528,7 +528,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path,
                                                     Expression columnExp, SQLs.WordDefault wordDefault,
                                                     Expression defaultExp,
                                                     SQLs.NullOption nullOption) {
@@ -542,13 +542,13 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path,
                                                     Expression columnExp, SQLs.NullOption nullOption) {
             return this.comma(name, type, path, columnExp, nullOption);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path,
                                                     Expression columnExp, SQLs.WordDefault wordDefault,
                                                     Expression defaultExp) {
             return this.comma(name, type, path, columnExp, wordDefault, defaultExp);
@@ -566,7 +566,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path,
                                                     Expression columnExp) {
             return this.comma(name, type, path, columnExp);
         }
@@ -577,12 +577,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, Functions.WordsForOrdinality forOrdinality) {
+        public Postgres.XmlTableCommaClause columns(String name, SQLs.WordsForOrdinality forOrdinality) {
             return this.comma(name, forOrdinality);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path,
                                                     BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                     String columnExp, SQLs.WordDefault wordDefault,
                                                     Expression defaultExp, SQLs.NullOption nullOption) {
@@ -590,14 +590,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path,
                                                     BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                     String columnExp, SQLs.NullOption nullOption) {
             return this.comma(name, type, path, funcRefForColumnExp, columnExp, nullOption);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause columns(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path,
                                                     BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                     String columnExp, SQLs.WordDefault wordDefault,
                                                     Expression defaultExp) {
@@ -605,7 +605,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path,
                                                   @Nullable Expression columnExp, SQLs.WordDefault wordDefault,
                                                   @Nullable Expression defaultExp,
                                                   @Nullable SQLs.NullOption nullOption) {
@@ -632,7 +632,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path,
                                                   @Nullable Expression columnExp,
                                                   @Nullable SQLs.NullOption nullOption) {
             if (columnExp == null) {
@@ -644,7 +644,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path,
                                                   @Nullable Expression columnExp, SQLs.WordDefault wordDefault,
                                                   @Nullable Expression defaultExp) {
             if (columnExp == null) {
@@ -674,7 +674,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path,
                                                   @Nullable Expression columnExp) {
             if (columnExp == null) {
                 throw ContextStack.nullPointer(this.outerContext);
@@ -688,7 +688,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(@Nullable String name, Functions.WordsForOrdinality forOrdinality) {
+        public Postgres.XmlTableCommaClause comma(@Nullable String name, SQLs.WordsForOrdinality forOrdinality) {
             if (name == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             } else if (!_DialectUtils.isSimpleIdentifier(name)) {
@@ -700,7 +700,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path,
                                                   BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                   String columnExp, SQLs.WordDefault wordDefault,
                                                   Expression defaultExp, SQLs.NullOption nullOption) {
@@ -709,14 +709,14 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path,
                                                   BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                   String columnExp, SQLs.NullOption nullOption) {
             return this.comma(name, type, path, funcRefForColumnExp.apply(TextType.INSTANCE, columnExp), nullOption);
         }
 
         @Override
-        public Postgres.XmlTableCommaClause comma(String name, MappingType type, Functions.WordPath path,
+        public Postgres.XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path,
                                                   BiFunction<MappingType, String, Expression> funcRefForColumnExp,
                                                   String columnExp, SQLs.WordDefault wordDefault,
                                                   Expression defaultExp) {
@@ -755,7 +755,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
         private Postgres.XmlTableCommaClause onAdd(
-                final @Nullable String name, @Nullable final MappingType type, final Functions.WordPath path,
+                final @Nullable String name, @Nullable final MappingType type, final SQLs.WordPath path,
                 final @Nullable Expression columnExp, final SQLs.WordDefault wordDefault,
                 final @Nullable Expression defaultExp, final @Nullable SQLs.NullOption nullOption) {
 

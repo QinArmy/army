@@ -506,6 +506,34 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
+    public interface WordPath extends SQLWords {
+
+    }
+
+    public interface WordsForOrdinality extends SQLWords {
+
+    }
+
+    public interface WordIn {
+
+    }
+
+    public interface WordFrom {
+
+    }
+
+    public interface WordFor {
+
+    }
+
+    public interface WordSimilar {
+
+    }
+
+    public interface TrimPosition {
+
+    }
+
 
 
 

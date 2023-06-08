@@ -228,7 +228,7 @@ abstract class PostgreDateTimeFunctions extends PostgreStringFunctions {
      * extract ( field from interval ) → numeric
      * </a>
      */
-    public static SimpleExpression extract(ExtractTimeField field, WordFrom from, Expression timestampOrInterval) {
+    public static SimpleExpression extract(ExtractTimeField field, SQLs.WordFrom from, Expression timestampOrInterval) {
         final String name = "EXTRACT";
         if (!(field instanceof PostgreWords.WordExtractTimeField)) {
             throw CriteriaUtils.funcArgError(name, from);

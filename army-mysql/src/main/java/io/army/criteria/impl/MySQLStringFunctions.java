@@ -856,7 +856,7 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM(remstr FROM str)</a>
      */
-    public static SimpleExpression trim(final Expression remstr, WordFrom from, final Expression str) {
+    public static SimpleExpression trim(final Expression remstr, SQLs.WordFrom from, final Expression str) {
         assert from == SQLs.FROM;
         return FunctionUtils.complexArgFunc("TRIM", StringType.INSTANCE, remstr, from, str);
     }
@@ -877,8 +877,8 @@ abstract class MySQLStringFunctions extends MySQLNumberFunctions {
      * @throws CriteriaException throw when invoking this method in non-statement context.
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/string-functions.html#function_trim">TRIM([BOTH | LEADING | TRAILING] remstr FROM str), TRIM([remstr FROM] str),TRIM(remstr FROM str)</a>
      */
-    public static SimpleExpression trim(final @Nullable MySQLs.TrimPosition position, final @Nullable Expression remstr
-            , final @Nullable WordFrom from, final Expression str) {//TODO 优化方法定义
+    public static SimpleExpression trim(final @Nullable SQLs.TrimPosition position, final @Nullable Expression remstr
+            , final @Nullable SQLs.WordFrom from, final Expression str) {//TODO 优化方法定义
         final String name = "TRIM";
         if (!(str instanceof ArmyExpression)) {
             throw CriteriaUtils.funcArgError(name, str);

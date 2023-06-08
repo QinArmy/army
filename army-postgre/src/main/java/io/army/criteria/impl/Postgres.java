@@ -62,9 +62,9 @@ public abstract class Postgres extends PostgreSyntax {
 
     public static final SQLs.NullOption NOT_NULL = SqlWords.KeyWordNotNull.NOT_NULL;
 
-    public static final WordPath PATH = SqlWords.KeyWordPath.PATH;
+    public static final SQLs.WordPath PATH = SqlWords.KeyWordPath.PATH;
 
-    public static final WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
+    public static final SQLs.WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
 
     public static final NullTreatMode RAISE_EXCEPTION = PostgreWords.NullTreatModeExpression.RAISE_EXCEPTION;
 
@@ -276,31 +276,31 @@ public abstract class Postgres extends PostgreSyntax {
 
     public interface _XmlTableColumnsClause {
 
-        XmlTableCommaClause columns(String name, MappingType type, WordPath path, Expression columnExp, SQLs.WordDefault wordDefault, Expression defaultExp, SQLs.NullOption nullOption);
+        XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path, Expression columnExp, SQLs.WordDefault wordDefault, Expression defaultExp, SQLs.NullOption nullOption);
 
         XmlTableCommaClause columns(String name, MappingType type, SQLs.WordDefault wordDefault, Expression defaultExp, SQLs.NullOption nullOption);
 
-        XmlTableCommaClause columns(String name, MappingType type, WordPath path, Expression columnExp, SQLs.NullOption nullOption);
+        XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path, Expression columnExp, SQLs.NullOption nullOption);
 
-        XmlTableCommaClause columns(String name, MappingType type, WordPath path, Expression columnExp, SQLs.WordDefault wordDefault, Expression defaultExp);
+        XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path, Expression columnExp, SQLs.WordDefault wordDefault, Expression defaultExp);
 
         XmlTableCommaClause columns(String name, MappingType type, SQLs.NullOption nullOption);
 
         XmlTableCommaClause columns(String name, MappingType type, SQLs.WordDefault wordDefault, Expression defaultExp);
 
-        XmlTableCommaClause columns(String name, MappingType type, WordPath path, Expression columnExp);
+        XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path, Expression columnExp);
 
         XmlTableCommaClause columns(String name, MappingType type);
 
-        XmlTableCommaClause columns(String name, WordsForOrdinality forOrdinality);
+        XmlTableCommaClause columns(String name, SQLs.WordsForOrdinality forOrdinality);
 
 
-        XmlTableCommaClause columns(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.WordDefault wordDefault, Expression defaultExp, SQLs.NullOption nullOption);
+        XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.WordDefault wordDefault, Expression defaultExp, SQLs.NullOption nullOption);
 
 
-        XmlTableCommaClause columns(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.NullOption nullOption);
+        XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.NullOption nullOption);
 
-        XmlTableCommaClause columns(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.WordDefault wordDefault, Expression defaultExp);
+        XmlTableCommaClause columns(String name, MappingType type, SQLs.WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.WordDefault wordDefault, Expression defaultExp);
 
 
     }
@@ -314,31 +314,31 @@ public abstract class Postgres extends PostgreSyntax {
      */
     public interface XmlTableCommaClause {
 
-        XmlTableCommaClause comma(String name, MappingType type, WordPath path, Expression columnExp, SQLs.WordDefault wordDefault, Expression defaultExp, SQLs.NullOption nullOption);
+        XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path, Expression columnExp, SQLs.WordDefault wordDefault, Expression defaultExp, SQLs.NullOption nullOption);
 
         XmlTableCommaClause comma(String name, MappingType type, SQLs.WordDefault wordDefault, Expression defaultExp, SQLs.NullOption nullOption);
 
-        XmlTableCommaClause comma(String name, MappingType type, WordPath path, Expression columnExp, SQLs.NullOption nullOption);
+        XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path, Expression columnExp, SQLs.NullOption nullOption);
 
-        XmlTableCommaClause comma(String name, MappingType type, WordPath path, Expression columnExp, SQLs.WordDefault wordDefault, Expression defaultExp);
+        XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path, Expression columnExp, SQLs.WordDefault wordDefault, Expression defaultExp);
 
         XmlTableCommaClause comma(String name, MappingType type, SQLs.NullOption nullOption);
 
         XmlTableCommaClause comma(String name, MappingType type, SQLs.WordDefault wordDefault, Expression defaultExp);
 
-        XmlTableCommaClause comma(String name, MappingType type, WordPath path, Expression columnExp);
+        XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path, Expression columnExp);
 
         XmlTableCommaClause comma(String name, MappingType type);
 
-        XmlTableCommaClause comma(String name, WordsForOrdinality forOrdinality);
+        XmlTableCommaClause comma(String name, SQLs.WordsForOrdinality forOrdinality);
 
 
-        XmlTableCommaClause comma(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.WordDefault wordDefault, Expression defaultExp, SQLs.NullOption nullOption);
+        XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.WordDefault wordDefault, Expression defaultExp, SQLs.NullOption nullOption);
 
 
-        XmlTableCommaClause comma(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.NullOption nullOption);
+        XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.NullOption nullOption);
 
-        XmlTableCommaClause comma(String name, MappingType type, WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.WordDefault wordDefault, Expression defaultExp);
+        XmlTableCommaClause comma(String name, MappingType type, SQLs.WordPath path, BiFunction<MappingType, String, Expression> funcRefForColumnExp, String columnExp, SQLs.WordDefault wordDefault, Expression defaultExp);
 
 
     }

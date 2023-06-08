@@ -213,13 +213,13 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
      * </p>
      *
-     * @see #overlay(Expression, WordPlacing, Expression, WordFrom, Expression, WordFor, Expression)
+     * @see #overlay(Expression, WordPlacing, Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">overlay ( string text PLACING newsubstring text FROM start integer [ FOR count integer ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">overlay ( bits bit PLACING newsubstring bit FROM start integer [ FOR count integer ] ) → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">overlay ( bytes bytea PLACING newsubstring bytea FROM start integer [ FOR count integer ] ) → bytea</a>
      */
     public static SimpleExpression overlay(Expression string, WordPlacing placing, Expression newSubstring,
-                                           WordFrom from, Expression start) {
+                                           SQLs.WordFrom from, Expression start) {
         return _overlay(string, placing, newSubstring, from, start, SQLs.FOR, null);
     }
 
@@ -228,13 +228,13 @@ abstract class PostgreStringFunctions extends Functions {
      * The {@link MappingType} of function return type: the {@link MappingType} of string.
      * </p>
      *
-     * @see #overlay(Expression, WordPlacing, Expression, WordFrom, Expression)
+     * @see #overlay(Expression, WordPlacing, Expression, SQLs.WordFrom, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">overlay ( string text PLACING newsubstring text FROM start integer [ FOR count integer ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">overlay ( bits bit PLACING newsubstring bit FROM start integer [ FOR count integer ] ) → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">overlay ( bytes bytea PLACING newsubstring bytea FROM start integer [ FOR count integer ] ) → bytea</a>
      */
     public static SimpleExpression overlay(Expression string, WordPlacing placing, Expression newSubstring,
-                                           WordFrom from, Expression start, WordFor wordFor,
+                                           SQLs.WordFrom from, Expression start, SQLs.WordFor wordFor,
                                            Expression count) {
         ContextStack.assertNonNull(count);
         return _overlay(string, placing, newSubstring, from, start, wordFor, count);
@@ -251,7 +251,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">position ( substring bit IN bits bit ) → integer</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">position ( substring bytea IN bytes bytea ) → integer</a>
      */
-    public static SimpleExpression position(Expression substring, WordIn in, Expression string) {
+    public static SimpleExpression position(Expression substring, SQLs.WordIn in, Expression string) {
         final String name = "POSITION";
         final SimpleExpression func;
         if (substring instanceof SqlValueParam.MultiValue) {
@@ -273,13 +273,13 @@ abstract class PostgreStringFunctions extends Functions {
      * </p>
      *
      * @param from {@link SQLs#FROM}
-     * @see #substring(Expression, WordFor, Expression)
-     * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
+     * @see #substring(Expression, SQLs.WordFor, Expression)
+     * @see #substring(Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text [ FROM start integer ] [ FOR count integer ] ) → text ; substring ( string text FROM pattern text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">substring ( bits bit [ FROM start integer ] [ FOR count integer ] ) → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substring ( bytes bytea [ FROM start integer ] [ FOR count integer ] ) → bytea</a>
      */
-    public static SimpleExpression substring(Expression string, WordFrom from, Expression startOrPattern) {
+    public static SimpleExpression substring(Expression string, SQLs.WordFrom from, Expression startOrPattern) {
         ContextStack.assertNonNull(startOrPattern);
         return _substring(string, from, startOrPattern, SQLs.FOR, null);
     }
@@ -290,13 +290,13 @@ abstract class PostgreStringFunctions extends Functions {
      * </p>
      *
      * @param wordFor {@link SQLs#FOR}
-     * @see #substring(Expression, WordFrom, Expression)
-     * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
+     * @see #substring(Expression, SQLs.WordFrom, Expression)
+     * @see #substring(Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text [ FROM start integer ] [ FOR count integer ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">substring ( bits bit [ FROM start integer ] [ FOR count integer ] ) → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substring ( bytes bytea [ FROM start integer ] [ FOR count integer ] ) → bytea</a>
      */
-    public static SimpleExpression substring(Expression string, WordFor wordFor, Expression count) {
+    public static SimpleExpression substring(Expression string, SQLs.WordFor wordFor, Expression count) {
         ContextStack.assertNonNull(count);
         return _substring(string, SQLs.FROM, null, wordFor, count);
     }
@@ -308,15 +308,15 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @param from    {@link SQLs#FROM}
      * @param wordFor {@link SQLs#FOR}
-     * @see #substring(Expression, WordFrom, Expression)
-     * @see #substring(Expression, WordFor, Expression)
-     * @see #substring(Expression, WordSimilar, Expression, SQLs.WordEscape, Expression)
+     * @see #substring(Expression, SQLs.WordFrom, Expression)
+     * @see #substring(Expression, SQLs.WordFor, Expression)
+     * @see #substring(Expression, SQLs.WordSimilar, Expression, SQLs.WordEscape, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text [ FROM start integer ] [ FOR count integer ] ) → text ; substring ( string text FROM pattern text FOR escape text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-bitstring.html#FUNCTIONS-BIT-STRING-TABLE">substring ( bits bit [ FROM start integer ] [ FOR count integer ] ) → bit</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">substring ( bytes bytea [ FROM start integer ] [ FOR count integer ] ) → bytea</a>
      */
-    public static SimpleExpression substring(Expression string, WordFrom from, Expression startOrPattern,
-                                             WordFor wordFor, Expression countOrEscape) {
+    public static SimpleExpression substring(Expression string, SQLs.WordFrom from, Expression startOrPattern,
+                                             SQLs.WordFor wordFor, Expression countOrEscape) {
         ContextStack.assertNonNull(startOrPattern);
         ContextStack.assertNonNull(countOrEscape);
         return _substring(string, from, startOrPattern, wordFor, countOrEscape);
@@ -329,10 +329,10 @@ abstract class PostgreStringFunctions extends Functions {
      *
      * @param similar    {@link SQLs#SIMILAR}
      * @param wordEscape {@link SQLs#ESCAPE}
-     * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
+     * @see #substring(Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">substring ( string text SIMILAR pattern text ESCAPE escape text ) → text</a>
      */
-    public static SimpleExpression substring(Expression string, WordSimilar similar, Expression pattern,
+    public static SimpleExpression substring(Expression string, SQLs.WordSimilar similar, Expression pattern,
                                              SQLs.WordEscape wordEscape, Expression escape) {
 
         final String name = "SUBSTRING";
@@ -373,7 +373,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @param from {@link SQLs#FROM}
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
      */
-    public static SimpleExpression trim(WordFrom from, Expression string) {
+    public static SimpleExpression trim(SQLs.WordFrom from, Expression string) {
         final String name = "TRIM";
         if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
@@ -395,10 +395,10 @@ abstract class PostgreStringFunctions extends Functions {
      *                      <li>{@link SQLs#BOTH}</li>
      *                 </ul>
      * @param from     {@link SQLs#FROM}
-     * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
+     * @see #substring(Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ characters text ] FROM string text ) → text</a>
      */
-    public static SimpleExpression trim(TrimPosition position, WordFrom from, Expression string) {
+    public static SimpleExpression trim(SQLs.TrimPosition position, SQLs.WordFrom from, Expression string) {
         final String name = "TRIM";
         if (string instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, string);
@@ -417,11 +417,11 @@ abstract class PostgreStringFunctions extends Functions {
      * </p>
      *
      * @param from {@link SQLs#FROM}
-     * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
+     * @see #substring(Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ characters text ] FROM string text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] bytesremoved bytea FROM bytes bytea ) → bytea</a>
      */
-    public static SimpleExpression trim(Expression characters, WordFrom from, Expression string) {
+    public static SimpleExpression trim(Expression characters, SQLs.WordFrom from, Expression string) {
         final String name = "TRIM";
         if (characters instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, characters);
@@ -446,11 +446,11 @@ abstract class PostgreStringFunctions extends Functions {
      *                      <li>{@link SQLs#BOTH}</li>
      *                 </ul>
      * @param from     {@link SQLs#FROM}
-     * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
+     * @see #substring(Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ characters text ] FROM string text ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] bytesremoved bytea FROM bytes bytea ) → bytea</a>
      */
-    public static SimpleExpression trim(TrimPosition position, Expression characters, WordFrom from, Expression string) {
+    public static SimpleExpression trim(SQLs.TrimPosition position, Expression characters, SQLs.WordFrom from, Expression string) {
         final String name = "TRIM";
         if (characters instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, characters);
@@ -491,7 +491,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] bytes bytea, bytesremoved bytea ) → bytea</a>
      */
-    public static SimpleExpression trim(WordFrom from, Expression string, Expression characters) {
+    public static SimpleExpression trim(SQLs.WordFrom from, Expression string, Expression characters) {
         final String name = "TRIM";
         if (from != SQLs.FROM) {
             throw CriteriaUtils.funcArgError(name, from);
@@ -520,7 +520,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] string text [, characters text ] ) → text</a>
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">trim ( [ LEADING | TRAILING | BOTH ] [ FROM ] bytes bytea, bytesremoved bytea ) → bytea</a>
      */
-    public static SimpleExpression trim(TrimPosition position, WordFrom from, Expression string, Expression characters) {
+    public static SimpleExpression trim(SQLs.TrimPosition position, SQLs.WordFrom from, Expression string, Expression characters) {
         final String name = "TRIM";
         if (string instanceof SqlValueParam.MultiValue) {
             throw CriteriaUtils.funcArgError(name, string);
@@ -1612,11 +1612,11 @@ abstract class PostgreStringFunctions extends Functions {
 
 
     /**
-     * @see #overlay(Expression, WordPlacing, Expression, WordFrom, Expression)
-     * @see #overlay(Expression, WordPlacing, Expression, WordFrom, Expression, WordFor, Expression)
+     * @see #overlay(Expression, WordPlacing, Expression, SQLs.WordFrom, Expression)
+     * @see #overlay(Expression, WordPlacing, Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      */
     private static SimpleExpression _overlay(Expression string, WordPlacing placing, Expression newSubstring,
-                                             WordFrom from, Expression start, @Nullable WordFor wordFor,
+                                             SQLs.WordFrom from, Expression start, @Nullable SQLs.WordFor wordFor,
                                              @Nullable Expression count) {
         final String name = "OVERLAY";
         final SimpleExpression func;
@@ -1646,12 +1646,12 @@ abstract class PostgreStringFunctions extends Functions {
 
 
     /**
-     * @see #substring(Expression, WordFrom, Expression)
-     * @see #substring(Expression, WordFor, Expression)
-     * @see #substring(Expression, WordFrom, Expression, WordFor, Expression)
+     * @see #substring(Expression, SQLs.WordFrom, Expression)
+     * @see #substring(Expression, SQLs.WordFor, Expression)
+     * @see #substring(Expression, SQLs.WordFrom, Expression, SQLs.WordFor, Expression)
      */
-    private static SimpleExpression _substring(Expression string, WordFrom from, @Nullable Expression start,
-                                               WordFor wordFor, @Nullable Expression count) {
+    private static SimpleExpression _substring(Expression string, SQLs.WordFrom from, @Nullable Expression start,
+                                               SQLs.WordFor wordFor, @Nullable Expression count) {
         final String name = "SUBSTRING";
         final SimpleExpression func;
         if (string instanceof SqlValueParam.MultiValue) {

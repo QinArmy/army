@@ -306,12 +306,12 @@ abstract class MySQLSyntax extends MySQLFunctions {
     public static final WordUsing USING = KeyWordUsing.USING;
 
 
-    public static final WordPath PATH = SqlWords.KeyWordPath.PATH;
+    public static final SQLs.WordPath PATH = SqlWords.KeyWordPath.PATH;
 
     public static final WordExistsPath EXISTS_PATH = KeyWordExistsPath.EXISTS_PATH;
 
 
-    public static final WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
+    public static final SQLs.WordsForOrdinality FOR_ORDINALITY = SqlWords.KeyWordsForOrdinality.FOR_ORDINALITY;
 
     // public static final WordNested NESTED = KeyWordNested.NESTED;
 

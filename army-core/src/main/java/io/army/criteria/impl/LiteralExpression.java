@@ -7,7 +7,6 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
-import io.army.meta.MetaException;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
@@ -38,11 +37,12 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
         if (value == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
-        try {
-            return new ImmutableAnonymousSingleLiteral(_MappingFactory.getDefault(value.getClass()), value);
-        } catch (MetaException e) {
-            throw ContextStack.clearStackAndCriteriaError(e.getMessage());
+        final MappingType type;
+        type = _MappingFactory.getDefaultIfMatch(value.getClass());
+        if (type == null) {
+            throw CriteriaUtils.clearStackAndNonDefaultType(value);
         }
+        return new AnonymousLiteral(type, value);
     }
 
 
@@ -51,18 +51,13 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
      * @see SQLs#literal(TypeInfer, Object)
      */
     static LiteralExpression single(final @Nullable TypeInfer infer, final @Nullable Object value) {
-        final AnonymousSingleLiteral expression;
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
-        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
-            expression = new DelayAnonymousSingleLiteral((DelayTypeInfer) infer, value);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw ParamExpression.typeInferReturnCodecField("encodingLiteral");
-        } else {
-            expression = new ImmutableAnonymousSingleLiteral(type, value);
         }
-        return expression;
+        return new AnonymousLiteral(type, value);
     }
 
     /**
@@ -73,20 +68,15 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
      * @see SQLs#namedLiteral(TypeInfer, String)
      */
     static LiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name) {
-        final NamedSingleLiteral expression;
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
             throw nameHaveNoText();
-        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
-            expression = new DelayNamedNonNullSingleLiteral((DelayTypeInfer) infer, name);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw ParamExpression.typeInferReturnCodecField("encodingNamedLiteral");
-        } else {
-            expression = new ImmutableNamedNonNullSingleLiteral(type, name);
         }
-        return expression;
+        return new NamedNonNullLiteral(name, type);
     }
 
     /**
@@ -97,20 +87,15 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
      * @see SQLs#namedNullableLiteral(TypeInfer, String)
      */
     static LiteralExpression namedNullable(final @Nullable TypeInfer infer, final @Nullable String name) {
-        final NamedSingleLiteral expression;
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
             throw nameHaveNoText();
-        } else if (infer instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) infer).isDelay()) {
-            expression = new DelayNamedSingleLiteral((DelayTypeInfer) infer, name);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
             throw ParamExpression.typeInferReturnCodecField("encodingNamedNullableLiteral");
-        } else {
-            expression = new ImmutableNamedSingleLiteral(type, name);
         }
-        return expression;
+        return new NamedLiteral(name, type);
     }
 
 
@@ -124,7 +109,7 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw ParamExpression.typeInferIsNotCodecField("literal");
         }
-        return new ImmutableAnonymousSingleLiteral((TableField) infer, value);
+        return new AnonymousLiteral((TableField) infer, value);
     }
 
     /**
@@ -142,7 +127,7 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw ParamExpression.typeInferIsNotCodecField("namedLiteral");
         }
-        return new ImmutableNamedNonNullSingleLiteral((TableField) infer, name);
+        return new NamedNonNullLiteral(name, (TableField) infer);
     }
 
     /**
@@ -160,7 +145,7 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
             throw ParamExpression.typeInferIsNotCodecField("namedNullableLiteral");
         }
-        return new ImmutableNamedSingleLiteral((TableField) infer, name);
+        return new NamedLiteral(name, (TableField) infer);
     }
 
     private static CriteriaException nameHaveNoText() {
@@ -173,12 +158,24 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
     private LiteralExpression() {
     }
 
-    private static abstract class AnonymousSingleLiteral extends LiteralExpression
+    private static class AnonymousLiteral extends LiteralExpression
             implements SingleAnonymousValue {
 
-        final Object value;
+        private final Object value;
 
-        private AnonymousSingleLiteral(@Nullable Object value) {
+        private final TypeMeta type;
+
+        /**
+         * @see #single(TypeInfer, Object)
+         * @see #encodingSingle(TypeInfer, Object)
+         */
+        private AnonymousLiteral(TypeMeta type, @Nullable Object value) {
+            if (type instanceof QualifiedField) {
+                this.type = ((QualifiedField<?>) type).fieldMeta();
+            } else {
+                assert type instanceof FieldMeta || type instanceof MappingType;
+                this.type = type;
+            }
             this.value = value;
         }
 
@@ -188,49 +185,28 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
         }
 
 
-    }//AnonymousSingleLiteral
-
-
-    private static final class ImmutableAnonymousSingleLiteral extends AnonymousSingleLiteral {
-
-        private final TypeMeta type;
-
-        /**
-         * @see #single(TypeInfer, Object)
-         * @see #encodingSingle(TypeInfer, Object)
-         */
-        private ImmutableAnonymousSingleLiteral(TypeMeta type, @Nullable Object value) {
-            super(value);
-            if (type instanceof QualifiedField) {
-                this.type = ((QualifiedField<?>) type).fieldMeta();
-            } else {
-                assert type instanceof FieldMeta || type instanceof MappingType;
-                this.type = type;
-            }
-        }
-
         @Override
-        public TypeMeta typeMeta() {
+        public final TypeMeta typeMeta() {
             return this.type;
         }
 
         @Override
-        public void appendSql(_SqlContext context) {
+        public final void appendSql(_SqlContext context) {
             context.appendLiteral(this.type, this.value);
         }
 
         @Override
-        public int hashCode() {
+        public final int hashCode() {
             return Objects.hash(this.type, this.value);
         }
 
         @Override
-        public boolean equals(final Object obj) {
+        public final boolean equals(final Object obj) {
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof ImmutableAnonymousSingleLiteral) {
-                final ImmutableAnonymousSingleLiteral o = (ImmutableAnonymousSingleLiteral) obj;
+            } else if (obj instanceof AnonymousLiteral) {
+                final AnonymousLiteral o = (AnonymousLiteral) obj;
                 match = o.type.equals(this.type)
                         && Objects.equals(o.value, this.value);
             } else {
@@ -240,7 +216,7 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
             final String s;
             if (this.value == null) {
                 s = _Constant.SPACE_NULL;
@@ -253,89 +229,35 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
         }
 
 
-    }//ImmutableAnonymousSingleLiteral
+    }//AnonymousLiteral
 
 
-    private static final class DelayAnonymousSingleLiteral extends AnonymousSingleLiteral
-            implements TypeInfer.DelayTypeInfer {
+    private static class NamedLiteral extends LiteralExpression implements io.army.criteria.NamedLiteral {
 
-        private final TypeInfer.DelayTypeInfer infer;
-
-
-        private TypeMeta type;
-
-        /**
-         * @see #single(TypeInfer, Object)
-         */
-        private DelayAnonymousSingleLiteral(TypeInfer.DelayTypeInfer infer, @Nullable Object value) {
-            super(value);
-            this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::onContextEnd);
-        }
+        private final String name;
 
 
-        @Override
-        public void appendSql(_SqlContext context) {
-            context.appendLiteral(this.typeMeta(), this.value);
-        }
+        private final TypeMeta type;
 
-        @Override
-        public boolean isDelay() {
-            return this.type == null && this.infer.isDelay();
-        }
-
-        @Override
-        public TypeMeta typeMeta() {
-            TypeMeta type = this.type;
-            if (type == null) {
-                type = ParamExpression.inferDelayType(this.infer, "encodingLiteral");
+        private NamedLiteral(String name, TypeMeta type) {
+            this.name = name;
+            if (type instanceof QualifiedField) {
+                this.type = ((QualifiedField<?>) type).fieldMeta();
+            } else {
+                assert type instanceof FieldMeta || type instanceof MappingType;
                 this.type = type;
             }
-            return type;
         }
 
-
-        @Override
-        public String toString() {
-            final TypeMeta type = this.type;
-            final String s;
-            if (this.value == null) {
-                s = _Constant.SPACE_NULL;
-            } else if (type == null || (type instanceof TableField && ((TableField) type).codec())) {
-                s = " {LITERAL}";
-            } else {
-                s = " " + this.value;
-            }
-            return s;
-        }
-
-
-        private void onContextEnd() {
-            if (!this.infer.isDelay()) {
-                this.typeMeta();
-            } else if (ContextStack.isEmpty()) {
-                throw CriteriaUtils.delayTypeInfer(this.infer);
-            } else {
-                //here, possibly recursive reference in WITH RECURSIVE clause
-                ContextStack.peek().addEndEventListener(this::onContextEnd);
-            }
-        }
-
-
-    }//DelayAnonymousSingleLiteral
-
-
-    private static abstract class NamedSingleLiteral extends LiteralExpression implements NamedLiteral {
-
-        final String name;
-
-        private NamedSingleLiteral(String name) {
-            this.name = name;
-        }
 
         @Override
         public final String name() {
             return this.name;
+        }
+
+        @Override
+        public final TypeMeta typeMeta() {
+            return this.type;
         }
 
         @Override
@@ -349,29 +271,6 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
             return " ?:" + this.name;
         }
 
-
-    }//NamedSingleLiteral
-
-
-    private static class ImmutableNamedSingleLiteral extends NamedSingleLiteral {
-
-        private final TypeMeta type;
-
-        private ImmutableNamedSingleLiteral(TypeMeta type, String name) {
-            super(name);
-            if (type instanceof QualifiedField) {
-                this.type = ((QualifiedField<?>) type).fieldMeta();
-            } else {
-                assert type instanceof FieldMeta || type instanceof MappingType;
-                this.type = type;
-            }
-        }
-
-        @Override
-        public final TypeMeta typeMeta() {
-            return this.type;
-        }
-
         @Override
         public final int hashCode() {
             return Objects.hash(this.type, this.name);
@@ -382,11 +281,11 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof ImmutableNamedSingleLiteral) {
-                final ImmutableNamedSingleLiteral o = (ImmutableNamedSingleLiteral) obj;
-                match = o instanceof ImmutableNamedNonNullSingleLiteral == this instanceof ImmutableNamedNonNullSingleLiteral
-                        && o.type.equals(this.type)
-                        && o.name.equals(this.name);
+            } else if (obj instanceof NamedLiteral) {
+                final NamedLiteral o = (NamedLiteral) obj;
+                match = (o instanceof NamedNonNullLiteral == this instanceof NamedNonNullLiteral)
+                        && o.name.equals(this.name)
+                        && o.type.equals(this.type);
             } else {
                 match = false;
             }
@@ -394,79 +293,18 @@ abstract class LiteralExpression extends OperationExpression.OperationSimpleExpr
         }
 
 
-    }//ImmutableNamedSingleLiteral
+    }//NamedLiteral
 
-    private static final class ImmutableNamedNonNullSingleLiteral extends ImmutableNamedSingleLiteral
+
+    private static final class NamedNonNullLiteral extends NamedLiteral
             implements SqlValueParam.NonNullValue {
 
-        private ImmutableNamedNonNullSingleLiteral(TypeMeta type, String name) {
-            super(type, name);
+        private NamedNonNullLiteral(String name, TypeMeta type) {
+            super(name, type);
         }
 
 
-    }//ImmutableNamedNonNullSingleLiteral
-
-
-    private static class DelayNamedSingleLiteral extends NamedSingleLiteral implements TypeInfer.DelayTypeInfer {
-
-        private final TypeInfer.DelayTypeInfer infer;
-
-        private TypeMeta type;
-
-        /**
-         * @see #namedNullable(TypeInfer, String)
-         */
-        private DelayNamedSingleLiteral(DelayTypeInfer infer, String name) {
-            super(name);
-            this.infer = infer;
-            ContextStack.peek().addEndEventListener(this::onContextEnd);
-        }
-
-        @Override
-        public final boolean isDelay() {
-            return this.type == null && this.infer.isDelay();
-        }
-
-        @Override
-        public final TypeMeta typeMeta() {
-            TypeMeta type = this.type;
-            if (type == null) {
-                if (this instanceof DelayNamedNonNullSingleLiteral) {
-                    type = ParamExpression.inferDelayType(this.infer, "encodingNamedLiteral");
-                } else {
-                    type = ParamExpression.inferDelayType(this.infer, "encodingNamedNullableLiteral");
-                }
-                this.type = type;
-            }
-            return type;
-        }
-
-        private void onContextEnd() {
-            if (!this.infer.isDelay()) {
-                this.typeMeta();
-            } else if (ContextStack.isEmpty()) {
-                throw CriteriaUtils.delayTypeInfer(this.infer);
-            } else {
-                //here, possibly recursive reference in WITH RECURSIVE clause
-                ContextStack.peek().addEndEventListener(this::onContextEnd);
-            }
-        }
-
-
-    }//DelayNamedSingleLiteral
-
-
-    private static final class DelayNamedNonNullSingleLiteral extends DelayNamedSingleLiteral
-            implements SqlValueParam.NonNullValue {
-
-        /**
-         * @see #named(TypeInfer, String)
-         */
-        private DelayNamedNonNullSingleLiteral(DelayTypeInfer infer, String name) {
-            super(infer, name);
-        }
-
-    }//DelayNamedNonNullSingleLiteral
+    }//NamedNonNullLiteral
 
 
 }

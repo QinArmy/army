@@ -508,6 +508,7 @@ abstract class CriteriaSupports {
     }//DelayTypeWrapper
 
 
+    @Deprecated
     private static final class UnaryDelayInferWrapper implements TypeMeta.DelayTypeMeta {
 
         private final TypeInfer.DelayTypeInfer infer;
