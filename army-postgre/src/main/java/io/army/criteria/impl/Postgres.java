@@ -346,19 +346,57 @@ public abstract class Postgres extends PostgreSyntax {
 
     public interface _RowsFromAsClause {
 
-        RowsFromCommaClause as(Consumer<PostgreStatement._FuncColumnDefinitionSpaceClause> consumer);
+        _RowsFromCommaClause as(Consumer<PostgreStatement._FuncColumnDefinitionSpaceClause> consumer);
 
     }
 
     public interface _RowsFromSpaceClause {
 
-        RowsFromCommaClause space(SimpleExpression func);
+        _RowsFromCommaClause space(SimpleExpression func);
 
-        RowsFromCommaClause space(SimplePredicate func);
+        _RowsFromCommaClause space(SimplePredicate func);
 
-        RowsFromCommaClause space(_TabularFunction func);
+        _RowsFromCommaClause space(_TabularFunction func);
 
         _RowsFromAsClause space(UndoneFunction func);
+
+    }
+
+
+    /**
+     * <p>
+     * This interface not start with underscore, so this interface can present in application developer code.
+     * </p>
+     *
+     * @since 1.0
+     */
+    public interface _RowsFromCommaClause {
+
+        _RowsFromCommaClause comma(SimpleExpression func);
+
+        _RowsFromCommaClause comma(SimplePredicate func);
+
+        _RowsFromCommaClause comma(_TabularFunction func);
+
+        _RowsFromAsClause comma(UndoneFunction func);
+
+    }
+
+    public interface _RowsFromConsumerAsClause {
+
+        RowFromConsumer as(Consumer<PostgreStatement._FuncColumnDefinitionSpaceClause> consumer);
+
+    }
+
+    public interface RowFromConsumer {
+
+        RowFromConsumer accept(SimpleExpression func);
+
+        RowFromConsumer accept(SimplePredicate func);
+
+        RowFromConsumer accept(_TabularFunction func);
+
+        _RowsFromConsumerAsClause accept(UndoneFunction func);
 
     }
 

@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._TableNameElement;
 import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.postgre.PostgreWindow;
-import io.army.criteria.postgre.RowsFromCommaClause;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.*;
 import io.army.dialect.postgre.PostgreDialect;
@@ -210,6 +209,16 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     }
 
     static Functions._TabularWithOrdinalityFunction rowsFrom(Consumer<Postgres._RowsFromSpaceClause> consumer) {
+        final PostgreRowsFromFunction func;
+        func = new PostgreRowsFromFunction();
+        consumer.accept(func);
+        return func.endFunc();
+    }
+
+    static Functions._TabularWithOrdinalityFunction rowsFrom(SQLs.SymbolSpace space, Consumer<Postgres.RowFromConsumer> consumer) {
+        if (space != SQLs.SPACE) {
+            throw CriteriaUtils.errorSymbol(space);
+        }
         final PostgreRowsFromFunction func;
         func = new PostgreRowsFromFunction();
         consumer.accept(func);
@@ -1724,7 +1733,8 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
     private static final class PostgreRowsFromFunction implements Functions._TabularWithOrdinalityFunction,
             Postgres._RowsFromSpaceClause,
-            RowsFromCommaClause,
+            Postgres._RowsFromCommaClause,
+            Postgres.RowFromConsumer,
             ArmyTabularFunction {
 
         private static final String ROWS_FROM = "ROWS FROM";
@@ -1751,7 +1761,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public RowsFromCommaClause space(SimpleExpression func) {
+        public Postgres._RowsFromCommaClause space(SimpleExpression func) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1760,7 +1770,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public RowsFromCommaClause space(SimplePredicate func) {
+        public Postgres._RowsFromCommaClause space(SimplePredicate func) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1769,7 +1779,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public RowsFromCommaClause space(Functions._TabularFunction func) {
+        public Postgres._RowsFromCommaClause space(Functions._TabularFunction func) {
             if (this.state != null) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -1788,17 +1798,17 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
         @Override
-        public RowsFromCommaClause comma(SimpleExpression func) {
+        public Postgres._RowsFromCommaClause comma(SimpleExpression func) {
             return this.onAddFuncExp(func);
         }
 
         @Override
-        public RowsFromCommaClause comma(SimplePredicate func) {
+        public Postgres._RowsFromCommaClause comma(SimplePredicate func) {
             return this.onAddFuncExp(func);
         }
 
         @Override
-        public RowsFromCommaClause comma(Functions._TabularFunction func) {
+        public Postgres._RowsFromCommaClause comma(Functions._TabularFunction func) {
             return this.onAddFuncExp(func);
         }
 
@@ -1810,7 +1820,45 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             } else if (!(func instanceof ArmySQLFunction)) {
                 throw ContextStack.clearStackAndNonArmyItem(func);
             }
-            return PostgreUtils.rowsFromUndoneFunc(func, this::onFuncDone);
+            return consumer -> PostgreUtils.rowsFromUndoneFunc(func, this::onFuncDone).apply(consumer);
+        }
+
+        @Override
+        public Postgres.RowFromConsumer accept(SimpleExpression func) {
+            if (this.state == null) {
+                this.state = Boolean.TRUE;
+            }
+            this.onAddFuncExp(func);
+            return this;
+        }
+
+        @Override
+        public Postgres.RowFromConsumer accept(SimplePredicate func) {
+            if (this.state == null) {
+                this.state = Boolean.TRUE;
+            }
+            this.onAddFuncExp(func);
+            return this;
+        }
+
+        @Override
+        public Postgres.RowFromConsumer accept(Functions._TabularFunction func) {
+            if (this.state == null) {
+                this.state = Boolean.TRUE;
+            }
+            this.onAddFuncExp(func);
+            return this;
+        }
+
+        @Override
+        public Postgres._RowsFromConsumerAsClause accept(final UndoneFunction func) {
+            if (this.state == null) {
+                this.state = Boolean.TRUE;
+            }
+            if (!(func instanceof ArmySQLFunction)) {
+                throw ContextStack.clearStackAndNonArmyItem(func);
+            }
+            return consumer -> PostgreUtils.rowsFromUndoneFunc(func, this::onFuncDone).apply(consumer);
         }
 
         @Override
@@ -1819,11 +1867,22 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             final List<Selection> fieldList = this.fieldList;
-            if (!(fieldList instanceof ArrayList)
-                    || fieldList.get(fieldList.size() - 1) == TabularSqlFunction.ORDINALITY_FIELD) {
+            if (fieldList.get(fieldList.size() - 1) == TabularSqlFunction.ORDINALITY_FIELD) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
-            fieldList.add(TabularSqlFunction.ORDINALITY_FIELD);
+
+            final List<Selection> temp;
+            if (fieldList instanceof ArrayList) {
+                temp = fieldList;
+            } else {
+                temp = _Collections.arrayList(fieldList.size() + 1);
+                temp.addAll(fieldList);
+            }
+
+            temp.add(TabularSqlFunction.ORDINALITY_FIELD);
+            if (temp == fieldList) {
+                this.fieldList = _Collections.unmodifiableList(temp);
+            }
             return this;
         }
 
@@ -1890,27 +1949,55 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                     .toString();
         }
 
-        private RowsFromCommaClause onAddFuncExp(final @Nullable Item func) {
+        private Postgres._RowsFromCommaClause onAddFuncExp(final @Nullable Item func) {
             final Boolean state = this.state;
             final List<ArmySQLFunction> funcList = this.functionList;
+            final List<Selection> fieldList = this.fieldList;
+
             if (state != Boolean.TRUE || !(funcList instanceof ArrayList)) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (!(func instanceof ArmySQLFunction)) {
                 throw ContextStack.clearStackAndNonArmyItem(func);
             } else if (func instanceof PostgreRowsFromFunction) {
                 throw ContextStack.clearStackAndCriteriaError("Don't support ROWS FROM() inside ROWS FROM()");
-            } else if (func instanceof Functions._TabularFunction && ((ArmyTabularFunction) func).hasWithOrdinality()) {
-                throw ContextStack.clearStackAndCriteriaError("Don't support WITH ORDINALITY inside ROWS FROM()");
-            }
-            funcList.add((ArmySQLFunction) func);
-            final List<Selection> fieldList = this.fieldList;
-            if (func instanceof Expression) {
+            } else if (func instanceof Expression) {
                 this.existsAnonymousField = true;
+                fieldList.add(ArmySelections.forAnonymous(((Expression) func).typeMeta()));
+            } else if (func instanceof Functions._TabularFunction) {
+                if (((ArmyTabularFunction) func).hasWithOrdinality()) {
+                    throw ContextStack.clearStackAndCriteriaError("Don't support WITH ORDINALITY inside ROWS FROM()");
+                }
+
+                final boolean anonymous;
+                anonymous = ((ArmyTabularFunction) func).hasAnonymousField();
+                this.existsAnonymousField = anonymous;
+
+                if (anonymous) {
+                    fieldList.addAll(((ArmyTabularFunction) func).refAllSelection());
+                } else {
+                    final Map<String, Selection> fieldMap = this.fieldMap;
+                    boolean notDuplicate = true;
+                    for (Selection field : ((ArmyTabularFunction) func).refAllSelection()) {
+
+                        fieldList.add(field);
+
+                        if (notDuplicate && fieldMap.putIfAbsent(field.alias(), field) != null) {
+                            notDuplicate = false;
+                            this.existsAnonymousField = true;
+                        }
+                    }
+                }// else
+
+            } else {
+                //no bug,never here
+                throw ContextStack.clearStackAndCriteriaError(String.format("unknown function[%s]", func));
             }
+
+            funcList.add((ArmySQLFunction) func);
             return this;
         }
 
-        private RowsFromCommaClause onFuncDone(final PostgreUtils.DoneFunc func) {
+        private PostgreRowsFromFunction onFuncDone(final PostgreUtils.DoneFunc func) {
             final List<ArmySQLFunction> funcList = this.functionList;
             if (!(funcList instanceof ArrayList)) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
@@ -1919,15 +2006,33 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
             final List<Selection> fieldList = this.fieldList;
             final Map<String, Selection> fieldMap = this.fieldMap;
+            boolean notDuplicate = true;
             for (_FunctionField field : func.fieldList) {
-                fieldMap.put(field.fieldName(), field); // override
+
                 fieldList.add(field);
+
+                if (notDuplicate && fieldMap.putIfAbsent(field.fieldName(), field) != null) {
+                    notDuplicate = false;
+                    this.existsAnonymousField = true;
+                }
+
             }
             return this;
         }
 
 
         private PostgreRowsFromFunction endFunc() {
+            this.state = Boolean.FALSE;
+            final List<ArmySQLFunction> funcList = this.functionList;
+            if (funcList.size() == 0) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            this.functionList = _Collections.unmodifiableList(funcList);
+            if (this.existsAnonymousField) {
+                this.fieldMap = null;
+            } else {
+                this.fieldMap = _Collections.unmodifiableMap(this.fieldMap);
+            }
             return this;
         }
 

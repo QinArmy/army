@@ -1203,6 +1203,13 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
         return PostgreFunctionUtils.rowsFrom(consumer);
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html">ROWS FROM</a>
+     */
+    public static _TabularWithOrdinalityFunction rowsFrom(SQLs.SymbolSpace space, Consumer<Postgres.RowFromConsumer> consumer) {
+        return PostgreFunctionUtils.rowsFrom(space, consumer);
+    }
+
 
     /*-------------------below package method -------------------*/
 

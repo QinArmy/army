@@ -8,7 +8,6 @@ import io.army.criteria.impl.inner._ParensRowSet;
 import io.army.criteria.impl.inner._RowSet;
 import io.army.criteria.postgre.FuncColumnDefCommaClause;
 import io.army.criteria.postgre.PostgreStatement;
-import io.army.criteria.postgre.RowsFromCommaClause;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.postgre.PostgreDialect;
@@ -21,6 +20,7 @@ import io.army.util._StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract class PostgreUtils extends CriteriaUtils {
@@ -56,8 +56,8 @@ abstract class PostgreUtils extends CriteriaUtils {
         };
     }
 
-    static Postgres._RowsFromAsClause rowsFromUndoneFunc(
-            final UndoneFunction func, final Function<DoneFunc, RowsFromCommaClause> function) {
+    static <T, R> Function<Consumer<PostgreStatement._FuncColumnDefinitionSpaceClause>, R> rowsFromUndoneFunc(
+            final UndoneFunction func, final Function<DoneFunc, R> function) {
         return c -> {
             final FuncColumnDefinitionClause clause;
             clause = new FuncColumnDefinitionClause();
