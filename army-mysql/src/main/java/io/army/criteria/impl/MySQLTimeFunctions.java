@@ -15,7 +15,6 @@ import io.army.sqltype.MySQLType;
 import io.army.util._Exceptions;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * package class
@@ -606,11 +605,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             case WEEK: {
                 final TypeMeta type;
                 type = datetimeExpr.typeMeta();
-                if (type instanceof TypeMeta.DelayTypeMeta) {
-                    returnType = CriteriaSupports.delayWrapper((TypeMeta.DelayTypeMeta) type, MySQLTimeFunctions::_timestampAdd);
-                } else {
-                    returnType = _timestampAdd(type.mappingType());
-                }
+                returnType = _timestampAdd(type.mappingType());
             }
             break;
             default:
@@ -1055,12 +1050,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
         final TypeMeta formatType;
         formatType = format.typeMeta();
         final TypeMeta returnType;
-        if (formatType instanceof TypeMeta.DelayTypeMeta) {//TODO modify delay implementation
-            final Function<MappingType, MappingType> function = t -> _strToDateReturnType((ArmyExpression) format, t);
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.DelayTypeMeta) formatType, function);
-        } else {
-            returnType = _strToDateReturnType((ArmyExpression) format, formatType.mappingType());
-        }
+        returnType = _strToDateReturnType((ArmyExpression) format, formatType.mappingType());
         return FunctionUtils.twoArgFunc("STR_TO_DATE", str, format, returnType);
     }
 
@@ -1117,11 +1107,7 @@ abstract class MySQLTimeFunctions extends MySQLStringFunctions {
             , final SQLs.WordInterval interval, final Expression expr, final MySQLTimeUnit unit) {
         final TypeMeta type, returnType;
         type = date.typeMeta();
-        if (type instanceof TypeMeta.DelayTypeMeta) {
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.DelayTypeMeta) type, t -> _dateAddSubReturnType(t, unit));
-        } else {
-            returnType = _dateAddSubReturnType(type.mappingType(), unit);
-        }
+        returnType = _dateAddSubReturnType(type.mappingType(), unit);
         return FunctionUtils.complexArgFunc(name, returnType, date, Functions.FuncWord.COMMA, interval, expr, unit);
     }
 

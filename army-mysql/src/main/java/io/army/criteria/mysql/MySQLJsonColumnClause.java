@@ -5,29 +5,30 @@ import io.army.criteria.Item;
 import io.army.criteria.SQLElement;
 import io.army.criteria.SQLIdentifier;
 import io.army.criteria.impl.MySQLs;
+import io.army.criteria.impl.SQLs;
 import io.army.sqltype.MySQLType;
 
 import java.util.function.Function;
 
 public interface MySQLJsonColumnClause extends Item {
 
-    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLs.WordsForOrdinality forOrdinality);
+    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, SQLs.WordsForOrdinality forOrdinality);
 
-    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, SQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, Expression n, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, Expression n, SQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, int n, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, int n, SQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, Expression n, SQLElement charset, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, Expression n, SQLElement charset, SQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, int n, SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, int n, SQLElement charset, SQLIdentifier collate, SQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, Expression n, SQLElement charset, SQLIdentifier collate, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, Expression n, SQLElement charset, SQLIdentifier collate, SQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, int p, int m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, int p, int m, SQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
-    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, Expression p, Expression m, MySQLs.WordPath path, Function<String, Expression> operator, String stringPath);
+    MySQLFunction._JsonTableDynamicOnEmptyActionSpec column(String name, MySQLType type, Expression p, Expression m, SQLs.WordPath path, Function<String, Expression> operator, String stringPath);
 
     /*-------------------below exists path -------------------*/
 

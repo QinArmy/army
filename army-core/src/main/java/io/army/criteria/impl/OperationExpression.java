@@ -848,7 +848,7 @@ abstract class OperationExpression extends OperationSQLExpression
 
 
     static abstract class SqlFunctionExpression extends OperationSimpleExpression
-            implements ArmySQLFunction, TypeInfer.DelayTypeInfer {
+            implements ArmySQLFunction {
 
         final String name;
 
@@ -877,12 +877,6 @@ abstract class OperationExpression extends OperationSQLExpression
         @Override
         public final String name() {
             return this.name;
-        }
-
-        @Override
-        public final boolean isDelay() {
-            final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
         }
 
         /**

@@ -1,6 +1,5 @@
 package io.army.meta;
 
-import io.army.criteria.CriteriaException;
 import io.army.criteria.TableField;
 import io.army.mapping.MappingType;
 
@@ -19,18 +18,8 @@ import io.army.mapping.MappingType;
  */
 public interface TypeMeta extends Meta {
 
-    /**
-     * @throws CriteriaException throw when this is {@link DelayTypeMeta} and {@link DelayTypeMeta#isDelay()} is true.
-     */
     MappingType mappingType();
 
-
-    @Deprecated
-    interface DelayTypeMeta extends TypeMeta {
-
-
-        boolean isDelay();
-    }
 
 
 }

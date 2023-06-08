@@ -72,25 +72,7 @@ abstract class MySQLJsonFunctions extends MySQLTimeFunctions {
      */
     @Deprecated
     public static SimpleExpression jsonObject(final Map<String, Expression> expMap) {
-        final String name = "JSON_OBJECT";
-        final SimpleExpression func;
-        if (expMap.size() == 0) {
-            func = FunctionUtils.zeroArgFunc(name, JsonMapType.from(SQLs._NullType.INSTANCE, SQLs._NullType.INSTANCE));
-        } else {
-            TypeMeta valueType = null;
-            for (Expression value : expMap.values()) {
-                valueType = value.typeMeta();
-                break;
-            }
-            final TypeMeta returnType;
-            if (valueType instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) valueType).isDelay()) {
-                returnType = CriteriaSupports.biDelayWrapper(StringType.INSTANCE, valueType, JsonMapType::from);
-            } else {
-                returnType = JsonMapType.from(StringType.INSTANCE, valueType.mappingType());
-            }
-            func = FunctionUtils.jsonObjectFunc(name, expMap, returnType);
-        }
-        return func;
+       throw new UnsupportedOperationException();
     }
 
 

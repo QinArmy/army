@@ -15,13 +15,5 @@ public interface TypeInfer extends Item {
     }
 
 
-    @Deprecated
-    interface DelayTypeInfer extends TypeInfer {
-
-        @Deprecated
-        boolean isDelay();
-
-    }
-
 
 }

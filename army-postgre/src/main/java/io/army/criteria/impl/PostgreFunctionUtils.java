@@ -1614,7 +1614,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
     }
 
-    private static final class UnaryOrderedSetType implements TypeMeta.DelayTypeMeta, OrderedSetType {
+    private static final class UnaryOrderedSetType implements TypeMeta, OrderedSetType {
 
         private final UnaryOperator<MappingType> function;
 
@@ -1632,7 +1632,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             this.inputType = inputType;
-            this.onContextEnd();
+            this.mappingType();
         }
 
         @Override
@@ -1658,40 +1658,9 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
 
-        @Override
-        public boolean isDelay() {
-            final boolean match;
-            if (this.type != null) {
-                match = false;
-            } else {
-                final TypeInfer inputType = this.inputType;
-                match = inputType == null || (inputType instanceof TypeInfer.DelayTypeInfer
-                        && ((TypeInfer.DelayTypeInfer) inputType).isDelay());
-            }
-            return match;
-        }
-
-
-        private void onContextEnd() {
-            if (this.type != null) {
-                return;
-            }
-            final TypeInfer inputType = this.inputType;
-            if (inputType instanceof TypeInfer.DelayTypeInfer
-                    && ((TypeInfer.DelayTypeInfer) inputType).isDelay()) {
-                if (ContextStack.isEmpty()) {
-                    throw CriteriaUtils.delayTypeMeta((TypeMeta.DelayTypeMeta) inputType);
-                }
-                ContextStack.peek().addEndEventListener(this::onContextEnd);
-            } else {
-                this.mappingType();
-            }
-        }
-
-
     }//UnaryOrderedSetType
 
-    private static final class BiOrderedSetType implements TypeMeta.DelayTypeMeta, OrderedSetType {
+    private static final class BiOrderedSetType implements TypeMeta, OrderedSetType {
 
         private final TypeInfer argInfer;
 
@@ -1712,7 +1681,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             this.inputInfer = inputType;
-            this.onContextEnd();
+            this.mappingType();
         }
 
         @Override
@@ -1747,39 +1716,6 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             type = this.function.apply(argType, inputType);
             this.type = type;
             return type;
-        }
-
-        @Override
-        public boolean isDelay() {
-            final boolean match;
-            if (this.type != null) {
-                match = false;
-            } else {
-                final TypeInfer argInfer = this.argInfer, inputInfer = this.inputInfer;
-                match = (argInfer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) argInfer).isDelay())
-                        || (inputInfer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) inputInfer).isDelay());
-            }
-            return match;
-        }
-
-        private void onContextEnd() {
-            if (this.type != null) {
-                return;
-            }
-
-            final TypeInfer argInfer = this.argInfer, inputInfer = this.inputInfer;
-            assert inputInfer != null;
-
-            if ((argInfer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) argInfer).isDelay())
-                    || (inputInfer instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) inputInfer).isDelay())) {
-                if (ContextStack.isEmpty()) {
-                    throw CriteriaUtils.delayTypeMeta((TypeMeta.DelayTypeMeta) inputInfer);
-                }
-                ContextStack.peek().addEndEventListener(this::onContextEnd);
-            } else {
-                this.mappingType();
-            }
-
         }
 
 
@@ -1965,11 +1901,6 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 throw ContextStack.clearStackAndCriteriaError("Don't support ROWS FROM() inside ROWS FROM()");
             } else if (func instanceof Functions._TabularFunction && ((ArmyTabularFunction) func).hasWithOrdinality()) {
                 throw ContextStack.clearStackAndCriteriaError("Don't support WITH ORDINALITY inside ROWS FROM()");
-            } else if (func instanceof Expression
-                    && func instanceof TypeInfer.DelayTypeInfer
-                    && ((TypeInfer.DelayTypeInfer) func).isDelay()) {
-
-                throw ContextStack.clearStackAndCriteriaError("error,delay function[%s]");
             }
             funcList.add((ArmySQLFunction) func);
             final List<Selection> fieldList = this.fieldList;

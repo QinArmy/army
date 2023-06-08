@@ -7371,9 +7371,6 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      */
     private static _TabularWithOrdinalityFunction _jsonbPopulateRecordFunc(final String name, final Expression base,
                                                                            final Expression json) {
-        if (base instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) base).isDelay()) {
-            throw CriteriaUtils.tabularFuncErrorPosition(name);
-        }
         final List<Selection> fieldList;
         fieldList = DialectFunctionUtils.compositeFieldList(name, base);
         return DialectFunctionUtils.twoArgTabularFunc(name, base, json, fieldList);

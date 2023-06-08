@@ -760,17 +760,6 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException delayTypeInfer(TypeInfer.DelayTypeInfer infer) {
-        String m = String.format("%s %s isPrepared() return true", TypeInfer.DelayTypeInfer.class.getName(), infer);
-        return ContextStack.clearStackAndCriteriaError(m);
-    }
-
-    static CriteriaException delayTypeMeta(TypeMeta.DelayTypeMeta type) {
-        String m = String.format("%s %s isPrepared() return true", TypeMeta.DelayTypeMeta.class.getName(), type);
-        return ContextStack.clearStackAndCriteriaError(m);
-    }
-
-
     static CriteriaException nonCollectionValue(String keyName) {
         String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
         return ContextStack.clearStackAndCriteriaError(m);
@@ -905,12 +894,6 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
-    static CriteriaException tabularFuncErrorPosition(String name) {
-        String m;
-        m = String.format("function[%s] don't support %s,because isDelay() return true,please check sql syntax. ", name,
-                TypeInfer.DelayTypeInfer.class.getName());
-        return ContextStack.clearStackAndCriteriaError(m);
-    }
 
     static UnknownFieldGroupException unknownFieldDerivedGroup(final @Nullable CriteriaContext currentContext,
                                                                String groupAlias) {

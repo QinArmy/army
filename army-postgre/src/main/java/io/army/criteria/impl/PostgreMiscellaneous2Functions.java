@@ -831,9 +831,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      */
     public static _TabularWithOrdinalityFunction unnest(final Expression exp) {
         final String name = "UNNEST";
-        if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
-            throw CriteriaUtils.tabularFuncErrorPosition(name);
-        }
 
         final MappingType type;
         type = exp.typeMeta().mappingType();
@@ -883,11 +880,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static _ColumnWithOrdinalityFunction unnest(final ArrayExpression exp) {
-        final String name = "UNNEST";
-        if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
-            throw CriteriaUtils.tabularFuncErrorPosition(name);
-        }
-        return DialectFunctionUtils.oneArgColumnFunction(name, exp, null,
+        return DialectFunctionUtils.oneArgColumnFunction("UNNEST", exp, null,
                 CriteriaUtils.arrayUnderlyingType(exp.typeMeta().mappingType())
         );
     }
@@ -912,17 +905,11 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      * </a>
      */
     public static _TabularWithOrdinalityFunction unnest(ArrayExpression array1, ArrayExpression array2) {
-        final String name = "UNNEST";
-        if (array1 instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array1).isDelay()) {
-            throw CriteriaUtils.tabularFuncErrorPosition(name);
-        } else if (array2 instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array2).isDelay()) {
-            throw CriteriaUtils.tabularFuncErrorPosition(name);
-        }
         final List<Selection> fieldList = _Collections.arrayList(2);
 
         fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(array1.typeMeta())));
         fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(array2.typeMeta())));
-        return DialectFunctionUtils.twoArgTabularFunc(name, array1, array2, fieldList);
+        return DialectFunctionUtils.twoArgTabularFunc("UNNEST", array1, array2, fieldList);
     }
 
     /**
@@ -947,13 +934,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
     public static _TabularWithOrdinalityFunction unnest(ArrayExpression array1, ArrayExpression array2,
                                                         ArrayExpression array3, ArrayExpression... restArray) {
         final String name = "UNNEST";
-        if (array1 instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array1).isDelay()) {
-            throw CriteriaUtils.tabularFuncErrorPosition(name);
-        } else if (array2 instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array2).isDelay()) {
-            throw CriteriaUtils.tabularFuncErrorPosition(name);
-        } else if (array3 instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array3).isDelay()) {
-            throw CriteriaUtils.tabularFuncErrorPosition(name);
-        }
 
         final List<Selection> fieldList = _Collections.arrayList(3 + restArray.length);
         fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(array1.typeMeta())));
@@ -971,9 +951,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
             argList.add((ArmyExpression) array3);
 
             for (ArrayExpression array : restArray) {
-                if (array instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) array).isDelay()) {
-                    throw CriteriaUtils.tabularFuncErrorPosition(name);
-                }
                 argList.add((ArmyExpression) array);
                 fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(array.typeMeta())));
             }
@@ -1006,9 +983,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
         final List<ArmyExpression> argList = _Collections.arrayList();
         final List<Selection> fieldList = _Collections.arrayList();
         consumer.accept(exp -> {
-            if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
-                throw CriteriaUtils.tabularFuncErrorPosition(name);
-            }
             argList.add((ArmyExpression) exp);
             fieldList.add(ArmySelections.forAnonymous(CriteriaUtils.arrayUnderlyingType(exp.typeMeta())));
         });

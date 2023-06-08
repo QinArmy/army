@@ -9,7 +9,6 @@ interface Operator {
 
     String name();
 
-    @Deprecated
     String spaceRender();
 
     /**

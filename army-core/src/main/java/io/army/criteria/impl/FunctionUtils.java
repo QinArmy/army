@@ -1826,8 +1826,7 @@ abstract class FunctionUtils {
             CaseWhens,
             SQLFunction._DynamicCaseThenClause,
             SQLFunction._DynamicWhenSpaceClause,
-            ArmySQLFunction,
-            TypeInfer.DelayTypeInfer {
+            ArmySQLFunction {
 
         private final ArmyExpression caseValue;
 
@@ -1853,11 +1852,6 @@ abstract class FunctionUtils {
             return "CASE";
         }
 
-        @Override
-        public boolean isDelay() {
-            final TypeMeta returnType = this.returnType;
-            return returnType instanceof TypeMeta.DelayTypeMeta && ((TypeMeta.DelayTypeMeta) returnType).isDelay();
-        }
 
         @Override
         public MappingType typeMeta() {
@@ -1880,7 +1874,8 @@ abstract class FunctionUtils {
             }
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
-                    .append(" CASE");
+                    .append(_Constant.SPACE)
+                    .append("CASE");
 
             final ArmyExpression caseValue = this.caseValue;
             if (caseValue != null) {
@@ -2228,20 +2223,16 @@ abstract class FunctionUtils {
             if (type == null) {
                 throw ContextStack.nullPointer(this.outerContext);
             }
-            final TypeMeta typeMeta;
+            MappingType resultType;
             if (type instanceof MappingType) {
-                typeMeta = (MappingType) type;
-            } else if (type instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) type).isDelay()) {
-                typeMeta = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) type, Expressions::identityType);
-            } else if (type instanceof TypeMeta.DelayTypeMeta) {
-                typeMeta = (TypeMeta) type;
+                resultType = (MappingType) type;
             } else {
-                typeMeta = type.typeMeta().mappingType();
+                resultType = type.typeMeta().mappingType();
             }
-            return this.endCaseFunction(typeMeta);
+            return this.endCaseFunction(resultType);
         }
 
-        private Expression endCaseFunction(final TypeMeta type) {
+        private Expression endCaseFunction(final MappingType type) {
             if (this.whenExpression != null) {
                 throw lastWhenClauseNotEnd();
             } else if (this.returnType != null) {

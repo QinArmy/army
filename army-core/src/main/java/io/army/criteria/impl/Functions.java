@@ -842,30 +842,12 @@ abstract class Functions {
 
     @Deprecated
     static TypeMeta _doubleOrNumeric(final Expression exp) {
-        final TypeMeta typeMeta;
-        typeMeta = exp.typeMeta();
-
-        final TypeMeta returnType;
-        if (typeMeta instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) typeMeta).isDelay()) {
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.DelayTypeMeta) typeMeta, Functions::_doubleOrNumberType);
-        } else {
-            returnType = _doubleOrNumberType(typeMeta.mappingType());
-        }
-        return returnType;
+        throw new UnsupportedOperationException();
     }
 
     @Deprecated
     static TypeMeta _numericOrDecimal(final Expression exp) {
-        final TypeMeta typeMeta;
-        typeMeta = exp.typeMeta();
-
-        final TypeMeta returnType;
-        if (typeMeta instanceof TypeMeta.DelayTypeMeta && !((TypeMeta.DelayTypeMeta) typeMeta).isDelay()) {
-            returnType = CriteriaSupports.delayWrapper((TypeMeta.DelayTypeMeta) typeMeta, Functions::_numberOrDecimal);
-        } else {
-            returnType = _numberOrDecimal(typeMeta.mappingType());
-        }
-        return returnType;
+        throw new UnsupportedOperationException();
     }
 
 

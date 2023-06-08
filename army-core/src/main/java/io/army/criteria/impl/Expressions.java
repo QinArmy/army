@@ -75,13 +75,7 @@ abstract class Expressions {
         } else if (!_StringUtils.hasText(collation)) {
             throw ContextStack.clearStackAndCriteriaError("collation must have text");
         }
-        final CollateExpression expression;
-        if (exp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) exp).isDelay()) {
-            expression = new DelayCollateExpression(exp, collation);
-        } else {
-            expression = new ImmutableCollateExpression(exp, collation);
-        }
-        return expression;
+        return new CollateExpression(exp, collation);
     }
 
     static CompoundExpression dialectDualExp(final Expression left, final DualExpOperator operator,
@@ -91,14 +85,7 @@ abstract class Expressions {
         } else if (!(right instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(right);
         }
-        final CompoundExpression result;
-        if ((left instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) left).isDelay())
-                || (right instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) right).isDelay())) {
-            result = new DelayDualExpression(left, operator, right, inferFunc);
-        } else {
-            result = new DualExpression(left, operator, right, inferFunc);
-        }
-        return result;
+        return new DualExpression(left, operator, right, inferFunc);
     }
 
 
@@ -106,13 +93,7 @@ abstract class Expressions {
         if (!(operand instanceof OperationExpression)) {
             throw NonOperationExpression.nonOperationExpression(operand);
         }
-        final UnaryExpression result;
-        if (operand instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) operand).isDelay()) {
-            result = new StandardDelayUnaryExpression(operator, operand, Expressions::identityType);
-        } else {
-            result = new StandardUnaryExpression(operator, operand, Expressions::identityType);
-        }
-        return result;
+        return new StandardUnaryExpression(operator, operand, Expressions::identityType);
     }
 
 
@@ -390,23 +371,18 @@ abstract class Expressions {
                 if (type == null) {
                     throw CriteriaUtils.clearStackAndNonDefaultType(element);
                 }
-            } else if (element instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) element).isDelay()) {
-                type = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) element, MappingType::arrayTypeOfThis);
             } else {
                 type = ((Expression) element).typeMeta();
             }
-
             break;
         }
 
         if (type == null) {
             type = TextArrayType.LINEAR;
-        } else if (!(type instanceof TypeMeta.DelayTypeMeta)) {
-            if (type instanceof MappingType) {
-                type = ((MappingType) type).arrayTypeOfThis();
-            } else {
-                type = type.mappingType().arrayTypeOfThis();
-            }
+        } else if (type instanceof MappingType) {
+            type = ((MappingType) type).arrayTypeOfThis();
+        } else {
+            type = type.mappingType().arrayTypeOfThis();
         }
         return type;
     }
@@ -874,27 +850,6 @@ abstract class Expressions {
     }//DualExpression
 
 
-    private static final class DelayDualExpression extends DualExpression implements TypeInfer.DelayTypeInfer {
-
-        /**
-         * @see #dualExp(Expression, DualExpOperator, Expression)
-         * @see #dialectDualExp(Expression, DualExpOperator, Expression, BinaryOperator)
-         */
-        private DelayDualExpression(Expression left, DualExpOperator operator, Expression right,
-                                    BinaryOperator<MappingType> inferFunc) {
-            super(left, operator, right, inferFunc);
-        }
-
-        @Override
-        public boolean isDelay() {
-            final ArmyExpression left = this.left, right = this.right;
-            return (left instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) left).isDelay())
-                    || (right instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) right).isDelay());
-        }
-
-
-    }//DelayDualExpression
-
     /**
      * <p>
      * This class representing unary expression,unary expression always out outer bracket.
@@ -909,6 +864,8 @@ abstract class Expressions {
         final ArmyExpression operand;
 
         private final UnaryOperator<MappingType> inferFunc;
+
+        private MappingType type;
 
         /**
          * @see #unaryExp(UnaryExpOperator, Expression)
@@ -925,11 +882,7 @@ abstract class Expressions {
          */
         @Override
         public final MappingType typeMeta() {
-            MappingType type = null;
-            if (this instanceof DelayUnaryExpression) {
-                type = ((DelayUnaryExpression) this).type;
-            }
-
+            MappingType type = this.type;
             if (type != null) {
                 return type;
             }
@@ -940,11 +893,8 @@ abstract class Expressions {
             } else {
                 type = typeMeta.mappingType();
             }
-
             type = this.inferFunc.apply(type); // infer
-            if (this instanceof DelayUnaryExpression) {
-                ((DelayUnaryExpression) this).type = type;
-            }
+            this.type = type;
             return type;
         }
 
@@ -955,9 +905,6 @@ abstract class Expressions {
             final Operator.SqlUnaryExpOperator operator = this.operator;
             final boolean outerParens;
             outerParens = operator != UnaryExpOperator.NEGATE;
-            if (!(operator instanceof UnaryExpOperator) && operator.database() != context.database()) {
-                throw unsupportedOperator(operator, context.database());
-            }
 
             final StringBuilder builder;
             builder = context.sqlBuilder();
@@ -965,7 +912,7 @@ abstract class Expressions {
             if (outerParens) {
                 builder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            builder.append(operator.spaceRender());
+            builder.append(operator.spaceRender(context.database()));
 
             final ArmyExpression operand = this.operand;
             final boolean operandOuterParens = !(operand instanceof ArmySimpleExpression);
@@ -984,26 +931,6 @@ abstract class Expressions {
                 builder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
-        }
-
-        @Override
-        public final int hashCode() {
-            return Objects.hash(this.operator, this.operand);
-        }
-
-        @Override
-        public final boolean equals(final Object obj) {
-            final boolean match;
-            if (obj == this) {
-                match = true;
-            } else if (obj instanceof UnaryExpression) {
-                final UnaryExpression o = (UnaryExpression) obj;
-                match = o.operator == this.operator
-                        && o.operand.equals(this.operand);
-            } else {
-                match = false;
-            }
-            return match;
         }
 
         @Override
@@ -1041,24 +968,6 @@ abstract class Expressions {
 
     }//UnaryExpression
 
-    static abstract class DelayUnaryExpression extends UnaryExpression implements TypeInfer.DelayTypeInfer {
-
-        private MappingType type;
-
-
-        DelayUnaryExpression(Operator.SqlUnaryExpOperator operator, Expression operand,
-                             UnaryOperator<MappingType> inferFunc) {
-            super(operator, operand, inferFunc);
-        }
-
-        @Override
-        public final boolean isDelay() {
-            return this.type == null && ((DelayTypeInfer) this.operand).isDelay();
-        }
-
-
-    }//DelayUnaryExpression
-
 
     private static final class StandardUnaryExpression extends UnaryExpression {
 
@@ -1072,17 +981,6 @@ abstract class Expressions {
 
     }//StandardUnaryExpression
 
-    private static final class StandardDelayUnaryExpression extends DelayUnaryExpression {
-
-        /**
-         * @see #unaryExp(UnaryExpOperator, Expression)
-         */
-        private StandardDelayUnaryExpression(UnaryExpOperator operator, Expression operand,
-                                             UnaryOperator<MappingType> inferFunc) {
-            super(operator, operand, inferFunc);
-        }
-
-    }//StandardDelayUnaryExpression
 
 
     private static final class ScalarExpression extends OperationExpression.OperationSimpleExpression {
@@ -1881,21 +1779,15 @@ abstract class Expressions {
         private ArrayElementExpression(final OperationExpression arrayExp) {
             this.arrayExp = (ArmyArrayExpression) arrayExp;
             final TypeMeta arrayType;
-            if (arrayExp instanceof TypeInfer.DelayTypeInfer && ((TypeInfer.DelayTypeInfer) arrayExp).isDelay()) {
-                arrayType = CriteriaSupports.unaryInfer((TypeInfer.DelayTypeInfer) arrayExp, Expressions::identityType);
-            } else {
-                arrayType = arrayExp.typeMeta();
-            }
+            arrayType = arrayExp.typeMeta();
 
-            if (this instanceof ArrayExpression) {
-                if (arrayType instanceof MappingType || arrayType instanceof TypeMeta.DelayTypeMeta) {
+            if (this instanceof ArrayExpression) { // TODO  bug ?
+                if (arrayType instanceof MappingType) {
                     this.type = arrayType;
                 } else {
                     // avoid to field codec
                     this.type = arrayType.mappingType();
                 }
-            } else if (arrayType instanceof TypeMeta.DelayTypeMeta) {
-                this.type = arrayType;
             } else if (arrayType instanceof MappingType) {
                 this.type = ((MappingType.SqlArrayType) arrayType).elementType();
             } else {
@@ -2199,13 +2091,7 @@ abstract class Expressions {
             this.json = (ArmyJsonExpression) json;
 
             final TypeMeta jsonType;
-            if (json instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) json).isDelay()) {
-                jsonType = CriteriaSupports.unaryInfer((DelayTypeInfer) json, Expressions::jsonIdentityType);
-            } else {
-                jsonType = json.typeMeta();
-            }
-
-            if (jsonType instanceof MappingType || jsonType instanceof TypeMeta.DelayTypeMeta) {
+            if ((jsonType = json.typeMeta()) instanceof MappingType) {
                 this.type = jsonType;
             } else {
                 this.type = jsonType.mappingType();
@@ -2657,10 +2543,10 @@ abstract class Expressions {
     }//SubQueryArrayConstructor
 
 
-    private static abstract class CollateExpression extends OperationExpression.OperationSimpleExpression
+    private static final class CollateExpression extends OperationExpression.OperationSimpleExpression
             implements SimpleResultExpression {
 
-        final ArmyExpression exp;
+        private final ArmyExpression exp;
 
         private final String collation;
 
@@ -2669,9 +2555,19 @@ abstract class Expressions {
             this.collation = collation;
         }
 
+        @Override
+        public MappingType typeMeta() {
+            TypeMeta typeMeta;
+            typeMeta = this.exp.typeMeta();
+            if (!(typeMeta instanceof MappingType)) {
+                typeMeta = typeMeta.mappingType();
+            }
+            return (MappingType) typeMeta;
+        }
+
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public void appendSql(final _SqlContext context) {
             this.exp.appendSql(context);
             final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder()
@@ -2680,7 +2576,7 @@ abstract class Expressions {
         }
 
         @Override
-        public final String toString() {
+        public String toString() {
             return _StringUtils.builder()
                     .append(this.exp)
                     .append(" COLLATE ")
@@ -2693,59 +2589,6 @@ abstract class Expressions {
     }//CollateExpression
 
 
-    private static final class ImmutableCollateExpression extends CollateExpression {
-
-        private ImmutableCollateExpression(Expression exp, String collation) {
-            super(exp, collation);
-        }
-
-        @Override
-        public MappingType typeMeta() {
-            final TypeMeta typeMeta;
-            typeMeta = this.exp.typeMeta();
-            final MappingType type;
-            if (typeMeta instanceof MappingType) {
-                type = (MappingType) typeMeta;
-            } else {
-                type = typeMeta.mappingType();
-            }
-            return type;
-        }
-
-    }//ImmutableCollateExpression
-
-
-    private static final class DelayCollateExpression extends CollateExpression implements TypeInfer.DelayTypeInfer {
-
-        private MappingType type;
-
-        private DelayCollateExpression(Expression exp, String collation) {
-            super(exp, collation);
-        }
-
-        @Override
-        public boolean isDelay() {
-            return this.type == null && ((DelayTypeInfer) this.exp).isDelay();
-        }
-
-        @Override
-        public MappingType typeMeta() {
-            MappingType type = this.type;
-            if (type != null) {
-                return type;
-            }
-            final TypeMeta typeMeta;
-            if ((typeMeta = this.exp.typeMeta()) instanceof MappingType) {
-                type = (MappingType) typeMeta;
-            } else {
-                type = typeMeta.mappingType();
-            }
-            this.type = type;
-            return type;
-        }
-
-
-    }//DelayCollateExpression
 
 
     private static final class EmptyParensGroupByItem implements ArmyGroupByItem, GroupByItem.ExpressionGroup {

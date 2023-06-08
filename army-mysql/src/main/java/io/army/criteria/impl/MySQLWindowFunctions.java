@@ -673,19 +673,17 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
         final MappingType returnType;
 
         final TypeMeta paramMeta = expr.typeMeta();
-        if (paramMeta instanceof TypeMeta.DelayTypeMeta) {
-            returnType = StringType.INSTANCE; //TODO optimize unknown,compatibility
-        } else if (!(paramMeta.mappingType() instanceof StringType)) {
-            returnType = LongType.INSTANCE;
-        } else if (!(expr instanceof SqlValueParam.SingleAnonymousValue)) {
-            returnType = StringType.INSTANCE; //ODO optimize unknown,compatibility
-        } else {
-            final Object value;
-            value = ((SqlValueParam.SingleAnonymousValue) expr).value();
-            if (value instanceof String && _StringUtils.isBinary((String) value)) {
-                returnType = StringType.INSTANCE;
-            } else {
-                returnType = LongType.INSTANCE;
+       if (!(paramMeta.mappingType() instanceof StringType)) {
+           returnType = LongType.INSTANCE;
+       } else if (!(expr instanceof SqlValueParam.SingleAnonymousValue)) {
+           returnType = StringType.INSTANCE; //ODO optimize unknown,compatibility
+       } else {
+           final Object value;
+           value = ((SqlValueParam.SingleAnonymousValue) expr).value();
+           if (value instanceof String && _StringUtils.isBinary((String) value)) {
+               returnType = StringType.INSTANCE;
+           } else {
+               returnType = LongType.INSTANCE;
             }
         }
         return returnType;

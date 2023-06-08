@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.criteria.SortItem;
 import io.army.criteria.Statement;
-import io.army.criteria.TypeInfer;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
@@ -18,13 +17,7 @@ class ArmySortItems implements ArmySortItem {
         }
         final ArmySortItem sortItem;
         if (firstLast == null) {
-            if (exp instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) exp).isDelay()) {
-                sortItem = new DelaySortItem(exp, ascDesc);
-            } else {
-                sortItem = new ArmySortItems(exp, ascDesc);
-            }
-        } else if (exp instanceof TypeInfer.DelayTypeInfer && ((DelayTypeInfer) exp).isDelay()) {
-            sortItem = new DelaySortItemWithNullsOption(exp, ascDesc, firstLast);
+            sortItem = new ArmySortItems(exp, ascDesc);
         } else {
             sortItem = new SortItemWithNullsOption(exp, ascDesc, firstLast);
         }
@@ -53,7 +46,7 @@ class ArmySortItems implements ArmySortItem {
     }
 
     @Override
-    public void appendSql(final _SqlContext context) {
+    public final void appendSql(final _SqlContext context) {
         this.sortItem.appendSql(context);
 
         final StringBuilder sqlBuilder;
@@ -66,7 +59,7 @@ class ArmySortItems implements ArmySortItem {
     }
 
     @Override
-    public String toString() {
+    public final String toString() {
         final StringBuilder builder;
         builder = new StringBuilder()
                 .append(this.sortItem)
@@ -79,22 +72,7 @@ class ArmySortItems implements ArmySortItem {
     }
 
 
-    private static final class DelaySortItem extends ArmySortItems implements TypeInfer.DelayTypeInfer {
-
-        private DelaySortItem(ArmyExpression sortItem, Statement.AscDesc ascDesc) {
-            super(sortItem, ascDesc);
-        }
-
-        @Override
-        public boolean isDelay() {
-            return ((DelayTypeInfer) this.sortItem).isDelay();
-        }
-
-
-    }//DelaySortItem
-
-
-    private static class SortItemWithNullsOption extends ArmySortItems {
+    private static final class SortItemWithNullsOption extends ArmySortItems {
 
         private final Statement.NullsFirstLast nullOption;
 
@@ -106,20 +84,5 @@ class ArmySortItems implements ArmySortItem {
 
     }//SortItemWithNullsOption
 
-    private static final class DelaySortItemWithNullsOption
-            extends SortItemWithNullsOption implements TypeInfer.DelayTypeInfer {
-
-        private DelaySortItemWithNullsOption(ArmyExpression sortItem, Statement.AscDesc aesWord,
-                                             Statement.NullsFirstLast nullOption) {
-            super(sortItem, aesWord, nullOption);
-        }
-
-        @Override
-        public boolean isDelay() {
-            return ((DelayTypeInfer) this.sortItem).isDelay();
-        }
-
-
-    }//DelaySortItemWithNullsOption
 
 }
