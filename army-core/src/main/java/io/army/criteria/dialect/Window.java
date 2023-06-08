@@ -3,6 +3,7 @@ package io.army.criteria.dialect;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.SimpleExpression;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.mapping.IntegerType;
@@ -358,6 +359,45 @@ public interface Window extends Item {
         R ifExcludeNoOthers(BooleanSupplier predicate);
     }
 
+
+    /*-------------------below standard window -------------------*/
+
+    interface _StandardFrameBetweenClause extends _FrameBetweenClause<Item> {
+
+    }
+
+    interface _StandardFrameUnitSpaceSpec extends _FrameUnitSpaceClause<Item, _StandardFrameBetweenClause> {
+
+    }
+
+    interface _StandardFrameExtentSpec extends _StaticFrameUnitRowsRangeSpec<Item, _StandardFrameBetweenClause>,
+            _DynamicFrameUnitRowsRangeClause<_StandardFrameUnitSpaceSpec, Item> {
+
+    }
+
+    interface _StandardOrderByCommaSpec extends Statement._OrderByCommaClause<_StandardOrderByCommaSpec>,
+            _StandardFrameExtentSpec {
+
+    }
+
+    interface _StandardOrderBySpec extends Statement._StaticOrderByClause<_StandardOrderByCommaSpec>,
+            Statement._DynamicOrderByClause<_StandardFrameExtentSpec>,
+            _StandardFrameExtentSpec {
+
+    }
+
+    interface _StandardPartitionByCommaSpec extends _PartitionByCommaClause<_StandardPartitionByCommaSpec>,
+            _StandardOrderBySpec {
+
+    }
+
+    interface _StandardPartitionBySpec extends _PartitionByExpClause<_StandardPartitionByCommaSpec>,
+            _StandardOrderBySpec {
+
+    }
+
+
+    /*-------------------below over clause -------------------*/
 
     interface _OverWindowClause<T extends _WindowSpec> extends Item {
 

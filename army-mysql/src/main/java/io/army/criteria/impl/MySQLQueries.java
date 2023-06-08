@@ -639,7 +639,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         window.endWindowClause();
         List<_Window> windowList = this.windowList;
         if (windowList == null) {
-            windowList = new ArrayList<>();
+            windowList = _Collections.arrayList();
             this.windowList = windowList;
         } else if (!(window instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);

@@ -73,7 +73,7 @@ abstract class MySQLSupports extends CriteriaSupports {
     }//DynamicCteQueryParensSpec
 
     private static final class MySQLCteBuilder implements MySQLCtes, CteBuilder,
-            DialectStatement._CommaClause<MySQLCtes> {
+            Statement._CommaClause<MySQLCtes> {
 
         private final boolean recursive;
 

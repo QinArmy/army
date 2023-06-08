@@ -1775,4 +1775,44 @@ public interface Statement extends Item {
     }
 
 
+    interface _DynamicWithClause<B extends CteBuilderSpec, WE extends Item> extends Item {
+        WE with(Consumer<B> consumer);
+
+        WE withRecursive(Consumer<B> consumer);
+
+        WE ifWith(Consumer<B> consumer);
+
+        WE ifWithRecursive(Consumer<B> consumer);
+
+    }
+
+    interface _StaticWithClause<WS> {
+
+        WS with(String name);
+
+        WS withRecursive(String name);
+
+    }
+
+
+    interface _DynamicCteAsClause<T extends Item, R extends Item> {
+
+        R as(Function<T, R> function);
+    }
+
+    interface _CommaClause<R> extends Item {
+
+        R comma();
+    }
+
+    interface _StaticWithCommaClause<CR> extends Item {
+
+        CR comma(String name);
+    }
+
+    interface _StaticSpaceClause<SR> {
+
+        SR space();
+    }
+
 }

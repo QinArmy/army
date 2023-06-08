@@ -670,18 +670,19 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             final StringBuilder sqlBuilder;
             sqlBuilder = context.appendFuncName(this.buildIn, this.name);
 
-            if (!(this instanceof FunctionUtils.NoParensFunction)) {
-                if (this instanceof FunctionUtils.NoArgFunction) {
-                    sqlBuilder.append(_Constant.RIGHT_PAREN);
-                } else {
-                    sqlBuilder.append(_Constant.LEFT_PAREN);
-                    this.appendArg(sqlBuilder, context);
-                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-                }
+            if (this instanceof FunctionUtils.NoParensFunction) {
+                return;
+            }
+            if (this instanceof FunctionUtils.NoArgFunction) {
+                sqlBuilder.append(_Constant.RIGHT_PAREN);
+            } else {
+                sqlBuilder.append(_Constant.LEFT_PAREN);
+                this.appendArg(sqlBuilder, context);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
 
-                if (this instanceof FunctionUtils.FunctionOuterClause) {
-                    ((FunctionUtils.FunctionOuterClause) this).appendFuncRest(sqlBuilder, context);
-                }
+            if (this instanceof FunctionUtils.FunctionOuterClause) {
+                ((FunctionUtils.FunctionOuterClause) this).appendFuncRest(sqlBuilder, context);
             }
         }
 

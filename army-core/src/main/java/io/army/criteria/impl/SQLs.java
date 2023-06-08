@@ -245,18 +245,20 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), Expressions::scalarExpression);
     }
 
-    public static StandardQuery._SelectSpec<Select> query20() {
+    public static StandardQuery._WithSpec<Select> query20() {
         return StandardQueries.simpleQuery(StandardDialect.STANDARD20);
     }
 
-    public static StandardQuery._SelectSpec<SubQuery> subQuery20() {
+    public static StandardQuery._WithSpec<SubQuery> subQuery20() {
         return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SQLs::identity);
     }
 
 
-    public static StandardQuery._SelectSpec<Expression> scalarSubQuery20() {
+    public static StandardQuery._WithSpec<Expression> scalarSubQuery20() {
         return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), Expressions::scalarExpression);
     }
+
+    /*-------------------below package method-------------------*/
 
 
     /**

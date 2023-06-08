@@ -5,7 +5,6 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -833,10 +832,6 @@ abstract class CriteriaUtils {
         return e;
     }
 
-    static CriteriaException userDefinedFuncNameError(String name, Dialect dialect) {
-        String m = String.format("user defined function name[%s] for %s", name, dialect);
-        return new CriteriaException(m);
-    }
 
     @Deprecated
     static CriteriaException duplicateColumnAlias(CriteriaContext context, String columnAlias) {
@@ -849,14 +844,12 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException columnAliasIsEmpty(CriteriaContext context) {
-        return ContextStack.criteriaError(context, "You don't add any cte column alias");
+    static CriteriaException standard10DontSupportWithClause(CriteriaContext context) {
+        return ContextStack.criteriaError(context, "standard 1.0 api don't support WITH syntax.");
     }
 
-    static CriteriaException windowNotEnd(CriteriaContext context, ArmyWindow oldWindow, ArmyWindow window) {
-        String m = String.format("last window[%s] not end,couldn't start new window[%s]",
-                oldWindow.windowName(), window.windowName());
-        throw ContextStack.criteriaError(context, m);
+    static CriteriaException standard10DontSupportWindow(CriteriaContext context) {
+        return ContextStack.criteriaError(context, "standard 1.0 api don't support WINDOW syntax.");
     }
 
 
@@ -883,11 +876,6 @@ abstract class CriteriaUtils {
     }
 
 
-    private static CriteriaException unknownSelectItem(final RowSet left, final SelectItem item) {
-        return ContextStack.criteriaError(((CriteriaContextSpec) left).getContext()
-                , _Exceptions::unknownSelectItem, item);
-    }
-
     static CriteriaException childParentNotMatch(CriteriaContext context, ParentTableMeta<?> parent,
                                                  ChildTableMeta<?> child) {
         String m = String.format("%s isn't child of %s", child, parent);
@@ -906,6 +894,7 @@ abstract class CriteriaUtils {
         }
         return e;
     }
+
 
     static UnknownFieldGroupException unknownTableFieldGroup(final @Nullable CriteriaContext currentContext,
                                                              final _SelectionGroup._TableFieldGroup group) {

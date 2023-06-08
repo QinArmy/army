@@ -14,6 +14,14 @@ import io.army.criteria.Statement;
  */
 public interface StandardStatement extends Statement {
 
+    interface _StandardDynamicWithClause<WE extends Item> extends _DynamicWithClause<StandardCtes, WE> {
+
+    }
+
+    interface _StandardStaticWithClause<I extends Item> extends _StaticWithClause<StandardQuery._StaticCteParensSpec<I>> {
+
+    }
+
 
     interface _StandardJoinClause<FS extends Item, JS extends Item> extends _JoinClause<JS, _AsClause<JS>>,
             _CrossJoinClause<FS, _AsClause<FS>>,

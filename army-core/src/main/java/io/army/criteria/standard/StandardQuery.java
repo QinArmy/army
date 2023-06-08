@@ -3,7 +3,10 @@ package io.army.criteria.standard;
 import io.army.criteria.Item;
 import io.army.criteria.Query;
 import io.army.criteria.Statement;
+import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.SQLs;
+
+import java.util.function.Function;
 
 /**
  * This interface representing standard SELECT syntax.
@@ -155,6 +158,22 @@ public interface StandardQuery extends Query, StandardStatement {
 
     }
 
+    interface _WindowCommaSpec<I extends Item> extends _OrderBySpec<I> {
+
+        Window._WindowAsClause<Window._StandardPartitionBySpec, _WindowCommaSpec<I>> comma(String windowName);
+
+
+    }
+
+
+    interface _WindowSpec<I extends Item> extends _OrderBySpec<I>,
+            Window._DynamicWindowClause<Window._StandardPartitionBySpec, _OrderBySpec<I>> {
+
+        Window._WindowAsClause<Window._StandardPartitionBySpec, _WindowCommaSpec<I>> window(String windowName);
+
+    }
+
+
     /**
      * <p>
      * This interface representing the composite of below:
@@ -171,8 +190,7 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _HavingSpec<I extends Item> extends _HavingClause<_OrderBySpec<I>>,
-            _OrderBySpec<I> {
+    interface _HavingSpec<I extends Item> extends _HavingClause<_WindowSpec<I>>, _WindowSpec<I> {
 
     }
 
@@ -200,7 +218,7 @@ public interface StandardQuery extends Query, StandardStatement {
      */
     interface _GroupBySpec<I extends Item> extends _StaticGroupByClause<_GroupByCommaSpec<I>>,
             _DynamicGroupByClause<_HavingSpec<I>>,
-            _OrderBySpec<I> {
+            _WindowSpec<I> {
 
     }
 
@@ -321,6 +339,41 @@ public interface StandardQuery extends Query, StandardStatement {
 
     interface _SelectSpec<I extends Item> extends _StandardSelectClause<I>,
             _DynamicParensRowSetClause<_SelectSpec<_UnionOrderBySpec<I>>, _UnionOrderBySpec<I>> {
+
+    }
+
+
+    interface _CteComma<I extends Item> extends _StaticWithCommaClause<_StaticCteParensSpec<I>>,
+            _StaticSpaceClause<I> {
+
+    }
+
+
+    interface _StaticCteAsClause<I extends Item> {
+        _CteComma<I> as(Function<_SelectSpec<_CteComma<I>>, _CteComma<I>> function);
+
+    }
+
+    interface _StaticCteParensSpec<I extends Item>
+            extends _OptionalParensStringClause<_StaticCteAsClause<I>>, _StaticCteAsClause<I> {
+
+    }
+
+
+    interface _WithSpec<I extends Item> extends _StandardDynamicWithClause<_SelectSpec<I>>,
+            _StandardStaticWithClause<_SelectSpec<I>>,
+            _SelectSpec<I> {
+
+    }
+
+
+    interface _QueryDynamicCteAsClause extends _DynamicCteAsClause<_WithSpec<_CommaClause<StandardCtes>>,
+            _CommaClause<StandardCtes>> {
+
+    }
+
+    interface _DynamicCteParensSpec extends _OptionalParensStringClause<_QueryDynamicCteAsClause>,
+            _QueryDynamicCteAsClause {
 
     }
 

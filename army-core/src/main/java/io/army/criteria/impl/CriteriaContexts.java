@@ -770,12 +770,6 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public boolean isSelectionMap(String derivedAlias) {
-            String m = "current context don't support isDerivedTable(derivedAlias)";
-            throw ContextStack.criteriaError(this, m);
-        }
-
-        @Override
         public void addSelectClauseEndListener(Runnable listener) {
             // no bug,never here
             throw new UnsupportedOperationException();
@@ -1174,17 +1168,6 @@ abstract class CriteriaContexts {
                 throw CriteriaUtils.unknownFieldDerivedGroup(this, derivedAlias);
             }
             return selectionMap;
-        }
-
-        @Override
-        public final boolean isSelectionMap(final String derivedAlias) {
-            final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
-            if (aliasToBlock == null) {
-                return false;
-            }
-            final _TabularBlock block;
-            block = aliasToBlock.get(derivedAlias);
-            return block != null && block.tableItem() instanceof _SelectionGroup;
         }
 
         @SuppressWarnings("unchecked")

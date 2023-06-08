@@ -136,8 +136,6 @@ interface CriteriaContext {
 
     _SelectionMap getNonNullDerived(String derivedAlias);
 
-    boolean isSelectionMap(String derivedAlias);
-
     /**
      * <p>
      * should be invoked before {@link ContextStack#pop(CriteriaContext)}

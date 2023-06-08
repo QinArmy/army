@@ -943,6 +943,10 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return (WE) this;
         }
 
+        final void clearWithClause() {
+            this.cteList = null;
+        }
+
 
         private WE endDynamicWithClause(final B builder, final boolean required) {
             ((CriteriaSupports.CteBuilder) builder).endLastCte();
