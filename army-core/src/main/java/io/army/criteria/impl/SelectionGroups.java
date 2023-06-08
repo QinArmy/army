@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CriteriaException;
 import io.army.criteria.RowElement;
 import io.army.criteria.Selection;
 import io.army.criteria.impl.inner._SelectionGroup;
@@ -41,9 +40,6 @@ abstract class SelectionGroups {
         return new InsertTableGroup<>(insertTable);
     }
 
-    static DerivedFieldGroup derivedGroup(String alias) {
-        return new DelayDerivedSelectionGroup(alias);
-    }
 
     static DerivedSelectionGroup derivedGroup(_SelectionMap table, String alias) {
         return new DerivedSelectionGroup(table, alias);
@@ -483,100 +479,6 @@ abstract class SelectionGroups {
 
     }//DerivedSelectionGroup
 
-    /**
-     * <p>
-     * This class implements {@link io.army.criteria.RowExpression} for postgre row constructor.
-     * </p>
-     */
-    @Deprecated
-    private static final class DelayDerivedSelectionGroup implements DerivedFieldGroup, RowElementGroup,
-            RowElement.DelayElement, ObjectElementGroup {
-
-        private final String derivedAlias;
-
-        private List<? extends Selection> selectionList;
-
-        private DelayDerivedSelectionGroup(String derivedAlias) {
-            this.derivedAlias = derivedAlias;
-        }
-
-
-        @Override
-        public boolean isDelay() {
-            return this.selectionList == null;
-        }
-
-
-        @Override
-        public void appendRowElement(final StringBuilder sqlBuilder, final _SqlContext context) {
-            throw new UnsupportedOperationException();
-
-        }
-
-        @Override
-        public void rowElementToString(final StringBuilder builder) {
-            throw new UnsupportedOperationException();
-        }
-
-
-        @Override
-        public void appendObjectElement(final StringBuilder sqlBuilder, final _SqlContext context) {
-            throw new UnsupportedOperationException();
-
-        }
-
-        @Override
-        public void objectElementToString(final StringBuilder builder) {
-            throw new UnsupportedOperationException();
-
-        }
-
-        @Override
-        public void finish(final _SelectionMap table, final String alias) {
-            if (this.selectionList != null) {
-                throw new IllegalStateException("duplication");
-            }
-            if (!this.derivedAlias.equals(alias)) {
-                throw new IllegalArgumentException("subQueryAlias not match.");
-            }
-
-            this.selectionList = table.refAllSelection();
-
-        }
-
-
-        @Override
-        public String tableAlias() {
-            return this.derivedAlias;
-        }
-
-        @Override
-        public List<? extends Selection> selectionList() {
-            final List<? extends Selection> selectionList = this.selectionList;
-            if (selectionList == null) {
-                String m = "currently,couldn't reference selection,please check syntax.";
-                throw ContextStack.clearStackAndCriteriaError(m);
-            }
-            return selectionList;
-        }
-
-        @Override
-        public void appendSelectItem(final _SqlContext context) {
-            final List<? extends Selection> selectionList = this.selectionList;
-            if (selectionList == null || selectionList.size() == 0) {
-                throw new CriteriaException("DerivedSelectionGroup no selection.");
-            }
-            appendDerivedFieldGroup(this.derivedAlias, selectionList, context);
-
-        }
-
-
-        private void appendDerivedRowElement(final StringBuilder sqlBuilder, final _SqlContext context) {
-            throw new UnsupportedOperationException();
-        }
-
-
-    }// SubQuerySelectionGroupImpl
 
 
 }

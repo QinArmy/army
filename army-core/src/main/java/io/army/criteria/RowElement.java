@@ -15,9 +15,5 @@ package io.army.criteria;
  */
 public interface RowElement extends Item {
 
-    interface DelayElement {
-
-        boolean isDelay();
-    }
 
 }

@@ -523,7 +523,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
         @Override
         public final _StaticReturningCommaSpec<Q> returning(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
-            this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            this.onAddSelection(SelectionGroups.derivedGroup(this.context.getNonNullDerived(derivedAlias), derivedAlias));
             return this;
         }
 
@@ -610,7 +610,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
         @Override
         public final _StaticReturningCommaSpec<Q> comma(String derivedAlias, SQLs.SymbolPeriod period,
                                                         SQLs.SymbolAsterisk star) {
-            this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            this.onAddSelection(SelectionGroups.derivedGroup(this.context.getNonNullDerived(derivedAlias), derivedAlias));
             return this;
         }
 
@@ -775,10 +775,6 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
                     throw CriteriaUtils.unknownTableFieldGroup(this.context, (_SelectionGroup._TableFieldGroup) selectItem);
                 }
 
-            } else if (selectItem instanceof DerivedFieldGroup) {
-                if (!this.context.isSelectionMap(((DerivedFieldGroup) selectItem).tableAlias())) {
-                    throw CriteriaUtils.unknownFieldDerivedGroup(this.context, ((DerivedFieldGroup) selectItem).tableAlias());
-                }
             }
             list.add((_SelectItem) selectItem);
             return this;
@@ -955,7 +951,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> returning(
                 String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
-            this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            this.onAddSelection(SelectionGroups.derivedGroup(this.context.getNonNullDerived(derivedAlias), derivedAlias));
             return new BatchParamClause(this);
         }
 
@@ -1142,10 +1138,6 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
                     throw CriteriaUtils.unknownTableFieldGroup(this.context, (_SelectionGroup._TableFieldGroup) selectItem);
                 }
 
-            } else if (selectItem instanceof DerivedFieldGroup) {
-                if (!this.context.isSelectionMap(((DerivedFieldGroup) selectItem).tableAlias())) {
-                    throw CriteriaUtils.unknownFieldDerivedGroup(this.context, ((DerivedFieldGroup) selectItem).tableAlias());
-                }
             }
             list.add((_SelectItem) selectItem);
             return this;
@@ -1208,7 +1200,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningUpdate> comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
-            this.statement.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            this.statement.onAddSelection(SelectionGroups.derivedGroup(this.statement.context.getNonNullDerived(derivedAlias), derivedAlias));
             return this;
         }
 

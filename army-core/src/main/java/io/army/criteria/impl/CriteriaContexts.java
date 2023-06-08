@@ -758,6 +758,18 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public _SelectionMap getDerived(String derivedAlias) {
+            String m = "current context don't support getDerived(derivedAlias)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
+        public _SelectionMap getNonNullDerived(String derivedAlias) {
+            String m = "current context don't support getNonNullDerived(derivedAlias)";
+            throw ContextStack.criteriaError(this, m);
+        }
+
+        @Override
         public boolean isSelectionMap(String derivedAlias) {
             String m = "current context don't support isDerivedTable(derivedAlias)";
             throw ContextStack.criteriaError(this, m);
@@ -1126,6 +1138,45 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public final _SelectionMap getDerived(final @Nullable String derivedAlias) {
+            if (derivedAlias == null) {
+                throw ContextStack.nullPointer(this);
+            }
+            // first flush buffer
+            this.flushBufferDerivedBlock();
+
+            final Map<String, _TabularBlock> blockMap = this.aliasToBlock;
+
+            final TabularItem item;
+            final _TabularBlock block;
+
+            final _SelectionMap selectionMap;
+            if (blockMap == null || (block = blockMap.get(derivedAlias)) == null) {
+                selectionMap = null;
+            } else if ((item = block.tableItem()) instanceof _Cte) {
+                selectionMap = (_SelectionMap) item;
+            } else if (block instanceof _SelectionMap) {
+                selectionMap = (_SelectionMap) block;
+            } else if (item instanceof _SelectionMap) {
+                selectionMap = (_SelectionMap) item;
+            } else {
+                String m = String.format("error,'%s' isn't derived table alias or cte alias", derivedAlias);
+                throw ContextStack.criteriaError(this, m);
+            }
+            return selectionMap;
+        }
+
+        @Override
+        public final _SelectionMap getNonNullDerived(String derivedAlias) {
+            final _SelectionMap selectionMap;
+            selectionMap = this.getDerived(derivedAlias);
+            if (selectionMap == null) {
+                throw CriteriaUtils.unknownFieldDerivedGroup(this, derivedAlias);
+            }
+            return selectionMap;
+        }
+
+        @Override
         public final boolean isSelectionMap(final String derivedAlias) {
             final Map<String, _TabularBlock> aliasToBlock = this.aliasToBlock;
             if (aliasToBlock == null) {
@@ -1310,35 +1361,6 @@ abstract class CriteriaContexts {
             }
 
             return blockList;
-        }
-
-        @Nullable
-        final _SelectionMap derivedSelectionMap(final @Nullable String derivedAlis) {
-            if (derivedAlis == null) {
-                throw ContextStack.nullPointer(this);
-            }
-            // first flush buffer
-            this.flushBufferDerivedBlock();
-
-            final Map<String, _TabularBlock> blockMap = this.aliasToBlock;
-
-            final TabularItem item;
-            final _TabularBlock block;
-
-            final _SelectionMap selectionMap;
-            if (blockMap == null || (block = blockMap.get(derivedAlis)) == null) {
-                selectionMap = null;
-            } else if ((item = block.tableItem()) instanceof _Cte) {
-                selectionMap = (_SelectionMap) item;
-            } else if (block instanceof _SelectionMap) {
-                selectionMap = (_SelectionMap) block;
-            } else if (item instanceof _SelectionMap) {
-                selectionMap = (_SelectionMap) item;
-            } else {
-                String m = String.format("error,'%s' isn't derived table alias or cte alias", derivedAlis);
-                throw ContextStack.criteriaError(this, m);
-            }
-            return selectionMap;
         }
 
 
@@ -2511,7 +2533,7 @@ abstract class CriteriaContexts {
          */
         private SelectionGroups.DerivedSelectionGroup createDerivedFieldGroup(final String derivedAlias) {
             final _SelectionMap selectionMap;
-            selectionMap = this.derivedSelectionMap(derivedAlias);
+            selectionMap = this.getDerived(derivedAlias);
             if (selectionMap == null) {
                 throw CriteriaUtils.unknownFieldDerivedGroup(this, derivedAlias);
             } else if (selectionMap instanceof RecursiveCte) {
@@ -2537,7 +2559,7 @@ abstract class CriteriaContexts {
                     //no bug,never here
                     String m = String.format("unknown selection group %s", _ClassUtils.safeClassName(group));
                     throw ContextStack.criteriaError(this, m);
-                } else if (this.derivedSelectionMap(group.tableAlias()) == null) {
+                } else if (this.getDerived(group.tableAlias()) == null) {
                     throw CriteriaUtils.unknownFieldDerivedGroup(this, group.tableAlias());
                 }
             }
@@ -2997,7 +3019,7 @@ abstract class CriteriaContexts {
             implements PrimaryContext {
 
         /**
-         * @see #dispatcherContext(CriteriaContext, CriteriaContext)
+         * @see #dispatcherContext(Dialect, CriteriaContext, CriteriaContext)
          */
         private PrimaryDispatcherContext(Dialect dialect, @Nullable CriteriaContext leftContext) {
             super(dialect, null, leftContext);

@@ -534,7 +534,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
         @Override
         public final _StaticReturningCommaSpec<Q> returning(String derivedAlias, SQLs.SymbolPeriod period,
                                                             SQLs.SymbolAsterisk star) {
-            this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            this.onAddSelection(SelectionGroups.derivedGroup(this.context.getNonNullDerived(derivedAlias), derivedAlias));
             return this;
         }
 
@@ -621,7 +621,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
         @Override
         public final _StaticReturningCommaSpec<Q> comma(String derivedAlias, SQLs.SymbolPeriod period,
                                                         SQLs.SymbolAsterisk star) {
-            this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            this.onAddSelection(SelectionGroups.derivedGroup(this.context.getNonNullDerived(derivedAlias), derivedAlias));
             return this;
         }
 
@@ -783,10 +783,6 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
                     throw CriteriaUtils.unknownTableFieldGroup(this.context, (_SelectionGroup._TableFieldGroup) selectItem);
                 }
 
-            } else if (selectItem instanceof DerivedFieldGroup) {
-                if (!this.context.isSelectionMap(((DerivedFieldGroup) selectItem).tableAlias())) {
-                    throw CriteriaUtils.unknownFieldDerivedGroup(this.context, ((DerivedFieldGroup) selectItem).tableAlias());
-                }
             }
             list.add((_SelectItem) selectItem);
             return this;
@@ -999,7 +995,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> returning(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
-            this.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            this.onAddSelection(SelectionGroups.derivedGroup(this.context.getNonNullDerived(derivedAlias), derivedAlias));
             return new BatchParamClause(this);
         }
 
@@ -1173,10 +1169,6 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
                     throw CriteriaUtils.unknownTableFieldGroup(this.context, (_SelectionGroup._TableFieldGroup) selectItem);
                 }
 
-            } else if (selectItem instanceof DerivedFieldGroup) {
-                if (!this.context.isSelectionMap(((DerivedFieldGroup) selectItem).tableAlias())) {
-                    throw CriteriaUtils.unknownFieldDerivedGroup(this.context, ((DerivedFieldGroup) selectItem).tableAlias());
-                }
             }
             list.add((_SelectItem) selectItem);
             return this;
@@ -1239,7 +1231,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
         @Override
         public _BatchStaticReturningCommaSpec<BatchReturningDelete> comma(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
-            this.statement.onAddSelection(SelectionGroups.derivedGroup(derivedAlias));
+            this.statement.onAddSelection(SelectionGroups.derivedGroup(this.statement.context.getNonNullDerived(derivedAlias), derivedAlias));
             return this;
         }
 

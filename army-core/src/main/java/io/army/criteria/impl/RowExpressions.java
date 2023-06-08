@@ -15,6 +15,7 @@ import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -50,100 +51,50 @@ abstract class RowExpressions {
     }
 
     static RowExpression row(final Object element) {
-        final RowExpression row;
-        if (element instanceof RowElement.DelayElement) {
-            row = new DelayRowConstructor(_Collections.singletonList(element));
+        final Object actualElement;
+        if (element instanceof Supplier) {
+            actualElement = ((Supplier<?>) element).get();
         } else {
-            final Object actualElement;
-            if (element instanceof Supplier) {
-                actualElement = ((Supplier<?>) element).get();
-            } else {
-                actualElement = element;
-            }
-            row = new ImmutableRowConstructor(_Collections.singletonList(actualElement),
-                    rowElementColumnSize(actualElement)
-            );
+            actualElement = element;
         }
-        return row;
+        return new ImmutableRowConstructor(_Collections.singletonList(actualElement),
+                rowElementColumnSize(actualElement)
+        );
     }
 
     static RowExpression row(final Object element1, final Object element2) {
-        final RowExpression row;
-        if ((element1 instanceof RowElement.DelayElement && ((RowElement.DelayElement) element1).isDelay())
-                || (element2 instanceof RowElement.DelayElement && ((RowElement.DelayElement) element2).isDelay())) {
-            row = new DelayRowConstructor(ArrayUtils.asUnmodifiableList(element1, element2));
-        } else {
-            final int columnSize;
-            columnSize = rowElementColumnSize(element1) + rowElementColumnSize(element2);
-            row = new ImmutableRowConstructor(ArrayUtils.asUnmodifiableList(element1, element2), columnSize);
-        }
-        return row;
+        final int columnSize;
+        columnSize = rowElementColumnSize(element1) + rowElementColumnSize(element2);
+        return new ImmutableRowConstructor(ArrayUtils.asUnmodifiableList(element1, element2), columnSize);
     }
 
     static RowExpression row(final Object element1, final Object element2, final Object element3, final Object... rest) {
-        boolean delay;
-        delay = element1 instanceof RowElement.DelayElement && ((RowElement.DelayElement) element1).isDelay();
-        if (!delay) {
-            delay = element2 instanceof RowElement.DelayElement && ((RowElement.DelayElement) element2).isDelay();
-        }
-        if (!delay) {
-            delay = element3 instanceof RowElement.DelayElement && ((RowElement.DelayElement) element3).isDelay();
-        }
 
         int columnSize = 0;
 
-        if (!delay) {
-            columnSize += rowElementColumnSize(element1);
-            columnSize += rowElementColumnSize(element2);
-            columnSize += rowElementColumnSize(element3);
-        }
+        columnSize += rowElementColumnSize(element1);
+        columnSize += rowElementColumnSize(element2);
+        columnSize += rowElementColumnSize(element3);
 
         final List<Object> elementList = _Collections.arrayList(3 + rest.length);
         elementList.add(element1);
         elementList.add(element2);
         elementList.add(element3);
 
-        for (Object e : rest) {
-            elementList.add(e);
-            if (!delay) {
-                delay = e instanceof RowElement.DelayElement && ((RowElement.DelayElement) e).isDelay();
-            }
-            if (!delay) {
-                columnSize += rowElementColumnSize(e);
-            }
-        }
-
-        final RowExpression row;
-        if (delay) {
-            row = new DelayRowConstructor(elementList);
-        } else {
-            row = new ImmutableRowConstructor(elementList, columnSize);
-        }
-        return row;
+        elementList.addAll(Arrays.asList(rest));
+        return new ImmutableRowConstructor(elementList, columnSize);
     }
 
     static RowExpression row(Consumer<Consumer<Object>> consumer) {
         final List<Object> elementList = _Collections.arrayList();
         final int[] columnSizeHolder = new int[]{0};
         consumer.accept(e -> {
-            if (columnSizeHolder[0] > -1) {
-                if (e instanceof RowElement.DelayElement && ((RowElement.DelayElement) e).isDelay()) {
-                    columnSizeHolder[0] = -1;
-                } else {
-                    columnSizeHolder[0] += rowElementColumnSize(e);
-                }
-            }
+            columnSizeHolder[0] += rowElementColumnSize(e);
             elementList.add(e);
         });
 
         final int columnSize = columnSizeHolder[0];
-        final RowExpression row;
-        if (columnSize < 0) {
-            row = new DelayRowConstructor(elementList);
-        } else {
-            row = new ImmutableRowConstructor(elementList, columnSize);
-        }
-        return row;
+        return new ImmutableRowConstructor(elementList, columnSize);
     }
 
 
@@ -151,12 +102,7 @@ abstract class RowExpressions {
         if (right instanceof SubQuery) {
             Expressions.validateSubQueryContext((SubQuery) right);
         }
-        if (isDelayColumnSet(left, right)) {
-            final ColumnSetValidator validator = new ColumnSetValidator(left, right);
-            ContextStack.addEndLise(validator::onContextEnd, validator::columnSetIsUnknown);
-        } else {
-            doValidateColumnSize(left, right);
-        }
+        doValidateColumnSize(left, right);
     }
 
     /*-------------------below private method-------------------*/
@@ -176,12 +122,6 @@ abstract class RowExpressions {
     }
 
 
-    private static boolean isDelayColumnSet(final SQLColumnSet left, final SQLColumnSet right) {
-        final boolean leftDelay, rightDelay;
-        leftDelay = left instanceof RowElement.DelayElement && ((RowElement.DelayElement) left).isDelay();
-        rightDelay = right instanceof RowElement.DelayElement && ((RowElement.DelayElement) right).isDelay();
-        return leftDelay || rightDelay;
-    }
 
 
     private static void doValidateColumnSize(final SQLColumnSet left, final SQLColumnSet right) {
@@ -212,52 +152,6 @@ abstract class RowExpressions {
             throw ContextStack.clearStackAndCriteriaError(m);
         }
     }
-
-
-    private static final class ColumnSetValidator {
-
-        private final SQLColumnSet left;
-
-        private final SQLColumnSet right;
-
-
-        /**
-         * @see #validateColumnSize(SQLColumnSet, SQLColumnSet)
-         */
-        private ColumnSetValidator(SQLColumnSet left, SQLColumnSet right) {
-            this.left = left;
-            this.right = right;
-        }
-
-        void onContextEnd() {
-            final SQLColumnSet left = this.left, right = this.right;
-            if (isDelayColumnSet(left, right)) {
-                ContextStack.addEndLise(this::onContextEnd, this::columnSetIsUnknown);
-            } else {
-                doValidateColumnSize(left, right);
-            }
-        }
-
-
-        private CriteriaException columnSetIsUnknown() {
-            final SQLColumnSet left = this.left, right = this.right;
-            final boolean leftDelay, rightDelay;
-            leftDelay = left instanceof RowElement.DelayElement && ((RowElement.DelayElement) left).isDelay();
-            rightDelay = right instanceof RowElement.DelayElement && ((RowElement.DelayElement) right).isDelay();
-            final String m;
-            if (leftDelay) {
-                m = String.format("left operand %s is unknown.", left);
-            } else if (rightDelay) {
-                m = String.format("right operand %s is unknown.", right);
-            } else {
-                m = String.format("unknown operand %s and %s", left, right);
-            }
-            return new CriteriaException(m);
-
-        }
-
-
-    }//ColumnSetValidator
 
     private static abstract class RowConstructorExpression extends OperationRowExpression {
 
@@ -392,58 +286,6 @@ abstract class RowExpressions {
 
 
     }//ImmutableRowConstructor
-
-    private static final class DelayRowConstructor extends RowConstructorExpression
-            implements RowElement.DelayElement {
-
-        private int columnSize = -1;
-
-        private DelayRowConstructor(List<Object> elementList) {
-            super(elementList);
-        }
-
-        @Override
-        public int columnSize() {
-            int columnSize = this.columnSize;
-            if (columnSize > 0) {
-                return columnSize;
-            }
-
-            int count = 0;
-            for (Object element : this.elementList) {
-                if (element instanceof RowElement.DelayElement && ((RowElement.DelayElement) element).isDelay()) {
-                    // no bug,never here
-                    String m = String.format("error,%s is delay row expression.", element);
-                    throw ContextStack.clearStackAndCriteriaError(m);
-                } else if (!(element instanceof RowElement)) {
-                    count++;
-                } else if (element instanceof SubQuery) {
-                    count += ((ArmySubQuery) element).refAllSelection().size();
-                } else if (element instanceof RowExpression) {
-                    count += ((ArmyRowExpression) element).columnSize();
-                } else {
-                    // no bug,never here
-                    throw _Exceptions.unknownRowElement(element);
-                }
-            }
-            this.columnSize = count;
-            return count;
-        }
-
-        @Override
-        public boolean isDelay() {
-            boolean match = false;
-            for (Object element : this.elementList) {
-                if (element instanceof RowElement.DelayElement && ((RowElement.DelayElement) element).isDelay()) {
-                    match = true;
-                    break;
-                }
-            }
-            return match;
-        }
-
-
-    }//DelayRowConstructor
 
 
 }

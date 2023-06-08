@@ -2,10 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.VarExpression;
-import io.army.criteria.impl.inner._AliasDerivedBlock;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._SelectItem;
-import io.army.criteria.impl.inner._TabularBlock;
+import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -17,21 +14,21 @@ import java.util.function.Function;
 
 interface CriteriaContext {
 
-   Dialect dialect();
+    Dialect dialect();
 
-   <T> T dialect(Class<T> type);
+    <T> T dialect(Class<T> type);
 
-   void validateDialect(CriteriaContext context);
+    void validateDialect(CriteriaContext context);
 
-   @Nullable
-   CriteriaContext getOuterContext();
+    @Nullable
+    CriteriaContext getOuterContext();
 
-   CriteriaContext getNonNullOuterContext();
+    CriteriaContext getNonNullOuterContext();
 
-   @Nullable
-   CriteriaContext getLeftContext();
+    @Nullable
+    CriteriaContext getLeftContext();
 
-   CriteriaContext getNonNullLeftContext();
+    CriteriaContext getNonNullLeftContext();
 
     void onBeforeWithClause(boolean recursive);
 
@@ -133,6 +130,11 @@ interface CriteriaContext {
 
     @Nullable
     TableMeta<?> getTable(String tableAlias);
+
+    @Nullable
+    _SelectionMap getDerived(String derivedAlias);
+
+    _SelectionMap getNonNullDerived(String derivedAlias);
 
     boolean isSelectionMap(String derivedAlias);
 
