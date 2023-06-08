@@ -236,12 +236,12 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
         SQLs.query()
                 .select(BankUser_.nickName)
-                .from(() -> SQLs.subQuery()
+                .from(SQLs.subQuery()
                         .select(ChinaProvince_.id)
                         .from(ChinaProvince_.T, AS, "p")
                         .join(ChinaRegion_.T, AS, "r").on(ChinaProvince_.id::equal, ChinaRegion_.id)
                         .where(ChinaProvince_.governor::equal, SQLs.refOuter("bu", BankUser_.NICK_NAME))
-                        .asQuery()
+                        ::asQuery
                 ).as("ps")
                 .join(SQLs.subQuery()
                         .select(BankUser_.id, BankUser_.nickName)
@@ -262,9 +262,9 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
         final Select stmt;
         stmt = SQLs.query()
-                .select(SQLs.refThis("us", "one"))
-                .comma("us", PERIOD, ASTERISK)
-                .from(() -> SQLs.subQuery()
+                .select(s -> s.space(SQLs.refThis("us", "one"))
+                        .comma("us", PERIOD, ASTERISK)
+                ).from(SQLs.subQuery()
                         .select(SQLs.literalValue(1)::as, "one")
                         .comma("u", PERIOD, PillUser_.T)
                         .from(PillUser_.T, AS, "u")

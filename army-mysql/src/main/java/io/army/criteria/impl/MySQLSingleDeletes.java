@@ -62,7 +62,7 @@ abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, W
 
 
     private MySQLSingleDeletes(@Nullable ArmyStmtSpec spec) {
-        super(spec, CriteriaContexts.primarySingleDmlContext(spec));
+        super(spec, CriteriaContexts.primarySingleDmlContext(MySQLUtils.DIALECT, spec));
     }
 
     @Override

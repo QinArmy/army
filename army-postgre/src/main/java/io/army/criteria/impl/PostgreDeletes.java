@@ -815,7 +815,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
             implements Delete {
 
         private PrimarySimpleDelete() {
-            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(null));
+            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null));
         }
 
         @Override
@@ -838,7 +838,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
         private final Function<PrimaryStatement, I> function;
 
         private PrimarySimpleDeleteForMultiStmt(ArmyStmtSpec spec, Function<PrimaryStatement, I> function) {
-            super(spec, CriteriaContexts.primaryJoinableSingleDmlContext(spec));
+            super(spec, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, spec));
             this.function = function;
         }
 
@@ -867,7 +867,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
          * @see #subSimpleDelete(CriteriaContext, Function)
          */
         private SubSimpleDelete(CriteriaContext outerContext, Function<SubStatement, I> function) {
-            super(null, CriteriaContexts.subJoinableSingleDmlContext(outerContext));
+            super(null, CriteriaContexts.subJoinableSingleDmlContext(PostgreUtils.DIALECT, outerContext));
             this.function = function;
         }
 
@@ -921,7 +921,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
         private List<?> paramList;
 
         private PostgreBatchDelete() {
-            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(null));
+            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null));
         }
 
         @Override

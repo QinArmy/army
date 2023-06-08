@@ -254,12 +254,12 @@ abstract class MySQLSimpleValues<I extends Item>
         final Function<RowSet, I> function;
 
         private MySQLValuesDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(leftContext.getOuterContext(), leftContext);
+            super(MySQLUtils.DIALECT, leftContext.getOuterContext(), leftContext);
             this.function = function;
         }
 
         private MySQLValuesDispatcher(MySQLBracketValues<?> bracket, Function<RowSet, I> function) {
-            super(bracket.context, null);
+            super(MySQLUtils.DIALECT, bracket.context, null);
             this.function = function;
         }
 

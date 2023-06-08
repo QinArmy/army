@@ -973,7 +973,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             PostgreQuery._FromSpec<I>> implements PostgreQuery._PostgreSelectClause<I> {
 
         PostgreSelectClauseDispatcher(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
-            super(outerContext, leftContext);
+            super(PostgreUtils.DIALECT, outerContext, leftContext);
         }
 
 

@@ -61,7 +61,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE extends Item, FT extends Ite
 
 
     private MySQLMultiUpdates(@Nullable ArmyStmtSpec spec) {
-        super(spec, CriteriaContexts.primaryMultiDmlContext(spec));
+        super(spec, CriteriaContexts.primaryMultiDmlContext(MySQLUtils.DIALECT, spec));
     }
 
     @Override

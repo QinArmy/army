@@ -259,7 +259,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
         String tableAlias;
 
         private UpdateClause(@Nullable ArmyStmtSpec spec) {
-            super(spec, CriteriaContexts.primarySingleDmlContext(spec));
+            super(spec, CriteriaContexts.primarySingleDmlContext(MySQLUtils.DIALECT, spec));
             ContextStack.push(this.context);
         }
 

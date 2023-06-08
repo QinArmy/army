@@ -128,17 +128,18 @@ abstract class CriteriaContexts {
      * @param spec         if non-null,then outerContext must be null.
      * @param outerContext if non-null,then spec must be null.
      */
-    static CriteriaContext subInsertContext(final @Nullable ArmyStmtSpec spec, @Nullable CriteriaContext outerContext) {
+    static CriteriaContext subInsertContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec,
+                                            @Nullable CriteriaContext outerContext) {
         final StatementContext context;
         if (spec == null) {
             assert outerContext != null;
-            context = new SubInsertContext(outerContext);
+            context = new SubInsertContext(dialect, outerContext);
         } else {
             assert outerContext == null;
             final DispatcherContext dispatcherContext;
             dispatcherContext = (DispatcherContext) spec.getContext();
 
-            context = new SubInsertContext(dispatcherContext.getNonNullOuterContext());
+            context = new SubInsertContext(dialect, dispatcherContext.getNonNullOuterContext());
 
             migrateContext(context, dispatcherContext);
             assertNonQueryContext(dispatcherContext);
@@ -184,9 +185,9 @@ abstract class CriteriaContexts {
      * For Example , Postgre update/delete criteria context
      * </p>
      */
-    static CriteriaContext primaryJoinableSingleDmlContext(final @Nullable ArmyStmtSpec spec) {
+    static CriteriaContext primaryJoinableSingleDmlContext(final Dialect dialect, final @Nullable ArmyStmtSpec spec) {
         final PrimaryJoinableSingleDmlContext context;
-        context = new PrimaryJoinableSingleDmlContext();
+        context = new PrimaryJoinableSingleDmlContext(dialect);
         if (spec != null) {
             final DispatcherContext dispatcherContext;
             dispatcherContext = (DispatcherContext) spec.getContext();
@@ -201,9 +202,9 @@ abstract class CriteriaContexts {
      * For Example ,Postgre update/delete criteria context
      * </p>
      */
-    static CriteriaContext subJoinableSingleDmlContext(final CriteriaContext outerContext) {
+    static CriteriaContext subJoinableSingleDmlContext(final Dialect dialect, final CriteriaContext outerContext) {
         final SubJoinableSingleDmlContext context;
-        context = new SubJoinableSingleDmlContext(outerContext);
+        context = new SubJoinableSingleDmlContext(dialect, outerContext);
         return context;
     }
 
@@ -235,17 +236,17 @@ abstract class CriteriaContexts {
         throw new UnsupportedOperationException();
     }
 
-    static CriteriaContext otherPrimaryContext() {
-        return new OtherPrimaryContext();
+    static CriteriaContext otherPrimaryContext(Dialect dialect) {
+        return new OtherPrimaryContext(dialect);
     }
 
-    static CriteriaContext dispatcherContext(final @Nullable CriteriaContext outerContext,
+    static CriteriaContext dispatcherContext(final Dialect dialect, final @Nullable CriteriaContext outerContext,
                                              final @Nullable CriteriaContext leftContext) {
         final CriteriaContext dispatcherContext;
         if (outerContext == null) {
-            dispatcherContext = new PrimaryDispatcherContext(leftContext);
+            dispatcherContext = new PrimaryDispatcherContext(dialect, leftContext);
         } else {
-            dispatcherContext = new SubDispatcherContext(outerContext, leftContext);
+            dispatcherContext = new SubDispatcherContext(dialect, outerContext, leftContext);
         }
         return dispatcherContext;
     }
@@ -931,12 +932,23 @@ abstract class CriteriaContexts {
                     .append(this.getClass().getSimpleName())
                     .append("[hash:")
                     .append(System.identityHashCode(this))
+                    .append(",dialect:")
+                    .append(this.dialect.name())
                     .append(",outerContext:");
-            final CriteriaContext outerContext = this.outerContext;
-            if (outerContext == null) {
+            CriteriaContext context = this.outerContext;
+            if (context == null) {
                 builder.append("null");
             } else {
-                builder.append(outerContext.getClass().getSimpleName());
+                builder.append(context.getClass().getSimpleName());
+            }
+            if (this instanceof SimpleQueryContext || this instanceof ValuesContext) {
+                builder.append(",leftContext:");
+                context = this.getLeftContext();
+                if (context == null) {
+                    builder.append("null");
+                } else {
+                    builder.append(context.getClass().getSimpleName());
+                }
             }
             return builder.append(']')
                     .toString();
@@ -969,19 +981,18 @@ abstract class CriteriaContexts {
                 throw ContextStack.clearStackAndCriteriaError(m); // this isn't current context.
             }
             final List<String> aliasList = withContext.currentAliasList;
-            int index;
             if (aliasList == null) {
-                index = Integer.MIN_VALUE;
-            } else {
-                final int size = aliasList.size();
-                index = -1;
-                for (int i = 0; i < size; i++) {
-                    if (!fieldName.equals(aliasList.get(i))) {
-                        continue;
-                    }
-                    index = i;
-                    break;
+                return Integer.MIN_VALUE;
+            }
+            int index;
+            final int size = aliasList.size();
+            index = -1;
+            for (int i = 0; i < size; i++) {
+                if (!fieldName.equals(aliasList.get(i))) {
+                    continue;
                 }
+                index = i;
+                break;
             }
             return index;
         }
@@ -1933,7 +1944,7 @@ abstract class CriteriaContexts {
     }//SingleDmlContext
 
     /**
-     * @see #primarySingleDmlContext(ArmyStmtSpec)
+     * @see #primarySingleDmlContext(Dialect, ArmyStmtSpec)
      */
     private static final class PrimarySingleDmlContext extends SingleDmlContext implements PrimaryContext {
 
@@ -2381,7 +2392,7 @@ abstract class CriteriaContexts {
          */
         @Override
         final _SelectionMap refNonRecursivePart(final RecursiveCte cte) {
-            if (!this.isSelectClauseEnd()) {
+            if (!this.isSelectClauseEnd()) { // TODO bug?
                 throw ContextStack.castCriteriaApi(this);
             }
             final StatementContext outerContext = this.outerContext, leftContext = this.leftContext;

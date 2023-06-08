@@ -1359,7 +1359,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
 
 
         private PrimarySimpleUpdateClause() {
-            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(null));
+            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null));
 
         }
 
@@ -1381,7 +1381,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
         private final Function<PrimaryStatement, I> function;
 
         private PrimarySimpleUpdateClauseForMultiStmt(ArmyStmtSpec spec, Function<PrimaryStatement, I> function) {
-            super(spec, CriteriaContexts.primaryJoinableSingleDmlContext(spec));
+            super(spec, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, spec));
             this.function = function;
         }
 
@@ -1401,7 +1401,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
         private final Function<SubStatement, I> function;
 
         private SubSimpleUpdateClause(CriteriaContext outerContext, Function<SubStatement, I> function) {
-            super(null, CriteriaContexts.subJoinableSingleDmlContext(outerContext));
+            super(null, CriteriaContexts.subJoinableSingleDmlContext(PostgreUtils.DIALECT, outerContext));
             this.function = function;
         }
 
@@ -1422,7 +1422,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
             implements PostgreUpdate._BatchSingleWithSpec<BatchUpdate, BatchReturningUpdate> {
 
         private BatchUpdateClause() {
-            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(null));
+            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null));
         }
 
         @Override

@@ -68,7 +68,7 @@ abstract class PostgreInserts extends InsertSupports {
      * create new single-table INSERT statement that is sub insert statement in dynamic with clause.
      * </p>
      */
-    static <I extends Item> PostgreInsert._DynamicSubOptionSpec<I> dynamicCteInsert(
+    static <I extends Item> PostgreInsert._DynamicSubOptionSpec<I> dynamicSubInsert(
             CriteriaContext outContext, Function<SubStatement, I> function) {
         return new DynamicSubInsertIntoClause<>(outContext, function);
     }
@@ -237,7 +237,7 @@ abstract class PostgreInserts extends InsertSupports {
             implements PostgreInsert._PrimaryOptionSpec {
 
         private PrimaryInsertIntoClause() {
-            super(CriteriaContexts.primaryInsertContext(null));
+            super(CriteriaContexts.primaryInsertContext(PostgreUtils.DIALECT, null));
             ContextStack.push(this.context);
         }
 
@@ -290,7 +290,7 @@ abstract class PostgreInserts extends InsertSupports {
         private ChildInsertIntoClause(ValueSyntaxOptions parentOption
                 , Function<PostgreComplexValuesClause<?, ?, ?>, Insert> dmlFunction
                 , Function<PostgreComplexValuesClause<?, ?, ?>, ReturningInsert> dqlFunction) {
-            super(parentOption, CriteriaContexts.primaryInsertContext(null));
+            super(parentOption, CriteriaContexts.primaryInsertContext(PostgreUtils.DIALECT, null));
             this.dmlFunction = dmlFunction;
             this.dqlFunction = dqlFunction;
             ContextStack.push(this.context);
@@ -331,7 +331,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         private ComplexInsertIntoClause(ArmyStmtSpec spec,
                                         Function<PrimaryStatement, I> function) {
-            super(CriteriaContexts.primaryInsertContext(spec));
+            super(CriteriaContexts.primaryInsertContext(PostgreUtils.DIALECT, spec));
             this.function = function;
             ContextStack.push(this.context);
         }
@@ -372,7 +372,7 @@ abstract class PostgreInserts extends InsertSupports {
         private final Function<SubStatement, I> function;
 
         private DynamicSubInsertIntoClause(CriteriaContext outerContext, Function<SubStatement, I> function) {
-            super(CriteriaContexts.subInsertContext(null, outerContext));
+            super(CriteriaContexts.subInsertContext(PostgreUtils.DIALECT, null, outerContext));
             this.function = function;
             //just push sub context,here don't need to start cte
             ContextStack.push(this.context);
@@ -414,7 +414,7 @@ abstract class PostgreInserts extends InsertSupports {
         private final Function<SubStatement, I> function;
 
         private StaticSubInsertIntoClause(ArmyStmtSpec spec, Function<SubStatement, I> function) {
-            super(CriteriaContexts.subInsertContext(spec, null));
+            super(CriteriaContexts.subInsertContext(PostgreUtils.DIALECT, spec, null));
             this.function = function;
             //just push sub context,here don't need to start cte
             ContextStack.push(this.context);

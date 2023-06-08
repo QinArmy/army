@@ -23,9 +23,11 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
     public void distinctOnClause() {
         final Select stmt;
         stmt = Postgres.query()
-                .selectsDistinctOn(SQLs.refSelection("aa\\nbb"), SQLs.ref(2))
-                .space(SQLs.literalValue("aa'")::as, "aa\\nbb", PillUser_.id)
-                .from(PillUser_.T, SQLs.AS, "u")
+                .selectsDistinctOn(s -> {
+                            s.accept(SQLs.refSelection("aa\\nbb"));
+                            SQLs.ref(2);
+                        }, s -> s.accept(SQLs.literalValue("aa'")::as, "aa\\nbb", PillUser_.id)
+                ).from(PillUser_.T, SQLs.AS, "u")
                 .orderBy(PillUser_.id)
                 .asQuery();
 

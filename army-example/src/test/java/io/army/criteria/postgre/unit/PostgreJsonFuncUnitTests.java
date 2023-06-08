@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-import static io.army.criteria.impl.Postgres.SymbolPeriod;
-import static io.army.criteria.impl.Postgres.SymbolSpace;
 import static io.army.criteria.impl.Postgres.*;
 import static io.army.criteria.impl.SQLs.row;
 import static io.army.criteria.impl.SQLs.*;
@@ -266,9 +264,9 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         json = "[1,true, [2,false]]";
         final Select stmt;
         stmt = Postgres.query()
-                .selectDistinctOn(SQLs.refSelection("ordinal"))
-                .space("json", PERIOD, ASTERISK)
-                .comma("jsonOrdinal", PERIOD, ASTERISK)
+                .selectDistinctOn(s -> s.accept(SQLs.refSelection("ordinal")), s -> s.space("json", PERIOD, ASTERISK)
+                        .comma("jsonOrdinal", PERIOD, ASTERISK)
+                )
                 .from(jsonArrayElements(SQLs::literal, json)).as("json").parens("value")
                 .crossJoin(jsonArrayElements(SQLs::literal, json).withOrdinality()).as("jsonOrdinal").parens("value", "ordinal")
                 .crossJoin(jsonbArrayElements(SQLs::literal, json)).as("jsonb").parens("value")
@@ -324,9 +322,9 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         json = "[\"foo\", \"bar\"]";
         final Select stmt;
         stmt = Postgres.query()
-                .selectDistinctOn(SQLs.refSelection("ordinal"))
-                .space("json", PERIOD, ASTERISK)
-                .comma("jsonOrdinal", PERIOD, ASTERISK)
+                .selectDistinctOn(s -> s.accept(SQLs.refSelection("ordinal")), s -> s.space("json", PERIOD, ASTERISK)
+                        .comma("jsonOrdinal", PERIOD, ASTERISK)
+                )
                 .from(jsonArrayElementsText(SQLs::literal, json)).as("json").parens("value")
                 .crossJoin(jsonArrayElementsText(SQLs::literal, json).withOrdinality()).as("jsonOrdinal").parens("value", "ordinal")
                 .crossJoin(jsonbArrayElementsText(SQLs::literal, json)).as("jsonb").parens("value")
@@ -366,10 +364,11 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         json = "{\"a\":\"foo\", \"b\":\"bar\"}";
         final Select stmt;
         stmt = Postgres.query()
-                .select("json", PERIOD, ASTERISK)
-                .comma("jsonOrdinal", PERIOD, ASTERISK)
-                .comma("jsonb", PERIOD, ASTERISK)
-                .comma("jsonbOrdinal", PERIOD, ASTERISK)
+                .select(s -> s.space("json", PERIOD, ASTERISK)
+                        .comma("jsonOrdinal", PERIOD, ASTERISK)
+                        .comma("jsonb", PERIOD, ASTERISK)
+                        .comma("jsonbOrdinal", PERIOD, ASTERISK)
+                )
                 .from(jsonEach(SQLs::literal, json)).as("json")
                 .crossJoin(jsonEach(SQLs::literal, json).withOrdinality()).as("jsonOrdinal")
                 .crossJoin(jsonbEach(SQLs::literal, json)).as("jsonb")
@@ -391,10 +390,11 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
         json = "{\"a\":\"foo\", \"b\":\"bar\"}";
         final Select stmt;
         stmt = Postgres.query()
-                .select("json", PERIOD, ASTERISK)
-                .comma("jsonOrdinal", PERIOD, ASTERISK)
-                .comma("jsonb", PERIOD, ASTERISK)
-                .comma("jsonbOrdinal", PERIOD, ASTERISK)
+                .select(s -> s.space("json", PERIOD, ASTERISK)
+                        .comma("jsonOrdinal", PERIOD, ASTERISK)
+                        .comma("jsonb", PERIOD, ASTERISK)
+                        .comma("jsonbOrdinal", PERIOD, ASTERISK)
+                )
                 .from(jsonEachText(SQLs::literal, json)).as("json")
                 .crossJoin(jsonEachText(SQLs::literal, json).withOrdinality()).as("jsonOrdinal")
                 .crossJoin(jsonbEachText(SQLs::literal, json)).as("jsonb")
@@ -517,11 +517,12 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
         final Select stmt;
         stmt = Postgres.query()
-                .select(jsonObjectKeys(SQLs.literal(JsonType.TEXT, json))::as, "json1")
-                .comma(jsonObjectKeys(SQLs::literal, json)::as, "json2")
-                .comma(jsonbObjectKeys(SQLs.literal(JsonbType.TEXT, json))::as, "json3")
-                .comma(jsonbObjectKeys(SQLs::literal, json)::as, "json4")
-                .comma("jt", PERIOD, ASTERISK)
+                .select(s -> s.space(jsonObjectKeys(SQLs.literal(JsonType.TEXT, json))::as, "json1")
+                        .comma(jsonObjectKeys(SQLs::literal, json)::as, "json2")
+                        .comma(jsonbObjectKeys(SQLs.literal(JsonbType.TEXT, json))::as, "json3")
+                        .comma(jsonbObjectKeys(SQLs::literal, json)::as, "json4")
+                        .comma("jt", PERIOD, ASTERISK)
+                )
                 .from(jsonObjectKeys(SQLs.literal(JsonType.TEXT, json))).as("jt").parens("value")
                 .asQuery();
 
@@ -540,8 +541,9 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
         final Select stmt;
         stmt = Postgres.query()
-                .select("d", PERIOD, ASTERISK)
-                .comma("w", PERIOD, ASTERISK)
+                .select(s -> s.space("d", PERIOD, ASTERISK)
+                        .comma("w", PERIOD, ASTERISK)
+                )
                 .from(jsonPopulateRecord(SQLs.literal(MyRowType.INSTANCE, null), SQLs.literal(JsonType.TEXT, json)))
                 .as("d")
                 .crossJoin(jsonPopulateRecord(SQLs.literal(MyRowType.INSTANCE, null), SQLs.literal(JsonType.TEXT, json))::withOrdinality)
@@ -567,8 +569,9 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
         final Select stmt;
         stmt = Postgres.query()
-                .select("d", PERIOD, ASTERISK)
-                .comma("w", PERIOD, ASTERISK)
+                .select(s -> s.space("d", PERIOD, ASTERISK)
+                        .comma("w", PERIOD, ASTERISK)
+                )
                 .from(jsonPopulateRecordSet(SQLs.literal(TwoIntType.INSTANCE, null), SQLs.literal(JsonType.TEXT, json)))
                 .as("d")
                 .crossJoin(jsonPopulateRecordSet(SQLs.literal(TwoIntType.INSTANCE, null), SQLs.literal(JsonType.TEXT, json))::withOrdinality)
@@ -595,10 +598,11 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
         final Select stmt;
         stmt = Postgres.query()
-                .select("json1", PERIOD, ASTERISK)
-                .comma("json2", PERIOD, ASTERISK)
-                .comma("jsonb1", PERIOD, ASTERISK)
-                .comma("jsonb2", PERIOD, ASTERISK)
+                .select(s -> s.space("json1", PERIOD, ASTERISK)
+                        .comma("json2", PERIOD, ASTERISK)
+                        .comma("jsonb1", PERIOD, ASTERISK)
+                        .comma("jsonb2", PERIOD, ASTERISK)
+                )
                 .from(jsonToRecord(SQLs.literal(JsonType.TEXT, json)))
                 .as("json1").parens(c -> c.space("a", IntegerType.INSTANCE)
                         .comma("b", TextType.INSTANCE)
@@ -642,10 +646,11 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
         final Select stmt;
         stmt = Postgres.query()
-                .select("json1", PERIOD, ASTERISK)
-                .comma("json2", PERIOD, ASTERISK)
-                .comma("jsonb1", PERIOD, ASTERISK)
-                .comma("jsonb2", PERIOD, ASTERISK)
+                .select(s -> s.space("json1", PERIOD, ASTERISK)
+                        .comma("json2", PERIOD, ASTERISK)
+                        .comma("jsonb1", PERIOD, ASTERISK)
+                        .comma("jsonb2", PERIOD, ASTERISK)
+                )
                 .from(jsonToRecordSet(SQLs.literal(JsonType.TEXT, json)))
                 .as("json1").parens(c -> c.space("a", IntegerType.INSTANCE)
                         .comma("b", TextType.INSTANCE)
@@ -750,26 +755,25 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
         final Select stmt;
         stmt = Postgres.query()
-                .select(jsonbPathQuery(jsonField, pathExp)::as, "json1")
-                .comma(jsonbPathQuery(jsonField, SQLs::literal, path)::as, "json2")
-                .comma(jsonbPathQuery(jsonField, varPathExp, varExp)::as, "json3")
-                .comma(jsonbPathQuery(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
-                .comma(jsonbPathQuery(jsonField, varPathExp, varExp, TRUE)::as, "json5")
-                .comma(jsonbPathQuery(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
-                .comma("jt1", PERIOD, ASTERISK)
-                .comma("jt2", PERIOD, ASTERISK)
-                .comma("jt3", PERIOD, ASTERISK)
-                .comma("jt4", PERIOD, ASTERISK)
-                .comma("jt5", PERIOD, ASTERISK)
-                .comma("jt6", PERIOD, ASTERISK)
-                .comma("jt7", PERIOD, ASTERISK)
-                .comma("jt8", PERIOD, ASTERISK)
-                .comma("jt9", PERIOD, ASTERISK)
-                .comma("jt10", PERIOD, ASTERISK)
-                .comma("jt11", PERIOD, ASTERISK)
-                .comma("jt12", PERIOD, ASTERISK)
-
-                .from(jsonbPathQuery(jsonField, pathExp)).as("jt1").parens("value")
+                .select(s -> s.space(jsonbPathQuery(jsonField, pathExp)::as, "json1")
+                        .comma(jsonbPathQuery(jsonField, SQLs::literal, path)::as, "json2")
+                        .comma(jsonbPathQuery(jsonField, varPathExp, varExp)::as, "json3")
+                        .comma(jsonbPathQuery(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                        .comma(jsonbPathQuery(jsonField, varPathExp, varExp, TRUE)::as, "json5")
+                        .comma(jsonbPathQuery(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                        .comma("jt1", PERIOD, ASTERISK)
+                        .comma("jt2", PERIOD, ASTERISK)
+                        .comma("jt3", PERIOD, ASTERISK)
+                        .comma("jt4", PERIOD, ASTERISK)
+                        .comma("jt5", PERIOD, ASTERISK)
+                        .comma("jt6", PERIOD, ASTERISK)
+                        .comma("jt7", PERIOD, ASTERISK)
+                        .comma("jt8", PERIOD, ASTERISK)
+                        .comma("jt9", PERIOD, ASTERISK)
+                        .comma("jt10", PERIOD, ASTERISK)
+                        .comma("jt11", PERIOD, ASTERISK)
+                        .comma("jt12", PERIOD, ASTERISK)
+                ).from(jsonbPathQuery(jsonField, pathExp)).as("jt1").parens("value")
                 .crossJoin(jsonbPathQuery(jsonField, pathExp)::withOrdinality).as("jt2").parens("value", "ordinal")
                 .crossJoin(jsonbPathQuery(jsonField, SQLs::literal, path)).as("jt3").parens("value")
                 .crossJoin(jsonbPathQuery(jsonField, SQLs::literal, path)::withOrdinality).as("jt4").parens("value", "ordinal")
@@ -953,26 +957,25 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
 
         final Select stmt;
         stmt = Postgres.query()
-                .select(jsonbPathQueryTz(jsonField, pathExp)::as, "json1")
-                .comma(jsonbPathQueryTz(jsonField, SQLs::literal, path)::as, "json2")
-                .comma(jsonbPathQueryTz(jsonField, varPathExp, varExp)::as, "json3")
-                .comma(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
-                .comma(jsonbPathQueryTz(jsonField, varPathExp, varExp, TRUE)::as, "json5")
-                .comma(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
-                .comma("jt1", PERIOD, ASTERISK)
-                .comma("jt2", PERIOD, ASTERISK)
-                .comma("jt3", PERIOD, ASTERISK)
-                .comma("jt4", PERIOD, ASTERISK)
-                .comma("jt5", PERIOD, ASTERISK)
-                .comma("jt6", PERIOD, ASTERISK)
-                .comma("jt7", PERIOD, ASTERISK)
-                .comma("jt8", PERIOD, ASTERISK)
-                .comma("jt9", PERIOD, ASTERISK)
-                .comma("jt10", PERIOD, ASTERISK)
-                .comma("jt11", PERIOD, ASTERISK)
-                .comma("jt12", PERIOD, ASTERISK)
-
-                .from(jsonbPathQueryTz(jsonField, pathExp)).as("jt1").parens("value")
+                .select(s -> s.space(jsonbPathQueryTz(jsonField, pathExp)::as, "json1")
+                        .comma(jsonbPathQueryTz(jsonField, SQLs::literal, path)::as, "json2")
+                        .comma(jsonbPathQueryTz(jsonField, varPathExp, varExp)::as, "json3")
+                        .comma(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars)::as, "json4")
+                        .comma(jsonbPathQueryTz(jsonField, varPathExp, varExp, TRUE)::as, "json5")
+                        .comma(jsonbPathQueryTz(jsonField, SQLs::literal, varPath, SQLs::literal, vars, TRUE)::as, "json6")
+                        .comma("jt1", PERIOD, ASTERISK)
+                        .comma("jt2", PERIOD, ASTERISK)
+                        .comma("jt3", PERIOD, ASTERISK)
+                        .comma("jt4", PERIOD, ASTERISK)
+                        .comma("jt5", PERIOD, ASTERISK)
+                        .comma("jt6", PERIOD, ASTERISK)
+                        .comma("jt7", PERIOD, ASTERISK)
+                        .comma("jt8", PERIOD, ASTERISK)
+                        .comma("jt9", PERIOD, ASTERISK)
+                        .comma("jt10", PERIOD, ASTERISK)
+                        .comma("jt11", PERIOD, ASTERISK)
+                        .comma("jt12", PERIOD, ASTERISK)
+                ).from(jsonbPathQueryTz(jsonField, pathExp)).as("jt1").parens("value")
                 .crossJoin(jsonbPathQueryTz(jsonField, pathExp)::withOrdinality).as("jt2").parens("value", "ordinal")
                 .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, path)).as("jt3").parens("value")
                 .crossJoin(jsonbPathQueryTz(jsonField, SQLs::literal, path)::withOrdinality).as("jt4").parens("value", "ordinal")

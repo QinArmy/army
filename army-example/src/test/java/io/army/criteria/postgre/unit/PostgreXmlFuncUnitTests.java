@@ -139,7 +139,7 @@ public class PostgreXmlFuncUnitTests extends PostgreUnitTests {
 
         final Select stmt;
         stmt = Postgres.query()
-                .select("x", PERIOD, ASTERISK)
+                .select(s -> s.space("x", PERIOD, ASTERISK))
                 .from(() -> xmlTable(xmlNamespaces(SQLs::literal, "http://example.com/myns", AS, "xz"),
                                 SQLs.literal(TextType.INSTANCE, "//ROWS/ROW"), PASSING, BY_VALUE, SQLs.literal(XmlType.TEXT, xmlDoc), BY_VALUE,
                                 c -> c.columns("id", IntegerType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "@id"))

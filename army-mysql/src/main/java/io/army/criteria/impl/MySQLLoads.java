@@ -76,7 +76,7 @@ abstract class MySQLLoads {
 
         @SuppressWarnings("unchecked")
         private LoadDataClause() {
-            this.context = CriteriaContexts.otherPrimaryContext();
+            this.context = CriteriaContexts.otherPrimaryContext(MySQLUtils.DIALECT);
             ContextStack.push(this.context);
             this.THIS = (T) this;
         }

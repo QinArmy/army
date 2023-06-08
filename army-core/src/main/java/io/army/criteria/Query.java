@@ -113,7 +113,12 @@ public interface Query extends RowSet {
 
     interface _DynamicDistinctOnExpClause<SR extends Item> {
 
+
+        _StaticSelectSpaceClause<SR> selectDistinctOn(Consumer<Consumer<Expression>> expConsumer);
+
         _StaticSelectSpaceClause<SR> select(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer);
+
+        _StaticSelectSpaceClause<SR> selectIfDistinctOn(Consumer<Consumer<Expression>> expConsumer);
 
         _StaticSelectSpaceClause<SR> selectIf(@Nullable SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer);
 
@@ -121,9 +126,17 @@ public interface Query extends RowSet {
 
     interface _DynamicDistinctOnAndSelectsClause<SD extends Item> {
 
+        SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer);
+
+        SD selectsDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer);
+
         SD select(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer);
 
         SD selects(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer);
+
+        SD selectIfDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer);
+
+        SD selectsIfDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer);
 
         SD selectIf(@Nullable SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer);
 

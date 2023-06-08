@@ -126,7 +126,7 @@ abstract class MySQLInserts extends InsertSupports {
         private List<MySQLs.Modifier> modifierList;
 
         private PrimaryInsertIntoClause() {
-            super(CriteriaContexts.primaryInsertContext(null));
+            super(CriteriaContexts.primaryInsertContext(MySQLUtils.DIALECT, null));
             ContextStack.push(this.context);
         }
 
@@ -178,7 +178,7 @@ abstract class MySQLInserts extends InsertSupports {
          */
         private ChildInsertIntoClause(ValueSyntaxOptions options,
                                       Function<MySQLComplexValuesClause<?, ?>, Insert> dmlFunction) {
-            super(options, CriteriaContexts.primaryInsertContext(null));
+            super(options, CriteriaContexts.primaryInsertContext(options.getContext().dialect(), null));
             this.dmlFunction = dmlFunction;
             ContextStack.push(this.context);
         }
@@ -222,7 +222,7 @@ abstract class MySQLInserts extends InsertSupports {
         private List<MySQLs.Modifier> modifierList;
 
         private PrimarySingleInsertIntoClause(ArmyStmtSpec spec, Function<? super Insert, I> function) {
-            super(CriteriaContexts.primaryInsertContext(spec));
+            super(CriteriaContexts.primaryInsertContext(MySQLUtils.DIALECT, spec));
             this.function = function;
             ContextStack.push(this.context);
         }

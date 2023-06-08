@@ -1161,12 +1161,12 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         final Function<RowSet, I> function;
 
         private MySQLQueryDispatcher(CriteriaContext leftContext, Function<RowSet, I> function) {
-            super(leftContext.getOuterContext(), leftContext);
+            super(MySQLUtils.DIALECT, leftContext.getOuterContext(), leftContext);
             this.function = function;
         }
 
         private MySQLQueryDispatcher(MySQLBracketQuery<?> bracket, Function<RowSet, I> function) {
-            super(bracket.context, null);
+            super(MySQLUtils.DIALECT, bracket.context, null);
             this.function = function;
         }
 

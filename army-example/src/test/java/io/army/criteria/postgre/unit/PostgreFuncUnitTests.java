@@ -113,7 +113,7 @@ public class PostgreFuncUnitTests extends PostgreUnitTests {
 
         try {
             Postgres.query()
-                    .select("func", PERIOD, ASTERISK)
+                    .select(s -> s.space("func", PERIOD, ASTERISK))
                     .from(jsonbPathQuery(SQLs.literal(JsonbType.TEXT, json), SQLs::literal, path))
                     .as("func") // here no specified jsonbPathQuery function field alias
                     .asQuery();

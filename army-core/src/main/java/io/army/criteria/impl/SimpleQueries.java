@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
+import io.army.dialect.Dialect;
 import io.army.function.TeFunction;
 import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
@@ -962,10 +963,23 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         private List<_Expression> distinctOnExpList;
 
+        private boolean registered;
+
         WithCteDistinctOnSimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
             super(withSpec, context);
         }
 
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctOn(Consumer<Consumer<Expression>> expConsumer) {
+            this.registerDistinctOn(true, expConsumer);
+            return this;
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectIfDistinctOn(Consumer<Consumer<Expression>> expConsumer) {
+            this.registerDistinctOn(false, expConsumer);
+            return this;
+        }
 
         @Override
         public final _StaticSelectSpaceClause<SR> select(SQLs.WordDistinct distinct, SQLs.WordOn on,
@@ -981,17 +995,24 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return this;
         }
 
+
         @Override
-        public final SD select(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer,
-                               Consumer<_DeferSelectSpaceClause> consumer) {
-            this.registerDistinctOn(true, distinct, expConsumer);
+        public final SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer) {
+            this.registerDistinctOn(true, expConsumer);
             this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
         }
 
         @Override
-        public final SD selects(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer,
-                                Consumer<SelectionConsumer> consumer) {
+        public final SD selectIfDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer) {
+            this.registerDistinctOn(false, expConsumer);
+            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            return (SD) this;
+        }
+
+        @Override
+        public final SD select(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer,
+                               Consumer<_DeferSelectSpaceClause> consumer) {
             this.registerDistinctOn(true, distinct, expConsumer);
             this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
@@ -1005,6 +1026,29 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return (SD) this;
         }
 
+        @Override
+        public final SD selectsDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
+            this.registerDistinctOn(true, expConsumer);
+            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            return (SD) this;
+        }
+
+        @Override
+        public final SD selectsIfDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
+            this.registerDistinctOn(false, expConsumer);
+            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            return (SD) this;
+        }
+
+
+        @Override
+        public final SD selects(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer,
+                                Consumer<SelectionConsumer> consumer) {
+            this.registerDistinctOn(true, distinct, expConsumer);
+            this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
+            return (SD) this;
+        }
+
 
         @Override
         public final SD selectsIf(@Nullable SQLs.WordDistinct distinct, SQLs.WordOn on,
@@ -1013,6 +1057,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             this.context.registerDeferSelectClause(() -> consumer.accept(new SelectionConsumerImpl(this.context)));
             return (SD) this;
         }
+
 
         @Override
         public final List<_Expression> distinctOnExpressions() {
@@ -1024,8 +1069,41 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             return list;
         }
 
+        private void registerDistinctOn(final boolean required, final Consumer<Consumer<Expression>> expConsumer) {
+            if (this.registered) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.context.addSelectClauseEndListener(() -> {
+                final List<_Expression> list = _Collections.arrayList();
+                expConsumer.accept(e -> {
+                    if (!(e instanceof ArmyExpression)) {
+                        throw ContextStack.nonArmyExp(this.context);
+                    }
+                    list.add((ArmyExpression) e);
+                });
+
+                if (this.distinctOnExpList != null) {
+                    throw ContextStack.castCriteriaApi(this.context);
+                }
+                if (list.size() > 0) {
+                    this.selectDistinct();
+                    this.distinctOnExpList = _Collections.unmodifiableList(list);
+                } else if (required) {
+                    throw CriteriaUtils.dontAddAnyItem();
+                } else {
+                    this.distinctOnExpList = _Collections.emptyList();
+                }
+
+            });
+
+            this.registered = true;
+        }
+
         private void registerDistinctOn(final boolean required, final @Nullable SQLs.WordDistinct distinct,
                                         final Consumer<Consumer<Expression>> expConsumer) {
+            if (this.registered) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
 
             this.context.addSelectClauseEndListener(() -> {
                 final List<_Expression> list = _Collections.arrayList();
@@ -1056,7 +1134,10 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
                 }
 
             });
+
+            this.registered = true;
         }
+
 
 
     }//WithCteDistinctOnSimpleQueries
@@ -1298,8 +1379,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         final CriteriaContext context;
 
-        SelectClauseDispatcher(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
-            this.context = CriteriaContexts.dispatcherContext(outerContext, leftContext);
+        SelectClauseDispatcher(Dialect dialect, @Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
+            this.context = CriteriaContexts.dispatcherContext(dialect, outerContext, leftContext);
             ContextStack.push(this.context);
         }
 
@@ -1310,64 +1391,54 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         @Override
         public final SR select(Selection selection) {
-            return this.createSelectClause()
-                    .select(selection);
+            return this.createSelectClause().select(selection);
         }
 
         @Override
         public final SR select(Function<String, Selection> function, String alias) {
-            return this.createSelectClause()
-                    .select(function, alias);
+            return this.createSelectClause().select(function, alias);
         }
 
         @Override
         public final SR select(Selection selection1, Selection selection2) {
-            return this.createSelectClause()
-                    .select(selection1, selection2);
+            return this.createSelectClause().select(selection1, selection2);
         }
 
         @Override
         public final SR select(Function<String, Selection> function, String alias, Selection selection) {
-            return this.createSelectClause()
-                    .select(function, alias, selection);
+            return this.createSelectClause().select(function, alias, selection);
         }
 
         @Override
         public final SR select(Selection selection, Function<String, Selection> function, String alias) {
-            return this.createSelectClause()
-                    .select(selection, function, alias);
+            return this.createSelectClause().select(selection, function, alias);
         }
 
         @Override
         public final SR select(Function<String, Selection> function1, String alias1,
                                Function<String, Selection> function2, String alias2) {
-            return this.createSelectClause()
-                    .select(function1, alias1, function2, alias2);
+            return this.createSelectClause().select(function1, alias1, function2, alias2);
         }
 
         @Override
         public final SR select(SQLField field1, SQLField field2, SQLField field3) {
-            return this.createSelectClause()
-                    .select(field1, field2, field3);
+            return this.createSelectClause().select(field1, field2, field3);
         }
 
         @Override
         public final SR select(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
-            return this.createSelectClause()
-                    .select(field1, field2, field3, field4);
+            return this.createSelectClause().select(field1, field2, field3, field4);
         }
 
         @Override
         public final SR select(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-            return this.createSelectClause()
-                    .select(tableAlias, period, table);
+            return this.createSelectClause().select(tableAlias, period, table);
         }
 
         @Override
-        public <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
-                             String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-            return this.createSelectClause()
-                    .select(parenAlias, period1, parent, childAlias, period2, child);
+        public final <P> SR select(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                                   String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+            return this.createSelectClause().select(parenAlias, period1, parent, childAlias, period2, child);
         }
 
         @Override
@@ -1456,9 +1527,9 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         private List<_Cte> cteList;
 
 
-        WithBuilderSelectClauseDispatcher(@Nullable CriteriaContext outerContext,
+        WithBuilderSelectClauseDispatcher(Dialect dialect, @Nullable CriteriaContext outerContext,
                                           @Nullable CriteriaContext leftContext) {
-            super(outerContext, leftContext);
+            super(dialect, outerContext, leftContext);
         }
 
         @Override
@@ -1543,9 +1614,26 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             implements Query._DynamicDistinctOnExpClause<SR>,
             Query._DynamicDistinctOnAndSelectsClause<SD> {
 
-        WithDistinctOnSelectClauseDispatcher(@Nullable CriteriaContext outerContext, @Nullable CriteriaContext leftContext) {
-            super(outerContext, leftContext);
+        WithDistinctOnSelectClauseDispatcher(Dialect dialect, @Nullable CriteriaContext outerContext,
+                                             @Nullable CriteriaContext leftContext) {
+            super(dialect, outerContext, leftContext);
         }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectDistinctOn(Consumer<Consumer<Expression>> expConsumer) {
+            return this.createSelectClause().selectDistinctOn(expConsumer);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> selectIfDistinctOn(Consumer<Consumer<Expression>> expConsumer) {
+            return this.createSelectClause().selectIfDistinctOn(expConsumer);
+        }
+
+        @Override
+        public final _StaticSelectSpaceClause<SR> select(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer) {
+            return this.createSelectClause().select(distinct, on, expConsumer);
+        }
+
 
         @Override
         public final _StaticSelectSpaceClause<SR> selectIf(@Nullable SQLs.WordDistinct distinct, SQLs.WordOn on,
@@ -1563,6 +1651,36 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         public final SD selectsIf(@Nullable SQLs.WordDistinct distinct, SQLs.WordOn on,
                                   Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
             return this.createSelectClause().selectsIf(distinct, on, expConsumer, consumer);
+        }
+
+        @Override
+        public final SD selectDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer) {
+            return this.createSelectClause().selectDistinctOn(expConsumer, consumer);
+        }
+
+        @Override
+        public final SD selectsDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
+            return this.createSelectClause().selectsDistinctOn(expConsumer, consumer);
+        }
+
+        @Override
+        public final SD select(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer) {
+            return this.createSelectClause().select(distinct, on, expConsumer, consumer);
+        }
+
+        @Override
+        public final SD selects(SQLs.WordDistinct distinct, SQLs.WordOn on, Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
+            return this.createSelectClause().selects(distinct, on, expConsumer, consumer);
+        }
+
+        @Override
+        public final SD selectIfDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<_DeferSelectSpaceClause> consumer) {
+            return this.createSelectClause().selectIfDistinctOn(expConsumer, consumer);
+        }
+
+        @Override
+        public final SD selectsIfDistinctOn(Consumer<Consumer<Expression>> expConsumer, Consumer<SelectionConsumer> consumer) {
+            return this.createSelectClause().selectsIfDistinctOn(expConsumer, consumer);
         }
 
         @Override
