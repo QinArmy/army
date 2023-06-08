@@ -9,7 +9,7 @@ import io.army.meta.TableMeta;
 
 public interface StandardDelete extends StandardStatement {
 
-    interface _DeleteFromClause<DR> {
+    interface _DeleteFromClause<DR> extends Item {
 
         DR deleteFrom(SingleTableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
@@ -33,7 +33,7 @@ public interface StandardDelete extends StandardStatement {
     }
 
 
-    interface _DomainDeleteClause {
+    interface _DomainDeleteClause extends Item {
 
         _WhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
 
@@ -57,6 +57,19 @@ public interface StandardDelete extends StandardStatement {
     interface _BatchDomainDeleteClause {
 
         _BatchWhereSpec<BatchDelete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias);
+
+    }
+
+
+    interface _WithSpec<I extends Item> extends _StandardDynamicWithClause<_StandardDeleteClause<I>>,
+            _StandardStaticWithClause<_StandardDeleteClause<I>>,
+            _StandardDeleteClause<I> {
+
+    }
+
+    interface _BatchWithSpec extends _StandardDynamicWithClause<_BatchDeleteClause>,
+            _StandardStaticWithClause<_BatchDeleteClause>,
+            _BatchDeleteClause {
 
     }
 

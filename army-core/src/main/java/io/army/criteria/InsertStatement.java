@@ -213,6 +213,10 @@ public interface InsertStatement extends DmlStatement {
 
     }
 
+    interface _ParentInsert20<I extends Item, T extends Item> extends _ParentInsert<T>, _StaticSpaceClause<I> {
+
+    }
+
 
     interface _StaticValueLeftParenClause<T, RR> {
 
@@ -222,22 +226,10 @@ public interface InsertStatement extends DmlStatement {
 
         _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field,
-                                                  BiFunction<FieldMeta<T>, Expression, Expression> operator,
-                                                  Expression expression);
-
-        _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field,
-                                                  BiFunction<FieldMeta<T>, Object, Expression> operator,
-                                                  @Nullable Object value);
+        <E> _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, E value);
 
 
-        <E> _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field,
-                                                      BiFunction<FieldMeta<T>, E, Expression> operator,
-                                                      Supplier<E> supplier);
-
-        _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field,
-                                                  BiFunction<FieldMeta<T>, Object, Expression> operator,
-                                                  Function<String, ?> function, String keyName);
+        <K, V> _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
 
 
     }
@@ -250,18 +242,9 @@ public interface InsertStatement extends DmlStatement {
 
         _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field,
-                                              BiFunction<FieldMeta<T>, Expression, Expression> operator,
-                                              Expression expression);
+        <E> _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, E value);
 
-        _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field,
-                                              BiFunction<FieldMeta<T>, Object, Expression> operator,
-                                              @Nullable Object value);
-
-
-        <E> _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier);
-
-        _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, Function<String, ?> function, String keyName);
+        <K, V> _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
 
     }
 
@@ -308,18 +291,6 @@ public interface InsertStatement extends DmlStatement {
         SD sets(Consumer<Assignments<T>> consumer);
 
         SD ifSets(Consumer<Assignments<T>> consumer);
-    }
-
-
-    interface _CommaFieldValuePairClause<T, SR> {
-
-        SR comma(FieldMeta<T> field, @Nullable Object value);
-
-        SR commaLiteral(FieldMeta<T> field, @Nullable Object value);
-
-        SR commaExp(FieldMeta<T> field, Supplier<? extends Expression> supplier);
-
-
     }
 
 

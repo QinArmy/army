@@ -67,13 +67,18 @@ public abstract class _Collections {
     }
 
 
-    public static boolean isEmpty(@io.qinarmy.lang.Nullable Collection<?> collection) {
+    public static boolean isEmpty(@Nullable Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
 
-    public static boolean isEmpty(@io.qinarmy.lang.Nullable Map<?, ?> map) {
+    public static boolean isEmpty(@Nullable Map<?, ?> map) {
         return map == null || map.isEmpty();
     }
+
+    public static <K, V> Map<K, V> emptyMap() {
+        return Collections.emptyMap();
+    }
+
 
     public static <E> List<E> singletonList(E e) {
         return Collections.singletonList(e);

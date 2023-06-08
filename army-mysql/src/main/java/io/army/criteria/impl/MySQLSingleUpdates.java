@@ -460,7 +460,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
 
     private static final class BatchUpdateClause
-            extends UpdateClause<io.army.criteria.BatchUpdate, MySQLUpdate._BatchSingleUpdateClause<io.army.criteria.BatchUpdate>>
+            extends UpdateClause<BatchUpdate, MySQLUpdate._BatchSingleUpdateClause<io.army.criteria.BatchUpdate>>
             implements MySQLUpdate._BatchSingleWithSpec<io.army.criteria.BatchUpdate> {
 
         private BatchUpdateClause() {

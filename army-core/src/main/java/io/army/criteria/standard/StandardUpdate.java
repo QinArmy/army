@@ -37,7 +37,7 @@ public interface StandardUpdate extends StandardStatement {
 
     }
 
-    interface _SingleUpdateClause<I extends Item> {
+    interface _SingleUpdateClause<I extends Item> extends Item {
 
         <T> _StandardSetClause<I, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
@@ -46,7 +46,7 @@ public interface StandardUpdate extends StandardStatement {
 
     }
 
-    interface _DomainUpdateClause {
+    interface _DomainUpdateClause extends Item {
 
         _StandardSetClause<Update, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
 
@@ -79,7 +79,7 @@ public interface StandardUpdate extends StandardStatement {
 
     }
 
-    interface _BatchSingleUpdateClause {
+    interface _BatchSingleUpdateClause extends Item {
 
         <T> _BatchSetClause<BatchUpdate, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
@@ -87,13 +87,26 @@ public interface StandardUpdate extends StandardStatement {
 
     }
 
-    interface _BatchDomainUpdateClause {
+    interface _BatchDomainUpdateClause extends Item {
 
         _BatchSetClause<BatchUpdate, FieldMeta<?>> update(TableMeta<?> table, String tableAlias);
 
         <T> _BatchSetClause<BatchUpdate, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as, String tableAlias);
 
         <T> _BatchSetClause<BatchUpdate, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as, String tableAlias);
+
+    }
+
+
+    interface _WithSpec<I extends Item> extends _StandardDynamicWithClause<_SingleUpdateClause<I>>,
+            _StandardStaticWithClause<_SingleUpdateClause<I>>,
+            _SingleUpdateClause<I> {
+
+    }
+
+    interface _BatchWithSpec extends _StandardDynamicWithClause<_BatchSingleUpdateClause>,
+            _StandardStaticWithClause<_BatchSingleUpdateClause>,
+            _BatchSingleUpdateClause {
 
     }
 

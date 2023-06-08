@@ -84,12 +84,25 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimp
 
     static <I extends Item> StandardQuery._CteComma<I> staticCteComma(CriteriaContext context, boolean recursive,
                                                                       Function<Boolean, I> function) {
+        if (context.dialect() == StandardDialect.STANDARD10) {
+            throw CriteriaUtils.standard10DontSupportWithClause(context);
+        }
         return new StaticCteComma<>(context, recursive, function);
     }
 
     static Window._StandardPartitionBySpec anonymousWindow(CriteriaContext context,
                                                            @Nullable String existingWindowName) {
+        if (context.dialect() == StandardDialect.STANDARD10) {
+            throw CriteriaUtils.standard10DontSupportWindow(context);
+        }
         return new StandardWindow(context, existingWindowName);
+    }
+
+    static StandardCtes cteBuilder(boolean recursive, CriteriaContext context) {
+        if (context.dialect() == StandardDialect.STANDARD10) {
+            throw CriteriaUtils.standard10DontSupportWithClause(context);
+        }
+        return new StandardCteBuilder(recursive, context);
     }
 
 
@@ -176,7 +189,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimp
 
     @Override
     public final Window._WindowAsClause<Window._StandardPartitionBySpec, _WindowCommaSpec<I>> window(String windowName) {
-        if (this.context.dialect() == StandardDialect.STANDARD10) {
+        if (this.context.dialect() == StandardDialect.STANDARD10) {// here required for WINDOW AS clause
             throw CriteriaUtils.standard10DontSupportWindow(this.context);
         }
         return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow, StandardQueries::namedWindow);
@@ -185,7 +198,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimp
 
     @Override
     public final Window._WindowAsClause<Window._StandardPartitionBySpec, _WindowCommaSpec<I>> comma(String windowName) {
-        if (this.context.dialect() == StandardDialect.STANDARD10) {
+        if (this.context.dialect() == StandardDialect.STANDARD10) {// here required for WINDOW AS clause
             throw CriteriaUtils.standard10DontSupportWindow(this.context);
         }
         return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow, StandardQueries::namedWindow);
@@ -193,9 +206,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimp
 
     @Override
     public final _OrderBySpec<I> windows(Consumer<Window.Builder<Window._StandardPartitionBySpec>> consumer) {
-        if (this.context.dialect() == StandardDialect.STANDARD10) {
-            throw CriteriaUtils.standard10DontSupportWindow(this.context);
-        }
         consumer.accept(this::dynamicNamedWindow);
         if (this.windowList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::windowListIsEmpty);
@@ -205,9 +215,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimp
 
     @Override
     public final _OrderBySpec<I> ifWindows(Consumer<Window.Builder<Window._StandardPartitionBySpec>> consumer) {
-        if (this.context.dialect() == StandardDialect.STANDARD10) {
-            throw CriteriaUtils.standard10DontSupportWindow(this.context);
-        }
         consumer.accept(this::dynamicNamedWindow);
         return this;
     }
@@ -399,12 +406,18 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimp
     }
 
     private Window._WindowAsClause<Window._StandardPartitionBySpec, Item> dynamicNamedWindow(String windowName) {
+        if (context.dialect() == StandardDialect.STANDARD10) {
+            throw CriteriaUtils.standard10DontSupportWindow(context);
+        }
         return new NamedWindowAsClause<>(this.context, windowName, this::onAddWindow, StandardQueries::namedWindow);
     }
 
 
     private static Window._StandardPartitionBySpec namedWindow(String windowName, CriteriaContext context,
                                                                @Nullable String existingWindowName) {
+        if (context.dialect() == StandardDialect.STANDARD10) {
+            throw CriteriaUtils.standard10DontSupportWindow(context);
+        }
         return new StandardWindow(windowName, context, existingWindowName);
     }
 

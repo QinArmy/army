@@ -146,12 +146,12 @@ public abstract class SQLs extends SQLsSyntax {
     static final Function<SubQuery, Expression> _SCALAR_QUERY_IDENTITY = Expressions::scalarExpression;
 
 
-    public static StandardInsert._PrimaryOptionSpec singleInsert() {
-        return StandardInserts.singleInsert(StandardDialect.STANDARD10);
+    public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
+        return StandardInserts.singleInsert();
     }
 
-    public static StandardInsert._PrimaryOptionSpec singleInsert20() {
-        return StandardInserts.singleInsert(StandardDialect.STANDARD20);
+    public static StandardInsert._PrimaryOption20Spec<Insert> singleInsert20() {
+        return StandardInserts.singleInsert20();
     }
 
     public static StandardUpdate._DomainUpdateClause domainUpdate() {
@@ -163,7 +163,7 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardUpdates.singleUpdate(StandardDialect.STANDARD10);
     }
 
-    public static StandardUpdate._SingleUpdateClause<Update> singleUpdate20() {
+    public static StandardUpdate._WithSpec<Update> singleUpdate20() {
         return StandardUpdates.singleUpdate(StandardDialect.STANDARD20);
     }
 
@@ -192,7 +192,7 @@ public abstract class SQLs extends SQLsSyntax {
      * Batch domain update
      * </p>
      */
-    public static StandardUpdate._BatchSingleUpdateClause batchSingleUpdate20() {
+    public static StandardUpdate._BatchWithSpec batchSingleUpdate20() {
         return StandardUpdates.batchSingle(StandardDialect.STANDARD20);
     }
 
@@ -201,7 +201,7 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardDeletes.singleDelete(StandardDialect.STANDARD10);
     }
 
-    public static StandardDelete._StandardDeleteClause<Delete> singleDelete20() {
+    public static StandardDelete._WithSpec<Delete> singleDelete20() {
         return StandardDeletes.singleDelete(StandardDialect.STANDARD20);
     }
 
@@ -223,7 +223,7 @@ public abstract class SQLs extends SQLsSyntax {
      * Batch domain delete
      * </p>
      */
-    public static StandardDelete._BatchDeleteClause batchSingleDelete20() {
+    public static StandardDelete._BatchWithSpec batchSingleDelete20() {
         return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD20);
     }
 

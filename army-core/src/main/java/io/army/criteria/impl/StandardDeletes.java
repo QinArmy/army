@@ -6,7 +6,9 @@ import io.army.criteria.DeleteStatement;
 import io.army.criteria.Item;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._DomainDelete;
+import io.army.criteria.standard.StandardCtes;
 import io.army.criteria.standard.StandardDelete;
+import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
@@ -24,15 +26,15 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-abstract class StandardDeletes<I extends Item, DR, WR, WA>
-        extends SingleDeleteStatement<I, WR, WA, Object, Object, Object, Object, Object>
+abstract class StandardDeletes<I extends Item, WE extends Item, DR, WR, WA>
+        extends SingleDeleteStatement.WithSingleDelete<I, StandardCtes, WE, WR, WA, Object, Object, Object, Object, Object>
         implements StandardDelete, DeleteStatement {
 
-    static _StandardDeleteClause<Delete> singleDelete(StandardDialect dialect) {
+    static _WithSpec<Delete> singleDelete(StandardDialect dialect) {
         return new SimpleSingleDelete<>(dialect, null, SQLs::identity);
     }
 
-    static _BatchDeleteClause batchSingleDelete(StandardDialect dialect) {
+    static _BatchWithSpec batchSingleDelete(StandardDialect dialect) {
         return new BatchSingleDelete(dialect);
     }
 
@@ -50,7 +52,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
     private String tableAlias;
 
     private StandardDeletes(StandardDialect dialect, @Nullable ArmyStmtSpec spec) {
-        super(CriteriaContexts.primarySingleDmlContext(dialect, spec));
+        super(spec, CriteriaContexts.primarySingleDmlContext(dialect, spec));
     }
 
 
@@ -89,7 +91,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
     @Override
     final void onClear() {
         if (this instanceof StandardBatchDelete) {
-            ((StandardBatchDelete) this).paramList = null;
+            ((StandardBatchDelete<?>) this).paramList = null;
         }
     }
 
@@ -98,17 +100,23 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
         return MySQLDialect.MySQL57;
     }
 
+    @Override
+    final StandardCtes createCteBuilder(boolean recursive) {
+        return StandardQueries.cteBuilder(recursive, this.context);
+    }
+
     /*################################## blow static inner class ##################################*/
 
 
     private static final class SimpleSingleDelete<I extends Item> extends StandardDeletes<
             I,
+            StandardDelete._StandardDeleteClause<I>,
             _WhereSpec<I>,
             _DmlDeleteSpec<I>,
             _WhereAndSpec<I>>
             implements _WhereSpec<I>,
             _WhereAndSpec<I>,
-            StandardDelete._StandardDeleteClause<I>,
+            StandardDelete._WithSpec<I>,
             Delete {
 
         private final Function<? super Delete, I> function;
@@ -120,6 +128,17 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
             this.function = function;
         }
 
+        @Override
+        public StandardQuery._StaticCteParensSpec<_StandardDeleteClause<I>> with(String name) {
+            return StandardQueries.staticCteComma(this.context, false, this::endStaticWithClause)
+                    .comma(name);
+        }
+
+        @Override
+        public StandardQuery._StaticCteParensSpec<_StandardDeleteClause<I>> withRecursive(String name) {
+            return StandardQueries.staticCteComma(this.context, true, this::endStaticWithClause)
+                    .comma(name);
+        }
 
         @Override
         public _WhereSpec<I> deleteFrom(final @Nullable SingleTableMeta<?> table, SQLs.WordAs as,
@@ -137,6 +156,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
 
     private static final class SimpleDomainDelete extends StandardDeletes<
             Delete,
+            _DomainDeleteClause,
             _WhereSpec<Delete>,
             _DmlDeleteSpec<Delete>,
             _WhereAndSpec<Delete>>
@@ -165,8 +185,9 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
     }//SimpleDomainDelete
 
 
-    private static abstract class StandardBatchDelete extends StandardDeletes<
+    private static abstract class StandardBatchDelete<WE extends Item> extends StandardDeletes<
             BatchDelete,
+            WE,
             _BatchWhereSpec<BatchDelete>,
             _BatchParamClause<_DmlDeleteSpec<BatchDelete>>,
             _BatchWhereAndSpec<BatchDelete>>
@@ -220,11 +241,23 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
     }//BatchDelete
 
 
-    private static final class BatchSingleDelete extends StandardBatchDelete
-            implements _BatchDeleteClause {
+    private static final class BatchSingleDelete extends StandardBatchDelete<_BatchDeleteClause>
+            implements StandardDelete._BatchWithSpec {
 
         private BatchSingleDelete(StandardDialect dialect) {
             super(dialect);
+        }
+
+        @Override
+        public StandardQuery._StaticCteParensSpec<_BatchDeleteClause> with(String name) {
+            return StandardQueries.staticCteComma(this.context, false, this::endStaticWithClause)
+                    .comma(name);
+        }
+
+        @Override
+        public StandardQuery._StaticCteParensSpec<_BatchDeleteClause> withRecursive(String name) {
+            return StandardQueries.staticCteComma(this.context, true, this::endStaticWithClause)
+                    .comma(name);
         }
 
         @Override
@@ -235,7 +268,7 @@ abstract class StandardDeletes<I extends Item, DR, WR, WA>
     }//BatchSingleDelete
 
 
-    private static final class BatchDomainDelete extends StandardBatchDelete
+    private static final class BatchDomainDelete extends StandardBatchDelete<Item>
             implements _DomainDelete,
             _BatchDomainDeleteClause {
 

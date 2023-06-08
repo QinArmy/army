@@ -80,8 +80,8 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
 
-                .leftParen(ChinaRegion_.name, SQLs::param, r::getName)
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, r::getRegionGdp)
+                .leftParen(ChinaRegion_.name, SQLs::param, r.getName())
+                .comma(ChinaRegion_.regionGdp, SQLs::literal, r.getRegionGdp())
                 .comma(ChinaRegion_.parentId, SQLs::literal, 0)
                 .rightParen()
 
@@ -104,13 +104,13 @@ public class StandardInsertUnitTests extends StandardUnitTests {
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
 
-                .leftParen(ChinaRegion_.name, SQLs::literal, () -> "武当山")
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, () -> "6666.66")
-                .comma(ChinaRegion_.parentId, SQLs::param, () -> 0)
+                .leftParen(ChinaRegion_.name, SQLs::literal, "武当山")
+                .comma(ChinaRegion_.regionGdp, SQLs::literal, "6666.66")
+                .comma(ChinaRegion_.parentId, SQLs::param, 0)
                 .rightParen()
 
-                .leftParen(ChinaRegion_.name, SQLs::literal, () -> "光明顶")
-                .comma(ChinaRegion_.parentId, SQLs::param, () -> 0)
+                .leftParen(ChinaRegion_.name, SQLs::literal, "光明顶")
+                .comma(ChinaRegion_.parentId, SQLs::param, 0)
                 .rightParen()
 
                 .asInsert()

@@ -1805,14 +1805,14 @@ public interface Statement extends Item {
         R comma();
     }
 
-    interface _StaticWithCommaClause<CR> extends Item {
+    interface _StaticWithCommaClause<R> extends Item {
 
-        CR comma(String name);
+        R comma(String name);
     }
 
-    interface _StaticSpaceClause<SR> {
+    interface _StaticSpaceClause<R> {
 
-        SR space();
+        R space();
     }
 
 }

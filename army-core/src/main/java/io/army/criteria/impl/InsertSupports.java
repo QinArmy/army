@@ -199,6 +199,14 @@ abstract class InsertSupports {
             super(context);
         }
 
+        NonQueryWithCteOption(@Nullable ArmyStmtSpec spec, CriteriaContext context) {
+            super(context);
+            if (spec != null) {
+                this.recursive = spec.isRecursive();
+                this.cteList = spec.cteList();
+            }
+        }
+
         @Override
         public final WE with(Consumer<B> consumer) {
             final B builder;
@@ -243,7 +251,8 @@ abstract class InsertSupports {
         public final List<_Cte> cteList() {
             List<_Cte> cteList = this.cteList;
             if (cteList == null) {
-                cteList = Collections.emptyList();
+                cteList = _Collections.emptyList();
+                this.cteList = cteList;
             }
             return cteList;
         }
@@ -275,7 +284,6 @@ abstract class InsertSupports {
 
         private WE endDynamicWithClause(final B builder, final boolean required) {
             ((CriteriaSupports.CteBuilder) builder).endLastCte();
-
             final boolean recursive;
             recursive = builder.isRecursive();
             this.recursive = recursive;
@@ -1535,34 +1543,18 @@ abstract class InsertSupports {
         }
 
         @Override
-        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field,
-                                                                               Function<FieldMeta<T>, Expression> function) {
+        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
             return this.comma(field, function.apply(field));
         }
 
         @Override
-        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, Expression> operator, Expression expression) {
-            return this.comma(field, operator.apply(field, expression));
+        public final <E> InsertStatement._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, E value) {
+            return this.comma(field, funcRef.apply(field, value));
         }
 
         @Override
-        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, @Nullable Object value) {
-            return this.comma(field, operator.apply(field, value));
-        }
-
-        @Override
-        public final <E> InsertStatement._StaticColumnValueClause<T, RR> leftParen(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier) {
-            return this.comma(field, operator.apply(field, supplier.get()));
-        }
-
-        @Override
-        public final InsertStatement._StaticColumnValueClause<T, RR> leftParen(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, Function<String, ?> function,
-                String keyName) {
-            return this.comma(field, operator.apply(field, function.apply(keyName)));
+        public final <K, V> InsertStatement._StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key) {
+            return this.comma(field, funcRef.apply(field, function.apply(key)));
         }
 
         @Override
@@ -1590,35 +1582,18 @@ abstract class InsertSupports {
         }
 
         @Override
-        public final InsertStatement._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field,
-                                                                           Function<FieldMeta<T>, Expression> function) {
+        public final InsertStatement._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
             return this.comma(field, function.apply(field));
         }
 
-
         @Override
-        public final InsertStatement._StaticColumnValueClause<T, RR> comma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, Expression> operator, Expression expression) {
-            return this.comma(field, operator.apply(field, expression));
+        public final <E> InsertStatement._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, E value) {
+            return this.comma(field, funcRef.apply(field, value));
         }
 
         @Override
-        public final InsertStatement._StaticColumnValueClause<T, RR> comma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator, @Nullable Object value) {
-            return this.comma(field, operator.apply(field, value));
-        }
-
-        @Override
-        public final <E> InsertStatement._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field,
-                                                                               BiFunction<FieldMeta<T>, E, Expression> operator,
-                                                                               Supplier<E> supplier) {
-            return this.comma(field, operator.apply(field, supplier.get()));
-        }
-
-        @Override
-        public final InsertStatement._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object,
-                Expression> operator, Function<String, ?> function, String keyName) {
-            return this.comma(field, operator.apply(field, function.apply(keyName)));
+        public final <K, V> InsertStatement._StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key) {
+            return this.comma(field, funcRef.apply(field, function.apply(key)));
         }
 
         @SuppressWarnings("unchecked")
@@ -1626,16 +1601,16 @@ abstract class InsertSupports {
         public final RR rightParen() {
             List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
             if (rowValueList == null) {
-                rowValueList = new ArrayList<>();
+                rowValueList = _Collections.arrayList();
                 this.rowList = rowValueList;
             } else if (!(rowValueList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             final Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
             if (currentRow == null) {
-                rowValueList.add(Collections.emptyMap());
+                rowValueList.add(_Collections.emptyMap());
             } else {
-                rowValueList.add(Collections.unmodifiableMap(currentRow));
+                rowValueList.add(_Collections.unmodifiableMap(currentRow));
             }
 
             this.rowValuesMap = null;// clear for next row
@@ -1661,9 +1636,9 @@ abstract class InsertSupports {
             final List<Map<FieldMeta<?>, _Expression>> rowList = this.rowList;
             final Map<FieldMeta<?>, _Expression> map;
             if (rowList == null) {
-                map = new HashMap<>();
+                map = _Collections.hashMap();
             } else {
-                map = new HashMap<>((int) (rowList.get(0).size() / 0.75F));
+                map = _Collections.hashMap((int) (rowList.get(0).size() / 0.75F));
             }
             return map;
         }

@@ -278,58 +278,29 @@ abstract class MySQLInserts extends InsertSupports {
 
 
         @Override
-        public <R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, R> valueOperator, Expression expression) {
-            return this.comma(field, valueOperator, expression);
+        public <E, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, E, R> valueOperator, @Nullable E value) {
+            return this.onAddAssignmentItemPair(field, valueOperator.apply(field, value));
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, @Nullable Object value) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+        public <K, V, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, V, R> valueOperator, Function<K, V> function, K key) {
+            return this.onAddAssignmentItemPair(field, valueOperator.apply(field, function.apply(key)));
         }
 
         @Override
-        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, supplier.get())));
+        public <E, U, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, U, R> fieldOperator,
+                BiFunction<FieldMeta<T>, E, U> valueOperator, @Nullable E value) {
+            return this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, value)));
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function,
-                String keyName) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, function.apply(keyName))));
-        }
-
-
-        @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, Expression, Expression> valueOperator, Expression expression) {
-            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, expression)));
-        }
-
-        @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Object value) {
-            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
-        }
-
-        @Override
-        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier) {
-            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
-        }
-
-        @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function,
-                String keyName) {
-            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
+        public <K, V, U, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> update(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, U, R> fieldOperator,
+                BiFunction<FieldMeta<T>, V, U> valueOperator, Function<K, V> function, K key) {
+            return this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, function.apply(key))));
         }
 
         @Override
@@ -344,32 +315,29 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> getter) {
+        public <E, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, E, R> valueOperator, Supplier<E> getter) {
             return this.ifComma(field, valueOperator, getter);
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
-                Function<String, ?> function, String keyName) {
-            return this.ifComma(field, valueOperator, function, keyName);
+        public <K, V, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, V, R> valueOperator, Function<K, V> function, K key) {
+            return this.ifComma(field, valueOperator, function, key);
         }
 
-
         @Override
-        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> getter) {
+        public <E, U, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, U, R> fieldOperator,
+                BiFunction<FieldMeta<T>, E, U> valueOperator, Supplier<E> getter) {
             return this.ifComma(field, fieldOperator, valueOperator, getter);
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function,
-                String keyName) {
-            return this.ifComma(field, fieldOperator, valueOperator, function, keyName);
+        public <K, V, U, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> updateIf(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, U, R> fieldOperator,
+                BiFunction<FieldMeta<T>, V, U> valueOperator, Function<K, V> function, K key) {
+            return this.ifComma(field, fieldOperator, valueOperator, function, key);
         }
 
         @Override
@@ -390,75 +358,36 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public <R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, R> valueOperator, Expression expression) {
-            final R item;
-            item = valueOperator.apply(field, expression);
-
-            if (item instanceof Expression) {
-                this.onAddItemPair(SQLs._itemPair(field, null, (Expression) item));
-            } else if (item instanceof ItemPair) {
-                this.onAddItemPair((ItemPair) item);
-            } else {
-                throw CriteriaUtils.illegalAssignmentItem(this.clause.context, item);
-            }
-            return this;
+        public <E, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, E, R> valueOperator, @Nullable E value) {
+            return this.onAddAssignmentItemPair(field, valueOperator.apply(field, value));
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, @Nullable Object value) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+        public <K, V, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, V, R> valueOperator, Function<K, V> function, K key) {
+            return this.onAddAssignmentItemPair(field, valueOperator.apply(field, function.apply(key)));
         }
 
         @Override
-        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, supplier.get())));
+        public <E, U, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, U, R> fieldOperator,
+                BiFunction<FieldMeta<T>, E, U> valueOperator, @Nullable E value) {
+            return this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, value)));
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
-                Function<String, ?> function, String keyName) {
-            return this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, function.apply(keyName))));
+        public <K, V, U, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, U, R> fieldOperator,
+                BiFunction<FieldMeta<T>, V, U> valueOperator, Function<K, V> function, K key) {
+            return this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, function.apply(key))));
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, Expression, Expression> valueOperator, Expression expression) {
-            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, expression)));
-        }
-
-        @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Object value) {
-            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
-        }
-
-        @Override
-        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier) {
-            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, supplier.get())));
-        }
-
-        @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> comma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function,
-                String keyName) {
-            return this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, function.apply(keyName))));
-        }
-
-        @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(FieldMeta<T> field,
-                                                                          Supplier<Expression> supplier) {
-            final Expression expression;
-            if ((expression = supplier.get()) != null) {
-                this.onAddItemPair(SQLs._itemPair(field, null, expression));
+        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(FieldMeta<T> field, Supplier<Expression> supplier) {
+            final Expression value;
+            if ((value = supplier.get()) != null) {
+                this.onAddItemPair(SQLs._itemPair(field, null, value));
             }
             return this;
         }
@@ -466,54 +395,51 @@ abstract class MySQLInserts extends InsertSupports {
         @Override
         public MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(FieldMeta<T> field,
                                                                           Function<FieldMeta<T>, Expression> function) {
-            final Expression expression;
-            if ((expression = function.apply(field)) != null) {
-                this.onAddItemPair(SQLs._itemPair(field, null, expression));
+            final Expression value;
+            if ((value = function.apply(field)) != null) {
+                this.onAddItemPair(SQLs._itemPair(field, null, value));
             }
             return this;
         }
 
-
         @Override
-        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> getter) {
+        public <E, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, E, R> valueOperator, Supplier<E> getter) {
             final E value;
             if ((value = getter.get()) != null) {
-                this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+                this.onAddAssignmentItemPair(field, valueOperator.apply(field, value));
             }
             return this;
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator,
-                Function<String, ?> function, String keyName) {
-            final Object value;
-            if ((value = function.apply(keyName)) != null) {
-                this.onAddItemPair(SQLs._itemPair(field, null, valueOperator.apply(field, value)));
+        public <K, V, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, V, R> valueOperator, Function<K, V> function, K key) {
+            final V value;
+            if ((value = function.apply(key)) != null) {
+                this.onAddAssignmentItemPair(field, valueOperator.apply(field, value));
             }
             return this;
         }
 
         @Override
-        public <E> MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> getter) {
+        public <E, U, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, U, R> fieldOperator,
+                BiFunction<FieldMeta<T>, E, U> valueOperator, Supplier<E> getter) {
             final E value;
             if ((value = getter.get()) != null) {
-                this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+                this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, value)));
             }
             return this;
         }
 
         @Override
-        public MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(
-                FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, ItemPair> fieldOperator,
-                BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function,
-                String keyName) {
-            final Object value;
-            if ((value = function.apply(keyName)) != null) {
-                this.onAddItemPair(fieldOperator.apply(field, valueOperator.apply(field, value)));
+        public <K, V, U, R extends AssignmentItem> MySQLInsert._StaticConflictUpdateCommaClause<I, T> ifComma(
+                FieldMeta<T> field, BiFunction<FieldMeta<T>, U, R> fieldOperator,
+                BiFunction<FieldMeta<T>, V, U> valueOperator, Function<K, V> function, K key) {
+            final V value;
+            if ((value = function.apply(key)) != null) {
+                this.onAddAssignmentItemPair(field, fieldOperator.apply(field, valueOperator.apply(field, value)));
             }
             return this;
         }
@@ -544,13 +470,27 @@ abstract class MySQLInserts extends InsertSupports {
             }
             List<_ItemPair> pairList = this.itemPairList;
             if (pairList == null) {
-                pairList = new ArrayList<>();
+                pairList = _Collections.arrayList();
                 this.itemPairList = pairList;
             } else if (!(pairList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.clause.context);
             }
             pairList.add((SQLs.FieldItemPair) pair);
             return this;
+        }
+
+        private MySQLInsert._StaticConflictUpdateCommaClause<I, T> onAddAssignmentItemPair(final FieldMeta<T> field, final @Nullable AssignmentItem item) {
+            final ItemPair pair;
+            if (item == null) {
+                throw ContextStack.nullPointer(this.clause.context);
+            } else if (item instanceof Expression) {
+                pair = SQLs._itemPair(field, null, (Expression) item);
+            } else if (item instanceof ItemPair) {
+                pair = (ItemPair) item;
+            } else {
+                throw CriteriaUtils.illegalAssignmentItem(this.clause.context, item);
+            }
+            return this.onAddItemPair(pair);
         }
 
 

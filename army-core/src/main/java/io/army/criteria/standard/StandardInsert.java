@@ -1,6 +1,5 @@
 package io.army.criteria.standard;
 
-import io.army.criteria.Insert;
 import io.army.criteria.InsertStatement;
 import io.army.criteria.Item;
 import io.army.meta.ComplexTableMeta;
@@ -14,7 +13,7 @@ import io.army.meta.SimpleTableMeta;
  *
  * @since 1.0
  */
-public interface StandardInsert extends StandardStatement {
+public interface StandardInsert extends StandardStatement, InsertStatement {
 
 
     interface _StandardValueStaticLeftParenClause<T, I extends Item>
@@ -54,25 +53,52 @@ public interface StandardInsert extends StandardStatement {
     }
 
 
-    interface _PrimaryInsertIntoClause {
+    interface _PrimaryInsertIntoClause<I extends Item> extends Item {
 
-        <T> _ColumnListSpec<T, Insert> insertInto(SimpleTableMeta<T> table);
+        <T> _ColumnListSpec<T, I> insertInto(SimpleTableMeta<T> table);
 
-        <P> _ColumnListSpec<P, InsertStatement._ParentInsert<_ChildInsertIntoClause<Insert, P>>> insertInto(ParentTableMeta<P> table);
+        <P> _ColumnListSpec<P, _ParentInsert20<I, _ChildInsertIntoClause<I, P>>> insertInto(ParentTableMeta<P> table);
     }
 
-    interface _PrimaryPreferLiteralSpec
-            extends InsertStatement._PreferLiteralClause<_PrimaryInsertIntoClause>, _PrimaryInsertIntoClause {
-
-    }
-
-    interface _PrimaryNullOptionSpec extends InsertStatement._NullOptionClause<_PrimaryPreferLiteralSpec>,
-            _PrimaryPreferLiteralSpec {
+    interface _PrimaryPreferLiteralSpec<I extends Item>
+            extends InsertStatement._PreferLiteralClause<_PrimaryInsertIntoClause<I>>,
+            _PrimaryInsertIntoClause<I> {
 
     }
 
-    interface _PrimaryOptionSpec extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec>,
-            _PrimaryNullOptionSpec {
+    interface _PrimaryNullOptionSpec<I extends Item>
+            extends InsertStatement._NullOptionClause<_PrimaryPreferLiteralSpec<I>>,
+            _PrimaryPreferLiteralSpec<I> {
+
+    }
+
+    interface _PrimaryOptionSpec<I extends Item>
+            extends InsertStatement._MigrationOptionClause<_PrimaryNullOptionSpec<I>>,
+            _PrimaryNullOptionSpec<I> {
+
+    }
+
+
+    interface _WithSpec<I extends Item> extends _StandardDynamicWithClause<_PrimaryInsertIntoClause<I>>,
+            _StandardStaticWithClause<_PrimaryInsertIntoClause<I>>,
+            _PrimaryInsertIntoClause<I> {
+
+    }
+
+    interface _PrimaryPreferLiteral20Spec<I extends Item>
+            extends InsertStatement._PreferLiteralClause<_WithSpec<I>>, _WithSpec<I> {
+
+    }
+
+    interface _PrimaryNullOption20Spec<I extends Item>
+            extends InsertStatement._NullOptionClause<_PrimaryPreferLiteral20Spec<I>>,
+            _PrimaryPreferLiteral20Spec<I> {
+
+    }
+
+    interface _PrimaryOption20Spec<I extends Item>
+            extends InsertStatement._MigrationOptionClause<_PrimaryNullOption20Spec<I>>,
+            _PrimaryNullOption20Spec<I> {
 
     }
 
