@@ -325,10 +325,10 @@ abstract class CriteriaContexts {
         return ContextStack.criteriaError(context, m);
     }
 
-    private static CriteriaException staticSelectClauseRefDerivedField(CriteriaContext context) {
-        String m = String.format("error,You couldn't invoke %s.refThis() or %s.refOuter() in static SELECT clause. detail see the Java doc of related method.",
-                SQLs.class.getName(), SQLs.class.getName());
-        return ContextStack.criteriaError(context, m);
+    private static UnknownDerivedFieldException staticSelectClauseRefDerivedField(CriteriaContext context, boolean sub) {
+        String m = String.format("error,You couldn't invoke %s.%s() in static SELECT clause. detail see the Java doc of related method.",
+                SQLs.class.getName(), sub ? "refOuter" : "refThis");
+        return ContextStack.criteriaError(context, UnknownDerivedFieldException::new, m);
 
     }
 
@@ -396,7 +396,6 @@ abstract class CriteriaContexts {
         String m = String.format("unknown outer derived field[%s.%s].", derivedAlias, selectionAlias);
         return ContextStack.clearStackAnd(UnknownDerivedFieldException::new, m);
     }
-
 
 
     private static CriteriaException unknownWindows(CriteriaContext context, Map<String, Boolean> refWindowNameMap) {
@@ -782,8 +781,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public DerivedField refThis(String derivedAlias, String selectionAlias) {
-            String m = "current context don't support refThis(derivedAlias,selectionAlias)";
+        public DerivedField refThis(String derivedAlias, String fieldAlias, boolean sub) {
+            String m = "current context don't support refThis(derivedAlias,fieldAlias)";
             throw ContextStack.criteriaError(this, m);
         }
 
@@ -1187,7 +1186,7 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final DerivedField refThis(final String derivedAlias, final String selectionAlias) {
+        public final DerivedField refThis(final String derivedAlias, final String fieldAlias, final boolean sub) {
 
             final Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
 
@@ -1195,13 +1194,13 @@ abstract class CriteriaContexts {
             if (aliasToSelection != null) {
                 fieldMap = aliasToSelection.get(derivedAlias);
             } else if (this.isInWithClause()) {
-                throw unknownDerivedField(derivedAlias, selectionAlias);
+                throw unknownDerivedField(derivedAlias, fieldAlias);
             } else {
                 fieldMap = null;
             }
             DerivedField field;
-            if (fieldMap == null || (field = fieldMap.get(selectionAlias)) == null) {
-                field = createDerivedField(derivedAlias, selectionAlias);
+            if (fieldMap == null || (field = fieldMap.get(fieldAlias)) == null) {
+                field = createDerivedField(derivedAlias, fieldAlias, sub);
             }
             return field;
         }
@@ -1214,7 +1213,7 @@ abstract class CriteriaContexts {
                 throw notFoundOuterContext(this);
             }
             this.refOuter = true;
-            return outerContext.refThis(derivedAlias, fieldName);
+            return outerContext.refThis(derivedAlias, fieldName, true);
         }
 
 
@@ -1296,6 +1295,11 @@ abstract class CriteriaContexts {
             //2. flush bufferDerivedBlock
             this.flushBufferDerivedBlock();
 
+            //3 end SimpleQueryContext ,possibly trigger defer SELECT clause.
+            if (this instanceof SimpleQueryContext) {
+                ((SimpleQueryContext) this).endQueryContext();
+            }
+
             final Map<String, _TabularBlock> aliasToBlock;
             aliasToBlock = _Collections.safeUnmodifiableMap(this.aliasToBlock);
             this.aliasToBlock = aliasToBlock;
@@ -1305,7 +1309,7 @@ abstract class CriteriaContexts {
             this.tableBlockList = blockList;//store for recursive checking
 
 
-            //3. assert nestedDerivedBufferMap
+            //4. assert nestedDerivedBufferMap
             final Map<String, _AliasDerivedBlock> nestedDerivedBufferMap = this.nestedDerivedBufferMap;
             if (nestedDerivedBufferMap != null && nestedDerivedBufferMap.size() > 0) {
                 throw ContextStack.castCriteriaApi(this);
@@ -1313,18 +1317,12 @@ abstract class CriteriaContexts {
             this.nestedDerivedBufferMap = null; //clear
 
 
-            //4. validate aliasToBlock
+            //5. validate aliasToBlock
             final int blockSize = blockList.size();
             if (blockSize == 0 && !(this instanceof SimpleQueryContext || this instanceof JoinableSingleDmlContext)) {
                 throw ContextStack.castCriteriaApi(this);
             }
             assert aliasToBlock.size() >= blockSize;// nested items
-
-            //5 end SimpleQueryContext ,possibly trigger defer SELECT clause.
-            if (this instanceof SimpleQueryContext) {
-                ((SimpleQueryContext) this).endQueryContext();
-            }
-
 
             //6. validate QualifiedField map
             if (this.aliasFieldMap != null) {
@@ -1348,9 +1346,9 @@ abstract class CriteriaContexts {
 
 
         /**
-         * @see JoinableContext#refThis(String, String)
+         * @see JoinableContext#refThis(String, String, boolean)
          */
-        private DerivedField createDerivedField(final String derivedAlias, final String selectionAlias) {
+        private DerivedField createDerivedField(final String derivedAlias, final String fieldAlias, final boolean sub) {
             //1. flush buffer _DerivedBlock
             this.flushBufferDerivedBlock();
 
@@ -1379,20 +1377,15 @@ abstract class CriteriaContexts {
             }
 
             if (selectionMap == null) {
-                if (this instanceof SimpleQueryContext && ((SimpleQueryContext) this).isStaticSelectClauseIng()) {
-                    throw staticSelectClauseRefDerivedField(this);
-                }
-                throw invalidRef(this, derivedAlias, selectionAlias);
+                throw handleNoSelectionMapError(derivedAlias, fieldAlias, sub);
             }
-
-
             Map<String, Map<String, DerivedField>> aliasToSelection = this.aliasToDerivedField;
             if (aliasToSelection == null) {
                 aliasToSelection = _Collections.hashMap();
                 this.aliasToDerivedField = aliasToSelection;
             }
             return aliasToSelection.computeIfAbsent(derivedAlias, _Collections::hashMapIgnoreKey)
-                    .computeIfAbsent(selectionAlias, fieldNameKey -> {
+                    .computeIfAbsent(fieldAlias, fieldNameKey -> {
                         final Selection selection;
                         selection = selectionMap.refSelection(fieldNameKey);
                         if (selection == null) {
@@ -1407,6 +1400,27 @@ abstract class CriteriaContexts {
                         return field;
                     });
 
+        }
+
+
+        /**
+         * @see #createDerivedField(String, String, boolean)
+         */
+        private CriteriaException handleNoSelectionMapError(final String derivedAlias, final String fieldAlias,
+                                                            final boolean sub) {
+            final CriteriaException e;
+            if (this instanceof SimpleQueryContext && ((SimpleQueryContext) this).deferSelectClause != null) {
+                e = invalidRef(this, derivedAlias, fieldAlias);
+            } else if (this.aliasToBlock != null) {
+                e = invalidRef(this, derivedAlias, fieldAlias);
+            } else if (this instanceof SimpleQueryContext && ((SimpleQueryContext) this).isStaticSelectAndNoItem()) {
+                e = staticSelectClauseRefDerivedField(this, sub);
+            } else {
+                String m = String.format("invalid derived[%s.%s],if you invoke %s.%s() in static SELECT clause,please use defer SELECT clause or dynamic SELECT clause.",
+                        derivedAlias, fieldAlias, SQLs.class.getName(), sub ? "refOut" : "refThis");
+                e = new UnknownDerivedFieldException(m);
+            }
+            return e;
         }
 
 
@@ -1577,7 +1591,7 @@ abstract class CriteriaContexts {
 
         /**
          * @see #onAddBlock(_TabularBlock)
-         * @see #refThis(String, String)
+         * @see #refThis(String, String, boolean)
          * @see #onEndContext()
          */
         private void flushBufferDerivedBlock() {
@@ -2571,6 +2585,10 @@ abstract class CriteriaContexts {
             return this.deferSelectClause == null && (selectItemList == null || selectItemList instanceof ArrayList);
         }
 
+        private boolean isStaticSelectAndNoItem() {
+            return this.deferSelectClause == null && this.selectItemList == null;
+        }
+
 
         private Map<String, Selection> getSelectionMap() {
             Map<String, Selection> selectionMap = this.selectionMap;
@@ -2898,13 +2916,13 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final DerivedField refThis(final String derivedAlias, final String selectionAlias) {
+        public final DerivedField refThis(String derivedAlias, String fieldAlias, boolean sub) {
             if (this.migrated) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             } else if (this.isInWithClause()) {
-                throw unknownDerivedField(derivedAlias, selectionAlias);
+                throw unknownDerivedField(derivedAlias, fieldAlias);
             }
-            throw staticSelectClauseRefDerivedField(this);
+            throw staticSelectClauseRefDerivedField(this, sub);
         }
 
         @Override
@@ -2917,7 +2935,7 @@ abstract class CriteriaContexts {
                 throw notFoundOuterContext(this);
             }
             this.refOuter = true;
-            return outerContext.refThis(derivedAlias, fieldName);
+            return outerContext.refThis(derivedAlias, fieldName, true);
         }
 
         @Override
@@ -3213,8 +3231,6 @@ abstract class CriteriaContexts {
 
 
     }//ImmutableOrdinalRefSelection
-
-
 
 
     static final class RecursiveCte implements _Cte {

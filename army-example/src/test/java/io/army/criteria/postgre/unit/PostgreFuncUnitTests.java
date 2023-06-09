@@ -126,10 +126,7 @@ public class PostgreFuncUnitTests extends PostgreUnitTests {
 
     }
 
-    @Test
-    public void isEmptyFunc() {
 
-    }
 
 
 }

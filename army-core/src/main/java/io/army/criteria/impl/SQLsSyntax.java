@@ -615,7 +615,7 @@ abstract class SQLsSyntax extends Functions {
      * @param selectionAlias derived field alias
      */
     public static DerivedField refThis(String derivedAlias, String selectionAlias) {
-        return ContextStack.peek().refThis(derivedAlias, selectionAlias);
+        return ContextStack.peek().refThis(derivedAlias, selectionAlias, false);
     }
 
     /**

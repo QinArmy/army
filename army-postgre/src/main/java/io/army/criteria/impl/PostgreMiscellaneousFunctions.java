@@ -1416,5 +1416,30 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
         return DialectFunctionUtils.oneArgTabularFunc("pg_mcv_list_items", pgMcvList, fieldList);
     }
 
+    /*-------------------below sampling methods-------------------*/
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link VoidType#VOID}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-FROM">TABLESAMPLE sampling_method ( argument [, ...] ) [ REPEATABLE ( seed ) ]<br/>
+     * </a>
+     */
+    public static Expression bernoulli(Expression fraction) {
+        return FunctionUtils.oneArgFunc("BERNOULLI", fraction, VoidType.VOID);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link VoidType#VOID}
+     * </p>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-FROM">TABLESAMPLE sampling_method ( argument [, ...] ) [ REPEATABLE ( seed ) ]<br/>
+     * </a>
+     */
+    public static Expression system(Expression fraction) {
+        return FunctionUtils.oneArgFunc("SYSTEM", fraction, VoidType.VOID);
+    }
 
 }

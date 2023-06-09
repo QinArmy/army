@@ -74,7 +74,7 @@ public class PostgreUpdateUnitTests extends PostgreUnitTests {
     }
 
 
-    @Test
+    @Test//(invocationCount = 10000)
     public void batchUpdateParent() {
         Map<String, Object> paramMap;
         final List<Map<String, Object>> paramList = new ArrayList<>();

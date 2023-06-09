@@ -232,24 +232,22 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void nonLateralReferenceOuterDerivedField() {
         final Map<String, Object> map = new HashMap<>();
         map.put("nickName", "蛮吉");
-
+        map.put("accountNo", "66688899");
 
         SQLs.query()
-                .select(BankUser_.nickName)
+                .select(s -> s.space(s.refThis("bu", BankUser_.ID)))
                 .from(SQLs.subQuery()
-                        .select(ChinaProvince_.id)
-                        .from(ChinaProvince_.T, AS, "p")
-                        .join(ChinaRegion_.T, AS, "r").on(ChinaProvince_.id::equal, ChinaRegion_.id)
-                        .where(ChinaProvince_.governor::equal, SQLs.refOuter("bu", BankUser_.NICK_NAME))
-                        ::asQuery
-                ).as("ps")
+                        .select(BankAccount_.id, BankAccount_.userId)
+                        .from(BankAccount_.T, AS, "a")
+                        .asQuery()
+                ).as("ba")
                 .join(SQLs.subQuery()
                         .select(BankUser_.id, BankUser_.nickName)
-                        .from(BankUser_.T, AS, "bu")
-                        .limit(SQLs::literal, 10)
+                        .from(BankUser_.T, AS, "u")
+                        .where(BankUser_.id::equal, refOuter("ba", BankAccount_.USER_ID)) // here non-LATERAL ,but reference outer field.
                         .asQuery()
-                ).as("bu").on(SQLs.refThis("bu", BankUser_.ID)::equal, SQLs.refThis("ps", ChinaProvince_.ID))
-                .where(BankUser_.nickName::equal, SQLs::param, map.get("nickName"))
+                ).as("bu").on(refThis("bu", BankUser_.ID)::equal, refThis("ba", BankAccount_.USER_ID))
+                .where(refThis("bu", BankUser_.NICK_NAME)::equal, SQLs::param, map.get("nickName"))
                 .asQuery();
 
     }
@@ -283,8 +281,9 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void nestedJoin() {
         final Select stmt;
         stmt = SQLs.query()
-                .select(BankPerson_.id::as, "userId", SQLs.refThis("cr", "id")::as, "regionId")
-                .comma(SQLs.refThis("cr", "name")::as, "regionName")
+                .select(s -> s.space(BankPerson_.id::as, "userId", s.refThis("cr", "id")::as, "regionId")
+                        .comma(SQLs.refThis("cr", "name")::as, "regionName")
+                )
                 .from(s -> s.leftParen(BankPerson_.T, AS, "up")
                         .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
                         .rightParen()
@@ -305,21 +304,17 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void dynamicJoin() {
         final Select stmt;
         stmt = SQLs.query()
-                .select(BankPerson_.id::as, "userId", SQLs.refThis("cr", "id")::as, "regionId")
+                .select(s -> s.space(BankPerson_.id::as, "userId", refThis("cr", "id")::as, "regionId"))
                 .from(s -> s.leftParen(BankPerson_.T, AS, "up")
                         .join(BankUser_.T, AS, "u").on(BankPerson_.id::equal, BankUser_.id)
                         .rightParen()
                 )
                 .join(BankAccount_.T, AS, "a").on(BankPerson_.id::equal, BankAccount_.userId)
-                .ifCrossJoin(
-                        s -> s.space(() -> SQLs.subQuery()
-                                        .select(ChinaRegion_.id, ChinaRegion_.name)
-                                        .from(ChinaRegion_.T, AS, "c")
-                                        .where(ChinaRegion_.name::equal, SQLs::literal, "荒''''\n\032'海")
-                                        .asQuery()
-
-                                )
-                                .as("cr")
+                .ifCrossJoin(s -> s.space(SQLs.subQuery()
+                        .select(ChinaRegion_.id, ChinaRegion_.name)
+                        .from(ChinaRegion_.T, AS, "c")
+                        .where(ChinaRegion_.name::equal, SQLs::literal, "荒''''\n\032'海")
+                        .asQuery()).as("cr")
                 )
                 .asQuery();
 

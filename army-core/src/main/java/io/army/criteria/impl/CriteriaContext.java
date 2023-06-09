@@ -77,7 +77,7 @@ interface CriteriaContext {
     void registerDeferSelectClause(Runnable deferSelectClause);
 
 
-    DerivedField refThis(String derivedAlias, String selectionAlias);
+    DerivedField refThis(String derivedAlias, String fieldAlias, boolean sub);
 
 
     <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);

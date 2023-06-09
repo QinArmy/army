@@ -2024,7 +2024,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         @Override
         public DerivedField refThis(String derivedAlias, String selectionAlias) {
-            return this.context.refThis(derivedAlias, selectionAlias);
+            return this.context.refThis(derivedAlias, selectionAlias, false);
         }
 
         @Override
