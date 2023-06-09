@@ -58,7 +58,7 @@ public final class UnsignedIntegerType extends _NumericType._UnsignedIntegerType
             case MySQL:
                 type = MySQLType.INT_UNSIGNED;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 type = PostgreDataType.BIGINT;
                 break;
             case Oracle:

@@ -52,7 +52,7 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
             case MySQL:
                 type = MySQLType.BIGINT_UNSIGNED;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 type = PostgreDataType.DECIMAL;
                 break;
             case Oracle:
@@ -82,7 +82,7 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
             case MySQL:
                 value = integerValue;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 value = new BigDecimal(integerValue);
                 break;
             default:

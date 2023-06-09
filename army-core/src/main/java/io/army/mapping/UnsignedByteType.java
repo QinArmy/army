@@ -46,7 +46,7 @@ public final class UnsignedByteType extends _NumericType._UnsignedIntegerType {
             case MySQL:
                 type = MySQLType.TINYINT_UNSIGNED;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 type = PostgreDataType.SMALLINT;
                 break;
             case Oracle:

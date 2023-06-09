@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import static io.army.dialect.Database.H2;
-import static io.army.dialect.Database.PostgreSQL;
+import static io.army.dialect.Database.Postgre;
 
 /**
  * <p>
@@ -100,7 +100,7 @@ public abstract class SQLs extends SQLsSyntax {
     public static final Window.ExpModifier FOLLOWING = SQLWindow.WindowExpModifier.FOLLOWING;
 
 
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     public static final BetweenModifier SYMMETRIC = SqlWords.KeyWordSymmetric.SYMMETRIC;
 
     @Support({H2})
@@ -150,9 +150,7 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardInserts.singleInsert();
     }
 
-    public static StandardInsert._PrimaryOption20Spec<Insert> singleInsert20() {
-        return StandardInserts.singleInsert20();
-    }
+
 
     public static StandardUpdate._DomainUpdateClause domainUpdate() {
         return StandardUpdates.simpleDomain();
@@ -161,10 +159,6 @@ public abstract class SQLs extends SQLsSyntax {
 
     public static StandardUpdate._SingleUpdateClause<Update> singleUpdate() {
         return StandardUpdates.singleUpdate(StandardDialect.STANDARD10);
-    }
-
-    public static StandardUpdate._WithSpec<Update> singleUpdate20() {
-        return StandardUpdates.singleUpdate(StandardDialect.STANDARD20);
     }
 
 
@@ -187,23 +181,11 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardUpdates.batchSingle(StandardDialect.STANDARD10);
     }
 
-    /**
-     * <p>
-     * Batch domain update
-     * </p>
-     */
-    public static StandardUpdate._BatchWithSpec batchSingleUpdate20() {
-        return StandardUpdates.batchSingle(StandardDialect.STANDARD20);
-    }
-
 
     public static StandardDelete._StandardDeleteClause<Delete> singleDelete() {
         return StandardDeletes.singleDelete(StandardDialect.STANDARD10);
     }
 
-    public static StandardDelete._WithSpec<Delete> singleDelete20() {
-        return StandardDeletes.singleDelete(StandardDialect.STANDARD20);
-    }
 
     public static StandardDelete._DomainDeleteClause domainDelete() {
         return StandardDeletes.domainDelete();
@@ -218,14 +200,6 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD10);
     }
 
-    /**
-     * <p>
-     * Batch domain delete
-     * </p>
-     */
-    public static StandardDelete._BatchWithSpec batchSingleDelete20() {
-        return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD20);
-    }
 
     public static StandardDelete._BatchDomainDeleteClause batchDomainDelete() {
         return StandardDeletes.batchDomainDelete();
@@ -245,18 +219,7 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), Expressions::scalarExpression);
     }
 
-    public static StandardQuery._WithSpec<Select> query20() {
-        return StandardQueries.simpleQuery(StandardDialect.STANDARD20);
-    }
 
-    public static StandardQuery._WithSpec<SubQuery> subQuery20() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SQLs::identity);
-    }
-
-
-    public static StandardQuery._WithSpec<Expression> scalarSubQuery20() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), Expressions::scalarExpression);
-    }
 
     /*-------------------below package method-------------------*/
 
@@ -832,7 +795,7 @@ public abstract class SQLs extends SQLsSyntax {
                 case MySQL:
                     sqlType = MySQLType.NULL;
                     break;
-                case PostgreSQL:
+                case Postgre:
                 case Oracle:
                 case H2:
                 default:

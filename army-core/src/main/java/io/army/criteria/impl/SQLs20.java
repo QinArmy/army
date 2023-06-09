@@ -1,0 +1,110 @@
+package io.army.criteria.impl;
+
+import io.army.criteria.*;
+import io.army.criteria.dialect.Window;
+import io.army.criteria.standard.*;
+import io.army.mapping.DoubleType;
+import io.army.mapping.LongType;
+import io.army.mapping.MappingType;
+
+/**
+ * <p>
+ * This hold standard 2.0 api.
+ * </p>
+ *
+ * @since 1.0
+ */
+public abstract class SQLs20 {
+
+    private SQLs20() {
+        throw new UnsupportedOperationException();
+    }
+
+
+    public interface _OverSpec extends Window._OverWindowClause<Window._StandardPartitionBySpec> {
+
+
+    }
+
+    public interface _AggregateWindowFunc extends _OverSpec, SQLFunction.AggregateFunction, SimpleExpression {
+
+    }
+
+
+    public static StandardQuery._WithSpec<Select> query() {
+        return StandardQueries.simpleQuery(StandardDialect.STANDARD20);
+    }
+
+    public static StandardQuery._WithSpec<SubQuery> subQuery() {
+        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SQLs::identity);
+    }
+
+
+    public static StandardQuery._WithSpec<Expression> scalarSubQuery() {
+        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), Expressions::scalarExpression);
+    }
+
+
+    public static StandardDelete._WithSpec<Delete> singleDelete() {
+        return StandardDeletes.singleDelete(StandardDialect.STANDARD20);
+    }
+
+
+    /**
+     * <p>
+     * Batch domain delete
+     * </p>
+     */
+    public static StandardDelete._BatchWithSpec batchSingleDelete() {
+        return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD20);
+    }
+
+
+    /**
+     * <p>
+     * Batch domain update
+     * </p>
+     */
+    public static StandardUpdate._BatchWithSpec batchSingleUpdate() {
+        return StandardUpdates.batchSingle(StandardDialect.STANDARD20);
+    }
+
+    public static StandardUpdate._WithSpec<Update> singleUpdate() {
+        return StandardUpdates.singleUpdate(StandardDialect.STANDARD20);
+    }
+
+    public static StandardInsert._PrimaryOption20Spec<Insert> singleInsert() {
+        return StandardInserts.singleInsert20();
+    }
+
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link  DoubleType}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_cume-dist">CUME_DIST() over_clause</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">cume_dist () → double precision<br/>
+     * Returns the cumulative distribution, that is (number of partition rows preceding or peers with current row) / (total partition rows). The value thus ranges from 1/N to 1.
+     * </a>
+     */
+    public static _OverSpec cumeDist() {
+        return WindowFunctionUtils.zeroArgWindowFunc("cume_dist", DoubleType.INSTANCE);
+    }
+
+    /**
+     * <p>
+     * The {@link MappingType} of function return type:  {@link  LongType}.
+     * </p>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
+     * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">row_number () → bigint<br/>
+     * Returns the number of the current row within its partition, counting from 1.
+     * </a>
+     */
+    public static _OverSpec rowNumber() {
+        return WindowFunctionUtils.zeroArgWindowFunc("row_number", LongType.INSTANCE);
+    }
+
+
+}

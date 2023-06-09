@@ -14,7 +14,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static io.army.dialect.Database.H2;
-import static io.army.dialect.Database.PostgreSQL;
+import static io.army.dialect.Database.Postgre;
 
 /**
  * Interface representing the sql expression, eg: column,function.
@@ -85,13 +85,13 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
     /**
      * @param and {@link SQLs#AND}
      */
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     CompoundPredicate between(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second);
 
     /**
      * @param and {@link SQLs#AND}
      */
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, Expression first, SQLs.WordAnd and, Expression second);
 
     /**
@@ -125,7 +125,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      *                 <li>{@link SQLs#DISTINCT_FROM}</li>
      *                 </u>
      */
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     CompoundPredicate is(SQLs.IsComparisonWord operator, Expression operand);
 
     /**
@@ -133,7 +133,7 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      *                 <li>{@link SQLs#DISTINCT_FROM}</li>
      *                 </u>
      */
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     CompoundPredicate isNot(SQLs.IsComparisonWord operator, Expression operand);
 
     CompoundPredicate like(Expression pattern);

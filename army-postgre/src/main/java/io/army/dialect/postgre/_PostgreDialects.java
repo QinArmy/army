@@ -12,7 +12,7 @@ public abstract class _PostgreDialects extends DialectParserFactory {
 
 
     public static PostgreDialectParser create(final DialectEnv env) {
-        return PostgreDialectParser.create(env, (PostgreDialect) targetDialect(env, Database.PostgreSQL));
+        return PostgreDialectParser.create(env, (PostgreDialect) targetDialect(env, Database.Postgre));
     }
 
 

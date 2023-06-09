@@ -38,7 +38,7 @@ public final class SQLCharType extends _ArmyBuildInMapping implements MappingTyp
             case MySQL:
                 type = MySQLType.CHAR;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 type = PostgreDataType.CHAR;
                 break;
             case Oracle:

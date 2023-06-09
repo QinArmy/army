@@ -43,7 +43,7 @@ public final class MySubRowType extends MappingType
 
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        if (meta.dialectDatabase() != Database.PostgreSQL) {
+        if (meta.dialectDatabase() != Database.Postgre) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return PostgreDataType.USER_DEFINED;
@@ -100,7 +100,7 @@ public final class MySubRowType extends MappingType
 
     @Override
     public String sqlTypeName(final ServerMeta meta) {
-        if (meta.dialectDatabase() != Database.PostgreSQL) {
+        if (meta.dialectDatabase() != Database.Postgre) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return "SUBROWTYPE";

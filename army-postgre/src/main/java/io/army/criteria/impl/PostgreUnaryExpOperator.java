@@ -59,7 +59,7 @@ enum PostgreUnaryExpOperator implements Operator.SqlUnaryExpOperator {
 
     @Override
     public final Database database() {
-        return Database.PostgreSQL;
+        return Database.Postgre;
     }
 
     @Override

@@ -107,7 +107,7 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
             case MySQL:
                 sqlType = MySQLType.TEXT;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 sqlType = PostgreDataType.TEXT;
                 break;
             default:

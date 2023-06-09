@@ -61,7 +61,7 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
             case MySQL:
                 func = MySQLExecutor::localExecutor;
                 break;
-            case PostgreSQL:
+            case Postgre:
             case Oracle:
             case H2:
             default:

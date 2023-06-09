@@ -115,7 +115,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
             case MySQL:
                 sqlType = MySQLType.ENUM;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 sqlType = PostgreDataType.VARCHAR;
                 break;
             case H2:

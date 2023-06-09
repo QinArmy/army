@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  * @see SQLs
  * @since 1.0
  */
-abstract class SQLsSyntax extends StandardFunctions {
+abstract class SQLsSyntax extends Functions {
 
 
     /**

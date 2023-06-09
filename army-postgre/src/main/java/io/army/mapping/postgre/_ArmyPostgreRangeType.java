@@ -86,7 +86,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
 
     @Override
     public final SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        if (meta.dialectDatabase() != Database.PostgreSQL) {
+        if (meta.dialectDatabase() != Database.Postgre) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return this.sqlType;

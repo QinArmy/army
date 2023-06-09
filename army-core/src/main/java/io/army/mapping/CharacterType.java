@@ -44,7 +44,7 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
             case MySQL:
                 type = MySQLType.CHAR;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 type = PostgreDataType.CHAR;
                 break;
             case H2:

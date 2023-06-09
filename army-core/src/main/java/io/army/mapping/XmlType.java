@@ -44,7 +44,7 @@ public final class XmlType extends _ArmyBuildInMapping {
             case MySQL:
                 sqlDataType = MySQLType.TEXT;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 sqlDataType = PostgreDataType.XML;
                 break;
             case Oracle:

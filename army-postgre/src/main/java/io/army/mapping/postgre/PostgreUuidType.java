@@ -36,7 +36,7 @@ public final class PostgreUuidType extends _ArmyNoInjectionMapping {
 
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        if (meta.dialectDatabase() != Database.PostgreSQL) {
+        if (meta.dialectDatabase() != Database.Postgre) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return PostgreDataType.UUID;

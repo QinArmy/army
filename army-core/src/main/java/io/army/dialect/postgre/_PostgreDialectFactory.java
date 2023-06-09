@@ -18,7 +18,7 @@ public abstract class _PostgreDialectFactory extends DialectParserFactory {
         if (_ClassUtils.isPresent(className, PostgreParser.class.getClassLoader())) {
             parser = DialectParserFactory.invokeFactoryMethod(PostgreParser.class, className, environment);
         } else {
-            parser = PostgreParser.standard(environment, (PostgreDialect) targetDialect(environment, Database.PostgreSQL));
+            parser = PostgreParser.standard(environment, (PostgreDialect) targetDialect(environment, Database.Postgre));
         }
         return parser;
     }

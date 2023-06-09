@@ -1,7 +1,6 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
-import io.army.criteria.impl.StandardFunctions;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
@@ -13,7 +12,7 @@ import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 import static io.army.dialect.Database.H2;
-import static io.army.dialect.Database.PostgreSQL;
+import static io.army.dialect.Database.Postgre;
 
 /**
  * <p>
@@ -21,7 +20,7 @@ import static io.army.dialect.Database.PostgreSQL;
  *     <ul>
  *         <li>{@link SQLField}</li>
  *         <li>single-value parameter/literal,for example {@link SQLs#param(TypeInfer, Object)}</li>
- *         <li>sql function,for example {@link StandardFunctions#countAsterisk()}</li>
+ *         <li>sql function,for example {@link SQLs#countAsterisk()}</li>
  *         <li>sql variable</li>
  *     </ul>
  * </p>
@@ -437,7 +436,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     <T> CompoundPredicate between(@Nullable SQLs.BetweenModifier modifier, BiFunction<SimpleExpression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
 
     /**
@@ -485,7 +484,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     <T, U> CompoundPredicate between(@Nullable SQLs.BetweenModifier modifier, BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first, SQLs.WordAnd and, BiFunction<SimpleExpression, U, Expression> secondFuncRef, U second);
 
 
@@ -520,7 +519,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     <T> CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, BiFunction<SimpleExpression, T, Expression> funcRef, T first, SQLs.WordAnd and, T second);
 
     /**
@@ -568,7 +567,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     <T,U> CompoundPredicate notBetween(@Nullable SQLs.BetweenModifier modifier, BiFunction<SimpleExpression, T, Expression> firstFuncRef, T first, SQLs.WordAnd and,BiFunction<SimpleExpression, U, Expression> secondFuncRef, U second);
 
 
@@ -603,7 +602,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     <T> CompoundPredicate is(SQLs.IsComparisonWord operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value);
 
     /**
@@ -637,7 +636,7 @@ public interface SimpleExpression extends Expression {
      * @throws CriteriaException throw when operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
-    @Support({PostgreSQL, H2})
+    @Support({Postgre, H2})
     <T> CompoundPredicate isNot(SQLs.IsComparisonWord operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value);
 
     <T extends Collection<?>> CompoundPredicate in(BiFunction<SimpleExpression, T, Expression> funcRef, T value);

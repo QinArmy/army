@@ -17,7 +17,7 @@ public interface _SchemaComparer {
             case MySQL:
                 comparer = MySQLComparer.create(serverMeta);
                 break;
-            case PostgreSQL:
+            case Postgre:
             case Oracle:
             case H2:
 

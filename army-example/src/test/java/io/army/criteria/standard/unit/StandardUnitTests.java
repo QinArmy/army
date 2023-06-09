@@ -34,7 +34,7 @@ abstract class StandardUnitTests {
         for (Database database : Database.values()) {
             switch (database) {
                 case MySQL:
-                case PostgreSQL:
+                case Postgre:
                     break;
                 default:
                     continue;

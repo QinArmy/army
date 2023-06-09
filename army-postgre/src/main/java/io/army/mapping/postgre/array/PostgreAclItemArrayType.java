@@ -47,7 +47,7 @@ public final class PostgreAclItemArrayType extends _ArmyBuildInMapping implement
 
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        if (meta.dialectDatabase() != Database.PostgreSQL) {
+        if (meta.dialectDatabase() != Database.Postgre) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return PostgreDataType.ACLITEM_ARRAY;

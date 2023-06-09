@@ -144,7 +144,7 @@ public final class IntegerType extends _NumericType._IntegerType {
             case MySQL:
                 sqlType = MySQLType.INT;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 sqlType = PostgreDataType.INTEGER;
                 break;
             default:

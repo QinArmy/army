@@ -64,7 +64,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         } else if (!(query instanceof PostgreQuery
                 || query instanceof StandardQuery
                 || query instanceof SimpleQueries.UnionSelect)) {
-            String m = String.format("%s don't support %s", Database.PostgreSQL, query.getClass().getName());
+            String m = String.format("%s don't support %s", Database.Postgre, query.getClass().getName());
             throw ContextStack.clearStackAndCriteriaError(m);
         }
         return new QueryExpression(query, visible);

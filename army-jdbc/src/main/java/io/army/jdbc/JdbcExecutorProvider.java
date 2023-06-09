@@ -171,7 +171,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         if (productName.equals("MySQL")) {
             database = Database.MySQL;
         } else if (productName.equals("PostgreSQL")) {
-            database = Database.PostgreSQL;
+            database = Database.Postgre;
         } else {
             throw new DataAccessException(String.format("Database[%s] currently unsupported.", productName));
         }

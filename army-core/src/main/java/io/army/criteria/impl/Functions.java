@@ -569,7 +569,7 @@ abstract class Functions {
     }
 
     public static SimpleExpression countAsterisk() {
-        return StandardFunctions.CountAsteriskFunction.INSTANCE;
+        return CountAsteriskFunction.INSTANCE;
     }
 
     /**
@@ -597,6 +597,63 @@ abstract class Functions {
 
 
     /*-------------------below custom function -------------------*/
+
+
+    public static SimpleExpression myFunc(String name, TypeMeta returnType) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw _customFuncNameError(name);
+        }
+        return FunctionUtils.zeroArgFunc(name, returnType);
+    }
+
+    public static IPredicate myFunc(String name) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw _customFuncNameError(name);
+        }
+        return FunctionUtils.zeroArgFuncPredicate(name);
+    }
+
+    public static SimpleExpression myFunc(String name, Expression expr, TypeMeta returnType) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw _customFuncNameError(name);
+        }
+        return FunctionUtils.oneArgFunc(name, expr, returnType);
+    }
+
+    public static IPredicate myFunc(String name, Expression expr) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw _customFuncNameError(name);
+        }
+        return FunctionUtils.oneArgPredicateFunc(name, expr);
+    }
+
+    public static SimpleExpression myFunc(String name, Expression expr1, Expression expr2, TypeMeta returnType) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw _customFuncNameError(name);
+        }
+        return FunctionUtils.twoArgFunc(name, expr1, expr2, returnType);
+    }
+
+    public static IPredicate myFunc(String name, Expression expr1, Expression expr2) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw _customFuncNameError(name);
+        }
+        return FunctionUtils.twoArgPredicateFunc(name, expr1, expr2);
+    }
+
+    public static SimpleExpression myFunc(String name, List<Expression> expList, TypeMeta returnType) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw _customFuncNameError(name);
+        }
+        return FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
+    }
+
+    public static IPredicate myFunc(String name, List<Expression> expList) {
+        if (!FUN_NAME_PATTER.matcher(name).matches()) {
+            throw _customFuncNameError(name);
+        }
+        return FunctionUtils.complexArgPredicate(name, _createSimpleMultiArgList(expList));
+    }
 
     static final Pattern FUN_NAME_PATTER = Pattern.compile("^[_a-zA-Z][_\\w]*$");
 
@@ -812,7 +869,7 @@ abstract class Functions {
     }
 
     /**
-     * @see StandardFunctions#round(Expression)
+     * @see #round(Expression)
      */
     static MappingType _numberOrDecimal(final MappingType type) {
         final MappingType returnType;

@@ -738,7 +738,7 @@ abstract class Expressions {
                 case AT_TIME_ZONE:
                 case DOUBLE_AMP:
                 case POUND: {
-                    if (context.database() != Database.PostgreSQL) {
+                    if (context.database() != Database.Postgre) {
                         throw unsupportedOperator(operator, context.database());
                     }
                 }
@@ -765,7 +765,7 @@ abstract class Expressions {
             }
 
             //2. append operator
-            if (operator == DualExpOperator.BITWISE_XOR && context.database() == Database.PostgreSQL) {
+            if (operator == DualExpOperator.BITWISE_XOR && context.database() == Database.Postgre) {
                 sqlBuilder.append(" #");
             } else {
                 sqlBuilder.append(operator.spaceOperator);
@@ -1209,7 +1209,7 @@ abstract class Expressions {
                     break;
                 case SIMILAR_TO:
                 case NOT_SIMILAR_TO: {
-                    if (context.database() != Database.PostgreSQL) {
+                    if (context.database() != Database.Postgre) {
                         throw unsupportedOperator(this.operator, context.database());
                     }
                 }
@@ -2160,7 +2160,7 @@ abstract class Expressions {
                     context.appendLiteral(NoCastTextType.INSTANCE, "$." + this.key);
                 }
                 break;
-                case PostgreSQL: {
+                case Postgre: {
                     sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator);
                     context.appendLiteral(NoCastTextType.INSTANCE, this.key);
                 }
@@ -2230,7 +2230,7 @@ abstract class Expressions {
                             .append("]'");
                 }
                 break;
-                case PostgreSQL:
+                case Postgre:
                     sqlBuilder.append(DualExpOperator.HYPHEN_GT.spaceOperator)
                             .append(this.index);
                     break;
@@ -2295,7 +2295,7 @@ abstract class Expressions {
                     }
                 }
                 break;
-                case PostgreSQL: {
+                case Postgre: {
                     final String funcName;
                     if (this.type.mappingType() instanceof MappingType.SqlJsonType) {
                         funcName = "JSON_PATH_QUERY";
@@ -2459,7 +2459,7 @@ abstract class Expressions {
 
             final MappingType castType = ((ArrayConstructor) this).castType;
             switch (context.database()) {
-                case PostgreSQL: {
+                case Postgre: {
                     if (castType != null) {
                         sqlBuilder.append(_Constant.DOUBLE_COLON);
                         context.parser().typeName(castType, sqlBuilder);

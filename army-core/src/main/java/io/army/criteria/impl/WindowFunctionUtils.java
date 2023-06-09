@@ -23,11 +23,11 @@ abstract class WindowFunctionUtils {
     }
 
 
-    static StandardFunctions._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
+    static SQLs20._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
         return new ZeroArgStandardWindowFunc(name, returnType);
     }
 
-    static StandardFunctions._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
+    static SQLs20._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
         if (!(one instanceof FunctionArg)) {
             throw CriteriaUtils.funcArgError(name, one);
         }
@@ -218,7 +218,7 @@ abstract class WindowFunctionUtils {
     }//GlobalWindow
 
     private static abstract class StandardWindowFunction extends WindowFunction<Window._StandardPartitionBySpec>
-            implements StandardFunctions._OverSpec {
+            implements SQLs20._OverSpec {
 
         private StandardWindowFunction(String name, TypeMeta returnType) {
             super(name, returnType);
@@ -237,7 +237,7 @@ abstract class WindowFunctionUtils {
                 case MySQL:
                     dontSupport = dialect.compareWith(MySQLDialect.MySQL80) < 0;
                     break;
-                case PostgreSQL:
+                case Postgre:
                     dontSupport = false;
                     break;
                 case H2:

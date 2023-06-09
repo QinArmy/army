@@ -42,7 +42,7 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
             case MySQL:
                 type = MySQLType.VARBINARY;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 type = PostgreDataType.BYTEA;
                 break;
             case Oracle:

@@ -922,7 +922,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( * ) → bigint<br/>
      * Computes the number of input rows.
      * </a>
-     * @see StandardFunctions#countAsterisk()
+     * @see #countAsterisk()
      */
     public static _AggWindowFunc countAsterisk() {
         return PostgreFunctionUtils.oneArgAggWindowFunc("count", SQLs._ASTERISK_EXP, LongType.INSTANCE);
@@ -936,7 +936,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
      * Computes the number of input rows in which the input value is not null.
      * </a>
-     * @see StandardFunctions#count(Expression)
+     * @see #count(Expression)
      */
     public static _PgAggFunc count(@Nullable SQLs.ArgDistinct modifier, Expression any) {
         return PostgreFunctionUtils.oneArgAggFunc("count", modifier, any, null, LongType.INSTANCE);
@@ -950,7 +950,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
      * Computes the number of input rows in which the input value is not null.
      * </a>
-     * @see StandardFunctions#count(Expression)
+     * @see #count(Expression)
      */
     public static _PgAggFunc count(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
 
@@ -966,7 +966,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
      * Computes the number of input rows in which the input value is not null.
      * </a>
-     * @see StandardFunctions#count(Expression)
+     * @see #count(Expression)
      */
     public static _PgAggFunc count(@Nullable SQLs.ArgDistinct modifier, Expression any,
                                    Consumer<Statement._SimpleOrderByClause> consumer) {
@@ -982,7 +982,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
      * Computes the number of input rows in which the input value is not null.
      * </a>
-     * @see StandardFunctions#count(Expression)
+     * @see #count(Expression)
      */
     public static _AggWindowFunc count(Expression exp) {
         return PostgreFunctionUtils.oneArgAggWindowFunc("count", exp, LongType.INSTANCE);

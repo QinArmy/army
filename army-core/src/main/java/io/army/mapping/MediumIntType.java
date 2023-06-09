@@ -56,7 +56,7 @@ public final class MediumIntType extends _NumericType {
             case MySQL:
                 sqlType = MySQLType.MEDIUMINT;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 sqlType = PostgreDataType.INTEGER;
                 break;
 

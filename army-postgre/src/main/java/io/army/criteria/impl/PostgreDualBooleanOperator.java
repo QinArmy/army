@@ -247,13 +247,13 @@ enum PostgreDualBooleanOperator implements Operator.SqlDualBooleanOperator {
 
     @Override
     public final Database database() {
-        return Database.PostgreSQL;
+        return Database.Postgre;
     }
 
 
     @Override
     public final String spaceRender(final Database database) {
-        if (database != Database.PostgreSQL) {
+        if (database != Database.Postgre) {
             throw _Exceptions.operatorError(this, database);
         }
         return this.spaceOperator;

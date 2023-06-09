@@ -93,7 +93,7 @@ public abstract class _PostgreConsultant extends _SQLConsultant {
 
     public static void assertNestedItems(final @Nullable _NestedItems nestedItems) {
         if (!(nestedItems instanceof PostgreNestedJoins)) {
-            throw illegalNestedItems(nestedItems, Database.PostgreSQL);
+            throw illegalNestedItems(nestedItems, Database.Postgre);
         }
     }
 

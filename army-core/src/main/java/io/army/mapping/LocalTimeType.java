@@ -58,7 +58,7 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
             case MySQL:
                 type = MySQLType.TIME;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 type = PostgreDataType.TIME;
                 break;
             default:

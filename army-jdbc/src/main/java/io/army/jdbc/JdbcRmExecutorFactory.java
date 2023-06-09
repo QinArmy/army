@@ -58,7 +58,7 @@ final class JdbcRmExecutorFactory extends JdbcExecutorFactory implements RmExecu
             case MySQL:
                 function = MySQLExecutor::rmExecutor;
                 break;
-            case PostgreSQL:
+            case Postgre:
             case Oracle:
             case H2:
             default:

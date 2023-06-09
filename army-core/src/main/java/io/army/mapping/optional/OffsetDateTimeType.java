@@ -78,7 +78,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
                 value = dateTime.withOffsetSameInstant(env.databaseZoneOffset())
                         .toLocalDateTime();
                 break;
-            case PostgreSQL:
+            case Postgre:
             case H2:
             default:
                 value = dateTime;
@@ -133,7 +133,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     static SqlType mapToSqlType(final ServerMeta meta, final MappingType type) {
         final SqlType sqlType;
         switch (meta.dialectDatabase()) {
-            case PostgreSQL:
+            case Postgre:
                 sqlType = PostgreDataType.TIMESTAMPTZ;
                 break;
             case Oracle:
@@ -159,7 +159,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
                 }
             }
             break;
-            case PostgreSQL:
+            case Postgre:
             default: {
                 try {
                     value = OffsetDateTime.parse((String) nonNull, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
@@ -182,7 +182,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
                 value = OffsetDateTime.of(LocalDateTime.parse((String) nonNull, _TimeUtils.DATETIME_FORMATTER_6),
                         env.databaseZoneOffset());
                 break;
-            case PostgreSQL:
+            case Postgre:
             default: {
                 OffsetDateTime v;
                 try {

@@ -117,7 +117,7 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
             case MySQL:
                 sqlType = MySQLType.VARCHAR;
                 break;
-            case PostgreSQL:
+            case Postgre:
                 sqlType = PostgreDataType.VARCHAR;
                 break;
             case Oracle:
