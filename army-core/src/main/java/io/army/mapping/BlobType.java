@@ -42,7 +42,7 @@ public final class BlobType extends _ArmyBuildInMapping {
                 type = MySQLType.BLOB;
                 break;
             case Postgre:
-                type = PostgreDataType.BYTEA;
+                type = PostgreSqlType.BYTEA;
                 break;
             case Oracle:
                 type = OracleDataType.BLOB;

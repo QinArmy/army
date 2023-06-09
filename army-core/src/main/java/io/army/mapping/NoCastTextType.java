@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 
 public final class NoCastTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
@@ -38,7 +38,7 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
         final SqlType type;
         switch (meta.dialectDatabase()) {
             case Postgre:
-                type = PostgreDataType.NO_CAST_TEXT;
+                type = PostgreSqlType.NO_CAST_TEXT;
                 break;
             case MySQL:
             case Oracle:

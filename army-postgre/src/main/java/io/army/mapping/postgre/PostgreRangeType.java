@@ -5,7 +5,7 @@ import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.meta.MetaException;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreSqlType;
 import io.army.util._Exceptions;
 
 import java.lang.reflect.Constructor;
@@ -31,7 +31,7 @@ public abstract class PostgreRangeType extends _ArmyPostgreRangeType {
     private static final Object INFINITY_BOUND = new Object();
 
 
-    PostgreRangeType(final PostgreDataType sqlType, final Class<?> javaType, final @Nullable RangeFunction<?, ?> rangeFunc) {
+    PostgreRangeType(final PostgreSqlType sqlType, final Class<?> javaType, final @Nullable RangeFunction<?, ?> rangeFunc) {
         super(sqlType, javaType, rangeFunc);
     }
 

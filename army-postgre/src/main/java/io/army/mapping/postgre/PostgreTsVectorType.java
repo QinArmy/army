@@ -9,7 +9,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 
 
@@ -46,7 +46,7 @@ public final class PostgreTsVectorType extends _ArmyNoInjectionMapping {
         if (meta.dialectDatabase() != Database.Postgre) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreDataType.TSVECTOR;
+        return PostgreSqlType.TSVECTOR;
     }
 
     @Override

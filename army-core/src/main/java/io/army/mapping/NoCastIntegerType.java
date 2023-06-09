@@ -2,7 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 
 public final class NoCastIntegerType extends _NumericType._IntegerType {
@@ -37,7 +37,7 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
         final SqlType type;
         switch (meta.dialectDatabase()) {
             case Postgre:
-                type = PostgreDataType.NO_CAST_INTEGER;
+                type = PostgreSqlType.NO_CAST_INTEGER;
                 break;
             case MySQL:
             case Oracle:

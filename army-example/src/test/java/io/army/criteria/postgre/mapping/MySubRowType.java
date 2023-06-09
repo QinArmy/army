@@ -9,7 +9,7 @@ import io.army.mapping.*;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
@@ -46,7 +46,7 @@ public final class MySubRowType extends MappingType
         if (meta.dialectDatabase() != Database.Postgre) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreDataType.USER_DEFINED;
+        return PostgreSqlType.USER_DEFINED;
     }
 
     @Override

@@ -73,7 +73,7 @@ final class ServerMetaImpl implements ServerMeta {
     }
 
     @Override
-    public Database underlyingDatabase() {
+    public Database serverDatabase() {
         return this.database;
     }
 
@@ -105,6 +105,11 @@ final class ServerMetaImpl implements ServerMeta {
     @Override
     public Dialect usedDialect() {
         return this.usedDialect;
+    }
+
+    @Override
+    public boolean isSupportSavePoints() {
+        return this.supportSavePoint;
     }
 
     @Override

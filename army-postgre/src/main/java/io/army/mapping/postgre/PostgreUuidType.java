@@ -9,7 +9,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 
 import java.util.UUID;
@@ -39,7 +39,7 @@ public final class PostgreUuidType extends _ArmyNoInjectionMapping {
         if (meta.dialectDatabase() != Database.Postgre) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreDataType.UUID;
+        return PostgreSqlType.UUID;
     }
 
     @Override

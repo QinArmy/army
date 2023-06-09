@@ -10,7 +10,7 @@ import io.army.mapping._ArmyBuildInMapping;
 import io.army.mapping.postgre.array.PostgreAclItemArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 
 
@@ -47,7 +47,7 @@ public final class PostgreAclItemType extends _ArmyBuildInMapping {
         if (meta.dialectDatabase() != Database.Postgre) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreDataType.ACLITEM;
+        return PostgreSqlType.ACLITEM;
     }
 
     @Override
@@ -63,7 +63,7 @@ public final class PostgreAclItemType extends _ArmyBuildInMapping {
     @Override
     public Object convert(MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof String)) {
-            throw PARAM_ERROR_HANDLER.apply(this, PostgreDataType.ACLITEM, nonNull, null);
+            throw PARAM_ERROR_HANDLER.apply(this, PostgreSqlType.ACLITEM, nonNull, null);
         }
         return nonNull;
     }

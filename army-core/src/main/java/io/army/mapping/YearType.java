@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 
 import java.time.*;
@@ -58,7 +58,7 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
                 type = MySQLType.YEAR;
                 break;
             case Postgre:
-                type = PostgreDataType.DATE;
+                type = PostgreSqlType.DATE;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

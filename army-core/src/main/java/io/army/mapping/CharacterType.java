@@ -5,7 +5,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -45,7 +45,7 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
                 type = MySQLType.CHAR;
                 break;
             case Postgre:
-                type = PostgreDataType.CHAR;
+                type = PostgreSqlType.CHAR;
                 break;
             case H2:
             case Oracle:

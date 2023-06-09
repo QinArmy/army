@@ -1,27 +1,31 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
+import io.army.mapping.NoCastTextType;
 import io.army.meta.*;
 import io.army.sqltype.SqlType;
+import io.army.util._Collections;
+import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public abstract class _DdlDialect implements DdlDialect {
+public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDialect {
 
     protected static final String SPACE_UNSIGNED = " UNSIGNED";
 
-    protected final List<String> errorMsgList = new ArrayList<>();
+    protected static final String SPACE_COMMENT = " COMMENT";
 
-    protected final _ArmyDialectParser dialect;
+    protected final List<String> errorMsgList = _Collections.arrayList();
+
+    protected final P parser;
 
     protected final ServerMeta serverMeta;
 
-    protected _DdlDialect(_ArmyDialectParser dialect) {
-        this.dialect = dialect;
-        this.serverMeta = dialect.serverMeta;
+    protected _DdlParser(P parser) {
+        this.parser = parser;
+        this.serverMeta = parser.serverMeta;
     }
 
     @Override
@@ -35,25 +39,23 @@ public abstract class _DdlDialect implements DdlDialect {
         if (size == 0) {
             return;
         }
-        final ArmyParser dialect = this.dialect;
         final StringBuilder builder = new StringBuilder(size * 10);
         builder.append("DROP TABLE IF EXISTS ");
         for (int i = 0; i < size; i++) {
             if (i > 0) {
                 builder.append(_Constant.SPACE_COMMA_SPACE);
             }
-            dialect.identifier(tableList.get(i).tableName(), builder);
+            this.parser.identifier(tableList.get(i).tableName(), builder);
         }
         sqlList.add(builder.toString());
     }
 
     @Override
-    public final <T> void createTable(final TableMeta<T> table, List<String> sqlList) {
-        final ArmyParser dialect = this.dialect;
+    public final <T> void createTable(final TableMeta<T> table, final List<String> sqlList) {
         final StringBuilder builder = new StringBuilder(128)
                 .append("CREATE TABLE IF NOT EXISTS ");
 
-        dialect.safeObjectName(table, builder)
+        this.parser.safeObjectName(table, builder)
                 .append(_Constant.SPACE_LEFT_PAREN)
                 .append("\n\t");
 
@@ -71,6 +73,24 @@ public abstract class _DdlDialect implements DdlDialect {
 
         appendTableOption(table, builder);
         sqlList.add(builder.toString());
+
+        switch (this.parser.database) {
+            case Postgre: {
+                StringBuilder commentBuilder;
+                for (int i = 0; i < fieldSize; i++) {
+                    commentBuilder = new StringBuilder(30);
+                    this.appendComment(fieldList.get(i), commentBuilder);
+                    sqlList.add(commentBuilder.toString());
+                }
+            }
+            break;
+            case MySQL:
+            case Oracle:
+            case H2:
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this.parser.database);
+        }
     }
 
     @Override
@@ -81,7 +101,7 @@ public abstract class _DdlDialect implements DdlDialect {
         }
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
-        final ArmyParser dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
 
         TableMeta<?> table = null;
         for (int i = 0; i < fieldSize; i++) {
@@ -106,7 +126,7 @@ public abstract class _DdlDialect implements DdlDialect {
 
 
     protected final void columnDefinition(final FieldMeta<?> field, final StringBuilder builder) {
-        this.dialect.safeObjectName(field, builder)
+        this.parser.safeObjectName(field, builder)
                 .append(_Constant.SPACE);
         final SqlType sqlType;
         sqlType = field.mappingType().map(this.serverMeta);
@@ -128,7 +148,18 @@ public abstract class _DdlDialect implements DdlDialect {
         if (field.generatorType() == GeneratorType.POST) {
             appendPostGenerator(field, builder);
         }
-        appendComment(field.comment(), builder);
+        switch (this.parser.database) {
+            case MySQL:
+                appendComment(field, builder);
+                break;
+            case H2:
+            case Oracle:
+            case Postgre:
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this.parser.database);
+
+        }
 
     }
 
@@ -142,6 +173,13 @@ public abstract class _DdlDialect implements DdlDialect {
     protected abstract void appendTableOption(final TableMeta<?> table, final StringBuilder builder);
 
     protected abstract void appendPostGenerator(final FieldMeta<?> field, final StringBuilder builder);
+
+    protected void appendComment(final DatabaseObject object, final StringBuilder builder) {
+
+        builder.append(SPACE_COMMENT)
+                .append(_Constant.SPACE);
+        this.parser.literal(NoCastTextType.INSTANCE, object.comment(), builder);
+    }
 
     protected final void precision(final FieldMeta<?> field, SqlType type
             , final long max, final long defaultValue, final StringBuilder builder) {
@@ -183,62 +221,12 @@ public abstract class _DdlDialect implements DdlDialect {
     }
 
 
-    protected final void appendComment(final String comment, final StringBuilder builder) {
-        final char[] array = comment.toCharArray();
-        builder.append(" COMMENT '");
-        int lastWritten = 0;
-        for (int i = 0; i < array.length; i++) {
-            switch (array[i]) {
-                case _Constant.QUOTE: {
-                    if (i > lastWritten) {
-                        builder.append(array, lastWritten, i - lastWritten);
-                    }
-                    builder.append(_Constant.QUOTE);
-                    lastWritten = i; // not i+1 as ch wasn't written.
-                }
-                break;
-                case _Constant.BACK_SLASH: {
-                    if (i > lastWritten) {
-                        builder.append(array, lastWritten, i - lastWritten);
-                    }
-                    builder.append(_Constant.BACK_SLASH);
-                    lastWritten = i; // not i+1 as ch wasn't written.
-                }
-                break;
-                case _Constant.NUL_CHAR: {
-                    if (i > lastWritten) {
-                        builder.append(array, lastWritten, i - lastWritten);
-                    }
-                    builder.append(_Constant.BACK_SLASH)
-                            .append('0');
-                    lastWritten = i + 1; //  i+1
-                }
-                break;
-                case '\032': {
-                    if (i > lastWritten) {
-                        builder.append(array, lastWritten, i - lastWritten);
-                    }
-                    builder.append(_Constant.BACK_SLASH)
-                            .append('Z');
-                    lastWritten = i + 1; //  i+1
-                }
-                break;
-                default://no-op
-            }
-        }
-
-        if (lastWritten < array.length) {
-            builder.append(array, lastWritten, array.length - lastWritten);
-        }
-        builder.append(_Constant.QUOTE);
-    }
-
     /**
      * @return true : complete
      */
     protected final boolean checkDefaultComplete(final FieldMeta<?> field, final String value) {
         final char[] array = value.toCharArray();
-        final char identifierQuote = this.dialect.identifierQuote;
+        final char identifierQuote = this.parser.identifierQuote;
         boolean quote = false, idQuote = false;
         LinkedList<Boolean> stack = null;
         char ch;
@@ -284,7 +272,7 @@ public abstract class _DdlDialect implements DdlDialect {
             this.errorMsgList.add(String.format("%s default value ''' not close.", field));
         } else if (idQuote) {
             complete = false;
-            String m = String.format("%s default value '%s' not close.", field, this.dialect.identifierQuote);
+            String m = String.format("%s default value '%s' not close.", field, this.parser.identifierQuote);
             this.errorMsgList.add(m);
         } else if (stack != null && stack.size() > 0) {
             complete = false;
@@ -299,7 +287,7 @@ public abstract class _DdlDialect implements DdlDialect {
 
 
     private <T> void index(final TableMeta<T> table, final StringBuilder builder) {
-        final ArmyParser dialect = this.dialect;
+        final ArmyParser dialect = this.parser;
         for (IndexMeta<T> index : table.indexList()) {
 
 

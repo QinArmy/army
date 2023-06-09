@@ -51,6 +51,11 @@ final class QualifiedFieldImpl<T> extends OperationDataField implements Qualifie
     }
 
     @Override
+    public String comment() {
+        return this.field.comment();
+    }
+
+    @Override
     public TypeMeta typeMeta() {
         return this.field;
     }

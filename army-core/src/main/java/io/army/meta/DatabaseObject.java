@@ -21,4 +21,6 @@ public interface DatabaseObject extends SQLElement {
      */
     String objectName();
 
+    String comment();
+
 }

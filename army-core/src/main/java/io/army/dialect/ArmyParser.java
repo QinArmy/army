@@ -618,6 +618,36 @@ abstract class ArmyParser implements DialectParser {
 
     }
 
+
+    /**
+     * <p>
+     * Append  literal
+     * </p>
+     */
+    public final void literal(final TypeMeta typeMeta, final @Nullable Object value, final StringBuilder sqlBuilder) {
+        final MappingType type;
+        if (typeMeta instanceof MappingType) {
+            type = (MappingType) typeMeta;
+        } else {
+            type = typeMeta.mappingType();
+        }
+        final SqlType sqlType;
+        sqlType = type.map(this.serverMeta);
+
+        if (value == null) {
+            this.bindLiteralNull(sqlType, type, sqlBuilder);
+            return;
+        }
+        final Object convertedValue;
+        if (this.isNeedConvert(sqlType, value)) {
+            convertedValue = type.beforeBind(sqlType, this.mappingEnv, value);
+        } else {
+            convertedValue = value;
+        }
+        //TODO validate non-field codec
+        this.bindLiteral(typeMeta, sqlType, convertedValue, sqlBuilder);
+    }
+
     protected abstract void arrayTypeName(String safeTypeNme, int dimension, StringBuilder sqlBuilder);
 
     protected abstract void buildInTypeName(SqlType sqlType, MappingType type, StringBuilder sqlBuilder);
@@ -786,34 +816,6 @@ abstract class ArmyParser implements DialectParser {
     /*-------------------below final protected method -------------------*/
 
 
-    /**
-     * <p>
-     * Append  literal
-     * </p>
-     */
-    protected final void literal(final TypeMeta typeMeta, final @Nullable Object value, final StringBuilder sqlBuilder) {
-        final MappingType type;
-        if (typeMeta instanceof MappingType) {
-            type = (MappingType) typeMeta;
-        } else {
-            type = typeMeta.mappingType();
-        }
-        final SqlType sqlType;
-        sqlType = type.map(this.serverMeta);
-
-        if (value == null) {
-            this.bindLiteralNull(sqlType, type, sqlBuilder);
-            return;
-        }
-        final Object convertedValue;
-        if (this.isNeedConvert(sqlType, value)) {
-            convertedValue = type.beforeBind(sqlType, this.mappingEnv, value);
-        } else {
-            convertedValue = value;
-        }
-        //TODO validate non-field codec
-        this.bindLiteral(typeMeta, sqlType, convertedValue, sqlBuilder);
-    }
 
     protected final _SingleUpdateContext createSingleUpdateContext(final @Nullable _SqlContext outerContext
             , final _SingleUpdate stmt, final Visible visible) {

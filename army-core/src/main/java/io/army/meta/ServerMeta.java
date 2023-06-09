@@ -12,10 +12,15 @@ public interface ServerMeta {
      * <p>
      * This method is equivalent to {@link Dialect#database()} of {@link #usedDialect()}
      * </p>
+     *
+     * @see #serverDatabase()
      */
     Database dialectDatabase();
 
-    Database underlyingDatabase();
+    /**
+     * @see #dialectDatabase()
+     */
+    Database serverDatabase();
 
     @Nullable
     String catalog();
@@ -29,13 +34,14 @@ public interface ServerMeta {
 
     int minor();
 
+    /**
+     * from {@link io.army.env.ArmyKey#DIALECT}
+     */
     Dialect usedDialect();
 
     boolean meetsMinimum(int major, int minor);
 
-    default boolean isSupportSavePoints() {
-        throw new UnsupportedOperationException();
-    }
+    boolean isSupportSavePoints();
 
     static Builder builder() {
         return ServerMetaImpl.builder();

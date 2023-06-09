@@ -7,7 +7,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreDataType;
+import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
@@ -57,7 +57,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
         final SqlType type;
         switch (meta.dialectDatabase()) {
             case Postgre:
-                type = PostgreDataType.TIMETZ;
+                type = PostgreSqlType.TIMETZ;
                 break;
             case Oracle:
                 type = OracleDataType.TIMESTAMPTZ;
