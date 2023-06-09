@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
+import io.army.criteria.impl.StandardFunctions;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
 import io.army.lang.Nullable;
@@ -20,7 +21,7 @@ import static io.army.dialect.Database.PostgreSQL;
  *     <ul>
  *         <li>{@link SQLField}</li>
  *         <li>single-value parameter/literal,for example {@link SQLs#param(TypeInfer, Object)}</li>
- *         <li>sql function,for example {@link SQLs#countAsterisk()}</li>
+ *         <li>sql function,for example {@link StandardFunctions#countAsterisk()}</li>
  *         <li>sql variable</li>
  *     </ul>
  * </p>

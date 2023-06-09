@@ -129,9 +129,15 @@ abstract class Functions {
     }//Word
 
 
+    public static SQLFunction._CaseFuncWhenClause cases() {
+        return FunctionUtils.caseFunction(null);
+    }
 
+    public static SQLFunction._CaseFuncWhenClause cases(Expression expression) {
+        ContextStack.assertNonNull(expression);
+        return FunctionUtils.caseFunction(expression);
+    }
 
-    /*################################## blow number function method ##################################*/
 
     /**
      * <p>
@@ -156,7 +162,6 @@ abstract class Functions {
     public static SimpleExpression acos(final Expression expr) {
         return FunctionUtils.oneArgFunc("ACOS", expr, DoubleType.INSTANCE);
     }
-
 
     /**
      * <p>
@@ -208,7 +213,6 @@ abstract class Functions {
     public static SimpleExpression ceil(final Expression exp) {
         return FunctionUtils.oneArgFunc("CEIL", exp, _returnType(exp, Functions::_numberOrDecimal));
     }
-
 
     /**
      * <p>
@@ -360,7 +364,6 @@ abstract class Functions {
     public static SimpleExpression log(final Expression b, final Expression x) {
         return FunctionUtils.twoArgFunc("LOG", b, x, BigDecimalType.INSTANCE);
     }
-
 
     /**
      * <p>
@@ -565,24 +568,9 @@ abstract class Functions {
         return FunctionUtils.oneArgFunc("LENGTH", exp, IntegerType.INSTANCE);
     }
 
-
-    public static SQLFunction._CaseFuncWhenClause cases() {
-        return FunctionUtils.caseFunction(null);
-    }
-
-    public static SQLFunction._CaseFuncWhenClause cases(Expression expression) {
-        ContextStack.assertNonNull(expression);
-        return FunctionUtils.caseFunction(expression);
-    }
-
-
-
-    /*-------------------below Aggregate Function-------------------*/
-
     public static SimpleExpression countAsterisk() {
-        return CountAsteriskFunction.INSTANCE;
+        return StandardFunctions.CountAsteriskFunction.INSTANCE;
     }
-
 
     /**
      * <p>
@@ -596,6 +584,13 @@ abstract class Functions {
     }
 
 
+    /*################################## blow number function method ##################################*/
+
+
+
+    /*-------------------below Aggregate Function-------------------*/
+
+
 
 
     /*################################## blow date time function method ##################################*/
@@ -604,62 +599,6 @@ abstract class Functions {
     /*-------------------below custom function -------------------*/
 
     static final Pattern FUN_NAME_PATTER = Pattern.compile("^[_a-zA-Z][_\\w]*$");
-
-    public static SimpleExpression customFunc(String name, TypeMeta returnType) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.zeroArgFunc(name, returnType);
-    }
-
-    public static IPredicate customFunc(String name) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.zeroArgFuncPredicate(name);
-    }
-
-    public static SimpleExpression customFunc(String name, Expression expr, TypeMeta returnType) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.oneArgFunc(name, expr, returnType);
-    }
-
-    public static IPredicate customFunc(String name, Expression expr) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.oneArgPredicateFunc(name, expr);
-    }
-
-    public static SimpleExpression customFunc(String name, Expression expr1, Expression expr2, TypeMeta returnType) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.twoArgFunc(name, expr1, expr2, returnType);
-    }
-
-    public static IPredicate customFunc(String name, Expression expr1, Expression expr2) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.twoArgPredicateFunc(name, expr1, expr2);
-    }
-
-    public static SimpleExpression customFunc(String name, List<Expression> expList, TypeMeta returnType) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.complexArgFunc(name, _createSimpleMultiArgList(expList), returnType);
-    }
-
-    public static IPredicate customFunc(String name, List<Expression> expList) {
-        if (!FUN_NAME_PATTER.matcher(name).matches()) {
-            throw _customFuncNameError(name);
-        }
-        return FunctionUtils.complexArgPredicate(name, _createSimpleMultiArgList(expList));
-    }
 
 
     static CriteriaException _customFuncNameError(String name) {
@@ -873,7 +812,7 @@ abstract class Functions {
     }
 
     /**
-     * @see #round(Expression)
+     * @see StandardFunctions#round(Expression)
      */
     static MappingType _numberOrDecimal(final MappingType type) {
         final MappingType returnType;

@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -21,7 +20,7 @@ import java.util.function.Supplier;
  * @see SQLs
  * @since 1.0
  */
-abstract class SQLsSyntax extends Functions {
+abstract class SQLsSyntax extends StandardFunctions {
 
 
     /**
@@ -687,11 +686,6 @@ abstract class SQLsSyntax extends Functions {
 
     public static IPredicate not(IPredicate predicate) {
         return OperationPredicate.notPredicate(predicate);
-    }
-
-
-    public static SQLFunction._CaseFuncWhenClause cases() {
-        return FunctionUtils.caseFunction(null);
     }
 
 

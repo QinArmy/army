@@ -22,8 +22,7 @@ public class PostgreFuncUnitTests extends PostgreUnitTests {
     private static final Logger LOG = LoggerFactory.getLogger(PostgreFuncUnitTests.class);
 
     /**
-     * @see Postgres#cases(Expression)
-     * @see Postgres#cases()
+     * @see SQLs#cases()
      */
     @Test
     public void caseFunc() {
@@ -57,7 +56,7 @@ public class PostgreFuncUnitTests extends PostgreUnitTests {
     }
 
     /**
-     * @see Postgres#nullIf(Expression, Expression)
+     * @see SQLs#nullIf(Expression, Expression)
      */
     @Test
     public void nullIfFunc() {

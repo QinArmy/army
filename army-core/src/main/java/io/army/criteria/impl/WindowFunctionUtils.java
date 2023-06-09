@@ -1,6 +1,7 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.CriteriaException;
+import io.army.criteria.Expression;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner._Window;
@@ -8,6 +9,7 @@ import io.army.dialect.Dialect;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
+import io.army.dialect.mysql.MySQLDialect;
 import io.army.lang.Nullable;
 import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
@@ -18,6 +20,18 @@ abstract class WindowFunctionUtils {
 
     private WindowFunctionUtils() {
         throw new UnsupportedOperationException();
+    }
+
+
+    static StandardFunctions._OverSpec zeroArgWindowFunc(String name, TypeMeta returnType) {
+        return new ZeroArgStandardWindowFunc(name, returnType);
+    }
+
+    static StandardFunctions._OverSpec oneArgWindowFunc(String name, Expression one, TypeMeta returnType) {
+        if (!(one instanceof FunctionArg)) {
+            throw CriteriaUtils.funcArgError(name, one);
+        }
+        return new OneArgStandardWindowFunc(name, one, returnType);
     }
 
 
@@ -41,6 +55,8 @@ abstract class WindowFunctionUtils {
         public final SimpleExpression over() {
             if (this.existingWindowName != null || this.anonymousWindow != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
+            } else if (this.outerContext.dialect() == StandardDialect.STANDARD10) {
+                throw CriteriaUtils.standard10DontSupportWindow(this.outerContext);
             }
             this.anonymousWindow = GlobalWindow.INSTANCE;
             return this;
@@ -50,6 +66,8 @@ abstract class WindowFunctionUtils {
         public final SimpleExpression over(final @Nullable String existingWindowName) {
             if (this.existingWindowName != null || this.anonymousWindow != null) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
+            } else if (this.outerContext.dialect() == StandardDialect.STANDARD10) {
+                throw CriteriaUtils.standard10DontSupportWindow(this.outerContext);
             }
             if (existingWindowName == null) {
                 this.existingWindowName = GLOBAL_PLACE_HOLDER;
@@ -68,6 +86,9 @@ abstract class WindowFunctionUtils {
 
         @Override
         public final SimpleExpression over(@Nullable String existingWindowName, Consumer<T> consumer) {
+            if (this.outerContext.dialect() == StandardDialect.STANDARD10) {
+                throw CriteriaUtils.standard10DontSupportWindow(this.outerContext);
+            }
             final T window;
             window = this.createAnonymousWindow(existingWindowName);
             consumer.accept(window);
@@ -195,6 +216,82 @@ abstract class WindowFunctionUtils {
         }
 
     }//GlobalWindow
+
+    private static abstract class StandardWindowFunction extends WindowFunction<Window._StandardPartitionBySpec>
+            implements StandardFunctions._OverSpec {
+
+        private StandardWindowFunction(String name, TypeMeta returnType) {
+            super(name, returnType);
+        }
+
+
+        @Override
+        final Window._StandardPartitionBySpec createAnonymousWindow(@Nullable String existingWindowName) {
+            return StandardQueries.anonymousWindow(this.outerContext, existingWindowName);
+        }
+
+        @Override
+        final boolean isDontSupportWindow(final Dialect dialect) {
+            final boolean dontSupport;
+            switch (dialect.database()) {
+                case MySQL:
+                    dontSupport = dialect.compareWith(MySQLDialect.MySQL80) < 0;
+                    break;
+                case PostgreSQL:
+                    dontSupport = false;
+                    break;
+                case H2:
+                default:
+                    throw _Exceptions.unexpectedEnum((Enum<?>) dialect);
+            }
+            return dontSupport;
+        }
+
+
+    }// StandardWindowFunction
+
+    private static final class ZeroArgStandardWindowFunc extends StandardWindowFunction
+            implements FunctionUtils.NoArgFunction {
+
+        private ZeroArgStandardWindowFunc(String name, TypeMeta returnType) {
+            super(name, returnType);
+        }
+
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            //no-op
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            //no-op
+        }
+
+
+    }//ZeroArgStandardWindowFunc
+
+    private static final class OneArgStandardWindowFunc extends StandardWindowFunction {
+
+        private final ArmyExpression one;
+
+        private OneArgStandardWindowFunc(String name, Expression one, TypeMeta returnType) {
+            super(name, returnType);
+            this.one = (ArmyExpression) one;
+        }
+
+        @Override
+        void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
+            this.one.appendSql(context);
+        }
+
+        @Override
+        void argToString(StringBuilder builder) {
+            builder.append(this.one);
+        }
+
+
+    }//OneArgStandardWindowFunc
 
 
 }

@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.mapping.array.IntArrayType;
@@ -279,9 +278,6 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
 
     /*-------------------below Conditional Expressions-------------------*/
 
-    public static SQLFunction._CaseFuncWhenClause cases(Expression exp) {
-        return FunctionUtils.caseFunction(exp);
-    }
 
     /**
      * <p>
