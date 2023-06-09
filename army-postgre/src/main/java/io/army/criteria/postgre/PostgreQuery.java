@@ -1,9 +1,6 @@
 package io.army.criteria.postgre;
 
-import io.army.criteria.Expression;
-import io.army.criteria.GroupByItem;
-import io.army.criteria.Item;
-import io.army.criteria.Query;
+import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
@@ -172,9 +169,9 @@ public interface PostgreQuery extends Query, PostgreStatement {
 
         _GroupByCommaSpec<I> groupBy(@Nullable SQLs.Modifier modifier, GroupByItem item1, GroupByItem item2, GroupByItem item3, GroupByItem item4);
 
-        _HavingSpec<I> groupBy(@Nullable SQLs.Modifier modifier, Consumer<Consumer<GroupByItem>> consumer);
+        _HavingSpec<I> groupBy(@Nullable SQLs.Modifier modifier, Consumer<ItemConsumer<GroupByItem>> consumer);
 
-        _HavingSpec<I> ifGroupBy(@Nullable SQLs.Modifier modifier, Consumer<Consumer<GroupByItem>> consumer);
+        _HavingSpec<I> ifGroupBy(@Nullable SQLs.Modifier modifier, Consumer<ItemConsumer<GroupByItem>> consumer);
 
     }
 

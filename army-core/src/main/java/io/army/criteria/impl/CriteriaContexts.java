@@ -2351,9 +2351,6 @@ abstract class CriteriaContexts {
          */
         @Override
         final _SelectionMap refNonRecursivePart(final RecursiveCte cte) {
-            if (!this.isSelectClauseEnd()) { // TODO bug?
-                throw ContextStack.castCriteriaApi(this);
-            }
             final StatementContext outerContext = this.outerContext, leftContext = this.leftContext;
             assert outerContext != null; // fail ,bug
             final _SelectionMap selectionMap;

@@ -1,5 +1,6 @@
 package io.army.criteria.mysql.unit;
 
+import io.army.criteria.NotExistsNonRecursiveException;
 import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
@@ -15,6 +16,8 @@ import org.testng.annotations.Test;
 import java.time.LocalDateTime;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static io.army.criteria.impl.MySQLs.cases;
+import static io.army.criteria.impl.MySQLs.*;
 import static io.army.criteria.impl.SQLs.*;
 
 public class MySQLQueryUnitTests extends MySQLUnitTests {
@@ -27,7 +30,7 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
         final LocalDateTime now = LocalDateTime.now();
         final Select stmt;
         stmt = MySQLs.query()
-                .select(MySQLs.cases(ChinaRegion_.regionType)
+                .select(cases(ChinaRegion_.regionType)
                         .when(SQLs::literalValue, RegionType.NONE)
                         .then(SQLs::literalValue, RegionType.NONE.name())
                         .when(SQLs::literalValue, RegionType.PROVINCE)
@@ -36,12 +39,12 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                         .then(SQLs::literalValue, RegionType.CITY.name())
                         .elseValue(NULL).end()::as, ChinaRegion_.REGION_TYPE
                 )
-                .comma(MySQLs.rowNumber().over()::as, "rowNumber")
-                .comma(MySQLs.sum(ChinaRegion_.regionGdp).over(s -> s.partitionBy(ChinaRegion_.regionType))::as, "gdpSum")
-                .comma(MySQLs.sum(MySQLs.DISTINCT, ChinaRegion_.regionGdp)
+                .comma(rowNumber().over()::as, "rowNumber")
+                .comma(sum(ChinaRegion_.regionGdp).over(s -> s.partitionBy(ChinaRegion_.regionType))::as, "gdpSum")
+                .comma(sum(MySQLs.DISTINCT, ChinaRegion_.regionGdp)
                         .over(s -> s.partitionBy(ChinaRegion_.regionType)).as("distinctGdpSum")
                 )
-                .comma(MySQLs.lag(ChinaRegion_.population, SQLs.literalValue(1))
+                .comma(lag(ChinaRegion_.population, SQLs.literalValue(1))
                         .over("w", s -> s.orderBy(ChinaRegion_.id)
                                 .rows().between(UNBOUNDED_PRECEDING, AND, CURRENT_ROW)
                         )::as, "log2"
@@ -156,16 +159,35 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
         stmt = MySQLs.query()
                 .withRecursive("cte").parens("n").as(s -> s.select(SQLs.literalValue(1)::as, "r")
                         .union()
-                        .select(SQLs.refThis("cte", "n").plus(SQLs::literal, 1)::as, "n")
+                        .select(cs -> cs.space(refThis("cte", "n").plus(SQLs::literal, 1)::as, "n"))
                         .from("cte")
-                        .where(SQLs.refThis("cte", "n").less(SQLs::literal, 10))
+                        .where(refThis("cte", "n").less(SQLs::literal, 10))
                         .asQuery()
                 )// with As clause end
                 .space()
-                .parens(s -> s.select(SQLs.refThis("cte", "n"))
+                .parens(s -> s.select(cs -> cs.space(refThis("cte", "n")))
                         .from("cte")
                         .asQuery()
                 )
+                .asQuery();
+
+        print80Stmt(LOG, stmt);
+    }
+
+    @Test(expectedExceptions = NotExistsNonRecursiveException.class)
+    public void notExistsRecursivePart() {
+        final Select stmt;
+        stmt = MySQLs.query()
+                .withRecursive("cte").parens("n")
+                .as(s -> s.select(cs -> cs.space(refThis("cte", "n")
+                                        .plus(SQLs::literal, 1)::as, "n")
+                                ).from("cte")
+                                .where(refThis("cte", "n").less(SQLs::literal, 10))
+                                .asQuery()
+                )// with As clause end
+                .space() // WITH clause end
+                .select(s -> s.space(refThis("cte", "n")))
+                .from("cte")
                 .asQuery();
 
         print80Stmt(LOG, stmt);

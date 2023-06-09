@@ -3,7 +3,6 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
-import io.army.criteria.standard.SQLFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.*;
 import io.army.util._Exceptions;
@@ -344,15 +343,6 @@ abstract class MySQLFunctions extends MySQLMiscellaneousFunctions {
 
     /*-------------------below Flow Control Functions-------------------*/
 
-    /**
-     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/flow-control-functions.html">Flow Control Functions</a>
-     */
-    public static SQLFunction._CaseFuncWhenClause cases(Expression exp) {
-        if (!(exp instanceof ArmyExpression)) {
-            throw CriteriaUtils.funcArgError("CASE", exp);
-        }
-        return FunctionUtils.caseFunction(exp);
-    }
 
 
     /**

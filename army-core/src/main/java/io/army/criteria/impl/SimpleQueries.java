@@ -5,6 +5,8 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
+import io.army.function.DialectBooleanOperator;
+import io.army.function.ExpressionOperator;
 import io.army.function.TeFunction;
 import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
@@ -385,8 +387,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
 
     @Override
-    public final WR ifWhere(Consumer<Consumer<IPredicate>> consumer) {
-        consumer.accept(this::and);
+    public final WR ifWhere(Consumer<ItemConsumer<IPredicate>> consumer) {
+        consumer.accept(CriteriaSupports.itemConsumer(this::and));
         return (WR) this;
     }
 
@@ -452,25 +454,23 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final GD groupBy(Consumer<Consumer<GroupByItem>> consumer) {
-        consumer.accept(this::addGroupByItem);
+    public final GD groupBy(Consumer<ItemConsumer<GroupByItem>> consumer) {
+        consumer.accept(CriteriaSupports.itemConsumer(this::addGroupByItem));
         return this.endGroupBy(true);
     }
 
 
     @Override
-    public final GD ifGroupBy(Consumer<Consumer<GroupByItem>> consumer) {
-        consumer.accept(this::addGroupByItem);
+    public final GD ifGroupBy(Consumer<ItemConsumer<GroupByItem>> consumer) {
+        consumer.accept(CriteriaSupports.itemConsumer(this::addGroupByItem));
         return this.endGroupBy(false);
     }
+
 
     @Override
     public final HR having(final @Nullable IPredicate predicate) {
         if (this.groupByList != null) {
-            if (predicate == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            this.havingList = Collections.singletonList((OperationPredicate) predicate);
+            this.addHavingPredicate(predicate);
         }
         return (HR) this;
     }
@@ -478,13 +478,18 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     @Override
     public final HR having(final @Nullable IPredicate predicate1, final @Nullable IPredicate predicate2) {
         if (this.groupByList != null) {
-            if (predicate1 == null || predicate2 == null) {
-                throw ContextStack.nullPointer(this.context);
-            }
-            this.havingList = ArrayUtils.asUnmodifiableList(
-                    (OperationPredicate) predicate1
-                    , (OperationPredicate) predicate2
-            );
+            this.addHavingPredicate(predicate1);
+            this.addHavingPredicate(predicate2);
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR having(IPredicate predicate1, IPredicate predicate2, IPredicate predicate3) {
+        if (this.groupByList != null) {
+            this.addHavingPredicate(predicate1);
+            this.addHavingPredicate(predicate2);
+            this.addHavingPredicate(predicate3);
         }
         return (HR) this;
     }
@@ -492,61 +497,133 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     @Override
     public final HR having(Supplier<IPredicate> supplier) {
         if (this.groupByList != null) {
-            this.having(supplier.get());
+            this.addHavingPredicate(supplier.get());
         }
         return (HR) this;
     }
 
 
     @Override
-    public final HR having(Function<Object, IPredicate> operator, Supplier<?> operand) {
+    public final <E> HR having(Function<E, IPredicate> operator, E value) {
         if (this.groupByList != null) {
-            this.having(operator.apply(operand.get()));
+            this.addHavingPredicate(operator.apply(value));
         }
         return (HR) this;
     }
 
     @Override
-    public final HR having(Function<Object, IPredicate> operator, Function<String, ?> operand, String operandKey) {
+    public final <K, V> HR having(Function<V, IPredicate> operator, Function<K, V> function, K key) {
         if (this.groupByList != null) {
-            this.having(operator.apply(operand.apply(operandKey)));
+            this.addHavingPredicate(operator.apply(function.apply(key)));
         }
         return (HR) this;
     }
 
     @Override
-    public final HR having(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand,
-                           Supplier<?> secondOperand) {
+    public final <E> HR having(ExpressionOperator<SimpleExpression, E, IPredicate> expOperator,
+                               BiFunction<SimpleExpression, E, Expression> valueOperator, E value) {
         if (this.groupByList != null) {
-            this.having(operator.apply(firstOperand.get(), secondOperand.get()));
+            this.addHavingPredicate(expOperator.apply(valueOperator, value));
         }
         return (HR) this;
     }
 
     @Override
-    public final HR having(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand,
-                           String firstKey, String secondKey) {
+    public final <E> HR having(DialectBooleanOperator<E> fieldOperator,
+                               BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                               BiFunction<SimpleExpression, E, Expression> func, @Nullable E value) {
         if (this.groupByList != null) {
-            this.having(operator.apply(operand.apply(firstKey), operand.apply(secondKey)));
+            this.addHavingPredicate(fieldOperator.apply(operator, func, value));
         }
         return (HR) this;
     }
 
     @Override
-    public final HR having(Consumer<Consumer<IPredicate>> consumer) {
+    public final <K, V> HR having(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
+                                  BiFunction<SimpleExpression, V, Expression> valueOperator, Function<K, V> function,
+                                  K key) {
         if (this.groupByList != null) {
-            consumer.accept(this::addHavingPredicate);
-            this.endHaving(false);
+            this.addHavingPredicate(expOperator.apply(valueOperator, function.apply(key)));
         }
         return (HR) this;
     }
 
+    @Override
+    public final <K, V> HR having(DialectBooleanOperator<V> fieldOperator,
+                                  BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                  BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key) {
+        if (this.groupByList != null) {
+            this.addHavingPredicate(fieldOperator.apply(operator, func, function.apply(key)));
+        }
+        return (HR) this;
+    }
 
     @Override
-    public final HR ifHaving(Consumer<Consumer<IPredicate>> consumer) {
+    public final <E> HR ifHaving(ExpressionOperator<SimpleExpression, E, IPredicate> expOperator,
+                                 BiFunction<SimpleExpression, E, Expression> valueOperator, Supplier<E> supplier) {
         if (this.groupByList != null) {
-            consumer.accept(this::addHavingPredicate);
+            final E value;
+            if ((value = supplier.get()) != null) {
+                this.addHavingPredicate(expOperator.apply(valueOperator, value));
+            }
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <E> HR ifHaving(DialectBooleanOperator<E> fieldOperator,
+                                 BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                 BiFunction<SimpleExpression, E, Expression> func, Supplier<E> supplier) {
+        if (this.groupByList != null) {
+            final E value;
+            if ((value = supplier.get()) != null) {
+                this.addHavingPredicate(fieldOperator.apply(operator, func, value));
+            }
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <K, V> HR ifHaving(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
+                                    BiFunction<SimpleExpression, V, Expression> valueOperator, Function<K, V> function,
+                                    K key) {
+        if (this.groupByList != null) {
+            final V value;
+            if ((value = function.apply(key)) != null) {
+                this.addHavingPredicate(expOperator.apply(valueOperator, value));
+            }
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <K, V> HR ifHaving(DialectBooleanOperator<V> fieldOperator,
+                                    BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                    BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key) {
+        if (this.groupByList != null) {
+            final V value;
+            if ((value = function.apply(key)) != null) {
+                this.addHavingPredicate(fieldOperator.apply(operator, func, value));
+            }
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HR having(Consumer<ItemConsumer<IPredicate>> consumer) {
+        if (this.groupByList != null) {
+            consumer.accept(CriteriaSupports.itemConsumer(this::addHavingPredicate));
             this.endHaving(true);
+        }
+        return (HR) this;
+    }
+
+
+    @Override
+    public final HR ifHaving(Consumer<ItemConsumer<IPredicate>> consumer) {
+        if (this.groupByList != null) {
+            consumer.accept(CriteriaSupports.itemConsumer(this::addHavingPredicate));
+            this.endHaving(false);
         }
         return (HR) this;
     }
@@ -778,17 +855,10 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
         this.endWhereClauseIfNeed();
 
-        // group by and having
-        if (this.groupByList == null) {
-            this.groupByList = Collections.emptyList();
-            this.havingList = Collections.emptyList();
-        } else if (this.havingList == null) {
-            this.havingList = Collections.emptyList();
-        }
-
         this.endOrderByClauseIfNeed();
 
         this.endGroupBy(false);
+        this.endHaving(false);
 
         final CriteriaContext context = this.context;
         if (beforeSelect) {
@@ -837,7 +907,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
         List<_Predicate> predicateList = this.havingList;
         if (predicateList == null) {
-            predicateList = new ArrayList<>();
+            predicateList = _Collections.arrayList();
             this.havingList = predicateList;
         } else if (!(predicateList instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -846,19 +916,17 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         predicateList.add((OperationPredicate) predicate);
     }
 
-    private void endHaving(final boolean optional) {
+    private void endHaving(final boolean required) {
         final List<_Predicate> predicateList = this.havingList;
         if (this.groupByList == null) {
-            this.havingList = Collections.emptyList();
-        } else if (predicateList == null) {
-            if (!optional) {
-                throw ContextStack.criteriaError(this.context, "having clause is empty");
-            }
-            this.havingList = Collections.emptyList();
+            this.havingList = _Collections.emptyList();
         } else if (predicateList instanceof ArrayList) {
             this.havingList = _Collections.unmodifiableList(predicateList);
-        } else {
-            throw ContextStack.castCriteriaApi(this.context);
+        } else if (predicateList == null) {
+            if (required) {
+                throw ContextStack.criteriaError(this.context, "having clause is empty");
+            }
+            this.havingList = _Collections.emptyList();
         }
 
     }
@@ -1941,48 +2009,48 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public SelectionConsumer accept(Selection selection) {
+        public SelectionConsumer selection(Selection selection) {
             this.context.onAddSelectItem(selection);
             return this;
         }
 
         @Override
-        public SelectionConsumer accept(Function<String, Selection> function, String alias) {
+        public SelectionConsumer selection(Function<String, Selection> function, String alias) {
             this.context.onAddSelectItem(function.apply(alias));
             return this;
         }
 
         @Override
-        public SelectionConsumer accept(Selection selection1, Selection selection2) {
+        public SelectionConsumer selection(Selection selection1, Selection selection2) {
             this.context.onAddSelectItem(selection1)
                     .onAddSelectItem(selection2);
             return this;
         }
 
         @Override
-        public SelectionConsumer accept(Function<String, Selection> function, String alias, Selection selection) {
+        public SelectionConsumer selection(Function<String, Selection> function, String alias, Selection selection) {
             this.context.onAddSelectItem(function.apply(alias))
                     .onAddSelectItem(selection);
             return this;
         }
 
         @Override
-        public SelectionConsumer accept(Selection selection, Function<String, Selection> function, String alias) {
+        public SelectionConsumer selection(Selection selection, Function<String, Selection> function, String alias) {
             this.context.onAddSelectItem(selection)
                     .onAddSelectItem(function.apply(alias));
             return this;
         }
 
         @Override
-        public SelectionConsumer accept(Function<String, Selection> function1, String alias1,
-                                        Function<String, Selection> function2, String alias2) {
+        public SelectionConsumer selection(Function<String, Selection> function1, String alias1,
+                                           Function<String, Selection> function2, String alias2) {
             this.context.onAddSelectItem(function1.apply(alias1))
                     .onAddSelectItem(function2.apply(alias2));
             return this;
         }
 
         @Override
-        public SelectionConsumer accept(SQLField field1, SQLField field2, SQLField field3) {
+        public SelectionConsumer selection(SQLField field1, SQLField field2, SQLField field3) {
             this.context.onAddSelectItem(field1)
                     .onAddSelectItem(field2)
                     .onAddSelectItem(field3);
@@ -1990,7 +2058,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public SelectionConsumer accept(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+        public SelectionConsumer selection(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
             this.context.onAddSelectItem(field1)
                     .onAddSelectItem(field2)
                     .onAddSelectItem(field3)
@@ -1999,15 +2067,15 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public SelectionConsumer accept(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+        public SelectionConsumer selection(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
             this.context.onAddSelectItem(SelectionGroups.singleGroup(table, tableAlias));
             return this;
         }
 
         @Override
-        public <P> SelectionConsumer accept(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
-                                            String childAlias, SQLs.SymbolPeriod period2,
-                                            ComplexTableMeta<P, ?> child) {
+        public <P> SelectionConsumer selection(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                                               String childAlias, SQLs.SymbolPeriod period2,
+                                               ComplexTableMeta<P, ?> child) {
             if (child.parentMeta() != parent) {
                 throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
             }
@@ -2017,20 +2085,11 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         }
 
         @Override
-        public SelectionConsumer accept(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
+        public SelectionConsumer selection(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
             this.context.onAddDerivedGroup(derivedAlias);
             return this;
         }
 
-        @Override
-        public DerivedField refThis(String derivedAlias, String selectionAlias) {
-            return this.context.refThis(derivedAlias, selectionAlias, false);
-        }
-
-        @Override
-        public DerivedField refOuter(String derivedAlias, String selectionAlias) {
-            return this.context.refOuter(derivedAlias, selectionAlias);
-        }
 
 
     }//SelectionsImpl

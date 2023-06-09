@@ -25,8 +25,8 @@ public class PostgreQueryUnitTests extends PostgreUnitTests {
         stmt = Postgres.query()
                 .selectsDistinctOn(s -> {
                             s.accept(SQLs.refSelection("aa\\nbb"));
-                            SQLs.ref(2);
-                        }, s -> s.accept(SQLs.literalValue("aa'")::as, "aa\\nbb", PillUser_.id)
+                            SQLs.refSelection(2);
+                        }, s -> s.selection(SQLs.literalValue("aa'")::as, "aa\\nbb", PillUser_.id)
                 ).from(PillUser_.T, SQLs.AS, "u")
                 .orderBy(PillUser_.id)
                 .asQuery();

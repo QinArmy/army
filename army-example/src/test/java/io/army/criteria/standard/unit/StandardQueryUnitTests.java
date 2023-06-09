@@ -235,7 +235,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
         map.put("accountNo", "66688899");
 
         SQLs.query()
-                .select(s -> s.space(s.refThis("bu", BankUser_.ID)))
+                .select(s -> s.space(refThis("bu", BankUser_.ID)))
                 .from(SQLs.subQuery()
                         .select(BankAccount_.id, BankAccount_.userId)
                         .from(BankAccount_.T, AS, "a")
@@ -281,7 +281,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     public void nestedJoin() {
         final Select stmt;
         stmt = SQLs.query()
-                .select(s -> s.space(BankPerson_.id::as, "userId", s.refThis("cr", "id")::as, "regionId")
+                .select(s -> s.space(BankPerson_.id::as, "userId", refThis("cr", "id")::as, "regionId")
                         .comma(SQLs.refThis("cr", "name")::as, "regionName")
                 )
                 .from(s -> s.leftParen(BankPerson_.T, AS, "up")

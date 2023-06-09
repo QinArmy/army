@@ -28,15 +28,15 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
                 .selects(s -> {
                     // due to SQLs.field("u", BankUser_.userNo) need criteria context,so couldn't create selection list
                     // before SQLs.query().
-                    s.accept(SQLs.field("u", BankUser_.userNo))
-                            .accept(SQLs.field("u", BankUser_.userType))
-                            .accept(BankAccount_.accountNo)
-                            .accept(BankAccount_.accountType)
+                    s.selection(SQLs.field("u", BankUser_.userNo))
+                            .selection(SQLs.field("u", BankUser_.userType))
+                            .selection(BankAccount_.accountNo)
+                            .selection(BankAccount_.accountType)
 
-                            .accept(SQLs.field("pu", BankUser_.userNo))
-                            .accept(RegisterRecord_.createTime)
-                            .accept(RegisterRecord_.handleTime)
-                            .accept(RegisterRecord_.completionTime);
+                            .selection(SQLs.field("pu", BankUser_.userNo))
+                            .selection(RegisterRecord_.createTime)
+                            .selection(RegisterRecord_.handleTime)
+                            .selection(RegisterRecord_.completionTime);
 
                 })
                 .from(RegisterRecord_.T, AS, "r")

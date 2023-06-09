@@ -194,17 +194,6 @@ public interface Statement extends Item {
         _ElementObjectCommaClause space(Expression key, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
     }
 
-    interface _ElementObjectConsumer {
-
-        _ElementObjectConsumer accept(String keName, SQLExpression value);
-
-        _ElementObjectConsumer accept(Expression key, SQLExpression value);
-
-        _ElementObjectConsumer accept(String keName, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
-
-        _ElementObjectConsumer accept(Expression key, String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk asterisk);
-
-    }
 
     interface _StringObjectCommaClause {
 
@@ -806,7 +795,7 @@ public interface Statement extends Item {
 
     interface _MinWhereClause<WR, WA> {
 
-        WR where(Consumer<Consumer<IPredicate>> consumer);
+        WR where(Consumer<ItemConsumer<IPredicate>> consumer);
 
         WA where(IPredicate predicate);
 
@@ -818,7 +807,7 @@ public interface Statement extends Item {
 
     interface _MinQueryWhereClause<WR, WA> extends _MinWhereClause<WR, WA> {
 
-        WR ifWhere(Consumer<Consumer<IPredicate>> consumer);
+        WR ifWhere(Consumer<ItemConsumer<IPredicate>> consumer);
     }
 
     /**
@@ -1111,9 +1100,9 @@ public interface Statement extends Item {
 
     interface _DynamicOrderByClause<R> {
 
-        R orderBy(Consumer<Consumer<SortItem>> consumer);
+        R orderBy(Consumer<ItemConsumer<SortItem>> consumer);
 
-        R ifOrderBy(Consumer<Consumer<SortItem>> consumer);
+        R ifOrderBy(Consumer<ItemConsumer<SortItem>> consumer);
     }
 
     interface _SimpleOrderByCommaClause extends _OrderByCommaClause<_SimpleOrderByCommaClause> {
@@ -1494,7 +1483,7 @@ public interface Statement extends Item {
 
     }
 
-
+    @Deprecated
     interface _CommaStringDualSpec<PR> extends Statement._RightParenClause<PR> {
 
         Statement._RightParenClause<PR> comma(String string);
@@ -1502,6 +1491,7 @@ public interface Statement extends Item {
         _CommaStringDualSpec<PR> comma(String string1, String string2);
     }
 
+    @Deprecated
     interface _CommaStringQuadraSpec<PR> extends Statement._RightParenClause<PR> {
 
         Statement._RightParenClause<PR> comma(String string);
@@ -1514,6 +1504,7 @@ public interface Statement extends Item {
 
     }
 
+    @Deprecated
     interface _LeftParenStringDualClause<PR> extends Item {
 
         Statement._RightParenClause<PR> leftParen(String string);
@@ -1523,11 +1514,13 @@ public interface Statement extends Item {
 
     }
 
+    @Deprecated
     interface _LeftParenStringDynamicClause<RR> extends Item {
 
         Statement._RightParenClause<RR> leftParen(Consumer<Consumer<String>> consumer);
     }
 
+    @Deprecated
     interface _LeftParenStringDynamicOptionalClause<RR> extends Item {
 
         Statement._RightParenClause<RR> leftParenIf(Consumer<Consumer<String>> consumer);
@@ -1535,23 +1528,27 @@ public interface Statement extends Item {
     }
 
 
+    @Deprecated
     interface _LeftParenStringDualSpec<RR>
             extends _LeftParenStringDualClause<RR>, _LeftParenStringDynamicClause<RR> {
 
     }
 
+    @Deprecated
     interface _LeftParenStringDualOptionalSpec<RR> extends _LeftParenStringDualSpec<RR>
             , _LeftParenStringDynamicOptionalClause<RR> {
 
     }
 
 
+    @Deprecated
     interface _LeftParenStringQuadraSpec<RR> extends _LeftParenStringDualSpec<RR> {
 
         _CommaStringQuadraSpec<RR> leftParen(String string1, String string2, String string3, String string4);
 
     }
 
+    @Deprecated
     interface _LeftParenStringQuadraOptionalSpec<RR> extends _LeftParenStringQuadraSpec<RR>
             , _LeftParenStringDynamicOptionalClause<RR> {
 
@@ -1565,6 +1562,7 @@ public interface Statement extends Item {
 
         R parens(Consumer<Consumer<String>> consumer);
     }
+
 
     interface _OptionalParensStringClause<R> extends _ParensStringClause<R> {
 
@@ -1814,5 +1812,51 @@ public interface Statement extends Item {
 
         R space();
     }
+
+    interface _DeferContextSpec {
+
+//        /**
+//         * <p>
+//         * This method is similar to {@link SQLs#refThis(String, String)},except that this method don't access {@link ThreadLocal}.
+//         * </p>
+//         */
+//        DerivedField refThis(String derivedAlias, String selectionAlias);
+//
+//        /**
+//         * <p>
+//         * This method is similar to {@link SQLs#refOuter(String, String)},except that this method don't access {@link ThreadLocal}.
+//         * </p>
+//         */
+//        DerivedField refOuter(String derivedAlias, String selectionAlias);
+//
+//        <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field);
+
+    }
+
+
+    interface _DeferClauseSpec extends _DeferContextSpec {
+
+//        /**
+//         * <p>
+//         * This method is similar to {@link SQLs#refSelection(String)},except that :
+//         * <ul>
+//         *     <li>this method </li>
+//         *     <li>this method don't access {@link ThreadLocal}.</li>
+//         * </ul>
+//         * </p>
+//         */
+//        Expression refSelection(String selectionName);
+//
+//        /**
+//         * <p>
+//         * This method is similar to {@link SQLs#refSelection(int)},except that this method don't access {@link ThreadLocal}.
+//         * </p>
+//         *
+//         * @param selectionOrdinal based 1
+//         */
+//        Expression refSelection(int selectionOrdinal);
+
+    }
+
 
 }

@@ -3,6 +3,8 @@ package io.army.criteria;
 
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.SQLs;
+import io.army.function.DialectBooleanOperator;
+import io.army.function.ExpressionOperator;
 import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
@@ -200,14 +202,7 @@ public interface Query extends RowSet {
     }
 
 
-    interface _DeferSelectSpec {
-
-        DerivedField refThis(String derivedAlias, String selectionAlias);
-
-        DerivedField refOuter(String derivedAlias, String selectionAlias);
-    }
-
-    interface _DeferSelectSpaceClause extends _StaticSelectSpaceClause<_DeferSelectCommaSpace>, _DeferSelectSpec {
+    interface _DeferSelectSpaceClause extends _StaticSelectSpaceClause<_DeferSelectCommaSpace>, _DeferContextSpec {
 
         _DeferSelectCommaSpace space(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
 
@@ -298,9 +293,9 @@ public interface Query extends RowSet {
 
     interface _DynamicGroupByClause<R> {
 
-        R groupBy(Consumer<Consumer<GroupByItem>> consumer);
+        R groupBy(Consumer<ItemConsumer<GroupByItem>> consumer);
 
-        R ifGroupBy(Consumer<Consumer<GroupByItem>> consumer);
+        R ifGroupBy(Consumer<ItemConsumer<GroupByItem>> consumer);
     }
 
 
@@ -310,19 +305,38 @@ public interface Query extends RowSet {
 
         R having(IPredicate predicate1, IPredicate predicate2);
 
+        R having(IPredicate predicate1, IPredicate predicate2, IPredicate predicate3);
+
         R having(Supplier<IPredicate> supplier);
 
-        R having(Function<Object, IPredicate> operator, Supplier<?> operand);
+        <E> R having(Function<E, IPredicate> operator, E value);
 
-        R having(Function<Object, IPredicate> operator, Function<String, ?> operand, String operandKey);
+        <K, V> R having(Function<V, IPredicate> operator, Function<K, V> operand, K key);
 
-        R having(BiFunction<Object, Object, IPredicate> operator, Supplier<?> firstOperand, Supplier<?> secondOperand);
 
-        R having(BiFunction<Object, Object, IPredicate> operator, Function<String, ?> operand, String firstKey, String secondKey);
+        <E> R having(ExpressionOperator<SimpleExpression, E, IPredicate> expOperator, BiFunction<SimpleExpression, E, Expression> valueOperator, E value);
 
-        R having(Consumer<Consumer<IPredicate>> consumer);
+        <E> R having(DialectBooleanOperator<E> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                     BiFunction<SimpleExpression, E, Expression> func, @Nullable E value);
 
-        R ifHaving(Consumer<Consumer<IPredicate>> consumer);
+        <K, V> R having(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator, BiFunction<SimpleExpression, V, Expression> valueOperator, Function<K, V> function, K key);
+
+        <K, V> R having(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                        BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
+
+        <E> R ifHaving(ExpressionOperator<SimpleExpression, E, IPredicate> expOperator, BiFunction<SimpleExpression, E, Expression> valueOperator, Supplier<E> supplier);
+
+        <E> R ifHaving(DialectBooleanOperator<E> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                       BiFunction<SimpleExpression, E, Expression> func, Supplier<E> supplier);
+
+        <K, V> R ifHaving(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator, BiFunction<SimpleExpression, V, Expression> valueOperator, Function<K, V> function, K key);
+
+        <K, V> R ifHaving(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                          BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
+
+        R having(Consumer<ItemConsumer<IPredicate>> consumer);
+
+        R ifHaving(Consumer<ItemConsumer<IPredicate>> consumer);
 
     }
 

@@ -570,6 +570,12 @@ abstract class Functions {
         return FunctionUtils.caseFunction(null);
     }
 
+    public static SQLFunction._CaseFuncWhenClause cases(Expression expression) {
+        ContextStack.assertNonNull(expression);
+        return FunctionUtils.caseFunction(expression);
+    }
+
+
 
     /*-------------------below Aggregate Function-------------------*/
 

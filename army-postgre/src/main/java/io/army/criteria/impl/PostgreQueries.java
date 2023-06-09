@@ -365,7 +365,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     @Override
     public final _HavingSpec<I> groupBy(@Nullable SQLs.Modifier modifier,
-                                        Consumer<Consumer<GroupByItem>> consumer) {
+                                        Consumer<ItemConsumer<GroupByItem>> consumer) {
         if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }
@@ -375,7 +375,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     @Override
     public final _HavingSpec<I> ifGroupBy(@Nullable SQLs.Modifier modifier,
-                                          Consumer<Consumer<GroupByItem>> consumer) {
+                                          Consumer<ItemConsumer<GroupByItem>> consumer) {
         if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }

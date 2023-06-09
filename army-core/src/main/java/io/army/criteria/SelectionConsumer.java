@@ -7,31 +7,30 @@ import io.army.meta.TableMeta;
 
 import java.util.function.Function;
 
-public interface SelectionConsumer extends Query._DeferSelectSpec {
+public interface SelectionConsumer extends Statement._DeferContextSpec {
 
-    SelectionConsumer accept(Selection selection);
+    SelectionConsumer selection(Selection selection);
 
-    SelectionConsumer accept(Function<String, Selection> function, String alias);
+    SelectionConsumer selection(Function<String, Selection> function, String alias);
 
-    SelectionConsumer accept(Selection selection1, Selection selection2);
+    SelectionConsumer selection(Selection selection1, Selection selection2);
 
-    SelectionConsumer accept(Function<String, Selection> function, String alias, Selection selection);
+    SelectionConsumer selection(Function<String, Selection> function, String alias, Selection selection);
 
-    SelectionConsumer accept(Selection selection, Function<String, Selection> function, String alias);
+    SelectionConsumer selection(Selection selection, Function<String, Selection> function, String alias);
 
-    SelectionConsumer accept(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2);
+    SelectionConsumer selection(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2);
 
-    SelectionConsumer accept(SQLField field1, SQLField field2, SQLField field3);
+    SelectionConsumer selection(SQLField field1, SQLField field2, SQLField field3);
 
-    SelectionConsumer accept(SQLField field1, SQLField field2, SQLField field3, SQLField field4);
+    SelectionConsumer selection(SQLField field1, SQLField field2, SQLField field3, SQLField field4);
 
-    SelectionConsumer accept(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
+    SelectionConsumer selection(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
-    <P> SelectionConsumer accept(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
-                                 String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
+    <P> SelectionConsumer selection(String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+                                    String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child);
 
-    SelectionConsumer accept(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
-
+    SelectionConsumer selection(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star);
 
 
 }

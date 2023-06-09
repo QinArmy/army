@@ -39,8 +39,8 @@ abstract class WhereClause<WR, WA, OR, OD, LR, LO, LF> extends LimitRowOrderByCl
 
 
     @Override
-    public final WR where(Consumer<Consumer<IPredicate>> consumer) {
-        consumer.accept(this::and);
+    public final WR where(Consumer<ItemConsumer<IPredicate>> consumer) {
+        consumer.accept(CriteriaSupports.itemConsumer(this::and));
         if (this.predicateList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::predicateListIsEmpty);
         }

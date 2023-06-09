@@ -664,7 +664,7 @@ abstract class SQLsSyntax extends Functions {
      *                           <li>current statement don't support this method,eg: UPDATE statement</li>
      *                           </ul>
      */
-    public static Expression ref(int selectionOrdinal) {
+    public static Expression refSelection(int selectionOrdinal) {
         return ContextStack.peek().refSelection(selectionOrdinal);
     }
 
@@ -694,10 +694,6 @@ abstract class SQLsSyntax extends Functions {
         return FunctionUtils.caseFunction(null);
     }
 
-    public static SQLFunction._CaseFuncWhenClause cases(Expression expression) {
-        ContextStack.assertNonNull(expression);
-        return FunctionUtils.caseFunction(expression);
-    }
 
 
     /*################################## blow sql key word operate method ##################################*/

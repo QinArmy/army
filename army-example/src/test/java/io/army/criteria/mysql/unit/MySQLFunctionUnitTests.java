@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import static io.army.criteria.impl.SQLs.cases;
+
 public class MySQLFunctionUnitTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLFunctionUnitTests.class);
@@ -25,7 +27,7 @@ public class MySQLFunctionUnitTests {
     public void caseFunc() {
         final Select stmt;
         stmt = MySQLs.query()
-                .select(MySQLs.cases(PillUser_.userType)
+                .select(cases(PillUser_.userType)
                         .when(SQLs.literalValue(PillUserType.NONE))
                         .then(SQLs.literalValue(1))
 
