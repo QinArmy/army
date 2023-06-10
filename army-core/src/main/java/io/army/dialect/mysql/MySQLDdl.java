@@ -4,7 +4,6 @@ import io.army.dialect._ArmyDialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._DdlParser;
 import io.army.meta.FieldMeta;
-import io.army.meta.IndexFieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
@@ -12,11 +11,8 @@ import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.struct.TextEnum;
 import io.army.util._Exceptions;
-import io.army.util._StringUtils;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 final class MySQLDdl extends _DdlParser<MySQLParser> {
 
@@ -92,83 +88,6 @@ final class MySQLDdl extends _DdlParser<MySQLParser> {
 
 
     @Override
-    public <T> void createIndex(final TableMeta<T> table, final List<String> indexNameList
-            , final List<String> sqlList) {
-        final int indexNameSize = indexNameList.size();
-        if (indexNameSize == 0) {
-            throw new IllegalArgumentException("indexNameList must not empty.");
-        }
-        if (table.javaType().getName().equals("io.army.example.domain.ChinaProvince")) {
-            for (String s : indexNameList) {
-                System.out.println(s);
-            }
-        }
-        final StringBuilder builder = new StringBuilder(128)
-                .append("ALTER TABLE ");
-
-        final _ArmyDialectParser dialect = this.parser;
-
-        dialect.identifier(table.tableName(), builder)
-                .append("\n\t");
-
-        final List<IndexMeta<T>> indexMetaList = table.indexList();
-
-        final Set<String> indexNameSet = new HashSet<>();
-        for (int i = 0; i < indexNameSize; i++) {
-            final String indexName = indexNameList.get(i);
-            IndexMeta<T> indexMeta = null;
-            for (IndexMeta<T> index : indexMetaList) {
-                if (!index.name().equals(indexName)) {
-                    continue;
-                }
-                if (indexNameSet.contains(indexName)) {
-                    String m = String.format("Index[%s] duplication for %s", indexName, table);
-                    throw new IllegalArgumentException(m);
-                }
-                indexMeta = index;
-                indexNameSet.add(indexName);
-                break;
-            }
-            if (indexMeta == null) {
-                String m = String.format("Index[%s] not found in %s", indexName, table);
-                throw new IllegalArgumentException(m);
-            }
-            if (i > 0) {
-                builder.append(" ,\n\t");
-            }
-            if (indexMeta.isUnique()) {
-                builder.append("ADD UNIQUE INDEX ");
-            } else {
-                builder.append("ADD INDEX ");
-            }
-            dialect.identifier(indexMeta.name(), builder);
-
-            final String indexType = indexMeta.type();
-            if (_StringUtils.hasText(indexType)) {
-                builder.append(" USING ");
-                dialect.identifier(indexType, builder);
-            }
-            builder.append(_Constant.SPACE_LEFT_PAREN);
-            final List<IndexFieldMeta<T>> indexFieldList = indexMeta.fieldList();
-            final int fieldSize = indexFieldList.size();
-            for (int j = 0; j < fieldSize; j++) {
-                if (j > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                builder.append(_Constant.SPACE);
-                dialect.identifier(indexFieldList.get(j).columnName(), builder);
-            }
-            builder.append(_Constant.SPACE_RIGHT_PAREN);
-
-
-        }
-
-        sqlList.add(builder.toString());
-
-    }
-
-
-    @Override
     public <T> void changeIndex(final TableMeta<T> table, final List<String> indexNameList
             , final List<String> sqlList) {
 
@@ -176,40 +95,27 @@ final class MySQLDdl extends _DdlParser<MySQLParser> {
         createIndex(table, indexNameList, sqlList);
     }
 
+
     @Override
-    public <T> void dropIndex(TableMeta<T> table, List<String> indexNameList
-            , List<String> sqlList) {
-        final int indexNameSize = indexNameList.size();
-        if (indexNameSize == 0) {
-            throw new IllegalArgumentException("indexNameList must not empty.");
+    protected <T> void appendIndexOutTableDef(final IndexMeta<T> index, final StringBuilder builder) {
+        if (index.isPrimaryKey()) {
+            throw new IllegalArgumentException();
         }
-        final StringBuilder builder = new StringBuilder(128)
-                .append("ALTER TABLE ");
-        final _ArmyDialectParser dialect = this.parser;
-        dialect.identifier(table.tableName(), builder)
-                .append("\n\t");
-        for (int i = 0; i < indexNameSize; i++) {
-            if (i > 0) {
-                builder.append(" ,\n\t");
-            }
-            final String indexName = indexNameList.get(i);
-
-            IndexMeta<T> index = null;
-            for (IndexMeta<T> indexMeta : table.indexList()) {
-                if (indexMeta.name().equals(indexName)) {
-                    index = indexMeta;
-                    break;
-                }
-            }
-            if (index == null) {
-                String m = String.format("Not found index[%s] in %s.", indexName, index);
-                throw new IllegalArgumentException(m);
-            }
-            builder.append("DROP INDEX ");
-            dialect.identifier(indexName, builder);
-
+        if (builder.length() > 0) {
+            builder.append(_Constant.SPACE);
         }
-        sqlList.add(builder.toString());
+        builder.append("CREATE");
+        if (index.isUnique()) {
+            builder.append(" UNIQUE");
+        }
+
+        builder.append(" INDEX ");
+        this.parser.identifier(index.name(), builder);
+        appendIndexType(index, builder);
+
+        builder.append(_Constant.SPACE_ON_SPACE);
+        this.parser.safeObjectName(index.tableMeta(), builder);
+        appendIndexFieldList(index, builder);
 
     }
 

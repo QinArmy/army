@@ -555,7 +555,7 @@ abstract class TableMetaUtils {
             final Map<String, Field> nameToFieldMap,
             final Set<String> createdColumnSet) {
 
-        final TableMeta<T> tableMeta = indexMeta.table();
+        final TableMeta<T> tableMeta = indexMeta.tableMeta();
         List<IndexFieldMeta<T>> list = new ArrayList<>(indexColumns.length);
 
         StringTokenizer tokenizer;
@@ -664,7 +664,7 @@ abstract class TableMetaUtils {
      */
     private static MetaException indexColumnDefinitionError(IndexMeta<?> indexMeta, String indexColumnDefinition) {
         String m = String.format("Domain[%s] index[%s] column definition[%s] error",
-                indexMeta.table().javaType().getName(), indexMeta.name(), indexColumnDefinition);
+                indexMeta.tableMeta().javaType().getName(), indexMeta.name(), indexColumnDefinition);
         throw new MetaException(m);
     }
 
@@ -673,7 +673,7 @@ abstract class TableMetaUtils {
      */
     private static MetaException notFoundIndexColumn(IndexMeta<?> indexMeta, String columnName) {
         String m = String.format("Not found index column[%s] in Domain[%s] for index[%s]"
-                , columnName, indexMeta.table().javaType().getName(), indexMeta.name());
+                , columnName, indexMeta.tableMeta().javaType().getName(), indexMeta.name());
         throw new MetaException(m);
     }
 
@@ -756,7 +756,7 @@ abstract class TableMetaUtils {
         }
 
         @Override
-        public TableMeta<T> table() {
+        public TableMeta<T> tableMeta() {
             return this.table;
         }
 

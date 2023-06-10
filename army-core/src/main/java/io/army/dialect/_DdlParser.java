@@ -8,8 +8,10 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDialect {
 
@@ -103,8 +105,8 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
                 .append("ALTER TABLE ");
 
         TableMeta<?> table = null;
+        FieldMeta<?> field;
         for (int i = 0; i < fieldSize; i++) {
-            final FieldMeta<?> field;
             field = fieldList.get(i);
             if (i > 0) {
                 if (field.tableMeta() != table) {
@@ -121,6 +123,79 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
         }
         builder.append("\n)");
         sqlList.add(builder.toString());
+    }
+
+    @Override
+    public final <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+        final int indexNameSize = indexNameList.size();
+        if (indexNameSize == 0) {
+            throw new IllegalArgumentException("indexNameList must not empty.");
+        }
+        if (table.javaType().getName().equals("io.army.example.domain.ChinaProvince")) {
+            for (String s : indexNameList) {
+                System.out.println(s);
+            }
+        }
+
+        final List<IndexMeta<T>> indexMetaList = table.indexList();
+
+        final Set<String> indexNameSet = new HashSet<>();
+        IndexMeta<T> indexMeta;
+        StringBuilder builder;
+        for (int i = 0; i < indexNameSize; i++) {
+            final String indexName = indexNameList.get(i);
+            indexMeta = null;
+            for (IndexMeta<T> index : indexMetaList) {
+                if (!index.name().equals(indexName)) {
+                    continue;
+                }
+                if (indexNameSet.contains(indexName)) {
+                    String m = String.format("Index[%s] duplication for %s", indexName, table);
+                    throw new IllegalArgumentException(m);
+                }
+                indexMeta = index;
+                indexNameSet.add(indexName);
+                break;
+            }
+            if (indexMeta == null) {
+                String m = String.format("Index[%s] not found in %s", indexName, table);
+                throw new IllegalArgumentException(m);
+            }
+
+            builder = new StringBuilder();
+            appendIndexOutTableDef(indexMeta, builder);
+            sqlList.add(builder.toString());
+
+        }
+
+    }
+
+    @Override
+    public final <T> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+        final int indexNameSize = indexNameList.size();
+        if (indexNameSize == 0) {
+            throw new IllegalArgumentException("indexNameList must not empty.");
+        }
+        StringBuilder builder;
+        IndexMeta<T> index;
+        for (final String indexName : indexNameList) {
+            index = null;
+            for (IndexMeta<T> indexMeta : table.indexList()) {
+                if (indexMeta.name().equals(indexName)) {
+                    index = indexMeta;
+                    break;
+                }
+            }
+            if (index == null) {
+                String m = String.format("Not found index[%s] in %s.", indexName, table);
+                throw new IllegalArgumentException(m);
+            }
+            builder = new StringBuilder();
+            builder.append("DROP INDEX ");
+            this.parser.identifier(index.name(), builder);
+            sqlList.add(builder.toString());
+        }
+
     }
 
 

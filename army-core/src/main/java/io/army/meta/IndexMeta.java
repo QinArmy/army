@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface IndexMeta<T> extends Meta {
 
-    TableMeta<T> table();
+    TableMeta<T> tableMeta();
 
     /**
      * @return index name(lower case)

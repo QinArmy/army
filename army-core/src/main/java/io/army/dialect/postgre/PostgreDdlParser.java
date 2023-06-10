@@ -37,20 +37,12 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     }
 
-    @Override
-    public <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
-
-    }
 
     @Override
     public <T> void changeIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
 
     }
 
-    @Override
-    public <T> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
-
-    }
 
     @Override
     protected void dataType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
@@ -151,7 +143,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
         builder.append(" INDEX IF NOT EXISTS ");
         this.parser.identifier(index.name(), builder);
         builder.append(_Constant.SPACE_ON_SPACE);
-        this.parser.safeObjectName(index.table(), builder);
+        this.parser.safeObjectName(index.tableMeta(), builder);
 
         final String type;
         if (_StringUtils.hasText((type = index.type()))) {
