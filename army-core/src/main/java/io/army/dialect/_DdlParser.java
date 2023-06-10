@@ -11,7 +11,7 @@ import io.army.util._StringUtils;
 
 import java.util.*;
 
-public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDialect {
+public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlParser {
 
     /**
      * non-static
@@ -76,13 +76,14 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
         if (size == 0) {
             return;
         }
-        StringBuilder builder;
+        final StringBuilder builder = new StringBuilder(30);
 
         for (TableMeta<?> tableMeta : tableList) {
-            builder = new StringBuilder();
             builder.append("DROP TABLE IF EXISTS ");
             this.parser.safeObjectName(tableMeta, builder);
             sqlList.add(builder.toString());
+
+            builder.setLength(0);  // clear
         }
 
     }
@@ -214,14 +215,15 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
 
         }//for
 
-        sqlList.add(builder.toString());
+        sqlList.add(builder.toString()); // end
+
 
         if (commentFieldList != null) {
-            StringBuilder commentBuilder;
             for (FieldMeta<?> f : commentFieldList) {
-                commentBuilder = new StringBuilder();
-                appendOuterComment(f, commentBuilder);
-                sqlList.add(commentBuilder.toString());
+                builder.setLength(0); // firstly,clear
+                appendOuterComment(f, builder);
+                sqlList.add(builder.toString());
+
             }
         }
 
@@ -232,19 +234,14 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
     public final <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
         final int indexNameSize = indexNameList.size();
         if (indexNameSize == 0) {
-            throw new IllegalArgumentException("indexNameList must not empty.");
-        }
-        if (table.javaType().getName().equals("io.army.example.domain.ChinaProvince")) {
-            for (String s : indexNameList) {
-                System.out.println(s);
-            }
+            return;
         }
 
         final List<IndexMeta<T>> indexMetaList = table.indexList();
 
         final Set<String> indexNameSet = new HashSet<>();
         IndexMeta<T> indexMeta;
-        StringBuilder builder;
+        final StringBuilder builder = new StringBuilder(40);
         for (int i = 0; i < indexNameSize; i++) {
             final String indexName = indexNameList.get(i);
             indexMeta = null;
@@ -265,21 +262,41 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
                 throw new IllegalArgumentException(m);
             }
 
-            builder = new StringBuilder();
             appendIndexOutTableDef(indexMeta, builder);
             sqlList.add(builder.toString());
+
+            builder.setLength(0); // clear
 
         }
 
     }
 
     @Override
-    public final <T> void dropIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+    public final <T> void changeIndex(final TableMeta<T> table, final List<String> indexNameList, final List<String> sqlList) {
+        dropIndex(table, indexNameList, sqlList);
+        createIndex(table, indexNameList, sqlList);
+    }
+
+    @Override
+    public final <T> void dropIndex(final TableMeta<T> table, final List<String> indexNameList,
+                                    final List<String> sqlList) {
         final int indexNameSize = indexNameList.size();
         if (indexNameSize == 0) {
-            throw new IllegalArgumentException("indexNameList must not empty.");
+            return;
         }
-        StringBuilder builder;
+        final boolean ifExists;
+        switch (this.parser.database) {
+            case Postgre:
+                ifExists = true;
+                break;
+            case MySQL:
+            case Oracle:
+            case H2:
+            default:
+                ifExists = false;
+        }
+
+        final StringBuilder builder = new StringBuilder(30);
         IndexMeta<T> index;
         for (final String indexName : indexNameList) {
             index = null;
@@ -293,11 +310,16 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
                 String m = String.format("Not found index[%s] in %s.", indexName, table);
                 throw new IllegalArgumentException(m);
             }
-            builder = new StringBuilder();
             builder.append("DROP INDEX ");
+            if (ifExists) {
+                builder.append("IF EXISTS ");
+            }
             this.parser.identifier(index.name(), builder);
             sqlList.add(builder.toString());
-        }
+
+            builder.setLength(0); // clear
+
+        }// for
 
     }
 
@@ -483,6 +505,9 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
     }
 
 
+    /**
+     * @param builder length is zero
+     */
     protected <T> void appendIndexOutTableDef(final IndexMeta<T> index, final StringBuilder builder) {
 
     }
@@ -661,7 +686,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
 
     private <T> void appendIndexAfterTableDef(final TableMeta<T> table, final List<String> sqlList) {
         final ArmyParser parser = this.parser;
-        StringBuilder builder;
+        final StringBuilder builder = new StringBuilder(30);
         for (IndexMeta<T> index : table.indexList()) {
 
             switch (parser.database) {
@@ -677,11 +702,14 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
                 default:
                     continue;
             }
-            builder = new StringBuilder(30);
             appendIndexOutTableDef(index, builder);
             sqlList.add(builder.toString());
 
-        }
+            builder.setLength(0); // clear
+
+        }//for
+
+
     }
 
 

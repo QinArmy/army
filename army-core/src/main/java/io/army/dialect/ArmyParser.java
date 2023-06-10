@@ -247,7 +247,7 @@ abstract class ArmyParser implements DialectParser {
 
     @Override
     public final List<String> schemaDdl(final _SchemaResult schemaResult) {
-        final DdlDialect ddlDialect;
+        final DdlParser ddlDialect;
         ddlDialect = createDdlDialect();
 
         final List<String> ddlList = new ArrayList<>();
@@ -659,7 +659,7 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract void bindLiteral(TypeMeta typeMeta, SqlType type, Object value, StringBuilder sqlBuilder);
 
-    protected abstract DdlDialect createDdlDialect();
+    protected abstract DdlParser createDdlDialect();
 
     /**
      * @return true: exists ignore possibility,for example support DO NOTHING clause in CONFLICT clause.

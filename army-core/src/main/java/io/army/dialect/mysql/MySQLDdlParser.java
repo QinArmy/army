@@ -34,14 +34,6 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
     }
 
 
-    @Override
-    public <T> void changeIndex(final TableMeta<T> table, final List<String> indexNameList
-            , final List<String> sqlList) {
-
-        dropIndex(table, indexNameList, sqlList);
-        createIndex(table, indexNameList, sqlList);
-    }
-
 
     @Override
     protected <T> void appendIndexOutTableDef(final IndexMeta<T> index, final StringBuilder builder) {

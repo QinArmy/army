@@ -33,10 +33,6 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     }
 
 
-    @Override
-    public <T> void changeIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
-
-    }
 
     @Override
     protected void doModifyColumn(final _FieldResult result, final StringBuilder builder) {
@@ -183,28 +179,24 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     @Override
     protected <T> void appendIndexOutTableDef(final IndexMeta<T> index, final StringBuilder builder) {
+        assert builder.length() == 0;
+
         if (index.isPrimaryKey()) {
-            // no bug,never here
-            throw new IllegalArgumentException("error ,is primary key");
-        }
-        if (builder.length() > 0) {
-            builder.append(_Constant.SPACE);
-        }
-        builder.append("CREATE");
+            builder.append("ALTER TABLE IF EXISTS ");
+            this.parser.safeObjectName(index.tableMeta(), builder);
+            builder.append(" ADD PRIMARY KEY");
+        } else {
+            builder.append("CREATE");
+            if (index.isUnique()) {
+                builder.append(" UNIQUE");
+            }
 
-        if (index.isUnique()) {
-            builder.append(" UNIQUE");
-        }
+            builder.append(" INDEX IF NOT EXISTS ");
+            this.parser.identifier(index.name(), builder);
+            builder.append(_Constant.SPACE_ON_SPACE);
+            this.parser.safeObjectName(index.tableMeta(), builder);
 
-        builder.append(" INDEX IF NOT EXISTS ");
-        this.parser.identifier(index.name(), builder);
-        builder.append(_Constant.SPACE_ON_SPACE);
-        this.parser.safeObjectName(index.tableMeta(), builder);
-
-        final String type;
-        if (_StringUtils.hasText((type = index.type()))) {
-            builder.append(" USING ");
-            this.parser.identifier(type, builder);
+            appendIndexType(index, builder);
         }
 
         appendIndexFieldList(index, builder);
