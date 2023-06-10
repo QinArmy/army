@@ -73,7 +73,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
             , final IndexMeta<T> indexMeta, final int columnCount, final @Nullable Boolean fieldAsc) {
         final DefaultIndexFieldMeta<T> newFieldMeta;
         // create new IndexFieldMeta
-        if (indexMeta.unique() && columnCount == 1) {
+        if (indexMeta.isUnique() && columnCount == 1) {
             if (ID.equals(field.getName())) {
                 newFieldMeta = new DefaultPrimaryFieldMeta<>(table, field, indexMeta, fieldAsc);
             } else {
@@ -93,7 +93,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
             String m = String.format("%s.%s can't mapping to  %s.", table.javaType().getName()
                     , field.getName(), IndexFieldMeta.class.getName());
             throw new IllegalArgumentException(m);
-        } else if (indexMeta.unique() && columnCount == 1) {
+        } else if (indexMeta.isUnique() && columnCount == 1) {
             if (!(cache instanceof DefaultUniqueFieldMeta)) {
                 String m = String.format("%s.%s can't mapping to  %s.", table.javaType().getName()
                         , field.getName(), UniqueFieldMeta.class.getName());
@@ -488,7 +488,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
         private DefaultUniqueFieldMeta(TableMeta<T> table, Field field, IndexMeta<T> indexMeta
                 , @Nullable Boolean fieldAsc) throws MetaException {
             super(table, field, indexMeta, fieldAsc);
-            if (!indexMeta.unique()) {
+            if (!indexMeta.isUnique()) {
                 String m = String.format("indexMeta[%s] non-unique.", indexMeta);
                 throw new MetaException(m);
             }

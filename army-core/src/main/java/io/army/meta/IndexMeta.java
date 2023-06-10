@@ -17,7 +17,7 @@ public interface IndexMeta<T> extends Meta {
 
     boolean isPrimaryKey();
 
-    boolean unique();
+    boolean isUnique();
 
     String type();
 

@@ -136,7 +136,7 @@ final class MySQLDdl extends _DdlParser<MySQLParser> {
             if (i > 0) {
                 builder.append(" ,\n\t");
             }
-            if (indexMeta.unique()) {
+            if (indexMeta.isUnique()) {
                 builder.append("ADD UNIQUE INDEX ");
             } else {
                 builder.append("ADD INDEX ");
@@ -310,6 +310,11 @@ final class MySQLDdl extends _DdlParser<MySQLParser> {
         }
 
 
+    }
+
+    @Override
+    protected void postDataType(FieldMeta<?> field, SqlType type, StringBuilder builder) {
+        // no-op
     }
 
     @Override

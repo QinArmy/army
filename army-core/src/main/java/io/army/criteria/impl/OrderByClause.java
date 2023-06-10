@@ -101,8 +101,8 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
 
 
     @Override
-    public final OD orderBy(Consumer<ItemConsumer<SortItem>> consumer) {
-        consumer.accept(CriteriaSupports.itemConsumer(this::onAddOrderBy));
+    public final OD orderBy(Consumer<Consumer<SortItem>> consumer) {
+        consumer.accept(this::onAddOrderBy);
         if (this.orderByList == null) {
             throw ContextStack.criteriaError(this.context, _Exceptions::sortItemListIsEmpty);
         }
@@ -110,8 +110,8 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
     }
 
     @Override
-    public final OD ifOrderBy(Consumer<ItemConsumer<SortItem>> consumer) {
-        consumer.accept(CriteriaSupports.itemConsumer(this::onAddOrderBy));
+    public final OD ifOrderBy(Consumer<Consumer<SortItem>> consumer) {
+        consumer.accept(this::onAddOrderBy);
         if (this.orderByList == null || this instanceof OrderByEventListener) {
             ((OrderByEventListener) this).onOrderByEvent();
         }

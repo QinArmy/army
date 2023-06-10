@@ -30,7 +30,7 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, OR, OD, LR, LO, LF, SP>
+abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR, LO, LF>
         implements Query._SelectDispatcher<W, SR, SD>,
         Query._StaticSelectCommaClause<SR>,
@@ -39,7 +39,9 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         Query._StaticGroupByClause<GR>,
         Query._GroupByCommaClause<GR>,
         Query._DynamicGroupByClause<GD>,
-        Query._HavingClause<HR>,
+        Query._StaticHavingClause<HR>,
+        Query._HavingAndClause<HR>,
+        Query._DynamicHavingClause<HD>,
         Query._AsQueryClause<Q>,
         RowSet._StaticUnionClause<SP>,
         RowSet._StaticIntersectClause<SP>,
@@ -387,8 +389,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
 
     @Override
-    public final WR ifWhere(Consumer<ItemConsumer<IPredicate>> consumer) {
-        consumer.accept(CriteriaSupports.itemConsumer(this::and));
+    public final WR ifWhere(Consumer<Consumer<IPredicate>> consumer) {
+        consumer.accept(this::and);
         return (WR) this;
     }
 
@@ -454,42 +456,23 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final GD groupBy(Consumer<ItemConsumer<GroupByItem>> consumer) {
-        consumer.accept(CriteriaSupports.itemConsumer(this::addGroupByItem));
+    public final GD groupBy(Consumer<Consumer<GroupByItem>> consumer) {
+        consumer.accept(this::addGroupByItem);
         return this.endGroupBy(true);
     }
 
 
     @Override
-    public final GD ifGroupBy(Consumer<ItemConsumer<GroupByItem>> consumer) {
-        consumer.accept(CriteriaSupports.itemConsumer(this::addGroupByItem));
+    public final GD ifGroupBy(Consumer<Consumer<GroupByItem>> consumer) {
+        consumer.accept(this::addGroupByItem);
         return this.endGroupBy(false);
     }
 
 
     @Override
-    public final HR having(final @Nullable IPredicate predicate) {
+    public final HR having(final IPredicate predicate) {
         if (this.groupByList != null) {
             this.addHavingPredicate(predicate);
-        }
-        return (HR) this;
-    }
-
-    @Override
-    public final HR having(final @Nullable IPredicate predicate1, final @Nullable IPredicate predicate2) {
-        if (this.groupByList != null) {
-            this.addHavingPredicate(predicate1);
-            this.addHavingPredicate(predicate2);
-        }
-        return (HR) this;
-    }
-
-    @Override
-    public final HR having(IPredicate predicate1, IPredicate predicate2, IPredicate predicate3) {
-        if (this.groupByList != null) {
-            this.addHavingPredicate(predicate1);
-            this.addHavingPredicate(predicate2);
-            this.addHavingPredicate(predicate3);
         }
         return (HR) this;
     }
@@ -610,22 +593,144 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
     @Override
-    public final HR having(Consumer<ItemConsumer<IPredicate>> consumer) {
+    public final HR spaceAnd(IPredicate predicate) {
         if (this.groupByList != null) {
-            consumer.accept(CriteriaSupports.itemConsumer(this::addHavingPredicate));
-            this.endHaving(true);
+            this.addHavingPredicate(predicate);
         }
         return (HR) this;
     }
 
-
     @Override
-    public final HR ifHaving(Consumer<ItemConsumer<IPredicate>> consumer) {
+    public final HR spaceAnd(Supplier<IPredicate> supplier) {
         if (this.groupByList != null) {
-            consumer.accept(CriteriaSupports.itemConsumer(this::addHavingPredicate));
-            this.endHaving(false);
+            this.addHavingPredicate(supplier.get());
         }
         return (HR) this;
+    }
+
+    @Override
+    public final <E> HR spaceAnd(Function<E, IPredicate> operator, E value) {
+        if (this.groupByList != null) {
+            this.addHavingPredicate(operator.apply(value));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <K, V> HR spaceAnd(Function<V, IPredicate> operator, Function<K, V> operand, K key) {
+        if (this.groupByList != null) {
+            this.addHavingPredicate(operator.apply(operand.apply(key)));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <E> HR spaceAnd(ExpressionOperator<SimpleExpression, E, IPredicate> expOperator,
+                                 BiFunction<SimpleExpression, E, Expression> valueOperator, E value) {
+        if (this.groupByList != null) {
+            this.addHavingPredicate(expOperator.apply(valueOperator, value));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <E> HR spaceAnd(DialectBooleanOperator<E> fieldOperator,
+                                 BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                 BiFunction<SimpleExpression, E, Expression> func, @Nullable E value) {
+        if (this.groupByList != null) {
+            this.addHavingPredicate(fieldOperator.apply(operator, func, value));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <K, V> HR spaceAnd(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
+                                    BiFunction<SimpleExpression, V, Expression> valueOperator, Function<K, V> function,
+                                    K key) {
+        if (this.groupByList != null) {
+            this.addHavingPredicate(expOperator.apply(valueOperator, function.apply(key)));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <K, V> HR spaceAnd(DialectBooleanOperator<V> fieldOperator,
+                                    BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                    BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key) {
+        if (this.groupByList != null) {
+            this.addHavingPredicate(fieldOperator.apply(operator, func, function.apply(key)));
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <E> HR ifSpaceAnd(ExpressionOperator<SimpleExpression, E, IPredicate> expOperator,
+                                   BiFunction<SimpleExpression, E, Expression> valueOperator, Supplier<E> supplier) {
+        if (this.groupByList != null) {
+            final E value;
+            if ((value = supplier.get()) != null) {
+                this.addHavingPredicate(expOperator.apply(valueOperator, value));
+            }
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <E> HR ifSpaceAnd(DialectBooleanOperator<E> fieldOperator,
+                                   BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                   BiFunction<SimpleExpression, E, Expression> func, Supplier<E> supplier) {
+        if (this.groupByList != null) {
+            final E value;
+            if ((value = supplier.get()) != null) {
+                this.addHavingPredicate(fieldOperator.apply(operator, func, value));
+            }
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <K, V> HR ifSpaceAnd(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
+                                      BiFunction<SimpleExpression, V, Expression> valueOperator,
+                                      Function<K, V> function, K key) {
+        if (this.groupByList != null) {
+            final V value;
+            if ((value = function.apply(key)) != null) {
+                this.addHavingPredicate(expOperator.apply(valueOperator, value));
+            }
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final <K, V> HR ifSpaceAnd(DialectBooleanOperator<V> fieldOperator,
+                                      BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                                      BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key) {
+        if (this.groupByList != null) {
+            final V value;
+            if ((value = function.apply(key)) != null) {
+                this.addHavingPredicate(fieldOperator.apply(operator, func, value));
+            }
+        }
+        return (HR) this;
+    }
+
+    @Override
+    public final HD having(Consumer<Consumer<IPredicate>> consumer) {
+        if (this.groupByList != null) {
+            consumer.accept(this::addHavingPredicate);
+            this.endHaving(true);
+        }
+        return (HD) this;
+    }
+
+
+    @Override
+    public final HD ifHaving(Consumer<Consumer<IPredicate>> consumer) {
+        if (this.groupByList != null) {
+            consumer.accept(this::addHavingPredicate);
+            this.endHaving(false);
+        }
+        return (HD) this;
     }
 
     @Override
@@ -932,8 +1037,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
-    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, OR, OD, LR, LO, LF, SP>
-            extends SimpleQueries<Q, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, OR, OD, LR, LO, LF, SP>
+    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
+            extends SimpleQueries<Q, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
             implements DialectStatement._DynamicWithClause<B, WE>,
             ArmyStmtSpec,
             Query._WithSelectDispatcher<B, WE, W, SR, SD> {
@@ -1028,8 +1133,8 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     }//WithCteSimpleQueries
 
-    static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, OR, OD, LR, LO, LF, SP>
-            extends WithCteSimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, OR, OD, LR, LO, LF, SP>
+    static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
+            extends WithCteSimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
             implements _SelectDistinctOnDispatcher<W, SR, SD>,
             _Query._DistinctOnClauseSpec {
 

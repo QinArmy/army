@@ -52,7 +52,8 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimp
         StandardQuery._WhereAndSpec<I>, // AR
         StandardQuery._GroupByCommaSpec<I>, // GR
         StandardQuery._HavingSpec<I>, // GD
-        StandardQuery._WindowSpec<I>, // HR
+        StandardQuery._HavingAndSpec<I>, // HR
+        StandardQuery._WindowSpec<I>, // HD
         StandardQuery._OrderByCommaSpec<I>, // OR
         StandardQuery._LimitSpec<I>, // OD
         StandardQuery._LockSpec<I>, // LR
@@ -67,6 +68,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimp
         StandardQuery._WhereAndSpec<I>,
         StandardQuery._GroupByCommaSpec<I>,
         StandardQuery._HavingSpec<I>,
+        StandardQuery._HavingAndSpec<I>,
         StandardQuery._WindowCommaSpec<I>,
         StandardQuery._OrderByCommaSpec<I>,
         _StandardQuery,

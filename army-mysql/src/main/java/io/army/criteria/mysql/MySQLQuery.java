@@ -174,7 +174,13 @@ public interface MySQLQuery extends Query, MySQLStatement {
 
     }
 
-    interface _HavingSpec<I extends Item> extends _HavingClause<_WindowSpec<I>>, _WindowSpec<I> {
+    interface _HavingAndSpec<I extends Item> extends _HavingAndClause<_HavingAndSpec<I>>, _WindowSpec<I> {
+
+    }
+
+    interface _HavingSpec<I extends Item> extends _StaticHavingClause<_HavingAndSpec<I>>,
+            _DynamicHavingClause<_WindowSpec<I>>,
+            _WindowSpec<I> {
 
     }
 

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -122,6 +123,22 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
     }
 
+    @Test
+    public void groupBy() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put("minGdp", new BigDecimal("88888.66"));
+        final LocalDateTime now = LocalDateTime.now();
+
+        final Select stmt;
+        stmt = SQLs.query()
+                .select(ChinaRegion_.id, ChinaRegion_.name)
+                .from(ChinaRegion_.T, AS, "c")
+                .groupBy(ChinaRegion_.regionType)
+                .having(min(ChinaRegion_.regionGdp)::greater, SQLs::literal, map::get, "minGdp")
+                .spaceAnd(ChinaRegion_.createTime.between(SQLs::literal, now.minusDays(49), AND, now))
+                .asQuery();
+        printStmt(LOG, stmt);
+    }
 
     @Test
     public void unionSelect() {

@@ -584,12 +584,25 @@ abstract class Functions {
     }
 
 
+
+
     /*################################## blow number function method ##################################*/
 
 
 
     /*-------------------below Aggregate Function-------------------*/
 
+    public static SimpleExpression min(Expression exp) {
+        return FunctionUtils.oneArgFunc("min", exp, _returnType(exp, Expressions::identityType));
+    }
+
+    public static SimpleExpression max(Expression exp) {
+        return FunctionUtils.oneArgFunc("max", exp, _returnType(exp, Expressions::identityType));
+    }
+
+    public static SimpleExpression sum(Expression exp) {
+        return FunctionUtils.oneArgFunc("sum", exp, _returnType(exp, Functions::_sumType));
+    }
 
 
 

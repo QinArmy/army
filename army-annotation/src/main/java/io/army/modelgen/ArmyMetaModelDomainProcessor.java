@@ -7,7 +7,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,38 +32,30 @@ public class ArmyMetaModelDomainProcessor extends AbstractProcessor {
         final Set<? extends Element> elementSet;
         elementSet = roundEnv.getElementsAnnotatedWith(Table.class);
 
-        if (elementSet.size() > 0) {
-            final long startTime = System.currentTimeMillis();
-            try {
-                final AnnotationHandler handler = new AnnotationHandler(this.processingEnv);
-                handler.createSourceFiles(elementSet);
-                if (handler.errorMsgList.size() > 0) {
-                    throw createException(handler.errorMsgList);
-                }
-            } catch (IOException e) {
-                throw new AnnotationMetaException("Army create source file occur.", e);
-            }
-            System.out.printf("[INFO] %s cost %s ms.%n", ArmyMetaModelDomainProcessor.class.getName()
-                    , System.currentTimeMillis() - startTime);
+        if (elementSet.size() == 0) {
+            return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
         }
+
+        final long startTime = System.currentTimeMillis();
+        try {
+            final AnnotationHandler handler = new AnnotationHandler(this.processingEnv);
+            handler.createSourceFiles(elementSet);
+            if (handler.errorMsgList.size() > 0) {
+                final String m, title;
+                title = "handle army annotation occur error,detail:";
+                m = _MetaBridge.createErrorMessage(title, handler.errorMsgList);
+                throw new AnnotationMetaException(m);
+            }
+        } catch (IOException e) {
+            throw new AnnotationMetaException("Army create source file occur.", e);
+        }
+        System.out.printf("[INFO] %s cost %s ms.%n", ArmyMetaModelDomainProcessor.class.getName()
+                , System.currentTimeMillis() - startTime);
         return ALLOW_OTHER_PROCESSORS_TO_CLAIM_ANNOTATIONS;
     }
 
 
     /*################################## blow private static method ##################################*/
-
-
-    private static AnnotationMetaException createException(final List<String> errorMsgList) {
-        final StringBuilder builder = new StringBuilder(errorMsgList.size() * 20)
-                .append("handle army annotation occur error,detail:");
-        final int size = errorMsgList.size();
-        for (int i = 0; i < size; i++) {
-            builder.append('\n')
-                    .append(String.format("%d: ", i + 1))
-                    .append(errorMsgList.get(i));
-        }
-        return new AnnotationMetaException(builder.toString());
-    }
 
 
 }

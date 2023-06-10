@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static io.army.criteria.impl.MySQLs.cases;
-import static io.army.criteria.impl.MySQLs.*;
+import static io.army.criteria.impl.MySQLs.lag;
 import static io.army.criteria.impl.SQLs.*;
 
 public class MySQLQueryUnitTests extends MySQLUnitTests {
@@ -39,9 +39,9 @@ public class MySQLQueryUnitTests extends MySQLUnitTests {
                         .then(SQLs::literalValue, RegionType.CITY.name())
                         .elseValue(NULL).end()::as, ChinaRegion_.REGION_TYPE
                 )
-                .comma(rowNumber().over()::as, "rowNumber")
-                .comma(sum(ChinaRegion_.regionGdp).over(s -> s.partitionBy(ChinaRegion_.regionType))::as, "gdpSum")
-                .comma(sum(MySQLs.DISTINCT, ChinaRegion_.regionGdp)
+                .comma(MySQLs.rowNumber().over()::as, "rowNumber")
+                .comma(MySQLs.sum(ChinaRegion_.regionGdp).over(s -> s.partitionBy(ChinaRegion_.regionType))::as, "gdpSum")
+                .comma(MySQLs.sum(MySQLs.DISTINCT, ChinaRegion_.regionGdp)
                         .over(s -> s.partitionBy(ChinaRegion_.regionType)).as("distinctGdpSum")
                 )
                 .comma(lag(ChinaRegion_.population, SQLs.literalValue(1))

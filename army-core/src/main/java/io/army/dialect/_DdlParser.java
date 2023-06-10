@@ -67,7 +67,9 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
             }
             this.columnDefinition(fieldList.get(i), builder);
         }
-        this.index(table, builder);
+
+        this.doAppendIndexInTableDef(table, builder);
+
         builder.append('\n')
                 .append(_Constant.SPACE_RIGHT_PAREN);
 
@@ -76,12 +78,8 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
 
         switch (this.parser.database) {
             case Postgre: {
-                StringBuilder commentBuilder;
-                for (int i = 0; i < fieldSize; i++) {
-                    commentBuilder = new StringBuilder(30);
-                    this.appendComment(fieldList.get(i), commentBuilder);
-                    sqlList.add(commentBuilder.toString());
-                }
+                appendIndexAfterTableDef(table, sqlList);
+                appendOuterComment(table, sqlList);
             }
             break;
             case MySQL:
@@ -91,7 +89,9 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
             default:
                 throw _Exceptions.unexpectedEnum(this.parser.database);
         }
+
     }
+
 
     @Override
     public final void addColumn(final List<FieldMeta<?>> fieldList, final List<String> sqlList) {
@@ -101,7 +101,6 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
         }
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
-        final ArmyParser dialect = this.parser;
 
         TableMeta<?> table = null;
         for (int i = 0; i < fieldSize; i++) {
@@ -114,7 +113,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
                 builder.append(" ,\n\t");
             } else {
                 table = field.tableMeta();
-                dialect.safeObjectName(table, builder)
+                this.parser.safeObjectName(table, builder)
                         .append(" ADD COLUMN (\n\t");
             }
             //TODO 新增的 时间类型列应该有默认值,否则 mysql 会以 00000-00-00 作为默认值.
@@ -131,7 +130,11 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
         final SqlType sqlType;
         sqlType = field.mappingType().map(this.serverMeta);
 
-        this.dataType(field, sqlType, builder);
+        if (field.generatorType() == GeneratorType.POST) {
+            this.postDataType(field, sqlType, builder);
+        } else {
+            this.dataType(field, sqlType, builder);
+        }
 
         if (field.nullable()) {
             builder.append(_Constant.SPACE_NULL);
@@ -170,6 +173,8 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
 
     protected abstract void dataType(FieldMeta<?> field, SqlType type, StringBuilder builder);
 
+    protected abstract void postDataType(FieldMeta<?> field, SqlType type, StringBuilder builder);
+
     protected abstract void appendTableOption(final TableMeta<?> table, final StringBuilder builder);
 
     protected abstract void appendPostGenerator(final FieldMeta<?> field, final StringBuilder builder);
@@ -180,6 +185,132 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
                 .append(_Constant.SPACE);
         this.parser.literal(NoCastTextType.INSTANCE, object.comment(), builder);
     }
+
+
+    /**
+     * non-static
+     */
+    protected final String COMMA_PRIMARY_KEY = " ,\n\tPRIMARY KEY";
+
+    /**
+     * non-static
+     */
+    protected final String COMMA_UNIQUE = " ,\n\tUNIQUE";
+
+    /**
+     * non-static
+     */
+    protected final String COMMA_INDEX = " ,\n\tINDEX";
+
+
+    protected final <T> void appendIndexInTableDef(final IndexMeta<T> index, final StringBuilder builder) {
+        if (index.isPrimaryKey()) {
+            builder.append(COMMA_PRIMARY_KEY);
+        } else if (index.isUnique()) {
+            builder.append(COMMA_UNIQUE);
+        } else {
+            builder.append(COMMA_INDEX);
+        }
+
+        switch (this.parser.database) {
+            case MySQL: {
+                if (!index.isPrimaryKey()) {
+                    builder.append(_Constant.SPACE);
+                    this.parser.identifier(index.name(), builder);
+                }
+            }
+            break;
+            case Postgre:
+            case Oracle:
+            case H2:
+                break;
+
+            default:// no-op
+        }
+
+        switch (this.parser.database) {
+            case MySQL:
+                appendIndexType(index, builder);
+                break;
+            case Postgre:
+            case H2:
+            case Oracle:
+            default://no-op
+        }
+
+        appendIndexFieldList(index, builder);
+
+    }
+
+    protected final <T> void appendIndexType(final IndexMeta<T> index, final StringBuilder builder) {
+        final String type;
+        type = index.type();
+        if (_StringUtils.hasText(type)) {
+            builder.append(" USING ");
+            this.parser.identifier(index.type(), builder);
+        }
+    }
+
+
+    protected final <T> void appendIndexFieldList(final IndexMeta<T> index, StringBuilder builder) {
+
+        final List<IndexFieldMeta<T>> indexFieldList = index.fieldList();
+        final int fieldSize = indexFieldList.size();
+        IndexFieldMeta<T> field;
+        Boolean asc;
+        builder.append(_Constant.SPACE_LEFT_PAREN);// index left bracket
+
+        for (int i = 0; i < fieldSize; i++) {
+            if (i > 0) {
+                builder.append(_Constant.SPACE_COMMA_SPACE);
+            } else {
+                builder.append(_Constant.SPACE);
+            }
+            field = indexFieldList.get(i);
+            this.parser.safeObjectName(field, builder);
+
+            asc = field.fieldAsc();
+            if (asc == null) {
+                continue;
+            }
+            if (asc) {
+                builder.append(_Constant.SPACE_ASC);
+            } else {
+                builder.append(_Constant.SPACE_DESC);
+            }
+        }
+
+        builder.append(_Constant.SPACE_RIGHT_PAREN); // index right bracket
+
+    }
+
+    protected final void appendTimeTypeScale(final FieldMeta<?> field, final StringBuilder builder) {
+        final int fieldScale;
+        switch ((fieldScale = field.scale())) {
+            case -1:
+                break;
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 5:
+            case 6:
+                builder.append(_Constant.LEFT_PAREN)
+                        .append(fieldScale)
+                        .append(_Constant.RIGHT_PAREN);
+                break;
+            default:
+                this.errorMsgList.add(String.format("%s scale[%s] error.", field, fieldScale));
+
+        }// switch
+
+    }
+
+
+    protected <T> void appendIndexOutTableDef(final IndexMeta<T> index, final StringBuilder builder) {
+
+    }
+
 
     protected final void precision(final FieldMeta<?> field, SqlType type
             , final long max, final long defaultValue, final StringBuilder builder) {
@@ -286,61 +417,6 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
     }
 
 
-    private <T> void index(final TableMeta<T> table, final StringBuilder builder) {
-        final ArmyParser dialect = this.parser;
-        for (IndexMeta<T> index : table.indexList()) {
-
-
-            if (index.isPrimaryKey()) {
-                final String indexName = index.name();
-                if (indexName.isEmpty()) {
-                    builder.append(" ,\n\tPRIMARY KEY");
-                } else {
-                    builder.append(" ,\n\tCONSTRAINT ");
-                    dialect.identifier(indexName, builder);
-                }
-            } else if (index.unique()) {
-                builder.append(" ,\n\tUNIQUE ");
-                dialect.identifier(index.name(), builder);
-            } else {
-                builder.append(" ,\n\tINDEX ");
-                dialect.identifier(index.name(), builder);
-            }
-            final String type;
-            type = index.type();
-            if (_StringUtils.hasText(type)) {
-                builder.append(" USING ");
-                dialect.identifier(index.type(), builder);
-            }
-            builder.append(_Constant.SPACE_LEFT_PAREN);// index left bracket
-
-            final List<IndexFieldMeta<T>> indexFieldList = index.fieldList();
-            final int indexFieldSize = indexFieldList.size();
-            for (int i = 0; i < indexFieldSize; i++) {
-                if (i > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
-                }
-                final IndexFieldMeta<T> indexField;
-                indexField = indexFieldList.get(i);
-
-                builder.append(_Constant.SPACE);
-                dialect.identifier(indexField.columnName(), builder);
-
-                final Boolean asc = indexField.fieldAsc();
-                if (asc != null) {
-                    if (asc) {
-                        builder.append(_Constant.SPACE_ASC);
-                    } else {
-                        builder.append(_Constant.SPACE_DESC);
-                    }
-                }
-            }
-            builder.append(_Constant.SPACE_RIGHT_PAREN); // index right bracket
-        }
-
-    }
-
-
     private void timeScaleError(FieldMeta<?> field, SqlType sqlType) {
         String m;
         m = String.format("%s scale[%s] error for %s.%s"
@@ -363,6 +439,73 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
             builder.append(_Constant.RIGHT_PAREN);
         }
 
+    }
+
+
+    /**
+     * @see #createTable(TableMeta, List)
+     */
+    private <T> void appendOuterComment(final TableMeta<T> table, final List<String> sqlList) {
+        StringBuilder commentBuilder;
+
+        commentBuilder = new StringBuilder();
+        this.appendComment(table, commentBuilder);
+        sqlList.add(commentBuilder.toString());
+
+        for (FieldMeta<T> field : table.fieldList()) {
+            commentBuilder = new StringBuilder(30);
+            this.appendComment(field, commentBuilder);
+            sqlList.add(commentBuilder.toString());
+        }
+
+
+    }
+
+    private <T> void doAppendIndexInTableDef(final TableMeta<T> table, final StringBuilder builder) {
+        final ArmyParser parser = this.parser;
+        for (IndexMeta<T> index : table.indexList()) {
+
+            switch (parser.database) {
+                case Postgre: {
+                    if (!index.isPrimaryKey()) {
+                        continue;
+                    }
+                }
+                break;
+                case H2:
+                case MySQL:
+                case Oracle:
+                default://no-op
+            }
+            appendIndexInTableDef(index, builder);
+
+        }
+
+    }
+
+    private <T> void appendIndexAfterTableDef(final TableMeta<T> table, final List<String> sqlList) {
+        final ArmyParser parser = this.parser;
+        StringBuilder builder;
+        for (IndexMeta<T> index : table.indexList()) {
+
+            switch (parser.database) {
+                case Postgre: {
+                    if (index.isPrimaryKey()) {
+                        continue;
+                    }
+                }
+                break;
+                case H2:
+                case MySQL:
+                case Oracle:
+                default:
+                    continue;
+            }
+            builder = new StringBuilder(30);
+            appendIndexOutTableDef(index, builder);
+            sqlList.add(builder.toString());
+
+        }
     }
 
 

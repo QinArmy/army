@@ -576,7 +576,7 @@ abstract class TableMetaUtils {
                 throw indexColumnDefinitionError(indexMeta, indexColumnDefinition);
             }
 
-            if (PRIMARY_FIELD.equals(fieldName) && (!indexMeta.unique() || indexColumns.length != 1)) {
+            if (PRIMARY_FIELD.equals(fieldName) && (!indexMeta.isUnique() || indexColumns.length != 1)) {
                 throw indexColumnDefinitionError(indexMeta, indexColumnDefinition);
             }
             final Field field = nameToFieldMap.get(fieldName);
@@ -776,7 +776,7 @@ abstract class TableMetaUtils {
         }
 
         @Override
-        public boolean unique() {
+        public boolean isUnique() {
             return this.unique;
         }
 

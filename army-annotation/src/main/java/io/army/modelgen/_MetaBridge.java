@@ -96,4 +96,18 @@ public abstract class _MetaBridge {
     }
 
 
+    public static String createErrorMessage(final String title, final List<String> errorMsgList) {
+        final StringBuilder builder = new StringBuilder(errorMsgList.size() * 20)
+                .append(title);
+        final int size = errorMsgList.size();
+        for (int i = 0; i < size; i++) {
+            builder.append('\n')
+                    .append(i + 1)
+                    .append(" : ")
+                    .append(errorMsgList.get(i));
+        }
+        return builder.toString();
+    }
+
+
 }

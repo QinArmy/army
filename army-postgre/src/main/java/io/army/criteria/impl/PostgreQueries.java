@@ -46,6 +46,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreQuery._WhereAndSpec<I>,
         PostgreQuery._GroupByCommaSpec<I>,
         PostgreQuery._HavingSpec<I>,
+        PostgreQuery._HavingAndSpec<I>,
         PostgreQuery._WindowSpec<I>,
         PostgreQuery._OrderByCommaSpec<I>,
         PostgreQuery._LimitSpec<I>,
@@ -61,6 +62,8 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         PostgreQuery._RepeatableJoinClause<I>,
         PostgreQuery._ParensJoinSpec<I>,
         PostgreQuery._WhereAndSpec<I>,
+        PostgreQuery._HavingSpec<I>,
+        PostgreQuery._HavingAndSpec<I>,
         PostgreQuery._WindowCommaSpec<I>,
         PostgreQuery._GroupByCommaSpec<I>,
         PostgreQuery._OrderByCommaSpec<I>,
@@ -365,7 +368,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     @Override
     public final _HavingSpec<I> groupBy(@Nullable SQLs.Modifier modifier,
-                                        Consumer<ItemConsumer<GroupByItem>> consumer) {
+                                        Consumer<Consumer<GroupByItem>> consumer) {
         if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }
@@ -375,7 +378,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
     @Override
     public final _HavingSpec<I> ifGroupBy(@Nullable SQLs.Modifier modifier,
-                                          Consumer<ItemConsumer<GroupByItem>> consumer) {
+                                          Consumer<Consumer<GroupByItem>> consumer) {
         if (modifier != null && modifier != SQLs.ALL && modifier != SQLs.DISTINCT) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }

@@ -807,7 +807,7 @@ public interface Statement extends Item {
 
     interface _MinQueryWhereClause<WR, WA> extends _MinWhereClause<WR, WA> {
 
-        WR ifWhere(Consumer<ItemConsumer<IPredicate>> consumer);
+        WR ifWhere(Consumer<Consumer<IPredicate>> consumer);
     }
 
     /**
@@ -1100,9 +1100,9 @@ public interface Statement extends Item {
 
     interface _DynamicOrderByClause<R> {
 
-        R orderBy(Consumer<ItemConsumer<SortItem>> consumer);
+        R orderBy(Consumer<Consumer<SortItem>> consumer);
 
-        R ifOrderBy(Consumer<ItemConsumer<SortItem>> consumer);
+        R ifOrderBy(Consumer<Consumer<SortItem>> consumer);
     }
 
     interface _SimpleOrderByCommaClause extends _OrderByCommaClause<_SimpleOrderByCommaClause> {

@@ -1,7 +1,10 @@
 package io.army.dialect.postgre;
 
+import io.army.dialect._Constant;
 import io.army.dialect._MockDialects;
 import io.army.mapping.PostgreFullType_;
+import io.army.meta.MetaException;
+import io.army.modelgen._MetaBridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -23,11 +26,19 @@ public class PostgreDdlTests {
 
         final List<String> sqlList = new ArrayList<>();
         ddlParser.createTable(PostgreFullType_.T, sqlList);
-        for (String sql : sqlList) {
-            System.out.print(sql);
-            System.out.print(';');
-            System.out.println();
+
+        if (ddlParser.errorMsgList().size() > 0) {
+            throw new MetaException(_MetaBridge.createErrorMessage("meta error", ddlParser.errorMsgList()));
         }
+        final StringBuilder builder = new StringBuilder(128);
+
+        for (String sql : sqlList) {
+            builder.append(sql)
+                    .append(_Constant.SPACE_SEMICOLON)
+                    .append('\n');
+        }
+
+        LOG.debug(builder.toString());
 
     }
 

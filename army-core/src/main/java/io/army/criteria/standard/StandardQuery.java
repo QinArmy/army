@@ -173,6 +173,10 @@ public interface StandardQuery extends Query, StandardStatement {
 
     }
 
+    interface _HavingAndSpec<I extends Item> extends _HavingAndClause<_HavingAndSpec<I>>, _WindowSpec<I> {
+
+    }
+
 
     /**
      * <p>
@@ -190,7 +194,9 @@ public interface StandardQuery extends Query, StandardStatement {
      *
      * @since 1.0
      */
-    interface _HavingSpec<I extends Item> extends _HavingClause<_WindowSpec<I>>, _WindowSpec<I> {
+    interface _HavingSpec<I extends Item> extends _StaticHavingClause<_HavingAndSpec<I>>,
+            _DynamicHavingClause<_WindowSpec<I>>,
+            _WindowSpec<I> {
 
     }
 

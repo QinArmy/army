@@ -293,19 +293,47 @@ public interface Query extends RowSet {
 
     interface _DynamicGroupByClause<R> {
 
-        R groupBy(Consumer<ItemConsumer<GroupByItem>> consumer);
+        R groupBy(Consumer<Consumer<GroupByItem>> consumer);
 
-        R ifGroupBy(Consumer<ItemConsumer<GroupByItem>> consumer);
+        R ifGroupBy(Consumer<Consumer<GroupByItem>> consumer);
+    }
+
+    interface _HavingAndClause<R> {
+
+        R spaceAnd(IPredicate predicate);
+
+        R spaceAnd(Supplier<IPredicate> supplier);
+
+        <E> R spaceAnd(Function<E, IPredicate> operator, E value);
+
+        <K, V> R spaceAnd(Function<V, IPredicate> operator, Function<K, V> operand, K key);
+
+
+        <E> R spaceAnd(ExpressionOperator<SimpleExpression, E, IPredicate> expOperator, BiFunction<SimpleExpression, E, Expression> valueOperator, E value);
+
+        <E> R spaceAnd(DialectBooleanOperator<E> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                       BiFunction<SimpleExpression, E, Expression> func, @Nullable E value);
+
+        <K, V> R spaceAnd(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator, BiFunction<SimpleExpression, V, Expression> valueOperator, Function<K, V> function, K key);
+
+        <K, V> R spaceAnd(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                          BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
+
+        <E> R ifSpaceAnd(ExpressionOperator<SimpleExpression, E, IPredicate> expOperator, BiFunction<SimpleExpression, E, Expression> valueOperator, Supplier<E> supplier);
+
+        <E> R ifSpaceAnd(DialectBooleanOperator<E> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                         BiFunction<SimpleExpression, E, Expression> func, Supplier<E> supplier);
+
+        <K, V> R ifSpaceAnd(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator, BiFunction<SimpleExpression, V, Expression> valueOperator, Function<K, V> function, K key);
+
+        <K, V> R ifSpaceAnd(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                            BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
     }
 
 
-    interface _HavingClause<R> {
+    interface _StaticHavingClause<R> {
 
         R having(IPredicate predicate);
-
-        R having(IPredicate predicate1, IPredicate predicate2);
-
-        R having(IPredicate predicate1, IPredicate predicate2, IPredicate predicate3);
 
         R having(Supplier<IPredicate> supplier);
 
@@ -334,9 +362,15 @@ public interface Query extends RowSet {
         <K, V> R ifHaving(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
                           BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
 
-        R having(Consumer<ItemConsumer<IPredicate>> consumer);
 
-        R ifHaving(Consumer<ItemConsumer<IPredicate>> consumer);
+    }
+
+
+    interface _DynamicHavingClause<R> {
+
+        R having(Consumer<Consumer<IPredicate>> consumer);
+
+        R ifHaving(Consumer<Consumer<IPredicate>> consumer);
 
     }
 

@@ -2,10 +2,12 @@ package io.army.mapping;
 
 import io.army.annotation.Mapping;
 import io.army.lang.Nullable;
+import io.army.mapping.array.IntegerArrayType;
 import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.mapping.optional.OffsetTimeType;
 import io.army.meta.MetaException;
 import io.army.struct.CodeEnum;
+import io.army.util.ArrayUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -47,13 +49,18 @@ public abstract class _MappingFactory {
     public static MappingType getDefaultIfMatch(final Class<?> javaType) {
         final MappingType type;
         if (!Enum.class.isAssignableFrom(javaType)) {
-            final Function<Class<?>, MappingType> function;
-            function = DEFAULT_MAPPING_MAP.get(javaType);
-            if (function == null) {
-                type = null;
+            if (javaType.isArray()) {
+                type = getDefaultArrayType(javaType);
             } else {
-                type = function.apply(javaType);
+                final Function<Class<?>, MappingType> function;
+                function = DEFAULT_MAPPING_MAP.get(javaType);
+                if (function == null) {
+                    type = null;
+                } else {
+                    type = function.apply(javaType);
+                }
             }
+
         } else if (CodeEnum.class.isAssignableFrom(javaType)) {
             type = CodeEnumType.from(javaType);
         } else if (TextEnumType.class.isAssignableFrom(javaType)) {
@@ -67,6 +74,7 @@ public abstract class _MappingFactory {
         }
         return type;
     }
+
 
     public static MappingType map(final Mapping mapping, final Field field) {
         final Class<?> mappingClass;
@@ -225,5 +233,17 @@ public abstract class _MappingFactory {
         }
 
     }
+
+    @Nullable
+    private static MappingType getDefaultArrayType(final Class<?> arrayJavaType) {
+        MappingType type;
+        if (ArrayUtils.underlyingComponent(arrayJavaType) == Integer.class) {
+            type = IntegerArrayType.from(arrayJavaType);
+        } else {
+            type = null;
+        }
+        return type;
+    }
+
 
 }
