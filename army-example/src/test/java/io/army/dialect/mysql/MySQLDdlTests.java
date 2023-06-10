@@ -236,7 +236,7 @@ public class MySQLDdlTests {
         }
 
         @Override
-        public boolean sqlType() {
+        public boolean containSqlType() {
             return this.sqlType;
         }
 
@@ -246,12 +246,12 @@ public class MySQLDdlTests {
         }
 
         @Override
-        public boolean nullable() {
+        public boolean containNullable() {
             return this.nullable;
         }
 
         @Override
-        public boolean comment() {
+        public boolean containComment() {
             return this.comment;
         }
 

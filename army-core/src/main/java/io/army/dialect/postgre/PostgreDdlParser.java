@@ -8,7 +8,6 @@ import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
-import io.army.schema._FieldResult;
 import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
@@ -32,10 +31,6 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     }
 
-    @Override
-    public void modifyColumn(List<_FieldResult> resultList, List<String> sqlList) {
-
-    }
 
 
     @Override

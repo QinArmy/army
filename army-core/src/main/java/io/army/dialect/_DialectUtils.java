@@ -31,6 +31,18 @@ public abstract class _DialectUtils {
     }
 
 
+    public static String printDdlSqlList(final List<String> sqlList) {
+        final StringBuilder builder = new StringBuilder(128);
+
+        for (String sql : sqlList) {
+            builder.append(sql)
+                    .append(_Constant.SPACE_SEMICOLON)
+                    .append('\n');
+        }
+        return builder.toString();
+    }
+
+
     public static boolean isOnConflictDoNothing(final _Insert stmt) {
         return stmt instanceof _Insert._SupportConflictClauseSpec
                 && ((_Insert._SupportConflictClauseSpec) stmt).isIgnorableConflict();

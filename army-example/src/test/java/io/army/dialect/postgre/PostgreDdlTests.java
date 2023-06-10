@@ -1,8 +1,10 @@
 package io.army.dialect.postgre;
 
-import io.army.dialect._Constant;
+import io.army.dialect._DialectUtils;
 import io.army.dialect._MockDialects;
+import io.army.mapping.PostgreFullType;
 import io.army.mapping.PostgreFullType_;
+import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.modelgen._MetaBridge;
 import org.slf4j.Logger;
@@ -16,13 +18,10 @@ public class PostgreDdlTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreDdlTests.class);
 
+    private final PostgreDdlParser ddlParser = PostgreDdlParser.create((PostgreParser) _MockDialects.from(PostgreDialect.POSTGRE15));
+
     @Test
     public void createTable() {
-        final PostgreParser parser;
-        parser = (PostgreParser) _MockDialects.from(PostgreDialect.POSTGRE15);
-
-        final PostgreDdlParser ddlParser;
-        ddlParser = PostgreDdlParser.create(parser);
 
         final List<String> sqlList = new ArrayList<>();
         ddlParser.createTable(PostgreFullType_.T, sqlList);
@@ -30,15 +29,35 @@ public class PostgreDdlTests {
         if (ddlParser.errorMsgList().size() > 0) {
             throw new MetaException(_MetaBridge.createErrorMessage("meta error", ddlParser.errorMsgList()));
         }
-        final StringBuilder builder = new StringBuilder(128);
 
-        for (String sql : sqlList) {
-            builder.append(sql)
-                    .append(_Constant.SPACE_SEMICOLON)
-                    .append('\n');
+
+        LOG.debug(_DialectUtils.printDdlSqlList(sqlList));
+
+    }
+
+
+    @Test
+    public void addColumn() {
+        final List<String> sqlList = new ArrayList<>();
+
+        final List<FieldMeta<?>> fieldList = new ArrayList<>();
+        for (FieldMeta<PostgreFullType> field : PostgreFullType_.T.fieldList()) {
+            if (_MetaBridge.isReserved(field.fieldName())) {
+                continue;
+            }
+
+            fieldList.add(field);
+
         }
 
-        LOG.debug(builder.toString());
+        ddlParser.addColumn(fieldList, sqlList);
+
+        if (ddlParser.errorMsgList().size() > 0) {
+            throw new MetaException(_MetaBridge.createErrorMessage("meta error", ddlParser.errorMsgList()));
+        }
+
+        LOG.debug(_DialectUtils.printDdlSqlList(sqlList));
+
 
     }
 

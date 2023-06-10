@@ -9,13 +9,13 @@ public interface _FieldResult {
 
     FieldMeta<?> field();
 
-    boolean sqlType();
+    boolean containSqlType();
 
     boolean defaultValue();
 
-    boolean nullable();
+    boolean containNullable();
 
-    boolean comment();
+    boolean containComment();
 
     static Builder builder() {
         return FieldResultImpl.builder();

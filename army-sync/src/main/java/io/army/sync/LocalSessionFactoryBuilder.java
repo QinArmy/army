@@ -372,7 +372,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
                             .append(" not exists.");
                 }
                 for (_FieldResult field : tableResult.changeFieldList()) {
-                    if (field.sqlType() || field.defaultValue() || field.nullable()) {
+                    if (field.containSqlType() || field.defaultValue() || field.containNullable()) {
                         builder.append("\n\t")
                                 .append(field)
                                 .append(" not match.");

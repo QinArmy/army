@@ -1,12 +1,10 @@
 package io.army.dialect.mysql;
 
-import io.army.dialect._ArmyDialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._DdlParser;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
-import io.army.schema._FieldResult;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.struct.TextEnum;
@@ -31,59 +29,6 @@ final class MySQLDdl extends _DdlParser<MySQLParser> {
         this.parser.safeObjectName(table, builder);
         appendComment(table, builder);
 
-    }
-
-    @Override
-    public void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
-        final int size = resultList.size();
-        if (size == 0) {
-            return;
-        }
-        final StringBuilder builder = new StringBuilder(128)
-                .append("ALTER TABLE ");
-        final _ArmyDialectParser dialect = this.parser;
-        TableMeta<?> table = null;
-        FieldMeta<?> field;
-        _FieldResult result;
-
-        for (int i = 0; i < size; i++) {
-            result = resultList.get(i);
-            field = result.field();
-            if (i > 0) {
-                if (field.tableMeta() != table) {
-                    throw new IllegalArgumentException("resultList error.");
-                }
-                builder.append(" ,\n\t");
-            } else {
-                table = field.tableMeta();
-                dialect.identifier(table.tableName(), builder)
-                        .append("\n\t");
-            }
-
-            if (result.comment() || result.sqlType() || result.nullable()) {
-                builder.append("CHANGE COLUMN ");
-                dialect.identifier(field.columnName(), builder)
-                        .append(_Constant.SPACE);
-                columnDefinition(field, builder);
-                continue;
-            }
-            final String defaultValue;
-            defaultValue = field.defaultValue();
-            builder.append("ALTER COLUMN ");
-            dialect.identifier(field.columnName(), builder);
-            if (defaultValue.length() == 0) {
-                builder.append(" DROP DEFAULT");
-            } else if (Character.isWhitespace(defaultValue.charAt(0))) {
-                defaultStartWithWhiteSpace(field);
-                return;
-            } else if (checkDefaultComplete(field, defaultValue)) {
-                builder.append(" SET DEFAULT ")
-                        .append(defaultValue);
-            }//no else,checkDefaultComplete method have handled.
-
-        }//for
-
-        sqlList.add(builder.toString());
     }
 
 

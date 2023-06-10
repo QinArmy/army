@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.annotation.GeneratorType;
 import io.army.mapping.NoCastTextType;
 import io.army.meta.*;
+import io.army.schema._FieldResult;
 import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -15,9 +16,31 @@ import java.util.Set;
 
 public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDialect {
 
-    protected static final String SPACE_UNSIGNED = " UNSIGNED";
+    /**
+     * non-static
+     */
+    protected final String SPACE_UNSIGNED = " UNSIGNED";
 
-    protected static final String SPACE_COMMENT = " COMMENT";
+    /**
+     * non-static
+     */
+    protected final String SPACE_COMMENT = " COMMENT";
+
+    /**
+     * non-static
+     */
+    protected final String COMMA_PRIMARY_KEY = " ,\n\tPRIMARY KEY";
+
+    /**
+     * non-static
+     */
+    protected final String COMMA_UNIQUE = " ,\n\tUNIQUE";
+
+    /**
+     * non-static
+     */
+    protected final String COMMA_INDEX = " ,\n\tINDEX";
+
 
     protected final List<String> errorMsgList = _Collections.arrayList();
 
@@ -36,20 +59,20 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
     }
 
     @Override
-    public final void dropTable(List<TableMeta<?>> tableList, List<String> sqlList) {
+    public final void dropTable(List<TableMeta<?>> tableList, final List<String> sqlList) {
         final int size = tableList.size();
         if (size == 0) {
             return;
         }
-        final StringBuilder builder = new StringBuilder(size * 10);
-        builder.append("DROP TABLE IF EXISTS ");
-        for (int i = 0; i < size; i++) {
-            if (i > 0) {
-                builder.append(_Constant.SPACE_COMMA_SPACE);
-            }
-            this.parser.identifier(tableList.get(i).tableName(), builder);
+        StringBuilder builder;
+
+        for (TableMeta<?> tableMeta : tableList) {
+            builder = new StringBuilder();
+            builder.append("DROP TABLE IF EXISTS ");
+            this.parser.safeObjectName(tableMeta, builder);
+            sqlList.add(builder.toString());
         }
-        sqlList.add(builder.toString());
+
     }
 
     @Override
@@ -108,22 +131,74 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
         FieldMeta<?> field;
         for (int i = 0; i < fieldSize; i++) {
             field = fieldList.get(i);
-            if (i > 0) {
-                if (field.tableMeta() != table) {
-                    throw new IllegalArgumentException("fieldList error");
-                }
-                builder.append(" ,\n\t");
-            } else {
+            if (i == 0) {
                 table = field.tableMeta();
-                this.parser.safeObjectName(table, builder)
-                        .append(" ADD COLUMN (\n\t");
+                this.parser.safeObjectName(table, builder);
+            } else if (field.tableMeta() != table) {
+                throw new IllegalArgumentException("fieldList error");
+            } else {
+                builder.append(_Constant.SPACE_COMMA);
             }
-            //TODO 新增的 时间类型列应该有默认值,否则 mysql 会以 00000-00-00 作为默认值.
+            builder.append("\n\tADD COLUMN");
             this.columnDefinition(field, builder);
         }
-        builder.append("\n)");
+
         sqlList.add(builder.toString());
     }
+
+
+    @Override
+    public final void modifyColumn(final List<_FieldResult> resultList, final List<String> sqlList) {
+        final int size = resultList.size();
+        if (size == 0) {
+            return;
+        }
+        final StringBuilder builder = new StringBuilder(128)
+                .append("ALTER TABLE ");
+        final _ArmyDialectParser dialect = this.parser;
+        TableMeta<?> table = null;
+        FieldMeta<?> field;
+        _FieldResult result;
+
+        for (int i = 0; i < size; i++) {
+            result = resultList.get(i);
+            field = result.field();
+            if (i == 0) {
+                table = field.tableMeta();
+                dialect.safeObjectName(table, builder);
+                //   .append("\n\t");
+            } else if (field.tableMeta() != table) {
+                throw new IllegalArgumentException("resultList error.");
+            } else {
+                builder.append(" ,\n\t");
+            }
+
+            if (result.containComment() || result.containSqlType() || result.containNullable()) {
+                builder.append("CHANGE COLUMN ");
+                dialect.identifier(field.columnName(), builder)
+                        .append(_Constant.SPACE);
+                columnDefinition(field, builder);
+                continue;
+            }
+            final String defaultValue;
+            defaultValue = field.defaultValue();
+            builder.append("ALTER COLUMN ");
+            dialect.identifier(field.columnName(), builder);
+            if (defaultValue.length() == 0) {
+                builder.append(" DROP DEFAULT");
+            } else if (Character.isWhitespace(defaultValue.charAt(0))) {
+                defaultStartWithWhiteSpace(field);
+                return;
+            } else if (checkDefaultComplete(field, defaultValue)) {
+                builder.append(" SET DEFAULT ")
+                        .append(defaultValue);
+            }//no else,checkDefaultComplete method have handled.
+
+        }//for
+
+        sqlList.add(builder.toString());
+    }
+
 
     @Override
     public final <T> void createIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
@@ -200,6 +275,10 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
 
 
     protected final void columnDefinition(final FieldMeta<?> field, final StringBuilder builder) {
+        final int length;
+        if ((length = builder.length()) > 0 && !Character.isWhitespace(builder.charAt(length - 1))) {
+            builder.append(_Constant.SPACE);
+        }
         this.parser.safeObjectName(field, builder)
                 .append(_Constant.SPACE);
         final SqlType sqlType;
@@ -261,21 +340,21 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
         this.parser.literal(NoCastTextType.INSTANCE, object.comment(), builder);
     }
 
+    protected void modifiyColumnDefinition(_FieldResult result, StringBuilder builder) {
 
-    /**
-     * non-static
-     */
-    protected final String COMMA_PRIMARY_KEY = " ,\n\tPRIMARY KEY";
+    }
 
-    /**
-     * non-static
-     */
-    protected final String COMMA_UNIQUE = " ,\n\tUNIQUE";
+    protected void dropColumnDefault(FieldMeta<?> field, StringBuilder builder) {
 
-    /**
-     * non-static
-     */
-    protected final String COMMA_INDEX = " ,\n\tINDEX";
+    }
+
+    protected void addColumnDefault(FieldMeta<?> field, StringBuilder builder) {
+
+    }
+
+    protected void modifyColumnComment(FieldMeta<?> field, StringBuilder builder) {
+
+    }
 
 
     protected final <T> void appendIndexInTableDef(final IndexMeta<T> index, final StringBuilder builder) {
