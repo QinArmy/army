@@ -74,8 +74,8 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final MySQLDdl createDdlDialect() {
-        return MySQLDdl.create(this);
+    protected final MySQLDdlParser createDdlDialect() {
+        return MySQLDdlParser.create(this);
     }
 
     @Override

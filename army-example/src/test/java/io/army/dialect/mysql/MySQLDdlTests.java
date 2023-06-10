@@ -21,12 +21,12 @@ public class MySQLDdlTests {
     @Test
     public void createTable() {
         final List<String> sqlList = new ArrayList<>();
-        MySQLDdl ddl;
+        MySQLDdlParser ddl;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
             ddl.createTable(PillUser_.T, sqlList);
 
             List<String> errorList;
@@ -51,13 +51,13 @@ public class MySQLDdlTests {
     @Test
     public void addColumn() {
         final List<String> sqlList = new ArrayList<>();
-        MySQLDdl ddl;
+        MySQLDdlParser ddl;
         final TableMeta<?> table = PillUser_.T;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
             List<?> fieldList = table.fieldList();
             ddl.addColumn((List<FieldMeta<?>>) fieldList, sqlList);
             List<String> errorList;
@@ -79,12 +79,12 @@ public class MySQLDdlTests {
     @Test
     public void modifyColumn() {
         final List<String> sqlList = new ArrayList<>();
-        MySQLDdl ddl;
+        MySQLDdlParser ddl;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
 
             List<_FieldResult> resultList = new ArrayList<>();
             resultList.add(new MockFieldResult(PillUser_.nickName, false, true, false, false));
@@ -113,13 +113,13 @@ public class MySQLDdlTests {
     @Test
     public void createIndex() {
         final List<String> sqlList = new ArrayList<>();
-        MySQLDdl ddl;
+        MySQLDdlParser ddl;
         final TableMeta<?> table = PillUser_.T;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
             ddl.createIndex(table, Collections.singletonList("idx_identity_id"), sqlList);
             List<String> errorList;
             errorList = ddl.errorMsgList();
@@ -140,13 +140,13 @@ public class MySQLDdlTests {
     @Test
     public void changeIndex() {
         final EnumMap<MySQLDialect, List<String>> sqlMap = new EnumMap<>(MySQLDialect.class);
-        MySQLDdl ddl;
+        MySQLDdlParser ddl;
         final TableMeta<?> table = PillUser_.T;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
 
             final List<String> sqlList = new ArrayList<>();
             sqlMap.put(dialect, sqlList);
@@ -176,13 +176,13 @@ public class MySQLDdlTests {
     @Test
     public void dropIndex() {
         final EnumMap<MySQLDialect, List<String>> sqlMap = new EnumMap<>(MySQLDialect.class);
-        MySQLDdl ddl;
+        MySQLDdlParser ddl;
         final TableMeta<?> table = PillUser_.T;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
                 continue;
             }
-            ddl = new MySQLDdl((MySQLParser) _MockDialects.from(dialect));
+            ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
 
             final List<String> sqlList = new ArrayList<>();
             sqlMap.put(dialect, sqlList);
@@ -241,7 +241,7 @@ public class MySQLDdlTests {
         }
 
         @Override
-        public boolean defaultValue() {
+        public boolean containDefault() {
             return this.defaultValue;
         }
 

@@ -56,6 +56,9 @@ public class PostgreFullType extends BaseVersionDomain<PostgreFullType> {
     private OffsetDateTime myOffsetDateTime6;
 
 
+    @Column(comment = "my month") // no default value
+    private Month month;
+
 
     /*-------------------below array-------------------*/
 
@@ -197,6 +200,15 @@ public class PostgreFullType extends BaseVersionDomain<PostgreFullType> {
 
     public PostgreFullType setMyIntegerArray(Integer[] myIntegerArray) {
         this.myIntegerArray = myIntegerArray;
+        return this;
+    }
+
+    public Month getMonth() {
+        return month;
+    }
+
+    public PostgreFullType setMonth(Month month) {
+        this.month = month;
         return this;
     }
 }

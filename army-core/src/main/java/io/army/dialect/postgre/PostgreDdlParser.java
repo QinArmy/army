@@ -8,6 +8,7 @@ import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
+import io.army.schema._FieldResult;
 import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
@@ -32,9 +33,69 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     }
 
 
-
     @Override
     public <T> void changeIndex(TableMeta<T> table, List<String> indexNameList, List<String> sqlList) {
+
+    }
+
+    @Override
+    protected void doModifyColumn(final _FieldResult result, final StringBuilder builder) {
+        appendSpaceIfNeed(builder);
+
+        final FieldMeta<?> field;
+        field = result.field();
+        final String safeColumnName, defaultValue;
+        safeColumnName = this.parser.safeObjectName(field);
+
+        int count = 0;
+        if (result.containSqlType()) {
+            builder.append("\n\t")
+                    .append(ALTER_COLUMN_SPACE)
+                    .append(safeColumnName)
+                    .append(" SET DATA TYPE ");
+
+            final SqlType sqlType;
+            sqlType = field.mappingType().map(this.serverMeta);
+            if (field.generatorType() == GeneratorType.POST) {
+                postDataType(field, sqlType, builder);
+            } else {
+                dataType(field, sqlType, builder);
+            }
+
+            count++;
+        }
+
+        if (result.containNullable()) {
+            if (count > 0) {
+                builder.append(_Constant.SPACE_COMMA);
+            }
+            builder.append("\n\t")
+                    .append(ALTER_COLUMN_SPACE)
+                    .append(safeColumnName);
+            if (field.nullable()) {
+                builder.append(" DROP");
+            } else {
+                builder.append(_Constant.SPACE_SET);
+            }
+            builder.append(_Constant.SPACE_NOT_NULL);
+
+            count++;
+        }
+
+        if (result.containDefault()) {
+            if (count > 0) {
+                builder.append(_Constant.SPACE_COMMA);
+            }
+            builder.append("\n\t")
+                    .append(ALTER_COLUMN_SPACE)
+                    .append(safeColumnName);
+            if (!_StringUtils.hasText((defaultValue = field.defaultValue()))) {
+                builder.append(SPACE_DROP_DEFAULT);
+            } else if (checkDefaultComplete(field, defaultValue)) {
+                builder.append(SPACE_SET_DEFAULT_SPACE)
+                        .append(defaultValue);
+            }
+        }
 
     }
 
@@ -86,7 +147,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     }
 
     @Override
-    protected void appendComment(final DatabaseObject object, final StringBuilder builder) {
+    protected void appendOuterComment(final DatabaseObject object, final StringBuilder builder) {
         builder.append(SPACE_COMMENT)
                 .append(_Constant.SPACE_ON);
 

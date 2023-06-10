@@ -11,7 +11,7 @@ public interface _FieldResult {
 
     boolean containSqlType();
 
-    boolean defaultValue();
+    boolean containDefault();
 
     boolean containNullable();
 
@@ -31,7 +31,7 @@ public interface _FieldResult {
 
         Builder nullable(boolean nullable);
 
-        void comment(boolean comment);
+        Builder comment(boolean comment);
 
         boolean hasDifference();
 

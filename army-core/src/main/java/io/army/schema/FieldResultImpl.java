@@ -38,7 +38,7 @@ final class FieldResultImpl implements _FieldResult {
     }
 
     @Override
-    public boolean defaultValue() {
+    public boolean containDefault() {
         return this.defaultExp;
     }
 
@@ -103,8 +103,9 @@ final class FieldResultImpl implements _FieldResult {
         }
 
         @Override
-        public void comment(boolean comment) {
+        public Builder comment(boolean comment) {
             this.comment = comment;
+            return this;
         }
 
         @Override

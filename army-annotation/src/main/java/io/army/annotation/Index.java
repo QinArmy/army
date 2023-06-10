@@ -28,6 +28,8 @@ public @interface Index {
      */
     boolean unique() default false;
 
+    /*-------------------TODO add FULLTEXT index and SPATIAL index -------------------*/
+
     String type() default "";
 
 }

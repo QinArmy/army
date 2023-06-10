@@ -9,10 +9,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDialect {
 
@@ -40,6 +37,21 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
      * non-static
      */
     protected final String COMMA_INDEX = " ,\n\tINDEX";
+
+    /**
+     * non-static
+     */
+    protected final String ALTER_COLUMN_SPACE = "ALTER COLUMN ";
+
+    /**
+     * non-static
+     */
+    protected final String SPACE_DROP_DEFAULT = " DROP DEFAULT";
+
+    /**
+     * non-static
+     */
+    protected final String SPACE_SET_DEFAULT_SPACE = " SET DEFAULT ";
 
 
     protected final List<String> errorMsgList = _Collections.arrayList();
@@ -155,48 +167,64 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
         }
         final StringBuilder builder = new StringBuilder(128)
                 .append("ALTER TABLE ");
-        final _ArmyDialectParser dialect = this.parser;
+
+        switch (this.parser.database) {
+            case Postgre:
+                builder.append("IF EXISTS ");
+                break;
+            case MySQL:
+            case Oracle:
+            case H2:
+            default:
+        }
         TableMeta<?> table = null;
         FieldMeta<?> field;
         _FieldResult result;
 
+        List<FieldMeta<?>> commentFieldList = null;
         for (int i = 0; i < size; i++) {
             result = resultList.get(i);
             field = result.field();
             if (i == 0) {
                 table = field.tableMeta();
-                dialect.safeObjectName(table, builder);
+                this.parser.safeObjectName(table, builder);
                 //   .append("\n\t");
             } else if (field.tableMeta() != table) {
                 throw new IllegalArgumentException("resultList error.");
             } else {
-                builder.append(" ,\n\t");
+                builder.append(_Constant.SPACE_COMMA);
             }
+            doModifyColumn(result, builder);
 
-            if (result.containComment() || result.containSqlType() || result.containNullable()) {
-                builder.append("CHANGE COLUMN ");
-                dialect.identifier(field.columnName(), builder)
-                        .append(_Constant.SPACE);
-                columnDefinition(field, builder);
-                continue;
+            switch (this.parser.database) {
+                case Postgre: {
+                    if (result.containComment()) {
+                        if (commentFieldList == null) {
+                            commentFieldList = new ArrayList<>();
+                        }
+                        commentFieldList.add(field);
+                    }
+                }
+                break;
+                case MySQL:
+                case Oracle:
+                case H2:
+                default:
             }
-            final String defaultValue;
-            defaultValue = field.defaultValue();
-            builder.append("ALTER COLUMN ");
-            dialect.identifier(field.columnName(), builder);
-            if (defaultValue.length() == 0) {
-                builder.append(" DROP DEFAULT");
-            } else if (Character.isWhitespace(defaultValue.charAt(0))) {
-                defaultStartWithWhiteSpace(field);
-                return;
-            } else if (checkDefaultComplete(field, defaultValue)) {
-                builder.append(" SET DEFAULT ")
-                        .append(defaultValue);
-            }//no else,checkDefaultComplete method have handled.
 
         }//for
 
         sqlList.add(builder.toString());
+
+        if (commentFieldList != null) {
+            StringBuilder commentBuilder;
+            for (FieldMeta<?> f : commentFieldList) {
+                commentBuilder = new StringBuilder();
+                appendOuterComment(f, commentBuilder);
+                sqlList.add(commentBuilder.toString());
+            }
+        }
+
     }
 
 
@@ -307,7 +335,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
         }
         switch (this.parser.database) {
             case MySQL:
-                appendComment(field, builder);
+                appendOuterComment(field, builder);
                 break;
             case H2:
             case Oracle:
@@ -324,6 +352,13 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
         this.errorMsgList.add(String.format("%s start with white space.", field));
     }
 
+    protected final void appendSpaceIfNeed(StringBuilder builder) {
+        final int length;
+        if ((length = builder.length()) > 0 && !Character.isWhitespace(builder.charAt(length - 1))) {
+            builder.append(_Constant.SPACE);
+        }
+    }
+
 
     protected abstract void dataType(FieldMeta<?> field, SqlType type, StringBuilder builder);
 
@@ -333,28 +368,15 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
 
     protected abstract void appendPostGenerator(final FieldMeta<?> field, final StringBuilder builder);
 
-    protected void appendComment(final DatabaseObject object, final StringBuilder builder) {
+    protected void appendOuterComment(final DatabaseObject object, final StringBuilder builder) {
 
         builder.append(SPACE_COMMENT)
                 .append(_Constant.SPACE);
         this.parser.literal(NoCastTextType.INSTANCE, object.comment(), builder);
     }
 
-    protected void modifiyColumnDefinition(_FieldResult result, StringBuilder builder) {
 
-    }
-
-    protected void dropColumnDefault(FieldMeta<?> field, StringBuilder builder) {
-
-    }
-
-    protected void addColumnDefault(FieldMeta<?> field, StringBuilder builder) {
-
-    }
-
-    protected void modifyColumnComment(FieldMeta<?> field, StringBuilder builder) {
-
-    }
+    protected abstract void doModifyColumn(_FieldResult result, StringBuilder builder);
 
 
     protected final <T> void appendIndexInTableDef(final IndexMeta<T> index, final StringBuilder builder) {
@@ -603,12 +625,12 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlDia
         StringBuilder commentBuilder;
 
         commentBuilder = new StringBuilder();
-        this.appendComment(table, commentBuilder);
+        this.appendOuterComment(table, commentBuilder);
         sqlList.add(commentBuilder.toString());
 
         for (FieldMeta<T> field : table.fieldList()) {
             commentBuilder = new StringBuilder(30);
-            this.appendComment(field, commentBuilder);
+            this.appendOuterComment(field, commentBuilder);
             sqlList.add(commentBuilder.toString());
         }
 

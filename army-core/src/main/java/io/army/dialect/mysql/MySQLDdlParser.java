@@ -5,20 +5,22 @@ import io.army.dialect._DdlParser;
 import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
+import io.army.schema._FieldResult;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.struct.TextEnum;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.List;
 
-final class MySQLDdl extends _DdlParser<MySQLParser> {
+final class MySQLDdlParser extends _DdlParser<MySQLParser> {
 
-    static MySQLDdl create(MySQLParser dialect) {
-        return new MySQLDdl(dialect);
+    static MySQLDdlParser create(MySQLParser dialect) {
+        return new MySQLDdlParser(dialect);
     }
 
-    MySQLDdl(MySQLParser dialect) {
+    MySQLDdlParser(MySQLParser dialect) {
         super(dialect);
     }
 
@@ -27,7 +29,7 @@ final class MySQLDdl extends _DdlParser<MySQLParser> {
         final StringBuilder builder = new StringBuilder()
                 .append("ALTER TABLE ");
         this.parser.safeObjectName(table, builder);
-        appendComment(table, builder);
+        appendOuterComment(table, builder);
 
     }
 
@@ -176,7 +178,34 @@ final class MySQLDdl extends _DdlParser<MySQLParser> {
     @Override
     protected void appendTableOption(final TableMeta<?> table, final StringBuilder builder) {
         builder.append(" ENGINE = InnoDB CHARACTER SET  = 'utf8mb4'");
-        appendComment(table, builder);
+        appendOuterComment(table, builder);
+    }
+
+
+    @Override
+    protected void doModifyColumn(final _FieldResult result, final StringBuilder builder) {
+        appendSpaceIfNeed(builder);
+
+        final FieldMeta<?> field;
+        field = result.field();
+        final String defaultValue;
+        if (result.containSqlType() || result.containNullable() || result.containComment()) {
+            builder.append("MODIFY COLUMN ");
+            this.parser.safeObjectName(field, builder);
+            columnDefinition(field, builder);
+        } else if (!result.containDefault()) {
+            //no bug,never here
+            throw new IllegalArgumentException();
+        } else if (!_StringUtils.hasText((defaultValue = field.defaultValue()))) {
+            builder.append(ALTER_COLUMN_SPACE);
+            this.parser.safeObjectName(field, builder);
+            builder.append(SPACE_DROP_DEFAULT);
+        } else if (checkDefaultComplete(field, defaultValue)) {
+            builder.append(ALTER_COLUMN_SPACE)
+                    .append(SPACE_SET_DEFAULT_SPACE)
+                    .append(defaultValue);
+        }
+
     }
 
     private void setType(final FieldMeta<?> field, final StringBuilder builder) {
