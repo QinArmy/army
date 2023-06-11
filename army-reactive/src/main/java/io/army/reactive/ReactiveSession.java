@@ -3,7 +3,7 @@ package io.army.reactive;
 import io.army.criteria.*;
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
-import io.army.session.GenericSession;
+import io.army.session.Session;
 import io.army.session.SessionException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public interface ReactiveSession extends GenericSession {
+public interface ReactiveSession extends Session {
 
     @Override
     SessionFactory sessionFactory();

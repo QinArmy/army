@@ -5,9 +5,17 @@ import io.army.session.SessionException;
 import io.army.tx.Isolation;
 
 /**
+ * <p>
+ * This interface representing blocking way local session.
+ * </p>
+ *
  * @see LocalSessionFactory
+ * @since 1.0
  */
 public interface LocalSession extends SyncSession, AutoCloseable {
+
+    @Override
+    LocalSessionFactory sessionFactory();
 
 
     LocalTransaction currentTransaction() throws SessionException;

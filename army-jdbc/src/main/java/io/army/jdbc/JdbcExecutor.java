@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 abstract class JdbcExecutor implements StmtExecutor {
 
@@ -70,6 +71,25 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     @Override
     public final <T> List<T> returnInsert(Stmt stmt, int txTimeout, Class<T> resultClass) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> List<T> returningUpdate(Stmt stmt, int txTimeout, Class<T> resultClass) throws DataAccessException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Map<String, Object>> returnInsertAsMap(Stmt stmt, int txTimeout,
+                                                       Supplier<Map<String, Object>> mapConstructor)
+            throws DataAccessException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Map<String, Object>> returningUpdateAsMap(Stmt stmt, int txTimeout,
+                                                          Supplier<Map<String, Object>> mapConstructor)
+            throws DataAccessException {
         throw new UnsupportedOperationException();
     }
 
@@ -143,8 +163,8 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <T> List<T> select(final SimpleStmt stmt, final int timeout, final Class<T> resultClass,
-                                    final Supplier<List<T>> listConstructor) {
+    public final <T> List<T> query(final SimpleStmt stmt, final int timeout, final Class<T> resultClass,
+                                   final Supplier<List<T>> listConstructor) {
 
         final List<? extends Selection> selectionList = stmt.selectionList();
         try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
@@ -204,7 +224,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     @Override
-    public final List<Map<String, Object>> selectAsMap(SimpleStmt stmt, int timeout
+    public final List<Map<String, Object>> queryAsMap(SimpleStmt stmt, int timeout
             , Supplier<Map<String, Object>> mapConstructor, Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException {
 
@@ -232,6 +252,22 @@ abstract class JdbcExecutor implements StmtExecutor {
             throw JdbcExceptions.wrap(e);
         }
 
+    }
+
+    @Override
+    public <R> Stream<R> queryStream(final SimpleStmt stmt, final Class<R> resultClass,
+                                     final boolean serverStream, final int fetchSize,
+                                     final @Nullable Comparable<? super R> comparator, final boolean parallel) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Stream<Map<String, Object>> queryMapStream(final SimpleStmt stmt,
+                                                      final Supplier<Map<String, Object>> mapConstructor,
+                                                      final boolean serverStream, final int fetchSize,
+                                                      final @Nullable Comparable<Map<String, Object>> comparator,
+                                                      final boolean parallel) {
+        return null;
     }
 
     @Override

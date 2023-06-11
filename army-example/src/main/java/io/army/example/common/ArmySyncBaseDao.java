@@ -1,7 +1,6 @@
 package io.army.example.common;
 
 import io.army.criteria.Expression;
-import io.army.criteria.NullMode;
 import io.army.criteria.Select;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.impl.SQLs;
@@ -28,30 +27,23 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
 
     @Override
     public <T extends Domain> void save(final T domain) {
-        this.sessionContext.currentSession()
-                .save(domain, NullMode.INSERT_DEFAULT);
+        this.sessionContext.currentSession().save(domain);
     }
 
+
     @Override
-    public <T extends Domain> void batchSave(List<T> domainList) {
-        this.sessionContext.currentSession()
-                .batchSave(domainList, NullMode.INSERT_DEFAULT);
+    public <T extends Domain> void batchSave(final List<T> domainList) {
+        this.sessionContext.currentSession().batchSave(domainList);
     }
 
     @Override
     public <T extends Domain> T get(Class<T> domainClass, Object id) {
-        final SyncSession session;
-        session = this.sessionContext.currentSession();
-        return session.get(session.tableMeta(domainClass), id);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public <T extends Domain> T getByUnique(Class<T> domainClass, String fieldName, Object fieldValue) {
-        final SyncSession session;
-        session = this.sessionContext.currentSession();
-        final TableMeta<T> table;
-        table = session.tableMeta(domainClass);
-        return session.getByUnique(table, table.getUniqueField(fieldName), fieldValue);
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -74,7 +66,7 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
 
     @Override
     public void flush() {
-        this.sessionContext.currentSession().flush();
+        //no-op
     }
 
 

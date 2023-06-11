@@ -727,39 +727,39 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static SessionException readOnlySession(GenericSession session) {
+    public static SessionException readOnlySession(Session session) {
         String m;
         m = String.format("%s of %s is read only,don't support DML.", session.sessionFactory(), session);
         return new ReadOnlySessionException(m);
     }
 
-    public static SessionException readOnlyTransaction(GenericSession session) {
+    public static SessionException readOnlyTransaction(Session session) {
         String m;
         m = String.format("%s of %s in read only transaction,don't support DML.", session.sessionFactory(), session);
         return new ReadOnlyTransactionException(m);
     }
 
-    public static SessionException sessionClosed(GenericSession session) {
+    public static SessionException sessionClosed(Session session) {
         String m;
         m = String.format("%s of %s have closed.", session.sessionFactory(), session);
         return new SessionClosedException(m);
     }
 
-    public static SessionException childDmlNoTransaction(GenericSession session, ChildTableMeta<?> table) {
+    public static SessionException childDmlNoTransaction(Session session, ChildTableMeta<?> table) {
         String m;
         m = String.format("%s of %s no transaction,so you don't execute dml about child table %s."
                 , session.sessionFactory(), session, table);
         return new ChildDmlNoTractionException(m);
     }
 
-    public static SessionException dontSupportNonVisible(GenericSession session, Visible visible) {
+    public static VisibleModeException dontSupportNonVisible(Session session, Visible visible) {
         String m;
         m = String.format("%s of %s don't support %s[%s]."
                 , session.sessionFactory(), session, Visible.class.getName(), visible);
-        return new NotSupportNonVisibleException(m);
+        return new VisibleModeException(m);
     }
 
-    public static SessionException dontSupportSubQueryInsert(GenericSession session) {
+    public static SessionException dontSupportSubQueryInsert(Session session) {
         String m;
         m = String.format("%s of %s don't support sub query insert."
                 , session.sessionFactory(), session);
@@ -808,7 +808,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static NotMatchRowException notMatchRow(GenericSession session, TableMeta<?> table, Object id) {
+    public static NotMatchRowException notMatchRow(Session session, TableMeta<?> table, Object id) {
         String m = String.format("%s update failure,not found match row for %s and id %s.", session, table, id);
         return new NotMatchRowException(m);
     }

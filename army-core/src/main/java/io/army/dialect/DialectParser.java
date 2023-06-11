@@ -39,7 +39,7 @@ public interface DialectParser {
         throw new UnsupportedOperationException();
     }
 
-    default Stmt dialectDql(DqlStatement statement, Visible visible) {
+    default SimpleStmt dialectDql(DqlStatement statement, Visible visible) {
         throw new UnsupportedOperationException();
     }
 

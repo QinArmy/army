@@ -1,12 +1,13 @@
 package io.army.session;
 
 
+import io.army.criteria.Visible;
 import io.army.meta.TableMeta;
 
 /**
  *
  */
-public interface GenericSession {
+public interface Session {
 
     boolean isReadOnlyStatus();
 
@@ -17,6 +18,8 @@ public interface GenericSession {
     boolean hasTransaction();
 
     String name();
+
+    Visible visible();
 
     SessionFactory sessionFactory();
 

@@ -1,5 +1,6 @@
 package io.army.sync;
 
+import io.army.criteria.Visible;
 import io.army.lang.Nullable;
 import io.army.session.*;
 
@@ -7,7 +8,7 @@ import io.army.session.*;
  * This interface representing single database(or single schema).
  * This interface run only below:
  */
-public interface LocalSessionFactory extends SessionFactory, AutoCloseable {
+public interface LocalSessionFactory extends SyncSessionFactory, AutoCloseable {
 
 
     SessionContext currentSessionContext() throws SessionFactoryException;
@@ -21,7 +22,7 @@ public interface LocalSessionFactory extends SessionFactory, AutoCloseable {
      * <p/>
      * It is the responsibility of the application to ensure that there are no
      * open {@link SessionFactory sessions} before calling this method asType the impact
-     * on those {@link GenericSession sessions} is indeterminate.
+     * on those {@link Session sessions} is indeterminate.
      * <p/>
      * No-ops if already {@link #isClosed closed}.
      *
@@ -41,6 +42,8 @@ public interface LocalSessionFactory extends SessionFactory, AutoCloseable {
         SessionBuilder readonly(boolean readonly);
 
         SessionBuilder queryInsertMode(QueryInsertMode mode);
+
+        SessionBuilder visibleMode(Visible visible);
 
         LocalSession build() throws SessionException;
 

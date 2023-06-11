@@ -2,11 +2,11 @@ package io.army.tx;
 
 
 import io.army.lang.Nullable;
-import io.army.session.GenericSession;
+import io.army.session.Session;
 
 public interface Transaction {
 
-    GenericSession session();
+    Session session();
 
     @Nullable
     String name();

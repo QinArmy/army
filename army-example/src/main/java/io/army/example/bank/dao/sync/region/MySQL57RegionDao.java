@@ -1,7 +1,7 @@
 package io.army.example.bank.dao.sync.region;
 
 import io.army.criteria.Expression;
-import io.army.criteria.InsertStatement;
+import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.Select;
 import io.army.criteria.impl.MySQLs;
@@ -48,7 +48,7 @@ public class MySQL57RegionDao extends BankSyncBaseDao implements BankRegionDao {
                 .where(ChinaProvince_.provincialCapital::equal, SQLs::literal, ChinaRegion_.NAME)
                 .asQuery();
 
-        final InsertStatement stmt;
+        final Insert stmt;
         stmt = SQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)

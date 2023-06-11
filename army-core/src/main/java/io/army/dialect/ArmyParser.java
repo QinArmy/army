@@ -240,8 +240,8 @@ abstract class ArmyParser implements DialectParser {
     }
 
     @Override
-    public final Stmt dialectDql(final DqlStatement statement, final Visible visible) {
-        return this.createDialectStmt(this.handleDialectDql(null, statement, visible));
+    public final SimpleStmt dialectDql(final DqlStatement statement, final Visible visible) {
+        throw new UnsupportedOperationException();
     }
 
 

@@ -1,15 +1,15 @@
 package io.army.sync;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.lang.Nullable;
-import io.army.meta.TableMeta;
-import io.army.meta.UniqueFieldMeta;
-import io.army.session.GenericSession;
-import io.army.session.SessionException;
+import io.army.session.Session;
+import io.army.session.VisibleModeException;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -23,70 +23,85 @@ import java.util.function.Supplier;
  *     </ul>
  * </p>
  */
-public interface SyncSession extends GenericSession {
+public interface SyncSession extends Session {
 
     @Override
-    LocalSessionFactory sessionFactory();
+    SyncSessionFactory sessionFactory();
+
 
     /**
      * @param <R> representing select result Java Type.
      */
     @Nullable
-    <R> R get(TableMeta<R> table, Object id);
+    <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass);
+
+    /**
+     * @param <R> representing select result Java Type.
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    @Nullable
+    <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, Visible visible);
+
+    @Nullable
+    Map<String, Object> queryOneAsMap(SimpleDqlStatement statement);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    @Nullable
+    Map<String, Object> queryOneAsMap(SimpleDqlStatement statement, Visible visible);
+
+    @Nullable
+    Map<String, Object> queryOneAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    @Nullable
+    Map<String, Object> queryOneAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    @Nullable
-    <R> R get(TableMeta<R> table, Object id, Visible visible);
+    <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass);
+
+
+    /**
+     * @param <R> representing select result Java Type.
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Visible visible);
+
 
     /**
      * @param <R> representing select result Java Type.
      */
-    @Nullable
-    <R> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value);
+    <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor);
 
-    @Nullable
-    <R> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value, Visible visible);
-
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    @Nullable
-    <R> R queryOne(DqlStatement statement, Class<R> resultClass);
-
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    @Nullable
-    <R> R queryOne(DqlStatement statement, Class<R> resultClass, Visible visible);
-
-    @Nullable
-    Map<String, Object> queryOneAsMap(DqlStatement statement);
-
-    @Nullable
-    Map<String, Object> queryOneAsMap(DqlStatement statement, Visible visible);
-
-    @Nullable
-    Map<String, Object> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor);
-
-    @Nullable
-    Map<String, Object> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
-
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> List<R> query(DqlStatement statement, Class<R> resultClass);
-
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor);
-
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> List<R> query(DqlStatement statement, Class<R> resultClass, Visible visible);
 
     /**
      * @param resultClass probably below type.
@@ -97,90 +112,282 @@ public interface SyncSession extends GenericSession {
      *                         <li>{@link io.army.bean.PairBean}</li>
      *                    </ul>
      * @param <R>         representing select result Java Type.
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
+    <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
 
 
-    List<Map<String, Object>> queryAsMap(DqlStatement statement);
-
-    List<Map<String, Object>> queryAsMap(DqlStatement statement, Visible visible);
-
-
-    List<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor);
-
-    List<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
-
-    <T> void save(T domain);
-
-    <T> void save(T domain, boolean optimizingParam);
-
-    <T> void save(T domain, Visible visible);
-
-    <T> void save(T domain, NullMode mode);
-
-    <T> void save(T domain, boolean preferLiteral, NullMode mode, Visible visible);
-
-    long update(DmlStatement dml);
-
-    long update(DmlStatement dml, Visible visible);
-
-    <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass);
-
-    <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Visible visible);
-
-    <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Supplier<List<R>> listConstructor);
+    List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement);
 
     /**
-     * @param resultClass probably below java type.
-     *                    <ul>
-     *                         <li>simple java type,eg: {@link java.lang.String} , {@link java.lang.Long}</li>
-     *                         <li>java bean</li>
-     *                         <li>{@link io.army.bean.FieldAccessBean}</li>
-     *                         <li>{@link io.army.bean.PairBean}</li>
-     *                    </ul>
-     * @param <R>         java type of result element
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
-
-    List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml);
-
-    List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Visible visible);
-
-    List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor);
-
-    List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Supplier<Map<String, Object>> mapConstructor
-            , Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
+    List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Visible visible);
 
 
-    <T> void batchSave(List<T> domainList);
+    List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
+                                         Supplier<List<Map<String, Object>>> listConstructor);
 
-    <T> void batchSave(List<T> domainList, boolean preferLiteral);
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
+                                         Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 
-    <T> void batchSave(List<T> domainList, Visible visible);
 
-    <T> void batchSave(List<T> domainList, NullMode mode);
 
-    <T> void batchSave(List<T> domainList, boolean preferLiteral, NullMode mode, Visible visible);
+    /*-------------------below queryStream -------------------*/
+
+    <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize);
+
+
+    <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream,
+                              int fetchSize, @Nullable Comparable<? super R> comparator);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize, Visible visible);
+
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream, int fetchSize,
+                              @Nullable Comparable<? super R> comparator, Visible visible);
+
+
+    /*-------------------below -------------------*/
+
+
+    <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize);
+
+
+    <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream,
+                                      int fetchSize, @Nullable Comparable<? super R> comparator);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize,
+                                      Visible visible);
+
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream,
+                                      int fetchSize, @Nullable Comparable<? super R> comparator, Visible visible);
+
+
+
+    /*-------------------below query map stream-------------------*/
+
+    Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
+                                               Supplier<Map<String, Object>> mapConstructor, int fetchSize);
+
+
+    Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
+                                               Supplier<Map<String, Object>> mapConstructor, boolean serverStream,
+                                               int fetchSize, @Nullable Comparable<Map<String, Object>> comparator);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
+                                               Supplier<Map<String, Object>> mapConstructor, int fetchSize,
+                                               Visible visible);
+
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
+                                               Supplier<Map<String, Object>> mapConstructor, boolean serverStream,
+                                               int fetchSize, @Nullable Comparable<Map<String, Object>> comparator,
+                                               Visible visible);
+
+
+    /*-------------------below -------------------*/
+
+
+    Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
+                                                       Supplier<Map<String, Object>> mapConstructor, int fetchSize);
+
+
+    Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
+                                                       Supplier<Map<String, Object>> mapConstructor,
+                                                       boolean serverStream, int fetchSize,
+                                                       @Nullable Comparable<Map<String, Object>> comparator);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
+                                                       Supplier<Map<String, Object>> mapConstructor,
+                                                       int fetchSize, Visible visible);
+
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
+                                                       Supplier<Map<String, Object>> mapConstructor,
+                                                       boolean serverStream, int fetchSize,
+                                                       @Nullable Comparable<Map<String, Object>> comparator,
+                                                       Visible visible);
+
+
+    long update(SimpleDmlStatement dml);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    long update(SimpleDmlStatement dml, Visible visible);
+
+    <T> long save(T domain);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    <T> long save(T domain, Visible visible);
 
     /**
      * @return a unmodifiable list
      */
-    List<Long> batchUpdate(NarrowDmlStatement dml);
+    List<Long> batchUpdate(BatchDmlStatement statement);
 
     /**
-     * @return a unmodifiable list
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    List<Long> batchUpdate(NarrowDmlStatement dml, Visible visible);
+    List<Long> batchUpdate(BatchDmlStatement statement, Visible visible);
 
-    MultiResult multiStmt(List<Statement> statementList);
 
-    MultiResult multiStmt(List<Statement> statementList, Visible visible);
+    <T> long batchSave(List<T> domainList);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    <T> long batchSave(List<T> domainList, Visible visible);
+
+    QueryResult batchQuery(BatchDqlStatement statement);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    QueryResult batchQuery(BatchDqlStatement statement, Visible visible);
+
+
+    MultiResult multiStmt(MultiStatement statement);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    MultiResult multiStmt(MultiStatement statement, Visible visible);
 
     MultiResult call(CallableStatement callable);
 
-    void flush() throws SessionException;
 
 }

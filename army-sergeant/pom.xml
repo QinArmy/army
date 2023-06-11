@@ -11,5 +11,21 @@
 
     <artifactId>army-sergeant</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>io.army</groupId>
+            <artifactId>army-struct</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.army</groupId>
+            <artifactId>army-sync</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.army</groupId>
+            <artifactId>army-reactive</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 
 </project>

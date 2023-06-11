@@ -1,5 +1,6 @@
 package io.army.env;
 
+import io.army.criteria.Visible;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
@@ -32,6 +33,10 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<NameMode> TABLE_NAME_MODE = new ArmyKey<>("table.name.mode", NameMode.class, NameMode.DEFAULT);
     public static final ArmyKey<NameMode> COLUMN_NAME_MODE = new ArmyKey<>("column.name.mode", NameMode.class, NameMode.DEFAULT);
+
+    public static final ArmyKey<Visible> VISIBLE_MODE = new ArmyKey<>("visible.mode", Visible.class, Visible.ONLY_VISIBLE);
+
+    public static final ArmyKey<String> VISIBLE_SESSION_WHITE_LIST = new ArmyKey<>("visible.session.white.list", String.class, null);
 
     public static final ArmyKey<QueryInsertMode> SUBQUERY_INSERT_MODE = new ArmyKey<>("subquery.insert.mode", QueryInsertMode.class, QueryInsertMode.ONLY_MIGRATION);
 

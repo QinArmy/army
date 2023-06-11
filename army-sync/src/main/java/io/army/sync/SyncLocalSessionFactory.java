@@ -1,5 +1,6 @@
 package io.army.sync;
 
+import io.army.criteria.Visible;
 import io.army.dialect.DialectEnv;
 import io.army.dialect.DialectParser;
 import io.army.dialect.DialectParserFactory;
@@ -38,10 +39,9 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
 
     private final SessionContext sessionContext;
 
-     private final boolean supportSavePoints;
+    private final boolean supportSavePoints;
 
     private boolean closed;
-
 
 
     SyncLocalSessionFactory(LocalSessionFactoryBuilder builder) throws SessionFactoryException {
@@ -206,6 +206,8 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
 
         boolean readonly;
 
+        Visible visible;
+
         private LocalSessionBuilder(SyncLocalSessionFactory sessionFactory) {
             this.sessionFactory = sessionFactory;
             this.readonly = sessionFactory.readonly;
@@ -226,6 +228,12 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
         @Override
         public SessionBuilder queryInsertMode(QueryInsertMode mode) {
             return null;
+        }
+
+        @Override
+        public SessionBuilder visibleMode(Visible visible) {
+            this.visible = visible;
+            return this;
         }
 
         @Override

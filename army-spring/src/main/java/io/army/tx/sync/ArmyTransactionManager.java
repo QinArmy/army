@@ -1,8 +1,8 @@
 package io.army.tx.sync;
 
 import io.army.criteria.*;
+import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.meta.TableMeta;
-import io.army.meta.UniqueFieldMeta;
 import io.army.session.SessionException;
 import io.army.sync.*;
 import org.springframework.beans.factory.BeanNameAware;
@@ -125,7 +125,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             //5. bind current session
             final SyncSession currentSession;
             if (this.wrapSession) {
-                currentSession = new CurrentSession(session);
+                throw new UnsupportedOperationException();
             } else {
                 currentSession = session;
             }
@@ -154,7 +154,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
                 logger.debug(String.format("Committing Army transaction on %s", session));
             }
             if (!tx.readOnly()) {
-                session.flush();
+
             }
             tx.commit();
         } catch (io.army.tx.TransactionException e) {
@@ -339,20 +339,16 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
         @Override
         public void flush() {
-            final LocalSession session = this.session;
-            if (session != null) {
-                try {
-                    session.flush();
-                } catch (SessionException e) {
-                    throw SpringUtils.convertSessionException(e);
-                }
-            }
+//            final LocalSession session = this.session;
+//            if (session != null) {
+//
+//            }
         }
 
     }//ArmyTransactionObject
 
 
-    private static final class CurrentSession extends _AbstractSyncSession {
+    private static abstract class CurrentSession extends _ArmySyncSession {
 
         private final LocalSession session;
 
@@ -370,6 +366,11 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         @Override
         public String name() {
             return this.session.name();
+        }
+
+        @Override
+        public Visible visible() {
+            return this.session.visible();
         }
 
         @Override
@@ -393,73 +394,43 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public void flush() throws SessionException {
-            this.session.flush();
-        }
-
-        @Override
         public <T> TableMeta<T> tableMeta(Class<T> domainClass) {
-            return this.session.tableMeta(domainClass);
+            return null;
         }
 
 
         @Override
-        public <R> R get(TableMeta<R> table, Object id, Visible visible) {
-            return this.session.get(table, id, visible);
+        public <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible) {
+            return null;
+        }
+
+
+        @Override
+        public List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
+            return null;
+        }
+
+
+        @Override
+        public long update(SimpleDmlStatement dml, Visible visible) {
+            return 0;
+        }
+
+
+        @Override
+        public List<Long> batchUpdate(BatchDmlStatement statement, Visible visible) {
+            return null;
+        }
+
+
+        @Override
+        public QueryResult batchQuery(BatchDqlStatement statement, Visible visible) {
+            return null;
         }
 
         @Override
-        public <R> R getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value
-                , Visible visible) {
-            return this.session.getByUnique(table, field, value, visible);
-        }
-
-        @Override
-        public <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible) {
-            return this.session.query(statement, resultClass, listConstructor, visible);
-        }
-
-        @Override
-        public List<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor
-                , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-            return this.session.queryAsMap(statement, mapConstructor, listConstructor, visible);
-        }
-
-        @Override
-        public <T> void save(T domain, boolean preferLiteral, NullMode mode, Visible visible) {
-            this.session.save(domain, preferLiteral, mode, visible);
-        }
-
-        @Override
-        public long update(DmlStatement dml, Visible visible) {
-            return this.session.update(dml, visible);
-        }
-
-        @Override
-        public <R> List<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Supplier<List<R>> listConstructor
-                , Visible visible) {
-            return this.session.returningUpdate(dml, resultClass, listConstructor, visible);
-        }
-
-        @Override
-        public List<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Supplier<Map<String, Object>> mapConstructor
-                , Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-            return this.session.returningUpdateAsMap(dml, mapConstructor, listConstructor, visible);
-        }
-
-        @Override
-        public <T> void batchSave(List<T> domainList, boolean preferLiteral, NullMode mode, Visible visible) {
-            this.session.batchSave(domainList, preferLiteral, mode, visible);
-        }
-
-        @Override
-        public List<Long> batchUpdate(NarrowDmlStatement dml, Visible visible) {
-            return this.session.batchUpdate(dml, visible);
-        }
-
-        @Override
-        public MultiResult multiStmt(List<Statement> statementList, Visible visible) {
-            return this.session.multiStmt(statementList, visible);
+        public MultiResult multiStmt(MultiStatement statement, Visible visible) {
+            return null;
         }
 
         @Override

@@ -61,6 +61,11 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
     }
 
     @Override
+    public Visible visible() {
+        return null;
+    }
+
+    @Override
     public <T> TableMeta<T> tableMeta(Class<T> domainClass) {
         return null;
     }

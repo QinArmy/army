@@ -1,6 +1,7 @@
 package io.army.criteria;
 
 import io.army.lang.Nullable;
+import io.army.util._Exceptions;
 
 public enum Visible {
 
@@ -25,5 +26,23 @@ public enum Visible {
         }
         return visibleEnm;
     }
+
+    public final boolean isSupport(final Visible visible) {
+        final boolean match;
+        switch (this) {
+            case ONLY_VISIBLE:
+            case ONLY_NON_VISIBLE:
+                match = visible == this;
+                break;
+            case BOTH:
+                match = true;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this);
+
+        }
+        return match;
+    }
+
 
 }
