@@ -17,6 +17,8 @@ import io.army.session.ChildInsertException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
+import io.army.sync.Commander;
+import io.army.sync.StreamOptions;
 import io.army.sync.executor.StmtExecutor;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
@@ -31,19 +33,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 abstract class JdbcExecutor implements StmtExecutor {
 
 
     final JdbcExecutorFactory factory;
 
-    final Connection conn;
+    private final Connection conn;
 
     Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
 
@@ -254,19 +255,64 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     }
 
-    @Override
-    public <R> Stream<R> queryStream(final SimpleStmt stmt, final Class<R> resultClass,
-                                     final boolean serverStream, final int fetchSize,
-                                     final @Nullable Comparable<? super R> comparator, final boolean parallel) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
-    public Stream<Map<String, Object>> queryMapStream(final SimpleStmt stmt,
-                                                      final Supplier<Map<String, Object>> mapConstructor,
-                                                      final boolean serverStream, final int fetchSize,
-                                                      final @Nullable Comparable<Map<String, Object>> comparator,
-                                                      final boolean parallel) {
+    public final <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass,
+                                           final StreamOptions options, final @Nullable Consumer<Commander> consumer) {
+
+        final List<SQLParam> paramGroup = stmt.paramGroup();
+
+        final String sql = stmt.sqlText();
+        final int paramSize;
+        paramSize = paramGroup.size();
+
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+
+            statement = createStreamStmt(sql, paramSize, options);
+            if (statement instanceof PreparedStatement) {
+                bindParameter((PreparedStatement) statement, paramGroup);
+            } else {
+                assert paramSize == 0;
+            }
+
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+
+            if (statement instanceof PreparedStatement) {
+                resultSet = ((PreparedStatement) statement).executeQuery();
+            } else {
+                resultSet = statement.executeQuery(sql);
+            }
+
+            final RowSpliterator<R> spliterator;
+            spliterator = new BeanRowSpliterator<>(this, statement, resultSet, stmt.selectionList(),
+                    stmt.hasOptimistic(), resultClass, options
+            );
+
+            if (consumer != null) {
+                final Commander commander;
+                if (options.parallel) {
+                    commander = new ParallelCommander(spliterator);
+                } else {
+                    commander = new SimpleCommander(spliterator);
+                }
+                consumer.accept(commander);
+            }
+            return StreamSupport.stream(spliterator, options.parallel);
+        } catch (Throwable e) {
+            throw handleError(e, resultSet, statement);
+        }
+
+    }
+
+
+    @Override
+    public Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
+                                                      Supplier<Map<String, Object>> mapConstructor,
+                                                      StreamOptions options, @Nullable Consumer<Commander> consumer) {
         return null;
     }
 
@@ -578,6 +624,43 @@ abstract class JdbcExecutor implements StmtExecutor {
     }
 
 
+    /**
+     * @see #queryStream(SimpleStmt, int, Class, StreamOptions, Consumer)
+     * @see #queryMapStream(SimpleStmt, int, Supplier, StreamOptions, Consumer)
+     */
+    private Statement createStreamStmt(final String sql, final int paramSize, final StreamOptions options)
+            throws SQLException {
+        final Statement statement;
+        if (paramSize > 0) {
+            statement = this.conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
+                    ResultSet.CLOSE_CURSORS_AT_COMMIT);
+        } else {
+            statement = this.conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
+                    ResultSet.CLOSE_CURSORS_AT_COMMIT);
+        }
+        if (options.serverStream) {
+            statement.setFetchSize(options.fetchSize);
+        } else switch (this.factory.serverDataBase) {
+            case MySQL:
+                statement.setFetchSize(Integer.MIN_VALUE);
+                break;
+            case Postgre:
+            case Oracle:
+            case H2:
+                statement.setFetchSize(options.fetchSize);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this.factory.serverDataBase);
+        }
+        return statement;
+
+    }
+
+
+
+
+
+
 
     /*################################## blow static method ##################################*/
 
@@ -632,6 +715,57 @@ abstract class JdbcExecutor implements StmtExecutor {
     }
 
 
+    private static ArmyException handleError(final Throwable error, final @Nullable ResultSet resultSet,
+                                             final @Nullable Statement statement)
+            throws ArmyException {
+
+        closeResultSetAndStatement(resultSet, statement);
+
+        final ArmyException e;
+        if (error instanceof ArmyException) {
+            e = (ArmyException) error;
+        } else if (error instanceof SQLException) {
+            e = JdbcExceptions.wrap((SQLException) error);
+        } else {
+            e = _Exceptions.unknownError(error.getMessage(), error);
+        }
+        return e;
+
+    }
+
+    private static void closeResultSetAndStatement(final @Nullable ResultSet resultSet,
+                                                   final @Nullable Statement statement) {
+        if (statement != null) {
+            if (resultSet == null) {
+                closeResource(statement);
+            } else {
+                try {
+                    closeResource(resultSet);
+                } finally {
+                    closeResource(statement);
+                }
+            }
+
+        } else if (resultSet != null) {
+            closeResource(resultSet);
+        }
+    }
+
+
+    private static void closeResource(final AutoCloseable resource)
+            throws ArmyException {
+        try {
+            resource.close();
+        } catch (SQLException e) {
+            throw JdbcExceptions.wrap(e);
+        } catch (Exception e) {
+            throw _Exceptions.unknownError(e.getMessage(), e);
+        } catch (Throwable e) {
+            throw new ArmyException("unknown error", e);
+        }
+
+    }
+
     private static ArmyException convertBeforeBindMethodError(MappingType mappingType) {
         String m = String.format("%s.convertBeforeBind(Object nonNull) return error.", mappingType);
         throw new ArmyException(m);
@@ -664,6 +798,165 @@ abstract class JdbcExecutor implements StmtExecutor {
         String m = String.format("insertedRows[%s] and generateKeys count[%s] not match.", insertedRows, generateIdCount);
         return new SQLException(m);
     }
+
+
+    private static abstract class RowSpliterator<R> implements Spliterator<R> {
+
+        final JdbcExecutor executor;
+
+        private final Statement statement;
+
+
+        private final ResultSet resultSet;
+
+        final List<? extends Selection> selectionList;
+
+        private final boolean hasOptimistic;
+
+        private final int fetchSize;
+
+        private final int splitSize;
+
+        private boolean closed;
+
+        private RowSpliterator(JdbcExecutor executor, Statement statement, ResultSet resultSet,
+                               List<? extends Selection> selectionList, boolean hasOptimistic, StreamOptions options) {
+            this.executor = executor;
+            this.statement = statement;
+            this.resultSet = resultSet;
+            this.selectionList = selectionList;
+
+            this.hasOptimistic = hasOptimistic;
+            this.fetchSize = options.fetchSize;
+            this.splitSize = options.splitSize;
+
+            assert this.fetchSize > 0 && this.splitSize > 0;
+
+        }
+
+        @Override
+        public final boolean tryAdvance(final Consumer<? super R> action) {
+            final ResultSet resultSet = this.resultSet;
+
+            boolean hasMore = !this.closed;
+
+            final int fetchSize = hasMore ? this.fetchSize : 0;
+            try {
+                for (int i = 0; i < fetchSize; i++) {
+                    if (!resultSet.next()) {
+                        hasMore = false;
+                        break;
+                    }
+                    action.accept(this.readOneRow(resultSet));
+                }
+
+                if (!hasMore) {
+                    this.closeStream();
+                }
+                return hasMore;
+            } catch (Throwable e) {
+                throw handleError(e, resultSet, this.statement);
+            }
+        }
+
+        @Override
+        public Spliterator<R> trySplit() {
+            return null;
+        }
+
+        @Override
+        public long estimateSize() {
+            return 0;
+        }
+
+        @Override
+        public int characteristics() {
+            return 0;
+        }
+
+
+        abstract R readOneRow(ResultSet resultSet);
+
+        final void closeStream() {
+            if (!this.closed) {
+                this.closed = true;
+                closeResultSetAndStatement(this.resultSet, this.statement);
+            }
+        }
+
+
+    }//RowSpliterator
+
+    private static final class BeanRowSpliterator<R> extends RowSpliterator<R> {
+
+        private final int selectionSize;
+
+        private final ObjectAccessor accessor;
+        private final Selection singleSelection;
+        private final Constructor<R> constructor;
+
+        private BeanRowSpliterator(JdbcExecutor executor, Statement statement, ResultSet resultSet,
+                                   List<? extends Selection> selectionList, boolean hasOptimistic, Class<R> resultClass,
+                                   StreamOptions options) {
+            super(executor, statement, resultSet, selectionList, hasOptimistic, options);
+            this.selectionSize = selectionList.size();
+
+            if (this.selectionSize == 1) {
+                this.singleSelection = selectionList.get(0);
+                this.constructor = null;
+                this.accessor = null;
+            } else if (this.selectionSize == 2 && PairBean.class.isAssignableFrom(resultClass)) {
+                this.singleSelection = null;
+                this.accessor = null;
+                this.constructor = ObjectAccessorFactory.getPairConstructor(resultClass);
+            } else {
+                this.singleSelection = null;
+                this.constructor = ObjectAccessorFactory.getConstructor(resultClass);
+                this.accessor = ObjectAccessorFactory.forBean(resultClass);
+            }
+        }
+
+        @Override
+        R readOneRow(final ResultSet resultSet) {
+            return null;
+        }
+
+
+    }//BeanRowSpliterator
+
+
+    private static final class SimpleCommander implements Commander {
+
+        private final RowSpliterator<?> spliterator;
+
+        private SimpleCommander(RowSpliterator<?> spliterator) {
+            this.spliterator = spliterator;
+        }
+
+        @Override
+        public void cancel() {
+
+        }
+
+
+    }//SimpleCommander
+
+    private static final class ParallelCommander implements Commander {
+
+        private final RowSpliterator<?> spliterator;
+
+
+        private ParallelCommander(RowSpliterator<?> spliterator) {
+            this.spliterator = spliterator;
+        }
+
+        @Override
+        public void cancel() {
+
+        }
+
+
+    }//ParallelCommander
 
 
 }

@@ -1,14 +1,18 @@
 package io.army.sync.executor;
 
+
 import io.army.lang.Nullable;
 import io.army.session.DataAccessException;
 import io.army.session.OptimisticLockException;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
+import io.army.sync.Commander;
+import io.army.sync.StreamOptions;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -61,13 +65,12 @@ public interface StmtExecutor {
             throws DataAccessException;
 
 
-    <R> Stream<R> queryStream(SimpleStmt stmt, Class<R> resultClass,
-                              boolean serverStream, int fetchSize,
-                              @Nullable Comparable<? super R> comparator, boolean parallel);
+    <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass, StreamOptions options,
+                              @Nullable Consumer<Commander> consumer);
 
-    Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, Supplier<Map<String, Object>> mapConstructor,
-                                               boolean serverStream, int fetchSize,
-                                               @Nullable Comparable<Map<String, Object>> comparator, boolean parallel);
+    Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
+                                               Supplier<Map<String, Object>> mapConstructor, StreamOptions options,
+                                               @Nullable Consumer<Commander> consumer);
 
 
     Object createSavepoint() throws DataAccessException;

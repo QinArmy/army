@@ -1,5 +1,6 @@
 package io.army.jdbc;
 
+import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.env.SyncKey;
 import io.army.mapping.MappingEnv;
@@ -24,6 +25,8 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
 
     final ServerMeta serverMeta;
 
+    final Database serverDataBase;
+
     final ArmyEnvironment env;
 
     final boolean useLargeUpdate;
@@ -38,6 +41,8 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
         this.executorEnv = executorEnv;
         this.mappingEnv = executorEnv.mappingEnv();
         this.serverMeta = this.mappingEnv.serverMeta();
+        this.serverDataBase = this.serverMeta.serverDatabase();
+
         this.env = executorEnv.environment();
 
         if (this.env.getOrDefault(SyncKey.JDBC_FORBID_V18)) {

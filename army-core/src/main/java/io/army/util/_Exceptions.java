@@ -42,7 +42,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return ExceptionUtils.createUnexpectedEnumException(e);
     }
 
-    public static ArmyException unknownError(String message, RuntimeException e) {
+    public static ArmyException unknownError(String message, Throwable e) {
         return new ArmyException(message, e);
     }
 

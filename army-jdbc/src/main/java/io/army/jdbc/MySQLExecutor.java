@@ -41,7 +41,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
 
     private MySQLExecutor(JdbcExecutorFactory factory, Connection conn) {
-        super(factory, conn);
+        super(factory, conn;
     }
 
 
@@ -49,6 +49,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
     Logger getLogger() {
         return LOG;
     }
+
 
     @Override
     void bind(final PreparedStatement stmt, final int index, final SqlType sqlDataType, final Object nonNull)
