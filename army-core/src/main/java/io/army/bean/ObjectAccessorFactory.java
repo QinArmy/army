@@ -21,6 +21,8 @@ public abstract class ObjectAccessorFactory {
         throw new UnsupportedOperationException();
     }
 
+    public static final ObjectAccessor PSEUDO_ACCESSOR = new PseudoWriterAccessor();
+
     private static final byte WRITE_METHOD = 1;
 
     private static final byte READ_METHOD = 2;
@@ -335,6 +337,51 @@ public abstract class ObjectAccessorFactory {
 
 
     }// MapWriterAccessor
+
+
+    private static final class PseudoWriterAccessor implements ObjectAccessor {
+
+        @Override
+        public boolean isWritable(String propertyName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isWritable(String propertyName, Class<?> valueType) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Class<?> getJavaType(String propertyName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void set(Object target, String propertyName, @Nullable Object value) throws ObjectAccessException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ReadAccessor getReadAccessor() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isReadable(String propertyName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object get(Object target, String propertyName) throws ObjectAccessException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Class<?> getAccessedType() {
+            throw new UnsupportedOperationException();
+        }
+
+    }// PseudoWriterAccessor
 
 
 }

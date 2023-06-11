@@ -1088,7 +1088,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
 //            case INTEGER:
 //            case BIGINT:
 //            case DECIMAL:
-//            case DOUBLE:
+//            case FLOAT8:
 //            case REAL:
 //            case TIME:
 //            case DATE:
@@ -1114,7 +1114,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
 //            case JSONB:
 //            case MONEY:
 //            case POINT:
-//            case CIRCLES:
+//            case CIRCLE:
 //
 //            case MACADDR:
 //            case POLYGON:
@@ -1178,7 +1178,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
 //            case TIMESTAMP_ARRAY:
 //            case TSTZRANGE_ARRAY:
 //            case TIMESTAMPTZ_ARRAY:
-//            case LINE_SEGMENT_ARRAY:
 //                break;
 //            default:
 //                throw _Exceptions.unexpectedEnum((PostgreType) type);

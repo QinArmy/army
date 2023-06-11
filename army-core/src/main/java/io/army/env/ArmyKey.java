@@ -36,6 +36,8 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<Visible> VISIBLE_MODE = new ArmyKey<>("visible.mode", Visible.class, Visible.ONLY_VISIBLE);
 
+    public static final ArmyKey<Boolean> DATABASE_SESSION_HOLDER = new ArmyKey<>("database.session.holder", Boolean.class, Boolean.FALSE);
+
     public static final ArmyKey<String> VISIBLE_SESSION_WHITE_LIST = new ArmyKey<>("visible.session.white.list", String.class, null);
 
     public static final ArmyKey<QueryInsertMode> SUBQUERY_INSERT_MODE = new ArmyKey<>("subquery.insert.mode", QueryInsertMode.class, QueryInsertMode.ONLY_MIGRATION);

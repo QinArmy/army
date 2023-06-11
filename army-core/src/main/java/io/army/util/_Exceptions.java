@@ -62,6 +62,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new MappingTypeException(m);
     }
 
+    public static MetaException beforeBindMethod(SqlType sqlType, Object nonNull) {
+        String m = String.format("%s and %s not match.", sqlType, _ClassUtils.safeClassName(nonNull));
+        return new MetaException(m);
+    }
+
     public static TransactionTimeOutException timeout(int timeout, long restMills) {
         String m;
         m = String.format("Expected completion in %s seconds,but rest %s millis", timeout, restMills);

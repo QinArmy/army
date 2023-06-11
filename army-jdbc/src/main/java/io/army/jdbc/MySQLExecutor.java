@@ -1,5 +1,6 @@
 package io.army.jdbc;
 
+import com.mysql.cj.MysqlType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.sync.executor.LocalStmtExecutor;
@@ -41,7 +42,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
 
     private MySQLExecutor(JdbcExecutorFactory factory, Connection conn) {
-        super(factory, conn;
+        super(factory, conn);
     }
 
 
@@ -52,72 +53,72 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
 
     @Override
-    void bind(final PreparedStatement stmt, final int index, final SqlType sqlDataType, final Object nonNull)
+    void bind(final PreparedStatement stmt, final int indexBasedOne, final SqlType type, final Object nonNull)
             throws SQLException {
-        switch ((MySQLType) sqlDataType) {
+        switch ((MySQLType) type) {
             case BOOLEAN:
-                stmt.setBoolean(index, (Boolean) nonNull);
+                stmt.setBoolean(indexBasedOne, (Boolean) nonNull);
                 break;
             case TINYINT:
-                stmt.setByte(index, (Byte) nonNull);
+                stmt.setByte(indexBasedOne, (Byte) nonNull);
                 break;
             case TINYINT_UNSIGNED:
             case SMALLINT:
-                stmt.setShort(index, (Short) nonNull);
+                stmt.setShort(indexBasedOne, (Short) nonNull);
                 break;
             case SMALLINT_UNSIGNED:
             case MEDIUMINT:
             case MEDIUMINT_UNSIGNED:
             case INT:
             case YEAR:
-                stmt.setInt(index, (Integer) nonNull);
+                stmt.setInt(indexBasedOne, (Integer) nonNull);
                 break;
             case INT_UNSIGNED:
             case BIGINT:
             case BIT:
-                stmt.setLong(index, (Long) nonNull);
+                stmt.setLong(indexBasedOne, (Long) nonNull);
                 break;
             case BIGINT_UNSIGNED: {
                 if (!(nonNull instanceof BigInteger || nonNull instanceof BigDecimal)) {
-                    throw beforeBindReturnError(sqlDataType, nonNull);
+                    throw beforeBindReturnError(type, nonNull);
                 }
-                stmt.setObject(index, nonNull, com.mysql.cj.MysqlType.BIGINT_UNSIGNED);
+                stmt.setObject(indexBasedOne, nonNull, MysqlType.BIGINT_UNSIGNED);
             }
             break;
             case DECIMAL:
             case DECIMAL_UNSIGNED:
-                stmt.setBigDecimal(index, (BigDecimal) nonNull);
+                stmt.setBigDecimal(indexBasedOne, (BigDecimal) nonNull);
                 break;
             case FLOAT:
-                stmt.setFloat(index, (Float) nonNull);
+                stmt.setFloat(indexBasedOne, (Float) nonNull);
                 break;
             case DOUBLE:
-                stmt.setDouble(index, (Double) nonNull);
+                stmt.setDouble(indexBasedOne, (Double) nonNull);
                 break;
             case TIME: {
                 final LocalTime value = (LocalTime) nonNull;
                 if (this.factory.useSetObjectMethod) {
-                    stmt.setObject(index, value, com.mysql.cj.MysqlType.TIME);
+                    stmt.setObject(indexBasedOne, value, com.mysql.cj.MysqlType.TIME);
                 } else {
-                    stmt.setTime(index, Time.valueOf(value));
+                    stmt.setTime(indexBasedOne, Time.valueOf(value));
                 }
             }
             break;
             case DATE: {
                 final LocalDate value = (LocalDate) nonNull;
                 if (this.factory.useSetObjectMethod) {
-                    stmt.setObject(index, value, com.mysql.cj.MysqlType.DATE);
+                    stmt.setObject(indexBasedOne, value, com.mysql.cj.MysqlType.DATE);
                 } else {
-                    stmt.setDate(index, Date.valueOf(value));
+                    stmt.setDate(indexBasedOne, Date.valueOf(value));
                 }
             }
             break;
             case DATETIME: {
                 final LocalDateTime value = (LocalDateTime) nonNull;
                 if (this.factory.useSetObjectMethod) {
-                    stmt.setObject(index, value, com.mysql.cj.MysqlType.DATETIME);
+                    stmt.setObject(indexBasedOne, value, com.mysql.cj.MysqlType.DATETIME);
                 } else {
-                    stmt.setTimestamp(index, Timestamp.valueOf(value));
+                    stmt.setTimestamp(indexBasedOne, Timestamp.valueOf(value));
                 }
             }
             break;
@@ -128,11 +129,11 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case TINYTEXT:
             case TEXT:
             case MEDIUMTEXT:
-                stmt.setString(index, (String) nonNull);
+                stmt.setString(indexBasedOne, (String) nonNull);
                 break;
             case JSON:
             case LONGTEXT: {
-                setLongText(stmt, index, nonNull);
+                setLongText(stmt, indexBasedOne, nonNull);
             }
             break;
             case BINARY:
@@ -140,10 +141,10 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case TINYBLOB:
             case BLOB:
             case MEDIUMBLOB:
-                stmt.setBytes(index, (byte[]) nonNull);
+                stmt.setBytes(indexBasedOne, (byte[]) nonNull);
                 break;
             case LONGBLOB: {
-                setLongBinary(stmt, index, nonNull);
+                setLongBinary(stmt, indexBasedOne, nonNull);
             }
             break;
             case POINT:
@@ -154,25 +155,25 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case MULTIPOLYGON:
             case GEOMETRYCOLLECTION: {
                 if (nonNull instanceof String) {
-                    stmt.setString(index, (String) nonNull);
+                    stmt.setString(indexBasedOne, (String) nonNull);
                 } else if (nonNull instanceof Reader) {
-                    stmt.setCharacterStream(index, (Reader) nonNull);
+                    stmt.setCharacterStream(indexBasedOne, (Reader) nonNull);
                 } else if (nonNull instanceof byte[]) {
-                    stmt.setBytes(index, (byte[]) nonNull);
+                    stmt.setBytes(indexBasedOne, (byte[]) nonNull);
                 } else if (nonNull instanceof InputStream) {
-                    stmt.setBinaryStream(index, (InputStream) nonNull);
+                    stmt.setBinaryStream(indexBasedOne, (InputStream) nonNull);
                 } else if (nonNull instanceof Path) {
                     try (InputStream inputStream = Files.newInputStream((Path) nonNull, StandardOpenOption.READ)) {
-                        stmt.setBinaryStream(index, inputStream);
+                        stmt.setBinaryStream(indexBasedOne, inputStream);
                     } catch (IOException e) {
                         String m = String.format("Parameter[%s] %s[%s] read occur error."
-                                , index, Path.class.getName(), nonNull);
+                                , indexBasedOne, Path.class.getName(), nonNull);
                         throw new SQLException(m, e);
                     }
                 }
             }
             default:
-                throw _Exceptions.unexpectedEnum((MySQLType) sqlDataType);
+                throw _Exceptions.unexpectedEnum((MySQLType) type);
 
         }
 
@@ -181,7 +182,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     @Override
     SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override

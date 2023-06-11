@@ -2,6 +2,8 @@ package io.army.util;
 
 import io.army.lang.Nullable;
 
+import java.util.Map;
+
 /**
  * @since 1.0
  */
@@ -30,6 +32,12 @@ public abstract class _ClassUtils {
         return present;
     }
 
+
+    @SuppressWarnings("unchecked")
+    public static Class<Map<String, Object>> mapJavaClass() {
+        final Class<?> clazz = Map.class;
+        return (Class<Map<String, Object>>) clazz;
+    }
 
     @Nullable
     public static String safeClassName(@Nullable Object value) {

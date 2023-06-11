@@ -21,6 +21,7 @@ import io.army.sync.Commander;
 import io.army.sync.StreamOptions;
 import io.army.sync.executor.StmtExecutor;
 import io.army.type.ImmutableSpec;
+import io.army.util._ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -46,9 +48,11 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     final JdbcExecutorFactory factory;
 
-    private final Connection conn;
+    final Connection conn;
 
     Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
+
+    private Map<RowSpliterator<?>, Boolean> rowSpliteratorMap;
 
     JdbcExecutor(JdbcExecutorFactory factory, Connection conn) {
         this.factory = factory;
@@ -261,61 +265,38 @@ abstract class JdbcExecutor implements StmtExecutor {
     @Override
     public final <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass,
                                            final StreamOptions options, final @Nullable Consumer<Commander> consumer) {
+        final List<? extends Selection> selectionList = stmt.selectionList();
 
-        final List<SQLParam> paramGroup = stmt.paramGroup();
-
-        final String sql = stmt.sqlText();
-        final int paramSize;
-        paramSize = paramGroup.size();
-
-        Statement statement = null;
-        ResultSet resultSet = null;
-        try {
-
-            statement = createStreamStmt(sql, paramSize, options);
-            if (statement instanceof PreparedStatement) {
-                bindParameter((PreparedStatement) statement, paramGroup);
+        final Function<ResultSetMetaData, RowReader<R>> function;
+        function = metaData -> {
+            final int selectionSize;
+            selectionSize = selectionList.size();
+            final RowReader<R> rowReader;
+            if (selectionSize == 1) {
+                rowReader = new SingleColumnRowReader<>(this, selectionList,
+                        createSqlTypArray(metaData, selectionSize), resultClass);
             } else {
-                assert paramSize == 0;
+                rowReader = new BeanRowReader<>(this, selectionList, resultClass,
+                        createSqlTypArray(metaData, selectionSize));
             }
+            return rowReader;
 
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
-            }
-
-            if (statement instanceof PreparedStatement) {
-                resultSet = ((PreparedStatement) statement).executeQuery();
-            } else {
-                resultSet = statement.executeQuery(sql);
-            }
-
-            final RowSpliterator<R> spliterator;
-            spliterator = new BeanRowSpliterator<>(this, statement, resultSet, stmt.selectionList(),
-                    stmt.hasOptimistic(), resultClass, options
-            );
-
-            if (consumer != null) {
-                final Commander commander;
-                if (options.parallel) {
-                    commander = new ParallelCommander(spliterator);
-                } else {
-                    commander = new SimpleCommander(spliterator);
-                }
-                consumer.accept(commander);
-            }
-            return StreamSupport.stream(spliterator, options.parallel);
-        } catch (Throwable e) {
-            throw handleError(e, resultSet, statement);
-        }
-
+        };
+        return this.queryAsStream(stmt, timeout, options, consumer, function);
     }
 
 
     @Override
     public Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
-                                                      Supplier<Map<String, Object>> mapConstructor,
+                                                      final Supplier<Map<String, Object>> mapConstructor,
                                                       StreamOptions options, @Nullable Consumer<Commander> consumer) {
-        return null;
+        final List<? extends Selection> selectionList = stmt.selectionList();
+
+        final Function<ResultSetMetaData, RowReader<Map<String, Object>>> function;
+        function = metaData -> new MapReader(this, selectionList, createSqlTypArray(metaData, selectionList.size()),
+                mapConstructor
+        );
+        return this.queryAsStream(stmt, timeout, options, consumer, function);
     }
 
     @Override
@@ -374,12 +355,26 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     @Override
     public final void close() throws DataAccessException {
+
+        final Map<RowSpliterator<?>, Boolean> rowSpliteratorMap = this.rowSpliteratorMap;
+
+        Throwable error = null;
+        if (rowSpliteratorMap != null) {
+            error = closeRowSpliterator(rowSpliteratorMap);
+        }
+
         try {
             this.conn.close();
+
+            if (error != null) {
+                throw JdbcExceptions.wrap(error);
+            }
         } catch (SQLException e) {
             throw JdbcExceptions.wrap(e);
         }
+
     }
+
 
 
 
@@ -388,7 +383,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     abstract Logger getLogger();
 
-    abstract void bind(PreparedStatement stmt, int index, SqlType sqlDataType, Object nonNull)
+    abstract void bind(PreparedStatement stmt, int indexBasedOne, SqlType type, Object nonNull)
             throws SQLException;
 
     abstract SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne);
@@ -430,6 +425,24 @@ abstract class JdbcExecutor implements StmtExecutor {
     }
 
     /*################################## blow private method ##################################*/
+
+
+    private SqlType[] createSqlTypArray(final ResultSetMetaData metaData, final int selectionSize) {
+        final SqlType[] sqlTypeArray = new SqlType[selectionSize];
+        for (int i = 0; i < selectionSize; i++) {
+            sqlTypeArray[i] = this.getSqlType(metaData, i + 1);
+        }
+        return sqlTypeArray;
+    }
+
+    private void addRowSpliterator(final RowSpliterator<?> spliterator) {
+        Map<RowSpliterator<?>, Boolean> rowSpliteratorMap = this.rowSpliteratorMap;
+        if (rowSpliteratorMap == null) {
+            rowSpliteratorMap = _Collections.hashMap();
+            this.rowSpliteratorMap = rowSpliteratorMap;
+        }
+        rowSpliteratorMap.put(spliterator, Boolean.TRUE);
+    }
 
 
     private int getRestSeconds(final int timeout, final long startMills) {
@@ -634,35 +647,127 @@ abstract class JdbcExecutor implements StmtExecutor {
      * @see #queryStream(SimpleStmt, int, Class, StreamOptions, Consumer)
      * @see #queryMapStream(SimpleStmt, int, Supplier, StreamOptions, Consumer)
      */
+    private <R> Stream<R> queryAsStream(final SimpleStmt stmt, final int timeout, final StreamOptions options,
+                                        final @Nullable Consumer<Commander> consumer,
+                                        final Function<ResultSetMetaData, RowReader<R>> function) {
+        final List<? extends Selection> selectionList = stmt.selectionList();
+        final int selectionSize;
+        selectionSize = selectionList.size();
+        if (selectionSize == 0) {
+            throw new IllegalArgumentException();
+        }
+        final List<SQLParam> paramGroup = stmt.paramGroup();
+
+        final String sql = stmt.sqlText();
+        final int paramSize;
+        paramSize = paramGroup.size();
+
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            // 1. create statement
+            statement = createStreamStmt(sql, paramSize, options);
+            // 2. bind parameter
+            if (statement instanceof PreparedStatement) {
+                bindParameter((PreparedStatement) statement, paramGroup);
+            } else {
+                assert paramSize == 0;
+            }
+
+            // 3. set timeout
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+            // 4. execute statement
+            if (statement instanceof PreparedStatement) {
+                resultSet = ((PreparedStatement) statement).executeQuery();
+            } else {
+                resultSet = statement.executeQuery(sql);
+            }
+
+            // 5. create RowSpliterator
+            final RowSpliterator<R> spliterator;
+            spliterator = new RowSpliterator<>(statement, resultSet, function.apply(resultSet.getMetaData()),
+                    stmt.hasOptimistic(), options
+            );
+
+            // 6. create Commander
+            if (consumer != null) {
+                final Commander commander;
+                if (options.parallel) {
+                    commander = new ParallelCommander(spliterator);
+                } else {
+                    commander = new SimpleCommander(spliterator);
+                }
+                consumer.accept(commander);
+            }
+
+            // 7. store RowSpliterator
+            this.addRowSpliterator(spliterator);
+
+            return StreamSupport.stream(spliterator, options.parallel);
+        } catch (Throwable e) {
+            throw handleError(e, resultSet, statement);
+        }
+    }
+
+
+    /**
+     * @see #queryAsStream(SimpleStmt, int, StreamOptions, Consumer, Function)
+     */
     private Statement createStreamStmt(final String sql, final int paramSize, final StreamOptions options)
             throws SQLException {
         final Statement statement;
-        if (paramSize > 0) {
+        if (paramSize > 0 || options.serverStream) {
             statement = this.conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
                     ResultSet.CLOSE_CURSORS_AT_COMMIT);
+
+            statement.setFetchSize(options.fetchSize);
         } else {
             statement = this.conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
                     ResultSet.CLOSE_CURSORS_AT_COMMIT);
+
+            switch (this.factory.serverDataBase) {
+                case MySQL:
+                    statement.setFetchSize(Integer.MIN_VALUE);
+                    break;
+                case Postgre:
+                case Oracle:
+                case H2:
+                    statement.setFetchSize(options.fetchSize);
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(this.factory.serverDataBase);
+            }
         }
-        if (options.serverStream) {
-            statement.setFetchSize(options.fetchSize);
-        } else switch (this.factory.serverDataBase) {
-            case MySQL:
-                statement.setFetchSize(Integer.MIN_VALUE);
-                break;
-            case Postgre:
-            case Oracle:
-            case H2:
-                statement.setFetchSize(options.fetchSize);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(this.factory.serverDataBase);
-        }
+
         return statement;
 
     }
 
 
+    /**
+     * @see #close()
+     */
+    @Nullable
+    private Throwable closeRowSpliterator(final Map<RowSpliterator<?>, Boolean> rowSpliteratorMap) {
+        Throwable error = null;
+
+        for (RowSpliterator<?> spliterator : rowSpliteratorMap.keySet()) {
+            if (spliterator.closed) {
+                continue;
+            }
+            try {
+                spliterator.closeStream();
+            } catch (Throwable e) {
+                error = e;
+            }
+        }
+        rowSpliteratorMap.clear();
+        this.rowSpliteratorMap = null;
+
+        return error;
+    }
 
 
 
@@ -815,20 +920,25 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         private final SqlType[] sqlTypeArray;
 
-        private final ObjectAccessor accessor;
+        final ObjectAccessor accessor;
 
         private MappingType[] compatibleTypeArray;
 
+        private final Class<R> resultClass;
+
 
         private RowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                          SqlType[] sqlTypeArray, ObjectAccessor accessor) {
+                          SqlType[] sqlTypeArray, Class<R> resultClass, ObjectAccessor accessor) {
             this.executor = executor;
             this.selectionList = selectionList;
             this.sqlTypeArray = sqlTypeArray;
+            this.resultClass = resultClass;
             this.accessor = accessor;
         }
 
-        final R readOneRow(final ResultSet resultSet) throws SQLException {
+        @SuppressWarnings("unchecked")
+        @Nullable
+        private R readOneRow(final ResultSet resultSet) throws SQLException {
             final JdbcExecutor executor = this.executor;
             final MappingEnv env = executor.factory.mappingEnv;
             final SqlType[] sqlTypeArray = this.sqlTypeArray;
@@ -837,15 +947,20 @@ abstract class JdbcExecutor implements StmtExecutor {
 
             MappingType[] compatibleTypeArray = this.compatibleTypeArray;
 
-            final R row;
-            row = this.createRow();
-
+            R row;
+            if (accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR) {
+                assert sqlTypeArray.length == 1;
+                row = null;
+            } else {
+                row = this.createRow();
+            }
             TypeMeta typeMeta;
             MappingType mappingType;
             Selection selection;
             Object columnValue;
             SqlType sqlType;
             String fieldName;
+            boolean compatible;
             for (int i = 0; i < sqlTypeArray.length; i++) {
                 sqlType = sqlTypeArray[i];
 
@@ -855,7 +970,9 @@ abstract class JdbcExecutor implements StmtExecutor {
                 fieldName = selection.alias();
 
                 if (columnValue == null) {
-                    accessor.set(row, fieldName, null);
+                    if (row != null) {
+                        accessor.set(row, fieldName, null);
+                    }
                     continue;
                 }
 
@@ -866,7 +983,12 @@ abstract class JdbcExecutor implements StmtExecutor {
                     } else {
                         mappingType = typeMeta.mappingType();
                     }
-                    if (!accessor.isWritable(fieldName, mappingType.javaType())) {
+                    if (row == null) {
+                        compatible = this.resultClass.isAssignableFrom(mappingType.javaType());
+                    } else {
+                        compatible = accessor.isWritable(fieldName, mappingType.javaType());
+                    }
+                    if (!compatible) {
                         mappingType = mappingType.compatibleFor(accessor.getJavaType(fieldName));
                         if (compatibleTypeArray == null) {
                             compatibleTypeArray = new MappingType[sqlTypeArray.length];
@@ -874,21 +996,22 @@ abstract class JdbcExecutor implements StmtExecutor {
                         }
                         compatibleTypeArray[i] = mappingType;
                     }
+
                 }
 
                 columnValue = mappingType.afterGet(sqlType, env, columnValue);
                 //TODO field codec
-                accessor.set(row, fieldName, columnValue);
-
+                if (row == null) {
+                    row = (R) columnValue;
+                } else {
+                    accessor.set(row, fieldName, columnValue);
+                }
             }
 
-            final R result;
             if (row instanceof Map && row instanceof ImmutableSpec) {
-                result = this.unmodifiedMap(row);
-            } else {
-                result = row;
+                row = this.unmodifiedMap(row);
             }
-            return result;
+            return row;
         }
 
         abstract R createRow();
@@ -903,15 +1026,14 @@ abstract class JdbcExecutor implements StmtExecutor {
     private static final class BeanRowReader<R> extends RowReader<R> {
 
 
-        final Class<R> resultClass;
         private final Constructor<R> constructor;
 
 
         private BeanRowReader(JdbcExecutor executor, List<? extends Selection> selectionList, Class<R> resultClass,
                               SqlType[] sqlTypeArray) {
-            super(executor, selectionList, sqlTypeArray, ObjectAccessorFactory.forBean(resultClass));
-            this.resultClass = resultClass;
+            super(executor, selectionList, sqlTypeArray, resultClass, ObjectAccessorFactory.forBean(resultClass));
             this.constructor = ObjectAccessorFactory.getConstructor(resultClass);
+
         }
 
         @Override
@@ -922,6 +1044,22 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     }//BeanRowReader
 
+    private static final class SingleColumnRowReader<R> extends RowReader<R> {
+
+        private SingleColumnRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
+                                      SqlType[] sqlTypeArray, Class<R> resultClass) {
+            super(executor, selectionList, sqlTypeArray, resultClass, ObjectAccessorFactory.PSEUDO_ACCESSOR);
+        }
+
+        @Override
+        R createRow() {
+            // no bug,never here
+            throw new UnsupportedOperationException();
+        }
+
+
+    }//SingleColumnRowReader
+
 
     private static final class MapReader extends RowReader<Map<String, Object>> {
 
@@ -929,7 +1067,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         private MapReader(JdbcExecutor executor, List<? extends Selection> selectionList, SqlType[] sqlTypeArray,
                           Supplier<Map<String, Object>> mapConstructor) {
-            super(executor, selectionList, sqlTypeArray, ObjectAccessorFactory.forMap());
+            super(executor, selectionList, sqlTypeArray, _ClassUtils.mapJavaClass(), ObjectAccessorFactory.forMap());
             this.mapConstructor = mapConstructor;
         }
 
@@ -958,6 +1096,7 @@ abstract class JdbcExecutor implements StmtExecutor {
             return result;
         }
 
+
     }//MapReader
 
 
@@ -977,6 +1116,10 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         private boolean closed;
 
+        private long rowCount = 0L;
+
+        private boolean canceled;
+
         private RowSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader, boolean hasOptimistic,
                                StreamOptions options) {
             this.statement = statement;
@@ -993,22 +1136,67 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         @Override
         public boolean tryAdvance(final Consumer<? super R> action) {
+            return this.doTryAdvance(this.fetchSize, action);
+        }
+
+        @Nullable
+        @Override
+        public Spliterator<R> trySplit() {
+            if (this.closed) {
+                return null;
+            }
+
+            final List<R> rowList = _Collections.linkedList();
+            this.doTryAdvance(this.splitSize, rowList::add);
+            final Spliterator<R> spliterator;
+            if (rowList.size() == 0) {
+                spliterator = null;
+            } else {
+                spliterator = rowList.spliterator();
+            }
+            return spliterator;
+        }
+
+
+        @Override
+        public long estimateSize() {
+            return Long.MAX_VALUE;
+        }
+
+        @Override
+        public int characteristics() {
+            return this.fetchSize == 1 ? Spliterator.ORDERED : 0;
+        }
+
+
+        private boolean doTryAdvance(final int expectedFetchSize, final @Nullable Consumer<? super R> action) {
+            if (action == null) {
+                throw new NullPointerException();
+            }
             final ResultSet resultSet = this.resultSet;
             final RowReader<R> rowReader = this.rowReader;
 
             boolean hasMore = !this.closed;
 
-            final int fetchSize = hasMore ? this.fetchSize : 0;
+            final int actualFetchSize = hasMore ? expectedFetchSize : 0;
             try {
-                for (int i = 0; i < fetchSize; i++) {
+                long rowCount = this.rowCount;
+                for (int i = 0; i < actualFetchSize; i++) {
                     if (!resultSet.next()) {
                         hasMore = false;
                         break;
                     }
                     action.accept(rowReader.readOneRow(resultSet));
+                    rowCount++;
                 }
 
-                if (!hasMore) {
+                this.rowCount = rowCount;
+
+                if (actualFetchSize > 0 && rowCount == 0 && this.hasOptimistic) {
+                    throw _Exceptions.optimisticLock(rowCount);
+                }
+
+                if (!hasMore || this.canceled) {
                     this.closeStream();
                 }
                 return hasMore;
@@ -1017,111 +1205,21 @@ abstract class JdbcExecutor implements StmtExecutor {
             }
         }
 
-        @Nullable
-        @Override
-        public Spliterator<R> trySplit() {
-            final ResultSet resultSet = this.resultSet;
-            final RowReader<R> rowReader = this.rowReader;
-
-            boolean hasMore = !this.closed;
-
-            final int splitSize = hasMore ? this.splitSize : 0;
-            List<R> rowList;
-            if (splitSize == 0) {
-                rowList = null;
-            } else {
-                rowList = _Collections.arrayList(splitSize);
-            }
-            try {
-                for (int i = 0; i < splitSize; i++) {
-                    if (!resultSet.next()) {
-                        hasMore = false;
-                        break;
-                    }
-                    rowList.add(rowReader.readOneRow(resultSet));
-                }
-
-                if (!hasMore) {
-                    this.closeStream();
-                }
-
-                final Spliterator<R> spliterator;
-                if (rowList == null || rowList.size() == 0) {
-                    spliterator = null;
-                } else {
-                    spliterator = new RowListSpliterator<>(rowList);
-                }
-                return spliterator;
-            } catch (Throwable e) {
-                throw handleError(e, resultSet, this.statement);
-            }
-        }
-
-        @Override
-        public long estimateSize() {
-            return 0;
-        }
-
-        @Override
-        public int characteristics() {
-            return 0;
-        }
-
         private void closeStream() {
-            if (!this.closed) {
-                this.closed = true;
-                closeResultSetAndStatement(this.resultSet, this.statement);
+            if (this.closed) {
+                return;
             }
+            this.closed = true;
+            final Map<RowSpliterator<?>, Boolean> mpa = this.rowReader.executor.rowSpliteratorMap;
+            if (mpa != null) {
+                mpa.remove(this);
+            }
+            closeResultSetAndStatement(this.resultSet, this.statement);
+
         }
 
 
     }//RowSpliterator
-
-
-    private static final class RowListSpliterator<R> implements Spliterator<R> {
-
-        private final List<R> rowList;
-
-        private boolean end;
-
-        private RowListSpliterator(List<R> rowList) {
-            this.rowList = rowList;
-        }
-
-        @Override
-        public boolean tryAdvance(Consumer<? super R> action) {
-            if (this.end) {
-                return false;
-            }
-            this.rowList.forEach(action);
-            this.end = true;
-            return true;
-        }
-
-        @Nullable
-        @Override
-        public Spliterator<R> trySplit() {
-            if (this.end) {
-                return null;
-            }
-            final Spliterator<R> spliterator;
-            spliterator = this.rowList.spliterator();
-            this.end = true;
-            return spliterator;
-        }
-
-        @Override
-        public long estimateSize() {
-            return 0;
-        }
-
-        @Override
-        public int characteristics() {
-            return 0;
-        }
-
-
-    }//RowListSpliterator
 
 
     private static final class SimpleCommander implements Commander {
@@ -1134,7 +1232,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         @Override
         public void cancel() {
-
+            this.spliterator.canceled = true;
         }
 
 
@@ -1151,7 +1249,9 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         @Override
         public void cancel() {
-
+            synchronized (this.spliterator) {
+                this.spliterator.canceled = true;
+            }
         }
 
 

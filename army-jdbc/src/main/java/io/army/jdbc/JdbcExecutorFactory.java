@@ -2,6 +2,7 @@ package io.army.jdbc;
 
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
+import io.army.env.ArmyKey;
 import io.army.env.SyncKey;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
@@ -35,6 +36,8 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
 
     final boolean useExecuteLargeBatch;
 
+    final boolean databaseSessionHolder;
+
     private boolean closed;
 
     JdbcExecutorFactory(final ExecutorEnv executorEnv, final int methodFlag) {
@@ -54,6 +57,8 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
             this.useSetObjectMethod = (methodFlag & SET_OBJECT_METHOD) != 0;
             this.useExecuteLargeBatch = (methodFlag & EXECUTE_LARGE_BATCH_METHOD) != 0;
         }
+
+        this.databaseSessionHolder = this.env.getOrDefault(ArmyKey.DATABASE_SESSION_HOLDER);
 
     }
 
