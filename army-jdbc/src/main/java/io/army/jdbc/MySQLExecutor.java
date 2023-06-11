@@ -178,8 +178,14 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     }
 
+
     @Override
-    Object get(final ResultSet resultSet, final String alias, final SqlType sqlType) throws SQLException {
+    SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne) {
+        return null;
+    }
+
+    @Override
+    Object get(final ResultSet resultSet, int indexBasedOne, final SqlType sqlType) throws SQLException {
         final Object value;
         switch ((MySQLType) sqlType) {
             case TINYINT:
@@ -190,28 +196,28 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case MEDIUMINT_UNSIGNED:
             case INT:
             case YEAR:
-                value = resultSet.getObject(alias, Integer.class);
+                value = resultSet.getObject(indexBasedOne, Integer.class);
                 break;
             case INT_UNSIGNED:
             case BIGINT:
             case BIT:
-                value = resultSet.getObject(alias, Long.class);
+                value = resultSet.getObject(indexBasedOne, Long.class);
                 break;
             case DECIMAL:
             case DECIMAL_UNSIGNED:
-                value = resultSet.getObject(alias, BigDecimal.class);
+                value = resultSet.getObject(indexBasedOne, BigDecimal.class);
                 break;
             case BOOLEAN:
-                value = resultSet.getObject(alias, Boolean.class);
+                value = resultSet.getObject(indexBasedOne, Boolean.class);
                 break;
             case DATETIME:
-                value = resultSet.getObject(alias, LocalDateTime.class);
+                value = resultSet.getObject(indexBasedOne, LocalDateTime.class);
                 break;
             case DATE:
-                value = resultSet.getObject(alias, LocalDate.class);
+                value = resultSet.getObject(indexBasedOne, LocalDate.class);
                 break;
             case TIME:
-                value = resultSet.getObject(alias, LocalTime.class);
+                value = resultSet.getObject(indexBasedOne, LocalTime.class);
                 break;
             case CHAR:
             case VARCHAR:
@@ -222,16 +228,16 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case MEDIUMTEXT:
             case LONGTEXT:
             case JSON:
-                value = resultSet.getObject(alias, String.class);
+                value = resultSet.getObject(indexBasedOne, String.class);
                 break;
             case FLOAT:
-                value = resultSet.getObject(alias, Float.class);
+                value = resultSet.getObject(indexBasedOne, Float.class);
                 break;
             case DOUBLE:
-                value = resultSet.getObject(alias, Double.class);
+                value = resultSet.getObject(indexBasedOne, Double.class);
                 break;
             case BIGINT_UNSIGNED:
-                value = resultSet.getObject(alias, BigInteger.class);
+                value = resultSet.getObject(indexBasedOne, BigInteger.class);
                 break;
             case BINARY:
             case VARBINARY:
@@ -247,7 +253,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case MULTIPOLYGON:
             case MULTILINESTRING:
             case GEOMETRYCOLLECTION:
-                value = resultSet.getObject(alias, byte[].class);
+                value = resultSet.getObject(indexBasedOne, byte[].class);
                 break;
             default:
                 throw _Exceptions.unexpectedEnum((MySQLType) sqlType);

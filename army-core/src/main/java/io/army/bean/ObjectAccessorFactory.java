@@ -3,10 +3,10 @@ package io.army.bean;
 
 import io.army.lang.Nullable;
 import io.army.proxy.ArmyProxy;
+import io.army.util._Collections;
 
 import java.lang.ref.SoftReference;
 import java.lang.reflect.*;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,6 +55,11 @@ public abstract class ObjectAccessorFactory {
         ACCESSOR_CACHE.put(beanClass, new SoftReference<>(accessor));
         return accessor;
     }
+
+    public static ObjectAccessor forMap() {
+        return MapWriterAccessor.INSTANCE;
+    }
+
 
     public static ReadAccessor readOnlyFromInstance(final Object instance) {
         final ReadAccessor accessor;
@@ -109,8 +114,10 @@ public abstract class ObjectAccessorFactory {
 
 
     private static BeanAccessors createMethodAccessors(final Class<?> beanClass) {
-        final Map<String, ValueReadAccessor> readerMap = new HashMap<>();
-        final Map<String, ValueWriteAccessor> writerMap = new HashMap<>();
+        final Map<String, ValueReadAccessor> readerMap = _Collections.hashMap();
+        final Map<String, ValueWriteAccessor> writerMap = _Collections.hashMap();
+
+        final Map<String, Class<?>> fieldTypeMap = _Collections.hashMap();
 
         String fieldName, methodName;
         int modifiers;
@@ -141,6 +148,8 @@ public abstract class ObjectAccessorFactory {
                 }
                 if (methodName.length() == 4) {
                     fieldName = String.valueOf(Character.toLowerCase(methodName.charAt(3)));
+                } else if (Character.isLowerCase(methodName.charAt(3)) || Character.isUpperCase(methodName.charAt(4))) {
+                    fieldName = methodName.substring(3);
                 } else {
                     fieldName = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
                 }
@@ -148,6 +157,7 @@ public abstract class ObjectAccessorFactory {
                     case WRITE_METHOD: {
                         writeAccessor = method::invoke;
                         writerMap.putIfAbsent(fieldName, writeAccessor);
+                        fieldTypeMap.putIfAbsent(fieldName, method.getParameterTypes()[0]);
                     }
                     break;
                     case READ_METHOD: {
@@ -163,12 +173,14 @@ public abstract class ObjectAccessorFactory {
 
 
         }
-        return new BeanAccessors(beanClass, readerMap, writerMap);
+        return new BeanAccessors(beanClass, fieldTypeMap, readerMap, writerMap);
     }
 
     private static BeanAccessors createFieldAccessorPair(final Class<?> beanClass) {
-        final Map<String, FieldReader> readerMap = new HashMap<>();
-        final Map<String, FieldWriter> writerMap = new HashMap<>();
+        final Map<String, FieldReader> readerMap = _Collections.hashMap();
+        final Map<String, FieldWriter> writerMap = _Collections.hashMap();
+
+        final Map<String, Class<?>> fieldTypeMap = _Collections.hashMap();
 
         int modifiers;
         String fieldName;
@@ -191,10 +203,12 @@ public abstract class ObjectAccessorFactory {
 
                 fieldWriter = field::set;
                 writerMap.putIfAbsent(fieldName, fieldWriter);
+
+                fieldTypeMap.putIfAbsent(fieldName, field.getType());
             }
 
         }
-        return new BeanAccessors(beanClass, readerMap, writerMap);
+        return new BeanAccessors(beanClass, fieldTypeMap, readerMap, writerMap);
     }
 
 
@@ -209,6 +223,23 @@ public abstract class ObjectAccessorFactory {
         @Override
         public boolean isWritable(String propertyName) {
             return this.accessors.writerMap.get(propertyName) != null;
+        }
+
+        @Override
+        public boolean isWritable(String propertyName, Class<?> valueType) {
+            final Class<?> fieldType;
+            fieldType = this.accessors.fieldTypeMap.get(propertyName);
+            return fieldType != null && fieldType.isAssignableFrom(valueType);
+        }
+
+        @Override
+        public Class<?> getJavaType(final String propertyName) {
+            final Class<?> fieldType;
+            fieldType = this.accessors.fieldTypeMap.get(propertyName);
+            if (fieldType == null) {
+                throw invalidProperty(propertyName);
+            }
+            return fieldType;
         }
 
         @Override
@@ -244,13 +275,66 @@ public abstract class ObjectAccessorFactory {
             return readAccessor;
         }
 
+
+    }//BeanWriterAccessor
+
+
+    private static final class MapWriterAccessor implements ObjectAccessor {
+
+        private static final MapWriterAccessor INSTANCE = new MapWriterAccessor();
+
         @Override
-        protected void finalize() {
-            ACCESSOR_CACHE.remove(this.accessors.beanClass);
+        public boolean isWritable(String propertyName) {
+            return true;
+        }
+
+        @Override
+        public boolean isWritable(String propertyName, Class<?> valueType) {
+            //TODO currently ,always true
+            return true;
+        }
+
+        @Override
+        public Class<?> getJavaType(String propertyName) {
+            return Object.class;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void set(final Object target, final String propertyName, final @Nullable Object value)
+                throws ObjectAccessException {
+            if (!(target instanceof Map)) {
+                throw new IllegalArgumentException("target non-map");
+            }
+            ((Map<String, Object>) target).put(propertyName, value);
+        }
+
+        @Override
+        public ReadAccessor getReadAccessor() {
+            return MapReadAccessor.INSTANCE;
+        }
+
+        @Override
+        public boolean isReadable(final String propertyName) {
+            return true;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Object get(final Object target, final String propertyName) throws ObjectAccessException {
+            if (!(target instanceof Map)) {
+                throw new IllegalArgumentException("target non-map");
+            }
+            return ((Map<String, Object>) target).get(propertyName);
+        }
+
+        @Override
+        public Class<?> getAccessedType() {
+            return Map.class;
         }
 
 
-    }//BeanWriterAccessor
+    }// MapWriterAccessor
 
 
 }

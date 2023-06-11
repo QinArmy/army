@@ -16,6 +16,18 @@ public interface ObjectAccessor extends ReadAccessor {
      */
     boolean isWritable(String propertyName);
 
+    /**
+     * Determine whether the specified property is writable.
+     * <p>Returns {@code false} if the property doesn'field exist.
+     *
+     * @param propertyName the property to check
+     *                     (may be a nested path then/or an indexed/mapped property)
+     * @return whether the property is writable
+     */
+    boolean isWritable(String propertyName, Class<?> valueType);
+
+    Class<?> getJavaType(String propertyName);
+
 
     /**
      * Set the specified value asType current property value.
