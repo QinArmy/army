@@ -133,6 +133,8 @@ public interface _Constant {
 
     String SPACE_SEPARATOR = " SEPARATOR";
 
+    String UNDERSCORE_ARRAY = "_ARRAY";
+
     String SPACE_SEMICOLON = " ;";
 
     String SPACE_COMMA_SPACE = " , ";

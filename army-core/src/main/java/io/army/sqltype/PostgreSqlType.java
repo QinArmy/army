@@ -99,8 +99,6 @@ public enum PostgreSqlType implements SqlType {
     INTEGER_ARRAY,
     BIGINT_ARRAY,
     DECIMAL_ARRAY,
-
-    OID_ARRAY,
     REAL_ARRAY,
     DOUBLE_ARRAY,
     MONEY_ARRAY,

@@ -139,7 +139,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 sqlBuilder.append(PostgreSqlType.TEXT.name());
                 break;
             case BOX_ARRAY:
-            case OID_ARRAY:
             case BIT_ARRAY:
             case XML_ARRAY:
             case CHAR_ARRAY:
@@ -396,7 +395,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
             break;
             // below array
             case BOX_ARRAY:
-            case OID_ARRAY:
             case BIT_ARRAY:
             case XML_ARRAY:
             case CHAR_ARRAY:

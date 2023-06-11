@@ -1,6 +1,8 @@
 package io.army.jdbc;
 
 import com.mysql.cj.MysqlType;
+import io.army.lang.Nullable;
+import io.army.mapping.MappingType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.sync.executor.LocalStmtExecutor;
@@ -53,9 +55,10 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
 
     @Override
-    void bind(final PreparedStatement stmt, final int indexBasedOne, final SqlType type, final Object nonNull)
+    final Object bind(final PreparedStatement stmt, final int indexBasedOne, final @Nullable Object attr,
+                      final MappingType type, final SqlType sqlType, final Object nonNull)
             throws SQLException {
-        switch ((MySQLType) type) {
+        switch ((MySQLType) sqlType) {
             case BOOLEAN:
                 stmt.setBoolean(indexBasedOne, (Boolean) nonNull);
                 break;
@@ -80,7 +83,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 break;
             case BIGINT_UNSIGNED: {
                 if (!(nonNull instanceof BigInteger || nonNull instanceof BigDecimal)) {
-                    throw beforeBindReturnError(type, nonNull);
+                    throw beforeBindReturnError(sqlType, nonNull);
                 }
                 stmt.setObject(indexBasedOne, nonNull, MysqlType.BIGINT_UNSIGNED);
             }
@@ -173,10 +176,10 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 }
             }
             default:
-                throw _Exceptions.unexpectedEnum((MySQLType) type);
+                throw _Exceptions.unexpectedEnum((MySQLType) sqlType);
 
         }
-
+        return attr;
     }
 
 

@@ -9,7 +9,6 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.*;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -30,8 +29,9 @@ public abstract class ObjectAccessorFactory {
     private static final ConcurrentMap<Class<?>, SoftReference<BeanWriterAccessor>> ACCESSOR_CACHE;
 
     static {
-        ACCESSOR_CACHE = new ConcurrentHashMap<>();
+        ACCESSOR_CACHE = _Collections.concurrentHashMap();
     }
+
 
     public static ObjectAccessor forBean(Class<?> beanClass) {
         while (ArmyProxy.class.isAssignableFrom(beanClass)) {

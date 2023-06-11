@@ -3,6 +3,7 @@ package io.army.util;
 import io.army.lang.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class _Collections {
 
@@ -103,6 +104,10 @@ public abstract class _Collections {
 
     public static <K, V> HashMap<K, V> hashMapIgnoreKey(Object ignoreKey) {
         return new FinalHashMap<>();
+    }
+
+    public static <K, V> ConcurrentHashMap<K, V> concurrentHashMap() {
+        return new FinalConcurrentHashMap<>();
     }
 
     public static <E> ArrayList<E> arrayList() {
@@ -265,6 +270,13 @@ public abstract class _Collections {
 
 
     }//FinalHashSet
+
+    private static final class FinalConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
+
+        private FinalConcurrentHashMap() {
+        }
+
+    }//FinalConcurrentHashMap
 
 
 }

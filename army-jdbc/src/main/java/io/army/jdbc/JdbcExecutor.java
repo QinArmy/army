@@ -383,10 +383,12 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     abstract Logger getLogger();
 
-    abstract void bind(PreparedStatement stmt, int indexBasedOne, SqlType type, Object nonNull)
+    @Nullable
+    abstract Object bind(PreparedStatement stmt, int indexBasedOne, @Nullable Object attr, MappingType type,
+                         SqlType sqlType, Object nonNull)
             throws SQLException;
 
-    abstract SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne);
+    abstract SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne) throws SQLException;
 
     @Nullable
     abstract Object get(ResultSet resultSet, int indexBasedOne, SqlType sqlType) throws SQLException;
@@ -547,16 +549,17 @@ abstract class JdbcExecutor implements StmtExecutor {
         SQLParam sqlParam;
         Object value;
         MappingType mappingType;
-        TypeMeta paramMeta;
+        TypeMeta typeMeta;
         SqlType sqlType;
+        Object attr = null;
         for (int i = 0; i < size; i++) {
             sqlParam = paramGroup.get(i);
 
-            paramMeta = sqlParam.typeMeta();
-            if (paramMeta instanceof MappingType) {
-                mappingType = (MappingType) paramMeta;
+            typeMeta = sqlParam.typeMeta();
+            if (typeMeta instanceof MappingType) {
+                mappingType = (MappingType) typeMeta;
             } else {
-                mappingType = paramMeta.mappingType();
+                mappingType = typeMeta.mappingType();
             }
             sqlType = mappingType.map(serverMeta);
 
@@ -565,26 +568,31 @@ abstract class JdbcExecutor implements StmtExecutor {
                 if (value == null) {
                     // bind null
                     statement.setNull(i + 1, Types.NULL);
-                } else {
-                    value = mappingType.beforeBind(sqlType, mappingEnv, value);
-                    bind(statement, i + 1, sqlType, value);
+                    continue;
                 }
-            } else if (sqlParam instanceof MultiParam) {
-                for (Object element : ((MultiParam) sqlParam).valueList()) {
-                    if (element == null) {
-                        // bind null
-                        statement.setNull(i + 1, Types.NULL);
-                    } else {
-                        value = mappingType.beforeBind(sqlType, mappingEnv, element);
-                        bind(statement, i + 1, sqlType, value);
-                    }
-                }
-            } else {
+                value = mappingType.beforeBind(sqlType, mappingEnv, value);
+                //TODO field codec
+                attr = bind(statement, i + 1, attr, mappingType, sqlType, value);
+                continue;
+            }
+
+            if (!(sqlParam instanceof MultiParam)) {
                 throw _Exceptions.unexpectedSqlParam(sqlParam);
             }
 
+            for (final Object element : ((MultiParam) sqlParam).valueList()) {
+                if (element == null) {
+                    // bind null
+                    statement.setNull(i + 1, Types.NULL);
+                    continue;
+                }
+                value = mappingType.beforeBind(sqlType, mappingEnv, element);
+                //TODO field codec
+                attr = bind(statement, i + 1, attr, mappingType, sqlType, value);
+            }// inner for
 
-        }
+
+        }//outer for
 
     }
 
@@ -728,9 +736,14 @@ abstract class JdbcExecutor implements StmtExecutor {
                     ResultSet.CLOSE_CURSORS_AT_COMMIT);
 
             switch (this.factory.serverDataBase) {
-                case MySQL:
-                    statement.setFetchSize(Integer.MIN_VALUE);
-                    break;
+                case MySQL: {
+                    if (this instanceof MySQLExecutor) {
+                        statement.setFetchSize(Integer.MIN_VALUE);
+                    } else {
+                        statement.setFetchSize(options.fetchSize);
+                    }
+                }
+                break;
                 case Postgre:
                 case Oracle:
                 case H2:
@@ -1086,8 +1099,14 @@ abstract class JdbcExecutor implements StmtExecutor {
         Map<String, Object> unmodifiedMap(final Map<String, Object> map) {
             Map<String, Object> result = null;
             if (map.size() == 1) {
+                Object value;
                 for (Map.Entry<String, Object> e : map.entrySet()) {
-                    result = Collections.singletonMap(e.getKey(), e.getValue()); // here don't use _Collections
+                    value = e.getValue();
+                    if (value == null) {
+                        result = Collections.emptyMap();// here don't use _Collections
+                    } else {
+                        result = Collections.singletonMap(e.getKey(), value); // here don't use _Collections
+                    }
                     break;
                 }
             } else {
@@ -1116,7 +1135,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         private boolean closed;
 
-        private long rowCount = 0L;
+        private int rowCount = 0;
 
         private boolean canceled;
 
@@ -1142,7 +1161,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         @Nullable
         @Override
         public Spliterator<R> trySplit() {
-            if (this.closed) {
+            if (this.closed || this.canceled) {
                 return null;
             }
 
@@ -1165,44 +1184,56 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         @Override
         public int characteristics() {
-            return this.fetchSize == 1 ? Spliterator.ORDERED : 0;
+            int bitSet;
+            bitSet = this.fetchSize == 1 ? Spliterator.ORDERED : 0;
+            if (this.rowReader.accessor != ObjectAccessorFactory.PSEUDO_ACCESSOR) {
+                bitSet |= Spliterator.NONNULL;
+            }
+            return bitSet;
         }
 
 
         private boolean doTryAdvance(final int expectedFetchSize, final @Nullable Consumer<? super R> action) {
-            if (action == null) {
-                throw new NullPointerException();
-            }
-            final ResultSet resultSet = this.resultSet;
-            final RowReader<R> rowReader = this.rowReader;
-
-            boolean hasMore = !this.closed;
-
-            final int actualFetchSize = hasMore ? expectedFetchSize : 0;
             try {
-                long rowCount = this.rowCount;
-                for (int i = 0; i < actualFetchSize; i++) {
-                    if (!resultSet.next()) {
-                        hasMore = false;
-                        break;
-                    }
-                    action.accept(rowReader.readOneRow(resultSet));
-                    rowCount++;
+                if (action == null) {
+                    throw new NullPointerException();
                 }
 
-                this.rowCount = rowCount;
+                final ResultSet resultSet = this.resultSet;
+                final RowReader<R> rowReader = this.rowReader;
+
+                boolean hasMore = !this.closed && !this.canceled;
+
+                final int actualFetchSize = hasMore ? expectedFetchSize : 0;
+
+                int rowCount = this.rowCount;
+                for (int i = 0; i < actualFetchSize; i++) {
+                    if (resultSet.next()) {
+                        action.accept(rowReader.readOneRow(resultSet));
+                        rowCount++;
+                        continue;
+                    }
+                    hasMore = false;
+                    break;
+                }
 
                 if (actualFetchSize > 0 && rowCount == 0 && this.hasOptimistic) {
                     throw _Exceptions.optimisticLock(rowCount);
                 }
+                if (rowCount > 0) {
+                    rowCount = 1; // just for hasOptimistic
+                }
+                this.rowCount = rowCount;
 
                 if (!hasMore || this.canceled) {
                     this.closeStream();
                 }
                 return hasMore;
             } catch (Throwable e) {
-                throw handleError(e, resultSet, this.statement);
+                this.closeStream();
+                throw JdbcExceptions.wrap(e);
             }
+
         }
 
         private void closeStream() {

@@ -16,7 +16,6 @@ import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.mapping.MappingTypeException;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.*;
@@ -55,11 +54,11 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static MappingTypeException beforeBindMethod(SqlType sqlType, MappingType mappingType
-            , @Nullable Object returnValue) {
+    public static MetaException beforeBindMethod(SqlType sqlType, MappingType mappingType,
+                                                 @Nullable Object returnValue) {
         String m = String.format("%s beforeBind() method return type %s and %s type not match."
-                , mappingType.getClass().getName(), _ClassUtils.safeClassName(returnValue), sqlType);
-        return new MappingTypeException(m);
+                , mappingType, _ClassUtils.safeClassName(returnValue), sqlType);
+        return new MetaException(m);
     }
 
     public static MetaException beforeBindMethod(SqlType sqlType, Object nonNull) {
