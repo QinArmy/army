@@ -181,7 +181,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
             case JSON:
             case JSONB:
-            case JSONPATH: {
+            case JSONPATH:
+
+            case PG_LSN:
+            case PG_SNAPSHOT: {
                 if (pgObject == null) {
                     pgObject = new PGobject();
                 }
@@ -197,56 +200,70 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 stmt.setObject(indexBasedOne, nonNull, Types.SQLXML);
             }
             break;
-            case BIT_ARRAY:
-            case XML_ARRAY:
-            case CHAR_ARRAY:
-            case CIDR_ARRAY:
-            case DATE_ARRAY:
-            case INET_ARRAY:
-            case JSON_ARRAY:
-            case LINE_ARRAY:
-            case PATH_ARRAY:
-            case REAL_ARRAY:
-            case BOX_ARRAY:
-            case TEXT_ARRAY:
-            case TIME_ARRAY:
-            case UUID_ARRAY:
-            case BYTEA_ARRAY:
-            case JSONB_ARRAY:
-            case MONEY_ARRAY:
-            case POINT_ARRAY:
-            case BIGINT_ARRAY:
-            case FLOAT8_ARRAY:
-            case TIMETZ_ARRAY:
-            case VARBIT_ARRAY:
             case BOOLEAN_ARRAY:
-            case CIRCLE_ARRAY:
-            case ACLITEM_ARRAY:
-            case LSEG_ARRAY:
-            case DECIMAL_ARRAY:
             case INTEGER_ARRAY:
-            case MACADDR_ARRAY:
-            case POLYGON_ARRAY:
-            case TSQUERY_ARRAY:
-            case TSRANGE_ARRAY:
-            case VARCHAR_ARRAY:
-            case INTERVAL_ARRAY:
-            case MACADDR8_ARRAY:
-            case NUMRANGE_ARRAY:
             case SMALLINT_ARRAY:
+            case BIGINT_ARRAY:
+            case DECIMAL_ARRAY:
+            case REAL_ARRAY:
+            case FLOAT8_ARRAY:
+
+            case CHAR_ARRAY:
+            case VARCHAR_ARRAY:
+            case TEXT_ARRAY:
+
+            case BYTEA_ARRAY:
+
+            case DATE_ARRAY:
+            case TIME_ARRAY:
+            case TIMETZ_ARRAY:
+            case TIMESTAMP_ARRAY:
+            case TIMESTAMPTZ_ARRAY:
+            case INTERVAL_ARRAY:
+
+            case BIT_ARRAY:
+            case VARBIT_ARRAY:
+            case UUID_ARRAY:
+
+            case CIDR_ARRAY:
+            case INET_ARRAY:
+            case MACADDR_ARRAY:
+            case MACADDR8_ARRAY:
+
+            case JSON_ARRAY:
+            case JSONB_ARRAY:
+            case JSONPATH_ARRAY:
+            case XML_ARRAY:
+
+            case POINT_ARRAY:
+            case LINE_ARRAY:
+            case LSEG_ARRAY:
+            case PATH_ARRAY:
+            case BOX_ARRAY:
+            case CIRCLE_ARRAY:
+            case POLYGON_ARRAY:
+
+            case TSQUERY_ARRAY:
             case TSVECTOR_ARRAY:
-            case DATERANGE_ARRAY:
+
             case INT4RANGE_ARRAY:
             case INT8RANGE_ARRAY:
-            case TIMESTAMP_ARRAY:
+            case NUMRANGE_ARRAY:
+            case DATERANGE_ARRAY:
+            case TSRANGE_ARRAY:
             case TSTZRANGE_ARRAY:
-            case TSMULTIRANGE_ARRAY:
-            case NUMMULTIRANGE_ARRAY:
-            case DATEMULTIRANGE_ARRAY:
+
             case INT4MULTIRANGE_ARRAY:
             case INT8MULTIRANGE_ARRAY:
+            case NUMMULTIRANGE_ARRAY:
+            case DATEMULTIRANGE_ARRAY:
+            case TSMULTIRANGE_ARRAY:
             case TSTZMULTIRANGE_ARRAY:
-            case TIMESTAMPTZ_ARRAY: {
+
+            case MONEY_ARRAY:
+            case ACLITEM_ARRAY:
+            case PG_LSN_ARRAY:
+            case PG_SNAPSHOT_ARRAY: {
                 if (!(nonNull instanceof String)) {
                     throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
                 }
@@ -310,20 +327,24 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case "int4":
             case "serial":
             case "integer":
+            case "xid":  // https://www.postgresql.org/docs/current/datatype-oid.html
+            case "cid":  // https://www.postgresql.org/docs/current/datatype-oid.html
                 type = PostgreSqlType.INTEGER;
                 break;
             case "int8":
             case "bigint":
             case "bigserial":
             case "serial8":
+            case "xid8":  // https://www.postgresql.org/docs/current/datatype-oid.html  TODO what's tid ?
                 type = PostgreSqlType.BIGINT;
                 break;
             case "numeric":
             case "decimal":
                 type = PostgreSqlType.DECIMAL;
                 break;
-            case "double precision":
             case "float8":
+            case "double precision":
+            case "float":
                 type = PostgreSqlType.FLOAT8;
                 break;
             case "float4":
@@ -339,6 +360,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 type = PostgreSqlType.VARCHAR;
                 break;
             case "text":
+            case "txid_snapshot":  // TODO txid_snapshot is text?
                 type = PostgreSqlType.TEXT;
                 break;
             case "bytea":
@@ -362,6 +384,9 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case "timestamptz":
             case "timestamp with time zone":
                 type = PostgreSqlType.TIMESTAMPTZ;
+                break;
+            case "interval":
+                type = PostgreSqlType.INTERVAL;
                 break;
 
             case "json":
@@ -455,11 +480,11 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case "nummultirange":
                 type = PostgreSqlType.NUMMULTIRANGE;
                 break;
-            case "tsmultirange":
-                type = PostgreSqlType.TSMULTIRANGE;
-                break;
             case "datemultirange":
                 type = PostgreSqlType.DATEMULTIRANGE;
+                break;
+            case "tsmultirange":
+                type = PostgreSqlType.TSMULTIRANGE;
                 break;
             case "tstzmultirange":
                 type = PostgreSqlType.TSTZMULTIRANGE;
@@ -471,8 +496,14 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case "money":
                 type = PostgreSqlType.MONEY;
                 break;
+            case "aclitem":
+                type = PostgreSqlType.ACLITEM;
+                break;
             case "pg_lsn":
                 type = PostgreSqlType.PG_LSN;
+                break;
+            case "pg_snapshot":
+                type = PostgreSqlType.PG_SNAPSHOT;
                 break;
 
             case "boolean[]":
@@ -501,6 +532,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 type = PostgreSqlType.DECIMAL_ARRAY;
                 break;
             case "float8[]":
+            case "float[]":
             case "double precision[]":
                 type = PostgreSqlType.FLOAT8_ARRAY;
                 break;
@@ -578,11 +610,11 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case "inet[]":
                 type = PostgreSqlType.INET_ARRAY;
                 break;
-            case "macaddr8[]":
-                type = PostgreSqlType.MACADDR8_ARRAY;
-                break;
             case "macaddr[]":
                 type = PostgreSqlType.MACADDR_ARRAY;
+                break;
+            case "macaddr8[]":
+                type = PostgreSqlType.MACADDR8_ARRAY;
                 break;
 
             case "box[]":
@@ -665,7 +697,6 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 type = PostgreSqlType.ACLITEM_ARRAY;
                 break;
             default:
-                //TODO user-level transaction ID
                 type = PostgreSqlType.UNKNOWN;
 
 

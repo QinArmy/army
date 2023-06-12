@@ -890,19 +890,19 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link BinaryType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_current_xact_id () → xid8<br/>
      * </a>
      */
     public static SimpleExpression pgCurrentXactId() {
-        return FunctionUtils.zeroArgFunc("pg_current_xact_id", BinaryType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("pg_current_xact_id", LongType.INSTANCE);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link BinaryType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_current_xact_id_if_assigned () → xid8<br/>
@@ -910,7 +910,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      */
     public static SimpleExpression pgCurrentXactIdIfAssigned() {
         //TODO xid8 is binary ?
-        return FunctionUtils.zeroArgFunc("pg_current_xact_id_if_assigned", BinaryType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("pg_current_xact_id_if_assigned", LongType.INSTANCE);
     }
 
     /**
@@ -941,7 +941,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: <ul>
-     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link BinaryType#INSTANCE}</li>
+     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#INSTANCE}</li>
      * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
@@ -950,32 +950,32 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static _ColumnWithOrdinalityFunction pgSnapshotXip(Expression pgSnapshot) {
-        return DialectFunctionUtils.oneArgColumnFunction("pg_snapshot_xip", pgSnapshot, null, BinaryType.INSTANCE);
+        return DialectFunctionUtils.oneArgColumnFunction("pg_snapshot_xip", pgSnapshot, null, LongType.INSTANCE);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link BinaryType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_snapshot_xmax ( pg_snapshot ) → xid8<br/>
      * </a>
      */
     public static SimpleExpression pgSnapshotXMax(Expression pgSnapshot) {
-        return FunctionUtils.oneArgFunc("pg_snapshot_xmax", pgSnapshot, BinaryType.INSTANCE);
+        return FunctionUtils.oneArgFunc("pg_snapshot_xmax", pgSnapshot, LongType.INSTANCE);
     }
 
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link BinaryType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_snapshot_xmin ( pg_snapshot ) → xid8<br/>
      * </a>
      */
     public static SimpleExpression pgSnapshotXMin(Expression pgSnapshot) {
-        return FunctionUtils.oneArgFunc("pg_snapshot_xmin", pgSnapshot, BinaryType.INSTANCE);
+        return FunctionUtils.oneArgFunc("pg_snapshot_xmin", pgSnapshot, LongType.INSTANCE);
     }
 
 
@@ -1171,7 +1171,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      * <ul>
-     *     <li>xid : {@link BinaryType#INSTANCE}</li>
+     *     <li>xid : {@link IntegerType#INSTANCE}</li>
      *     <li>timestamp : {@link OffsetDateTimeType#INSTANCE}</li>
      *     <li>roident : {@link LongType#INSTANCE}</li>
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
@@ -1184,7 +1184,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     public static _TabularWithOrdinalityFunction pgLastCommittedXact() {
         final List<Selection> fieldList;
         fieldList = ArrayUtils.asUnmodifiableList(
-                ArmySelections.forName("xid", BinaryType.INSTANCE), //TODO xid is binary ?
+                ArmySelections.forName("xid", IntegerType.INSTANCE),
                 ArmySelections.forName("timestamp", OffsetDateTimeType.INSTANCE),
                 ArmySelections.forName("roident", LongType.INSTANCE)
         );
@@ -1209,17 +1209,17 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *     <li>next_xid : {@link TextType#INSTANCE}</li>
      *     <li>next_oid : {@link LongType#INSTANCE}</li>
      *     <br/>
-     *     <li>next_multixact_id : {@link BinaryType#INSTANCE}</li>
-     *     <li>next_multi_offset : {@link BinaryType#INSTANCE}</li>
-     *     <li>oldest_xid : {@link BinaryType#INSTANCE}</li>
+     *     <li>next_multixact_id : {@link IntegerType#INSTANCE}</li>
+     *     <li>next_multi_offset : {@link IntegerType#INSTANCE}</li>
+     *     <li>oldest_xid : {@link IntegerType#INSTANCE}</li>
      *     <li>oldest_xid_dbid : {@link LongType#INSTANCE}</li>
      *     <br/>
-     *     <li>oldest_active_xid : {@link BinaryType#INSTANCE}</li>
-     *     <li>oldest_multi_xid : {@link BinaryType#INSTANCE}</li>
+     *     <li>oldest_active_xid : {@link IntegerType#INSTANCE}</li>
+     *     <li>oldest_multi_xid : {@link IntegerType#INSTANCE}</li>
      *     <li>oldest_multi_dbid : {@link LongType#INSTANCE}</li>
-     *     <li>oldest_commit_ts_xid : {@link BinaryType#INSTANCE}</li>
+     *     <li>oldest_commit_ts_xid : {@link IntegerType#INSTANCE}</li>
      *     <br/>
-     *     <li>newest_commit_ts_xid : {@link BinaryType#INSTANCE}</li>
+     *     <li>newest_commit_ts_xid : {@link IntegerType#INSTANCE}</li>
      *     <li>checkpoint_time : {@link OffsetDateTimeType#INSTANCE}</li>
      *     <br/>
      *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
@@ -1245,17 +1245,17 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
         fieldList.add(ArmySelections.forName("next_xid", TextType.INSTANCE));
         fieldList.add(ArmySelections.forName("next_oid", LongType.INSTANCE));
 
-        fieldList.add(ArmySelections.forName("next_multixact_id", BinaryType.INSTANCE)); //TODO xid is binary ?
-        fieldList.add(ArmySelections.forName("next_multi_offset", BinaryType.INSTANCE));
-        fieldList.add(ArmySelections.forName("oldest_xid", BinaryType.INSTANCE));
+        fieldList.add(ArmySelections.forName("next_multixact_id", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("next_multi_offset", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("oldest_xid", IntegerType.INSTANCE));
         fieldList.add(ArmySelections.forName("oldest_xid_dbid", LongType.INSTANCE));
 
-        fieldList.add(ArmySelections.forName("oldest_active_xid", BinaryType.INSTANCE));
-        fieldList.add(ArmySelections.forName("oldest_multi_xid", BinaryType.INSTANCE));
+        fieldList.add(ArmySelections.forName("oldest_active_xid", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("oldest_multi_xid", IntegerType.INSTANCE));
         fieldList.add(ArmySelections.forName("oldest_multi_dbid", LongType.INSTANCE));
-        fieldList.add(ArmySelections.forName("oldest_commit_ts_xid", BinaryType.INSTANCE));
+        fieldList.add(ArmySelections.forName("oldest_commit_ts_xid", IntegerType.INSTANCE));
 
-        fieldList.add(ArmySelections.forName("newest_commit_ts_xid", BinaryType.INSTANCE));
+        fieldList.add(ArmySelections.forName("newest_commit_ts_xid", IntegerType.INSTANCE));
         fieldList.add(ArmySelections.forName("checkpoint_time", OffsetDateTimeType.INSTANCE));
 
         return DialectFunctionUtils.zeroArgTabularFunc("pg_control_checkpoint", fieldList);
