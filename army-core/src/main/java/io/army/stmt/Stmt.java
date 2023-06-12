@@ -9,6 +9,8 @@ import java.util.function.Function;
  */
 public interface Stmt {
 
+    boolean hasOptimistic();
+
     String printSql(Function<String, String> function);
 
     @Override

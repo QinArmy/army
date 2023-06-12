@@ -354,6 +354,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
 
         private CurrentSession(LocalSession session) {
+            super(session.name(), session.isReadonlySession());
             this.session = session;
         }
 
@@ -363,20 +364,12 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             return this.session.sessionFactory();
         }
 
-        @Override
-        public String name() {
-            return this.session.name();
-        }
 
         @Override
         public Visible visible() {
             return this.session.visible();
         }
 
-        @Override
-        public boolean isReadonlySession() {
-            return this.session.isReadonlySession();
-        }
 
         @Override
         public boolean isReadOnlyStatus() {
@@ -384,8 +377,8 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
         @Override
-        public boolean closed() {
-            return this.session.closed();
+        public boolean isClosed() {
+            return this.session.isClosed();
         }
 
         @Override

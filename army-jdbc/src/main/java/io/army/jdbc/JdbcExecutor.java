@@ -160,9 +160,6 @@ abstract class JdbcExecutor implements StmtExecutor {
             } else {
                 rows = statement.executeUpdate(sql);
             }
-            if (rows < 1 && stmt.hasOptimistic()) {
-                throw _Exceptions.optimisticLock(rows);
-            }
             return rows;
         } catch (ArmyException e) {
             throw e;
@@ -174,27 +171,8 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     @Override
-    public <T> List<T> returningUpdate(Stmt stmt, int txTimeout, Class<T> resultClass) throws DataAccessException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<Map<String, Object>> returnInsertAsMap(Stmt stmt, int txTimeout,
-                                                       Supplier<Map<String, Object>> mapConstructor)
+    public List<Long> batchUpdate(final BatchStmt stmt, final int timeout, final @Nullable List<Long> rowsList)
             throws DataAccessException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<Map<String, Object>> returningUpdateAsMap(Stmt stmt, int txTimeout,
-                                                          Supplier<Map<String, Object>> mapConstructor)
-            throws DataAccessException {
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Override
-    public List<Long> batchUpdate(final BatchStmt stmt, final int timeout) throws DataAccessException {
 
         try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
             final List<List<SQLParam>> paramGroupList = stmt.groupList();
@@ -337,7 +315,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     @Override
     public final <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass,
-                                           final StreamOptions options, final @Nullable Consumer<StreamCommander> consumer) {
+                                           final StreamOptions options) {
         final List<? extends Selection> selectionList = stmt.selectionList();
 
         final FunctionWithError<ResultSetMetaData, RowReader<R>> function;
@@ -355,21 +333,21 @@ abstract class JdbcExecutor implements StmtExecutor {
             return rowReader;
 
         };
-        return this.queryAsStream(stmt, timeout, options, consumer, function);
+        return this.queryAsStream(stmt, timeout, options, function);
     }
 
 
     @Override
     public Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
                                                       final Supplier<Map<String, Object>> mapConstructor,
-                                                      StreamOptions options, @Nullable Consumer<StreamCommander> consumer) {
+                                                      StreamOptions options) {
         final List<? extends Selection> selectionList = stmt.selectionList();
 
         final FunctionWithError<ResultSetMetaData, RowReader<Map<String, Object>>> function;
         function = metaData -> new MapReader(this, selectionList, createSqlTypArray(metaData, selectionList.size()),
                 mapConstructor
         );
-        return this.queryAsStream(stmt, timeout, options, consumer, function);
+        return this.queryAsStream(stmt, timeout, options, function);
     }
 
     @Override
@@ -678,11 +656,10 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     /**
-     * @see #queryStream(SimpleStmt, int, Class, StreamOptions, Consumer)
-     * @see #queryMapStream(SimpleStmt, int, Supplier, StreamOptions, Consumer)
+     * @see #queryStream(SimpleStmt, int, Class, StreamOptions)
+     * @see #queryMapStream(SimpleStmt, int, Supplier, StreamOptions)
      */
     private <R> Stream<R> queryAsStream(final SimpleStmt stmt, final int timeout, final StreamOptions options,
-                                        final @Nullable Consumer<StreamCommander> consumer,
                                         final FunctionWithError<ResultSetMetaData, RowReader<R>> function) {
         final List<? extends Selection> selectionList = stmt.selectionList();
         final int selectionSize;
@@ -725,6 +702,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                     stmt.hasOptimistic(), options
             );
 
+            final Consumer<StreamCommander> consumer = options.commanderConsumer;
             // 6. create Commander
             if (consumer != null) {
                 final StreamCommander commander;
@@ -747,7 +725,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     /**
-     * @see #queryAsStream(SimpleStmt, int, StreamOptions, Consumer, FunctionWithError)
+     * @see #queryAsStream(SimpleStmt, int, StreamOptions, FunctionWithError)
      */
     private Statement createStreamStmt(final String sql, final int paramSize, final StreamOptions options)
             throws SQLException {
@@ -1091,20 +1069,24 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         @Override
         Map<String, Object> unmodifiedMap(final Map<String, Object> map) {
-            Map<String, Object> result = null;
-            if (map.size() == 1) {
-                Object value;
-                for (Map.Entry<String, Object> e : map.entrySet()) {
-                    value = e.getValue();
-                    if (value == null) {
-                        result = Collections.emptyMap();// here don't use _Collections
-                    } else {
-                        result = Collections.singletonMap(e.getKey(), value); // here don't use _Collections
-                    }
+            final Map<String, Object> result;
+
+            switch (map.size()) {
+                case 0:   // here , due to column value is null and map is ConcurrentMap, map accessor remove key.
+                    result = Collections.emptyMap();
                     break;
+                case 1: {
+                    Map<String, Object> temp = null;
+                    for (Map.Entry<String, Object> e : map.entrySet()) {
+                        temp = Collections.singletonMap(e.getKey(), e.getValue()); // here don't use _Collections
+                        break;
+                    }
+                    result = temp;
                 }
-            } else {
-                result = Collections.unmodifiableMap(map); // here don't use _Collections
+                break;
+                default:
+                    result = Collections.unmodifiableMap(map);
+
             }
             return result;
         }

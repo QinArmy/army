@@ -6,13 +6,10 @@ import io.army.session.DataAccessException;
 import io.army.session.OptimisticLockException;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
-import io.army.sync.StreamCommander;
 import io.army.sync.StreamOptions;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -54,29 +51,13 @@ public interface StmtExecutor {
      */
     long update(SimpleStmt stmt, int timeout) throws DataAccessException;
 
-    /**
-     * @throws io.army.session.DataAccessException when access database occur error.
-     */
-    <T> List<T> returningUpdate(Stmt stmt, int txTimeout, Class<T> resultClass) throws DataAccessException;
-
-    /**
-     * @throws io.army.session.DataAccessException when access database occur error.
-     */
-    List<Map<String, Object>> returnInsertAsMap(Stmt stmt, int txTimeout, Supplier<Map<String, Object>> mapConstructor)
-            throws DataAccessException;
-
-    /**
-     * @throws io.army.session.DataAccessException when access database occur error.
-     */
-    List<Map<String, Object>> returningUpdateAsMap(Stmt stmt, int txTimeout, Supplier<Map<String, Object>> mapConstructor)
-            throws DataAccessException;
 
 
     /**
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
-    List<Long> batchUpdate(BatchStmt stmt, int timeout) throws DataAccessException;
+    List<Long> batchUpdate(BatchStmt stmt, int timeout, @Nullable List<Long> rowsList) throws DataAccessException;
 
     <T> List<T> query(SimpleStmt stmt, int timeout, Class<T> resultClass, Supplier<List<T>> listConstructor)
             throws DataAccessException;
@@ -86,12 +67,10 @@ public interface StmtExecutor {
             throws DataAccessException;
 
 
-    <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass, StreamOptions options,
-                              @Nullable Consumer<StreamCommander> consumer);
+    <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass, StreamOptions options);
 
     Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
-                                               Supplier<Map<String, Object>> mapConstructor, StreamOptions options,
-                                               @Nullable Consumer<StreamCommander> consumer);
+                                               Supplier<Map<String, Object>> mapConstructor, StreamOptions options);
 
 
     Object createSavepoint() throws DataAccessException;

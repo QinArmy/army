@@ -308,7 +308,12 @@ public abstract class ObjectAccessorFactory {
             if (!(target instanceof Map)) {
                 throw new IllegalArgumentException("target non-map");
             }
-            ((Map<String, Object>) target).put(propertyName, value);
+            if (value == null && target instanceof ConcurrentMap) {
+                ((Map<String, Object>) target).remove(propertyName);
+            } else {
+                ((Map<String, Object>) target).put(propertyName, value);
+            }
+
         }
 
         @Override

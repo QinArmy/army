@@ -25,7 +25,7 @@ import java.time.ZoneId;
 /**
  * This class is a implementation of {@link LocalSessionFactory}
  */
-final class SyncLocalSessionFactory extends _AbstractSessionFactory implements LocalSessionFactory {
+final class SyncLocalSessionFactory extends _ArmySessionFactory implements LocalSessionFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(SyncLocalSessionFactory.class);
 
@@ -198,19 +198,19 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
 
     static final class LocalSessionBuilder implements LocalSessionFactory.SessionBuilder {
 
-        final SyncLocalSessionFactory sessionFactory;
-
-        LocalStmtExecutor stmtExecutor;
+        final SyncLocalSessionFactory factory;
 
         String name;
 
         boolean readonly;
 
+        LocalStmtExecutor stmtExecutor;
+
         Visible visible;
 
-        private LocalSessionBuilder(SyncLocalSessionFactory sessionFactory) {
-            this.sessionFactory = sessionFactory;
-            this.readonly = sessionFactory.readonly;
+        private LocalSessionBuilder(SyncLocalSessionFactory factory) {
+            this.factory = factory;
+            this.readonly = factory.readonly;
         }
 
         @Override
@@ -227,7 +227,8 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
 
         @Override
         public SessionBuilder queryInsertMode(QueryInsertMode mode) {
-            return null;
+            //TODO
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -238,15 +239,18 @@ final class SyncLocalSessionFactory extends _AbstractSessionFactory implements L
 
         @Override
         public LocalSession build() throws SessionException {
-            if (!this.readonly && this.sessionFactory.readonly) {
+            if (!this.readonly && this.factory.readonly) {
                 String m = String.format("%s couldn't create non-readonly %s."
-                        , this.sessionFactory, LocalSession.class.getName());
+                        , this.factory, LocalSession.class.getName());
                 throw new CreateSessionException(m);
             }
             try {
-                this.stmtExecutor = this.sessionFactory.executorFactory.createLocalStmtExecutor();
+                this.stmtExecutor = this.factory.executorFactory.createLocalStmtExecutor();
             } catch (DataAccessException e) {
                 throw new CreateSessionException("create session occur error.", e);
+            }
+            if (this.name == null) {
+                this.name = "unnamed";
             }
             return new SyncLocalSession(this);
 

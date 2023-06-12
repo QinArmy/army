@@ -4,6 +4,7 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.lang.Nullable;
 import io.army.session.NonUniqueException;
+import io.army.session._ArmySession;
 import io.army.util.ArmyCriteria;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -13,10 +14,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public abstract class _ArmySyncSession implements SyncSession {
+public abstract class _ArmySyncSession extends _ArmySession implements SyncSession {
 
 
-    protected _ArmySyncSession() {
+    protected _ArmySyncSession(String name, boolean readonly) {
+        super(name, readonly);
     }
 
 
@@ -118,113 +120,18 @@ public abstract class _ArmySyncSession implements SyncSession {
 
 
     @Override
-    public final <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize) {
-        return this.doQueryStream(statement, resultClass, true, fetchSize, null, false, Visible.ONLY_VISIBLE);
+    public final <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, StreamOptions options) {
+        return this.queryStream(statement, resultClass, options, Visible.ONLY_VISIBLE);
     }
 
-    @Override
-    public final <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream,
-                                           int fetchSize, @Nullable Comparable<? super R> comparator) {
-        return this.doQueryStream(statement, resultClass, serverStream, fetchSize, comparator, false, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize,
-                                           Visible visible) {
-        return this.doQueryStream(statement, resultClass, true, fetchSize, null, false, visible);
-    }
-
-    @Override
-    public final <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream,
-                                           int fetchSize, @Nullable Comparable<? super R> comparator, Visible visible) {
-        return this.doQueryStream(statement, resultClass, serverStream, fetchSize, comparator, false, visible);
-    }
-
-    @Override
-    public final <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize) {
-        return this.doQueryStream(statement, resultClass, true, fetchSize, null, true, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream,
-                                                   int fetchSize, @Nullable Comparable<? super R> comparator) {
-        return this.doQueryStream(statement, resultClass, serverStream, fetchSize, comparator, true, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize,
-                                                   Visible visible) {
-        return this.doQueryStream(statement, resultClass, true, fetchSize, null, true, visible);
-    }
-
-    @Override
-    public final <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream,
-                                                   int fetchSize, @Nullable Comparable<? super R> comparator,
-                                                   Visible visible) {
-        return this.doQueryStream(statement, resultClass, serverStream, fetchSize, comparator, true, visible);
-    }
-
-    @Override
-    public final Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
-                                                            Supplier<Map<String, Object>> mapConstructor, int fetchSize) {
-        return this.doQueryMapStream(statement, mapConstructor, true, fetchSize, null, false, Visible.ONLY_VISIBLE);
-    }
 
     @Override
     public final Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
                                                             Supplier<Map<String, Object>> mapConstructor,
-                                                            boolean serverStream, int fetchSize,
-                                                            @Nullable Comparable<Map<String, Object>> comparator) {
-        return this.doQueryMapStream(statement, mapConstructor, serverStream, fetchSize, comparator, false,
-                Visible.ONLY_VISIBLE);
+                                                            StreamOptions options) {
+        return this.queryMapStream(statement, mapConstructor, options, Visible.ONLY_VISIBLE);
     }
 
-    @Override
-    public final Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
-                                                            Supplier<Map<String, Object>> mapConstructor, int fetchSize,
-                                                            Visible visible) {
-        return this.doQueryMapStream(statement, mapConstructor, true, fetchSize, null, false, visible);
-    }
-
-    @Override
-    public final Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
-                                                            Supplier<Map<String, Object>> mapConstructor,
-                                                            boolean serverStream, int fetchSize,
-                                                            @Nullable Comparable<Map<String, Object>> comparator,
-                                                            Visible visible) {
-        return this.doQueryMapStream(statement, mapConstructor, serverStream, fetchSize, comparator, false, visible);
-    }
-
-    @Override
-    public final Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
-                                                                    Supplier<Map<String, Object>> mapConstructor,
-                                                                    int fetchSize) {
-        return this.doQueryMapStream(statement, mapConstructor, true, fetchSize, null, true, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
-                                                                    Supplier<Map<String, Object>> mapConstructor,
-                                                                    boolean serverStream, int fetchSize,
-                                                                    @Nullable Comparable<Map<String, Object>> comparator) {
-        return this.doQueryMapStream(statement, mapConstructor, serverStream, fetchSize, comparator, true, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
-                                                                    Supplier<Map<String, Object>> mapConstructor,
-                                                                    int fetchSize, Visible visible) {
-        return this.doQueryMapStream(statement, mapConstructor, true, fetchSize, null, true, visible);
-    }
-
-    @Override
-    public final Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
-                                                                    Supplier<Map<String, Object>> mapConstructor,
-                                                                    boolean serverStream, int fetchSize,
-                                                                    @Nullable Comparable<Map<String, Object>> comparator,
-                                                                    Visible visible) {
-        return this.doQueryMapStream(statement, mapConstructor, serverStream, fetchSize, comparator, true, visible);
-    }
 
     @Override
     public final long update(SimpleDmlStatement statement) {
@@ -279,17 +186,6 @@ public abstract class _ArmySyncSession implements SyncSession {
         return obj == this;
     }
 
-
-    protected abstract <R> Stream<R> doQueryStream(SimpleDqlStatement statement, Class<R> resultClass,
-                                                   boolean serverStream, int fetchSize,
-                                                   @Nullable Comparable<? super R> comparator, boolean parallel,
-                                                   Visible visible);
-
-    protected abstract Stream<Map<String, Object>> doQueryMapStream(SimpleDqlStatement statement,
-                                                                    Supplier<Map<String, Object>> mapConstructor,
-                                                                    boolean serverStream, int fetchSize,
-                                                                    @Nullable Comparable<Map<String, Object>> comparator,
-                                                                    boolean parallel, Visible visible);
 
 
 }

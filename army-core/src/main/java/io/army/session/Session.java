@@ -13,7 +13,7 @@ public interface Session {
 
     boolean isReadonlySession();
 
-    boolean closed();
+    boolean isClosed();
 
     boolean hasTransaction();
 

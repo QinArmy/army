@@ -41,7 +41,7 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
     }
 
     @Override
-    public boolean closed() {
+    public boolean isClosed() {
         return false;
     }
 

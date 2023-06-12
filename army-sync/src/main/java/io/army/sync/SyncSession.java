@@ -137,10 +137,21 @@ public interface SyncSession extends Session {
     List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Visible visible);
 
 
+    /**
+     * <p>
+     * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
+     * and column value is null ,army remove element not put element.
+     * </p>
+     */
     List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
                                          Supplier<List<Map<String, Object>>> listConstructor);
 
     /**
+     * <p>
+     * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
+     * and column value is null ,army remove element not put element.
+     * </p>
+     *
      * @throws VisibleModeException throw when satisfy all the following conditions :
      *                              <ul>
      *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
@@ -156,11 +167,7 @@ public interface SyncSession extends Session {
 
     /*-------------------below queryStream -------------------*/
 
-    <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize);
-
-
-    <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream,
-                              int fetchSize, @Nullable Comparable<? super R> comparator);
+    <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, StreamOptions options);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -171,69 +178,24 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize, Visible visible);
+    <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, StreamOptions options, Visible visible);
 
 
     /**
-     * @throws VisibleModeException throw when satisfy all the following conditions :
-     *                              <ul>
-     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
-     *                                  <li>{@link Session#visible()} is don't support visible value</li>
-     *                              </ul>
-     * @see io.army.env.ArmyKey#VISIBLE_MODE
-     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     * <p>
+     * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
+     * and column value is null ,army remove element not put element.
+     * </p>
      */
-    <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream, int fetchSize,
-                              @Nullable Comparable<? super R> comparator, Visible visible);
-
-
-    /*-------------------below -------------------*/
-
-
-    <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize);
-
-
-    <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream,
-                                      int fetchSize, @Nullable Comparable<? super R> comparator);
-
-    /**
-     * @throws VisibleModeException throw when satisfy all the following conditions :
-     *                              <ul>
-     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
-     *                                  <li>{@link Session#visible()} is don't support visible value</li>
-     *                              </ul>
-     * @see io.army.env.ArmyKey#VISIBLE_MODE
-     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
-     */
-    <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, int fetchSize,
-                                      Visible visible);
-
-
-    /**
-     * @throws VisibleModeException throw when satisfy all the following conditions :
-     *                              <ul>
-     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
-     *                                  <li>{@link Session#visible()} is don't support visible value</li>
-     *                              </ul>
-     * @see io.army.env.ArmyKey#VISIBLE_MODE
-     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
-     */
-    <R> Stream<R> queryParallelStream(SimpleDqlStatement statement, Class<R> resultClass, boolean serverStream,
-                                      int fetchSize, @Nullable Comparable<? super R> comparator, Visible visible);
-
-
-
-    /*-------------------below query map stream-------------------*/
-
     Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
-                                               Supplier<Map<String, Object>> mapConstructor, int fetchSize);
-
-
-    Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
-                                               Supplier<Map<String, Object>> mapConstructor, boolean serverStream,
-                                               int fetchSize, @Nullable Comparable<Map<String, Object>> comparator);
+                                               Supplier<Map<String, Object>> mapConstructor, StreamOptions options);
 
     /**
+     * <p>
+     * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
+     * and column value is null ,army remove element not put element.
+     * </p>
+     *
      * @throws VisibleModeException throw when satisfy all the following conditions :
      *                              <ul>
      *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
@@ -243,65 +205,8 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
     Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
-                                               Supplier<Map<String, Object>> mapConstructor, int fetchSize,
+                                               Supplier<Map<String, Object>> mapConstructor, StreamOptions options,
                                                Visible visible);
-
-
-    /**
-     * @throws VisibleModeException throw when satisfy all the following conditions :
-     *                              <ul>
-     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
-     *                                  <li>{@link Session#visible()} is don't support visible value</li>
-     *                              </ul>
-     * @see io.army.env.ArmyKey#VISIBLE_MODE
-     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
-     */
-    Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
-                                               Supplier<Map<String, Object>> mapConstructor, boolean serverStream,
-                                               int fetchSize, @Nullable Comparable<Map<String, Object>> comparator,
-                                               Visible visible);
-
-
-    /*-------------------below -------------------*/
-
-
-    Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
-                                                       Supplier<Map<String, Object>> mapConstructor, int fetchSize);
-
-
-    Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
-                                                       Supplier<Map<String, Object>> mapConstructor,
-                                                       boolean serverStream, int fetchSize,
-                                                       @Nullable Comparable<Map<String, Object>> comparator);
-
-    /**
-     * @throws VisibleModeException throw when satisfy all the following conditions :
-     *                              <ul>
-     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
-     *                                  <li>{@link Session#visible()} is don't support visible value</li>
-     *                              </ul>
-     * @see io.army.env.ArmyKey#VISIBLE_MODE
-     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
-     */
-    Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
-                                                       Supplier<Map<String, Object>> mapConstructor,
-                                                       int fetchSize, Visible visible);
-
-
-    /**
-     * @throws VisibleModeException throw when satisfy all the following conditions :
-     *                              <ul>
-     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
-     *                                  <li>{@link Session#visible()} is don't support visible value</li>
-     *                              </ul>
-     * @see io.army.env.ArmyKey#VISIBLE_MODE
-     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
-     */
-    Stream<Map<String, Object>> queryParallelMapStream(SimpleDqlStatement statement,
-                                                       Supplier<Map<String, Object>> mapConstructor,
-                                                       boolean serverStream, int fetchSize,
-                                                       @Nullable Comparable<Map<String, Object>> comparator,
-                                                       Visible visible);
 
 
     long update(SimpleDmlStatement statement);

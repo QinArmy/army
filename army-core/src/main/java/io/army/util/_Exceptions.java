@@ -979,11 +979,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static ChildInsertException parentChildRowsNotMatch(ChildTableMeta<?> domainTable, long parentRows,
+    public static ChildUpdateException parentChildRowsNotMatch(ChildTableMeta<?> domainTable, long parentRows,
                                                                long childRows) {
         String m = String.format("%s Parent insert/update rows[%s] and child insert/update rows[%s] not match.",
                 domainTable, parentRows, childRows);
-        throw new ChildInsertException(m);
+        throw new ChildUpdateException(m);
     }
 
 

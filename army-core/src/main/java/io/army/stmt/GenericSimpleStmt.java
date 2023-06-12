@@ -7,7 +7,6 @@ public interface GenericSimpleStmt extends Stmt {
 
     String sqlText();
 
-    boolean hasOptimistic();
 
     @Deprecated
     default StatementType statementType() {

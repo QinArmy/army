@@ -8,6 +8,7 @@ import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.impl.inner._BatchDml;
 import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
@@ -33,8 +34,6 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     private static final Logger LOG = LoggerFactory.getLogger(SyncLocalSession.class);
 
-    final String name;
-
     final SyncLocalSessionFactory factory;
 
     final StmtExecutor stmtExecutor;
@@ -54,23 +53,14 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     private boolean closed;
 
     SyncLocalSession(final SyncLocalSessionFactory.LocalSessionBuilder builder) {
-        final String name = builder.name;
-        if (name == null) {
-            this.name = "unnamed";
-        } else {
-            this.name = name;
-        }
-        this.factory = builder.sessionFactory;
+        super(builder.name, builder.readonly);
+
+        this.factory = builder.factory;
         this.stmtExecutor = builder.stmtExecutor;
         assert this.stmtExecutor != null;
         this.readonly = builder.readonly;
         this.visible = builder.visible;
         this.sessionCache = this.factory.sessionCacheFactory.createCache();
-    }
-
-    @Override
-    public String name() {
-        return this.name;
     }
 
     @Override
@@ -100,53 +90,48 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         return this.readonly || (tx != null && tx.readOnly());
     }
 
-    @Override
-    public boolean isReadonlySession() {
-        return this.readonly;
-    }
-
 
     @Override
     public <R> List<R> query(final SimpleDqlStatement statement, final Class<R> resultClass,
                              final Supplier<List<R>> listConstructor, final Visible visible) {
-        try {
-            //1.assert session status
-            assertSession(statement instanceof DmlStatement, visible);
 
-            final LocalTransaction tx = this.transaction;
+        //1.assert session status
+        assertSession(statement instanceof DmlStatement, visible);
+        try {
             final int timeOut;
-            timeOut = tx == null ? 0 : tx.nextTimeout();
+            timeOut = this.getTxTimeout();
 
             final SyncLocalSessionFactory factory = this.factory;
 
-            final SimpleStmt queryStmt;
-            final Stmt dmlStmt;
+            final SimpleStmt stmt;
             final List<R> resultList;
 
             if (statement instanceof Select) {
-                queryStmt = factory.dialectParser.select((Select) statement, visible);
-                factory.printSqlIfNeed(queryStmt);
-                resultList = this.stmtExecutor.query(queryStmt, timeOut, resultClass, listConstructor);
+                stmt = factory.dialectParser.select((Select) statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.query(stmt, timeOut, resultClass, listConstructor);
             } else if (!(statement instanceof DmlStatement)) {
-                queryStmt = factory.dialectParser.dialectDql(statement, visible);
-                factory.printSqlIfNeed(queryStmt);
-                resultList = this.stmtExecutor.query(queryStmt, timeOut, resultClass, listConstructor);
+                stmt = factory.dialectParser.dialectDql(statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.query(stmt, timeOut, resultClass, listConstructor);
+            } else if (statement instanceof _Statement._ChildStatement) {
+                throw new ArmyException("don't support"); //TODO
             } else if (statement instanceof ReturningUpdate) {
-                dmlStmt = factory.dialectParser.update((ReturningUpdate) statement, visible);
-                factory.printSqlIfNeed(dmlStmt);
-                resultList = this.stmtExecutor.returningUpdate(dmlStmt, timeOut, resultClass);
+                stmt = (SimpleStmt) factory.dialectParser.update((ReturningUpdate) statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.query(stmt, timeOut, resultClass, listConstructor);
             } else if (statement instanceof ReturningInsert) {
-                dmlStmt = factory.dialectParser.insert((ReturningInsert) statement, visible);
-                factory.printSqlIfNeed(dmlStmt);
-                resultList = this.stmtExecutor.returningUpdate(dmlStmt, timeOut, resultClass);
+                stmt = (SimpleStmt) factory.dialectParser.insert((ReturningInsert) statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.query(stmt, timeOut, resultClass, listConstructor);
             } else if (statement instanceof ReturningDelete) {
-                dmlStmt = factory.dialectParser.delete((ReturningDelete) statement, visible);
-                factory.printSqlIfNeed(dmlStmt);
-                resultList = this.stmtExecutor.returningUpdate(dmlStmt, timeOut, resultClass);
+                stmt = (SimpleStmt) factory.dialectParser.delete((ReturningDelete) statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.query(stmt, timeOut, resultClass, listConstructor);
             } else {
-                dmlStmt = factory.dialectParser.dialectDml((DmlStatement) statement, visible);
-                factory.printSqlIfNeed(dmlStmt);
-                resultList = this.stmtExecutor.returningUpdate(dmlStmt, timeOut, resultClass);
+                stmt = (SimpleStmt) factory.dialectParser.dialectDml((DmlStatement) statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.query(stmt, timeOut, resultClass, listConstructor);
             }
 
             return resultList;
@@ -159,6 +144,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             ((_Statement) statement).clear();
         }
     }
+
 
     @Override
     public List<Map<String, Object>> queryAsMap(final SimpleDqlStatement statement,
@@ -175,36 +161,36 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
             final SyncLocalSessionFactory factory = this.factory;
 
-            final SimpleStmt queryStmt;
-            final Stmt dmlStmt;
+            final SimpleStmt stmt;
             final List<Map<String, Object>> resultList;
 
             if (statement instanceof Select) {
-                queryStmt = factory.dialectParser.select((Select) statement, visible);
-                factory.printSqlIfNeed(queryStmt);
-                resultList = this.stmtExecutor.queryAsMap(queryStmt, timeOut, mapConstructor, listConstructor);
+                stmt = factory.dialectParser.select((Select) statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.queryAsMap(stmt, timeOut, mapConstructor, listConstructor);
             } else if (!(statement instanceof DmlStatement)) {
-                queryStmt = factory.dialectParser.dialectDql(statement, visible);
-                factory.printSqlIfNeed(queryStmt);
-                resultList = this.stmtExecutor.queryAsMap(queryStmt, timeOut, mapConstructor, listConstructor);
+                stmt = factory.dialectParser.dialectDql(statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.queryAsMap(stmt, timeOut, mapConstructor, listConstructor);
+            } else if (statement instanceof _Statement._ChildStatement) {
+                throw new ArmyException("don't support"); //TODO
             } else if (statement instanceof ReturningUpdate) {
-                dmlStmt = factory.dialectParser.update((ReturningUpdate) statement, visible);
-                factory.printSqlIfNeed(dmlStmt);
-                resultList = this.stmtExecutor.returningUpdateAsMap(dmlStmt, timeOut, mapConstructor);
+                stmt = (SimpleStmt) factory.dialectParser.update((ReturningUpdate) statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.queryAsMap(stmt, timeOut, mapConstructor, listConstructor);
             } else if (statement instanceof ReturningInsert) {
-                dmlStmt = factory.dialectParser.insert((ReturningInsert) statement, visible);
-                factory.printSqlIfNeed(dmlStmt);
-                resultList = this.stmtExecutor.returnInsertAsMap(dmlStmt, timeOut, mapConstructor);
+                stmt = (SimpleStmt) factory.dialectParser.insert((ReturningInsert) statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.queryAsMap(stmt, timeOut, mapConstructor, listConstructor);
             } else if (statement instanceof ReturningDelete) {
-                dmlStmt = factory.dialectParser.delete((ReturningDelete) statement, visible);
-                factory.printSqlIfNeed(dmlStmt);
-                resultList = this.stmtExecutor.returningUpdateAsMap(dmlStmt, timeOut, mapConstructor);
+                stmt = (SimpleStmt) factory.dialectParser.delete((ReturningDelete) statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.queryAsMap(stmt, timeOut, mapConstructor, listConstructor);
             } else {
-                dmlStmt = factory.dialectParser.dialectDml((DmlStatement) statement, visible);
-                factory.printSqlIfNeed(dmlStmt);
-                resultList = this.stmtExecutor.returningUpdateAsMap(dmlStmt, timeOut, mapConstructor);
+                stmt = (SimpleStmt) factory.dialectParser.dialectDml((DmlStatement) statement, visible);
+                factory.printSqlIfNeed(stmt);
+                resultList = this.stmtExecutor.queryAsMap(stmt, timeOut, mapConstructor, listConstructor);
             }
-
             return resultList;
         } catch (ArmyException e) {
             throw e;
@@ -219,47 +205,98 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     @Override
     public long update(final SimpleDmlStatement statement, final Visible visible) {
+        if (statement instanceof _BatchDml) {
+            // no bug,never here
+            throw _Exceptions.unexpectedStatement(statement);
+        }
         final long affectedRows;
         if (statement instanceof InsertStatement) {
             affectedRows = this.insert((InsertStatement) statement, visible);
         } else {
-            affectedRows = this.dmlUpdate(statement, visible);
+            affectedRows = this.simpleUpdate(statement, visible);
         }
         return affectedRows;
     }
 
 
     @Override
-    public List<Long> batchUpdate(final BatchDmlStatement dml, final Visible visible) {
+    public List<Long> batchUpdate(final BatchDmlStatement statement, final Visible visible) {
+        if (!(statement instanceof _BatchDml)) {
+            // no bug,never here
+            throw _Exceptions.unexpectedStatement(statement);
+        }
         try {
-            if (!(dml instanceof _BatchDml)) {
-                throw _Exceptions.unexpectedStatement(dml);
-            }
+
             //1. assert session status
             assertSession(true, visible);
             //2. parse statement to stmt
             final BatchStmt stmt;
-            if (dml instanceof UpdateStatement) {
-                stmt = (BatchStmt) this.factory.dialectParser.update((UpdateStatement) dml, visible);
-            } else if (dml instanceof DeleteStatement) {
-                stmt = (BatchStmt) this.factory.dialectParser.delete((DeleteStatement) dml, visible);
+            if (statement instanceof UpdateStatement) {
+                stmt = (BatchStmt) this.factory.dialectParser.update((UpdateStatement) statement, visible);
+            } else if (statement instanceof DeleteStatement) {
+                stmt = (BatchStmt) this.factory.dialectParser.delete((DeleteStatement) statement, visible);
             } else {
-                throw _Exceptions.unexpectedStatement(dml);
+                throw _Exceptions.unexpectedStatement(statement);
             }
-            factory.printSqlIfNeed(stmt);
+            this.factory.printSqlIfNeed(stmt);
             //3. execute stmt
-            final LocalTransaction tx = this.transaction;
-            return this.stmtExecutor.batchUpdate(stmt, tx == null ? 0 : tx.nextTimeout());
+            throw new ArmyException("");
+        } catch (ChildUpdateException e) {
+            final SyncLocalTransaction tx = this.transaction;
+            if (tx != null) {
+                tx.markRollbackOnly();
+            }
+            throw e;
         } catch (ArmyException e) {
             throw e;
         } catch (RuntimeException e) {
-            String m = String.format("Army execute %s occur error.", UpdateStatement.class.getName());
+            String m = String.format("Army execute %s occur error.", statement.getClass().getName());
             throw _Exceptions.unknownError(m, e);
         } finally {
-            ((_Statement) dml).clear();
+            ((_Statement) statement).clear();
         }
     }
 
+
+    @Override
+    public <R> Stream<R> queryStream(final SimpleDqlStatement statement, final Class<R> resultClass,
+                                     final StreamOptions options, final Visible visible) {
+        //1. assert session status
+        assertSession(statement instanceof DmlStatement, visible);
+        try {
+            final SimpleStmt stmt;
+            stmt = this.parseSimpleDqlStatement(statement, visible);
+            return this.stmtExecutor.queryStream(stmt, this.getTxTimeout(), resultClass, options);
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            String m = String.format("Army execute %s occur error.", SimpleDqlStatement.class.getName());
+            throw _Exceptions.unknownError(m, e);
+        } finally {
+            ((_Statement) statement).clear();
+        }
+    }
+
+
+    @Override
+    public Stream<Map<String, Object>> queryMapStream(final SimpleDqlStatement statement,
+                                                      final Supplier<Map<String, Object>> mapConstructor,
+                                                      final StreamOptions options, final Visible visible) {
+        //1. assert session status
+        assertSession(statement instanceof DmlStatement, visible);
+        try {
+            final SimpleStmt stmt;
+            stmt = this.parseSimpleDqlStatement(statement, visible);
+            return this.stmtExecutor.queryMapStream(stmt, this.getTxTimeout(), mapConstructor, options);
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            String m = String.format("Army execute %s occur error.", SimpleDqlStatement.class.getName());
+            throw _Exceptions.unknownError(m, e);
+        } finally {
+            ((_Statement) statement).clear();
+        }
+    }
 
     @Override
     public QueryResult batchQuery(BatchDqlStatement statement, Visible visible) {
@@ -278,7 +315,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public boolean closed() {
+    public boolean isClosed() {
         return this.closed;
     }
 
@@ -334,23 +371,6 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 , this.readonly, this.transaction != null);
     }
 
-    @Override
-    protected <R> Stream<R> doQueryStream(final SimpleDqlStatement statement, final Class<R> resultClass,
-                                          final boolean serverStream, final int fetchSize,
-                                          final @Nullable Comparable<? super R> comparator, final boolean parallel,
-                                          final Visible visible) {
-        return null;
-    }
-
-    @Override
-    protected Stream<Map<String, Object>> doQueryMapStream(final SimpleDqlStatement statement,
-                                                           final Supplier<Map<String, Object>> mapConstructor,
-                                                           final boolean serverStream, final int fetchSize,
-                                                           final @Nullable Comparable<Map<String, Object>> comparator,
-                                                           final boolean parallel, final Visible visible) {
-        return null;
-    }
-
 
     /*################################## blow package method ##################################*/
 
@@ -384,7 +404,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
      * @see #update(SimpleDmlStatement, Visible)
      */
     private long insert(final InsertStatement statement, final Visible visible) {
-        final LocalTransaction tx = this.transaction;
+
         try {
             //1. assert session status
             assertSession(true, visible);
@@ -402,13 +422,12 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
             //3. execute stmt
 
-            final int timeout = tx == null ? 0 : tx.nextTimeout();
             final long affectedRows;
             if (stmt instanceof SimpleStmt) {
-                affectedRows = this.stmtExecutor.insert((SimpleStmt) stmt, timeout);
+                affectedRows = this.stmtExecutor.insert((SimpleStmt) stmt, this.getTxTimeout());
             } else {
                 affectedRows = this.insertPairStmt((ChildTableMeta<?>) ((_Insert) statement).insertTable(),
-                        (PairStmt) stmt, timeout);
+                        (PairStmt) stmt, this.getTxTimeout());
             }
 
             //4. validate value insert affected rows
@@ -417,9 +436,13 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 String m = String.format("value list size is %s,but affected %s rows."
                         , ((_Insert._DomainInsert) statement).domainList().size(), affectedRows);
                 throw new DataAccessException(m);
+            } else if (affectedRows < 1) {
+                String m = String.format("%s insert rows is %s .", ((_Insert) statement).insertTable(), affectedRows);
+                throw new DataAccessException(m);
             }
             return affectedRows;
-        } catch (ChildInsertException e) {
+        } catch (ChildUpdateException e) {
+            final LocalTransaction tx = this.transaction;
             if (tx != null) {
                 tx.markRollbackOnly();
             }
@@ -434,6 +457,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         }
     }
 
+
     /**
      * @see #insert(InsertStatement, Visible)
      */
@@ -444,17 +468,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         insertRows = this.stmtExecutor.insert(stmt.firstStmt(), timeout);
 
         final int restSeconds;
-        final long restMills;
-        if (timeout == 0) {
-            restSeconds = 0;
-        } else if ((restMills = (timeout * 1000L) - (System.currentTimeMillis() - startTime)) < 1L) {
-            String m = "Parent insert completion,but timeout,so no time insert child.";
-            throw new ChildInsertException(m, _Exceptions.timeout(timeout, restMills));
-        } else if ((restMills % 1000L) == 0) {
-            restSeconds = (int) (restMills / 1000L);
-        } else {
-            restSeconds = (int) (restMills / 1000L) + 1;
-        }
+        restSeconds = _ArmySession.restSecond(domainTable, startTime, timeout);
 
         try {
             final long childRows;
@@ -464,16 +478,18 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 throw _Exceptions.parentChildRowsNotMatch(domainTable, insertRows, childRows);
             }
             return insertRows;
-        } catch (ChildInsertException e) {
+        } catch (ChildUpdateException e) {
             throw e;
         } catch (Exception e) {
-            throw new ChildInsertException("Parent insert completion,but child insert occur error.", e);
+            throw new ChildUpdateException("Parent insert completion,but child insert occur error.", e);
         }
 
     }
 
-
-    private long dmlUpdate(final SimpleDmlStatement statement, final Visible visible) {
+    /**
+     * @see #update(SimpleDmlStatement, Visible)
+     */
+    private long simpleUpdate(final SimpleDmlStatement statement, final Visible visible) {
         if (statement instanceof _BatchDml) {
             // no bug,never here
             throw _Exceptions.unexpectedStatement(statement);
@@ -498,6 +514,9 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final long affectedRows;
             if (stmt instanceof SimpleStmt) {
                 affectedRows = this.stmtExecutor.update((SimpleStmt) stmt, timeout);
+            } else {
+                affectedRows = this.updatePairStmt((ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table(),
+                        (PairStmt) stmt, timeout);
             }
 
             //4. assert optimistic lock
@@ -505,6 +524,11 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 throw _Exceptions.optimisticLock(affectedRows);
             }
             return affectedRows;
+        } catch (ChildUpdateException e) {
+            if (tx != null) {
+                tx.markRollbackOnly();
+            }
+            throw e;
         } catch (ArmyException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -513,6 +537,63 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         } finally {
             ((_Statement) statement).clear();
         }
+    }
+
+
+    /**
+     * @see #simpleUpdate(SimpleDmlStatement, Visible)
+     */
+    private long updatePairStmt(final ChildTableMeta<?> domainTable, final PairStmt stmt, final int timeout) {
+        final long startTime;
+        startTime = System.currentTimeMillis();
+
+        final long affectedRows;
+        affectedRows = this.stmtExecutor.update(stmt.firstStmt(), timeout);
+
+        final int restSeconds;
+        restSeconds = _ArmySession.restSecond(domainTable, startTime, timeout);
+
+        try {
+            final long childRows;
+            childRows = this.stmtExecutor.update(stmt.secondStmt(), restSeconds);
+
+            if (childRows != affectedRows) {
+                throw _Exceptions.parentChildRowsNotMatch(domainTable, affectedRows, childRows);
+            }
+            return affectedRows;
+        } catch (ChildUpdateException e) {
+            throw e;
+        } catch (Exception e) {
+            String m = String.format("%s parent update completion,but child insert occur error.", domainTable);
+            throw new ChildUpdateException(m, e);
+        }
+
+    }
+
+
+    /**
+     * @see #query(SimpleDqlStatement, Class, Supplier, Visible)
+     * @see #queryAsMap(SimpleDqlStatement, Supplier, Supplier, Visible)
+     * @see #queryStream(SimpleDqlStatement, Class, StreamOptions, Visible)
+     * @see #queryMapStream(SimpleDqlStatement, Supplier, StreamOptions, Visible)
+     */
+    private SimpleStmt parseSimpleDqlStatement(final SimpleDqlStatement statement, final Visible visible) {
+        final SimpleStmt stmt;
+        if (statement instanceof Select) {
+            stmt = this.factory.dialectParser.select((Select) statement, visible);
+        } else if (!(statement instanceof DmlStatement)) {
+            stmt = this.factory.dialectParser.dialectDql(statement, visible);
+        } else if (statement instanceof _Statement._ChildStatement) {
+            throw new ArmyException("stream api don't support child statement.");
+        } else if (statement instanceof ReturningUpdate) {
+            stmt = (SimpleStmt) this.factory.dialectParser.update((ReturningUpdate) statement, visible);
+        } else if (statement instanceof ReturningDelete) {
+            stmt = (SimpleStmt) this.factory.dialectParser.delete((ReturningDelete) statement, visible);
+        } else {
+            stmt = (SimpleStmt) this.factory.dialectParser.dialectDml((DmlStatement) statement, visible);
+        }
+        this.factory.printSqlIfNeed(stmt);
+        return stmt;
     }
 
 
@@ -535,6 +616,11 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             throw _Exceptions.dontSupportNonVisible(this, visible);
         }
 
+    }
+
+    private int getTxTimeout() {
+        final LocalTransaction tx = this.transaction;
+        return tx == null ? 0 : tx.nextTimeout();
     }
 
     private void assertSessionForChildInsert(final InsertStatement statement) {

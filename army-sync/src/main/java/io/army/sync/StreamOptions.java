@@ -1,6 +1,8 @@
 package io.army.sync;
 
 
+import java.util.function.Consumer;
+
 public final class StreamOptions {
 
 
@@ -27,13 +29,18 @@ public final class StreamOptions {
 
     public final boolean parallel;
 
+    public final Consumer<StreamCommander> commanderConsumer;
+
 
     private StreamOptions(boolean serverStream, int fetchSize, int splitSize, boolean parallel) {
         assert fetchSize > 0 && splitSize > 0;
+
         this.serverStream = serverStream;
         this.fetchSize = fetchSize;
         this.splitSize = splitSize;
         this.parallel = parallel;
+
+        this.commanderConsumer = null;
     }
 
     private StreamOptions(Builder builder) {
@@ -41,7 +48,10 @@ public final class StreamOptions {
         this.fetchSize = builder.fetchSize;
         this.splitSize = builder.splitSize;
         this.parallel = builder.parallel;
+
         assert this.fetchSize > 0 && this.splitSize > 0;
+
+        this.commanderConsumer = builder.commanderConsumer;
     }
 
 
@@ -60,6 +70,8 @@ public final class StreamOptions {
         private int splitSize = 100;
 
         private boolean parallel;
+
+        private Consumer<StreamCommander> commanderConsumer;
 
         private Builder(int fetchSize) {
             this.fetchSize = fetchSize;
@@ -81,6 +93,10 @@ public final class StreamOptions {
             return this;
         }
 
+        public Builder setCommanderConsumer(Consumer<StreamCommander> commanderConsumer) {
+            this.commanderConsumer = commanderConsumer;
+            return this;
+        }
 
         public StreamOptions build() {
             if (this.splitSize < 0) {

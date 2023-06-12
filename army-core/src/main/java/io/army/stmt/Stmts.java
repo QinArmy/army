@@ -163,6 +163,11 @@ public abstract class Stmts {
         }
 
         @Override
+        public boolean hasOptimistic() {
+            return this.first.hasOptimistic();
+        }
+
+        @Override
         public SimpleStmt firstStmt() {
             return this.first;
         }
@@ -197,6 +202,11 @@ public abstract class Stmts {
         private PairBatchStmtImpl(BatchStmt first, BatchStmt second) {
             this.first = first;
             this.second = second;
+        }
+
+        @Override
+        public boolean hasOptimistic() {
+            return this.first.hasOptimistic();
         }
 
         @Override

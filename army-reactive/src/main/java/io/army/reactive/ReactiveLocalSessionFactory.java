@@ -2,7 +2,7 @@ package io.army.reactive;
 
 import io.army.meta.ServerMeta;
 import io.army.session.SessionException;
-import io.army.session._AbstractSessionFactory;
+import io.army.session._ArmySessionFactory;
 import reactor.core.publisher.Mono;
 
 import java.time.ZoneId;
@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * This class is a implementation of {@link SessionFactory}
  */
-final class ReactiveLocalSessionFactory extends _AbstractSessionFactory implements SessionFactory {
+final class ReactiveLocalSessionFactory extends _ArmySessionFactory implements SessionFactory {
 
 
     private final AtomicBoolean factoryClosed = new AtomicBoolean(false);

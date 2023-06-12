@@ -22,7 +22,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-public abstract class _AbstractSessionFactory implements SessionFactory {
+public abstract class _ArmySessionFactory implements SessionFactory {
 
     protected static final ConcurrentMap<String, Boolean> FACTORY_MAP = new ConcurrentHashMap<>(3);
 
@@ -51,7 +51,7 @@ public abstract class _AbstractSessionFactory implements SessionFactory {
     private final boolean sqlLogDebug;
 
 
-    protected _AbstractSessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
+    protected _ArmySessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
         final String name = _Assert.assertHasText(support.name, "factory name required");
         final ArmyEnvironment env = Objects.requireNonNull(support.environment);
 
@@ -175,13 +175,20 @@ public abstract class _AbstractSessionFactory implements SessionFactory {
         return function;
     }
 
-    private static byte tableCountPerDatabase(final int tableCount) {
-        if (tableCount < 1 || tableCount > 99) {
-            String m = String.format("Table count[%s] per database must great than 0 .", tableCount);
-            throw new SessionFactoryException(m);
+
+    /**
+     * must be protected class
+     */
+    protected static abstract class ArmySessionBuilder<T extends _ArmySessionFactory> {
+
+        public final T factory;
+
+        protected ArmySessionBuilder(T factory) {
+            this.factory = factory;
         }
-        return (byte) tableCount;
-    }
+
+
+    }//SessionBuilder
 
 
 }
