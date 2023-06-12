@@ -46,6 +46,9 @@ public enum PostgreSqlType implements SqlType {
     VARCHAR,
     MONEY,
     TEXT,
+    PG_LSN,
+    PG_SNAPSHOT,
+
 
     NO_CAST_TEXT,
 
@@ -95,13 +98,14 @@ public enum PostgreSqlType implements SqlType {
     ACLITEM_ARRAY,
     BOOLEAN_ARRAY,
 
-
+    PG_LSN_ARRAY,
+    PG_SNAPSHOT_ARRAY,
     SMALLINT_ARRAY,
     INTEGER_ARRAY,
     BIGINT_ARRAY,
     DECIMAL_ARRAY,
     REAL_ARRAY,
-    DOUBLE_ARRAY,
+    FLOAT8_ARRAY,
     MONEY_ARRAY,
 
     TIME_ARRAY,
@@ -125,6 +129,7 @@ public enum PostgreSqlType implements SqlType {
     XML_ARRAY,
     JSON_ARRAY,
     JSONB_ARRAY,
+    JSONPATH_ARRAY,
 
     TSVECTOR_ARRAY,
     TSQUERY_ARRAY,
@@ -137,7 +142,7 @@ public enum PostgreSqlType implements SqlType {
 
     PATH_ARRAY,
     POLYGON_ARRAY,
-    CIRCLES_ARRAY,
+    CIRCLE_ARRAY,
 
     UUID_ARRAY,
 

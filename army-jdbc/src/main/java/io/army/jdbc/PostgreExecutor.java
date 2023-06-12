@@ -216,11 +216,11 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case MONEY_ARRAY:
             case POINT_ARRAY:
             case BIGINT_ARRAY:
-            case DOUBLE_ARRAY:
+            case FLOAT8_ARRAY:
             case TIMETZ_ARRAY:
             case VARBIT_ARRAY:
             case BOOLEAN_ARRAY:
-            case CIRCLES_ARRAY:
+            case CIRCLE_ARRAY:
             case ACLITEM_ARRAY:
             case LSEG_ARRAY:
             case DECIMAL_ARRAY:
@@ -295,16 +295,15 @@ abstract class PostgreExecutor extends JdbcExecutor {
     @Override
     final SqlType getSqlType(final ResultSetMetaData metaData, final int indexBasedOne) throws SQLException {
 
-        final String typeName;
         final PostgreSqlType type;
-        switch ((typeName = metaData.getColumnTypeName(indexBasedOne).toLowerCase(Locale.ROOT))) {
+        switch (metaData.getColumnTypeName(indexBasedOne).toLowerCase(Locale.ROOT)) {
             case "boolean":
             case "bool":
                 type = PostgreSqlType.BOOLEAN;
                 break;
             case "int2":
-            case "smallserial":
             case "smallint":
+            case "smallserial":
                 type = PostgreSqlType.SMALLINT;
                 break;
             case "int":
@@ -349,8 +348,35 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 type = PostgreSqlType.DATE;
                 break;
             case "time":
+            case "time without time zone":
                 type = PostgreSqlType.TIME;
                 break;
+            case "timetz":
+            case "time with time zone":
+                type = PostgreSqlType.TIMETZ;
+                break;
+            case "timestamp":
+            case "timestamp without time zone":
+                type = PostgreSqlType.TIMESTAMP;
+                break;
+            case "timestamptz":
+            case "timestamp with time zone":
+                type = PostgreSqlType.TIMESTAMPTZ;
+                break;
+
+            case "json":
+                type = PostgreSqlType.JSON;
+                break;
+            case "jsonb":
+                type = PostgreSqlType.JSONB;
+                break;
+            case "jsonpath":
+                type = PostgreSqlType.JSONPATH;
+                break;
+            case "xml":
+                type = PostgreSqlType.XML;
+                break;
+
             case "bit":
                 type = PostgreSqlType.BIT;
                 break;
@@ -358,7 +384,288 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case "varbit":
                 type = PostgreSqlType.VARBIT;
                 break;
+
+            case "cidr":
+                type = PostgreSqlType.CIDR;
+                break;
+            case "inet":
+                type = PostgreSqlType.INET;
+                break;
+            case "macaddr8":
+                type = PostgreSqlType.MACADDR8;
+                break;
+            case "macaddr":
+                type = PostgreSqlType.MACADDR;
+                break;
+
+            case "box":
+                type = PostgreSqlType.BOX;
+                break;
+            case "lseg":
+                type = PostgreSqlType.LSEG;
+                break;
+            case "line":
+                type = PostgreSqlType.LINE;
+                break;
+            case "path":
+                type = PostgreSqlType.PATH;
+                break;
+            case "point":
+                type = PostgreSqlType.POINT;
+                break;
+            case "circle":
+                type = PostgreSqlType.CIRCLE;
+                break;
+            case "polygon":
+                type = PostgreSqlType.POLYGON;
+                break;
+
+            case "tsvector":
+                type = PostgreSqlType.TSVECTOR;
+                break;
+            case "tsquery":
+                type = PostgreSqlType.TSQUERY;
+                break;
+
+            case "int4range":
+                type = PostgreSqlType.INT4RANGE;
+                break;
+            case "int8range":
+                type = PostgreSqlType.INT8RANGE;
+                break;
+            case "numrange":
+                type = PostgreSqlType.NUMRANGE;
+                break;
+            case "tsrange":
+                type = PostgreSqlType.TSRANGE;
+                break;
+            case "daterange":
+                type = PostgreSqlType.DATERANGE;
+                break;
+            case "tstzrange":
+                type = PostgreSqlType.TSTZRANGE;
+                break;
+
+            case "int4multirange":
+                type = PostgreSqlType.INT4MULTIRANGE;
+                break;
+            case "int8multirange":
+                type = PostgreSqlType.INT8MULTIRANGE;
+                break;
+            case "nummultirange":
+                type = PostgreSqlType.NUMMULTIRANGE;
+                break;
+            case "tsmultirange":
+                type = PostgreSqlType.TSMULTIRANGE;
+                break;
+            case "datemultirange":
+                type = PostgreSqlType.DATEMULTIRANGE;
+                break;
+            case "tstzmultirange":
+                type = PostgreSqlType.TSTZMULTIRANGE;
+                break;
+
+            case "uuid":
+                type = PostgreSqlType.UUID;
+                break;
+            case "money":
+                type = PostgreSqlType.MONEY;
+                break;
+            case "pg_lsn":
+                type = PostgreSqlType.PG_LSN;
+                break;
+
+            case "boolean[]":
+            case "bool[]":
+                type = PostgreSqlType.BOOLEAN_ARRAY;
+                break;
+            case "int2[]":
+            case "smallint[]":
+            case "smallserial[]":
+                type = PostgreSqlType.SMALLINT_ARRAY;
+                break;
+            case "int[]":
+            case "int4[]":
+            case "integer[]":
+            case "serial[]":
+                type = PostgreSqlType.INTEGER_ARRAY;
+                break;
+            case "int8[]":
+            case "bigint[]":
+            case "serial8[]":
+            case "bigserial[]":
+                type = PostgreSqlType.BIGINT_ARRAY;
+                break;
+            case "numeric[]":
+            case "decimal[]":
+                type = PostgreSqlType.DECIMAL_ARRAY;
+                break;
+            case "float8[]":
+            case "double precision[]":
+                type = PostgreSqlType.FLOAT8_ARRAY;
+                break;
+            case "float4[]":
+            case "real[]":
+                type = PostgreSqlType.REAL_ARRAY;
+                break;
+
+            case "char[]":
+            case "character[]":
+                type = PostgreSqlType.CHAR_ARRAY;
+                break;
+            case "varchar[]":
+            case "character varying[]":
+                type = PostgreSqlType.VARCHAR_ARRAY;
+                break;
+            case "text[]":
+                type = PostgreSqlType.TEXT_ARRAY;
+                break;
+            case "bytea[]":
+                type = PostgreSqlType.BYTEA_ARRAY;
+                break;
+
+            case "date[]":
+                type = PostgreSqlType.DATE_ARRAY;
+                break;
+            case "time[]":
+            case "time without time zone[]":
+                type = PostgreSqlType.TIME_ARRAY;
+                break;
+            case "timetz[]":
+            case "time with time zone[]":
+                type = PostgreSqlType.TIMETZ_ARRAY;
+                break;
+            case "timestamp[]":
+            case "timestamp without time zone[]":
+                type = PostgreSqlType.TIMESTAMP_ARRAY;
+                break;
+            case "timestamptz[]":
+            case "timestamp with time zone[]":
+                type = PostgreSqlType.TIMESTAMPTZ_ARRAY;
+                break;
+            case "interval[]":
+                type = PostgreSqlType.INTERVAL_ARRAY;
+                break;
+
+            case "json[]":
+                type = PostgreSqlType.JSON_ARRAY;
+                break;
+            case "jsonb[]":
+                type = PostgreSqlType.JSONB_ARRAY;
+                break;
+            case "jsonpath[]":
+                type = PostgreSqlType.JSONPATH_ARRAY;
+                break;
+            case "xml[]":
+                type = PostgreSqlType.XML_ARRAY;
+                break;
+
+            case "varbit[]":
+            case "bit varying[]":
+                type = PostgreSqlType.VARBIT_ARRAY;
+                break;
+            case "bit[]":
+                type = PostgreSqlType.BIT_ARRAY;
+                break;
+
+            case "uuid[]":
+                type = PostgreSqlType.UUID_ARRAY;
+                break;
+
+            case "cidr[]":
+                type = PostgreSqlType.CIDR_ARRAY;
+                break;
+            case "inet[]":
+                type = PostgreSqlType.INET_ARRAY;
+                break;
+            case "macaddr8[]":
+                type = PostgreSqlType.MACADDR8_ARRAY;
+                break;
+            case "macaddr[]":
+                type = PostgreSqlType.MACADDR_ARRAY;
+                break;
+
+            case "box[]":
+                type = PostgreSqlType.BOX_ARRAY;
+                break;
+            case "lseg[]":
+                type = PostgreSqlType.LSEG_ARRAY;
+                break;
+            case "line[]":
+                type = PostgreSqlType.LINE_ARRAY;
+                break;
+            case "path[]":
+                type = PostgreSqlType.PATH_ARRAY;
+                break;
+            case "point[]":
+                type = PostgreSqlType.POINT_ARRAY;
+                break;
+            case "circle[]":
+                type = PostgreSqlType.CIRCLE_ARRAY;
+                break;
+            case "polygon[]":
+                type = PostgreSqlType.POLYGON_ARRAY;
+                break;
+
+            case "tsquery[]":
+                type = PostgreSqlType.TSQUERY_ARRAY;
+                break;
+            case "tsvector[]":
+                type = PostgreSqlType.TSVECTOR_ARRAY;
+                break;
+
+            case "int4range[]":
+                type = PostgreSqlType.INT4RANGE_ARRAY;
+                break;
+            case "int8range[]":
+                type = PostgreSqlType.INT8RANGE_ARRAY;
+                break;
+            case "numrange[]":
+                type = PostgreSqlType.NUMRANGE_ARRAY;
+                break;
+            case "daterange[]":
+                type = PostgreSqlType.DATERANGE_ARRAY;
+                break;
+            case "tsrange[]":
+                type = PostgreSqlType.TSRANGE_ARRAY;
+                break;
+            case "tstzrange[]":
+                type = PostgreSqlType.TSTZRANGE_ARRAY;
+                break;
+
+            case "int4multirange[]":
+                type = PostgreSqlType.INT4MULTIRANGE_ARRAY;
+                break;
+            case "int8multirange[]":
+                type = PostgreSqlType.INT8MULTIRANGE_ARRAY;
+                break;
+            case "nummultirange[]":
+                type = PostgreSqlType.NUMMULTIRANGE_ARRAY;
+                break;
+            case "datemultirange[]":
+                type = PostgreSqlType.DATEMULTIRANGE_ARRAY;
+                break;
+            case "tsmultirange[]":
+                type = PostgreSqlType.TSMULTIRANGE_ARRAY;
+                break;
+            case "tstzmultirange[]":
+                type = PostgreSqlType.TSTZMULTIRANGE_ARRAY;
+                break;
+
+            case "money[]":
+                type = PostgreSqlType.MONEY_ARRAY;
+                break;
+            case "pg_lsn[]":
+                type = PostgreSqlType.PG_LSN_ARRAY;
+                break;
+            case "pg_snapshot[]":
+                type = PostgreSqlType.PG_SNAPSHOT_ARRAY;
+                break;
+            case "aclitem[]":
+                type = PostgreSqlType.ACLITEM_ARRAY;
+                break;
             default:
+                //TODO user-level transaction ID
                 type = PostgreSqlType.UNKNOWN;
 
 
@@ -394,7 +701,6 @@ abstract class PostgreExecutor extends JdbcExecutor {
         }
 
     }//LocalSessionHolderExecutor
-
 
 
 }

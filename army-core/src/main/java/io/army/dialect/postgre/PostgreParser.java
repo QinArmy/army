@@ -158,11 +158,11 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case MONEY_ARRAY:
             case POINT_ARRAY:
             case BIGINT_ARRAY:
-            case DOUBLE_ARRAY:
+            case FLOAT8_ARRAY:
             case TIMETZ_ARRAY:
             case VARBIT_ARRAY:
             case BOOLEAN_ARRAY:
-            case CIRCLES_ARRAY:
+            case CIRCLE_ARRAY:
             case DECIMAL_ARRAY:
             case INTEGER_ARRAY:
             case MACADDR_ARRAY:
@@ -424,7 +424,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case DECIMAL_ARRAY:
                 this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::bigDecimalArrayElement);
                 break;
-            case DOUBLE_ARRAY:
+            case FLOAT8_ARRAY:
                 this.safeArray(typeMeta, type, value, sqlBuilder, _Literals::doubleArrayElement);
                 break;
             case REAL_ARRAY:
@@ -442,7 +442,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case POINT_ARRAY:
 
             case VARBIT_ARRAY:
-            case CIRCLES_ARRAY:
+            case CIRCLE_ARRAY:
             case MACADDR_ARRAY:
             case POLYGON_ARRAY:
             case TSQUERY_ARRAY:
