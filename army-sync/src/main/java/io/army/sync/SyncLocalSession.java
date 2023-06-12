@@ -217,7 +217,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     @Override
     public List<Long> batchUpdate(final BatchDmlStatement statement, Supplier<List<Long>> listConstructor,
-                                  final Visible visible) {
+                                  final boolean useMultiStmt, final Visible visible) {
         if (!(statement instanceof _BatchDml)) {
             // no bug,never here
             throw _Exceptions.unexpectedStatement(statement);
@@ -280,6 +280,35 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
+    public <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator,
+                                  Supplier<List<R>> listConstructor, boolean useMultiStmt, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement,
+                                                     Supplier<Map<String, Object>> mapConstructor,
+                                                     Map<String, Object> terminator,
+                                                     Supplier<List<Map<String, Object>>> listConstructor,
+                                                     boolean useMultiStmt, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass, R terminator,
+                                          StreamOptions options, boolean useMultiStmt, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public Stream<Map<String, Object>> batchQueryMapStream(BatchDqlStatement statement,
+                                                           Supplier<Map<String, Object>> mapConstructor,
+                                                           Map<String, Object> terminator, StreamOptions options,
+                                                           boolean useMultiStmt, Visible visible) {
+        return null;
+    }
+
+    @Override
     public <R> Stream<R> queryStream(final SimpleDqlStatement statement, final Class<R> resultClass,
                                      final StreamOptions options, final Visible visible) {
         //1. assert session status
@@ -319,11 +348,6 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         }
     }
 
-    @Override
-    public QueryResult batchQuery(BatchDqlStatement statement, Visible visible) {
-        //TODO
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public MultiResult multiStmt(MultiStatement statement, Visible visible) {

@@ -54,6 +54,11 @@ abstract class MySQLExecutor extends JdbcExecutor {
         super(factory, conn);
     }
 
+    @Override
+    public boolean isSupportClientStream() {
+        //true, MySQL jdbc support
+        return true;
+    }
 
     @Override
     Logger getLogger() {

@@ -23,6 +23,8 @@ import java.util.stream.Stream;
  */
 public interface StmtExecutor {
 
+    boolean isSupportClientStream();
+
 
     /**
      * <p>

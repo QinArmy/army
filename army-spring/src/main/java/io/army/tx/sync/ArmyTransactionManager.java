@@ -1,10 +1,10 @@
 package io.army.tx.sync;
 
-import io.army.criteria.*;
-import io.army.criteria.dialect.BatchDqlStatement;
-import io.army.meta.TableMeta;
 import io.army.session.SessionException;
-import io.army.sync.*;
+import io.army.sync.LocalSession;
+import io.army.sync.LocalSessionFactory;
+import io.army.sync.LocalTransaction;
+import io.army.sync.SyncSession;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.lang.Nullable;
@@ -14,10 +14,6 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.SmartTransactionObject;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * @since 1.0
@@ -348,91 +344,6 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     }//ArmyTransactionObject
 
 
-    private static abstract class CurrentSession extends _ArmySyncSession {
-
-        private final LocalSession session;
-
-
-        private CurrentSession(LocalSession session) {
-            super(session.name(), session.isReadonlySession());
-            this.session = session;
-        }
-
-
-        @Override
-        public LocalSessionFactory sessionFactory() {
-            return this.session.sessionFactory();
-        }
-
-
-        @Override
-        public Visible visible() {
-            return this.session.visible();
-        }
-
-
-        @Override
-        public boolean isReadOnlyStatus() {
-            return this.session.isReadOnlyStatus();
-        }
-
-        @Override
-        public boolean isClosed() {
-            return this.session.isClosed();
-        }
-
-        @Override
-        public boolean hasTransaction() {
-            return this.session.hasTransaction();
-        }
-
-        @Override
-        public <T> TableMeta<T> tableMeta(Class<T> domainClass) {
-            return null;
-        }
-
-
-        @Override
-        public <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible) {
-            return null;
-        }
-
-
-        @Override
-        public List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Supplier<List<Map<String, Object>>> listConstructor, Visible visible) {
-            return null;
-        }
-
-
-        @Override
-        public long update(SimpleDmlStatement statement, Visible visible) {
-            return 0;
-        }
-
-
-
-        @Override
-        public QueryResult batchQuery(BatchDqlStatement statement, Visible visible) {
-            return null;
-        }
-
-        @Override
-        public MultiResult multiStmt(MultiStatement statement, Visible visible) {
-            return null;
-        }
-
-        @Override
-        public MultiResult call(CallableStatement callable) {
-            return this.session.call(callable);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Wrapper[%s] of %s", System.identityHashCode(this), this.session);
-        }
-
-
-    }// CurrentSession
 
 
 }

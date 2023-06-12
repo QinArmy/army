@@ -150,28 +150,6 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
     }
 
     @Override
-    public final QueryResult batchQuery(BatchDqlStatement statement) {
-        return this.batchQuery(statement, Visible.ONLY_VISIBLE);
-    }
-
-
-    @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement) {
-        return this.batchUpdate(statement, _Collections::arrayList, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor) {
-        return this.batchUpdate(statement, listConstructor, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement, Visible visible) {
-        return this.batchUpdate(statement, _Collections::arrayList, visible);
-    }
-
-
-    @Override
     public final <T> long batchSave(List<T> domainList) {
         return this.update(ArmyCriteria.batchInsertStmt(this, domainList), Visible.ONLY_VISIBLE);
     }
@@ -179,6 +157,163 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
     @Override
     public final <T> long batchSave(List<T> domainList, Visible visible) {
         return this.update(ArmyCriteria.batchInsertStmt(this, domainList), visible);
+    }
+
+
+    @Override
+    public final List<Long> batchUpdate(BatchDmlStatement statement) {
+        return this.batchUpdate(statement, _Collections::arrayList, false, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor) {
+        return this.batchUpdate(statement, listConstructor, false, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final List<Long> batchUpdate(BatchDmlStatement statement, Visible visible) {
+        return this.batchUpdate(statement, _Collections::arrayList, false, visible);
+    }
+
+    @Override
+    public final List<Long> batchUpdate(BatchDmlStatement statement, boolean useMultiStmt) {
+        return this.batchUpdate(statement, _Collections::arrayList, useMultiStmt, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor,
+                                        boolean useMultiStmt) {
+        return this.batchUpdate(statement, listConstructor, useMultiStmt, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final List<Long> batchUpdate(BatchDmlStatement statement, boolean useMultiStmt, Visible visible) {
+        return this.batchUpdate(statement, _Collections::arrayList, useMultiStmt, visible);
+    }
+
+    @Override
+    public final List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor,
+                                        Visible visible) {
+        return this.batchUpdate(statement, listConstructor, false, visible);
+    }
+
+
+    @Override
+    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator) {
+        return this.batchQuery(statement, resultClass, terminator, _Collections::arrayList, false, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator,
+                                        Supplier<List<R>> listConstructor) {
+        return this.batchQuery(statement, resultClass, terminator, listConstructor, false, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator,
+                                        Supplier<List<R>> listConstructor, boolean useMultiStmt) {
+        return this.batchQuery(statement, resultClass, terminator, listConstructor, useMultiStmt, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator,
+                                        Visible visible) {
+        return this.batchQuery(statement, resultClass, terminator, _Collections::arrayList, false, visible);
+    }
+
+    @Override
+    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator,
+                                        Supplier<List<R>> listConstructor, Visible visible) {
+        return this.batchQuery(statement, resultClass, terminator, listConstructor, false, visible);
+    }
+
+
+    @Override
+    public final List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement,
+                                                           Supplier<Map<String, Object>> mapConstructor,
+                                                           Map<String, Object> terminator) {
+        return this.batchQueryAsMap(statement, mapConstructor, terminator, _Collections::arrayList, false,
+                Visible.ONLY_VISIBLE
+        );
+    }
+
+    @Override
+    public final List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement,
+                                                           Supplier<Map<String, Object>> mapConstructor,
+                                                           Map<String, Object> terminator,
+                                                           Supplier<List<Map<String, Object>>> listConstructor) {
+        return this.batchQueryAsMap(statement, mapConstructor, terminator, listConstructor, false,
+                Visible.ONLY_VISIBLE
+        );
+    }
+
+    @Override
+    public final List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement,
+                                                           Supplier<Map<String, Object>> mapConstructor,
+                                                           Map<String, Object> terminator,
+                                                           Supplier<List<Map<String, Object>>> listConstructor,
+                                                           boolean useMultiStmt) {
+        return this.batchQueryAsMap(statement, mapConstructor, terminator, listConstructor, useMultiStmt,
+                Visible.ONLY_VISIBLE
+        );
+    }
+
+    @Override
+    public final List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement,
+                                                           Supplier<Map<String, Object>> mapConstructor,
+                                                           Map<String, Object> terminator, Visible visible) {
+        return this.batchQueryAsMap(statement, mapConstructor, terminator, _Collections::arrayList, false, visible);
+    }
+
+    @Override
+    public final List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement,
+                                                           Supplier<Map<String, Object>> mapConstructor,
+                                                           Map<String, Object> terminator,
+                                                           Supplier<List<Map<String, Object>>> listConstructor,
+                                                           Visible visible) {
+        return this.batchQueryAsMap(statement, mapConstructor, terminator, listConstructor, false, visible);
+    }
+
+    @Override
+    public final <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass, R terminator,
+                                                StreamOptions options) {
+        return this.batchQueryStream(statement, resultClass, terminator, options, false, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass, R terminator,
+                                                StreamOptions options, boolean useMultiStmt) {
+        return this.batchQueryStream(statement, resultClass, terminator, options, useMultiStmt, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass, R terminator,
+                                                StreamOptions options, Visible visible) {
+        return this.batchQueryStream(statement, resultClass, terminator, options, false, visible);
+    }
+
+
+    @Override
+    public final Stream<Map<String, Object>> batchQueryMapStream(BatchDqlStatement statement,
+                                                                 Supplier<Map<String, Object>> mapConstructor,
+                                                                 Map<String, Object> terminator, StreamOptions options) {
+        return this.batchQueryMapStream(statement, mapConstructor, terminator, options, false, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final Stream<Map<String, Object>> batchQueryMapStream(BatchDqlStatement statement,
+                                                                 Supplier<Map<String, Object>> mapConstructor,
+                                                                 Map<String, Object> terminator, StreamOptions options,
+                                                                 boolean useMultiStmt) {
+        return this.batchQueryMapStream(statement, mapConstructor, terminator, options, useMultiStmt, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final Stream<Map<String, Object>> batchQueryMapStream(BatchDqlStatement statement,
+                                                                 Supplier<Map<String, Object>> mapConstructor,
+                                                                 Map<String, Object> terminator, StreamOptions options,
+                                                                 Visible visible) {
+        return this.batchQueryMapStream(statement, mapConstructor, terminator, options, false, visible);
     }
 
     @Override
@@ -196,7 +331,6 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
     public final boolean equals(Object obj) {
         return obj == this;
     }
-
 
 
 }
