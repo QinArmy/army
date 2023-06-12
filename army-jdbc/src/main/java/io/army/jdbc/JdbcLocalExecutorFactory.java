@@ -14,8 +14,7 @@ import java.util.function.BiFunction;
 
 final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements LocalExecutorFactory {
 
-    static JdbcLocalExecutorFactory create(DataSource dataSource, ExecutorEnv env
-            , int methodFlag) {
+    static JdbcLocalExecutorFactory create(DataSource dataSource, ExecutorEnv env, int methodFlag) {
         return new JdbcLocalExecutorFactory(dataSource, env, methodFlag);
     }
 
@@ -29,9 +28,7 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
             , final int methodFlag) {
         super(executorEnv, methodFlag);
         this.dataSource = dataSource;
-        this.executorFunction = localFunction(this.serverMeta.dialectDatabase());
-
-
+        this.executorFunction = localFunction(this.serverMeta.serverDatabase());
     }
 
 
@@ -55,13 +52,16 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
         }
     }
 
-    private static BiFunction<JdbcLocalExecutorFactory, Connection, LocalStmtExecutor> localFunction(final Database database) {
+    private static BiFunction<JdbcLocalExecutorFactory, Connection, LocalStmtExecutor> localFunction(
+            final Database database) {
         final BiFunction<JdbcLocalExecutorFactory, Connection, LocalStmtExecutor> func;
         switch (database) {
             case MySQL:
                 func = MySQLExecutor::localExecutor;
                 break;
             case Postgre:
+                func = PostgreExecutor::localExecutor;
+                break;
             case Oracle:
             case H2:
             default:

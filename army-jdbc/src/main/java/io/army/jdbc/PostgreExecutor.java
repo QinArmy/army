@@ -6,17 +6,20 @@ import io.army.mapping.MappingType;
 import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
+import io.army.sync.executor.LocalStmtExecutor;
 import io.army.util._Exceptions;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.XAConnection;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.*;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * <p>
@@ -27,14 +30,18 @@ import java.util.Locale;
  */
 abstract class PostgreExecutor extends JdbcExecutor {
 
-    static PostgreExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
-        final PostgreExecutor executor;
+    static LocalStmtExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+        final LocalSessionExecutor executor;
         if (factory.databaseSessionHolder) {
             executor = new LocalSessionHolderExecutor(factory, conn);
         } else {
             executor = new LocalSessionExecutor(factory, conn);
         }
         return executor;
+    }
+
+    static PostgreExecutor rmExecutor(JdbcRmExecutorFactory factory, XAConnection xaConn) {
+        throw new UnsupportedOperationException();
     }
 
 
@@ -706,12 +713,194 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
     @Override
     final Object get(final ResultSet resultSet, final int indexBasedOne, final SqlType sqlType) throws SQLException {
+        final Object value;
 
-        return null;
+        switch ((PostgreSqlType) sqlType) {
+            case BOOLEAN:
+                value = resultSet.getObject(indexBasedOne, Boolean.class);
+                break;
+            case SMALLINT:
+                value = resultSet.getObject(indexBasedOne, Short.class);
+                break;
+            case NO_CAST_INTEGER:
+            case INTEGER:
+                value = resultSet.getObject(indexBasedOne, Integer.class);
+                break;
+            case BIGINT:
+                value = resultSet.getObject(indexBasedOne, Long.class);
+                break;
+            case DECIMAL:
+                value = resultSet.getObject(indexBasedOne, BigDecimal.class);
+                break;
+            case FLOAT8:
+                value = resultSet.getObject(indexBasedOne, Double.class);
+                break;
+            case REAL:
+                value = resultSet.getObject(indexBasedOne, Float.class);
+                break;
+
+            case BYTEA: // postgre client protocol body must less than 2^32 byte
+                value = resultSet.getObject(indexBasedOne, byte[].class);
+                break;
+            case TIME:
+                value = resultSet.getObject(indexBasedOne, LocalTime.class);
+                break;
+            case DATE:
+                value = resultSet.getObject(indexBasedOne, LocalDate.class);
+                break;
+            case TIMETZ:
+                value = resultSet.getObject(indexBasedOne, OffsetTime.class);
+                break;
+            case TIMESTAMP:
+                value = resultSet.getObject(indexBasedOne, LocalDateTime.class);
+                break;
+            case TIMESTAMPTZ:
+                value = resultSet.getObject(indexBasedOne, OffsetDateTime.class);
+                break;
+            case UUID:
+                value = resultSet.getObject(indexBasedOne, UUID.class);
+                break;
+            case CHAR:
+            case VARCHAR:
+            case TEXT:
+            case NO_CAST_TEXT:  // postgre client protocol body must less than 2^32 byte
+
+            case JSON:
+            case JSONB:
+            case JSONPATH:
+            case XML:
+
+            case BIT:
+            case VARBIT:
+
+            case INTERVAL:
+
+            case TSVECTOR:
+            case TSQUERY:
+
+            case INT4RANGE:
+            case INT8RANGE:
+            case NUMRANGE:
+            case TSRANGE:
+            case DATERANGE:
+            case TSTZRANGE:
+
+            case INT4MULTIRANGE:
+            case INT8MULTIRANGE:
+            case NUMMULTIRANGE:
+            case TSMULTIRANGE:
+            case DATEMULTIRANGE:
+            case TSTZMULTIRANGE:
+
+            case PG_SNAPSHOT:
+
+            case BOX:
+            case LSEG:
+            case LINE:
+            case PATH:
+            case POINT:
+            case CIRCLE:
+            case POLYGON:
+
+            case CIDR:
+            case INET:
+            case MACADDR8:
+            case MACADDR:
+            case ACLITEM:
+
+            case MONEY:
+
+            case BOOLEAN_ARRAY:
+            case INTEGER_ARRAY:
+            case SMALLINT_ARRAY:
+            case BIGINT_ARRAY:
+            case DECIMAL_ARRAY:
+            case REAL_ARRAY:
+            case FLOAT8_ARRAY:
+
+            case CHAR_ARRAY:
+            case VARCHAR_ARRAY:
+            case TEXT_ARRAY:
+
+            case BYTEA_ARRAY:
+
+            case DATE_ARRAY:
+            case TIME_ARRAY:
+            case TIMETZ_ARRAY:
+            case TIMESTAMP_ARRAY:
+            case TIMESTAMPTZ_ARRAY:
+            case INTERVAL_ARRAY:
+
+            case BIT_ARRAY:
+            case VARBIT_ARRAY:
+            case UUID_ARRAY:
+
+            case CIDR_ARRAY:
+            case INET_ARRAY:
+            case MACADDR_ARRAY:
+            case MACADDR8_ARRAY:
+
+            case JSON_ARRAY:
+            case JSONB_ARRAY:
+            case JSONPATH_ARRAY:
+            case XML_ARRAY:
+
+            case POINT_ARRAY:
+            case LINE_ARRAY:
+            case LSEG_ARRAY:
+            case PATH_ARRAY:
+            case BOX_ARRAY:
+            case CIRCLE_ARRAY:
+            case POLYGON_ARRAY:
+
+            case TSQUERY_ARRAY:
+            case TSVECTOR_ARRAY:
+
+            case INT4RANGE_ARRAY:
+            case INT8RANGE_ARRAY:
+            case NUMRANGE_ARRAY:
+            case DATERANGE_ARRAY:
+            case TSRANGE_ARRAY:
+            case TSTZRANGE_ARRAY:
+
+            case INT4MULTIRANGE_ARRAY:
+            case INT8MULTIRANGE_ARRAY:
+            case NUMMULTIRANGE_ARRAY:
+            case DATEMULTIRANGE_ARRAY:
+            case TSMULTIRANGE_ARRAY:
+            case TSTZMULTIRANGE_ARRAY:
+
+            case MONEY_ARRAY:
+            case ACLITEM_ARRAY:
+            case PG_LSN_ARRAY:
+            case PG_SNAPSHOT_ARRAY:
+
+            case USER_DEFINED:
+            case USER_DEFINED_ARRAY:
+                value = resultSet.getString(indexBasedOne);
+                break;
+            case PG_LSN: {
+                final long v;
+                v = resultSet.getLong(indexBasedOne);
+                if (v != 0 || resultSet.getObject(indexBasedOne) != null) {
+                    value = v;
+                } else {
+                    value = null;
+                }
+            }
+            break;
+            case UNKNOWN:
+            case REF_CURSOR:
+            default:
+                throw _Exceptions.unexpectedEnum((PostgreSqlType) sqlType);
+
+        }
+
+        return value;
     }
 
 
-    private static final class LocalSessionExecutor extends PostgreExecutor {
+    private static class LocalSessionExecutor extends PostgreExecutor implements LocalStmtExecutor {
 
         private LocalSessionExecutor(JdbcExecutorFactory factory, Connection conn) {
             super(factory, conn);
@@ -720,7 +909,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
     }//LocalSessionExecutor
 
-    private static final class LocalSessionHolderExecutor extends PostgreExecutor implements DatabaseSessionHolder {
+    private static final class LocalSessionHolderExecutor extends LocalSessionExecutor
+            implements DatabaseSessionHolder {
 
         private LocalSessionHolderExecutor(JdbcExecutorFactory factory, Connection conn) {
             super(factory, conn);

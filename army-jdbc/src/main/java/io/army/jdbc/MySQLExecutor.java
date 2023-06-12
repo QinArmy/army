@@ -3,6 +3,7 @@ package io.army.jdbc;
 import com.mysql.cj.MysqlType;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
+import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.sync.executor.LocalStmtExecutor;
@@ -27,8 +28,14 @@ import java.time.LocalTime;
 
 abstract class MySQLExecutor extends JdbcExecutor {
 
-    static MySQLLocalExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
-        return new MySQLLocalExecutor(factory, conn);
+    static LocalStmtExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+        final MySQLLocalExecutor executor;
+        if (factory.databaseSessionHolder) {
+            executor = new MySQLLocalHolderExecutor(factory, conn);
+        } else {
+            executor = new MySQLLocalExecutor(factory, conn);
+        }
+        return executor;
     }
 
     static MySQLRmExecutor rmExecutor(final JdbcRmExecutorFactory factory, final XAConnection xaConnection) {
@@ -266,12 +273,25 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }
 
 
-    private static final class MySQLLocalExecutor extends MySQLExecutor implements LocalStmtExecutor {
+    private static class MySQLLocalExecutor extends MySQLExecutor implements LocalStmtExecutor {
 
         private MySQLLocalExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
             super(factory, conn);
         }
 
+
+    }//MySQLLocalExecutor
+
+    private static class MySQLLocalHolderExecutor extends MySQLLocalExecutor implements DatabaseSessionHolder {
+
+        private MySQLLocalHolderExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+            super(factory, conn);
+        }
+
+        @Override
+        public Object databaseSession() {
+            return this.conn;
+        }
 
     }//MySQLLocalExecutor
 

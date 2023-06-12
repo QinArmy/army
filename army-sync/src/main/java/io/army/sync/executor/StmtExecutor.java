@@ -16,6 +16,13 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+/**
+ * <p>
+ * This interface representing sql statement executor with blocking way.
+ * </p>
+ *
+ * @since 1.0
+ */
 public interface StmtExecutor {
 
 
