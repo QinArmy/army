@@ -978,4 +978,13 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("unknown row element %s", element);
         return new CriteriaException(m);
     }
+
+    public static ChildInsertException parentChildRowsNotMatch(ChildTableMeta<?> domainTable, long parentRows,
+                                                               long childRows) {
+        String m = String.format("%s Parent insert/update rows[%s] and child insert/update rows[%s] not match.",
+                domainTable, parentRows, childRows);
+        throw new ChildInsertException(m);
+    }
+
+
 }

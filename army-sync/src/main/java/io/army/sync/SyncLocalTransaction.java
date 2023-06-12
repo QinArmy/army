@@ -41,7 +41,7 @@ final class SyncLocalTransaction extends _AbstractGenericTransaction implements 
         try {
             final SyncLocalSession session = this.session;
             final List<String> stmtList;
-            stmtList = session.sessionFactory.dialectParser.startTransaction(this.isolation, this.readonly);
+            stmtList = session.factory.dialectParser.startTransaction(this.isolation, this.readonly);
             session.stmtExecutor.executeBatch(stmtList);
             this.status = TransactionStatus.ACTIVE;
         } catch (DataAccessException e) {

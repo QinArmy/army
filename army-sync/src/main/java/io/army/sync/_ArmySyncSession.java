@@ -227,8 +227,8 @@ public abstract class _ArmySyncSession implements SyncSession {
     }
 
     @Override
-    public final long update(SimpleDmlStatement dml) {
-        return this.update(dml, Visible.ONLY_VISIBLE);
+    public final long update(SimpleDmlStatement statement) {
+        return this.update(statement, Visible.ONLY_VISIBLE);
     }
 
 

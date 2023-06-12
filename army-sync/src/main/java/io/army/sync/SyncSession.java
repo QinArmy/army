@@ -304,7 +304,7 @@ public interface SyncSession extends Session {
                                                        Visible visible);
 
 
-    long update(SimpleDmlStatement dml);
+    long update(SimpleDmlStatement statement);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -315,7 +315,7 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    long update(SimpleDmlStatement dml, Visible visible);
+    long update(SimpleDmlStatement statement, Visible visible);
 
     <T> long save(T domain);
 

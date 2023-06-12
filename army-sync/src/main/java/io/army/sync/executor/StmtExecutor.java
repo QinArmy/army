@@ -27,14 +27,32 @@ public interface StmtExecutor {
 
 
     /**
+     * <p>
+     * Execute INSERT statement that possibly get auto generated key.
+     * </p>
+     *
+     * @param timeout seconds
      * @throws io.army.session.DataAccessException when access database occur error.
+     * @throws io.army.ArmyException               throw when:<ul>
+     *                                             <li>param error</li>
+     *                                             </ul>
+     * @throws IllegalArgumentException            throw when timeout negative.
      */
-    long insert(Stmt stmt, int timeout) throws DataAccessException;
+    long insert(SimpleStmt stmt, int timeout) throws DataAccessException;
 
     /**
+     * <p>
+     * Executor non-insert dml.
+     * </p>
+     *
+     * @param timeout seconds
      * @throws io.army.session.DataAccessException when access database occur error.
+     * @throws io.army.ArmyException               throw when:<ul>
+     *                                             <li>param error</li>
+     *                                             </ul>
+     * @throws IllegalArgumentException            throw when timeout negative.
      */
-    <T> List<T> returnInsert(Stmt stmt, int txTimeout, Class<T> resultClass) throws DataAccessException;
+    long update(SimpleStmt stmt, int timeout) throws DataAccessException;
 
     /**
      * @throws io.army.session.DataAccessException when access database occur error.
@@ -53,10 +71,6 @@ public interface StmtExecutor {
     List<Map<String, Object>> returningUpdateAsMap(Stmt stmt, int txTimeout, Supplier<Map<String, Object>> mapConstructor)
             throws DataAccessException;
 
-    /**
-     * @throws io.army.session.DataAccessException when access database occur error.
-     */
-    long update(SimpleStmt stmt, int timeout) throws DataAccessException;
 
     /**
      * @return a unmodified list.

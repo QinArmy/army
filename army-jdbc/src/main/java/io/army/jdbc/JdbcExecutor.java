@@ -13,7 +13,6 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.session.ChildInsertException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
@@ -59,26 +58,120 @@ abstract class JdbcExecutor implements StmtExecutor {
     }
 
     @Override
-    public final long insert(final Stmt stmt, final int timeout) {
-        try {
-            final long insertRows;
-            if (stmt instanceof SimpleStmt) {
-                insertRows = this.executeInsert((SimpleStmt) stmt, timeout);
-            } else if (stmt instanceof PairStmt) {
-                insertRows = this.executePariInsert((PairStmt) stmt, timeout);
+    public final long insert(final SimpleStmt stmt, final int timeout) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException();
+        }
+        final List<? extends Selection> selectionList = stmt.selectionList();
+        final boolean returningId;
+        returningId = selectionList.size() == 1 && selectionList.get(0) instanceof PrimaryFieldMeta;
+
+        final int generatedKeys;
+        if (!returningId && stmt instanceof GeneratedKeyStmt) {
+            generatedKeys = Statement.RETURN_GENERATED_KEYS;
+        } else {
+            generatedKeys = Statement.NO_GENERATED_KEYS;
+        }
+
+        final String sql = stmt.sqlText();
+        final List<SQLParam> paramGroup = stmt.paramGroup();
+        final int paramSize = paramGroup.size();
+
+        try (Statement statement = this.createInsertStatement(sql, paramSize, generatedKeys)) {
+
+            final boolean preparedStmt;
+            if (statement instanceof PreparedStatement) {
+                preparedStmt = true;
+                bindParameter((PreparedStatement) statement, paramGroup);
             } else {
-                throw _Exceptions.unexpectedStmt(stmt);
+                assert paramSize == 0;
+                preparedStmt = false;
             }
-            return insertRows;
+
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+            final long rows;
+            if (returningId) {
+                if (preparedStmt) {
+                    rows = doExtractId(((PreparedStatement) statement).executeQuery(), (GeneratedKeyStmt) stmt);
+                } else {
+                    rows = doExtractId(statement.executeQuery(sql), (GeneratedKeyStmt) stmt);
+                }
+            } else {
+                if (this.factory.useLargeUpdate) {
+                    if (preparedStmt) {
+                        rows = ((PreparedStatement) statement).executeLargeUpdate();
+                    } else {
+                        rows = statement.executeLargeUpdate(sql, generatedKeys);
+                    }
+                } else if (preparedStmt) {
+                    rows = ((PreparedStatement) statement).executeUpdate();
+                } else {
+                    rows = statement.executeUpdate(sql, generatedKeys);
+                }
+
+                if (generatedKeys == Statement.RETURN_GENERATED_KEYS) {
+                    extractGenerateKeys(statement, rows, (GeneratedKeyStmt) stmt);
+                }
+            }
+            if (rows < 1) {
+                throw new SQLException(String.format("insert statement affected %s rows", rows));
+            }
+            return rows;
+        } catch (ArmyException e) {
+            throw e;
         } catch (Exception e) {
             throw JdbcExceptions.wrap(e);
         }
+
     }
 
     @Override
-    public final <T> List<T> returnInsert(Stmt stmt, int txTimeout, Class<T> resultClass) {
-        throw new UnsupportedOperationException();
+    public final long update(final SimpleStmt stmt, final int timeout) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException();
+        }
+        final String sql = stmt.sqlText();
+        final List<SQLParam> paramGroup = stmt.paramGroup();
+        final int paramSize = paramGroup.size();
+
+        try (Statement statement = this.createUpdateStatement(sql, paramSize)) {
+
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+
+            final long rows;
+            if (statement instanceof PreparedStatement) {
+
+                bindParameter((PreparedStatement) statement, paramGroup);
+
+                if (this.factory.useLargeUpdate) {
+                    rows = ((PreparedStatement) statement).executeLargeUpdate();
+                } else {
+                    rows = ((PreparedStatement) statement).executeUpdate();
+                }
+            } else if (paramSize > 0) {
+                //no bug,never here
+                throw new IllegalStateException();
+            } else if (this.factory.useLargeUpdate) {
+                rows = statement.executeLargeUpdate(sql);
+            } else {
+                rows = statement.executeUpdate(sql);
+            }
+            if (rows < 1 && stmt.hasOptimistic()) {
+                throw _Exceptions.optimisticLock(rows);
+            }
+            return rows;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (Exception e) {
+            throw JdbcExceptions.wrap(e);
+        }
+
     }
+
 
     @Override
     public <T> List<T> returningUpdate(Stmt stmt, int txTimeout, Class<T> resultClass) throws DataAccessException {
@@ -99,25 +192,6 @@ abstract class JdbcExecutor implements StmtExecutor {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public final long update(final SimpleStmt stmt, final int timeout) {
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
-
-            bindParameter(statement, stmt.paramGroup());
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
-            }
-            final long affectedRows;
-            if (this.factory.useLargeUpdate) {
-                affectedRows = statement.executeLargeUpdate();
-            } else {
-                affectedRows = statement.executeUpdate();
-            }
-            return affectedRows;
-        } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
-        }
-    }
 
     @Override
     public List<Long> batchUpdate(final BatchStmt stmt, final int timeout) throws DataAccessException {
@@ -461,100 +535,8 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     /**
-     * @see #insert(Stmt, int)
+     * @see #insert(SimpleStmt, int)
      */
-    private long executePariInsert(final PairStmt stmt, final int timeout) throws SQLException {
-        final long startTime = System.currentTimeMillis();
-
-        final long insertRows;
-        insertRows = this.executeInsert(stmt.firstStmt(), timeout);
-        final int restSeconds;
-        if (timeout > 0) {
-            final long restMills = (timeout * 1000L) - (System.currentTimeMillis() - startTime);
-            if (restMills < 1L) {
-                String m = "Parent insert completion,but timeout,so no time insert child.";
-                throw new ChildInsertException(m, _Exceptions.timeout(timeout, restMills));
-            }
-            if ((restMills % 1000L) == 0) {
-                restSeconds = (int) (restMills / 1000L);
-            } else {
-                restSeconds = (int) (restMills / 1000L) + 1;
-            }
-        } else {
-            restSeconds = 0;
-        }
-        try {
-            final long childRows;
-            childRows = this.executeInsert(stmt.secondStmt(), restSeconds);
-
-            if (childRows != insertRows) {
-                throw parentChildRowsNotMatch(insertRows, childRows);
-            }
-        } catch (Exception e) {
-            throw new ChildInsertException("Parent insert completion,but child insert occur error.", e);
-        }
-        return insertRows;
-    }
-
-    private long executeInsert(final SimpleStmt stmt, final int timeoutSeconds) throws SQLException {
-        final List<? extends Selection> selectionList = stmt.selectionList();
-        final boolean returningId;
-        returningId = selectionList.size() == 1 && selectionList.get(0) instanceof PrimaryFieldMeta;
-
-        final int generatedKeys;
-        if (!returningId && stmt instanceof GeneratedKeyStmt) {
-            generatedKeys = Statement.RETURN_GENERATED_KEYS;
-        } else {
-            generatedKeys = Statement.NO_GENERATED_KEYS;
-        }
-        final String sql = stmt.sqlText();
-        final List<SQLParam> paramGroup = stmt.paramGroup();
-        final int paramSize = paramGroup.size();
-        try (Statement statement = this.createInsertStatement(sql, paramSize, generatedKeys)) {
-            final boolean preparedStmt;
-            if (statement instanceof PreparedStatement) {
-                preparedStmt = true;
-                bindParameter((PreparedStatement) statement, paramGroup);
-            } else {
-                assert paramSize == 0;
-                preparedStmt = false;
-            }
-
-            if (timeoutSeconds > 0) {
-                statement.setQueryTimeout(timeoutSeconds);
-            }
-            final long rows;
-            if (returningId) {
-                if (preparedStmt) {
-                    rows = doExtractId(((PreparedStatement) statement).executeQuery(), (GeneratedKeyStmt) stmt);
-                } else {
-                    rows = doExtractId(statement.executeQuery(sql), (GeneratedKeyStmt) stmt);
-                }
-            } else {
-                if (this.factory.useLargeUpdate) {
-                    if (preparedStmt) {
-                        rows = ((PreparedStatement) statement).executeLargeUpdate();
-                    } else {
-                        rows = statement.executeLargeUpdate(sql, generatedKeys);
-                    }
-                } else if (preparedStmt) {
-                    rows = ((PreparedStatement) statement).executeUpdate();
-                } else {
-                    rows = statement.executeUpdate(sql, generatedKeys);
-                }
-
-                if (generatedKeys == Statement.RETURN_GENERATED_KEYS) {
-                    extractGenerateKeys(statement, rows, (GeneratedKeyStmt) stmt);
-                }
-            }
-            if (rows < 1) {
-                throw new SQLException(String.format("insert statement affected %s rows", rows));
-            }
-            return rows;
-        }
-
-    }
-
     private Statement createInsertStatement(final String sql, final int paramSize, final int autoGeneratedKeys)
             throws SQLException {
         final Statement statement;
@@ -566,9 +548,23 @@ abstract class JdbcExecutor implements StmtExecutor {
         return statement;
     }
 
+    /**
+     * @see #update(SimpleStmt, int)
+     */
+    private Statement createUpdateStatement(final String sql, final int paramSize) throws SQLException {
+        final Statement statement;
+        if (paramSize > 0) {
+            statement = this.conn.prepareStatement(sql);
+        } else {
+            statement = this.conn.createStatement();
+        }
+        return statement;
+    }
+
 
     /**
-     * @see #executeInsert(SimpleStmt, int)
+     * @see #insert(SimpleStmt, int)
+     * @see #update(SimpleStmt, int)
      */
     private void bindParameter(final PreparedStatement statement, final List<SQLParam> paramGroup)
             throws SQLException {
@@ -664,7 +660,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     /**
-     * @see #executeInsert(SimpleStmt, int)
+     * @see #insert(SimpleStmt, int)
      */
     private void extractGenerateKeys(final Statement statement, final long insertedRows, final GeneratedKeyStmt stmt)
             throws SQLException {
@@ -826,7 +822,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     /**
-     * @see #executeInsert(SimpleStmt, int)
+     * @see #insert(SimpleStmt, int)
      * @see #extractGenerateKeys(Statement, long, GeneratedKeyStmt)
      */
     private static int doExtractId(final ResultSet idResultSet, final GeneratedKeyStmt stmt) throws SQLException {
@@ -855,19 +851,6 @@ abstract class JdbcExecutor implements StmtExecutor {
         }
     }
 
-    private static int getSingleTimeout(final long restMillis) {
-        int timeout;
-        if (restMillis < 1L) {
-            timeout = 0;
-        } else {
-            timeout = (int) (restMillis / 1000L);
-            if (restMillis % 1000L != 0) {
-                timeout++;
-            }
-        }
-        return timeout;
-    }
-
 
     private static ArmyException handleError(final Throwable error, final @Nullable ResultSet resultSet,
                                              final @Nullable Statement statement)
@@ -875,16 +858,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         closeResultSetAndStatement(resultSet, statement);
 
-        final ArmyException e;
-        if (error instanceof ArmyException) {
-            e = (ArmyException) error;
-        } else if (error instanceof SQLException) {
-            e = JdbcExceptions.wrap((SQLException) error);
-        } else {
-            e = _Exceptions.unknownError(error.getMessage(), error);
-        }
-        return e;
-
+        return JdbcExceptions.wrap(error);
     }
 
     private static void closeResultSetAndStatement(final @Nullable ResultSet resultSet,
@@ -920,10 +894,6 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     }
 
-    private static ArmyException convertBeforeBindMethodError(MappingType mappingType) {
-        String m = String.format("%s.convertBeforeBind(Object nonNull) return error.", mappingType);
-        throw new ArmyException(m);
-    }
 
     private static FieldCodecReturnException createCodecReturnTypeException(FieldCodec fieldCodec
             , FieldMeta<?> fieldMeta) {
@@ -938,12 +908,6 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     private static ArmyException valueInsertDomainWrapperSizeError(long insertedRows, int domainWrapperSize) {
         String m = String.format("InsertedRows[%s] and domainWrapperSize[%s] not match.", insertedRows, domainWrapperSize);
-        throw new ArmyException(m);
-    }
-
-    private ArmyException parentChildRowsNotMatch(long parentRows, long childRows) {
-        String m = String.format("Parent insert/update rows[%s] and child insert/update rows[%s] not match."
-                , parentRows, childRows);
         throw new ArmyException(m);
     }
 
