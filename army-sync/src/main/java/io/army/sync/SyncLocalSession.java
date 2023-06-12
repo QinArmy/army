@@ -15,10 +15,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.proxy._SessionCache;
 import io.army.session.*;
-import io.army.stmt.BatchStmt;
-import io.army.stmt.PairStmt;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
+import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
 import io.army.tx.*;
 import io.army.util._Exceptions;
@@ -151,13 +148,12 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                                                 final Supplier<Map<String, Object>> mapConstructor,
                                                 final Supplier<List<Map<String, Object>>> listConstructor,
                                                 final Visible visible) {
+        //1.assert session status
+        assertSession(statement instanceof DmlStatement, visible);
         try {
-            //1.assert session status
-            assertSession(statement instanceof DmlStatement, visible);
 
-            final LocalTransaction tx = this.transaction;
             final int timeOut;
-            timeOut = tx == null ? 0 : tx.nextTimeout();
+            timeOut = this.getTxTimeout();
 
             final SyncLocalSessionFactory factory = this.factory;
 
@@ -220,7 +216,8 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public List<Long> batchUpdate(final BatchDmlStatement statement, final Visible visible) {
+    public List<Long> batchUpdate(final BatchDmlStatement statement, Supplier<List<Long>> listConstructor,
+                                  final Visible visible) {
         if (!(statement instanceof _BatchDml)) {
             // no bug,never here
             throw _Exceptions.unexpectedStatement(statement);
@@ -230,17 +227,41 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             //1. assert session status
             assertSession(true, visible);
             //2. parse statement to stmt
-            final BatchStmt stmt;
+            final Stmt stmt;
             if (statement instanceof UpdateStatement) {
-                stmt = (BatchStmt) this.factory.dialectParser.update((UpdateStatement) statement, visible);
+                stmt = this.factory.dialectParser.update((UpdateStatement) statement, visible);
             } else if (statement instanceof DeleteStatement) {
-                stmt = (BatchStmt) this.factory.dialectParser.delete((DeleteStatement) statement, visible);
+                stmt = this.factory.dialectParser.delete((DeleteStatement) statement, visible);
             } else {
                 throw _Exceptions.unexpectedStatement(statement);
             }
             this.factory.printSqlIfNeed(stmt);
+
             //3. execute stmt
-            throw new ArmyException("");
+            final int timeout;
+            timeout = this.getTxTimeout();
+            final List<Long> resultList;
+            if (stmt instanceof BatchStmt) {
+                resultList = this.stmtExecutor.batchUpdate((BatchStmt) stmt, timeout, listConstructor, null, null);
+            } else if (!this.hasTransaction()) {
+                throw new ArmyException("update/delete child must in transaction.");
+            } else {
+                final long startTime;
+                startTime = System.currentTimeMillis();
+
+                resultList = this.stmtExecutor.batchUpdate(((PairBatchStmt) stmt).firstStmt(), timeout,
+                        listConstructor, null, null
+                );
+
+                final ChildTableMeta<?> domainTable;
+                domainTable = (ChildTableMeta<?>) ((_Statement._ChildStatement) statement).table();
+
+                this.stmtExecutor.batchUpdate(((PairBatchStmt) stmt).secondStmt(),
+                        restSecond(domainTable, startTime, timeout), listConstructor, domainTable, resultList
+                );
+            }
+
+            return resultList;
         } catch (ChildUpdateException e) {
             final SyncLocalTransaction tx = this.transaction;
             if (tx != null) {
@@ -300,16 +321,19 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     @Override
     public QueryResult batchQuery(BatchDqlStatement statement, Visible visible) {
-        return null;
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public MultiResult multiStmt(MultiStatement statement, Visible visible) {
-        return null;
+        //TODO
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public MultiResult call(CallableStatement callable) {
+        //TODO
         throw new UnsupportedOperationException();
     }
 
@@ -426,7 +450,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             if (stmt instanceof SimpleStmt) {
                 affectedRows = this.stmtExecutor.insert((SimpleStmt) stmt, this.getTxTimeout());
             } else {
-                affectedRows = this.insertPairStmt((ChildTableMeta<?>) ((_Insert) statement).insertTable(),
+                affectedRows = this.insertPairStmt((ChildTableMeta<?>) ((_Insert) statement).table(),
                         (PairStmt) stmt, this.getTxTimeout());
             }
 
@@ -437,7 +461,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                         , ((_Insert._DomainInsert) statement).domainList().size(), affectedRows);
                 throw new DataAccessException(m);
             } else if (affectedRows < 1) {
-                String m = String.format("%s insert rows is %s .", ((_Insert) statement).insertTable(), affectedRows);
+                String m = String.format("%s insert rows is %s .", ((_Insert) statement).table(), affectedRows);
                 throw new DataAccessException(m);
             }
             return affectedRows;
@@ -625,7 +649,8 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     private void assertSessionForChildInsert(final InsertStatement statement) {
         final TableMeta<?> domainTable;
-        domainTable = ((_Insert) statement).insertTable();
+        domainTable = ((_Insert) statement).table();
+
         if (domainTable instanceof ChildTableMeta && this.transaction == null) {
             throw _Exceptions.childDmlNoTransaction(this, (ChildTableMeta<?>) domainTable);
         }

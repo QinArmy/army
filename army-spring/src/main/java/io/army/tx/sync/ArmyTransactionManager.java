@@ -410,11 +410,6 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         }
 
 
-        @Override
-        public List<Long> batchUpdate(BatchDmlStatement statement, Visible visible) {
-            return null;
-        }
-
 
         @Override
         public QueryResult batchQuery(BatchDqlStatement statement, Visible visible) {

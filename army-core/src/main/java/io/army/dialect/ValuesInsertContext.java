@@ -328,7 +328,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
         private ValuesRowWrapper(ValuesInsertContext context, _Insert._ValuesInsert domainStmt) {
-            super(domainStmt.insertTable(), context.parser.mappingEnv);
+            super(domainStmt.table(), context.parser.mappingEnv);
             this.nonChildRowList = context.rowList;
             if (domainStmt instanceof _Insert._ChildValuesInsert) {
                 assert context.insertTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();

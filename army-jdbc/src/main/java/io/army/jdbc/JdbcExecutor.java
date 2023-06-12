@@ -3,7 +3,6 @@ package io.army.jdbc;
 import io.army.ArmyException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
-import io.army.bean.PairBean;
 import io.army.codec.FieldCodec;
 import io.army.codec.FieldCodecReturnException;
 import io.army.criteria.SQLParam;
@@ -13,6 +12,7 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.session.ChildUpdateException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
@@ -35,7 +35,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.*;
-import java.util.*;
+import java.util.ConcurrentModificationException;
+import java.util.List;
+import java.util.Map;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -171,9 +174,12 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     @Override
-    public List<Long> batchUpdate(final BatchStmt stmt, final int timeout, final @Nullable List<Long> rowsList)
-            throws DataAccessException {
-
+    public final List<Long> batchUpdate(final BatchStmt stmt, final int timeout,
+                                        final Supplier<List<Long>> listConstructor,
+                                        final @Nullable ChildTableMeta<?> domainTable, final @Nullable List<Long> rowsList) {
+        if (timeout < 0 || domainTable == null ^ rowsList == null) {
+            throw new IllegalArgumentException();
+        }
         try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
             final List<List<SQLParam>> paramGroupList = stmt.groupList();
 
@@ -185,155 +191,47 @@ abstract class JdbcExecutor implements StmtExecutor {
                 statement.setQueryTimeout(timeout);
             }
 
-            final int groupSize = paramGroupList.size();
-            final List<Long> batchList = new ArrayList<>(groupSize);
-            final boolean optimistic = stmt.hasOptimistic();
+            final List<Long> resultList;
             if (this.factory.useLargeUpdate) {
-                final long[] batchAffectedRows;
-                batchAffectedRows = statement.executeLargeBatch();
-                long rows;
-                for (int i = 0; i < batchAffectedRows.length; i++) {
-                    rows = batchAffectedRows[i];
-                    if (optimistic && rows < 1) {
-                        throw _Exceptions.batchOptimisticLock(i, rows);
-                    }
-                    batchList.add(rows);
-                }
+                final long[] affectedRows;
+                affectedRows = statement.executeLargeBatch();
+                resultList = this.handleLargeBatchResult(stmt.hasOptimistic(), affectedRows, listConstructor,
+                        domainTable, rowsList);
             } else {
-                final int[] batchAffectedRows;
-                batchAffectedRows = statement.executeBatch();
-                for (int i = 0, rows; i < batchAffectedRows.length; i++) {
-                    rows = batchAffectedRows[i];
-                    if (optimistic && rows < 1) {
-                        throw _Exceptions.batchOptimisticLock(i, rows);
-                    }
-                    batchList.add((long) rows);
-                }
+                final int[] affectedRows;
+                affectedRows = statement.executeBatch();
+                resultList = this.handleBatchResult(stmt.hasOptimistic(), affectedRows, listConstructor,
+                        domainTable, rowsList);
             }
-            if (batchList.size() != groupSize) {
-                throw _Exceptions.batchCountNotMatch(groupSize, batchList.size());
-            }
-            return Collections.unmodifiableList(batchList);
-        } catch (SQLException e) {
+
+            return resultList;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (Exception e) {
             throw JdbcExceptions.wrap(e);
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public final <T> List<T> query(final SimpleStmt stmt, final int timeout, final Class<T> resultClass,
-                                   final Supplier<List<T>> listConstructor) {
-
-        final List<? extends Selection> selectionList = stmt.selectionList();
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
-
-            bindParameter(statement, stmt.paramGroup());
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
-            }
-            final List<T> list = listConstructor.get();
-            try (ResultSet resultSet = statement.executeQuery()) {
-                final ObjectAccessor accessor;
-                final Selection singleSelection;
-                final Constructor<T> constructor;
-                final int selectionSize = selectionList.size();
-                if (selectionSize == 1) {
-                    singleSelection = selectionList.get(0);
-                    constructor = null;
-                    accessor = null;
-                } else if (selectionSize == 2 && PairBean.class.isAssignableFrom(resultClass)) {
-                    singleSelection = null;
-                    accessor = null;
-                    constructor = ObjectAccessorFactory.getPairConstructor(resultClass);
-                } else {
-                    singleSelection = null;
-                    constructor = ObjectAccessorFactory.getConstructor(resultClass);
-                    accessor = ObjectAccessorFactory.forBean(resultClass);
-                }
-                T bean;
-                for (Object columnValue; resultSet.next(); ) {
-                    if (selectionSize == 1) {
-                        columnValue = getColumnValue(resultSet, singleSelection);
-                        if (columnValue != null && !resultClass.isInstance(columnValue)) {
-                            throw _Exceptions.expectedTypeAndResultNotMatch(singleSelection, resultClass);
-                        }
-                        list.add((T) columnValue);
-                    } else if (accessor == null) {
-                        columnValue = getColumnValue(resultSet, selectionList.get(0));
-                        bean = ObjectAccessorFactory.createPair(constructor, columnValue
-                                , getColumnValue(resultSet, selectionList.get(1)));
-                        list.add(bean);
-                    } else {
-                        bean = ObjectAccessorFactory.createBean(constructor);
-                        for (Selection selection : selectionList) {
-                            columnValue = getColumnValue(resultSet, selection);
-                            accessor.set(bean, selection.alias(), columnValue);
-                        }
-                        list.add(bean);
-                    }
-                }
-            }
-            return list;
-        } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
-        }
+    public final <R> List<R> query(final SimpleStmt stmt, final int timeout, final Class<R> resultClass,
+                                   final Supplier<List<R>> listConstructor) {
+        return this.doQuery(stmt, timeout, listConstructor, this.createFuncForBean(stmt.selectionList(), resultClass));
 
     }
 
 
     @Override
-    public final List<Map<String, Object>> queryAsMap(SimpleStmt stmt, int timeout
-            , Supplier<Map<String, Object>> mapConstructor, Supplier<List<Map<String, Object>>> listConstructor)
-            throws DataAccessException {
-
-        final List<? extends Selection> selectionList = stmt.selectionList();
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
-
-            bindParameter(statement, stmt.paramGroup());
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
-            }
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                final List<Map<String, Object>> list = listConstructor.get();
-                Map<String, Object> rowMap;
-                while (resultSet.next()) {
-                    rowMap = mapConstructor.get();
-                    for (Selection selection : selectionList) {
-                        rowMap.put(selection.alias(), getColumnValue(resultSet, selection));
-                    }
-                    list.add(rowMap);
-                }
-                return list;
-            }
-        } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
-        }
-
+    public final List<Map<String, Object>> queryAsMap(SimpleStmt stmt, int timeout,
+                                                      Supplier<Map<String, Object>> mapConstructor,
+                                                      Supplier<List<Map<String, Object>>> listConstructor) {
+        return this.doQuery(stmt, timeout, listConstructor, this.createFuncForMap(stmt.selectionList(), mapConstructor));
     }
 
 
     @Override
     public final <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass,
                                            final StreamOptions options) {
-        final List<? extends Selection> selectionList = stmt.selectionList();
-
-        final FunctionWithError<ResultSetMetaData, RowReader<R>> function;
-        function = metaData -> {
-            final int selectionSize;
-            selectionSize = selectionList.size();
-            final RowReader<R> rowReader;
-            if (selectionSize == 1) {
-                rowReader = new SingleColumnRowReader<>(this, selectionList,
-                        createSqlTypArray(metaData, selectionSize), resultClass);
-            } else {
-                rowReader = new BeanRowReader<>(this, selectionList, resultClass,
-                        createSqlTypArray(metaData, selectionSize));
-            }
-            return rowReader;
-
-        };
-        return this.queryAsStream(stmt, timeout, options, function);
+        return this.queryAsStream(stmt, timeout, options, this.createFuncForBean(stmt.selectionList(), resultClass));
     }
 
 
@@ -341,14 +239,9 @@ abstract class JdbcExecutor implements StmtExecutor {
     public Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
                                                       final Supplier<Map<String, Object>> mapConstructor,
                                                       StreamOptions options) {
-        final List<? extends Selection> selectionList = stmt.selectionList();
-
-        final FunctionWithError<ResultSetMetaData, RowReader<Map<String, Object>>> function;
-        function = metaData -> new MapReader(this, selectionList, createSqlTypArray(metaData, selectionList.size()),
-                mapConstructor
-        );
-        return this.queryAsStream(stmt, timeout, options, function);
+        return this.queryAsStream(stmt, timeout, options, this.createFuncForMap(stmt.selectionList(), mapConstructor));
     }
+
 
     @Override
     public final Object createSavepoint() throws DataAccessException {
@@ -498,20 +391,6 @@ abstract class JdbcExecutor implements StmtExecutor {
     }
 
 
-    private int getRestSeconds(final int timeout, final long startMills) {
-        long currentMills = System.currentTimeMillis();
-        long restMills = (timeout * 1000L - (currentMills - startMills));
-        if (restMills <= 0) {
-            throw _Exceptions.timeout(timeout, restMills);
-        }
-        int restSeconds = (int) (restMills / 1000L);
-        if (restSeconds == 0) {
-            restSeconds++;
-        }
-        return restSeconds;
-    }
-
-
     /**
      * @see #insert(SimpleStmt, int)
      */
@@ -537,6 +416,55 @@ abstract class JdbcExecutor implements StmtExecutor {
             statement = this.conn.createStatement();
         }
         return statement;
+    }
+
+    /**
+     * @see #doQuery(SimpleStmt, int, Supplier, FunctionWithError)
+     */
+    private Statement createQueryStatement(final String sql, final int paramSize) throws SQLException {
+        final Statement statement;
+        if (paramSize > 0) {
+            statement = this.conn.prepareStatement(sql);
+        } else {
+            statement = this.conn.createStatement();
+        }
+        return statement;
+    }
+
+
+    /**
+     * @see #query(SimpleStmt, int, Class, Supplier)
+     * @see #queryStream(SimpleStmt, int, Class, StreamOptions)
+     */
+    private <R> FunctionWithError<ResultSetMetaData, RowReader<R>> createFuncForBean(
+            final List<? extends Selection> selectionList, final Class<R> resultClass) {
+
+        return metaData -> {
+            final int selectionSize;
+            selectionSize = selectionList.size();
+
+            final RowReader<R> rowReader;
+            if (selectionSize == 1) {
+                rowReader = new SingleColumnRowReader<>(this, selectionList,
+                        createSqlTypArray(metaData, selectionSize), resultClass);
+            } else {
+                rowReader = new BeanRowReader<>(this, selectionList, resultClass,
+                        createSqlTypArray(metaData, selectionSize));
+            }
+            return rowReader;
+
+        };
+    }
+
+    /**
+     * @see #queryAsMap(SimpleStmt, int, Supplier, Supplier)
+     * @see #queryMapStream(SimpleStmt, int, Supplier, StreamOptions)
+     */
+    private FunctionWithError<ResultSetMetaData, RowReader<Map<String, Object>>> createFuncForMap(
+            List<? extends Selection> selectionList, Supplier<Map<String, Object>> mapConstructor) {
+        return metaData -> new MapReader(this, selectionList, createSqlTypArray(metaData, selectionList.size()),
+                mapConstructor
+        );
     }
 
 
@@ -600,42 +528,6 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     }
 
-    @Deprecated
-    @Nullable
-    private Object getColumnValue(final ResultSet resultSet, final Selection selection)
-            throws SQLException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Nullable
-    private Object getColumnValue(final ResultSet resultSet, final int indexBasedOne, final SqlType sqlType,
-                                  final MappingType type) throws SQLException {
-
-        Object value;
-        value = this.get(resultSet, indexBasedOne, sqlType);
-        if (value == null) {
-            return null;
-        }
-        value = type.afterGet(sqlType, this.factory.mappingEnv, value);
-        //TODO codec
-        return value;
-
-    }
-
-
-    private Object encodeField(final FieldMeta<?> fieldMeta, Object nonNull) {
-        final FieldCodec fieldCodec;
-        fieldCodec = this.fieldCodecMap.get(fieldMeta);
-        if (fieldCodec == null) {
-            throw createNoFieldCodecException(fieldMeta);
-        }
-        nonNull = fieldCodec.encode(fieldMeta, nonNull);
-        if (nonNull == null || nonNull.getClass() != fieldMeta.javaType()) {
-            throw createCodecReturnTypeException(fieldCodec, fieldMeta);
-        }
-        return nonNull;
-    }
-
 
     /**
      * @see #insert(SimpleStmt, int)
@@ -656,11 +548,69 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     /**
+     * @see #query(SimpleStmt, int, Class, Supplier)
+     * @see #queryAsMap(SimpleStmt, int, Supplier, Supplier)
+     */
+    private <R> List<R> doQuery(final SimpleStmt stmt, final int timeout, final Supplier<List<R>> listConstructor,
+                                final FunctionWithError<ResultSetMetaData, RowReader<R>> function) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException();
+        }
+
+        final String sql = stmt.sqlText();
+        final List<SQLParam> paramGroup = stmt.paramGroup();
+        final int paramSize = paramGroup.size();
+
+        try (Statement statement = this.createQueryStatement(sql, paramSize)) {
+
+            if (statement instanceof PreparedStatement) {
+                bindParameter((PreparedStatement) statement, paramGroup);
+            }
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+
+            final ResultSet rs;
+            if (statement instanceof PreparedStatement) {
+                rs = ((PreparedStatement) statement).executeQuery();
+            } else {
+                rs = statement.executeQuery(sql);
+            }
+            try (ResultSet resultSet = rs) {
+                List<R> list = listConstructor.get();
+                if (list == null) {
+                    throw new NullPointerException("listConstructor return null");
+                }
+                final RowReader<R> rowReader;
+                rowReader = function.apply(resultSet.getMetaData());
+                while (resultSet.next()) {
+                    list.add(rowReader.readOneRow(resultSet));
+                }
+
+                if (list instanceof ImmutableSpec) {
+                    list = _Collections.unmodifiableListForDeveloper(list);
+                }
+                return list;
+            }
+        } catch (ArmyException e) {
+            throw e;
+        } catch (Exception e) {
+            throw JdbcExceptions.wrap(e);
+        }
+
+    }
+
+
+    /**
      * @see #queryStream(SimpleStmt, int, Class, StreamOptions)
      * @see #queryMapStream(SimpleStmt, int, Supplier, StreamOptions)
      */
     private <R> Stream<R> queryAsStream(final SimpleStmt stmt, final int timeout, final StreamOptions options,
                                         final FunctionWithError<ResultSetMetaData, RowReader<R>> function) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException();
+        }
+
         final List<? extends Selection> selectionList = stmt.selectionList();
         final int selectionSize;
         selectionSize = selectionList.size();
@@ -786,6 +736,86 @@ abstract class JdbcExecutor implements StmtExecutor {
         return error;
     }
 
+
+    /**
+     * @see #batchUpdate(BatchStmt, int, Supplier, List)
+     */
+    private List<Long> handleLargeBatchResult(final boolean optimistic, final long[] affectedRows,
+                                              final Supplier<List<Long>> listConstructor,
+                                              final @Nullable ChildTableMeta<?> domainTable,
+                                              final @Nullable List<Long> rowsList) {
+        List<Long> list;
+        if (rowsList == null) {
+            list = listConstructor.get();
+            if (list == null) {
+                throw new NullPointerException("listConstructor return null");
+            }
+        } else if (rowsList.size() != affectedRows.length) {
+            String m = String.format("%s child batch number[%s] and parent batch number[%s] not match.",
+                    domainTable, affectedRows.length, rowsList.size());
+            throw new ChildUpdateException(m);
+        } else {
+            list = rowsList;
+        }
+        long rows;
+        for (int i = 0; i < affectedRows.length; i++) {
+            rows = affectedRows[i];
+            if (optimistic && rows < 1) {
+                throw _Exceptions.batchOptimisticLock(domainTable, i + 1, rows);
+            } else if (rowsList == null) {
+                list.add(rows);
+            } else if (rows != rowsList.get(i)) {
+                String m = String.format("%s child [batch %s(based 1) : %s rows] and parent[batch %s(based 1) : %s rows] not match.",
+                        domainTable, i + 1, rows, i + 1, rowsList.get(i));
+                throw new ChildUpdateException(m);
+            }
+        }
+
+        if (rowsList == null && list instanceof ImmutableSpec) {
+            list = _Collections.unmodifiableListForDeveloper(list);
+        }
+        return list;
+    }
+
+    /**
+     * @see #batchUpdate(BatchStmt, int, Supplier, List)
+     */
+    private List<Long> handleBatchResult(final boolean optimistic, final int[] affectedRows,
+                                         final Supplier<List<Long>> listConstructor,
+                                         final @Nullable ChildTableMeta<?> domainTable,
+                                         final @Nullable List<Long> rowsList) {
+        List<Long> list;
+        if (rowsList == null) {
+            list = listConstructor.get();
+            if (list == null) {
+                throw new NullPointerException("listConstructor return null");
+            }
+        } else if (rowsList.size() != affectedRows.length) {
+            String m = String.format("%s child batch number[%s] and parent batch number[%s] not match.",
+                    domainTable, affectedRows.length, rowsList.size());
+            throw new ChildUpdateException(m);
+        } else {
+            list = rowsList;
+        }
+        long rows;
+        for (int i = 0; i < affectedRows.length; i++) {
+            rows = affectedRows[i];
+            if (optimistic && rows < 1) {
+                throw _Exceptions.batchOptimisticLock(domainTable, i + 1, rows);
+            } else if (rowsList == null) {
+                list.add(rows);
+            } else if (rows != rowsList.get(i)) {
+                String m = String.format("%s child [batch %s(based 1) : %s rows] and parent[batch %s(based 1) : %s rows] not match.",
+                        domainTable, i + 1, rows, i + 1, rowsList.get(i));
+                throw new ChildUpdateException(m);
+            }
+        }
+
+        if (rowsList == null && list instanceof ImmutableSpec) {
+            list = _Collections.unmodifiableListForDeveloper(list);
+        }
+        return list;
+    }
 
 
 
@@ -1069,26 +1099,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         @Override
         Map<String, Object> unmodifiedMap(final Map<String, Object> map) {
-            final Map<String, Object> result;
-
-            switch (map.size()) {
-                case 0:   // here , due to column value is null and map is ConcurrentMap, map accessor remove key.
-                    result = Collections.emptyMap();
-                    break;
-                case 1: {
-                    Map<String, Object> temp = null;
-                    for (Map.Entry<String, Object> e : map.entrySet()) {
-                        temp = Collections.singletonMap(e.getKey(), e.getValue()); // here don't use _Collections
-                        break;
-                    }
-                    result = temp;
-                }
-                break;
-                default:
-                    result = Collections.unmodifiableMap(map);
-
-            }
-            return result;
+            return _Collections.unmodifiableMapForDeveloper(map);
         }
 
 

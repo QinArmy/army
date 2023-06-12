@@ -615,7 +615,7 @@ abstract class InsertSupports {
 
 
         @Override
-        public final TableMeta<?> insertTable() {
+        public final TableMeta<?> table() {
             return this.insertTable;
         }
 
@@ -1763,7 +1763,7 @@ abstract class InsertSupports {
 
         AbstractInsertStatement(_Insert clause) {
             super(((CriteriaContextSpec) clause).getContext());
-            this.insertTable = clause.insertTable();
+            this.insertTable = clause.table();
             this.tableAlias = clause.tableAlias();
         }
 
@@ -1774,7 +1774,7 @@ abstract class InsertSupports {
 
 
         @Override
-        public final TableMeta<?> insertTable() {
+        public final TableMeta<?> table() {
             return this.insertTable;
         }
 
@@ -2246,13 +2246,13 @@ abstract class InsertSupports {
         validateSelectionSize(context, stmt);
 
         final CodeEnum discriminatorEnum, childEnum;
-        childEnum = stmt.insertTable().discriminatorValue();
+        childEnum = stmt.table().discriminatorValue();
         assert childEnum != null;
 
         discriminatorEnum = stmt.parentStmt().discriminatorEnum();
 
         if (discriminatorEnum != childEnum) {
-            throw discriminatorNotMatch(context, stmt.insertTable(), childEnum);
+            throw discriminatorNotMatch(context, stmt.table(), childEnum);
         }
 
     }
@@ -2268,7 +2268,7 @@ abstract class InsertSupports {
         assert discriminatorSelection != null;
 
         final CodeEnum discriminatorValue;
-        discriminatorValue = getDiscriminatorValue(context, discriminatorSelection, (ParentTableMeta<?>) stmt.insertTable());
+        discriminatorValue = getDiscriminatorValue(context, discriminatorSelection, (ParentTableMeta<?>) stmt.table());
 
         ((ParentQueryInsert) stmt).onValidateEnd(discriminatorValue);
 
@@ -2276,7 +2276,7 @@ abstract class InsertSupports {
 
 
     private static void validateSimpleQueryInsert(final _Insert._QueryInsert stmt) {
-        assert stmt.insertTable() instanceof SimpleTableMeta;
+        assert stmt.table() instanceof SimpleTableMeta;
         validateSelectionSize(((CriteriaContextSpec) stmt).getContext(), stmt);
 
     }
@@ -2321,7 +2321,7 @@ abstract class InsertSupports {
     @Nullable
     private static Selection validateSelectionSize(final CriteriaContext context, final _Insert._QueryInsert stmt) {
         final TableMeta<?> insertTable;
-        insertTable = stmt.insertTable();
+        insertTable = stmt.table();
 
         final List<FieldMeta<?>> fieldList;
         fieldList = stmt.fieldList();
@@ -2336,7 +2336,7 @@ abstract class InsertSupports {
                     Selection.class.getSimpleName(),
                     selectionList.size(),
                     fieldSize,
-                    stmt.insertTable());
+                    stmt.table());
             throw ContextStack.criteriaError(context, m);
         }
 
@@ -2369,7 +2369,7 @@ abstract class InsertSupports {
         if (childDomainList != parentDomainList) {
             final CriteriaContext context;
             context = ((CriteriaContextSpec) childStmt).getContext();
-            throw CriteriaUtils.childParentDomainListNotMatch(context, (ChildTableMeta<?>) childStmt.insertTable());
+            throw CriteriaUtils.childParentDomainListNotMatch(context, (ChildTableMeta<?>) childStmt.table());
         }
     }
 
@@ -2382,7 +2382,7 @@ abstract class InsertSupports {
         parentPairList = childStmt.parentStmt().rowPairList();
         if (childPairList.size() != parentPairList.size()) {
             String m = String.format("%s insert row number[%s] and parent insert row number[%s] not match"
-                    , childStmt.insertTable(), childPairList.size()
+                    , childStmt.table(), childPairList.size()
                     , parentPairList.size());
             throw ContextStack.criteriaError(((CriteriaContextSpec) childStmt).getContext(), m);
         }

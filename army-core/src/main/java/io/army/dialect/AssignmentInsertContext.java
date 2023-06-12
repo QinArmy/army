@@ -258,7 +258,7 @@ final class AssignmentInsertContext extends InsertContext
         private DelayIdParam delayIdParam;
 
         private AssignmentWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
-            super(domainStmt.insertTable(), context.parser.mappingEnv);
+            super(domainStmt.table(), context.parser.mappingEnv);
             this.mockEnv = context.parser.mockEnv;
             if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
                 assert context.insertTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();

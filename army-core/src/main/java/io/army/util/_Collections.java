@@ -31,6 +31,10 @@ public abstract class _Collections {
 
     }
 
+    public static <T> List<T> unmodifiableListForDeveloper(List<T> list) {
+        return unmodifiableList(list);
+    }
+
     public static <K, V> Map<K, V> unmodifiableMap(Map<K, V> map) {
         switch (map.size()) {
             case 0:
@@ -47,6 +51,10 @@ public abstract class _Collections {
                 map = Collections.unmodifiableMap(map);
         }
         return map;
+    }
+
+    public static <K, V> Map<K, V> unmodifiableMapForDeveloper(Map<K, V> map) {
+        return unmodifiableMap(map);
     }
 
     public static <T> Set<T> unmodifiableSet(Set<T> set) {

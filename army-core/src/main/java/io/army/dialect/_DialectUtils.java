@@ -58,7 +58,7 @@ public abstract class _DialectUtils {
 
         final boolean needReturnId, cannotReturnId;
         needReturnId = !(parentStmt instanceof _Insert._QueryInsert || ((_Insert._InsertOption) parentStmt).isMigration())
-                && parentStmt.insertTable().id().generatorType() == GeneratorType.POST;
+                && parentStmt.table().id().generatorType() == GeneratorType.POST;
 
         cannotReturnId = needReturnId
                 && parentStmt instanceof _Insert._SupportConflictClauseSpec
@@ -84,7 +84,7 @@ public abstract class _DialectUtils {
      * @param stmt non {@link io.army.criteria.impl.inner._Insert._ChildInsert}
      */
     public static boolean isCannotReturnId(final _Insert._DomainInsert stmt) {
-        final TableMeta<?> table = stmt.insertTable();
+        final TableMeta<?> table = stmt.table();
         if (table instanceof ChildTableMeta) {
             //here,stmt not tow statement mode,for example postgre insert with cte.
             return false;
@@ -265,7 +265,7 @@ public abstract class _DialectUtils {
     }
 
     static boolean isIllegalConflict(final _Insert stmt, final Visible visible) {
-        if (visible == Visible.BOTH || !stmt.insertTable().containComplexField(_MetaBridge.VISIBLE)) {
+        if (visible == Visible.BOTH || !stmt.table().containComplexField(_MetaBridge.VISIBLE)) {
             return false;
         }
 
@@ -295,7 +295,7 @@ public abstract class _DialectUtils {
         if (insert.isMigration()) {
             return;
         }
-        final TableMeta<?> table = insert.insertTable();
+        final TableMeta<?> table = insert.table();
 
         FieldMeta<?> field;
         for (Map.Entry<FieldMeta<?>, _Expression> e : insert.defaultValueMap().entrySet()) {

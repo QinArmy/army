@@ -300,7 +300,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         private Object domain;
 
         private DomainWrapper(DomainInsertContext context, _Insert._DomainInsert domainStmt) {
-            this.domainTable = domainStmt.insertTable();
+            this.domainTable = domainStmt.table();
 
             if (domainStmt instanceof _Insert._ChildDomainInsert) {
                 assert ((ChildTableMeta<?>) this.domainTable).parentMeta() == context.insertTable;

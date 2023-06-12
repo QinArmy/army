@@ -157,8 +157,19 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
 
     @Override
     public final List<Long> batchUpdate(BatchDmlStatement statement) {
-        return this.batchUpdate(statement, Visible.ONLY_VISIBLE);
+        return this.batchUpdate(statement, _Collections::arrayList, Visible.ONLY_VISIBLE);
     }
+
+    @Override
+    public final List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor) {
+        return this.batchUpdate(statement, listConstructor, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final List<Long> batchUpdate(BatchDmlStatement statement, Visible visible) {
+        return this.batchUpdate(statement, _Collections::arrayList, visible);
+    }
+
 
     @Override
     public final <T> long batchSave(List<T> domainList) {

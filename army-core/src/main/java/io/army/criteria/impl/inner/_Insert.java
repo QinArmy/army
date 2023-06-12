@@ -14,7 +14,7 @@ import java.util.Map;
 
 public interface _Insert extends _Statement {
 
-    TableMeta<?> insertTable();
+    TableMeta<?> table();
 
     @Nullable
     String tableAlias();

@@ -94,7 +94,7 @@ abstract class InsertContext extends StatementContext
             }
             targetStmt = domainStmt;
         }
-        this.insertTable = targetStmt.insertTable();
+        this.insertTable = targetStmt.table();
         assert this.insertTable instanceof SingleTableMeta;
 
         if (targetStmt instanceof _Insert._InsertOption) {
@@ -199,7 +199,7 @@ abstract class InsertContext extends StatementContext
             , final InsertContext parentContext) {
         super(outerContext, parentContext.parser, parentContext.visible);
         this.parentContext = parentContext;
-        this.insertTable = stmt.insertTable();
+        this.insertTable = stmt.table();
 
         if (stmt instanceof _Insert._InsertOption) {
             final _Insert._InsertOption option = (_Insert._InsertOption) stmt;

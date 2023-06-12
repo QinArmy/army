@@ -2,6 +2,7 @@ package io.army.sync.executor;
 
 
 import io.army.lang.Nullable;
+import io.army.meta.ChildTableMeta;
 import io.army.session.DataAccessException;
 import io.army.session.OptimisticLockException;
 import io.army.stmt.BatchStmt;
@@ -52,12 +53,12 @@ public interface StmtExecutor {
     long update(SimpleStmt stmt, int timeout) throws DataAccessException;
 
 
-
     /**
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
-    List<Long> batchUpdate(BatchStmt stmt, int timeout, @Nullable List<Long> rowsList) throws DataAccessException;
+    List<Long> batchUpdate(BatchStmt stmt, int timeout, Supplier<List<Long>> listConstructor,
+                           @Nullable ChildTableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
 
     <T> List<T> query(SimpleStmt stmt, int timeout, Class<T> resultClass, Supplier<List<T>> listConstructor)
             throws DataAccessException;

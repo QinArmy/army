@@ -232,21 +232,21 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static ErrorChildInsertException parentDoNothingError(final _Insert._ChildInsert childStmt) {
         String m = String.format("parent %s of %s couldn't use DO NOTHING clause,because insert row count will error",
-                childStmt.parentStmt().insertTable(),
-                childStmt.insertTable());
+                childStmt.parentStmt().table(),
+                childStmt.table());
         return new ErrorChildInsertException(m);
     }
 
     public static ErrorChildInsertException childDoNothingError(final _Insert._ChildInsert childStmt) {
         String m = String.format("child %s couldn't use DO NOTHING clause,because insert row count will error",
-                childStmt.insertTable());
+                childStmt.table());
         return new ErrorChildInsertException(m);
     }
 
     public static ErrorChildInsertException forbidChildInsertSyntaxError(final _Insert._ChildInsert childStmt) {
 
         final ParentTableMeta<?> parentTable;
-        parentTable = ((ChildTableMeta<?>) childStmt.insertTable()).parentMeta();
+        parentTable = ((ChildTableMeta<?>) childStmt.table()).parentMeta();
 
         String m = String.format("%s id %s is %s ,so you couldn't use ON DUPLICATE KEY clause(or ON CONFLICT clause).",
                 parentTable, GeneratorType.class.getName(), parentTable.id().generatorType());
@@ -327,7 +327,7 @@ public abstract class _Exceptions extends ExceptionUtils {
             tip = "if domain insert mode and single table,you should use ignoreReturnIds insert option";
             function = CriteriaException::new;
         }
-        final TableMeta<?> insertTable = nonChildStmt.insertTable();
+        final TableMeta<?> insertTable = nonChildStmt.table();
         final PrimaryFieldMeta<?> idField = insertTable.id();
         final String f;
         f = "%s %s is %s and insert multi row nad exists ignorable conflict clause,so couldn't return multi ids. %s";
@@ -339,9 +339,9 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static CriteriaException conflictClauseAndVisibleNotMatch(Dialect dialect, _Insert stmt, final Visible visible) {
         final StringBuilder builder = new StringBuilder();
         if (stmt instanceof _Insert._ChildInsert) {
-            builder.append(((_Insert._ChildInsert) stmt).parentStmt().insertTable());
+            builder.append(((_Insert._ChildInsert) stmt).parentStmt().table());
         } else {
-            builder.append(stmt.insertTable());
+            builder.append(stmt.table());
         }
         builder.append(" contain ")
                 .append(_MetaBridge.VISIBLE)
@@ -369,7 +369,7 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static ErrorChildInsertException doNothingConflict(final _Insert._ChildInsert childStmt) {
         final StringBuilder builder = _StringUtils.builder();
         builder.append("couldn't insert ")
-                .append(childStmt.insertTable())
+                .append(childStmt.table())
                 .append(",because insert multi-row and ")
                 .append("exists conflict clause with DO NOTHING")
                 .append(",child insert row count and parent insert row count possibly not match");
@@ -788,9 +788,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new OptimisticLockException(m);
     }
 
-    public static OptimisticLockException batchOptimisticLock(int batchIndex, long affectedRows) {
-        String m = String.format("Batch index[%s] affected rows is %s,don't satisfy expected rows."
-                , batchIndex, affectedRows);
+
+    public static OptimisticLockException batchOptimisticLock(@Nullable ChildTableMeta<?> domainChild,
+                                                              int batchIndexBasedOne, long affectedRows) {
+        String m = String.format("%s Batch number[%s(based 1)] affected rows is %s,don't satisfy expected rows.",
+                domainChild == null ? "" : domainChild, batchIndexBasedOne, affectedRows);
         return new OptimisticLockException(m);
     }
 
