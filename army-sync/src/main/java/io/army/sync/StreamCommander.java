@@ -1,7 +1,7 @@
 package io.army.sync;
 
 
-public interface Commander {
+public interface StreamCommander {
 
 
     /**

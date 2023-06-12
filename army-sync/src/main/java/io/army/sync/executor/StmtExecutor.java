@@ -7,7 +7,7 @@ import io.army.session.OptimisticLockException;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmt;
-import io.army.sync.Commander;
+import io.army.sync.StreamCommander;
 import io.army.sync.StreamOptions;
 
 import java.util.List;
@@ -66,11 +66,11 @@ public interface StmtExecutor {
 
 
     <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass, StreamOptions options,
-                              @Nullable Consumer<Commander> consumer);
+                              @Nullable Consumer<StreamCommander> consumer);
 
     Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
                                                Supplier<Map<String, Object>> mapConstructor, StreamOptions options,
-                                               @Nullable Consumer<Commander> consumer);
+                                               @Nullable Consumer<StreamCommander> consumer);
 
 
     Object createSavepoint() throws DataAccessException;

@@ -17,7 +17,7 @@ import io.army.session.ChildInsertException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
-import io.army.sync.Commander;
+import io.army.sync.StreamCommander;
 import io.army.sync.StreamOptions;
 import io.army.sync.executor.StmtExecutor;
 import io.army.type.ImmutableSpec;
@@ -38,7 +38,6 @@ import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -264,10 +263,10 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     @Override
     public final <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass,
-                                           final StreamOptions options, final @Nullable Consumer<Commander> consumer) {
+                                           final StreamOptions options, final @Nullable Consumer<StreamCommander> consumer) {
         final List<? extends Selection> selectionList = stmt.selectionList();
 
-        final Function<ResultSetMetaData, RowReader<R>> function;
+        final FunctionWithError<ResultSetMetaData, RowReader<R>> function;
         function = metaData -> {
             final int selectionSize;
             selectionSize = selectionList.size();
@@ -289,10 +288,10 @@ abstract class JdbcExecutor implements StmtExecutor {
     @Override
     public Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
                                                       final Supplier<Map<String, Object>> mapConstructor,
-                                                      StreamOptions options, @Nullable Consumer<Commander> consumer) {
+                                                      StreamOptions options, @Nullable Consumer<StreamCommander> consumer) {
         final List<? extends Selection> selectionList = stmt.selectionList();
 
-        final Function<ResultSetMetaData, RowReader<Map<String, Object>>> function;
+        final FunctionWithError<ResultSetMetaData, RowReader<Map<String, Object>>> function;
         function = metaData -> new MapReader(this, selectionList, createSqlTypArray(metaData, selectionList.size()),
                 mapConstructor
         );
@@ -429,7 +428,7 @@ abstract class JdbcExecutor implements StmtExecutor {
     /*################################## blow private method ##################################*/
 
 
-    private SqlType[] createSqlTypArray(final ResultSetMetaData metaData, final int selectionSize) {
+    private SqlType[] createSqlTypArray(final ResultSetMetaData metaData, final int selectionSize) throws SQLException {
         final SqlType[] sqlTypeArray = new SqlType[selectionSize];
         for (int i = 0; i < selectionSize; i++) {
             sqlTypeArray[i] = this.getSqlType(metaData, i + 1);
@@ -656,8 +655,8 @@ abstract class JdbcExecutor implements StmtExecutor {
      * @see #queryMapStream(SimpleStmt, int, Supplier, StreamOptions, Consumer)
      */
     private <R> Stream<R> queryAsStream(final SimpleStmt stmt, final int timeout, final StreamOptions options,
-                                        final @Nullable Consumer<Commander> consumer,
-                                        final Function<ResultSetMetaData, RowReader<R>> function) {
+                                        final @Nullable Consumer<StreamCommander> consumer,
+                                        final FunctionWithError<ResultSetMetaData, RowReader<R>> function) {
         final List<? extends Selection> selectionList = stmt.selectionList();
         final int selectionSize;
         selectionSize = selectionList.size();
@@ -701,7 +700,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
             // 6. create Commander
             if (consumer != null) {
-                final Commander commander;
+                final StreamCommander commander;
                 if (options.parallel) {
                     commander = new ParallelCommander(spliterator);
                 } else {
@@ -721,7 +720,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     /**
-     * @see #queryAsStream(SimpleStmt, int, StreamOptions, Consumer, Function)
+     * @see #queryAsStream(SimpleStmt, int, StreamOptions, Consumer, FunctionWithError)
      */
     private Statement createStreamStmt(final String sql, final int paramSize, final StreamOptions options)
             throws SQLException {
@@ -1165,7 +1164,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                 return null;
             }
 
-            final List<R> rowList = _Collections.linkedList();
+            final List<R> rowList = _Collections.arrayList(Math.min(300, this.splitSize));
             this.doTryAdvance(this.splitSize, rowList::add);
             final Spliterator<R> spliterator;
             if (rowList.size() == 0) {
@@ -1205,27 +1204,33 @@ abstract class JdbcExecutor implements StmtExecutor {
                 boolean hasMore = !this.closed && !this.canceled;
 
                 final int actualFetchSize = hasMore ? expectedFetchSize : 0;
-
-                int rowCount = this.rowCount;
+                final int oldRowCount = this.rowCount;
+                int newRowCount = oldRowCount;
                 for (int i = 0; i < actualFetchSize; i++) {
-                    if (resultSet.next()) {
-                        action.accept(rowReader.readOneRow(resultSet));
-                        rowCount++;
-                        continue;
+                    if (!resultSet.next()) {
+                        hasMore = false;
+                        break;
                     }
-                    hasMore = false;
-                    break;
+                    action.accept(rowReader.readOneRow(resultSet));
+                    newRowCount++;
+
+                    if (this.canceled) { // at least read one row
+                        hasMore = false;
+                        break;
+                    }
+
                 }
 
-                if (actualFetchSize > 0 && rowCount == 0 && this.hasOptimistic) {
-                    throw _Exceptions.optimisticLock(rowCount);
+                if (actualFetchSize > 0 && newRowCount == 0 && this.hasOptimistic) {
+                    throw _Exceptions.optimisticLock(newRowCount);
+                } else if (this.rowCount != oldRowCount) {
+                    throw new ConcurrentModificationException();
+                } else if (newRowCount < 0) {
+                    newRowCount = 1; // just for hasOptimistic
                 }
-                if (rowCount > 0) {
-                    rowCount = 1; // just for hasOptimistic
-                }
-                this.rowCount = rowCount;
+                this.rowCount = newRowCount;
 
-                if (!hasMore || this.canceled) {
+                if (!hasMore) {
                     this.closeStream();
                 }
                 return hasMore;
@@ -1253,7 +1258,7 @@ abstract class JdbcExecutor implements StmtExecutor {
     }//RowSpliterator
 
 
-    private static final class SimpleCommander implements Commander {
+    private static final class SimpleCommander implements StreamCommander {
 
         private final RowSpliterator<?> spliterator;
 
@@ -1269,7 +1274,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     }//SimpleCommander
 
-    private static final class ParallelCommander implements Commander {
+    private static final class ParallelCommander implements StreamCommander {
 
         private final RowSpliterator<?> spliterator;
 
@@ -1280,6 +1285,9 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         @Override
         public void cancel() {
+            if (this.spliterator.canceled) {
+                return;
+            }
             synchronized (this.spliterator) {
                 this.spliterator.canceled = true;
             }
@@ -1287,6 +1295,13 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     }//ParallelCommander
+
+    @FunctionalInterface
+    private interface FunctionWithError<T, R> {
+
+        R apply(T t) throws Exception;
+
+    }
 
 
 }

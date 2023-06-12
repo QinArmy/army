@@ -1,6 +1,7 @@
 package io.army.sqltype;
 
 import io.army.dialect.Database;
+import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.util._StringUtils;
@@ -187,11 +188,11 @@ public enum PostgreSqlType implements SqlType {
         return this == UNKNOWN;
     }
 
+
     @Override
     public final boolean isArray() {
-        return this.name().contains("_ARRAY");
+        return this.name().contains(_Constant.UNDERSCORE_ARRAY);
     }
-
 
 
     @Override

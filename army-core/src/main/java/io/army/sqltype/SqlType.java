@@ -17,6 +17,7 @@ public interface SqlType {
 
     boolean isUnknown();
 
+
     default boolean isArray() {
         throw new UnsupportedOperationException();
     }

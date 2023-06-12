@@ -11,11 +11,12 @@ import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
+import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.*;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * <p>
@@ -85,12 +86,26 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case CHAR:
             case VARCHAR:
             case TEXT:
-            case NO_CAST_TEXT:
-                stmt.setString(indexBasedOne, (String) nonNull);
-                break;
-            case BYTEA:
-                stmt.setBytes(indexBasedOne, (byte[]) nonNull);
-                break;
+            case NO_CAST_TEXT: {
+                if (nonNull instanceof String) {
+                    stmt.setString(indexBasedOne, (String) nonNull);
+                } else if (nonNull instanceof Reader) {
+                    stmt.setCharacterStream(indexBasedOne, (Reader) nonNull);
+                } else {
+                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                }
+            }
+            break;
+            case BYTEA: {
+                if (nonNull instanceof byte[]) {
+                    stmt.setBytes(indexBasedOne, (byte[]) nonNull);
+                } else if (nonNull instanceof InputStream) {
+                    stmt.setBinaryStream(indexBasedOne, (InputStream) nonNull);
+                } else {
+                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                }
+            }
+            break;
             case TIME: {
                 if (!(nonNull instanceof LocalTime)) {
                     throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
@@ -182,8 +197,6 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 stmt.setObject(indexBasedOne, nonNull, Types.SQLXML);
             }
             break;
-
-
             case BIT_ARRAY:
             case XML_ARRAY:
             case CHAR_ARRAY:
@@ -239,8 +252,14 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 }
                 final String name, typeName;
                 name = sqlType.name();
-                typeName = name.substring(0, name.lastIndexOf(_Constant.UNDERSCORE_ARRAY)).toLowerCase(Locale.ROOT);
-                stmt.setArray(indexBasedOne, new PgArray(typeName, (String) nonNull));
+                typeName = name.substring(0, name.lastIndexOf(_Constant.UNDERSCORE_ARRAY))
+                        .toLowerCase(Locale.ROOT);
+                if (pgObject == null) {
+                    pgObject = new PGobject();
+                }
+                pgObject.setType(typeName + "[]");
+                pgObject.setValue((String) nonNull);
+                stmt.setObject(indexBasedOne, pgObject, Types.OTHER);
             }
             break;
             case USER_DEFINED:
@@ -252,23 +271,16 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 }
                 final String typeName;
                 typeName = ((MappingType.SqlUserDefinedType) type).sqlTypeName(this.factory.serverMeta);
-                switch ((PostgreSqlType) sqlType) {
-                    case USER_DEFINED: {
-                        if (pgObject == null) {
-                            pgObject = new PGobject();
-                        }
-                        pgObject.setType(typeName);
-                        pgObject.setValue((String) nonNull);
-                        stmt.setObject(indexBasedOne, pgObject, Types.OTHER);
-                    }
-                    break;
-                    case USER_DEFINED_ARRAY:
-                        stmt.setArray(indexBasedOne, new PgArray(typeName, (String) nonNull));
-                        break;
-                    default:
-                        throw _Exceptions.unexpectedEnum((PostgreSqlType) sqlType);
+                if (pgObject == null) {
+                    pgObject = new PGobject();
                 }
-
+                if (sqlType == PostgreSqlType.USER_DEFINED_ARRAY) {
+                    pgObject.setType(typeName + "[]");
+                } else {
+                    pgObject.setType(typeName);
+                }
+                pgObject.setValue((String) nonNull);
+                stmt.setObject(indexBasedOne, pgObject, Types.OTHER);
             }
             break;
             case UNKNOWN:
@@ -277,7 +289,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 throw _Exceptions.unexpectedEnum((PostgreSqlType) sqlType);
 
         }
-        return attr;
+        return pgObject;
     }
 
     @Override
@@ -310,6 +322,34 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case "numeric":
             case "decimal":
                 type = PostgreSqlType.DECIMAL;
+                break;
+            case "double precision":
+            case "float8":
+                type = PostgreSqlType.FLOAT8;
+                break;
+            case "float4":
+            case "real":
+                type = PostgreSqlType.REAL;
+                break;
+            case "char":
+            case "character":
+                type = PostgreSqlType.CHAR;
+                break;
+            case "varchar":
+            case "character varying":
+                type = PostgreSqlType.VARCHAR;
+                break;
+            case "text":
+                type = PostgreSqlType.TEXT;
+                break;
+            case "bytea":
+                type = PostgreSqlType.BYTEA;
+                break;
+            case "date":
+                type = PostgreSqlType.DATE;
+                break;
+            case "time":
+                type = PostgreSqlType.TIME;
                 break;
             case "bit":
                 type = PostgreSqlType.BIT;
@@ -355,81 +395,6 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
     }//LocalSessionHolderExecutor
 
-
-    private static final class PgArray implements Array {
-
-        private final String typeName;
-
-
-        private final String text;
-
-        private PgArray(String typeName, String text) {
-            this.typeName = typeName;
-            this.text = text;
-        }
-
-        @Override
-        public String getBaseTypeName() {
-            return this.typeName;
-        }
-
-        @Override
-        public int getBaseType() {
-            return 0;
-        }
-
-        @Override
-        public Object getArray() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object getArray(Map<String, Class<?>> map) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object getArray(long index, int count) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object getArray(long index, int count, Map<String, Class<?>> map) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ResultSet getResultSet() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ResultSet getResultSet(Map<String, Class<?>> map) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ResultSet getResultSet(long index, int count) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ResultSet getResultSet(long index, int count, Map<String, Class<?>> map) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void free() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String toString() {
-            return this.text;
-        }
-
-
-    }// PgArray
 
 
 }
