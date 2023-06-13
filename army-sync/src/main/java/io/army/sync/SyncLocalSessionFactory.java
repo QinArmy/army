@@ -1,6 +1,5 @@
 package io.army.sync;
 
-import io.army.criteria.Visible;
 import io.army.dialect.DialectEnv;
 import io.army.dialect.DialectParser;
 import io.army.dialect.DialectParserFactory;
@@ -9,7 +8,9 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.proxy._SessionCacheFactory;
-import io.army.session.*;
+import io.army.session.DataAccessException;
+import io.army.session.SessionFactoryException;
+import io.army.session._ArmySessionFactory;
 import io.army.stmt.Stmt;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.LocalExecutorFactory;
@@ -58,6 +59,7 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
         this.sessionCacheFactory = _SessionCacheFactory.create(this);
         this.supportSavePoints = this.mappingEnv.serverMeta().isSupportSavePoints()
                 && this.executorFactory.supportSavePoints();
+
     }
 
 
@@ -196,64 +198,30 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
 
     /*################################## blow instance inner class  ##################################*/
 
-    static final class LocalSessionBuilder implements LocalSessionFactory.SessionBuilder {
+    static final class LocalSessionBuilder extends ArmySessionBuilder<LocalSessionFactory.SessionBuilder, LocalSession>
+            implements LocalSessionFactory.SessionBuilder {
 
         final SyncLocalSessionFactory factory;
 
-        String name;
-
-        boolean readonly;
 
         LocalStmtExecutor stmtExecutor;
 
-        Visible visible;
 
         private LocalSessionBuilder(SyncLocalSessionFactory factory) {
+            super(factory);
             this.factory = factory;
-            this.readonly = factory.readonly;
         }
 
-        @Override
-        public SessionBuilder name(@Nullable String name) {
-            this.name = name;
-            return this;
-        }
 
         @Override
-        public SessionBuilder readonly(boolean readonly) {
-            this.readonly = readonly;
-            return this;
-        }
-
-        @Override
-        public SessionBuilder queryInsertMode(QueryInsertMode mode) {
-            //TODO
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public SessionBuilder visibleMode(Visible visible) {
-            this.visible = visible;
-            return this;
-        }
-
-        @Override
-        public LocalSession build() throws SessionException {
-            if (!this.readonly && this.factory.readonly) {
-                String m = String.format("%s couldn't create non-readonly %s."
-                        , this.factory, LocalSession.class.getName());
-                throw new CreateSessionException(m);
-            }
+        protected LocalSession createSession() {
             try {
                 this.stmtExecutor = this.factory.executorFactory.createLocalStmtExecutor();
-            } catch (DataAccessException e) {
-                throw new CreateSessionException("create session occur error.", e);
-            }
-            if (this.name == null) {
-                this.name = "unnamed";
-            }
-            return new SyncLocalSession(this);
 
+                return new SyncLocalSession(this);
+            } catch (DataAccessException e) {
+                throw createExecutorError(e);
+            }
         }
 
 

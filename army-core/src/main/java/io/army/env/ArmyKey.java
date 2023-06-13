@@ -1,11 +1,10 @@
 package io.army.env;
 
-import io.army.criteria.Visible;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
+import io.army.session.AllowMode;
 import io.army.session.DdlMode;
-import io.army.session.QueryInsertMode;
 
 import java.time.ZoneOffset;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,13 +33,15 @@ public class ArmyKey<T> {
     public static final ArmyKey<NameMode> TABLE_NAME_MODE = new ArmyKey<>("table.name.mode", NameMode.class, NameMode.DEFAULT);
     public static final ArmyKey<NameMode> COLUMN_NAME_MODE = new ArmyKey<>("column.name.mode", NameMode.class, NameMode.DEFAULT);
 
-    public static final ArmyKey<Visible> VISIBLE_MODE = new ArmyKey<>("visible.mode", Visible.class, Visible.ONLY_VISIBLE);
+    public static final ArmyKey<AllowMode> VISIBLE_MODE = new ArmyKey<>("visible.mode", AllowMode.class, AllowMode.NEVER);
 
     public static final ArmyKey<Boolean> DATABASE_SESSION_HOLDER = new ArmyKey<>("database.session.holder", Boolean.class, Boolean.FALSE);
 
     public static final ArmyKey<String> VISIBLE_SESSION_WHITE_LIST = new ArmyKey<>("visible.session.white.list", String.class, null);
 
-    public static final ArmyKey<QueryInsertMode> SUBQUERY_INSERT_MODE = new ArmyKey<>("subquery.insert.mode", QueryInsertMode.class, QueryInsertMode.ONLY_MIGRATION);
+    public static final ArmyKey<AllowMode> QUERY_INSERT_MODE = new ArmyKey<>("query.insert.mode", AllowMode.class, AllowMode.SUPPORT);
+
+    public static final ArmyKey<String> QUERY_INSERT_SESSION_WHITE_LIST = new ArmyKey<>("query.insert.session.white.list", String.class, null);
 
     public static final ArmyKey<NameMode> FUNC_NAME_MODE = new ArmyKey<>("func.name.mode", NameMode.class, NameMode.DEFAULT);
     public static final ArmyKey<Boolean> SQL_LOG_DYNAMIC = new ArmyKey<>("sql.log.dynamic", Boolean.class, Boolean.FALSE);

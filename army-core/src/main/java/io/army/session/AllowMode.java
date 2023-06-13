@@ -1,9 +1,9 @@
 package io.army.session;
 
-public enum QueryInsertMode {
+public enum AllowMode {
 
     SUPPORT,
-    ONLY_MIGRATION,
+    WHITE_LIST,
 
     NEVER
 

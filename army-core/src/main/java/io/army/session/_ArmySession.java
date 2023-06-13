@@ -1,7 +1,7 @@
 package io.army.session;
 
-import io.army.ArmyException;
 import io.army.criteria.BatchDmlStatement;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._MultiDml;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
@@ -18,10 +18,20 @@ public abstract class _ArmySession implements Session {
 
     protected final boolean readonly;
 
-    protected _ArmySession(String name, boolean readonly) {
-        assert _StringUtils.hasText(name);
-        this.name = name;
-        this.readonly = readonly;
+    protected final Visible visible;
+
+    protected final boolean allowQueryInsert;
+
+    protected _ArmySession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
+
+        this.name = builder.name;
+        this.readonly = builder.readonly;
+        this.visible = builder.visible;
+        this.allowQueryInsert = builder.allowQueryInsert;
+
+        assert _StringUtils.hasText(this.name);
+        assert this.visible != null;
+
     }
 
 
@@ -35,6 +45,33 @@ public abstract class _ArmySession implements Session {
         return this.readonly;
     }
 
+    @Override
+    public final Visible visible() {
+        return this.visible;
+    }
+
+    @Override
+    public final boolean isAllowQueryInsert() {
+        return this.allowQueryInsert;
+    }
+
+
+    @Override
+    public final String toString() {
+        return String.format("%s[name:%s,factory:%s,hash:%s,readonly:%s,transaction:%s,visible:%s,allow query insert:%s]",
+                this.getClass().getName(),
+                this.name,
+                this.sessionFactory().name(),
+                System.identityHashCode(this),
+                this.readonly,
+                this.transactionName(),
+                this.visible,
+                this.allowQueryInsert
+        );
+    }
+
+    @Nullable
+    protected abstract String transactionName();
 
     protected static int restSecond(final ChildTableMeta<?> domainTable, final long startTime, final int timeout) {
         final int restSeconds;
@@ -69,8 +106,8 @@ public abstract class _ArmySession implements Session {
         return domainTable;
     }
 
-    protected static ArmyException updateChildNoTransaction() {
-        return new ArmyException("update/delete child must in transaction.");
+    protected static ChildDmlNoTractionException updateChildNoTransaction() {
+        return new ChildDmlNoTractionException("update/delete child must in transaction.");
     }
 
 

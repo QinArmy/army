@@ -118,6 +118,10 @@ public abstract class _Collections {
         return new FinalConcurrentHashMap<>();
     }
 
+    public static <K, V> ConcurrentHashMap<K, V> concurrentHashMap(int initialCapacity) {
+        return new FinalConcurrentHashMap<>(initialCapacity);
+    }
+
     public static <E> ArrayList<E> arrayList() {
         return new FinalArrayList<>();
     }
@@ -284,6 +288,9 @@ public abstract class _Collections {
         private FinalConcurrentHashMap() {
         }
 
+        private FinalConcurrentHashMap(int initialCapacity) {
+            super(initialCapacity);
+        }
     }//FinalConcurrentHashMap
 
 

@@ -1,6 +1,7 @@
 package io.army.session;
 
 import io.army.ArmyException;
+import io.army.criteria.Visible;
 import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
 import io.army.meta.SchemaMeta;
@@ -28,6 +29,10 @@ public interface SessionFactory {
     @Nullable
     <T> TableMeta<T> getTable(Class<T> domainClass);
 
+    AllowMode visibleMode();
+
+    AllowMode queryInsertMode();
+
 
     boolean isSupportSavePoints();
 
@@ -38,7 +43,7 @@ public interface SessionFactory {
      */
     boolean isClosed();
 
-    boolean readonly();
+    boolean isReadonly();
 
 
     boolean isReactive();
@@ -47,5 +52,24 @@ public interface SessionFactory {
 
 
     Function<ArmyException, RuntimeException> exceptionFunction();
+
+
+    interface SessionBuilderSpec<B, S extends Session> {
+
+        B name(@Nullable String name);
+
+        /**
+         * Optional,default is {@link SessionFactory#isReadonly()}
+         */
+        B readonly(boolean readonly);
+
+        B allowQueryInsert(boolean allow);
+
+        B visibleMode(Visible visible);
+
+        S build() throws SessionException;
+
+
+    }
 
 }

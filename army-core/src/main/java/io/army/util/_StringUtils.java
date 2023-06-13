@@ -2,9 +2,12 @@ package io.army.util;
 
 
 import io.army.dialect._Constant;
+import io.army.lang.Nullable;
 import io.army.modelgen._MetaBridge;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
 
@@ -68,6 +71,35 @@ public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
                 .append(_Constant.POINT)
                 .append(words.name())
                 .toString();
+    }
+
+    /**
+     * @return a unmodified map
+     */
+    @SuppressWarnings("all")
+    public static Map<String, Boolean> whiteMap(final @Nullable String whitelist) {
+        if (whitelist == null) {
+            return _Collections.emptyMap();
+        }
+        final String[] array;
+        array = whitelist.split(",");
+        final Map<String, Boolean> map;
+        switch (array.length) {
+            case 0:
+                map = _Collections.emptyMap();
+                break;
+            case 1:
+                map = _Collections.singletonMap(array[0].trim(), Boolean.TRUE);
+                break;
+            default: {
+                final Map<String, Boolean> temp = new HashMap<>((int) (array.length / 0.75f));
+                for (int i = 0; i < array.length; i++) {
+                    temp.put(array[i].trim(), Boolean.TRUE);
+                }
+                map = _Collections.unmodifiableMap(temp);
+            }
+        }
+        return map;
     }
 
 

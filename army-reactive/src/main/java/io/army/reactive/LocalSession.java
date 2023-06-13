@@ -170,6 +170,11 @@ final class LocalSession extends _AbstractReactiveSession implements Session {
         return null;
     }
 
+    @Override
+    public boolean isAllowQueryInsert() {
+        return false;
+    }
+
     /*################################## blow private instance inner class ##################################*/
 
     static final class LocalTransactionBuilder extends TransactionOptions implements Session.TransactionBuilder {

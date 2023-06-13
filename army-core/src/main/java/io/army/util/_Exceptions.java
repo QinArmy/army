@@ -737,6 +737,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new ReadOnlySessionException(m);
     }
 
+
     public static SessionException readOnlyTransaction(Session session) {
         String m;
         m = String.format("%s of %s in read only transaction,don't support DML.", session.sessionFactory(), session);
@@ -763,11 +764,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new VisibleModeException(m);
     }
 
-    public static SessionException dontSupportSubQueryInsert(Session session) {
+
+    public static QueryInsertException dontSupportSubQueryInsert(Session session) {
         String m;
-        m = String.format("%s of %s don't support sub query insert."
-                , session.sessionFactory(), session);
-        return new NotSupportNonVisibleException(m);
+        m = String.format("%s don't support query insert.", session);
+        return new QueryInsertException(m);
     }
 
     public static MetaException autoIdErrorJavaType(PrimaryFieldMeta<?> field) {

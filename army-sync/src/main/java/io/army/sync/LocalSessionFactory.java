@@ -1,8 +1,8 @@
 package io.army.sync;
 
-import io.army.criteria.Visible;
-import io.army.lang.Nullable;
-import io.army.session.*;
+import io.army.session.Session;
+import io.army.session.SessionFactory;
+import io.army.session.SessionFactoryException;
 
 /**
  * This interface representing single database(or single schema).
@@ -32,20 +32,10 @@ public interface LocalSessionFactory extends SyncSessionFactory, AutoCloseable {
     void close() throws SessionFactoryException;
 
 
-    interface SessionBuilder {
+    interface SessionBuilder extends SessionBuilderSpec<SessionBuilder, LocalSession> {
 
-        SessionBuilder name(@Nullable String name);
-
-        /**
-         * Optional,default is {@link LocalSessionFactory#readonly()}
-         */
-        SessionBuilder readonly(boolean readonly);
-
-        SessionBuilder queryInsertMode(QueryInsertMode mode);
-
-        SessionBuilder visibleMode(Visible visible);
-
-        LocalSession build() throws SessionException;
 
     }
+
+
 }

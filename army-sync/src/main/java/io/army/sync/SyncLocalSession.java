@@ -35,35 +35,21 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     final StmtExecutor stmtExecutor;
 
-    final boolean readonly;
-
     private final _SessionCache sessionCache;
-
-    private boolean onlySupportVisible;
-
-    private boolean dontSupportSubQueryInsert;
 
     private SyncLocalTransaction transaction;
 
-    private final Visible visible;
 
     private boolean closed;
 
     SyncLocalSession(final SyncLocalSessionFactory.LocalSessionBuilder builder) {
-        super(builder.name, builder.readonly);
-
+        super(builder);
         this.factory = builder.factory;
         this.stmtExecutor = builder.stmtExecutor;
         assert this.stmtExecutor != null;
-        this.readonly = builder.readonly;
-        this.visible = builder.visible;
         this.sessionCache = this.factory.sessionCacheFactory.createCache();
     }
 
-    @Override
-    public Visible visible() {
-        return this.visible;
-    }
 
     @Override
     public LocalSessionFactory sessionFactory() {
@@ -112,7 +98,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 factory.printSqlIfNeed(stmt);
                 resultList = this.stmtExecutor.query(stmt, timeOut, resultClass, listConstructor);
             } else if (statement instanceof _Statement._ChildStatement) {
-                throw new ArmyException("don't support"); //TODO
+                throw new ArmyException("don't support"); //TODO FireBird
             } else if (statement instanceof ReturningUpdate) {
                 stmt = (SimpleStmt) factory.dialectParser.update((ReturningUpdate) statement, false, visible);
                 factory.printSqlIfNeed(stmt);
@@ -415,13 +401,10 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         return this.transaction != null;
     }
 
-
     @Override
-    public String toString() {
-        return String.format("[%s name:%s,factory:%s,hash:%s,readonly:%s,transaction non-null:%s]"
-                , SyncLocalSession.class.getName(), this.name
-                , this.factory.name(), System.identityHashCode(this)
-                , this.readonly, this.transaction != null);
+    protected String transactionName() {
+        final SyncLocalTransaction tx = this.transaction;
+        return tx == null ? null : tx.name();
     }
 
 
@@ -457,14 +440,14 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
      * @see #update(SimpleDmlStatement, Visible)
      */
     private long insert(final InsertStatement statement, final Visible visible) {
+        //1. assert session status
+        assertSession(true, visible);
+        assertSessionForChildInsert(statement);
 
         try {
-            //1. assert session status
-            assertSession(true, visible);
-            assertSessionForChildInsert(statement);
 
             //2. parse statement to stmt
-            if (statement instanceof _Insert._QueryInsert && this.dontSupportSubQueryInsert) {
+            if (statement instanceof _Insert._QueryInsert && !this.allowQueryInsert) {
                 throw _Exceptions.dontSupportSubQueryInsert(this);
             }
             final SyncLocalSessionFactory factory = this.factory;
@@ -676,6 +659,9 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         return tx == null ? 0 : tx.nextTimeout();
     }
 
+    /**
+     * @see #insert(InsertStatement, Visible)
+     */
     private void assertSessionForChildInsert(final InsertStatement statement) {
         final TableMeta<?> domainTable;
         domainTable = ((_Insert) statement).table();

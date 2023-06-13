@@ -5,6 +5,7 @@ import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.lang.Nullable;
 import io.army.session.NonUniqueException;
 import io.army.session._ArmySession;
+import io.army.session._ArmySessionFactory;
 import io.army.util.ArmyCriteria;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -17,8 +18,8 @@ import java.util.stream.Stream;
 public abstract class _ArmySyncSession extends _ArmySession implements SyncSession {
 
 
-    protected _ArmySyncSession(String name, boolean readonly) {
-        super(name, readonly);
+    protected _ArmySyncSession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
+        super(builder);
     }
 
 
