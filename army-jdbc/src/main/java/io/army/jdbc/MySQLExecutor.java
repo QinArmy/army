@@ -44,7 +44,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             connection = xaConnection.getConnection();
             return new MySQLRmExecutor(factory, xaConnection, connection);
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw JdbcExecutor.wrap(e);
         }
     }
 

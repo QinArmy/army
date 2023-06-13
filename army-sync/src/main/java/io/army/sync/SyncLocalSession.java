@@ -302,17 +302,75 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     }
 
     @Override
-    public <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass, R terminator,
-                                          StreamOptions options, boolean useMultiStmt, Visible visible) {
-        return null;
+    public <R> Stream<R> batchQueryStream(final BatchDqlStatement statement, final Class<R> resultClass,
+                                          final @Nullable R terminator, final StreamOptions options,
+                                          final boolean useMultiStmt, final Visible visible) {
+        if (terminator == null) {
+            throw _Exceptions.terminatorIsNull();
+        }
+        //1. assert session status
+        assertSession(statement instanceof DmlStatement, visible);
+        try {
+            final Stmt stmt;
+            stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
+            final Stream<R> stream;
+            if (stmt instanceof MultiStmt) {
+                stream = this.stmtExecutor.multiStmtBatchQueryStream((MultiStmt) stmt, this.getTxTimeout(), resultClass,
+                        terminator, options);
+            } else if (stmt instanceof BatchStmt) {
+                stream = this.stmtExecutor.batchQueryStream((BatchStmt) stmt, this.getTxTimeout(), resultClass,
+                        terminator, options);
+            } else {
+                throw _Exceptions.unexpectedStatement(statement);
+            }
+            if (!this.factory.buildInExecutor) {
+                Objects.requireNonNull(stream);
+            }
+            return stream;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw _Exceptions.unknownError(e.getMessage(), e);
+        } finally {
+            ((_Statement) statement).clear();
+        }
     }
 
     @Override
-    public Stream<Map<String, Object>> batchQueryMapStream(BatchDqlStatement statement,
-                                                           Supplier<Map<String, Object>> mapConstructor,
-                                                           Map<String, Object> terminator, StreamOptions options,
-                                                           boolean useMultiStmt, Visible visible) {
-        return null;
+    public Stream<Map<String, Object>> batchQueryMapStream(final BatchDqlStatement statement,
+                                                           final Supplier<Map<String, Object>> mapConstructor,
+                                                           final @Nullable Map<String, Object> terminator,
+                                                           final StreamOptions options, final boolean useMultiStmt,
+                                                           final Visible visible) {
+        if (terminator == null) {
+            throw _Exceptions.terminatorIsNull();
+        }
+        //1. assert session status
+        assertSession(statement instanceof DmlStatement, visible);
+        try {
+            final Stmt stmt;
+            stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
+            final Stream<Map<String, Object>> stream;
+            if (stmt instanceof MultiStmt) {
+                stream = this.stmtExecutor.multiStmtBatchQueryMapStream((MultiStmt) stmt, this.getTxTimeout(),
+                        mapConstructor, terminator, options);
+            } else if (stmt instanceof BatchStmt) {
+                stream = this.stmtExecutor.batchQueryMapStream((BatchStmt) stmt, this.getTxTimeout(), mapConstructor,
+                        terminator, options);
+            } else {
+                throw _Exceptions.unexpectedStatement(statement);
+            }
+            if (!this.factory.buildInExecutor) {
+                Objects.requireNonNull(stream);
+            }
+            return stream;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw _Exceptions.unknownError(e.getMessage(), e);
+        } finally {
+            ((_Statement) statement).clear();
+        }
     }
 
     @Override
@@ -359,21 +417,20 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         } finally {
             ((_Statement) statement).clear();
         }
-    }
 
-
-    @Override
-    public MultiResult multiStmt(MultiStatement statement, Visible visible) {
-        //TODO
-        throw new UnsupportedOperationException();
     }
 
     @Override
-    public MultiResult call(CallableStatement callable) {
-        //TODO
-        throw new UnsupportedOperationException();
+    public MultiResult multiStmt(final MultiResultStatement statement, final @Nullable StreamOptions options,
+                                 final Visible visible) {
+        return null;
     }
 
+    @Override
+    public MultiResultStream multiStmtStream(final MultiResultStatement statement, final @Nullable StreamOptions options,
+                                             final Visible visible) {
+        return null;
+    }
 
     @Override
     public boolean isClosed() {

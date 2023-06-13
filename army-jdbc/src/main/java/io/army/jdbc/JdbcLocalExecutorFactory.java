@@ -38,7 +38,7 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
         try {
             return this.executorFunction.apply(this, this.dataSource.getConnection());
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw JdbcExecutor.wrap(e);
         }
     }
 
@@ -48,7 +48,7 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
         try {
             return this.dataSource.getConnection();
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw JdbcExecutor.wrap(e);
         }
     }
 

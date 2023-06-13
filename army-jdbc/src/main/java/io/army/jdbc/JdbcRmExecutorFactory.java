@@ -37,7 +37,7 @@ final class JdbcRmExecutorFactory extends JdbcExecutorFactory implements RmExecu
         try {
             return this.executorFunction.apply(this, this.dataSource.getXAConnection());
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw JdbcExecutor.wrap(e);
         }
     }
 
@@ -47,7 +47,7 @@ final class JdbcRmExecutorFactory extends JdbcExecutorFactory implements RmExecu
         try {
             return this.dataSource.getXAConnection().getConnection();
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw JdbcExecutor.wrap(e);
         }
     }
 

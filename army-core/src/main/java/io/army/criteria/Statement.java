@@ -1613,7 +1613,7 @@ public interface Statement extends Item {
 
     interface _MultiStmtSpec extends Item {
 
-        MultiStatement asMultiStmt();
+        MultiResultStatement asMultiStmt();
 
     }
 

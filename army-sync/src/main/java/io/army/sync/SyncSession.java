@@ -424,7 +424,9 @@ public interface SyncSession extends Session {
                                                     Map<String, Object> terminator, StreamOptions options, boolean useMultiStmt,
                                                     Visible visible);
 
-    MultiResult multiStmt(MultiStatement statement);
+    MultiResult multiStmt(MultiResultStatement statement);
+
+    MultiResult multiStmt(MultiResultStatement statement, @Nullable StreamOptions options);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -435,9 +437,45 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    MultiResult multiStmt(MultiStatement statement, Visible visible);
+    MultiResult multiStmt(MultiResultStatement statement, Visible visible);
 
-    MultiResult call(CallableStatement callable);
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    MultiResult multiStmt(MultiResultStatement statement, @Nullable StreamOptions options, Visible visible);
+
+
+    MultiResultStream multiStmtStream(MultiResultStatement statement);
+
+    MultiResultStream multiStmtStream(MultiResultStatement statement, @Nullable StreamOptions options);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    MultiResultStream multiStmtStream(MultiResultStatement statement, Visible visible);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    MultiResultStream multiStmtStream(MultiResultStatement statement, @Nullable StreamOptions options, Visible visible);
 
 
 }

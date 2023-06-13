@@ -318,8 +318,33 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
     }
 
     @Override
-    public final MultiResult multiStmt(MultiStatement statement) {
-        return this.multiStmt(statement, Visible.ONLY_VISIBLE);
+    public final MultiResult multiStmt(MultiResultStatement statement) {
+        return this.multiStmt(statement, null, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final MultiResult multiStmt(MultiResultStatement statement, @Nullable StreamOptions options) {
+        return this.multiStmt(statement, options, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final MultiResult multiStmt(MultiResultStatement statement, Visible visible) {
+        return this.multiStmt(statement, null, visible);
+    }
+
+    @Override
+    public final MultiResultStream multiStmtStream(MultiResultStatement statement) {
+        return this.multiStmtStream(statement, null, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final MultiResultStream multiStmtStream(MultiResultStatement statement, @Nullable StreamOptions options) {
+        return this.multiStmtStream(statement, options, Visible.ONLY_VISIBLE);
+    }
+
+    @Override
+    public final MultiResultStream multiStmtStream(MultiResultStatement statement, Visible visible) {
+        return this.multiStmtStream(statement, null, visible);
     }
 
 

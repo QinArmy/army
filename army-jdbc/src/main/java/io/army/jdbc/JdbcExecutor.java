@@ -14,6 +14,8 @@ import io.army.modelgen._MetaBridge;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
+import io.army.sync.MultiResult;
+import io.army.sync.MultiResultStream;
 import io.army.sync.StreamCommander;
 import io.army.sync.StreamOptions;
 import io.army.sync.executor.StmtExecutor;
@@ -57,6 +59,18 @@ abstract class JdbcExecutor implements StmtExecutor {
     JdbcExecutor(JdbcExecutorFactory factory, Connection conn) {
         this.factory = factory;
         this.conn = conn;
+    }
+
+    public static ArmyException wrap(final Throwable error) {
+        final ArmyException e;
+        if (error instanceof SQLException) {
+            e = new DataAccessException(error);
+        } else if (error instanceof ArmyException) {
+            e = (ArmyException) error;
+        } else {
+            e = _Exceptions.unknownError(error.getMessage(), error);
+        }
+        return e;
     }
 
     @Override
@@ -124,7 +138,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
 
     }
@@ -166,7 +180,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
 
     }
@@ -210,7 +224,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
     }
 
@@ -244,7 +258,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
 
     }
@@ -338,12 +352,27 @@ abstract class JdbcExecutor implements StmtExecutor {
         return null;
     }
 
+
+    @Override
+    public final MultiResult multiStmt(final MultiStmt stmt, final int timeout, final @Nullable StreamOptions options) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException();
+        }
+
+        return null;
+    }
+
+    @Override
+    public final MultiResultStream multiStmtStream(MultiStmt stmt, int timeout, @Nullable StreamOptions options) {
+        return null;
+    }
+
     @Override
     public final Object createSavepoint() throws DataAccessException {
         try {
             return this.conn.setSavepoint();
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
     }
 
@@ -352,7 +381,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         try {
             this.conn.releaseSavepoint((Savepoint) savepoint);
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
     }
 
@@ -361,7 +390,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         try {
             this.conn.releaseSavepoint((Savepoint) savepoint);
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
     }
 
@@ -379,7 +408,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                 throw new DataAccessException(m);
             }
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
     }
 
@@ -388,7 +417,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         try (Statement statement = this.conn.createStatement()) {
             statement.executeUpdate(stmt);
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
     }
 
@@ -406,10 +435,10 @@ abstract class JdbcExecutor implements StmtExecutor {
             this.conn.close();
 
             if (error != null) {
-                throw JdbcExceptions.wrap(error);
+                throw wrap(error);
             }
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
 
     }
@@ -690,7 +719,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         }
 
     }
@@ -1034,7 +1063,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         closeResultSetAndStatement(resultSet, statement);
 
-        return JdbcExceptions.wrap(error);
+        return wrap(error);
     }
 
     private static void closeResultSetAndStatement(final @Nullable ResultSet resultSet,
@@ -1061,7 +1090,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         try {
             resource.close();
         } catch (SQLException e) {
-            throw JdbcExceptions.wrap(e);
+            throw wrap(e);
         } catch (Exception e) {
             throw _Exceptions.unknownError(e.getMessage(), e);
         } catch (Throwable e) {
@@ -1384,7 +1413,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                 return readRowCount > 0;
             } catch (Throwable e) {
                 this.closeStream();
-                throw JdbcExceptions.wrap(e);
+                throw wrap(e);
             }
 
         }

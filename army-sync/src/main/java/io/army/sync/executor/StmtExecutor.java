@@ -8,6 +8,8 @@ import io.army.session.OptimisticLockException;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.SimpleStmt;
+import io.army.sync.MultiResult;
+import io.army.sync.MultiResultStream;
 import io.army.sync.StreamOptions;
 
 import java.util.List;
@@ -120,6 +122,11 @@ public interface StmtExecutor {
                                                              Supplier<Map<String, Object>> mapConstructor,
                                                              Map<String, Object> terminator, StreamOptions options)
             throws DataAccessException;
+
+    MultiResult multiStmt(MultiStmt stmt, int timeout, @Nullable StreamOptions options);
+
+    MultiResultStream multiStmtStream(MultiStmt stmt, int timeout, @Nullable StreamOptions options);
+
 
     Object createSavepoint() throws DataAccessException;
 
