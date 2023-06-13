@@ -30,16 +30,16 @@ public interface DialectParser {
 
     Stmt delete(DeleteStatement delete, boolean useMultiStmt, Visible visible);
 
-    SimpleStmt select(Select select, Visible visible);
+    Stmt select(QueryStatement select, boolean useMultiStmt, Visible visible);
 
-    SimpleStmt values(Values values, Visible visible);
+    Stmt values(Values values, Visible visible);
 
 
     default Stmt dialectDml(DmlStatement statement, Visible visible) {
         throw new UnsupportedOperationException();
     }
 
-    default SimpleStmt dialectDql(DqlStatement statement, Visible visible) {
+    default Stmt dialectDql(DqlStatement statement, Visible visible) {
         throw new UnsupportedOperationException();
     }
 

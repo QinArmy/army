@@ -80,12 +80,46 @@ public interface StmtExecutor {
                                          Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException;
 
+    <R> List<R> batchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
+                           Supplier<List<R>> listConstructor) throws DataAccessException;
 
-    <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass, StreamOptions options);
+    List<Map<String, Object>> batchQueryAsMap(BatchStmt stmt, int timeout, Supplier<Map<String, Object>> mapConstructor,
+                                              Map<String, Object> terminator,
+                                              Supplier<List<Map<String, Object>>> listConstructor)
+            throws DataAccessException;
+
+    <R> List<R> multiStmtBatchQuery(MultiStmt stmt, int timeout, Class<R> resultClass, R terminator,
+                                    Supplier<List<R>> listConstructor) throws DataAccessException;
+
+    List<Map<String, Object>> multiStmtBatchQueryAsMap(MultiStmt stmt, int timeout,
+                                                       Supplier<Map<String, Object>> mapConstructor,
+                                                       Map<String, Object> terminator,
+                                                       Supplier<List<Map<String, Object>>> listConstructor)
+            throws DataAccessException;
+
+
+    <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass, StreamOptions options)
+            throws DataAccessException;
 
     Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
-                                               Supplier<Map<String, Object>> mapConstructor, StreamOptions options);
+                                               Supplier<Map<String, Object>> mapConstructor, StreamOptions options)
+            throws DataAccessException;
 
+    <R> Stream<R> batchQueryStream(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
+                                   StreamOptions options) throws DataAccessException;
+
+    Stream<Map<String, Object>> batchQueryMapStream(BatchStmt stmt, int timeout,
+                                                    Supplier<Map<String, Object>> mapConstructor,
+                                                    Map<String, Object> terminator, StreamOptions options)
+            throws DataAccessException;
+
+    <R> Stream<R> multiStmtBatchQueryStream(MultiStmt stmt, int timeout, Class<R> resultClass, R terminator,
+                                            StreamOptions options) throws DataAccessException;
+
+    Stream<Map<String, Object>> multiStmtBatchQueryMapStream(MultiStmt stmt, int timeout,
+                                                             Supplier<Map<String, Object>> mapConstructor,
+                                                             Map<String, Object> terminator, StreamOptions options)
+            throws DataAccessException;
 
     Object createSavepoint() throws DataAccessException;
 

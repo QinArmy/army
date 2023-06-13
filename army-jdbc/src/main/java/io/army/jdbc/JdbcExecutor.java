@@ -265,6 +265,35 @@ abstract class JdbcExecutor implements StmtExecutor {
         return this.doQuery(stmt, timeout, listConstructor, this.createFuncForMap(stmt.selectionList(), mapConstructor));
     }
 
+    @Override
+    public final <R> List<R> batchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
+                                        Supplier<List<R>> listConstructor) throws DataAccessException {
+        return null;
+    }
+
+    @Override
+    public final List<Map<String, Object>> batchQueryAsMap(BatchStmt stmt, int timeout,
+                                                           Supplier<Map<String, Object>> mapConstructor,
+                                                           Map<String, Object> terminator,
+                                                           Supplier<List<Map<String, Object>>> listConstructor)
+            throws DataAccessException {
+        return null;
+    }
+
+    @Override
+    public final <R> List<R> multiStmtBatchQuery(MultiStmt stmt, int timeout, Class<R> resultClass, R terminator,
+                                                 Supplier<List<R>> listConstructor) throws DataAccessException {
+        return null;
+    }
+
+    @Override
+    public final List<Map<String, Object>> multiStmtBatchQueryAsMap(MultiStmt stmt, int timeout,
+                                                                    Supplier<Map<String, Object>> mapConstructor,
+                                                                    Map<String, Object> terminator,
+                                                                    Supplier<List<Map<String, Object>>> listConstructor)
+            throws DataAccessException {
+        return null;
+    }
 
     @Override
     public final <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass,
@@ -274,12 +303,40 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     @Override
-    public Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
-                                                      final Supplier<Map<String, Object>> mapConstructor,
-                                                      StreamOptions options) {
+    public final Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
+                                                            final Supplier<Map<String, Object>> mapConstructor,
+                                                            StreamOptions options) {
         return this.queryAsStream(stmt, timeout, options, this.createFuncForMap(stmt.selectionList(), mapConstructor));
     }
 
+    @Override
+    public final <R> Stream<R> batchQueryStream(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
+                                                StreamOptions options) throws DataAccessException {
+        return null;
+    }
+
+    @Override
+    public final Stream<Map<String, Object>> batchQueryMapStream(BatchStmt stmt, int timeout,
+                                                                 Supplier<Map<String, Object>> mapConstructor,
+                                                                 Map<String, Object> terminator, StreamOptions options)
+            throws DataAccessException {
+        return null;
+    }
+
+    @Override
+    public final <R> Stream<R> multiStmtBatchQueryStream(MultiStmt stmt, int timeout, Class<R> resultClass,
+                                                         R terminator, StreamOptions options) throws DataAccessException {
+        return null;
+    }
+
+    @Override
+    public final Stream<Map<String, Object>> multiStmtBatchQueryMapStream(MultiStmt stmt, int timeout,
+                                                                          Supplier<Map<String, Object>> mapConstructor,
+                                                                          Map<String, Object> terminator,
+                                                                          StreamOptions options)
+            throws DataAccessException {
+        return null;
+    }
 
     @Override
     public final Object createSavepoint() throws DataAccessException {

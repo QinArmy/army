@@ -110,5 +110,9 @@ public abstract class _ArmySession implements Session {
         return new ChildDmlNoTractionException("update/delete child must in transaction.");
     }
 
+    protected static SessionException streamApiDontSupportTowStatement() {
+        return new SessionException("stream api don't support two statement.");
+    }
+
 
 }

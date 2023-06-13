@@ -1038,4 +1038,8 @@ public abstract class _Exceptions extends ExceptionUtils {
                 statementCount);
         throw new DataAccessException(m);
     }
+
+    public static NullPointerException terminatorIsNull() {
+        return new NullPointerException("terminator is null");
+    }
 }

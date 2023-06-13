@@ -32,11 +32,14 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
 
     final LocalExecutorFactory executorFactory;
 
+    final boolean buildInExecutor;
+
     final DialectParser dialectParser;
 
     final _SessionCacheFactory sessionCacheFactory;
 
     final MappingEnv mappingEnv;
+
 
     private final SessionContext sessionContext;
 
@@ -50,6 +53,8 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
 
         this.executorFactory = builder.executorFactory;
         assert this.executorFactory != null;
+        this.buildInExecutor = isBuildInExecutor(this.executorFactory);
+
         final DialectEnv dialectEnv = builder.dialectEnv;
         assert dialectEnv != null;
         this.dialectParser = DialectParserFactory.createDialect(dialectEnv);
@@ -186,6 +191,11 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
             String m = String.format("Create %s occur error.%s", SessionContext.class.getName(), this);
             throw new SessionFactoryException(m, e);
         }
+    }
+
+
+    private static boolean isBuildInExecutor(final LocalExecutorFactory executorFactory) {
+        return executorFactory.getClass().getName().startsWith("io.army.jdbc.");
     }
 
 

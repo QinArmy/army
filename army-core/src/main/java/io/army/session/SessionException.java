@@ -2,7 +2,7 @@ package io.army.session;
 
 import io.army.lang.Nullable;
 
-public abstract class SessionException extends DataAccessException {
+public class SessionException extends DataAccessException {
 
     public SessionException(String message) {
         super(message);
