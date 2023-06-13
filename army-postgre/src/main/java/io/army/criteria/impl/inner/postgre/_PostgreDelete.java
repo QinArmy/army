@@ -11,7 +11,8 @@ public interface _PostgreDelete extends _SingleDelete,
         _JoinableDelete,
         _DialectStatement,
         _Statement._WithClauseSpec,
-        _Statement._ReturningListSpec {
+        _Statement._ReturningListSpec,
+        _Statement._WithDmlSpec {
 
     @Nullable
     SQLs.WordOnly modifier();

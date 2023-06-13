@@ -239,26 +239,29 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             //3. execute stmt
             final int timeout;
             timeout = this.getTxTimeout();
+            final TableMeta<?> domainTable;
+            domainTable = getBatchUpdateDomainTable(statement);
             final List<Long> resultList;
             if (useMultiStmt) {
-                resultList = this.stmtExecutor.multiStmtBatchUpdate((MultiStmt) stmt, timeout, listConstructor);
+                resultList = this.stmtExecutor.multiStmtBatchUpdate((MultiStmt) stmt, timeout, listConstructor,
+                        domainTable
+                );
             } else if (stmt instanceof BatchStmt) {
-                resultList = this.stmtExecutor.batchUpdate((BatchStmt) stmt, timeout, listConstructor, null, null);
+                resultList = this.stmtExecutor.batchUpdate((BatchStmt) stmt, timeout, listConstructor, domainTable, null);
             } else if (!this.hasTransaction()) {
-                throw new ArmyException("update/delete child must in transaction.");
+                throw updateChildNoTransaction();
             } else {
                 final long startTime;
                 startTime = System.currentTimeMillis();
-
+                // firstStmt update child, because army update child and update parent
                 resultList = this.stmtExecutor.batchUpdate(((PairBatchStmt) stmt).firstStmt(), timeout,
-                        listConstructor, null, null
+                        listConstructor, domainTable, null
                 );
+                assert domainTable instanceof ChildTableMeta; // fail, bug.
 
-                final ChildTableMeta<?> domainTable;
-                domainTable = (ChildTableMeta<?>) ((_Statement._ChildStatement) statement).table();
-
+                // secondStmt update parent, because army update child and update parent
                 this.stmtExecutor.batchUpdate(((PairBatchStmt) stmt).secondStmt(),
-                        restSecond(domainTable, startTime, timeout), listConstructor, domainTable,
+                        restSecond((ChildTableMeta<?>) domainTable, startTime, timeout), listConstructor, domainTable,
                         resultList
                 );
             }

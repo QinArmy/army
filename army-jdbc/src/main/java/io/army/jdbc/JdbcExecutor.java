@@ -11,7 +11,6 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.session.ChildUpdateException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
@@ -39,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import java.util.function.IntToLongFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -174,9 +174,10 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     @Override
     public final List<Long> batchUpdate(final BatchStmt stmt, final int timeout,
-                                        final Supplier<List<Long>> listConstructor, final TableMeta<?> domainTable,
+                                        final Supplier<List<Long>> listConstructor,
+                                        final @Nullable TableMeta<?> domainTable,
                                         final @Nullable List<Long> rowsList) {
-        if (timeout < 0) {
+        if (timeout < 0 || !(rowsList == null || domainTable instanceof ChildTableMeta)) {
             throw new IllegalArgumentException();
         }
         try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
@@ -194,13 +195,15 @@ abstract class JdbcExecutor implements StmtExecutor {
             if (this.factory.useLargeUpdate) {
                 final long[] affectedRows;
                 affectedRows = statement.executeLargeBatch();
-                resultList = this.handleLargeBatchResult(stmt.hasOptimistic(), affectedRows, listConstructor,
-                        domainTable, rowsList);
+                resultList = this.handleBatchResult(stmt.hasOptimistic(), affectedRows.length,
+                        index -> affectedRows[index], listConstructor, domainTable, rowsList
+                );
             } else {
                 final int[] affectedRows;
                 affectedRows = statement.executeBatch();
-                resultList = this.handleBatchResult(stmt.hasOptimistic(), affectedRows, listConstructor,
-                        domainTable, rowsList);
+                resultList = this.handleBatchResult(stmt.hasOptimistic(), affectedRows.length,
+                        index -> affectedRows[index], listConstructor, domainTable, rowsList
+                );
             }
 
             return resultList;
@@ -214,24 +217,30 @@ abstract class JdbcExecutor implements StmtExecutor {
     @Override
     public final List<Long> multiStmtBatchUpdate(final MultiStmt stmt, final int timeout,
                                                  final Supplier<List<Long>> listConstructor,
-                                                 final TableMeta<?> domainTable) {
+                                                 final @Nullable TableMeta<?> domainTable) {
 
-        final List<Long> list = listConstructor.get();
+
+        List<Long> list = listConstructor.get();
         if (list == null) {
             throw _Exceptions.listConstructorError();
         }
         try (Statement statement = this.conn.createStatement()) {
 
-
             if (statement.execute(stmt.multiSql())) {
-                throw new DataAccessException("error, the first result is ResultSet");
+                // sql error
+                throw new DataAccessException("error,multi-statement batch update the first result is ResultSet");
             }
             if (domainTable instanceof ChildTableMeta) {
-
+                handleChildMultiStmtBatchUpdate(statement, stmt, (ChildTableMeta<?>) domainTable, list);
             } else {
-                handleSimpleMultiStmtBatchUpdate(statement, stmt, (SingleTableMeta<?>) domainTable, list);
+                // SingleTableMeta batch update or multi-table batch update.
+                handleSimpleMultiStmtBatchUpdate(statement, stmt, domainTable, list);
             }
-            return null;
+
+            if (list instanceof ImmutableSpec) {
+                list = _Collections.unmodifiableListForDeveloper(list);
+            }
+            return list;
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
@@ -240,39 +249,6 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     }
 
-
-    private void handleSimpleMultiStmtBatchUpdate(final Statement statement, final MultiStmt stmt,
-                                                  final SingleTableMeta<?> domainTable,
-                                                  final List<Long> list) throws SQLException {
-        final JdbcExecutorFactory factory = this.factory;
-        final boolean optimistic = stmt.hasOptimistic();
-        final int itemSize = stmt.resultItemList().size();
-
-        long rows;
-        for (int i = 0; i < itemSize; i++) {
-            if (statement.getMoreResults()) {
-                throw _Exceptions.batchUpdateReturnResultSet(i + 1);
-            }
-            if (factory.useLargeUpdate) {
-                rows = statement.getLargeUpdateCount();
-            } else {
-                rows = statement.getUpdateCount();
-            }
-            if (rows == -1) {
-                break;
-            }
-            if (optimistic && rows < 1) {
-                throw _Exceptions.batchOptimisticLock(domainTable, i + 1, rows);
-            }
-            list.add(rows);
-
-        }
-
-        if (itemSize != list.size()) {
-            throw _Exceptions.multiStmtCountAndResultCountNotMatch(itemSize, list.size());
-        }
-
-    }
 
     @Override
     public final <R> List<R> query(final SimpleStmt stmt, final int timeout, final Class<R> resultClass,
@@ -802,34 +778,34 @@ abstract class JdbcExecutor implements StmtExecutor {
     /**
      * @see #batchUpdate(BatchStmt, int, Supplier, TableMeta, List)
      */
-    private List<Long> handleLargeBatchResult(final boolean optimistic, final long[] affectedRows,
-                                              final Supplier<List<Long>> listConstructor,
-                                              final TableMeta<?> domainTable,
-                                              final @Nullable List<Long> rowsList) {
+    private List<Long> handleBatchResult(final boolean optimistic, final int bathSize,
+                                         final IntToLongFunction accessor,
+                                         final Supplier<List<Long>> listConstructor,
+                                         final @Nullable TableMeta<?> domainTable,
+                                         final @Nullable List<Long> rowsList) {
+        assert rowsList == null || domainTable instanceof ChildTableMeta;
+
         List<Long> list;
         if (rowsList == null) {
             list = listConstructor.get();
             if (list == null) {
-                throw new NullPointerException("listConstructor return null");
+                throw _Exceptions.listConstructorError();
             }
-        } else if (rowsList.size() != affectedRows.length) {
-            String m = String.format("%s child batch number[%s] and parent batch number[%s] not match.",
-                    domainTable, affectedRows.length, rowsList.size());
-            throw new ChildUpdateException(m);
+        } else if (rowsList.size() != bathSize) { // here bathSize representing parent's bathSize ,because army update child and update parent
+            throw _Exceptions.childBatchSizeError((ChildTableMeta<?>) domainTable, rowsList.size(), bathSize);
         } else {
             list = rowsList;
         }
         long rows;
-        for (int i = 0; i < affectedRows.length; i++) {
-            rows = affectedRows[i];
+        for (int i = 0; i < bathSize; i++) {
+            rows = accessor.applyAsLong(i);
             if (optimistic && rows < 1) {
                 throw _Exceptions.batchOptimisticLock(domainTable, i + 1, rows);
             } else if (rowsList == null) {
                 list.add(rows);
-            } else if (rows != rowsList.get(i)) {
-                String m = String.format("%s child [batch %s(based 1) : %s rows] and parent[batch %s(based 1) : %s rows] not match.",
-                        domainTable, i + 1, rows, i + 1, rowsList.get(i));
-                throw new ChildUpdateException(m);
+            } else if (rows != rowsList.get(i)) { // here rows representing parent's rows,because army update child and update parent
+                throw _Exceptions.batchChildUpdateRowsError((ChildTableMeta<?>) domainTable, i + 1, rowsList.get(i),
+                        rows);
             }
         }
 
@@ -837,47 +813,120 @@ abstract class JdbcExecutor implements StmtExecutor {
             list = _Collections.unmodifiableListForDeveloper(list);
         }
         return list;
+    }
+
+
+    /**
+     * @see #multiStmtBatchUpdate(MultiStmt, int, Supplier, TableMeta)
+     */
+    private void handleChildMultiStmtBatchUpdate(final Statement statement, final MultiStmt stmt,
+                                                 final ChildTableMeta<?> domainTable,
+                                                 final List<Long> list) throws SQLException {
+
+        final JdbcExecutorFactory factory = this.factory;
+        final boolean optimistic = stmt.hasOptimistic();
+
+        final int itemSize, itemPairSize;
+        itemSize = stmt.resultItemList().size();
+        if ((itemSize & 1) != 0) {
+            // no bug,never here
+            throw new IllegalArgumentException(String.format("item count[%s] not event", itemSize));
+        }
+        itemPairSize = itemSize << 1;
+
+        long itemRows = 0, rows;
+        for (int i = 0; i < itemPairSize; i++) {
+
+            if (statement.getMoreResults()) {  // sql error
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                throw _Exceptions.batchUpdateReturnResultSet(domainTable, (i >> 1) + 1);
+            }
+            if (factory.useLargeUpdate) {
+                rows = statement.getLargeUpdateCount();
+            } else {
+                rows = statement.getUpdateCount();
+            }
+
+            if (rows == -1) {
+                // no more result,no bug,never here
+                break;
+            }
+
+            if (optimistic && rows < 1) {
+                throw _Exceptions.batchOptimisticLock(domainTable, (i >> 1) + 1, rows);
+            } else if ((i & 1) == 0) { // this code block representing child's update rows,because army update child and update parent
+                itemRows = rows;
+                list.add(rows);
+            } else if (rows != itemRows) { // this code block representing parent's update rows,because army update child and update parent
+                throw _Exceptions.batchChildUpdateRowsError(domainTable, (i >> 1) + 1, itemRows, rows);
+            }
+
+
+        }// for
+
+        if (statement.getMoreResults() || statement.getUpdateCount() != -1) {
+            // sql error
+            throw _Exceptions.multiStmtBatchUpdateResultCountError(itemPairSize);
+        }
+
+        if (itemSize != list.size()) {
+            throw _Exceptions.multiStmtCountAndResultCountNotMatch(domainTable, itemSize, list.size());
+        }
+
     }
 
     /**
-     * @see #batchUpdate(BatchStmt, int, Supplier, TableMeta, List)
+     * @param domainTable <ul>
+     *                    <li>null : multi-table batch update </li>
+     *                    <li>{@link SingleTableMeta} : single table batch udpate</li>
+     *
+     *                    </ul>
+     * @see #multiStmtBatchUpdate(MultiStmt, int, Supplier, TableMeta)
      */
-    private List<Long> handleBatchResult(final boolean optimistic, final int[] affectedRows,
-                                         final Supplier<List<Long>> listConstructor,
-                                         final TableMeta<?> domainTable,
-                                         final @Nullable List<Long> rowsList) {
-        List<Long> list;
-        if (rowsList == null) {
-            list = listConstructor.get();
-            if (list == null) {
-                throw new NullPointerException("listConstructor return null");
-            }
-        } else if (rowsList.size() != affectedRows.length) {
-            String m = String.format("%s child batch number[%s] and parent batch number[%s] not match.",
-                    domainTable, affectedRows.length, rowsList.size());
-            throw new ChildUpdateException(m);
-        } else {
-            list = rowsList;
-        }
+    private void handleSimpleMultiStmtBatchUpdate(final Statement statement, final MultiStmt stmt,
+                                                  final @Nullable TableMeta<?> domainTable,
+                                                  final List<Long> list) throws SQLException {
+
+        assert domainTable == null || domainTable instanceof SingleTableMeta;
+
+        final JdbcExecutorFactory factory = this.factory;
+        final boolean optimistic = stmt.hasOptimistic();
+        final int itemSize = stmt.resultItemList().size();
+
         long rows;
-        for (int i = 0; i < affectedRows.length; i++) {
-            rows = affectedRows[i];
+        for (int i = 0; i < itemSize; i++) {
+            if (statement.getMoreResults()) {
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                throw _Exceptions.batchUpdateReturnResultSet(domainTable, i + 1);
+            }
+            if (factory.useLargeUpdate) {
+                rows = statement.getLargeUpdateCount();
+            } else {
+                rows = statement.getUpdateCount();
+            }
+
+            if (rows == -1) {
+                // no more result
+                break;
+            }
             if (optimistic && rows < 1) {
                 throw _Exceptions.batchOptimisticLock(domainTable, i + 1, rows);
-            } else if (rowsList == null) {
-                list.add(rows);
-            } else if (rows != rowsList.get(i)) {
-                String m = String.format("%s child [batch %s(based 1) : %s rows] and parent[batch %s(based 1) : %s rows] not match.",
-                        domainTable, i + 1, rows, i + 1, rowsList.get(i));
-                throw new ChildUpdateException(m);
             }
+            list.add(rows);
+
         }
 
-        if (rowsList == null && list instanceof ImmutableSpec) {
-            list = _Collections.unmodifiableListForDeveloper(list);
+        if (statement.getMoreResults() || statement.getUpdateCount() != -1) {
+            // sql error
+            throw _Exceptions.multiStmtBatchUpdateResultCountError(itemSize);
         }
-        return list;
+
+        if (itemSize != list.size()) {
+            throw _Exceptions.multiStmtCountAndResultCountNotMatch(domainTable, itemSize, list.size());
+        }
+
     }
+
 
 
 

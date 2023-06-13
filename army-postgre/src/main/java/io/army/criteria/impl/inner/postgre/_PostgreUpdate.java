@@ -8,7 +8,7 @@ import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 
 public interface _PostgreUpdate extends _SingleUpdate, _DialectStatement, _Statement._WithClauseSpec,
-        _JoinableUpdate, _Statement._ReturningListSpec {
+        _JoinableUpdate, _Statement._ReturningListSpec, _Statement._WithDmlSpec {
 
     @Nullable
     SQLWords modifier();

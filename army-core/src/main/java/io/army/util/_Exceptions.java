@@ -789,10 +789,13 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static OptimisticLockException batchOptimisticLock(TableMeta<?> domainChild,
-                                                              int batchIndexBasedOne, long affectedRows) {
+    /**
+     * @param batchNo based 1
+     */
+    public static OptimisticLockException batchOptimisticLock(@Nullable TableMeta<?> domainChild,
+                                                              int batchNo, long affectedRows) {
         String m = String.format("%s Batch number[%s(based 1)] affected rows is %s,don't satisfy expected rows.",
-                domainChild, batchIndexBasedOne, affectedRows);
+                domainChild == null ? "" : domainChild, batchNo, affectedRows);
         return new OptimisticLockException(m);
     }
 
@@ -993,13 +996,45 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new NullPointerException("listConstructor return null");
     }
 
-    public static DataAccessException multiStmtCountAndResultCountNotMatch(int stmtCount, int resultCount) {
-        String m = String.format("multi-statement count[%s] and result count[%s] not match.", stmtCount, resultCount);
+    public static DataAccessException multiStmtCountAndResultCountNotMatch(@Nullable TableMeta<?> table, int stmtCount,
+                                                                           int resultCount) {
+        String m = String.format("%s multi-statement count[%s] and result count[%s] not match.",
+                table == null ? "" : table,
+                stmtCount, resultCount);
         return new DataAccessException(m);
     }
 
-    public static DataAccessException batchUpdateReturnResultSet(int batchIndexBasedOne) {
-        return new DataAccessException(String.format("batch update[number:%s(based 1)] return result set"
-                , batchIndexBasedOne));
+    /**
+     * @param batchNo based 1
+     */
+    public static DataAccessException batchUpdateReturnResultSet(@Nullable TableMeta<?> table, int batchNo) {
+
+        return new DataAccessException(String.format("%s batch update[number:%s(based 1)] return result set",
+                table == null ? "" : table,
+                batchNo));
+    }
+
+    /**
+     * @param batchNum based 1
+     */
+    public static ChildUpdateException batchChildUpdateRowsError(@Nullable ChildTableMeta<?> domainTable, int batchNum,
+                                                                 long childRows, long parentRows) {
+        String m = String.format("%s child [batch %s(based 1) : %s rows] and parent[batch %s(based 1) : %s rows] not match.",
+                domainTable == null ? "" : domainTable, batchNum, childRows, batchNum, parentRows);
+        return new ChildUpdateException(m);
+    }
+
+    public static ChildUpdateException childBatchSizeError(ChildTableMeta<?> table, int childBatchSize,
+                                                           int parentBatchSize) {
+        String m = String.format("%s child batch number[%s] and parent batch number[%s] not match.",
+                table, childBatchSize, parentBatchSize);
+        return new ChildUpdateException(m);
+    }
+
+    public static DataAccessException multiStmtBatchUpdateResultCountError(int statementCount) {
+        String m;
+        m = String.format("error, multi-statement batch update result count greater than statement count[%s]",
+                statementCount);
+        throw new DataAccessException(m);
     }
 }

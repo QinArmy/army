@@ -61,10 +61,17 @@ public interface StmtExecutor {
      * @throws OptimisticLockException when
      */
     List<Long> batchUpdate(BatchStmt stmt, int timeout, Supplier<List<Long>> listConstructor,
-                           TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
+                           @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
 
+    /**
+     * @param domainTable <ul>
+     *                    <li>null : multi-table batch update or the batch update which WITH clause support sub dml</li>
+     *                    <li>{@link io.army.meta.ChildTableMeta} child batch update,now {@link MultiStmt#resultItemList()} size must be even.</li>
+     *                    <li>{@link io.army.meta.SingleTableMeta} single table batch update</li>
+     *                    </ul>
+     */
     List<Long> multiStmtBatchUpdate(MultiStmt stmt, int timeout, Supplier<List<Long>> listConstructor,
-                                    TableMeta<?> domainTable);
+                                    @Nullable TableMeta<?> domainTable);
 
     <T> List<T> query(SimpleStmt stmt, int timeout, Class<T> resultClass, Supplier<List<T>> listConstructor)
             throws DataAccessException;

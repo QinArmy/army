@@ -21,6 +21,13 @@ public interface _Statement {
         List<? extends SortItem> orderByList();
     }
 
+    /**
+     * This interface representing dialect WITH clause support update/delete, for example postgre.
+     */
+    interface _WithDmlSpec {
+
+    }
+
     interface _ReturningListSpec {
 
         /**
