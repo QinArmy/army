@@ -16,7 +16,7 @@ import io.army.type.DaoLayer;
  *   </ul>
  * </p>
  * <p> example:
- *     <pre><br/>
+ *     <pre><br/>  <code>
  *    public static final class Int4Range {
  *
  *        public static Int4Range create(&#64;Nullable Integer lower, boolean includeLower,
@@ -109,7 +109,7 @@ import io.army.type.DaoLayer;
  *
  *
  *    }//Int4Range
- *     </pre>
+ *     </code></pre>
  * </p>
  *
  * @see RangeFunction

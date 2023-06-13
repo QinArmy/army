@@ -789,7 +789,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      *          cat    | {3}       | {D}
      *          fat    | {2,4}     | {D,D}
      *          rat    | {5}       | {A}
-     *     </pre>
+     *   </pre>
      * </p>
      *
      * <p>

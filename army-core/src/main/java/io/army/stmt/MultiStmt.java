@@ -2,11 +2,11 @@ package io.army.stmt;
 
 import java.util.List;
 
-public interface MultiStmt {
+public interface MultiStmt extends Stmt {
 
     String multiSql();
 
-    List<ResultItem> resultItemList();
+    List<Boolean> resultItemList();
 
 
 }

@@ -193,7 +193,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     @Override
-    public final Stmt update(final UpdateStatement update, final Visible visible) {
+    public final Stmt update(final UpdateStatement update, boolean useMultiStmt, final Visible visible) {
         final Stmt stmt;
         stmt = this.handleUpdate(null, update, visible, this::createUpdateStmt);
         if (!(update instanceof _SingleUpdate._ChildUpdate)) {
@@ -208,7 +208,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     @Override
-    public final Stmt delete(final DeleteStatement delete, final Visible visible) {
+    public final Stmt delete(final DeleteStatement delete, boolean useMultiStmt, final Visible visible) {
         final Stmt stmt;
         stmt = this.handleDelete(null, delete, visible, this::createDeleteStmt);
         if (!(delete instanceof _SingleDelete._ChildDelete)) {
@@ -814,7 +814,6 @@ abstract class ArmyParser implements DialectParser {
 
 
     /*-------------------below final protected method -------------------*/
-
 
 
     protected final _SingleUpdateContext createSingleUpdateContext(final @Nullable _SqlContext outerContext

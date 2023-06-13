@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 /**
  * <p>
- * This interface encapsulate synchronous api than can access database.
+ * This interface encapsulate blocking api than can access database.
  * </p>
  *
  * <p>

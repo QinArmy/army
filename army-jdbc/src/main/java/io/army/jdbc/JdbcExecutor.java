@@ -4,7 +4,6 @@ import io.army.ArmyException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.codec.FieldCodec;
-import io.army.codec.FieldCodecReturnException;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.lang.Nullable;
@@ -175,9 +174,9 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     @Override
     public final List<Long> batchUpdate(final BatchStmt stmt, final int timeout,
-                                        final Supplier<List<Long>> listConstructor,
-                                        final @Nullable ChildTableMeta<?> domainTable, final @Nullable List<Long> rowsList) {
-        if (timeout < 0 || domainTable == null ^ rowsList == null) {
+                                        final Supplier<List<Long>> listConstructor, final TableMeta<?> domainTable,
+                                        final @Nullable List<Long> rowsList) {
+        if (timeout < 0) {
             throw new IllegalArgumentException();
         }
         try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
@@ -210,6 +209,69 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (Exception e) {
             throw JdbcExceptions.wrap(e);
         }
+    }
+
+    @Override
+    public final List<Long> multiStmtBatchUpdate(final MultiStmt stmt, final int timeout,
+                                                 final Supplier<List<Long>> listConstructor,
+                                                 final TableMeta<?> domainTable) {
+
+        final List<Long> list = listConstructor.get();
+        if (list == null) {
+            throw _Exceptions.listConstructorError();
+        }
+        try (Statement statement = this.conn.createStatement()) {
+
+
+            if (statement.execute(stmt.multiSql())) {
+                throw new DataAccessException("error, the first result is ResultSet");
+            }
+            if (domainTable instanceof ChildTableMeta) {
+
+            } else {
+                handleSimpleMultiStmtBatchUpdate(statement, stmt, (SingleTableMeta<?>) domainTable, list);
+            }
+            return null;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (Exception e) {
+            throw JdbcExceptions.wrap(e);
+        }
+
+    }
+
+
+    private void handleSimpleMultiStmtBatchUpdate(final Statement statement, final MultiStmt stmt,
+                                                  final SingleTableMeta<?> domainTable,
+                                                  final List<Long> list) throws SQLException {
+        final JdbcExecutorFactory factory = this.factory;
+        final boolean optimistic = stmt.hasOptimistic();
+        final int itemSize = stmt.resultItemList().size();
+
+        long rows;
+        for (int i = 0; i < itemSize; i++) {
+            if (statement.getMoreResults()) {
+                throw _Exceptions.batchUpdateReturnResultSet(i + 1);
+            }
+            if (factory.useLargeUpdate) {
+                rows = statement.getLargeUpdateCount();
+            } else {
+                rows = statement.getUpdateCount();
+            }
+            if (rows == -1) {
+                break;
+            }
+            if (optimistic && rows < 1) {
+                throw _Exceptions.batchOptimisticLock(domainTable, i + 1, rows);
+            }
+            list.add(rows);
+
+        }
+
+        if (itemSize != list.size()) {
+            throw _Exceptions.multiStmtCountAndResultCountNotMatch(itemSize, list.size());
+        }
+
     }
 
     @Override
@@ -738,11 +800,11 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
     /**
-     * @see #batchUpdate(BatchStmt, int, Supplier, List)
+     * @see #batchUpdate(BatchStmt, int, Supplier, TableMeta, List)
      */
     private List<Long> handleLargeBatchResult(final boolean optimistic, final long[] affectedRows,
                                               final Supplier<List<Long>> listConstructor,
-                                              final @Nullable ChildTableMeta<?> domainTable,
+                                              final TableMeta<?> domainTable,
                                               final @Nullable List<Long> rowsList) {
         List<Long> list;
         if (rowsList == null) {
@@ -778,11 +840,11 @@ abstract class JdbcExecutor implements StmtExecutor {
     }
 
     /**
-     * @see #batchUpdate(BatchStmt, int, Supplier, List)
+     * @see #batchUpdate(BatchStmt, int, Supplier, TableMeta, List)
      */
     private List<Long> handleBatchResult(final boolean optimistic, final int[] affectedRows,
                                          final Supplier<List<Long>> listConstructor,
-                                         final @Nullable ChildTableMeta<?> domainTable,
+                                         final TableMeta<?> domainTable,
                                          final @Nullable List<Long> rowsList) {
         List<Long> list;
         if (rowsList == null) {
@@ -902,17 +964,6 @@ abstract class JdbcExecutor implements StmtExecutor {
 
     }
 
-
-    private static FieldCodecReturnException createCodecReturnTypeException(FieldCodec fieldCodec
-            , FieldMeta<?> fieldMeta) {
-        return new FieldCodecReturnException("FieldCodec[%s] return  error,FieldMeta[%s],"
-                , fieldCodec, fieldMeta);
-    }
-
-    private static MetaException createNoFieldCodecException(FieldMeta<?> fieldMeta) {
-        String m = String.format("FieldMeta[%s] not found FieldCodec.", fieldMeta);
-        return new MetaException(m);
-    }
 
     private static ArmyException valueInsertDomainWrapperSizeError(long insertedRows, int domainWrapperSize) {
         String m = String.format("InsertedRows[%s] and domainWrapperSize[%s] not match.", insertedRows, domainWrapperSize);

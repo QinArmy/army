@@ -789,10 +789,10 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
-    public static OptimisticLockException batchOptimisticLock(@Nullable ChildTableMeta<?> domainChild,
+    public static OptimisticLockException batchOptimisticLock(TableMeta<?> domainChild,
                                                               int batchIndexBasedOne, long affectedRows) {
         String m = String.format("%s Batch number[%s(based 1)] affected rows is %s,don't satisfy expected rows.",
-                domainChild == null ? "" : domainChild, batchIndexBasedOne, affectedRows);
+                domainChild, batchIndexBasedOne, affectedRows);
         return new OptimisticLockException(m);
     }
 
@@ -989,4 +989,17 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
+    public static NullPointerException listConstructorError() {
+        return new NullPointerException("listConstructor return null");
+    }
+
+    public static DataAccessException multiStmtCountAndResultCountNotMatch(int stmtCount, int resultCount) {
+        String m = String.format("multi-statement count[%s] and result count[%s] not match.", stmtCount, resultCount);
+        return new DataAccessException(m);
+    }
+
+    public static DataAccessException batchUpdateReturnResultSet(int batchIndexBasedOne) {
+        return new DataAccessException(String.format("batch update[number:%s(based 1)] return result set"
+                , batchIndexBasedOne));
+    }
 }

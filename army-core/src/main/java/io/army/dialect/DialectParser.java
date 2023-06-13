@@ -26,9 +26,9 @@ public interface DialectParser {
      */
     Stmt insert(InsertStatement insert, Visible visible);
 
-    Stmt update(UpdateStatement update, Visible visible);
+    Stmt update(UpdateStatement update, boolean useMultiStmt, Visible visible);
 
-    Stmt delete(DeleteStatement delete, Visible visible);
+    Stmt delete(DeleteStatement delete, boolean useMultiStmt, Visible visible);
 
     SimpleStmt select(Select select, Visible visible);
 

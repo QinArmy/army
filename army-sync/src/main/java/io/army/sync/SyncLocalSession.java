@@ -114,7 +114,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             } else if (statement instanceof _Statement._ChildStatement) {
                 throw new ArmyException("don't support"); //TODO
             } else if (statement instanceof ReturningUpdate) {
-                stmt = (SimpleStmt) factory.dialectParser.update((ReturningUpdate) statement, visible);
+                stmt = (SimpleStmt) factory.dialectParser.update((ReturningUpdate) statement, false, visible);
                 factory.printSqlIfNeed(stmt);
                 resultList = this.stmtExecutor.query(stmt, timeOut, resultClass, listConstructor);
             } else if (statement instanceof ReturningInsert) {
@@ -122,7 +122,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 factory.printSqlIfNeed(stmt);
                 resultList = this.stmtExecutor.query(stmt, timeOut, resultClass, listConstructor);
             } else if (statement instanceof ReturningDelete) {
-                stmt = (SimpleStmt) factory.dialectParser.delete((ReturningDelete) statement, visible);
+                stmt = (SimpleStmt) factory.dialectParser.delete((ReturningDelete) statement, false, visible);
                 factory.printSqlIfNeed(stmt);
                 resultList = this.stmtExecutor.query(stmt, timeOut, resultClass, listConstructor);
             } else {
@@ -171,7 +171,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             } else if (statement instanceof _Statement._ChildStatement) {
                 throw new ArmyException("don't support"); //TODO
             } else if (statement instanceof ReturningUpdate) {
-                stmt = (SimpleStmt) factory.dialectParser.update((ReturningUpdate) statement, visible);
+                stmt = (SimpleStmt) factory.dialectParser.update((ReturningUpdate) statement, false, visible);
                 factory.printSqlIfNeed(stmt);
                 resultList = this.stmtExecutor.queryAsMap(stmt, timeOut, mapConstructor, listConstructor);
             } else if (statement instanceof ReturningInsert) {
@@ -179,7 +179,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 factory.printSqlIfNeed(stmt);
                 resultList = this.stmtExecutor.queryAsMap(stmt, timeOut, mapConstructor, listConstructor);
             } else if (statement instanceof ReturningDelete) {
-                stmt = (SimpleStmt) factory.dialectParser.delete((ReturningDelete) statement, visible);
+                stmt = (SimpleStmt) factory.dialectParser.delete((ReturningDelete) statement, false, visible);
                 factory.printSqlIfNeed(stmt);
                 resultList = this.stmtExecutor.queryAsMap(stmt, timeOut, mapConstructor, listConstructor);
             } else {
@@ -216,22 +216,21 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public List<Long> batchUpdate(final BatchDmlStatement statement, Supplier<List<Long>> listConstructor,
+    public List<Long> batchUpdate(final BatchDmlStatement statement, final Supplier<List<Long>> listConstructor,
                                   final boolean useMultiStmt, final Visible visible) {
         if (!(statement instanceof _BatchDml)) {
             // no bug,never here
             throw _Exceptions.unexpectedStatement(statement);
         }
+        //1. assert session status
+        assertSession(true, visible);
         try {
-
-            //1. assert session status
-            assertSession(true, visible);
             //2. parse statement to stmt
             final Stmt stmt;
             if (statement instanceof UpdateStatement) {
-                stmt = this.factory.dialectParser.update((UpdateStatement) statement, visible);
+                stmt = this.factory.dialectParser.update((UpdateStatement) statement, useMultiStmt, visible);
             } else if (statement instanceof DeleteStatement) {
-                stmt = this.factory.dialectParser.delete((DeleteStatement) statement, visible);
+                stmt = this.factory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, visible);
             } else {
                 throw _Exceptions.unexpectedStatement(statement);
             }
@@ -241,7 +240,9 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final int timeout;
             timeout = this.getTxTimeout();
             final List<Long> resultList;
-            if (stmt instanceof BatchStmt) {
+            if (useMultiStmt) {
+                resultList = this.stmtExecutor.multiStmtBatchUpdate((MultiStmt) stmt, timeout, listConstructor);
+            } else if (stmt instanceof BatchStmt) {
                 resultList = this.stmtExecutor.batchUpdate((BatchStmt) stmt, timeout, listConstructor, null, null);
             } else if (!this.hasTransaction()) {
                 throw new ArmyException("update/delete child must in transaction.");
@@ -257,7 +258,8 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 domainTable = (ChildTableMeta<?>) ((_Statement._ChildStatement) statement).table();
 
                 this.stmtExecutor.batchUpdate(((PairBatchStmt) stmt).secondStmt(),
-                        restSecond(domainTable, startTime, timeout), listConstructor, domainTable, resultList
+                        restSecond(domainTable, startTime, timeout), listConstructor, domainTable,
+                        resultList
                 );
             }
 
@@ -549,9 +551,9 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             //2. parse statement to stmt
             final Stmt stmt;
             if (statement instanceof Update) {
-                stmt = this.factory.dialectParser.update((Update) statement, visible);
+                stmt = this.factory.dialectParser.update((Update) statement, false, visible);
             } else if (statement instanceof Delete) {
-                stmt = this.factory.dialectParser.delete((Delete) statement, visible);
+                stmt = this.factory.dialectParser.delete((Delete) statement, false, visible);
             } else {
                 stmt = this.factory.dialectParser.dialectDml(statement, visible);
             }
@@ -634,9 +636,9 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         } else if (statement instanceof _Statement._ChildStatement) {
             throw new ArmyException("stream api don't support child statement.");
         } else if (statement instanceof ReturningUpdate) {
-            stmt = (SimpleStmt) this.factory.dialectParser.update((ReturningUpdate) statement, visible);
+            stmt = (SimpleStmt) this.factory.dialectParser.update((ReturningUpdate) statement, false, visible);
         } else if (statement instanceof ReturningDelete) {
-            stmt = (SimpleStmt) this.factory.dialectParser.delete((ReturningDelete) statement, visible);
+            stmt = (SimpleStmt) this.factory.dialectParser.delete((ReturningDelete) statement, false, visible);
         } else {
             stmt = (SimpleStmt) this.factory.dialectParser.dialectDml((DmlStatement) statement, visible);
         }
