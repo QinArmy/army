@@ -829,6 +829,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new NonUniqueException(m);
     }
 
+    public static NonUniqueException nonUnique(Class<?> resultClass) {
+        return new NonUniqueException(String.format("return %s row count more than 1", resultClass.getName()));
+    }
+
 
     public static IllegalArgumentException dialectDatabaseNotMatch(Dialect usedDialect, ServerMeta meta) {
         String m = String.format("ArmyKey %s %s database not match with server %s", ArmyKey.DIALECT, usedDialect, meta);
@@ -1067,6 +1071,18 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static DataAccessException stmtItemIsUpdateItem(MultiStmt.UpdateStmt item) {
         String m = String.format("%s is %s ,but database return query result.", MultiStmt.StmtItem.class.getName(),
                 item);
+        return new DataAccessException(m);
+    }
+
+    public static DataAccessException exceptedError(int indexBasedOne, MultiStmt.StmtItem excepted,
+                                                    String actual) {
+        String m = String.format("No %s item excepted is %s but actual %s", indexBasedOne, excepted, actual);
+        return new DataAccessException(m);
+    }
+
+    public static DataAccessException columnCountAndSelectionCountNotMatch(int columnSize, int selectionCount) {
+        String m = String.format("result column count[%s] and selection count[%s] not match.",
+                columnSize, selectionCount);
         return new DataAccessException(m);
     }
 

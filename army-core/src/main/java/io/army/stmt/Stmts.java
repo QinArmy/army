@@ -306,6 +306,11 @@ public abstract class Stmts {
         }
 
         @Override
+        public List<? extends Selection> selectionList() {
+            return Collections.emptyList();
+        }
+
+        @Override
         public List<List<SQLParam>> groupList() {
             return this.paramGroupList;
         }

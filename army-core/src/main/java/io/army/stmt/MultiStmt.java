@@ -23,6 +23,13 @@ public interface MultiStmt extends Stmt {
          */
         List<StmtItem> resultItemList();
 
+        /**
+         * @return always false
+         */
+        @Override
+        boolean hasOptimistic();
+
+
     }//ProcedureItem
 
 

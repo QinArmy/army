@@ -9,21 +9,18 @@ import java.util.function.Supplier;
 public interface MultiResult extends MultiResultSpec {
 
 
-    <R> List<R> nextQuery(Class<R> resultClass) throws ArmyException;
+    <R> List<R> query(Class<R> resultClass) throws ArmyException;
 
-    <R> List<R> nextQuery(Class<R> resultClass, Supplier<List<R>> listConstructor) throws ArmyException;
+    <R> List<R> query(Class<R> resultClass, Supplier<List<R>> listConstructor) throws ArmyException;
 
-    List<Map<String, Object>> nextQueryAsMap() throws ArmyException;
+    List<Map<String, Object>> queryMap() throws ArmyException;
 
-    List<Map<String, Object>> nextQueryAsMap(Supplier<Map<String, Object>> mapConstructor)
+    List<Map<String, Object>> queryMap(Supplier<Map<String, Object>> mapConstructor)
             throws ArmyException;
 
-    List<Map<String, Object>> nextQueryAsMap(Supplier<Map<String, Object>> mapConstructor,
-                                             Supplier<List<Map<String, Object>>> listConstructor)
+    List<Map<String, Object>> queryMap(Supplier<Map<String, Object>> mapConstructor,
+                                       Supplier<List<Map<String, Object>>> listConstructor)
             throws ArmyException;
-
-
-
 
 
 }
