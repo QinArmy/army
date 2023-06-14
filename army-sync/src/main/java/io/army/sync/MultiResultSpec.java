@@ -5,12 +5,12 @@ import io.army.lang.Nullable;
 
 public interface MultiResultSpec extends AutoCloseable {
 
-    State hasMore() throws ArmyException;
+    State next() throws ArmyException;
 
-    long nextUpdate() throws ArmyException;
+    long updateCount() throws ArmyException;
 
     @Nullable
-    <R> R nextOne(Class<R> resultClass) throws ArmyException;
+    <R> R queryOne(Class<R> resultClass) throws ArmyException;
 
 
     @Override

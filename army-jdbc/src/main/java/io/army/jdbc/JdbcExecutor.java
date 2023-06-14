@@ -38,10 +38,7 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
-import java.util.function.Consumer;
-import java.util.function.IntFunction;
-import java.util.function.IntToLongFunction;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -802,7 +799,7 @@ abstract class JdbcExecutor implements StmtExecutor {
     private Statement createStreamStmt(final String sql, final int paramSize, final StreamOptions options)
             throws SQLException {
         final Statement statement;
-        if (paramSize > 0 || options.serverStream) {
+        if (paramSize > 0 || options.serverStream == Boolean.TRUE) {
             statement = this.conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
                     ResultSet.CLOSE_CURSORS_AT_COMMIT);
 
@@ -1487,7 +1484,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
         @Override
-        public final State hasMore() {
+        public final State next() {
             final State oldState = this.state;
             if (oldState == State.NONE) {
                 return oldState;
@@ -1533,7 +1530,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
         @Override
-        public final long nextUpdate() throws DataAccessException {
+        public final long updateCount() throws DataAccessException {
             final State currentState = this.state;
             if (currentState == null) {
                 this.close();
@@ -1567,7 +1564,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         }
 
         @Override
-        public <R> R nextOne(Class<R> resultClass) {
+        public <R> R queryOne(Class<R> resultClass) {
 
             return null;
         }
@@ -1582,7 +1579,31 @@ abstract class JdbcExecutor implements StmtExecutor {
             closeMultiStatement(this.statement);
         }
 
-        final <R> R doNextQuery(final TeFunction<ResultSet, List<? extends Selection>, SqlType[], R> function) {
+
+        final <T, R> R beanQuery(final Class<T> resultClass,
+                                 final TeFunction<ResultSet, RowReader<T>, Boolean, R> function) {
+            return this.doNextQuery((selectionList, sqlTypeArray) -> {
+                final RowReader<T> rowReader;
+                if (sqlTypeArray.length == 1) {
+                    rowReader = new SingleColumnRowReader<>(this.executor, selectionList, sqlTypeArray,
+                            resultClass);
+                } else {
+                    rowReader = new BeanRowReader<>(this.executor, selectionList, resultClass, sqlTypeArray);
+                }
+                return rowReader;
+            }, function);
+        }
+
+        final <R> R mapQuery(final Supplier<Map<String, Object>> mapConstructor,
+                             final TeFunction<ResultSet, RowReader<Map<String, Object>>, Boolean, R> function) {
+            return this.doNextQuery((selectionList, sqlTypeArray) ->
+                            new MapReader(this.executor, selectionList, sqlTypeArray, mapConstructor),
+                    function
+            );
+        }
+
+        private <T, R> R doNextQuery(final BiFunction<List<? extends Selection>, SqlType[], RowReader<T>> readerConstructor,
+                                     final TeFunction<ResultSet, RowReader<T>, Boolean, R> function) {
 
             final State currentState = this.state;
             if (currentState == null) {
@@ -1637,7 +1658,8 @@ abstract class JdbcExecutor implements StmtExecutor {
                     throw _Exceptions.unknownStmtItem(currentItem);
                 }
                 final R result;
-                result = function.apply(resultSet, selectionList, sqlTypeArray);
+                result = function.apply(resultSet, readerConstructor.apply(selectionList, sqlTypeArray),
+                        currentItem.hasOptimistic());
                 this.state = null;
                 return result;
             } catch (Throwable e) {
@@ -1663,35 +1685,9 @@ abstract class JdbcExecutor implements StmtExecutor {
         @Override
         public <R> List<R> nextQuery(final Class<R> resultClass, final Supplier<List<R>> listConstructor)
                 throws DataAccessException {
-
-            return this.doNextQuery((s, selectionList, sqlTypeArray) -> {
-
-                try (ResultSet resultSet = s) {
-
-                    List<R> resultList = listConstructor.get();
-                    if (resultList == null) {
-                        throw _Exceptions.listConstructorError();
-                    }
-                    final RowReader<R> rowReader;
-                    if (sqlTypeArray.length == 1) {
-                        rowReader = new SingleColumnRowReader<>(this.executor, selectionList, sqlTypeArray,
-                                resultClass);
-                    } else {
-                        rowReader = new BeanRowReader<>(this.executor, selectionList, resultClass, sqlTypeArray);
-                    }
-                    while (resultSet.next()) {
-                        resultList.add(rowReader.readOneRow(resultSet));
-                    }
-                    if (resultList instanceof ImmutableSpec) {
-                        resultList = _Collections.unmodifiableListForDeveloper(resultList);
-                    }
-                    return resultList;
-                } catch (SQLException e) { // other error is handled by doNextQuery()
-                    throw wrapError(e);
-                }
-
-
-            });
+            return this.beanQuery(resultClass, (s, rowReader, optimistic) ->
+                    this.readList(s, rowReader, optimistic, listConstructor)
+            );
         }
 
 
@@ -1706,34 +1702,38 @@ abstract class JdbcExecutor implements StmtExecutor {
             return this.nextQueryAsMap(mapConstructor, _Collections::arrayList);
         }
 
+
         @Override
-        public List<Map<String, Object>> nextQueryAsMap(Supplier<Map<String, Object>> mapConstructor,
-                                                        Supplier<List<Map<String, Object>>> listConstructor)
+        public List<Map<String, Object>> nextQueryAsMap(final Supplier<Map<String, Object>> mapConstructor,
+                                                        final Supplier<List<Map<String, Object>>> listConstructor)
                 throws DataAccessException {
-            return this.doNextQuery((s, selectionList, sqlTypeArray) -> {
+            return this.mapQuery(mapConstructor, (s, mapReader, optimistic) ->
+                    this.readList(s, mapReader, optimistic, listConstructor)
+            );
+        }
 
-                try (ResultSet resultSet = s) {
+        private <R> List<R> readList(final ResultSet set, final RowReader<R> rowReader, final boolean optimistic,
+                                     final Supplier<List<R>> listConstructor) {
+            try (ResultSet resultSet = set) {
 
-                    List<Map<String, Object>> resultList = listConstructor.get();
-                    if (resultList == null) {
-                        throw _Exceptions.listConstructorError();
-                    }
-                    final MapReader mapReader;
-                    mapReader = new MapReader(this.executor, selectionList, sqlTypeArray, mapConstructor);
-
-                    while (resultSet.next()) {
-                        resultList.add(mapReader.readOneRow(resultSet));
-                    }
-                    if (resultList instanceof ImmutableSpec) {
-                        resultList = _Collections.unmodifiableListForDeveloper(resultList);
-                    }
-                    return resultList;
-                } catch (SQLException e) { // other error is handled by doNextQuery()
-                    throw wrapError(e);
+                List<R> list = listConstructor.get();
+                if (list == null) {
+                    throw _Exceptions.listConstructorError();
                 }
+                while (resultSet.next()) {
+                    list.add(rowReader.readOneRow(resultSet));
+                }
+                if (optimistic && list.size() == 0) {
+                    throw _Exceptions.optimisticLock(0);
+                }
+                if (list instanceof ImmutableSpec) {
+                    list = _Collections.unmodifiableListForDeveloper(list);
+                }
+                return list;
+            } catch (SQLException e) { // other error is handled by supper.doNextQuery()
+                throw wrapError(e);
+            }
 
-
-            });
         }
 
 
@@ -1751,31 +1751,38 @@ abstract class JdbcExecutor implements StmtExecutor {
         }
 
         @Override
-        public <R> Stream<R> nextQueryStream(Class<R> resultClass) throws DataAccessException {
-            return this.nextQueryStream(resultClass, _Collections::arrayList);
+        public <R> Stream<R> query(Class<R> resultClass) throws DataAccessException {
+            return this.query(resultClass, this.options);
         }
 
         @Override
-        public <R> Stream<R> nextQueryStream(final Class<R> resultClass, final Supplier<List<R>> listConstructor)
+        public <R> Stream<R> query(final Class<R> resultClass, final StreamOptions options)
+                throws ArmyException {
+            return this.beanQuery(resultClass, (set, rowReader) -> {
+
+            });
+        }
+
+        @Override
+        public Stream<Map<String, Object>> queryMap() throws DataAccessException {
+            return this.queryMap(_Collections::hashMap, this.options);
+        }
+
+        @Override
+        public Stream<Map<String, Object>> queryMap(Supplier<Map<String, Object>> mapConstructor)
                 throws DataAccessException {
-            return null;
+            return this.queryMap(mapConstructor, this.options);
+        }
+
+
+        @Override
+        public Stream<Map<String, Object>> queryMap(StreamOptions options) throws ArmyException {
+            return this.queryMap(_Collections::hashMap, options);
         }
 
         @Override
-        public Stream<Map<String, Object>> nextQueryMapStream() throws DataAccessException {
-            return null;
-        }
-
-        @Override
-        public Stream<Map<String, Object>> nextQueryMapStream(Supplier<Map<String, Object>> mapConstructor)
-                throws DataAccessException {
-            return null;
-        }
-
-        @Override
-        public Stream<Map<String, Object>> nextQueryMapStream(Supplier<Map<String, Object>> mapConstructor,
-                                                              Supplier<List<Map<String, Object>>> listConstructor)
-                throws DataAccessException {
+        public Stream<Map<String, Object>> queryMap(Supplier<Map<String, Object>> mapConstructor,
+                                                    StreamOptions options) throws ArmyException {
             return null;
         }
 
