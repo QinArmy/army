@@ -7,6 +7,7 @@ import io.army.codec.FieldCodec;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.criteria.impl.SqlTypeUtils;
+import io.army.function.TeFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -15,10 +16,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
-import io.army.sync.MultiResult;
-import io.army.sync.MultiStream;
-import io.army.sync.StreamCommander;
-import io.army.sync.StreamOptions;
+import io.army.sync.*;
 import io.army.sync.executor.StmtExecutor;
 import io.army.type.ImmutableSpec;
 import io.army.util._ClassUtils;
@@ -1147,7 +1145,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         @SuppressWarnings("unchecked")
         @Nullable
-        private R readOneRow(final ResultSet resultSet) throws SQLException {
+        final R readOneRow(final ResultSet resultSet) throws SQLException {
             final JdbcExecutor executor = this.executor;
             final MappingEnv env = executor.factory.mappingEnv;
             final SqlType[] sqlTypeArray = this.sqlTypeArray;
@@ -1461,38 +1459,35 @@ abstract class JdbcExecutor implements StmtExecutor {
         return new DataAccessException("Don't invoke hasMore method.");
     }
 
-    private static final class JdbcMultiResult implements MultiResult {
+    private static abstract class JdbcMultiResultSpec implements MultiResultSpec {
 
-        private final JdbcExecutor executor;
 
-        private final Statement statement;
+        final JdbcExecutor executor;
 
-        private final List<MultiStmt.StmtItem> stmtItemList;
+        final Statement statement;
 
-        private final int stmtItemSize;
+        final List<MultiStmt.StmtItem> stmtItemList;
 
-        private final StreamOptions options;
+        final int stmtItemSize;
 
         private State state;
 
-        private Long updateCount;
+        private long updateCount;
 
         private int stmtItemIndex = -1;
 
-        private JdbcMultiResult(JdbcExecutor executor, Statement statement, List<MultiStmt.StmtItem> stmtItemList,
-                                StreamOptions options) {
+        private JdbcMultiResultSpec(JdbcExecutor executor, Statement statement, List<MultiStmt.StmtItem> stmtItemList) {
             this.executor = executor;
             this.statement = statement;
             this.stmtItemList = stmtItemList;
-            this.stmtItemIndex = stmtItemList.size();
+            this.stmtItemSize = stmtItemList.size();
 
-            this.options = options;
-
-            assert this.stmtItemIndex > 0;
+            assert this.stmtItemSize > 0;
         }
 
+
         @Override
-        public State hasMore() {
+        public final State hasMore() {
             final State oldState = this.state;
             if (oldState == State.NONE) {
                 return oldState;
@@ -1503,13 +1498,14 @@ abstract class JdbcExecutor implements StmtExecutor {
                 final int oldStmtIndex = this.stmtItemIndex;
 
                 if (oldState == State.QUERY) {
+                    // developer don't deal current result set
                     hasResults = statement.getMoreResults(Statement.CLOSE_CURRENT_RESULT);
                 } else {
                     hasResults = statement.getMoreResults();
                 }
                 final State newState;
                 if (hasResults) {
-                    this.updateCount = null;
+                    this.updateCount = -1;
                     newState = State.QUERY;
                 } else {
                     final long rows;
@@ -1519,7 +1515,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                         rows = statement.getUpdateCount();
                     }
                     newState = rows == -1 ? State.NONE : State.UPDATE;
-                    this.updateCount = rows == -1 ? null : rows;
+                    this.updateCount = rows;
                 }
 
                 if (this.state != oldState || this.stmtItemIndex != oldStmtIndex) {
@@ -1529,7 +1525,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                 this.state = newState;
                 return newState;
             } catch (Throwable e) {
-                this.closeMultiResult();
+                this.close();
                 throw wrapError(e);
             }
 
@@ -1537,23 +1533,23 @@ abstract class JdbcExecutor implements StmtExecutor {
 
 
         @Override
-        public long nextUpdate() throws DataAccessException {
+        public final long nextUpdate() throws DataAccessException {
             final State currentState = this.state;
             if (currentState == null) {
-                this.closeMultiResult();
+                this.close();
                 throw dontInvokeHasMore();
             }
 
             try {
-                final Long updateCount;
+                final long updateCount;
                 switch (currentState) {
                     case UPDATE: {
                         updateCount = this.updateCount;
-                        if (updateCount == null) {
+                        if (updateCount == -1) {
                             throw new ConcurrentModificationException();
                         }
                         this.state = null;
-                        this.updateCount = null;
+                        this.updateCount = -1;
                     }
                     break;
                     case QUERY:
@@ -1565,7 +1561,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                 }
                 return updateCount;
             } catch (Throwable e) {
-                this.closeMultiResult();
+                this.close();
                 throw wrapError(e);
             }
         }
@@ -1577,17 +1573,20 @@ abstract class JdbcExecutor implements StmtExecutor {
         }
 
         @Override
-        public <R> List<R> nextQuery(Class<R> resultClass) throws DataAccessException {
-            return this.nextQuery(resultClass, _Collections::arrayList);
+        public final void close() throws DataAccessException {
+            if (this.state == State.NONE) {
+                return;
+            }
+            this.state = State.NONE;
+            this.stmtItemIndex = this.stmtItemSize;
+            closeMultiStatement(this.statement);
         }
 
-        @Override
-        public <R> List<R> nextQuery(Class<R> resultClass, Supplier<List<R>> listConstructor)
-                throws DataAccessException {
+        final <R> R doNextQuery(final TeFunction<ResultSet, List<? extends Selection>, SqlType[], R> function) {
 
             final State currentState = this.state;
             if (currentState == null) {
-                this.closeMultiResult();
+                this.close();
                 throw dontInvokeHasMore();
             }
             try {
@@ -1625,48 +1624,80 @@ abstract class JdbcExecutor implements StmtExecutor {
                     throw _Exceptions.unknownStmtItem(currentItem);
                 } else if (((MultiStmt.ProcedureItem) currentItem).resultItemList().isEmpty()) {
                     sqlTypeArray = this.executor.createSqlTypArray(metaData, metaData.getColumnCount());
-                    final IntFunction<String> function;
-                    function = index -> {
+                    final IntFunction<String> columnNameFunc;
+                    columnNameFunc = index -> {
                         try {
                             return metaData.getColumnLabel(index);
                         } catch (SQLException e) {
                             throw wrapError(e);
                         }
                     };
-                    selectionList = SqlTypeUtils.mapSelectionList(sqlTypeArray, function);
+                    selectionList = SqlTypeUtils.mapSelectionList(sqlTypeArray, columnNameFunc);
                 } else {
                     throw _Exceptions.unknownStmtItem(currentItem);
                 }
-                final FunctionWithError<ResultSetMetaData, RowReader<R>> function;
-
-                final RowReader<R> rowReader;
-                rowReader = function.apply(metaData);
-                List<R> resultList = listConstructor.get();
-                if (resultList == null) {
-                    throw _Exceptions.listConstructorError();
-                }
-                while (resultSet.next()) {
-                    resultList.add(rowReader.readOneRow(resultSet));
-                }
-                if (resultList instanceof ImmutableSpec) {
-                    resultList = _Collections.unmodifiableListForDeveloper(resultList);
-                }
-                return resultList;
+                final R result;
+                result = function.apply(resultSet, selectionList, sqlTypeArray);
+                this.state = null;
+                return result;
             } catch (Throwable e) {
-                this.closeMultiResult();
+                this.close();
                 throw wrapError(e);
             }
-
         }
 
-        private <R> void readResultSet(final State state, final int expectedRows, final Consumer<? super R> consumer) {
 
+    }//JdbcMultiResultSpec
+
+    private static final class JdbcMultiResult extends JdbcMultiResultSpec implements MultiResult {
+
+        private JdbcMultiResult(JdbcExecutor executor, Statement statement, List<MultiStmt.StmtItem> stmtItemList) {
+            super(executor, statement, stmtItemList);
+        }
+
+        @Override
+        public <R> List<R> nextQuery(Class<R> resultClass) throws DataAccessException {
+            return this.nextQuery(resultClass, _Collections::arrayList);
+        }
+
+        @Override
+        public <R> List<R> nextQuery(final Class<R> resultClass, final Supplier<List<R>> listConstructor)
+                throws DataAccessException {
+
+            return this.doNextQuery((s, selectionList, sqlTypeArray) -> {
+
+                try (ResultSet resultSet = s) {
+
+                    List<R> resultList = listConstructor.get();
+                    if (resultList == null) {
+                        throw _Exceptions.listConstructorError();
+                    }
+                    final RowReader<R> rowReader;
+                    if (sqlTypeArray.length == 1) {
+                        rowReader = new SingleColumnRowReader<>(this.executor, selectionList, sqlTypeArray,
+                                resultClass);
+                    } else {
+                        rowReader = new BeanRowReader<>(this.executor, selectionList, resultClass, sqlTypeArray);
+                    }
+                    while (resultSet.next()) {
+                        resultList.add(rowReader.readOneRow(resultSet));
+                    }
+                    if (resultList instanceof ImmutableSpec) {
+                        resultList = _Collections.unmodifiableListForDeveloper(resultList);
+                    }
+                    return resultList;
+                } catch (SQLException e) { // other error is handled by doNextQuery()
+                    throw wrapError(e);
+                }
+
+
+            });
         }
 
 
         @Override
         public List<Map<String, Object>> nextQueryAsMap() throws DataAccessException {
-            return null;
+            return this.nextQueryAsMap(_Collections::hashMap, _Collections::arrayList);
         }
 
         @Override
@@ -1679,26 +1710,77 @@ abstract class JdbcExecutor implements StmtExecutor {
         public List<Map<String, Object>> nextQueryAsMap(Supplier<Map<String, Object>> mapConstructor,
                                                         Supplier<List<Map<String, Object>>> listConstructor)
                 throws DataAccessException {
-            return null;
-        }
+            return this.doNextQuery((s, selectionList, sqlTypeArray) -> {
 
-        @Override
-        public void close() throws DataAccessException {
+                try (ResultSet resultSet = s) {
 
-        }
+                    List<Map<String, Object>> resultList = listConstructor.get();
+                    if (resultList == null) {
+                        throw _Exceptions.listConstructorError();
+                    }
+                    final MapReader mapReader;
+                    mapReader = new MapReader(this.executor, selectionList, sqlTypeArray, mapConstructor);
+
+                    while (resultSet.next()) {
+                        resultList.add(mapReader.readOneRow(resultSet));
+                    }
+                    if (resultList instanceof ImmutableSpec) {
+                        resultList = _Collections.unmodifiableListForDeveloper(resultList);
+                    }
+                    return resultList;
+                } catch (SQLException e) { // other error is handled by doNextQuery()
+                    throw wrapError(e);
+                }
 
 
-        private void closeMultiResult() {
-            if (this.state == State.NONE) {
-                return;
-            }
-            this.state = State.NONE;
-            this.stmtItemIndex = this.stmtItemSize;
-            closeMultiStatement(this.statement);
+            });
         }
 
 
     }//JdbcMultiResult
+
+
+    private static final class JdbcMultiStream extends JdbcMultiResultSpec implements MultiStream {
+
+        private final StreamOptions options;
+
+        private JdbcMultiStream(JdbcExecutor executor, Statement statement, List<MultiStmt.StmtItem> stmtItemList,
+                                StreamOptions options) {
+            super(executor, statement, stmtItemList);
+            this.options = options;
+        }
+
+        @Override
+        public <R> Stream<R> nextQueryStream(Class<R> resultClass) throws DataAccessException {
+            return this.nextQueryStream(resultClass, _Collections::arrayList);
+        }
+
+        @Override
+        public <R> Stream<R> nextQueryStream(final Class<R> resultClass, final Supplier<List<R>> listConstructor)
+                throws DataAccessException {
+            return null;
+        }
+
+        @Override
+        public Stream<Map<String, Object>> nextQueryMapStream() throws DataAccessException {
+            return null;
+        }
+
+        @Override
+        public Stream<Map<String, Object>> nextQueryMapStream(Supplier<Map<String, Object>> mapConstructor)
+                throws DataAccessException {
+            return null;
+        }
+
+        @Override
+        public Stream<Map<String, Object>> nextQueryMapStream(Supplier<Map<String, Object>> mapConstructor,
+                                                              Supplier<List<Map<String, Object>>> listConstructor)
+                throws DataAccessException {
+            return null;
+        }
+
+
+    }//JdbcMultiStream
 
 
     @FunctionalInterface
@@ -1707,7 +1789,6 @@ abstract class JdbcExecutor implements StmtExecutor {
         R apply(T t) throws Exception;
 
     }
-
 
 
 }

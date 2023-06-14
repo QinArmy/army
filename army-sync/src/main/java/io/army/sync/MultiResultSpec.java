@@ -1,20 +1,20 @@
 package io.army.sync;
 
+import io.army.ArmyException;
 import io.army.lang.Nullable;
-import io.army.session.DataAccessException;
 
 public interface MultiResultSpec extends AutoCloseable {
 
-    State hasMore();
+    State hasMore() throws ArmyException;
 
-    long nextUpdate() throws DataAccessException;
+    long nextUpdate() throws ArmyException;
 
     @Nullable
-    <R> R nextOne(Class<R> resultClass);
+    <R> R nextOne(Class<R> resultClass) throws ArmyException;
 
 
     @Override
-    void close() throws DataAccessException;
+    void close() throws ArmyException;
 
     enum State {
 
