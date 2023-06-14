@@ -6,6 +6,7 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.codec.FieldCodec;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
+import io.army.criteria.impl.SqlTypeUtils;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -15,7 +16,7 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.MultiResult;
-import io.army.sync.MultiResultStream;
+import io.army.sync.MultiStream;
 import io.army.sync.StreamCommander;
 import io.army.sync.StreamOptions;
 import io.army.sync.executor.StmtExecutor;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import java.util.function.IntFunction;
 import java.util.function.IntToLongFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -61,7 +63,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         this.conn = conn;
     }
 
-    public static ArmyException wrap(final Throwable error) {
+    public static ArmyException wrapError(final Throwable error) {
         final ArmyException e;
         if (error instanceof SQLException) {
             e = new DataAccessException(error);
@@ -138,7 +140,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
 
     }
@@ -180,7 +182,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
 
     }
@@ -224,7 +226,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
     }
 
@@ -258,7 +260,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
 
     }
@@ -363,7 +365,7 @@ abstract class JdbcExecutor implements StmtExecutor {
     }
 
     @Override
-    public final MultiResultStream multiStmtStream(MultiStmt stmt, int timeout, @Nullable StreamOptions options) {
+    public final MultiStream multiStmtStream(MultiStmt stmt, int timeout, @Nullable StreamOptions options) {
         return null;
     }
 
@@ -372,7 +374,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         try {
             return this.conn.setSavepoint();
         } catch (SQLException e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
     }
 
@@ -381,7 +383,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         try {
             this.conn.releaseSavepoint((Savepoint) savepoint);
         } catch (SQLException e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
     }
 
@@ -390,7 +392,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         try {
             this.conn.releaseSavepoint((Savepoint) savepoint);
         } catch (SQLException e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
     }
 
@@ -408,7 +410,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                 throw new DataAccessException(m);
             }
         } catch (SQLException e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
     }
 
@@ -417,7 +419,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         try (Statement statement = this.conn.createStatement()) {
             statement.executeUpdate(stmt);
         } catch (SQLException e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
     }
 
@@ -435,10 +437,10 @@ abstract class JdbcExecutor implements StmtExecutor {
             this.conn.close();
 
             if (error != null) {
-                throw wrap(error);
+                throw wrapError(error);
             }
         } catch (SQLException e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
 
     }
@@ -719,7 +721,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         } catch (ArmyException e) {
             throw e;
         } catch (Exception e) {
-            throw wrap(e);
+            throw wrapError(e);
         }
 
     }
@@ -779,13 +781,11 @@ abstract class JdbcExecutor implements StmtExecutor {
             final Consumer<StreamCommander> consumer = options.commanderConsumer;
             // 6. create Commander
             if (consumer != null) {
-                final StreamCommander commander;
                 if (options.parallel) {
-                    commander = new ParallelCommander(spliterator);
+                    consumer.accept(spliterator::parallelCancel);
                 } else {
-                    commander = new SimpleCommander(spliterator);
+                    consumer.accept(spliterator::simpleCancel);
                 }
-                consumer.accept(commander);
             }
 
             // 7. store RowSpliterator
@@ -913,7 +913,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         final boolean optimistic = stmt.hasOptimistic();
 
         final int itemSize, itemPairSize;
-        itemSize = stmt.resultItemList().size();
+        itemSize = stmt.stmtItemList().size();
         if ((itemSize & 1) != 0) {
             // no bug,never here
             throw new IllegalArgumentException(String.format("item count[%s] not event", itemSize));
@@ -977,7 +977,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         final JdbcExecutorFactory factory = this.factory;
         final boolean optimistic = stmt.hasOptimistic();
-        final int itemSize = stmt.resultItemList().size();
+        final int itemSize = stmt.stmtItemList().size();
 
         long rows;
         for (int i = 0; i < itemSize; i++) {
@@ -1063,7 +1063,7 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         closeResultSetAndStatement(resultSet, statement);
 
-        return wrap(error);
+        return wrapError(error);
     }
 
     private static void closeResultSetAndStatement(final @Nullable ResultSet resultSet,
@@ -1089,14 +1089,22 @@ abstract class JdbcExecutor implements StmtExecutor {
             throws ArmyException {
         try {
             resource.close();
-        } catch (SQLException e) {
-            throw wrap(e);
         } catch (Exception e) {
-            throw _Exceptions.unknownError(e.getMessage(), e);
+            throw wrapError(e);
         } catch (Throwable e) {
             throw new ArmyException("unknown error", e);
         }
 
+    }
+
+
+    private static void closeMultiStatement(final Statement statement) {
+        try {
+            statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+            statement.close();
+        } catch (Throwable e) {
+            throw wrapError(e);
+        }
     }
 
 
@@ -1277,7 +1285,7 @@ abstract class JdbcExecutor implements StmtExecutor {
             final Map<String, Object> map;
             map = this.mapConstructor.get();
             if (map == null) {
-                throw new NullPointerException("mapConstructor return null");
+                throw _Exceptions.mapConstructorError();
             }
             return map;
         }
@@ -1312,8 +1320,8 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         private boolean canceled;
 
-        private RowSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader, boolean hasOptimistic,
-                               StreamOptions options) {
+        private RowSpliterator(@Nullable Statement statement, ResultSet resultSet, RowReader<R> rowReader,
+                               boolean hasOptimistic, StreamOptions options) {
             this.statement = statement;
             this.resultSet = resultSet;
             this.rowReader = rowReader;
@@ -1322,7 +1330,7 @@ abstract class JdbcExecutor implements StmtExecutor {
             this.fetchSize = options.fetchSize;
             this.splitSize = options.splitSize;
 
-            assert this.fetchSize > 0 && this.splitSize > 0;
+            assert this.fetchSize > 0 && this.splitSize >= 0;
 
         }
 
@@ -1334,12 +1342,13 @@ abstract class JdbcExecutor implements StmtExecutor {
         @Nullable
         @Override
         public Spliterator<R> trySplit() {
-            if (this.closed || this.canceled) {
+            final int splitSize = this.splitSize;
+            if (this.closed || this.canceled || splitSize < 1) {
                 return null;
             }
 
-            final List<R> rowList = _Collections.arrayList(Math.min(300, this.splitSize));
-            this.doTryAdvance(this.splitSize, rowList::add);
+            final List<R> rowList = _Collections.arrayList(Math.min(300, splitSize));
+            this.doTryAdvance(splitSize, rowList::add);
             final Spliterator<R> spliterator;
             if (rowList.size() == 0) {
                 spliterator = null;
@@ -1413,7 +1422,7 @@ abstract class JdbcExecutor implements StmtExecutor {
                 return readRowCount > 0;
             } catch (Throwable e) {
                 this.closeStream();
-                throw wrap(e);
+                throw wrapError(e);
             }
 
         }
@@ -1431,47 +1440,266 @@ abstract class JdbcExecutor implements StmtExecutor {
 
         }
 
+        private void simpleCancel() {
+            this.canceled = true;
+        }
+
+        private void parallelCancel() {
+            if (this.canceled) {
+                return;
+            }
+            synchronized (this) {
+                this.canceled = true;
+            }
+        }
+
 
     }//RowSpliterator
 
 
-    private static final class SimpleCommander implements StreamCommander {
+    private static DataAccessException dontInvokeHasMore() {
+        return new DataAccessException("Don't invoke hasMore method.");
+    }
 
-        private final RowSpliterator<?> spliterator;
+    private static final class JdbcMultiResult implements MultiResult {
 
-        private SimpleCommander(RowSpliterator<?> spliterator) {
-            this.spliterator = spliterator;
+        private final JdbcExecutor executor;
+
+        private final Statement statement;
+
+        private final List<MultiStmt.StmtItem> stmtItemList;
+
+        private final int stmtItemSize;
+
+        private final StreamOptions options;
+
+        private State state;
+
+        private Long updateCount;
+
+        private int stmtItemIndex = -1;
+
+        private JdbcMultiResult(JdbcExecutor executor, Statement statement, List<MultiStmt.StmtItem> stmtItemList,
+                                StreamOptions options) {
+            this.executor = executor;
+            this.statement = statement;
+            this.stmtItemList = stmtItemList;
+            this.stmtItemIndex = stmtItemList.size();
+
+            this.options = options;
+
+            assert this.stmtItemIndex > 0;
         }
 
         @Override
-        public void cancel() {
-            this.spliterator.canceled = true;
+        public State hasMore() {
+            final State oldState = this.state;
+            if (oldState == State.NONE) {
+                return oldState;
+            }
+            try {
+                final Statement statement = this.statement;
+                final boolean hasResults;
+                final int oldStmtIndex = this.stmtItemIndex;
+
+                if (oldState == State.QUERY) {
+                    hasResults = statement.getMoreResults(Statement.CLOSE_CURRENT_RESULT);
+                } else {
+                    hasResults = statement.getMoreResults();
+                }
+                final State newState;
+                if (hasResults) {
+                    this.updateCount = null;
+                    newState = State.QUERY;
+                } else {
+                    final long rows;
+                    if (this.executor.factory.useLargeUpdate) {
+                        rows = statement.getLargeUpdateCount();
+                    } else {
+                        rows = statement.getUpdateCount();
+                    }
+                    newState = rows == -1 ? State.NONE : State.UPDATE;
+                    this.updateCount = rows == -1 ? null : rows;
+                }
+
+                if (this.state != oldState || this.stmtItemIndex != oldStmtIndex) {
+                    throw new ConcurrentModificationException();
+                }
+                this.stmtItemIndex = oldStmtIndex + 1;
+                this.state = newState;
+                return newState;
+            } catch (Throwable e) {
+                this.closeMultiResult();
+                throw wrapError(e);
+            }
+
         }
 
 
-    }//SimpleCommander
+        @Override
+        public long nextUpdate() throws DataAccessException {
+            final State currentState = this.state;
+            if (currentState == null) {
+                this.closeMultiResult();
+                throw dontInvokeHasMore();
+            }
 
-    private static final class ParallelCommander implements StreamCommander {
-
-        private final RowSpliterator<?> spliterator;
-
-
-        private ParallelCommander(RowSpliterator<?> spliterator) {
-            this.spliterator = spliterator;
+            try {
+                final Long updateCount;
+                switch (currentState) {
+                    case UPDATE: {
+                        updateCount = this.updateCount;
+                        if (updateCount == null) {
+                            throw new ConcurrentModificationException();
+                        }
+                        this.state = null;
+                        this.updateCount = null;
+                    }
+                    break;
+                    case QUERY:
+                        throw _Exceptions.currentResultIsQuery();
+                    case NONE:
+                        throw _Exceptions.noMoreResult();
+                    default:
+                        throw _Exceptions.unexpectedEnum(currentState);
+                }
+                return updateCount;
+            } catch (Throwable e) {
+                this.closeMultiResult();
+                throw wrapError(e);
+            }
         }
 
         @Override
-        public void cancel() {
-            if (this.spliterator.canceled) {
+        public <R> R nextOne(Class<R> resultClass) {
+
+            return null;
+        }
+
+        @Override
+        public <R> List<R> nextQuery(Class<R> resultClass) throws DataAccessException {
+            return this.nextQuery(resultClass, _Collections::arrayList);
+        }
+
+        @Override
+        public <R> List<R> nextQuery(Class<R> resultClass, Supplier<List<R>> listConstructor)
+                throws DataAccessException {
+
+            final State currentState = this.state;
+            if (currentState == null) {
+                this.closeMultiResult();
+                throw dontInvokeHasMore();
+            }
+            try {
+                switch (currentState) {
+                    case QUERY:
+                        break;
+                    case UPDATE:
+                        throw _Exceptions.currentResultIsUpdate();
+                    case NONE:
+                        throw _Exceptions.noMoreResult();
+                    default:
+                        throw _Exceptions.unexpectedEnum(currentState);
+                }
+
+                final List<MultiStmt.StmtItem> itemList = this.stmtItemList;
+                final int itemIndex = this.stmtItemIndex;
+                assert itemIndex > -1 && itemIndex < this.stmtItemSize;
+
+                final ResultSet resultSet;
+                resultSet = this.statement.getResultSet();
+                final ResultSetMetaData metaData;
+                metaData = resultSet.getMetaData();
+                final MultiStmt.StmtItem currentItem = itemList.get(itemIndex);
+                final List<? extends Selection> selectionList;
+                final SqlType[] sqlTypeArray;
+                if (currentItem instanceof MultiStmt.UpdateStmt) {
+                    throw _Exceptions.stmtItemIsUpdateItem((MultiStmt.UpdateStmt) currentItem);
+                } else if (currentItem instanceof MultiStmt.QueryStmt) {
+                    selectionList = ((MultiStmt.QueryStmt) currentItem).selectionList();
+                    sqlTypeArray = this.executor.createSqlTypArray(metaData, selectionList.size());
+                } else if (!(currentItem instanceof MultiStmt.ProcedureItem)
+                        || itemIndex != 0
+                        || this.stmtItemSize != 1) {
+                    // no bug,never here
+                    throw _Exceptions.unknownStmtItem(currentItem);
+                } else if (((MultiStmt.ProcedureItem) currentItem).resultItemList().isEmpty()) {
+                    sqlTypeArray = this.executor.createSqlTypArray(metaData, metaData.getColumnCount());
+                    final IntFunction<String> function;
+                    function = index -> {
+                        try {
+                            return metaData.getColumnLabel(index);
+                        } catch (SQLException e) {
+                            throw wrapError(e);
+                        }
+                    };
+                    selectionList = SqlTypeUtils.mapSelectionList(sqlTypeArray, function);
+                } else {
+                    throw _Exceptions.unknownStmtItem(currentItem);
+                }
+                final FunctionWithError<ResultSetMetaData, RowReader<R>> function;
+
+                final RowReader<R> rowReader;
+                rowReader = function.apply(metaData);
+                List<R> resultList = listConstructor.get();
+                if (resultList == null) {
+                    throw _Exceptions.listConstructorError();
+                }
+                while (resultSet.next()) {
+                    resultList.add(rowReader.readOneRow(resultSet));
+                }
+                if (resultList instanceof ImmutableSpec) {
+                    resultList = _Collections.unmodifiableListForDeveloper(resultList);
+                }
+                return resultList;
+            } catch (Throwable e) {
+                this.closeMultiResult();
+                throw wrapError(e);
+            }
+
+        }
+
+        private <R> void readResultSet(final State state, final int expectedRows, final Consumer<? super R> consumer) {
+
+        }
+
+
+        @Override
+        public List<Map<String, Object>> nextQueryAsMap() throws DataAccessException {
+            return null;
+        }
+
+        @Override
+        public List<Map<String, Object>> nextQueryAsMap(Supplier<Map<String, Object>> mapConstructor)
+                throws DataAccessException {
+            return this.nextQueryAsMap(mapConstructor, _Collections::arrayList);
+        }
+
+        @Override
+        public List<Map<String, Object>> nextQueryAsMap(Supplier<Map<String, Object>> mapConstructor,
+                                                        Supplier<List<Map<String, Object>>> listConstructor)
+                throws DataAccessException {
+            return null;
+        }
+
+        @Override
+        public void close() throws DataAccessException {
+
+        }
+
+
+        private void closeMultiResult() {
+            if (this.state == State.NONE) {
                 return;
             }
-            synchronized (this.spliterator) {
-                this.spliterator.canceled = true;
-            }
+            this.state = State.NONE;
+            this.stmtItemIndex = this.stmtItemSize;
+            closeMultiStatement(this.statement);
         }
 
 
-    }//ParallelCommander
+    }//JdbcMultiResult
+
 
     @FunctionalInterface
     private interface FunctionWithError<T, R> {
@@ -1479,6 +1707,7 @@ abstract class JdbcExecutor implements StmtExecutor {
         R apply(T t) throws Exception;
 
     }
+
 
 
 }

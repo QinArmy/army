@@ -1,6 +1,12 @@
 package io.army.sync;
 
 
+import io.army.lang.Nullable;
+
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamException;
 import java.util.function.Consumer;
 
 public final class StreamOptions {
@@ -10,7 +16,7 @@ public final class StreamOptions {
         if (fetchSize < 0) {
             throw fetchSizeError(fetchSize);
         }
-        return new StreamOptions(true, fetchSize, 100, false);
+        return new StreamOptions(fetchSize);
     }
 
     public static Builder builder(int fetchSize) {
@@ -20,8 +26,10 @@ public final class StreamOptions {
         return new Builder(fetchSize);
     }
 
+    public static final StreamOptions LIST_LIKE = new StreamOptions();
 
-    public final boolean serverStream;
+
+    public final Boolean serverStream;
 
     public final int fetchSize;
 
@@ -32,19 +40,35 @@ public final class StreamOptions {
     public final Consumer<StreamCommander> commanderConsumer;
 
 
-    private StreamOptions(boolean serverStream, int fetchSize, int splitSize, boolean parallel) {
-        assert fetchSize > 0 && splitSize > 0;
+    private StreamOptions() {
+        this.serverStream = null;
+        this.fetchSize = Integer.MAX_VALUE;
+        this.splitSize = 0;
+        this.parallel = false;
+        this.commanderConsumer = null;
+    }
 
-        this.serverStream = serverStream;
+    private StreamOptions(int fetchSize) {
+        assert fetchSize > 0;
+        this.serverStream = Boolean.TRUE;  // must be this.serverStream = Boolean.TRUE not this.serverStream = true
         this.fetchSize = fetchSize;
-        this.splitSize = splitSize;
-        this.parallel = parallel;
+        this.splitSize = 100;
+        this.parallel = false;
 
         this.commanderConsumer = null;
     }
 
     private StreamOptions(Builder builder) {
-        this.serverStream = builder.serverStream;
+        final Boolean serverStream = builder.serverStream;
+        if (serverStream == null) {
+            this.serverStream = null;
+        } else if (serverStream) {
+            // must be this.serverStream = Boolean.TRUE not this.serverStream = serverStream
+            this.serverStream = Boolean.TRUE;
+        } else {
+            // must be this.serverStream = Boolean.FALSE not this.serverStream = serverStream
+            this.serverStream = Boolean.FALSE;
+        }
         this.fetchSize = builder.fetchSize;
         this.splitSize = builder.splitSize;
         this.parallel = builder.parallel;
@@ -52,6 +76,17 @@ public final class StreamOptions {
         assert this.fetchSize > 0 && this.splitSize > 0;
 
         this.commanderConsumer = builder.commanderConsumer;
+    }
+
+
+    private void readObject(ObjectInputStream in) throws IOException,
+            ClassNotFoundException {
+        throw new InvalidObjectException("can't deserialize StreamOptions");
+    }
+
+
+    private void readObjectNoData() throws ObjectStreamException {
+        throw new InvalidObjectException("can't deserialize StreamOptions");
     }
 
 
@@ -64,7 +99,7 @@ public final class StreamOptions {
 
         private final int fetchSize;
 
-        private boolean serverStream;
+        private Boolean serverStream = Boolean.TRUE;
 
 
         private int splitSize = 100;
@@ -77,7 +112,7 @@ public final class StreamOptions {
             this.fetchSize = fetchSize;
         }
 
-        public Builder setServerStream(boolean serverStream) {
+        public Builder setServerStream(@Nullable Boolean serverStream) {
             this.serverStream = serverStream;
             return this;
         }

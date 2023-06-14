@@ -20,6 +20,7 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
+import io.army.stmt.MultiStmt;
 import io.army.stmt.Stmt;
 import io.army.tx.ReadOnlyTransactionException;
 import io.army.tx.TransactionTimeOutException;
@@ -1042,4 +1043,32 @@ public abstract class _Exceptions extends ExceptionUtils {
     public static NullPointerException terminatorIsNull() {
         return new NullPointerException("terminator is null");
     }
+
+    public static NullPointerException mapConstructorError() {
+        return new NullPointerException("mapConstructor return null");
+    }
+
+    public static DataAccessException noMoreResult() {
+        return new DataAccessException("No more result.");
+    }
+
+    public static DataAccessException currentResultIsQuery() {
+        return new DataAccessException("current result is query result,isn't update result.");
+    }
+
+    public static DataAccessException currentResultIsUpdate() {
+        return new DataAccessException("current result is update result,isn't query result.");
+    }
+
+    public static DataAccessException unknownStmtItem(MultiStmt.StmtItem item) {
+        return new DataAccessException(String.format("unknown %s %s .", MultiStmt.StmtItem.class.getName(), item));
+    }
+
+    public static DataAccessException stmtItemIsUpdateItem(MultiStmt.UpdateStmt item) {
+        String m = String.format("%s is %s ,but database return query result.", MultiStmt.StmtItem.class.getName(),
+                item);
+        return new DataAccessException(m);
+    }
+
+
 }

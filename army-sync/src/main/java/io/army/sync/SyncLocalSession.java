@@ -427,8 +427,8 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     }
 
     @Override
-    public MultiResultStream multiStmtStream(final MultiResultStatement statement, final @Nullable StreamOptions options,
-                                             final Visible visible) {
+    public MultiStream multiStmtStream(final MultiResultStatement statement, final @Nullable StreamOptions options,
+                                       final Visible visible) {
         return null;
     }
 

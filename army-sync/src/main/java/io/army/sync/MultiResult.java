@@ -6,11 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public interface MultiResult extends AutoCloseable {
+public interface MultiResult extends MultiResultSpec {
 
-    Type hasMore();
-
-    long nextUpdate() throws DataAccessException;
 
     <R> List<R> nextQuery(Class<R> resultClass) throws DataAccessException;
 
@@ -26,15 +23,7 @@ public interface MultiResult extends AutoCloseable {
             throws DataAccessException;
 
 
-    @Override
-    void close() throws DataAccessException;
 
-    enum Type {
-
-        NONE,
-        UPDATE,
-        QUERY
-    }
 
 
 }

@@ -61,7 +61,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
             this.meta = meta;
             return meta;
         } catch (SQLException e) {
-            throw JdbcExecutor.wrap(e);
+            throw JdbcExecutor.wrapError(e);
         } catch (DataAccessException e) {
             throw e;
         } catch (Exception e) {
@@ -72,7 +72,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
                 try {
                     xaConnection.close();
                 } catch (SQLException e) {
-                    throw JdbcExecutor.wrap(e);
+                    throw JdbcExecutor.wrapError(e);
                 }
             }
         }
@@ -123,7 +123,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
             this.methodFlag = methodFlag;
             return serverMeta;
         } catch (SQLException e) {
-            throw JdbcExecutor.wrap(e);
+            throw JdbcExecutor.wrapError(e);
         } catch (Exception e) {
             String m = String.format("get server metadata occur error:%s", e.getMessage());
             throw new DataAccessException(m, e);

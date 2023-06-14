@@ -7,12 +7,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public interface MultiResultStream extends AutoCloseable {
+public interface MultiStream extends MultiResultSpec {
 
-
-    MultiResult.Type hasMore();
-
-    long nextUpdate() throws DataAccessException;
 
     <R> Stream<R> nextQueryStream(Class<R> resultClass) throws DataAccessException;
 
@@ -26,10 +22,6 @@ public interface MultiResultStream extends AutoCloseable {
     Stream<Map<String, Object>> nextQueryMapStream(Supplier<Map<String, Object>> mapConstructor,
                                                    Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException;
-
-
-    @Override
-    void close() throws DataAccessException;
 
 
 }

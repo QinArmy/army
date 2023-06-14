@@ -9,7 +9,7 @@ import io.army.stmt.BatchStmt;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.sync.MultiResult;
-import io.army.sync.MultiResultStream;
+import io.army.sync.MultiStream;
 import io.army.sync.StreamOptions;
 
 import java.util.List;
@@ -68,7 +68,7 @@ public interface StmtExecutor {
     /**
      * @param domainTable <ul>
      *                    <li>null : multi-table batch update or the batch update which WITH clause support sub dml</li>
-     *                    <li>{@link io.army.meta.ChildTableMeta} child batch update,now {@link MultiStmt#resultItemList()} size must be even.</li>
+     *                    <li>{@link io.army.meta.ChildTableMeta} child batch update,now {@link MultiStmt#stmtItemList()} size must be even.</li>
      *                    <li>{@link io.army.meta.SingleTableMeta} single table batch update</li>
      *                    </ul>
      */
@@ -125,7 +125,7 @@ public interface StmtExecutor {
 
     MultiResult multiStmt(MultiStmt stmt, int timeout, @Nullable StreamOptions options);
 
-    MultiResultStream multiStmtStream(MultiStmt stmt, int timeout, @Nullable StreamOptions options);
+    MultiStream multiStmtStream(MultiStmt stmt, int timeout, @Nullable StreamOptions options);
 
 
     Object createSavepoint() throws DataAccessException;

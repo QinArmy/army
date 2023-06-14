@@ -49,7 +49,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
             }
             return _SchemaInfo.create(catalog, schema, tableBuilderMap);
         } catch (SQLException e) {
-            throw JdbcExecutor.wrap(e);
+            throw JdbcExecutor.wrapError(e);
         }
     }
 
@@ -72,7 +72,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
             LOG.info(builder.toString());
             stmt.executeBatch();
         } catch (SQLException e) {
-            throw JdbcExecutor.wrap(e);
+            throw JdbcExecutor.wrapError(e);
         }
     }
 
@@ -81,7 +81,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
         try {
             this.conn.close();
         } catch (SQLException e) {
-            throw JdbcExecutor.wrap(e);
+            throw JdbcExecutor.wrapError(e);
         }
     }
 

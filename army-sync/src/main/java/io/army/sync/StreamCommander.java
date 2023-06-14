@@ -1,6 +1,6 @@
 package io.army.sync;
 
-
+@FunctionalInterface
 public interface StreamCommander {
 
 

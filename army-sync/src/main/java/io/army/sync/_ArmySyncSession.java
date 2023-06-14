@@ -333,17 +333,17 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
     }
 
     @Override
-    public final MultiResultStream multiStmtStream(MultiResultStatement statement) {
+    public final MultiStream multiStmtStream(MultiResultStatement statement) {
         return this.multiStmtStream(statement, null, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final MultiResultStream multiStmtStream(MultiResultStatement statement, @Nullable StreamOptions options) {
+    public final MultiStream multiStmtStream(MultiResultStatement statement, @Nullable StreamOptions options) {
         return this.multiStmtStream(statement, options, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final MultiResultStream multiStmtStream(MultiResultStatement statement, Visible visible) {
+    public final MultiStream multiStmtStream(MultiResultStatement statement, Visible visible) {
         return this.multiStmtStream(statement, null, visible);
     }
 
