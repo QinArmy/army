@@ -1056,6 +1056,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new DataAccessException("No more result.");
     }
 
+    public static DataAccessException notExistsAnyResultSet() {
+        return new DataAccessException("database don't return any result set.");
+    }
+
     public static DataAccessException currentResultIsQuery() {
         return new DataAccessException("current result is query result,isn't update result.");
     }
@@ -1084,6 +1088,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("result column count[%s] and selection count[%s] not match.",
                 columnSize, selectionCount);
         return new DataAccessException(m);
+    }
+
+    public static DataAccessException batchQueryReturnUpdate() {
+        return new DataAccessException("batch query return update result.");
     }
 
 

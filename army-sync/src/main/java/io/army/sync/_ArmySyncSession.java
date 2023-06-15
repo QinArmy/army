@@ -12,6 +12,7 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -167,7 +168,7 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
     }
 
     @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor) {
+    public final List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor) {
         return this.batchUpdate(statement, listConstructor, false, Visible.ONLY_VISIBLE);
     }
 
@@ -182,7 +183,7 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
     }
 
     @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor,
+    public final List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor,
                                         boolean useMultiStmt) {
         return this.batchUpdate(statement, listConstructor, useMultiStmt, Visible.ONLY_VISIBLE);
     }
@@ -193,7 +194,7 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
     }
 
     @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor,
+    public final List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor,
                                         Visible visible) {
         return this.batchUpdate(statement, listConstructor, false, visible);
     }

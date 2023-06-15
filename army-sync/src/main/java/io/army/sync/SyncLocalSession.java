@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -161,7 +162,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public List<Long> batchUpdate(final BatchDmlStatement statement, final Supplier<List<Long>> listConstructor,
+    public List<Long> batchUpdate(final BatchDmlStatement statement, final IntFunction<List<Long>> listConstructor,
                                   final boolean useMultiStmt, final Visible visible) {
         if (!(statement instanceof _BatchDml)) {
             // no bug,never here
@@ -187,11 +188,11 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final TableMeta<?> domainTable;
             domainTable = getBatchUpdateDomainTable(statement);
             final List<Long> resultList;
-            if (stmt instanceof MultiStmt) {
-                resultList = this.stmtExecutor.multiStmtBatchUpdate((MultiStmt) stmt, timeout, listConstructor,
+            if (useMultiStmt) {
+                resultList = this.stmtExecutor.multiStmtBatchUpdate((BatchStmt) stmt, timeout, listConstructor,
                         domainTable
                 );
-            } else if (stmt instanceof BatchStmt) {
+            } else if (!(stmt instanceof PairBatchStmt)) {
                 resultList = this.stmtExecutor.batchUpdate((BatchStmt) stmt, timeout, listConstructor, domainTable, null);
             } else if (!this.hasTransaction()) {
                 throw updateChildNoTransaction();
@@ -242,13 +243,13 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final Stmt stmt;
             stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
             final List<R> resultList;
-            if (stmt instanceof MultiStmt) {
-                resultList = this.stmtExecutor.multiStmtBatchQuery((MultiStmt) stmt, this.getTxTimeout(), resultClass,
+            if (useMultiStmt) {
+                resultList = this.stmtExecutor.multiStmtBatchQuery((BatchStmt) stmt, this.getTxTimeout(), resultClass,
                         terminator, listConstructor);
             } else if (stmt instanceof BatchStmt) {
                 resultList = this.stmtExecutor.batchQuery((BatchStmt) stmt, this.getTxTimeout(), resultClass,
                         terminator, listConstructor);
-            } else {
+            } else {//TODO firebird
                 throw _Exceptions.unexpectedStatement(statement);
             }
             if (!this.factory.buildInExecutor) {
@@ -279,13 +280,13 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final Stmt stmt;
             stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
             final List<Map<String, Object>> resultList;
-            if (stmt instanceof MultiStmt) {
-                resultList = this.stmtExecutor.multiStmtBatchQueryAsMap((MultiStmt) stmt, this.getTxTimeout(),
+            if (useMultiStmt) {
+                resultList = this.stmtExecutor.multiStmtBatchQueryAsMap((BatchStmt) stmt, this.getTxTimeout(),
                         mapConstructor, terminator, listConstructor);
             } else if (stmt instanceof BatchStmt) {
                 resultList = this.stmtExecutor.batchQueryAsMap((BatchStmt) stmt, this.getTxTimeout(), mapConstructor,
                         terminator, listConstructor);
-            } else {
+            } else {//TODO firebird
                 throw _Exceptions.unexpectedStatement(statement);
             }
             if (!this.factory.buildInExecutor) {
@@ -314,8 +315,8 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final Stmt stmt;
             stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
             final Stream<R> stream;
-            if (stmt instanceof MultiStmt) {
-                stream = this.stmtExecutor.multiStmtBatchQueryStream((MultiStmt) stmt, this.getTxTimeout(), resultClass,
+            if (useMultiStmt) {
+                stream = this.stmtExecutor.multiStmtBatchQueryStream((BatchStmt) stmt, this.getTxTimeout(), resultClass,
                         terminator, options);
             } else if (stmt instanceof BatchStmt) {
                 stream = this.stmtExecutor.batchQueryStream((BatchStmt) stmt, this.getTxTimeout(), resultClass,
@@ -351,8 +352,8 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final Stmt stmt;
             stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
             final Stream<Map<String, Object>> stream;
-            if (stmt instanceof MultiStmt) {
-                stream = this.stmtExecutor.multiStmtBatchQueryMapStream((MultiStmt) stmt, this.getTxTimeout(),
+            if (useMultiStmt) {
+                stream = this.stmtExecutor.multiStmtBatchQueryMapStream((BatchStmt) stmt, this.getTxTimeout(),
                         mapConstructor, terminator, options);
             } else if (stmt instanceof BatchStmt) {
                 stream = this.stmtExecutor.batchQueryMapStream((BatchStmt) stmt, this.getTxTimeout(), mapConstructor,

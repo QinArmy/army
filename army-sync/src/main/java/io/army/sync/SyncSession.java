@@ -8,6 +8,7 @@ import io.army.session.VisibleModeException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -254,9 +255,9 @@ public interface SyncSession extends Session {
     List<Long> batchUpdate(BatchDmlStatement statement, boolean useMultiStmt);
 
 
-    List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor);
+    List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor);
 
-    List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor, boolean useMultiStmt);
+    List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor, boolean useMultiStmt);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -282,7 +283,7 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor, Visible visible);
+    List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor, Visible visible);
 
 
     /**
@@ -294,7 +295,7 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    List<Long> batchUpdate(BatchDmlStatement statement, Supplier<List<Long>> listConstructor, boolean useMultiStmt,
+    List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor, boolean useMultiStmt,
                            Visible visible);
 
 

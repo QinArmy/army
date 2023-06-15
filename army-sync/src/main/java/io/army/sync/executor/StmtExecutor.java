@@ -14,6 +14,7 @@ import io.army.sync.StreamOptions;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -62,7 +63,7 @@ public interface StmtExecutor {
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
-    List<Long> batchUpdate(BatchStmt stmt, int timeout, Supplier<List<Long>> listConstructor,
+    List<Long> batchUpdate(BatchStmt stmt, int timeout, IntFunction<List<Long>> listConstructor,
                            @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
 
     /**
@@ -72,7 +73,7 @@ public interface StmtExecutor {
      *                    <li>{@link io.army.meta.SingleTableMeta} single table batch update</li>
      *                    </ul>
      */
-    List<Long> multiStmtBatchUpdate(MultiStmt stmt, int timeout, Supplier<List<Long>> listConstructor,
+    List<Long> multiStmtBatchUpdate(BatchStmt stmt, int timeout, IntFunction<List<Long>> listConstructor,
                                     @Nullable TableMeta<?> domainTable);
 
     <T> List<T> query(SimpleStmt stmt, int timeout, Class<T> resultClass, Supplier<List<T>> listConstructor)
@@ -90,10 +91,10 @@ public interface StmtExecutor {
                                               Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException;
 
-    <R> List<R> multiStmtBatchQuery(MultiStmt stmt, int timeout, Class<R> resultClass, R terminator,
+    <R> List<R> multiStmtBatchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
                                     Supplier<List<R>> listConstructor) throws DataAccessException;
 
-    List<Map<String, Object>> multiStmtBatchQueryAsMap(MultiStmt stmt, int timeout,
+    List<Map<String, Object>> multiStmtBatchQueryAsMap(BatchStmt stmt, int timeout,
                                                        Supplier<Map<String, Object>> mapConstructor,
                                                        Map<String, Object> terminator,
                                                        Supplier<List<Map<String, Object>>> listConstructor)
@@ -115,17 +116,17 @@ public interface StmtExecutor {
                                                     Map<String, Object> terminator, StreamOptions options)
             throws DataAccessException;
 
-    <R> Stream<R> multiStmtBatchQueryStream(MultiStmt stmt, int timeout, Class<R> resultClass, R terminator,
+    <R> Stream<R> multiStmtBatchQueryStream(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
                                             StreamOptions options) throws DataAccessException;
 
-    Stream<Map<String, Object>> multiStmtBatchQueryMapStream(MultiStmt stmt, int timeout,
+    Stream<Map<String, Object>> multiStmtBatchQueryMapStream(BatchStmt stmt, int timeout,
                                                              Supplier<Map<String, Object>> mapConstructor,
                                                              Map<String, Object> terminator, StreamOptions options)
             throws DataAccessException;
 
-    MultiResult multiStmt(MultiStmt stmt, int timeout, @Nullable StreamOptions options);
+    MultiResult multiStmt(MultiStmt stmt, int timeout, StreamOptions options);
 
-    MultiStream multiStmtStream(MultiStmt stmt, int timeout, @Nullable StreamOptions options);
+    MultiStream multiStmtStream(MultiStmt stmt, int timeout, StreamOptions options);
 
 
     Object createSavepoint() throws DataAccessException;

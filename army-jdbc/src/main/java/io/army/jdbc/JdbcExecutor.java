@@ -3,7 +3,6 @@ package io.army.jdbc;
 import io.army.ArmyException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
-import io.army.codec.FieldCodec;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.criteria.impl.SqlTypeUtils;
@@ -47,7 +46,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     final Connection conn;
 
-    Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
 
     JdbcExecutor(JdbcExecutorFactory factory, Connection conn) {
         this.factory = factory;
@@ -181,7 +179,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     @Override
     public final List<Long> batchUpdate(final BatchStmt stmt, final int timeout,
-                                        final Supplier<List<Long>> listConstructor,
+                                        final IntFunction<List<Long>> listConstructor,
                                         final @Nullable TableMeta<?> domainTable,
                                         final @Nullable List<Long> rowsList) {
         if (timeout < 0 || !(rowsList == null || domainTable instanceof ChildTableMeta)) {
@@ -222,18 +220,23 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }
 
     @Override
-    public final List<Long> multiStmtBatchUpdate(final MultiStmt stmt, final int timeout,
-                                                 final Supplier<List<Long>> listConstructor,
+    public final List<Long> multiStmtBatchUpdate(final BatchStmt stmt, final int timeout,
+                                                 final IntFunction<List<Long>> listConstructor,
                                                  final @Nullable TableMeta<?> domainTable) {
 
-
-        List<Long> list = listConstructor.get();
+        final int stmtSize;
+        stmtSize = stmt.groupList().size();
+        List<Long> list = listConstructor.apply(stmtSize);
         if (list == null) {
             throw _Exceptions.listConstructorError();
         }
         try (Statement statement = this.conn.createStatement()) {
 
-            if (statement.execute(stmt.multiSql())) {
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+
+            if (statement.execute(stmt.sqlText())) {
                 // sql error
                 throw new DataAccessException("error,multi-statement batch update the first result is ResultSet");
             }
@@ -242,6 +245,10 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             } else {
                 // SingleTableMeta batch update or multi-table batch update.
                 handleSimpleMultiStmtBatchUpdate(statement, stmt, domainTable, list);
+            }
+
+            if (stmtSize != list.size()) {
+                throw _Exceptions.batchCountNotMatch(stmtSize, list.size());
             }
 
             if (list instanceof ImmutableSpec) {
@@ -260,7 +267,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     @Override
     public final <R> List<R> query(final SimpleStmt stmt, final int timeout, final Class<R> resultClass,
                                    final Supplier<List<R>> listConstructor) {
-        return this.doQuery(stmt, timeout, listConstructor, this.createFuncForBean(stmt.selectionList(), resultClass));
+        return this.doQuery(stmt, timeout, listConstructor, this.beanReaderFunc(stmt.selectionList(), resultClass));
 
     }
 
@@ -269,7 +276,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     public final List<Map<String, Object>> queryAsMap(SimpleStmt stmt, int timeout,
                                                       Supplier<Map<String, Object>> mapConstructor,
                                                       Supplier<List<Map<String, Object>>> listConstructor) {
-        return this.doQuery(stmt, timeout, listConstructor, this.createFuncForMap(stmt.selectionList(), mapConstructor));
+        return this.doQuery(stmt, timeout, listConstructor, this.mapReaderFunc(stmt.selectionList(), mapConstructor));
     }
 
     @Override
@@ -277,7 +284,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                                         final @Nullable R terminator,
                                         final Supplier<List<R>> listConstructor) throws DataAccessException {
         final Function<ResultSetMetaData, RowReader<R>> function;
-        function = this.createFuncForBean(stmt.selectionList(), resultClass);
+        function = this.beanReaderFunc(stmt.selectionList(), resultClass);
         return this.doBatchQuery(stmt, timeout, terminator, listConstructor, function);
     }
 
@@ -289,29 +296,36 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                                                            final Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException {
         final Function<ResultSetMetaData, RowReader<Map<String, Object>>> function;
-        function = this.createFuncForMap(stmt.selectionList(), mapConstructor);
+        function = this.mapReaderFunc(stmt.selectionList(), mapConstructor);
         return this.doBatchQuery(stmt, timeout, terminator, listConstructor, function);
     }
 
     @Override
-    public final <R> List<R> multiStmtBatchQuery(MultiStmt stmt, int timeout, Class<R> resultClass, R terminator,
+    public final <R> List<R> multiStmtBatchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
                                                  Supplier<List<R>> listConstructor) throws DataAccessException {
-        return null;
+        final Function<ResultSetMetaData, RowReader<R>> function;
+        function = this.beanReaderFunc(stmt.selectionList(), resultClass);
+        return this.doMultiStmtBatchQuery(stmt, timeout, terminator, listConstructor, function);
     }
 
+
     @Override
-    public final List<Map<String, Object>> multiStmtBatchQueryAsMap(MultiStmt stmt, int timeout,
+    public final List<Map<String, Object>> multiStmtBatchQueryAsMap(BatchStmt stmt, int timeout,
                                                                     Supplier<Map<String, Object>> mapConstructor,
                                                                     Map<String, Object> terminator,
                                                                     Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException {
-        return null;
+        final Function<ResultSetMetaData, RowReader<Map<String, Object>>> function;
+        function = this.mapReaderFunc(stmt.selectionList(), mapConstructor);
+        return this.doMultiStmtBatchQuery(stmt, timeout, terminator, listConstructor, function);
     }
 
     @Override
     public final <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass,
                                            final StreamOptions options) {
-        return this.queryAsStream(stmt, timeout, options, this.createFuncForBean(stmt.selectionList(), resultClass));
+        final Function<ResultSetMetaData, RowReader<R>> function;
+        function = this.beanReaderFunc(stmt.selectionList(), resultClass);
+        return this.queryAsStream(stmt, timeout, options, function);
     }
 
 
@@ -319,7 +333,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     public final Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
                                                             final Supplier<Map<String, Object>> mapConstructor,
                                                             StreamOptions options) {
-        return this.queryAsStream(stmt, timeout, options, this.createFuncForMap(stmt.selectionList(), mapConstructor));
+        final Function<ResultSetMetaData, RowReader<Map<String, Object>>> function;
+        function = this.mapReaderFunc(stmt.selectionList(), mapConstructor);
+        return this.queryAsStream(stmt, timeout, options, function);
     }
 
 
@@ -329,13 +345,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             throws DataAccessException {
 
         final Function<ResultSetMetaData, RowReader<R>> function;
-        function = metaData -> {
-            try {
-                return this.createBeanRowReader(metaData, resultClass, stmt.selectionList());
-            } catch (SQLException e) {
-                throw wrapError(e);
-            }
-        };
+        function = this.beanReaderFunc(stmt.selectionList(), resultClass);
         return this.doBatchQueryStream(stmt, timeout, terminator, options, function);
     }
 
@@ -346,48 +356,75 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                                                                  final @Nullable Map<String, Object> terminator,
                                                                  final StreamOptions options)
             throws DataAccessException {
-        if (terminator == Collections.EMPTY_MAP) {
-            throw new IllegalArgumentException();
-        }
         final Function<ResultSetMetaData, RowReader<Map<String, Object>>> function;
-        function = metaData -> {
-            try {
-                return this.createMapReader(metaData, mapConstructor, stmt.selectionList());
-            } catch (SQLException e) {
-                throw wrapError(e);
-            }
-        };
+        function = this.mapReaderFunc(stmt.selectionList(), mapConstructor);
         return this.doBatchQueryStream(stmt, timeout, terminator, options, function);
     }
 
     @Override
-    public final <R> Stream<R> multiStmtBatchQueryStream(MultiStmt stmt, int timeout, Class<R> resultClass,
-                                                         R terminator, StreamOptions options) throws DataAccessException {
-        return null;
+    public final <R> Stream<R> multiStmtBatchQueryStream(BatchStmt stmt, int timeout, Class<R> resultClass,
+                                                         R terminator, StreamOptions options)
+            throws DataAccessException {
+        final Function<ResultSetMetaData, RowReader<R>> function;
+        function = this.beanReaderFunc(stmt.selectionList(), resultClass);
+        return this.doMultiStmtBatchQueryStream(stmt, timeout, terminator, options, function);
     }
 
     @Override
-    public final Stream<Map<String, Object>> multiStmtBatchQueryMapStream(MultiStmt stmt, int timeout,
+    public final Stream<Map<String, Object>> multiStmtBatchQueryMapStream(BatchStmt stmt, int timeout,
                                                                           Supplier<Map<String, Object>> mapConstructor,
                                                                           Map<String, Object> terminator,
                                                                           StreamOptions options)
             throws DataAccessException {
-        return null;
+        final Function<ResultSetMetaData, RowReader<Map<String, Object>>> function;
+        function = this.mapReaderFunc(stmt.selectionList(), mapConstructor);
+        return this.doMultiStmtBatchQueryStream(stmt, timeout, terminator, options, function);
     }
 
 
     @Override
-    public final MultiResult multiStmt(final MultiStmt stmt, final int timeout, final @Nullable StreamOptions options) {
+    public final MultiResult multiStmt(final MultiStmt stmt, final int timeout, final StreamOptions options) {
         if (timeout < 0) {
             throw new IllegalArgumentException();
         }
+        Statement statement = null;
+        try {
+            statement = this.createMultiStmtStreamStatement(options);
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+            statement.execute(stmt.multiSql());
 
-        return null;
+            return new JdbcMultiResult(this, statement, stmt.stmtItemList());
+        } catch (Throwable e) {
+            if (statement != null) {
+                closeResource(statement);
+            }
+            throw wrapError(e);
+        }
+
     }
 
     @Override
-    public final MultiStream multiStmtStream(MultiStmt stmt, int timeout, @Nullable StreamOptions options) {
-        return null;
+    public final MultiStream multiStmtStream(MultiStmt stmt, int timeout, StreamOptions options) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException();
+        }
+        Statement statement = null;
+        try {
+            statement = this.createMultiStmtStreamStatement(options);
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+            statement.execute(stmt.multiSql());
+
+            return new JdbcMultiStream(this, statement, stmt.stmtItemList(), options);
+        } catch (Throwable e) {
+            if (statement != null) {
+                closeResource(statement);
+            }
+            throw wrapError(e);
+        }
     }
 
     @Override
@@ -609,7 +646,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }
 
     /**
-     * @see #doBatchQuery(BatchStmt, int, Consumer)
+     * @see #doBatchQuery(BatchStmt, int, Object, Supplier, Function)
      * @see #batchQueryStream(BatchStmt, int, Class, Object, StreamOptions)
      */
     private PreparedStatement createBatchStreamStatement(final String sql, final StreamOptions options)
@@ -630,17 +667,38 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     }
 
+    /**
+     * @see #doMultiStmtBatchQueryStream(BatchStmt, int, Object, StreamOptions, Function)
+     * @see #multiStmt(MultiStmt, int, StreamOptions)
+     * @see #multiStmtStream(MultiStmt, int, StreamOptions)
+     */
+    private Statement createMultiStmtStreamStatement(final StreamOptions options) throws SQLException {
+        final Statement statement;
+
+        if (options == StreamOptions.LIST_LIKE || options.serverStream == null) {
+            statement = this.conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        } else {
+            statement = this.conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
+                    ResultSet.CLOSE_CURSORS_AT_COMMIT);
+            if (options.serverStream == Boolean.TRUE) {
+                statement.setFetchSize(options.fetchSize);
+            } else {
+                setClientStreamFetchSize(statement, options);
+            }
+        }
+        return statement;
+    }
+
 
     /**
      * @see #query(SimpleStmt, int, Class, Supplier)
      * @see #queryStream(SimpleStmt, int, Class, StreamOptions)
      */
-    private <R> Function<ResultSetMetaData, RowReader<R>> createFuncForBean(
+    private <R> Function<ResultSetMetaData, RowReader<R>> beanReaderFunc(
             final List<? extends Selection> selectionList, final Class<R> resultClass) {
 
         return metaData -> {
             try {
-
                 return this.createBeanRowReader(metaData, resultClass, selectionList);
             } catch (SQLException e) {
                 throw wrapError(e);
@@ -653,7 +711,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
      * @see #queryAsMap(SimpleStmt, int, Supplier, Supplier)
      * @see #queryMapStream(SimpleStmt, int, Supplier, StreamOptions)
      */
-    private Function<ResultSetMetaData, RowReader<Map<String, Object>>> createFuncForMap(
+    private Function<ResultSetMetaData, RowReader<Map<String, Object>>> mapReaderFunc(
             List<? extends Selection> selectionList, Supplier<Map<String, Object>> mapConstructor) {
         return metaData -> {
             try {
@@ -850,6 +908,67 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
 
     /**
+     * @see #multiStmtBatchQuery(BatchStmt, int, Class, Object, Supplier)
+     * @see #multiStmtBatchQueryAsMap(BatchStmt, int, Supplier, Map, Supplier)
+     */
+    private <R> List<R> doMultiStmtBatchQuery(final BatchStmt stmt, final int timeout, final @Nullable R terminator,
+                                              final Supplier<List<R>> listConstructor,
+                                              final Function<ResultSetMetaData, RowReader<R>> function) {
+        if (terminator == null) {
+            throw _Exceptions.terminatorIsNull();
+        } else if (timeout < 0 || terminator == Collections.EMPTY_MAP) {
+            throw new IllegalArgumentException();
+        }
+        List<R> resultList = listConstructor.get();
+        if (resultList == null) {
+            throw _Exceptions.listConstructorError();
+        }
+        try (Statement statement = this.conn.createStatement()) {
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+            // execute multi-statement
+            if (!statement.execute(stmt.sqlText())) {
+                throw new DataAccessException("database don't return any result set.");
+            }
+            final int groupSize = stmt.groupList().size();
+            RowReader<R> rowReader = null;
+            int batchIndex;
+            for (batchIndex = 0; statement.getMoreResults(); batchIndex++) {
+
+                if (batchIndex >= groupSize) {
+                    statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                    throw _Exceptions.batchCountNotMatch(groupSize, batchIndex + 1);
+                }
+
+                try (ResultSet resultSet = statement.getResultSet()) {
+                    if (rowReader == null) {
+                        rowReader = function.apply(resultSet.getMetaData());
+                    }
+                    resultList.add(rowReader.readOneRow(resultSet));
+                }
+
+                resultList.add(terminator); // append terminator
+
+            }// outer for
+
+            if (statement.getUpdateCount() != -1) {
+                // stmt no bug,never here
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                throw _Exceptions.batchQueryReturnUpdate();
+            }
+
+            if (resultList instanceof ImmutableSpec) {
+                resultList = _Collections.unmodifiableListForDeveloper(resultList);
+            }
+            return resultList;
+        } catch (Throwable e) {
+            throw wrapError(e);
+        }
+    }
+
+
+    /**
      * @see #batchQueryStream(BatchStmt, int, Class, Object, StreamOptions)
      * @see #batchQueryMapStream(BatchStmt, int, Supplier, Map, StreamOptions)
      */
@@ -858,6 +977,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                                              final Function<ResultSetMetaData, RowReader<R>> function) {
         if (terminator == null) {
             throw _Exceptions.terminatorIsNull();
+        } else if (terminator == Collections.EMPTY_MAP) {
+            throw new IllegalArgumentException();
         }
         final List<List<SQLParam>> paramGroupList;
         paramGroupList = stmt.groupList();
@@ -905,6 +1026,60 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         }
     }
 
+
+    /**
+     * @see #multiStmtBatchQueryStream(BatchStmt, int, Class, Object, StreamOptions)
+     * @see #multiStmtBatchQueryMapStream(BatchStmt, int, Supplier, Map, StreamOptions)
+     */
+    private <R> Stream<R> doMultiStmtBatchQueryStream(final BatchStmt stmt, final int timeout,
+                                                      final @Nullable R terminator, final StreamOptions options,
+                                                      final Function<ResultSetMetaData, RowReader<R>> function) {
+        if (terminator == null) {
+            throw _Exceptions.terminatorIsNull();
+        } else if (timeout < 0 || terminator == Collections.EMPTY_MAP) {
+            throw new IllegalArgumentException();
+        }
+        final int groupSize = stmt.groupList().size();
+        if (groupSize == 0) {
+            throw new IllegalArgumentException();
+        }
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            // 1. create statement
+            statement = this.createMultiStmtStreamStatement(options);
+
+            // 2. timeout
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+            // 3. execute
+            if (!statement.execute(stmt.sqlText()) || !statement.getMoreResults()) {
+                throw _Exceptions.notExistsAnyResultSet();
+            }
+            // 4. get result
+            resultSet = statement.getResultSet();
+
+            // 5. create RowReader
+            final RowReader<R> rowReader;
+            rowReader = function.apply(resultSet.getMetaData());
+
+            // 6. create BatchRowSpliterator
+            final MultiStmtBatchRowSpliterator<R> rowSpliterator;
+            rowSpliterator = new MultiStmtBatchRowSpliterator<>(statement, groupSize, resultSet, rowReader, terminator,
+                    stmt.hasOptimistic(), options);
+
+            // 7. invoke commander consumer
+            invokeCommanderConsumer(options, rowSpliterator);
+
+            // 8. create Stream
+            return StreamSupport.stream(rowSpliterator, options.parallel);
+        } catch (Throwable e) {
+            closeResultSetAndStatement(resultSet, statement);
+            throw wrapError(e);
+        }
+    }
+
     /**
      * @see #doBatchQueryStream(BatchStmt, int, Object, StreamOptions, Function)
      */
@@ -925,18 +1100,18 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
 
     /**
-     * @see #batchUpdate(BatchStmt, int, Supplier, TableMeta, List)
+     * @see #batchUpdate(BatchStmt, int, IntFunction, TableMeta, List)
      */
     private List<Long> handleBatchResult(final boolean optimistic, final int bathSize,
                                          final IntToLongFunction accessor,
-                                         final Supplier<List<Long>> listConstructor,
+                                         final IntFunction<List<Long>> listConstructor,
                                          final @Nullable TableMeta<?> domainTable,
                                          final @Nullable List<Long> rowsList) {
         assert rowsList == null || domainTable instanceof ChildTableMeta;
 
         List<Long> list;
         if (rowsList == null) {
-            list = listConstructor.get();
+            list = listConstructor.apply(bathSize);
             if (list == null) {
                 throw _Exceptions.listConstructorError();
             }
@@ -966,9 +1141,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
 
     /**
-     * @see #multiStmtBatchUpdate(MultiStmt, int, Supplier, TableMeta)
+     * @see #multiStmtBatchUpdate(BatchStmt, int, IntFunction, TableMeta)
      */
-    private void handleChildMultiStmtBatchUpdate(final Statement statement, final MultiStmt stmt,
+    private void handleChildMultiStmtBatchUpdate(final Statement statement, final BatchStmt stmt,
                                                  final ChildTableMeta<?> domainTable,
                                                  final List<Long> list) throws SQLException {
 
@@ -976,7 +1151,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         final boolean optimistic = stmt.hasOptimistic();
 
         final int itemSize, itemPairSize;
-        itemSize = stmt.stmtItemList().size();
+        itemSize = stmt.groupList().size();
         if ((itemSize & 1) != 0) {
             // no bug,never here
             throw new IllegalArgumentException(String.format("item count[%s] not event", itemSize));
@@ -1030,9 +1205,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
      *                    <li>{@link SingleTableMeta} : single table batch udpate</li>
      *
      *                    </ul>
-     * @see #multiStmtBatchUpdate(MultiStmt, int, Supplier, TableMeta)
+     * @see #multiStmtBatchUpdate(BatchStmt, int, IntFunction, TableMeta)
      */
-    private void handleSimpleMultiStmtBatchUpdate(final Statement statement, final MultiStmt stmt,
+    private void handleSimpleMultiStmtBatchUpdate(final Statement statement, final BatchStmt stmt,
                                                   final @Nullable TableMeta<?> domainTable,
                                                   final List<Long> list) throws SQLException {
 
@@ -1040,7 +1215,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
         final JdbcExecutorFactory factory = this.factory;
         final boolean optimistic = stmt.hasOptimistic();
-        final int itemSize = stmt.stmtItemList().size();
+        final int itemSize = stmt.groupList().size();
 
         long rows;
         for (int i = 0; i < itemSize; i++) {
@@ -1097,20 +1272,14 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     private static <R> List<R> readList(final ResultSet set, final RowReader<R> rowReader, final boolean optimistic,
                                         final Supplier<List<R>> listConstructor) {
 
-        List<R> list = listConstructor.get();
-        if (list == null) {
-            throw _Exceptions.listConstructorError();
-        }
-        readRowToList(set, rowReader, optimistic, list);
-        if (list instanceof ImmutableSpec) {
-            list = _Collections.unmodifiableListForDeveloper(list);
-        }
-        return list;
-    }
 
-    private static <R> void readRowToList(final ResultSet set, final RowReader<R> rowReader,
-                                          final boolean optimistic, final List<R> list) {
         try (ResultSet resultSet = set) {
+
+            List<R> list = listConstructor.get();
+            if (list == null) {
+                throw _Exceptions.listConstructorError();
+            }
+
             while (resultSet.next()) {
                 list.add(rowReader.readOneRow(resultSet));
             }
@@ -1118,9 +1287,14 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 throw _Exceptions.optimisticLock(0);
             }
 
+            if (list instanceof ImmutableSpec) {
+                list = _Collections.unmodifiableListForDeveloper(list);
+            }
+            return list;
         } catch (SQLException e) { // other error is handled by invoker
             throw wrapError(e);
         }
+
     }
 
 
@@ -1244,14 +1418,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             rowReader = new BeanRowReader<>(this, selectionList, resultClass, sqlTypeArray);
         }
         return rowReader;
-    }
-
-    /**
-     * @see #batchQueryAsMap(BatchStmt, int, Supplier, Map, Supplier)
-     */
-    private MapReader createMapReader(final ResultSetMetaData metaData, final Supplier<Map<String, Object>> mapConstructor,
-                                      final List<? extends Selection> selectionList) throws SQLException {
-        return new MapReader(this, selectionList, this.createSqlTypArray(metaData), mapConstructor);
     }
 
 
@@ -1774,8 +1940,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             if (prevResultSet == null) {
                 throw new ConcurrentModificationException();
             }
-            prevResultSet.close(); // close prevResultSet
             this.resultSet = null; // clear avoid close again
+            prevResultSet.close(); // close prevResultSet
 
             if (currentIndex == this.groupSize) {
                 return null;
@@ -1803,6 +1969,90 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     }//BatchRowSpliterator
 
+    private static final class MultiStmtBatchRowSpliterator<R> extends JdbcRowSpliterator<R> {
+
+        private final Statement statement;
+
+        private final R terminator;
+        private final int resultSize;
+        private int resultIndex = 1; // 1 not 0
+
+        private ResultSet resultSet;
+
+        /**
+         * @see JdbcExecutor#doMultiStmtBatchQueryStream(BatchStmt, int, Object, StreamOptions, Function)
+         */
+        private MultiStmtBatchRowSpliterator(Statement statement, final int resultSize, ResultSet resultSet,
+                                             RowReader<R> rowReader, R terminator, boolean hasOptimistic,
+                                             StreamOptions options) {
+            super(rowReader, hasOptimistic, options);
+            assert resultSize > 0;
+            Objects.requireNonNull(terminator);
+            this.statement = statement;
+            this.terminator = terminator;
+            this.resultSize = resultSize;
+            this.resultSet = resultSet;
+        }
+
+        @Override
+        Statement getStatement() {
+            return this.statement;
+        }
+
+        @Override
+        ResultSet getCurrentResult() {
+            final ResultSet resultSet = this.resultSet;
+            if (resultSet == null) {
+                throw new ConcurrentModificationException();
+            }
+            return resultSet;
+        }
+
+        @Override
+        ResultSet tryGetCurrentResult() {
+            return this.resultSet;
+        }
+
+        @Override
+        ResultSet nextResultSet(final Consumer<? super R> action) throws SQLException {
+
+            final ResultSet prevResultSet = this.resultSet;
+            if (prevResultSet == null) {
+                throw new ConcurrentModificationException();
+            }
+            this.resultSet = null; // clear avoid close again
+            prevResultSet.close(); // close prevResultSet
+
+            final Statement statement = this.statement;
+
+            final int currentIndex = this.resultIndex++;
+            if (currentIndex >= this.resultSize) {
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                throw _Exceptions.batchCountNotMatch(this.resultSize, currentIndex + 1);
+            }
+
+            //  append terminator
+            action.accept(this.terminator); // append terminator
+
+
+            final ResultSet newResultSet;
+            if (statement.getMoreResults()) {
+                newResultSet = statement.getResultSet();
+            } else if (statement.getUpdateCount() == -1) {
+                // end
+                newResultSet = null;
+            } else {
+                // stmt no bug,never here
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                throw _Exceptions.batchQueryReturnUpdate();
+            }
+
+            this.resultSet = newResultSet;
+            return newResultSet;
+        }
+
+
+    }//MultiStmtBatchRowSpliterator
 
     private static abstract class JdbcMultiResultSpec implements MultiResultSpec {
 
@@ -2014,7 +2264,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
         final <T, R> R beanQuery(final Class<T> resultClass,
                                  final TeFunction<ResultSet, RowReader<T>, Boolean, R> function) {
-            return this.doNextQuery((selectionList, sqlTypeArray) -> {
+            final BiFunction<List<? extends Selection>, SqlType[], RowReader<T>> readerFunc;
+            readerFunc = (selectionList, sqlTypeArray) -> {
                 final RowReader<T> rowReader;
                 if (sqlTypeArray.length == 1) {
                     rowReader = new SingleColumnRowReader<>(this.executor, selectionList, sqlTypeArray,
@@ -2023,15 +2274,16 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                     rowReader = new BeanRowReader<>(this.executor, selectionList, resultClass, sqlTypeArray);
                 }
                 return rowReader;
-            }, function);
+            };
+            return this.doNextQuery(readerFunc, function);
         }
 
         final <R> R mapQuery(final Supplier<Map<String, Object>> mapConstructor,
                              final TeFunction<ResultSet, RowReader<Map<String, Object>>, Boolean, R> function) {
-            return this.doNextQuery((selectionList, sqlTypeArray) ->
-                            new MapReader(this.executor, selectionList, sqlTypeArray, mapConstructor),
-                    function
-            );
+            final BiFunction<List<? extends Selection>, SqlType[], RowReader<Map<String, Object>>> readerFunc;
+            readerFunc = (selectionList, sqlTypeArray) ->
+                    new MapReader(this.executor, selectionList, sqlTypeArray, mapConstructor);
+            return this.doNextQuery(readerFunc, function);
         }
 
         private <T, R> R doNextQuery(final BiFunction<List<? extends Selection>, SqlType[], RowReader<T>> readerConstructor,
@@ -2070,12 +2322,12 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                     throw _Exceptions.exceptedError(itemIndex + 1, currentItem, "query result");
                 } else if (currentItem instanceof MultiStmt.QueryStmt) {
                     selectionList = ((MultiStmt.QueryStmt) currentItem).selectionList();
-                    sqlTypeArray = this.executor.createSqlTypArray(metaData, metaData.getColumnCount());
+                    sqlTypeArray = this.executor.createSqlTypArray(metaData);
                 } else if (!(currentItem instanceof MultiStmt.ProcedureItem && this.procedureItem)) {
                     // no bug,never here, MultiStmt bug
                     throw _Exceptions.unknownStmtItem(currentItem);
                 } else if (((MultiStmt.ProcedureItem) currentItem).resultItemList().isEmpty()) {
-                    sqlTypeArray = this.executor.createSqlTypArray(metaData, metaData.getColumnCount());
+                    sqlTypeArray = this.executor.createSqlTypArray(metaData);
                     final IntFunction<String> columnNameFunc;
                     columnNameFunc = index -> {
                         try {
@@ -2104,7 +2356,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                         throw _Exceptions.unknownStmtItem(currentItem);
                     }
                     selectionList = ((MultiStmt.QueryStmt) subItem).selectionList();
-                    sqlTypeArray = this.executor.createSqlTypArray(metaData, metaData.getColumnCount());
+                    sqlTypeArray = this.executor.createSqlTypArray(metaData);
                 }
 
                 if (sqlTypeArray.length != selectionList.size()) {
