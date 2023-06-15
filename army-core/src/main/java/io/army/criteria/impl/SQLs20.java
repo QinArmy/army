@@ -1,8 +1,8 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.SimpleExpression;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.standard.*;
+import io.army.criteria.standard.SQLFunction;
 import io.army.mapping.DoubleType;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
@@ -28,53 +28,6 @@ public abstract class SQLs20 {
 
     public interface _AggregateWindowFunc extends _OverSpec, SQLFunction.AggregateFunction, SimpleExpression {
 
-    }
-
-
-    public static StandardQuery._WithSpec<Select> query() {
-        return StandardQueries.simpleQuery(StandardDialect.STANDARD20);
-    }
-
-    public static StandardQuery._WithSpec<SubQuery> subQuery() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SQLs::identity);
-    }
-
-
-    public static StandardQuery._WithSpec<Expression> scalarSubQuery() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), Expressions::scalarExpression);
-    }
-
-
-    public static StandardDelete._WithSpec<Delete> singleDelete() {
-        return StandardDeletes.singleDelete(StandardDialect.STANDARD20);
-    }
-
-
-    /**
-     * <p>
-     * Batch domain delete
-     * </p>
-     */
-    public static StandardDelete._BatchWithSpec batchSingleDelete() {
-        return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD20);
-    }
-
-
-    /**
-     * <p>
-     * Batch domain update
-     * </p>
-     */
-    public static StandardUpdate._BatchWithSpec batchSingleUpdate() {
-        return StandardUpdates.batchSingle(StandardDialect.STANDARD20);
-    }
-
-    public static StandardUpdate._WithSpec<Update> singleUpdate() {
-        return StandardUpdates.singleUpdate(StandardDialect.STANDARD20);
-    }
-
-    public static StandardInsert._PrimaryOption20Spec<Insert> singleInsert() {
-        return StandardInserts.singleInsert20();
     }
 
 

@@ -1,10 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.BatchDelete;
-import io.army.criteria.Delete;
-import io.army.criteria.DeleteStatement;
-import io.army.criteria.Item;
-import io.army.criteria.impl.inner._BatchStatement;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._DomainDelete;
 import io.army.criteria.standard.StandardCtes;
 import io.army.criteria.standard.StandardDelete;
@@ -17,7 +13,6 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * <p>
@@ -26,24 +21,31 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-abstract class StandardDeletes<I extends Item, WE extends Item, DR, WR, WA>
-        extends SingleDeleteStatement.WithSingleDelete<I, StandardCtes, WE, WR, WA, Object, Object, Object, Object, Object>
+abstract class StandardDeletes<I extends Item, BI extends Item, WE extends Item, DR>
+        extends SingleDeleteStatement<
+        I,
+        BI,
+        StandardCtes,
+        WE,
+        Statement._DmlDeleteSpec<I>,
+        StandardDelete._WhereAndSpec<I>,
+        Object, Object, Object, Object, Object>
         implements StandardDelete, DeleteStatement {
 
     static _WithSpec<Delete> singleDelete(StandardDialect dialect) {
-        return new SimpleSingleDelete<>(dialect, null, SQLs::identity);
+        return new SimpleSingleDelete<>(dialect, null, SQLs.SIMPLE_DELETE, SQLs.ERROR_FUNC);
     }
 
-    static _BatchWithSpec batchSingleDelete(StandardDialect dialect) {
-        return new BatchSingleDelete(dialect);
+    static _WithSpec<_BatchParamClause<BatchDelete>> batchSingleDelete(StandardDialect dialect) {
+        return new SimpleSingleDelete<>(dialect, null, SQLs::forBatchDelete, SQLs.BATCH_DELETE);
     }
 
-    static _DomainDeleteClause domainDelete() {
-        return new SimpleDomainDelete();
+    static _DomainDeleteClause<Delete> domainDelete() {
+        return new SimpleDomainDelete<>(SQLs.SIMPLE_DELETE, SQLs.ERROR_FUNC);
     }
 
-    static _BatchDomainDeleteClause batchDomainDelete() {
-        return new BatchDomainDelete();
+    static _DomainDeleteClause<_BatchParamClause<BatchDelete>> batchDomainDelete() {
+        return new SimpleDomainDelete<>(SQLs::forBatchDelete, SQLs.BATCH_DELETE);
     }
 
 
@@ -90,9 +92,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR, WR, WA>
 
     @Override
     final void onClear() {
-        if (this instanceof StandardBatchDelete) {
-            ((StandardBatchDelete<?>) this).paramList = null;
-        }
+        //no-op
     }
 
     @Override
@@ -108,24 +108,27 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR, WR, WA>
     /*################################## blow static inner class ##################################*/
 
 
-    private static final class SimpleSingleDelete<I extends Item> extends StandardDeletes<
+    private static final class SimpleSingleDelete<I extends Item, BI extends Item> extends StandardDeletes<
             I,
+            BI,
             StandardDelete._StandardDeleteClause<I>,
-            _WhereSpec<I>,
-            _DmlDeleteSpec<I>,
-            _WhereAndSpec<I>>
+            _WhereSpec<I>>
             implements _WhereSpec<I>,
             _WhereAndSpec<I>,
             StandardDelete._WithSpec<I>,
-            Delete {
+            BatchDeleteSpec<BI> {
 
-        private final Function<? super Delete, I> function;
+        private final Function<? super BatchDeleteSpec<BI>, I> function;
+
+        private final Function<? super BatchDelete, BI> batchFunc;
 
 
         private SimpleSingleDelete(StandardDialect dialect, @Nullable ArmyStmtSpec spec,
-                                   Function<? super Delete, I> function) {
+                                   Function<? super BatchDeleteSpec<BI>, I> function,
+                                   Function<? super BatchDelete, BI> batchFunc) {
             super(dialect, spec);
             this.function = function;
+            this.batchFunc = batchFunc;
         }
 
         @Override
@@ -151,138 +154,85 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR, WR, WA>
             return this.function.apply(this);
         }
 
+        @Override
+        BI onAsBatchDelete(List<?> paramList) {
+            return this.batchFunc.apply(new StandardBatchDelete(this, paramList));
+        }
+
 
     }//SimpleSingleDelete
 
-    private static final class SimpleDomainDelete extends StandardDeletes<
-            Delete,
-            _DomainDeleteClause,
-            _WhereSpec<Delete>,
-            _DmlDeleteSpec<Delete>,
-            _WhereAndSpec<Delete>>
-            implements _DomainDeleteClause,
-            _WhereSpec<Delete>,
-            _WhereAndSpec<Delete>,
+    private static final class SimpleDomainDelete<I extends Item, BI extends Item> extends StandardDeletes<
+            I,
+            BI,
+            _DomainDeleteClause<I>,
+            _WhereSpec<I>>
+            implements _DomainDeleteClause<I>,
+            _WhereSpec<I>,
+            _WhereAndSpec<I>,
             _DomainDelete,
-            Delete {
+            BatchDeleteSpec<BI> {
+
+        private final Function<? super BatchDeleteSpec<BI>, I> function;
+
+        private final Function<? super BatchDelete, BI> batchFunc;
 
 
-        private SimpleDomainDelete() {
+        private SimpleDomainDelete(Function<? super BatchDeleteSpec<BI>, I> function,
+                                   Function<? super BatchDelete, BI> batchFunc) {
             super(StandardDialect.STANDARD10, null);
+            this.function = function;
+            this.batchFunc = batchFunc;
         }
 
 
         @Override
-        public _WhereSpec<Delete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
+        public _WhereSpec<I> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
             return this.deleteFrom(table, tableAlias);
         }
 
         @Override
-        Delete onAsDelete() {
-            return this;
+        I onAsDelete() {
+            return this.function.apply(this);
         }
+
+        @Override
+        BI onAsBatchDelete(List<?> paramList) {
+            return this.batchFunc.apply(new DomainBatchDelete(this, paramList));
+        }
+
 
     }//SimpleDomainDelete
 
+    private static final class StandardBatchDelete extends ArmyBathDelete
+            implements StandardDelete, BatchDelete {
 
-    private static abstract class StandardBatchDelete<WE extends Item> extends StandardDeletes<
-            BatchDelete,
-            WE,
-            _BatchWhereSpec<BatchDelete>,
-            _BatchParamClause<_DmlDeleteSpec<BatchDelete>>,
-            _BatchWhereAndSpec<BatchDelete>>
-            implements _BatchWhereSpec<BatchDelete>,
-            _BatchWhereAndSpec<BatchDelete>,
-            BatchDelete,
-            _BatchStatement {
-
-        private List<?> paramList;
-
-
-        private StandardBatchDelete(StandardDialect dialect) {
-            super(dialect, null);
-        }
-
-
-        @Override
-        public final <P> _DmlDeleteSpec<BatchDelete> namedParamList(List<P> paramList) {
-            this.paramList = CriteriaUtils.paramList(this.context, paramList);
-            return this;
+        private StandardBatchDelete(SimpleSingleDelete<?, ?> statement, List<?> paramList) {
+            super(statement, paramList);
         }
 
         @Override
-        public final <P> _DmlDeleteSpec<BatchDelete> namedParamList(Supplier<List<P>> supplier) {
-            return this.namedParamList(supplier.get());
+        Dialect statementDialect() {
+            return MySQLDialect.MySQL57;
+        }
+
+
+    }//StandardBatchDelete
+
+    private static final class DomainBatchDelete extends ArmyBathDelete
+            implements _DomainDelete, BatchDelete {
+
+        private DomainBatchDelete(SimpleDomainDelete<?, ?> statement, List<?> paramList) {
+            super(statement, paramList);
         }
 
         @Override
-        public final _DmlDeleteSpec<BatchDelete> namedParamList(Function<String, ?> function, String keyName) {
-            return this.namedParamList((List<?>) function.apply(keyName));
-        }
-
-        @Override
-        public final List<?> paramList() {
-            final List<?> list = this.paramList;
-            if (list == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return list;
-        }
-
-        @Override
-        final BatchDelete onAsDelete() {
-            if (this.paramList == null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            return this;
+        Dialect statementDialect() {
+            return MySQLDialect.MySQL57;
         }
 
 
-    }//BatchDelete
-
-
-    private static final class BatchSingleDelete extends StandardBatchDelete<_BatchDeleteClause>
-            implements StandardDelete._BatchWithSpec {
-
-        private BatchSingleDelete(StandardDialect dialect) {
-            super(dialect);
-        }
-
-        @Override
-        public StandardQuery._StaticCteParensSpec<_BatchDeleteClause> with(String name) {
-            return StandardQueries.staticCteComma(this.context, false, this::endStaticWithClause)
-                    .comma(name);
-        }
-
-        @Override
-        public StandardQuery._StaticCteParensSpec<_BatchDeleteClause> withRecursive(String name) {
-            return StandardQueries.staticCteComma(this.context, true, this::endStaticWithClause)
-                    .comma(name);
-        }
-
-        @Override
-        public _BatchWhereSpec<BatchDelete> deleteFrom(SingleTableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-            return this.deleteFrom(table, tableAlias);
-        }
-
-    }//BatchSingleDelete
-
-
-    private static final class BatchDomainDelete extends StandardBatchDelete<Item>
-            implements _DomainDelete,
-            _BatchDomainDeleteClause {
-
-        private BatchDomainDelete() {
-            super(StandardDialect.STANDARD10);
-        }
-
-        @Override
-        public _BatchWhereSpec<BatchDelete> deleteFrom(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
-            return this.deleteFrom(table, tableAlias);
-        }
-
-
-    }//BatchDomainDelete
+    }//DomainBatchDelete
 
 
 }

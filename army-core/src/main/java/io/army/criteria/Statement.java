@@ -258,13 +258,13 @@ public interface Statement extends Item {
      * @param <R> next clause java type
      * @since 1.0
      */
-    interface _BatchParamClause<R extends Item> {
+    interface _BatchParamClause<R extends Item> extends Item {
 
         <P> R namedParamList(List<P> paramList);
 
         <P> R namedParamList(Supplier<List<P>> supplier);
 
-       <K> R namedParamList(Function<K, ?> function, K key);
+        <K> R namedParamList(Function<K, ?> function, K key);
     }
 
 

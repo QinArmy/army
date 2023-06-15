@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static io.army.dialect.Database.H2;
 import static io.army.dialect.Database.Postgre;
@@ -127,23 +128,26 @@ public abstract class SQLs extends SQLsSyntax {
     public static final IsComparisonWord DISTINCT_FROM = SqlWords.IsComparisonKeyWord.DISTINCT_FROM;
 
     public static final WordEscape ESCAPE = SqlWords.KeyWordEscape.ESCAPE;
+
+
     /**
      * package field
      */
     static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
 
-    private static final Function<? extends Item, ? extends Item> _IDENTITY = SQLs::identity;
+    static UnaryOperator<Update> SIMPLE_UPDATE = SQLs::identity;
 
-    static final Function<InsertStatement, InsertStatement> _INSERT_IDENTITY = _getIdentity();
+    static UnaryOperator<BatchUpdate> BATCH_UPDATE = SQLs::identity;
+    static UnaryOperator<Item> ERROR_FUNC = SQLs::castCriteria;
 
-    static final Function<Select, Select> _SELECT_IDENTITY = _getIdentity();
+    static final UnaryOperator<Delete> SIMPLE_DELETE = SQLs::identity;
 
-    static final Function<Update, Update> _UPDATE_IDENTITY = _getIdentity();
-    static final Function<Delete, Delete> _DELETE_IDENTITY = _getIdentity();
+    static UnaryOperator<BatchDelete> BATCH_DELETE = SQLs::identity;
 
-    static final Function<SubQuery, SubQuery> _SUB_QUERY_IDENTITY = _getIdentity();
+    static final UnaryOperator<Select> SIMPLE_SELECT = SQLs::identity;
 
-    static final Function<SubQuery, Expression> _SCALAR_QUERY_IDENTITY = Expressions::scalarExpression;
+
+    static final UnaryOperator<SubQuery> SUB_QUERY = SQLs::identity;
 
 
     public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
@@ -151,8 +155,7 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
 
-
-    public static StandardUpdate._DomainUpdateClause<? extends Update> domainUpdate() {
+    public static StandardUpdate._DomainUpdateClause<Update> domainUpdate() {
         return StandardUpdates.simpleDomain();
     }
 
@@ -161,13 +164,17 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardUpdates.singleUpdate(StandardDialect.STANDARD10);
     }
 
+    public static StandardUpdate._WithSpec<Update> singleUpdate20() {
+        return StandardUpdates.singleUpdate(StandardDialect.STANDARD20);
+    }
+
 
     /**
      * <p>
      * Batch domain update
      * </p>
      */
-    public static StandardUpdate._BatchDomainUpdateClause batchDomainUpdate() {
+    public static StandardUpdate._DomainUpdateClause<Statement._BatchParamClause<BatchUpdate>> batchDomainUpdate() {
         return StandardUpdates.batchDomain();
     }
 
@@ -177,8 +184,12 @@ public abstract class SQLs extends SQLsSyntax {
      * Batch domain update
      * </p>
      */
-    public static StandardUpdate._BatchSingleUpdateClause batchSingleUpdate() {
-        return StandardUpdates.batchSingle(StandardDialect.STANDARD10);
+    public static StandardUpdate._SingleUpdateClause<Statement._BatchParamClause<BatchUpdate>> batchSingleUpdate() {
+        return StandardUpdates.batchSingleUpdate(StandardDialect.STANDARD10);
+    }
+
+    public static StandardUpdate._WithSpec<Statement._BatchParamClause<BatchUpdate>> batchSingleUpdate20() {
+        return StandardUpdates.batchSingleUpdate(StandardDialect.STANDARD20);
     }
 
 
@@ -186,8 +197,12 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardDeletes.singleDelete(StandardDialect.STANDARD10);
     }
 
+    public static StandardDelete._WithSpec<Delete> singleDelete20() {
+        return StandardDeletes.singleDelete(StandardDialect.STANDARD20);
+    }
 
-    public static StandardDelete._DomainDeleteClause domainDelete() {
+
+    public static StandardDelete._DomainDeleteClause<Delete> domainDelete() {
         return StandardDeletes.domainDelete();
     }
 
@@ -196,12 +211,21 @@ public abstract class SQLs extends SQLsSyntax {
      * Batch domain delete
      * </p>
      */
-    public static StandardDelete._BatchDeleteClause batchSingleDelete() {
+    public static StandardDelete._StandardDeleteClause<Statement._BatchParamClause<BatchDelete>> batchSingleDelete() {
         return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD10);
     }
 
+    /**
+     * <p>
+     * Batch domain delete
+     * </p>
+     */
+    public static StandardDelete._WithSpec<Statement._BatchParamClause<BatchDelete>> batchSingleDelete20() {
+        return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD20);
+    }
 
-    public static StandardDelete._BatchDomainDeleteClause batchDomainDelete() {
+
+    public static StandardDelete._DomainDeleteClause<Statement._BatchParamClause<BatchDelete>> batchDomainDelete() {
         return StandardDeletes.batchDomainDelete();
     }
 
@@ -210,13 +234,25 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardQueries.simpleQuery(StandardDialect.STANDARD10);
     }
 
+    public static StandardQuery._SelectSpec<Select> query20() {
+        return StandardQueries.simpleQuery(StandardDialect.STANDARD20);
+    }
+
     public static StandardQuery._SelectSpec<SubQuery> subQuery() {
-        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SQLs::identity);
+        return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SUB_QUERY);
+    }
+
+    public static StandardQuery._SelectSpec<SubQuery> subQuery20() {
+        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SUB_QUERY);
     }
 
 
     public static StandardQuery._SelectSpec<Expression> scalarSubQuery() {
         return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), Expressions::scalarExpression);
+    }
+
+    public static StandardQuery._SelectSpec<Expression> scalarSubQuery20() {
+        return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), Expressions::scalarExpression);
     }
 
 
@@ -273,8 +309,17 @@ public abstract class SQLs extends SQLsSyntax {
         return t;
     }
 
-    static <I extends Item> Update simpleUpdate(Update._BatchSpec<I> stmt) {
-        return stmt;
+
+    static <T extends Item> Statement._BatchParamClause<T> forBatchUpdate(BatchUpdateSpec<T> spec) {
+        return spec;
+    }
+
+    static <T extends Item> Statement._BatchParamClause<T> forBatchDelete(BatchDeleteSpec<T> spec) {
+        return spec;
+    }
+
+    static Item castCriteria(Item stmt) {
+        throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
     }
 
 
@@ -322,10 +367,6 @@ public abstract class SQLs extends SQLsSyntax {
         return new SQLIdentifierImpl(identifier);
     }
 
-    @SuppressWarnings("unchecked")
-    static <T extends Item> Function<T, T> _getIdentity() {
-        return (Function<T, T>) _IDENTITY;
-    }
 
     static String sqlKeyWordsToString(Enum<?> wordEnum) {
         return _StringUtils.builder()

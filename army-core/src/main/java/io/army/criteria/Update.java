@@ -10,9 +10,4 @@ package io.army.criteria;
 public interface Update extends SimpleDmlStatement, UpdateStatement {
 
 
-    interface _BatchSpec<I extends Item> extends Update, _BatchParamClause<I> {
-
-    }
-
-
 }

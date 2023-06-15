@@ -76,7 +76,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimp
 
 
     static _WithSpec<Select> simpleQuery(StandardDialect dialect) {
-        return new SimpleSelect<>(dialect, null, null, SQLs._SELECT_IDENTITY, null);
+        return new SimpleSelect<>(dialect, null, null, SQLs.SIMPLE_SELECT, null);
     }
 
     static <I extends Item> _WithSpec<I> subQuery(StandardDialect dialect, CriteriaContext outerContext,

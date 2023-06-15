@@ -230,13 +230,13 @@ abstract class CriteriaSupports {
             }
             final Stmt stmt;
             if (this instanceof Select) {
-                stmt = parser.select((Select) this, visible);
-            } else if (this instanceof InsertStatement) {
-                stmt = parser.insert((InsertStatement) this, visible);
-            } else if (this instanceof UpdateStatement) {
-                stmt = parser.update((UpdateStatement) this, visible);
-            } else if (this instanceof DeleteStatement) {
-                stmt = parser.delete((DeleteStatement) this, visible);
+                stmt = parser.select((Select) this, false, visible);
+            } else if (this instanceof Insert) {
+                stmt = parser.insert((Insert) this, visible);
+            } else if (this instanceof Update) {
+                stmt = parser.update((Update) this, false, visible);
+            } else if (this instanceof Delete) {
+                stmt = parser.delete((Delete) this, false, visible);
             } else if (this instanceof Values) {
                 stmt = parser.values((Values) this, visible);
             } else if (this instanceof DqlStatement) {

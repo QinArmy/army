@@ -75,7 +75,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQ
         OrderByClause.OrderByEventListener {
 
     static _WithSpec<Select> simpleQuery() {
-        return new SimpleSelect<>(null, null, SQLs._SELECT_IDENTITY);
+        return new SimpleSelect<>(null, null, SQLs.SIMPLE_SELECT);
     }
 
     static <I extends Item> MySQLQueries<I> fromDispatcher(ArmyStmtSpec spec,

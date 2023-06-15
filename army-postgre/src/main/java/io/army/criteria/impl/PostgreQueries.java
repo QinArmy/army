@@ -71,7 +71,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
 
     static PostgreQuery._WithSpec<Select> simpleQuery() {
-        return new SimpleSelect<>(null, null, SQLs._SELECT_IDENTITY);
+        return new SimpleSelect<>(null, null, SQLs.SIMPLE_SELECT);
     }
 
     static <I extends Item> PostgreQueries<I> fromDispatcher(ArmyStmtSpec spec,

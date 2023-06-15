@@ -32,11 +32,19 @@ abstract class StandardUpdates<I extends Item, BI extends Item, F extends TableF
         implements StandardUpdate, UpdateStatement, _Statement._WithClauseSpec {
 
     static _WithSpec<Update> singleUpdate(StandardDialect dialect) {
-        return new SimpleUpdateClause<>(dialect, null, SQLs::identity);
+        return new SimpleUpdateClause<>(dialect, null, SQLs.SIMPLE_UPDATE, SQLs.ERROR_FUNC);
     }
 
-    static _DomainUpdateClause<Update._BatchSpec<BatchUpdate>> simpleDomain() {
-        return new SimpleDomainUpdateClause();
+    static _WithSpec<_BatchParamClause<BatchUpdate>> batchSingleUpdate(StandardDialect dialect) {
+        return new SimpleUpdateClause<>(dialect, null, SQLs::forBatchUpdate, SQLs.BATCH_UPDATE);
+    }
+
+    static _DomainUpdateClause<Update> simpleDomain() {
+        return new SimpleDomainUpdateClause<>(SQLs.SIMPLE_UPDATE, SQLs.ERROR_FUNC);
+    }
+
+    static _DomainUpdateClause<_BatchParamClause<BatchUpdate>> batchDomain() {
+        return new SimpleDomainUpdateClause<>(SQLs::forBatchUpdate, SQLs.BATCH_UPDATE);
     }
 
 
@@ -75,7 +83,7 @@ abstract class StandardUpdates<I extends Item, BI extends Item, F extends TableF
             _WhereSpec<I, F>,
             _DmlUpdateSpec<I>,
             _WhereAndSpec<I>>
-            implements _WhereSpec<I, F>, _WhereAndSpec<I>, Update._BatchSpec<BI> {
+            implements _WhereSpec<I, F>, _WhereAndSpec<I>, BatchUpdateSpec<BI> {
 
 
         private SimpleSingleUpdate(UpdateClause<?> clause, TableMeta<?> table, String tableAlias) {
@@ -94,7 +102,7 @@ abstract class StandardUpdates<I extends Item, BI extends Item, F extends TableF
     private static final class PrimarySimpleSingleUpdate<I extends Item, BI extends Item, F extends TableField>
             extends SimpleSingleUpdate<I, BI, F> {
 
-        private final Function<? super Update._BatchSpec<BI>, I> function;
+        private final Function<? super BatchUpdateSpec<BI>, I> function;
 
         private final Function<? super BatchUpdate, BI> batchFunc;
 
@@ -118,25 +126,31 @@ abstract class StandardUpdates<I extends Item, BI extends Item, F extends TableF
     }//PrimarySimpleSingleUpdate
 
 
-    private static final class SimpleDomainUpdate<F extends TableField>
-            extends SimpleSingleUpdate<Update._BatchSpec<BatchUpdate>, BatchUpdate, F>
+    private static final class SimpleDomainUpdate<I extends Item, BI extends Item, F extends TableField>
+            extends SimpleSingleUpdate<I, BI, F>
             implements _DomainUpdate {
+
+        private final Function<? super BatchUpdateSpec<BI>, I> function;
+
+        private final Function<? super BatchUpdate, BI> batchFunc;
 
         private List<_ItemPair> childItemPairList;
 
-        private SimpleDomainUpdate(UpdateClause<?> clause, TableMeta<?> table, String tableAlias) {
+        private SimpleDomainUpdate(SimpleDomainUpdateClause<I, BI> clause, TableMeta<?> table, String tableAlias) {
             super(clause, table, tableAlias);
+            this.function = clause.function;
+            this.batchFunc = clause.batchFunc;
         }
 
         @Override
-        Update._BatchSpec<BatchUpdate> onAsUpdate() {
+        I onAsUpdate() {
             this.childItemPairList = _Collections.safeUnmodifiableList(this.childItemPairList);
-            return this;
+            return this.function.apply(this);
         }
 
         @Override
-        BatchUpdate onAsBatchUpdate(final List<?> paramList) {
-            return new DomainBatchStatement(this, paramList);
+        BI onAsBatchUpdate(final List<?> paramList) {
+            return this.batchFunc.apply(new DomainBatchStatement(this, paramList));
         }
 
         @Override
@@ -175,7 +189,8 @@ abstract class StandardUpdates<I extends Item, BI extends Item, F extends TableF
     }//SimpleDomainUpdate
 
 
-    private static abstract class UpdateClause<WE extends Item> extends CriteriaSupports.WithClause<StandardCtes, WE> {
+    private static abstract class UpdateClause<WE extends Item>
+            extends CriteriaSupports.WithClause<StandardCtes, WE> {
 
         private UpdateClause(@Nullable _WithClauseSpec spec, CriteriaContext context) {
             super(spec, context);
@@ -195,12 +210,13 @@ abstract class StandardUpdates<I extends Item, BI extends Item, F extends TableF
             StandardUpdate._WithSpec<I> {
 
 
-        private final Function<? super Update._BatchSpec<BI>, I> function;
+        private final Function<? super BatchUpdateSpec<BI>, I> function;
 
         private final Function<? super BatchUpdate, BI> batchFunc;
 
         private SimpleUpdateClause(StandardDialect dialect, @Nullable ArmyStmtSpec spec,
-                                   Function<? super Update, I> function, Function<? super BatchUpdate, BI> batchFunc) {
+                                   Function<? super BatchUpdateSpec<BI>, I> function,
+                                   Function<? super BatchUpdate, BI> batchFunc) {
             super(spec, CriteriaContexts.primarySingleDmlContext(dialect, spec));
             ContextStack.push(this.context);
             this.function = function;
@@ -238,31 +254,39 @@ abstract class StandardUpdates<I extends Item, BI extends Item, F extends TableF
     /**
      * domain api don't support WITH clause.
      */
-    private static final class SimpleDomainUpdateClause
-            extends UpdateClause<_DomainUpdateClause<Update._BatchSpec<BatchUpdate>>>
-            implements _DomainUpdateClause<Update._BatchSpec<BatchUpdate>> {
+    private static final class SimpleDomainUpdateClause<I extends Item, BI extends Item>
+            extends UpdateClause<_DomainUpdateClause<I>>
+            implements _DomainUpdateClause<I> {
 
-        private SimpleDomainUpdateClause() {
+        private final Function<? super BatchUpdateSpec<BI>, I> function;
+
+        private final Function<? super BatchUpdate, BI> batchFunc;
+
+        private SimpleDomainUpdateClause(Function<? super BatchUpdateSpec<BI>, I> function,
+                                         Function<? super BatchUpdate, BI> batchFunc) {
             super(null, CriteriaContexts.primarySingleDmlContext(StandardDialect.STANDARD10, null));
             ContextStack.push(this.context);
+            this.function = function;
+            this.batchFunc = batchFunc;
         }
 
         @Override
-        public _StandardSetClause<Update._BatchSpec<BatchUpdate>, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
+        public _StandardSetClause<I, FieldMeta<?>> update(TableMeta<?> table, String tableAlias) {
             return new SimpleDomainUpdate<>(this, table, tableAlias);
         }
 
         @Override
-        public <T> _StandardSetClause<Update._BatchSpec<BatchUpdate>, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as,
-                                                                                           String tableAlias) {
+        public <T> _StandardSetClause<I, FieldMeta<T>> update(SingleTableMeta<T> table, SQLs.WordAs as,
+                                                              String tableAlias) {
             return new SimpleDomainUpdate<>(this, table, tableAlias);
         }
 
         @Override
-        public <T> _StandardSetClause<Update._BatchSpec<BatchUpdate>, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as,
-                                                                                                   String tableAlias) {
+        public <T> _StandardSetClause<I, FieldMeta<? super T>> update(ChildTableMeta<T> table, SQLs.WordAs as,
+                                                                      String tableAlias) {
             return new SimpleDomainUpdate<>(this, table, tableAlias);
         }
+
     }// SimpleDomainUpdateClause
 
 
@@ -286,7 +310,7 @@ abstract class StandardUpdates<I extends Item, BI extends Item, F extends TableF
 
         private final List<_ItemPair> childItemPairList;
 
-        private DomainBatchStatement(SimpleDomainUpdate<?> statement, List<?> paramList) {
+        private DomainBatchStatement(SimpleDomainUpdate<?, ?, ?> statement, List<?> paramList) {
             super(statement, paramList);
             this.childItemPairList = statement.childItemPairList;
             assert this.childItemPairList != null;
