@@ -182,3 +182,7 @@
       选择用 select clause 异步调用来解决执行顺序问题是更好的选择.
     * 这是一个重要经验,从根源上解决总是也是一种 mapping real word.
 
+41. 为什么要删除原有的 batch update api,而选择在 simple update 结尾加上 nameParam 子句?
+    * 因为原有的 api 需要定义两套 接口
+    * 新增 批量查询 api 如果也定义两套 api 那将是一场灾难
+

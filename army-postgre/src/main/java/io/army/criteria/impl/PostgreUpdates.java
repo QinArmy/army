@@ -876,7 +876,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
             PostgreUpdate._BatchSingleWhereAndSpec<BatchUpdate, BatchReturningUpdate>,
             _DqlUpdateSpec<BatchReturningUpdate>,
             BatchUpdate,
-            _BatchDml {
+            _BatchStatement {
 
 
         private List<_SelectItem> returningList;
@@ -1615,7 +1615,7 @@ abstract class PostgreUpdates<I extends Item, T, SR, FT, FS, FC extends Item, FF
     }//ReturningUpdateWrapper
 
     private static final class BatchReturningUpdateWrapper extends PostgreReturningUpdateWrapper
-            implements BatchReturningUpdate, _BatchDml {
+            implements BatchReturningUpdate, _BatchStatement {
 
         private final List<?> paramList;
 

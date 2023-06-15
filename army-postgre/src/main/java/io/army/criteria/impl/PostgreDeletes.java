@@ -910,7 +910,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
             PostgreDelete._BatchSingleWhereAndSpec<BatchDelete, BatchReturningDelete>,
             Statement._DqlDeleteSpec<BatchReturningDelete>,
             BatchDelete,
-            _BatchDml {
+            _BatchStatement {
 
         private List<_SelectItem> returningList;
 
@@ -1435,7 +1435,7 @@ abstract class PostgreDeletes<I extends Item, WE extends Item, DR, FT, FS, FC ex
 
 
     private static final class BatchReturningDeleteWrapper extends PostgreReturningDeleteWrapper
-            implements BatchReturningDelete, _BatchDml {
+            implements BatchReturningDelete, _BatchStatement {
 
         private final List<?> paramList;
 

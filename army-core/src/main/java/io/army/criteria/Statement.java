@@ -264,7 +264,7 @@ public interface Statement extends Item {
 
         <P> R namedParamList(Supplier<List<P>> supplier);
 
-        R namedParamList(Function<String, ?> function, String keyName);
+       <K> R namedParamList(Function<K, ?> function, K key);
     }
 
 

@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBlock;
@@ -565,7 +565,7 @@ abstract class MySQLMultiDeletes<I extends Item, WE extends Item, DT, FU extends
             MySQLDelete._BatchParensJoinSpec<BatchDelete>,
             MySQLDelete._BatchMultiWhereAndSpec<BatchDelete>,
             BatchDelete,
-            _BatchDml {
+            _BatchStatement {
 
         private List<?> paramList;
 

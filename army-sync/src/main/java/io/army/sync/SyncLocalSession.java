@@ -3,7 +3,7 @@ package io.army.sync;
 import io.army.ArmyException;
 import io.army.criteria.*;
 import io.army.criteria.dialect.BatchDqlStatement;
-import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.criteria.impl.inner._Statement;
@@ -147,7 +147,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     @Override
     public long update(final SimpleDmlStatement statement, final Visible visible) {
-        if (statement instanceof _BatchDml) {
+        if (statement instanceof _BatchStatement) {
             // no bug,never here
             throw _Exceptions.unexpectedStatement(statement);
         }
@@ -164,7 +164,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     @Override
     public List<Long> batchUpdate(final BatchDmlStatement statement, final IntFunction<List<Long>> listConstructor,
                                   final boolean useMultiStmt, final Visible visible) {
-        if (!(statement instanceof _BatchDml)) {
+        if (!(statement instanceof _BatchStatement)) {
             // no bug,never here
             throw _Exceptions.unexpectedStatement(statement);
         }
@@ -606,7 +606,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
      * @see #update(SimpleDmlStatement, Visible)
      */
     private long simpleUpdate(final SimpleDmlStatement statement, final Visible visible) {
-        if (statement instanceof _BatchDml) {
+        if (statement instanceof _BatchStatement) {
             // no bug,never here
             throw _Exceptions.unexpectedStatement(statement);
         }

@@ -371,32 +371,36 @@ abstract class CriteriaUtils {
     }
 
 
+    @Deprecated
     static List<Object> paramList(final CriteriaContext context, final @Nullable List<?> paramList) {
+        throw new UnsupportedOperationException();
+    }
+
+    static <K> List<Object> paramListFromMap(final Function<K, ?> function, K key) {
+        final Object value;
+        value = function.apply(key);
+        if (!(value instanceof List)) {
+            throw ContextStack.clearStackAndCriteriaError(String.format("key %s don't return List", key));
+        }
+        return paramList((List<?>) value);
+    }
+
+    static List<Object> paramList(final @Nullable List<?> paramList) {
+        if (paramList == null) {
+            throw ContextStack.clearStackAndNullPointer();
+        }
         final int size;
-        if (paramList == null || (size = paramList.size()) == 0) {
-            throw new CriteriaException("Batch dml parameter list must not empty.");
+        if ((size = paramList.size()) == 0) {
+            throw ContextStack.clearStackAndCriteriaError("Batch dml parameter list must not empty.");
         }
-        final Object firstParam = paramList.get(0);
-        if (firstParam == null) {
-            throw new NullPointerException("Batch parameter must non-null.");
-        }
-        final boolean isMap = firstParam instanceof Map;
-        final Class<?> paramJavaType = firstParam.getClass();
-        final List<Object> wrapperList = new ArrayList<>(size);
+        final List<Object> wrapperList = _Collections.arrayList(size);
         for (Object param : paramList) {
             if (param == null) {
-                throw ContextStack.nullPointer(context);
-            }
-            if (isMap) {
-                if (!(param instanceof Map)) {
-                    throw ContextStack.criteriaError(context, "Batch parameter must be same java type.");
-                }
-            } else if (!paramJavaType.isInstance(param)) {
-                throw ContextStack.criteriaError(context, "Batch parameter must be same java type.");
+                throw ContextStack.clearStackAndNullPointer();
             }
             wrapperList.add(param);
         }
-        return Collections.unmodifiableList(wrapperList);
+        return _Collections.unmodifiableList(wrapperList);
     }
 
 

@@ -148,7 +148,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
      * @see #statementDigestText(PrimaryStatement, Visible, boolean)
      */
     private static void assertPrimaryStatement(final PrimaryStatement statement, final String funcName) {
-        if (statement instanceof _BatchDml
+        if (statement instanceof _BatchStatement
                 || statement instanceof _Statement._ChildStatement
                 || (statement instanceof _DomainUpdate
                 && ((_DomainUpdate) statement).table() instanceof ChildTableMeta)

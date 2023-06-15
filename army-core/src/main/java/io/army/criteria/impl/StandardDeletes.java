@@ -4,7 +4,7 @@ import io.army.criteria.BatchDelete;
 import io.army.criteria.Delete;
 import io.army.criteria.DeleteStatement;
 import io.army.criteria.Item;
-import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._DomainDelete;
 import io.army.criteria.standard.StandardCtes;
 import io.army.criteria.standard.StandardDelete;
@@ -194,7 +194,7 @@ abstract class StandardDeletes<I extends Item, WE extends Item, DR, WR, WA>
             implements _BatchWhereSpec<BatchDelete>,
             _BatchWhereAndSpec<BatchDelete>,
             BatchDelete,
-            _BatchDml {
+            _BatchStatement {
 
         private List<?> paramList;
 

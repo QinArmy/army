@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLDelete;
@@ -254,7 +254,7 @@ abstract class MySQLSingleDeletes<I extends Item, WE extends Item, DT, PR, WR, W
             MySQLDelete._BatchSingleWhereAndSpec<BatchDelete>,
             MySQLDelete._BatchOrderByCommaSpec<BatchDelete>,
             BatchDelete,
-            _BatchDml {
+            _BatchStatement {
 
         private List<?> paramList;
 

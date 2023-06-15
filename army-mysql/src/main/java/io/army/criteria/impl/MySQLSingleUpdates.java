@@ -1,11 +1,10 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.BatchUpdate;
 import io.army.criteria.Item;
 import io.army.criteria.Update;
 import io.army.criteria.UpdateStatement;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
@@ -59,7 +58,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
      * create batch single-table UPDATE statement that is primary statement.
      * </p>
      */
-    static _BatchSingleWithSpec<BatchUpdate> batch() {
+    static _BatchSingleWithSpec<SingleBatchUpdate> batch() {
         return new BatchUpdateClause();
     }
 
@@ -391,22 +390,22 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
 
     private static final class MySQLBatchUpdate<T> extends MySQLSingleUpdates<
-            BatchUpdate,
+            SingleBatchUpdate,
             T,
-            _BatchSingleIndexHintSpec<BatchUpdate, T>,
-            _BatchSingleWhereSpec<BatchUpdate, T>,
-            _BatchOrderBySpec<BatchUpdate>,
-            _BatchSingleWhereAndSpec<BatchUpdate>,
-            _BatchOrderByCommaSpec<BatchUpdate>,
-            _BatchLimitSpec<BatchUpdate>,
-            _BatchParamClause<_DmlUpdateSpec<BatchUpdate>>>
-            implements MySQLUpdate._BatchSingleIndexHintSpec<BatchUpdate, T>,
-            MySQLUpdate._BatchSingleWhereSpec<BatchUpdate, T>,
-            MySQLUpdate._BatchSingleWhereAndSpec<BatchUpdate>,
-            MySQLUpdate._BatchOrderByCommaSpec<BatchUpdate>,
-            _DmlUpdateSpec<BatchUpdate>,
-            BatchUpdate,
-            _BatchDml {
+            _BatchSingleIndexHintSpec<SingleBatchUpdate, T>,
+            _BatchSingleWhereSpec<SingleBatchUpdate, T>,
+            _BatchOrderBySpec<SingleBatchUpdate>,
+            _BatchSingleWhereAndSpec<SingleBatchUpdate>,
+            _BatchOrderByCommaSpec<SingleBatchUpdate>,
+            _BatchLimitSpec<SingleBatchUpdate>,
+            _BatchParamClause<_DmlUpdateSpec<SingleBatchUpdate>>>
+            implements MySQLUpdate._BatchSingleIndexHintSpec<SingleBatchUpdate, T>,
+            MySQLUpdate._BatchSingleWhereSpec<SingleBatchUpdate, T>,
+            MySQLUpdate._BatchSingleWhereAndSpec<SingleBatchUpdate>,
+            MySQLUpdate._BatchOrderByCommaSpec<SingleBatchUpdate>,
+            _DmlUpdateSpec<SingleBatchUpdate>,
+            SingleBatchUpdate,
+            _BatchStatement {
 
         private List<?> paramList;
 
@@ -415,25 +414,25 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
         }
 
         @Override
-        public _BatchSingleWhereClause<BatchUpdate> sets(Consumer<_BatchItemPairs<FieldMeta<T>>> consumer) {
+        public _BatchSingleWhereClause<SingleBatchUpdate> sets(Consumer<_BatchItemPairs<FieldMeta<T>>> consumer) {
             consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
             return this;
         }
 
         @Override
-        public <P> _DmlUpdateSpec<BatchUpdate> namedParamList(List<P> paramList) {
+        public <P> _DmlUpdateSpec<SingleBatchUpdate> namedParamList(List<P> paramList) {
             this.paramList = CriteriaUtils.paramList(this.context, paramList);
             return this;
         }
 
         @Override
-        public <P> _DmlUpdateSpec<BatchUpdate> namedParamList(Supplier<List<P>> supplier) {
+        public <P> _DmlUpdateSpec<SingleBatchUpdate> namedParamList(Supplier<List<P>> supplier) {
             this.paramList = CriteriaUtils.paramList(this.context, supplier.get());
             return this;
         }
 
         @Override
-        public _DmlUpdateSpec<BatchUpdate> namedParamList(Function<String, ?> function, String keyName) {
+        public _DmlUpdateSpec<SingleBatchUpdate> namedParamList(Function<String, ?> function, String keyName) {
             this.paramList = CriteriaUtils.paramList(this.context, (List<?>) function.apply(keyName));
             return this;
         }
@@ -448,7 +447,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
         }
 
         @Override
-        BatchUpdate asMySQLUpdate() {
+        SingleBatchUpdate asMySQLUpdate() {
             if (this.paramList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -460,7 +459,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
 
 
     private static final class BatchUpdateClause
-            extends UpdateClause<BatchUpdate, MySQLUpdate._BatchSingleUpdateClause<io.army.criteria.BatchUpdate>>
+            extends UpdateClause<SingleBatchUpdate, MySQLUpdate._BatchSingleUpdateClause<io.army.criteria.BatchUpdate>>
             implements MySQLUpdate._BatchSingleWithSpec<io.army.criteria.BatchUpdate> {
 
         private BatchUpdateClause() {
@@ -541,8 +540,8 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
     }//BatchUpdateClause
 
     private static final class BatchPartitionClause<T>
-            extends MySQLSupports.PartitionAsClause<_BatchSingleIndexHintSpec<BatchUpdate, T>>
-            implements MySQLUpdate._BatchSinglePartitionClause<BatchUpdate, T> {
+            extends MySQLSupports.PartitionAsClause<_BatchSingleIndexHintSpec<SingleBatchUpdate, T>>
+            implements MySQLUpdate._BatchSinglePartitionClause<SingleBatchUpdate, T> {
 
         private final BatchUpdateClause clause;
 
@@ -553,7 +552,7 @@ abstract class MySQLSingleUpdates<I extends Item, T, UT extends Item, SR, WR, WA
         }
 
         @Override
-        _BatchSingleIndexHintSpec<BatchUpdate, T> asEnd(MySQLSupports.MySQLBlockParams params) {
+        _BatchSingleIndexHintSpec<SingleBatchUpdate, T> asEnd(MySQLSupports.MySQLBlockParams params) {
             final BatchUpdateClause clause = this.clause;
             clause.partitionList = params.partitionList();
             clause.tableAlias = params.alias();

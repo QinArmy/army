@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBlock;
@@ -548,7 +548,7 @@ abstract class MySQLMultiUpdates<I extends Item, WE extends Item, FT extends Ite
             MySQLUpdate._BatchMultiWhereSpec<BatchUpdate>,
             MySQLUpdate._BatchMultiWhereAndSpec<BatchUpdate>,
             BatchUpdate,
-            _BatchDml {
+            _BatchStatement {
 
 
         private List<?> paramList;

@@ -152,7 +152,7 @@ public abstract class SQLs extends SQLsSyntax {
 
 
 
-    public static StandardUpdate._DomainUpdateClause domainUpdate() {
+    public static StandardUpdate._DomainUpdateClause<? extends Update> domainUpdate() {
         return StandardUpdates.simpleDomain();
     }
 
@@ -272,6 +272,11 @@ public abstract class SQLs extends SQLsSyntax {
     static <T extends Item> T identity(T t) {
         return t;
     }
+
+    static <I extends Item> Update simpleUpdate(Update._BatchSpec<I> stmt) {
+        return stmt;
+    }
+
 
     @Deprecated
     static BatchUpdate _batchUpdateIdentity(UpdateStatement update) {

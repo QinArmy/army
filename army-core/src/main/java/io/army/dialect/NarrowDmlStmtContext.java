@@ -4,7 +4,7 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._BatchDml;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._DmlStatement;
 import io.army.lang.Nullable;
 import io.army.stmt.DmlStmtParams;
@@ -49,8 +49,8 @@ abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDm
 
         this.selectionList = Collections.emptyList();//TODO optimize for postgre
 
-        if (stmt instanceof _BatchDml) {
-            this.paramList = ((_BatchDml) stmt).paramList();
+        if (stmt instanceof _BatchStatement) {
+            this.paramList = ((_BatchStatement) stmt).paramList();
             if (parentOrOuterContext instanceof _MultiStatementContext) {
                 this.accessor = ObjectAccessorFactory.readOnlyFromInstance(this.paramList.get(0));
                 this.paramIndex = 0;
