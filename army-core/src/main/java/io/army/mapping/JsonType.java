@@ -44,7 +44,7 @@ public final class JsonType extends _ArmyBuildInMapping implements MappingType.S
             case MySQL:
                 sqlDataType = MySQLType.JSON;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlDataType = PostgreSqlType.JSON;
                 break;
             case Oracle:

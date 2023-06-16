@@ -56,7 +56,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.dialectDatabase()) {
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.TIMETZ;
                 break;
             case Oracle:
@@ -89,7 +89,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
                 value = time.withOffsetSameInstant(env.databaseZoneOffset())
                         .toLocalTime();
                 break;
-            case Postgre:
+            case PostgreSQL:
             case H2:
             default:
                 value = time;
@@ -164,7 +164,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
                 }
             }
             break;
-            case Postgre:
+            case PostgreSQL:
             default: {
                 try {
                     value = OffsetTime.parse((String) nonNull, _TimeUtils.OFFSET_TIME_FORMATTER_6);
@@ -185,7 +185,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
             case MySQL:
                 value = OffsetTime.of(LocalTime.parse((String) nonNull), env.databaseZoneOffset());
                 break;
-            case Postgre:
+            case PostgreSQL:
             default: {
                 OffsetTime v;
                 try {

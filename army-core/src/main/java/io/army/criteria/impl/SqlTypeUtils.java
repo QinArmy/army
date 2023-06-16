@@ -41,7 +41,7 @@ public abstract class SqlTypeUtils {
     public static MappingType sqlTypeToMappingType(final SqlType sqlType) {
         switch (sqlType.database()) {
             case MySQL:
-            case Postgre:
+            case PostgreSQL:
                 //TODO
                 break;
             default:

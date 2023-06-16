@@ -83,7 +83,7 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
             case MySQL:
                 sqlType = MySQLType.DECIMAL_UNSIGNED;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlType = PostgreSqlType.DECIMAL;
                 break;
             case Oracle:

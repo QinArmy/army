@@ -24,7 +24,7 @@ public enum PostgreDialect implements Dialect {
 
     @Override
     public final Database database() {
-        return Database.Postgre;
+        return Database.PostgreSQL;
     }
 
 

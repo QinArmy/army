@@ -33,35 +33,6 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     }
 
 
-    public interface Modifier extends Query.SelectModifier {
-
-    }
-
-    public interface WordDistinct extends Modifier, SQLs.ArgDistinct {
-
-    }
-
-    public interface WordMaterialized extends SQLWords {
-
-    }
-
-    public interface WordName extends SQLWords {
-
-    }
-
-    public interface _PeriodOverlapsClause {
-
-        IPredicate overlaps(Expression start, Expression endOrLength);
-
-        <T> IPredicate overlaps(Expression start, BiFunction<Expression, T, Expression> valueOperator, T value);
-
-        <T> IPredicate overlaps(BiFunction<Expression, T, Expression> valueOperator, T value, Expression endOrLength);
-
-        IPredicate overlaps(TypeInfer type, BiFunction<TypeInfer, Object, Expression> valueOperator, Object start, Object endOrLength);
-
-
-    }
-
     /**
      * <p>
      * Static array constructor, array is {@link TextArrayType#LINEAR} type.
@@ -233,6 +204,44 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      */
     public static Expression pound(Expression operand) {
         return PostgreExpressions.unaryExpression(PostgreUnaryExpOperator.POUND, operand, PostgreExpressions::unaryPoundType);
+    }
+
+    /*-------------------below dual operator -------------------*/
+
+
+    /**
+     * <p>
+     * Create PostgreSQL-style typecast expression. Format : 'string'::type .
+     * This method is used for postgre dialect type, for example : text, regclass .
+     * </p>
+     * <p>
+     * <strong>NOTE</strong>: {@link LiteralExpression#typeMeta()} always is {@link NoCastTextType#INSTANCE)
+     * </p>
+     * <p>
+     * examples :
+     * <pre><br/>
+     *        Postgres.space("my_seq",Postgres.DOUBLE_COLON,"regclass")
+     *        Postgres.space('my_seq',DOUBLE_COLON,"regclass")
+     *        Postgres.space('QinArmy',DOUBLE_COLON,"text")
+     *     </pre>
+     * </p>
+     *
+     * @param literal     text literal
+     * @param doubleColon must be {@link Postgres#DOUBLE_COLON}
+     * @param typeName    not key word , a simple sql identifier.
+     * @return a {@link LiteralExpression} whose {@link LiteralExpression#typeMeta()} always is {@link NoCastTextType#INSTANCE)
+     * @throws CriteriaException throw when <ul>
+     *                           <li>literal error,here is delay , throw when parsing</li>
+     *                           <li>typeName error,here is delay , throw when parsing</li>
+     *                           <li>dialect isn't {@link io.army.dialect.postgre.PostgreDialect},here is delay , throw when parsing</li>
+     *                           </ul>
+     * @see SQLs#space(Object, BiFunction, Object)
+     */
+    public static LiteralExpression space(String literal, Postgres.DoubleColon doubleColon, String typeName) {
+        if (doubleColon != Postgres.DOUBLE_COLON) {
+            throw CriteriaUtils.errorSymbol(doubleColon);
+        }
+        return PostgreDoubleColonCastExpression.cast(literal, typeName);
     }
 
     /**
@@ -881,7 +890,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
-    public static _PeriodOverlapsClause period(final Expression start, final Expression endOrLength) {
+    public static Postgres._PeriodOverlapsClause period(final Expression start, final Expression endOrLength) {
         return PostgreExpressions.overlaps(start, endOrLength);
     }
 
@@ -893,7 +902,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
-    public static <T> _PeriodOverlapsClause period(Expression start, BiFunction<Expression, T, Expression> valueOperator, T value) {
+    public static <T> Postgres._PeriodOverlapsClause period(Expression start, BiFunction<Expression, T, Expression> valueOperator, T value) {
         return period(start, valueOperator.apply(start, value));
     }
 
@@ -904,7 +913,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
-    public static <T> _PeriodOverlapsClause period(BiFunction<Expression, T, Expression> valueOperator, T value, Expression endOrLength) {
+    public static <T> Postgres._PeriodOverlapsClause period(BiFunction<Expression, T, Expression> valueOperator, T value, Expression endOrLength) {
         return period(valueOperator.apply(endOrLength, value), endOrLength);
     }
 
@@ -915,7 +924,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-datetime.html"> OVERLAPS operato</a>
      */
-    public static _PeriodOverlapsClause period(TypeInfer type, BiFunction<TypeInfer, Object, Expression> valueOperator, Object start, Object endOrLength) {
+    public static Postgres._PeriodOverlapsClause period(TypeInfer type, BiFunction<TypeInfer, Object, Expression> valueOperator, Object start, Object endOrLength) {
         return period(valueOperator.apply(type, start), valueOperator.apply(type, endOrLength));
     }
 

@@ -74,6 +74,8 @@ public abstract class Postgres extends PostgreSyntax {
 
     public static final NullTreatMode RETURN_TARGET = PostgreWords.NullTreatModeExpression.RETURN_TARGET;
 
+    public static final DoubleColon DOUBLE_COLON = PostgreWords.SymbolDoubleColon.DOUBLE_COLON;
+
 
     public static final ExtractTimeField CENTURY = PostgreWords.WordExtractTimeField.CENTURY;
     public static final ExtractTimeField DAY = PostgreWords.WordExtractTimeField.DAY;
@@ -401,4 +403,36 @@ public abstract class Postgres extends PostgreSyntax {
     }
 
 
+    public interface Modifier extends Query.SelectModifier {
+
+    }
+
+    public interface WordDistinct extends Modifier, SQLs.ArgDistinct {
+
+    }
+
+    public interface WordMaterialized extends SQLWords {
+
+    }
+
+    public interface WordName extends SQLWords {
+
+    }
+
+    public interface DoubleColon {
+
+    }
+
+    public interface _PeriodOverlapsClause {
+
+        IPredicate overlaps(Expression start, Expression endOrLength);
+
+        <T> IPredicate overlaps(Expression start, BiFunction<Expression, T, Expression> valueOperator, T value);
+
+        <T> IPredicate overlaps(BiFunction<Expression, T, Expression> valueOperator, T value, Expression endOrLength);
+
+        IPredicate overlaps(TypeInfer type, BiFunction<TypeInfer, Object, Expression> valueOperator, Object start, Object endOrLength);
+
+
+    }
 }

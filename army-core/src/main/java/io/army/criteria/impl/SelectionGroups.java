@@ -360,7 +360,7 @@ abstract class SelectionGroups {
                 case MySQL:
                     this.appendDerivedRowElement(sqlBuilder, context);
                     break;
-                case Postgre: {
+                case PostgreSQL: {
                     sqlBuilder.append(_Constant.SPACE);
                     context.parser().identifier(this.derivedAlias, sqlBuilder);
                     sqlBuilder.append(_Constant.POINT)

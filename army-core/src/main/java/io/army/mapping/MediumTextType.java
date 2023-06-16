@@ -75,7 +75,7 @@ public final class MediumTextType extends _ArmyBuildInMapping implements Mapping
             case MySQL:
                 type = MySQLType.MEDIUMTEXT;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.TEXT;
                 break;
             default:

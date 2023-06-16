@@ -1680,7 +1680,7 @@ public interface Statement extends Item {
 
     interface _ArrayExpOperator {
 
-        @Support({H2, Postgre})
+        @Support({H2, PostgreSQL})
         SimpleExpression atElement(int index);
 
         SimpleExpression atElement(int index1, int index2);
@@ -1704,37 +1704,37 @@ public interface Statement extends Item {
 
         SimpleExpression atElement(Expression index1, Expression index2, Expression index3, Expression... restIndex);
 
-        @Support({H2, Postgre})
+        @Support({H2, PostgreSQL})
         ArrayExpression atArray(int index);
 
-        @Support({Postgre})
+        @Support({PostgreSQL})
         ArrayExpression atArray(int index1, int index2);
 
-        @Support({Postgre})
+        @Support({PostgreSQL})
         ArrayExpression atArray(int index1, int index2, int index3, int... restIndex);
 
-        @Support({Postgre})
+        @Support({PostgreSQL})
         ArrayExpression atArray(ArraySubscript index);
 
-        @Support({Postgre})
+        @Support({PostgreSQL})
         ArrayExpression atArray(ArraySubscript index1, ArraySubscript index2);
 
-        @Support({Postgre})
+        @Support({PostgreSQL})
         ArrayExpression atArray(ArraySubscript index1, ArraySubscript index2, ArraySubscript index3, ArraySubscript... restIndex);
 
-        @Support({Postgre})
+        @Support({PostgreSQL})
         <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value);
 
-        @Support({Postgre})
+        @Support({PostgreSQL})
         <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2);
 
-        @Support({Postgre})
+        @Support({PostgreSQL})
         <T> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef, T value1, T value2, T value3);
 
-        @Support({Postgre})
+        @Support({PostgreSQL})
         <T, U> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2);
 
-        @Support({Postgre})
+        @Support({PostgreSQL})
         <T, U, V> ArrayExpression atArray(BiFunction<MappingType, T, Expression> funcRef1, T value1, BiFunction<MappingType, U, Expression> funcRef2, U value2, BiFunction<MappingType, V, Expression> funcRef3, V value3);
 
 
@@ -1743,16 +1743,16 @@ public interface Statement extends Item {
 
     interface _JsonExpOperator {
 
-        @Support({MySQL, Postgre})
+        @Support({MySQL, PostgreSQL})
         JsonExpression arrayElement(int index);
 
-        @Support({MySQL, Postgre})
+        @Support({MySQL, PostgreSQL})
         JsonExpression objectAttr(String keyName);
 
-        @Support({MySQL, Postgre})
+        @Support({MySQL, PostgreSQL})
         JsonExpression atPath(String jsonPath);
 
-        @Support({MySQL, Postgre})
+        @Support({MySQL, PostgreSQL})
         JsonExpression atPath(Expression jsonPath);
 
         /**
@@ -1767,7 +1767,7 @@ public interface Statement extends Item {
          *                The first argument of funcRef always is {@link io.army.mapping.optional.JsonPathType#INSTANCE}.
          * @param value   non-null,it will be passed to funcRef as the second argument of funcRef
          */
-        @Support({MySQL, Postgre})
+        @Support({MySQL, PostgreSQL})
         <T> JsonExpression atPath(BiFunction<MappingType, T, Expression> funcRef, T value);
 
     }

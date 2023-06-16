@@ -103,7 +103,7 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
     static SqlType mapSqlType(final MappingType mappingType, final ServerMeta meta) {
         final SqlType type;
         switch (meta.dialectDatabase()) {
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.INTEGER_ARRAY;
                 break;
             case Oracle:

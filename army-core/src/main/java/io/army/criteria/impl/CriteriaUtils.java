@@ -804,7 +804,7 @@ abstract class CriteriaUtils {
     }
 
     static CriteriaException unknownWords(@Nullable Object word) {
-        return unknownWords(ContextStack.peek(), word);
+        return ContextStack.clearStackAndCriteriaError(String.format("unknown word[%s]", word));
     }
 
     static CriteriaException spaceMethodNotFirst() {

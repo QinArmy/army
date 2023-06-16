@@ -62,7 +62,7 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
             case MySQL:
                 sqlType = MySQLType.BOOLEAN;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlType = PostgreSqlType.BOOLEAN;
                 break;
             default:

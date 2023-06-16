@@ -32,7 +32,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import static io.army.dialect.Database.H2;
-import static io.army.dialect.Database.Postgre;
+import static io.army.dialect.Database.PostgreSQL;
 
 /**
  * <p>
@@ -101,7 +101,7 @@ public abstract class SQLs extends SQLsSyntax {
     public static final Window.ExpModifier FOLLOWING = SQLWindow.WindowExpModifier.FOLLOWING;
 
 
-    @Support({Postgre, H2})
+    @Support({PostgreSQL, H2})
     public static final BetweenModifier SYMMETRIC = SqlWords.KeyWordSymmetric.SYMMETRIC;
 
     @Support({H2})
@@ -841,7 +841,7 @@ public abstract class SQLs extends SQLsSyntax {
                 case MySQL:
                     sqlType = MySQLType.NULL;
                     break;
-                case Postgre:
+                case PostgreSQL:
                 case Oracle:
                 case H2:
                 default:

@@ -1090,7 +1090,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
 
     /**
      * <p>
-     * <strong>Note:</strong>This function cannot exist independently,see {@link #xmlElement(PostgreSyntax.WordName, String, XmlAttributes, Expression...)}
+     * <strong>Note:</strong>This function cannot exist independently,see {@link #xmlElement(Postgres.WordName, String, XmlAttributes, Expression...)}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">9.15.1.3. Xmlelement<br/>
@@ -1112,7 +1112,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(PostgreSyntax.WordName wordName, String name, XmlAttributes attributes,
+    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name, XmlAttributes attributes,
                                               Expression... contents) {
         ContextStack.assertNonNull(attributes);
         ContextStack.assertNonNull(contents);
@@ -1131,7 +1131,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(PostgreSyntax.WordName wordName, String name, Expression... contents) {
+    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name, Expression... contents) {
         ContextStack.assertNonNull(contents);
         return _xmlElement(wordName, name, null, c -> {
             for (Expression content : contents) {
@@ -1149,7 +1149,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(PostgreSyntax.WordName wordName, String name, XmlAttributes attributes,
+    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name, XmlAttributes attributes,
                                               List<Expression> contentList) {
         ContextStack.assertNonNull(attributes);
         return _xmlElement(wordName, name, attributes, c -> {
@@ -1167,7 +1167,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * xmlelement ( NAME name [, XMLATTRIBUTES ( attvalue [ AS attname ] [, ...] ) ] [, content [, ...]] ) → xml
      * </a>
      */
-    public static SimpleExpression xmlElement(PostgreSyntax.WordName wordName, String name,
+    public static SimpleExpression xmlElement(Postgres.WordName wordName, String name,
                                               List<Expression> contentList) {
         return _xmlElement(wordName, name, null, c -> {
             for (Expression content : contentList) {
@@ -1182,11 +1182,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
-     * @see #xmlPi(PostgreSyntax.WordName, String, Expression)
+     * @see #xmlPi(Postgres.WordName, String, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlPi(PostgreSyntax.WordName wordName, String name) {
+    public static SimpleExpression xmlPi(Postgres.WordName wordName, String name) {
         return _xmlPi(wordName, name, null);
     }
 
@@ -1195,11 +1195,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
-     * @see #xmlPi(PostgreSyntax.WordName, String)
+     * @see #xmlPi(Postgres.WordName, String)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlPi(PostgreSyntax.WordName wordName, String name,
+    public static SimpleExpression xmlPi(Postgres.WordName wordName, String name,
                                          BiFunction<MappingType, String, Expression> funcRef, String content) {
         final Expression contentExp;
         contentExp = funcRef.apply(StringType.INSTANCE, content);
@@ -1212,11 +1212,11 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
-     * @see #xmlPi(PostgreSyntax.WordName, String)
+     * @see #xmlPi(Postgres.WordName, String)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
      * </a>
      */
-    public static SimpleExpression xmlPi(PostgreSyntax.WordName wordName, String name, Expression content) {
+    public static SimpleExpression xmlPi(Postgres.WordName wordName, String name, Expression content) {
         ContextStack.assertNonNull(content);
         return _xmlPi(wordName, name, content);
     }
@@ -7161,12 +7161,12 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
     /*-------------------below private method -------------------*/
 
     /**
-     * @see #xmlElement(PostgreSyntax.WordName, String, XmlAttributes, Expression...)
-     * @see #xmlElement(PostgreSyntax.WordName, String, Expression...)
-     * @see #xmlElement(PostgreSyntax.WordName, String, List)
-     * @see #xmlElement(PostgreSyntax.WordName, String, XmlAttributes, List)
+     * @see #xmlElement(Postgres.WordName, String, XmlAttributes, Expression...)
+     * @see #xmlElement(Postgres.WordName, String, Expression...)
+     * @see #xmlElement(Postgres.WordName, String, List)
+     * @see #xmlElement(Postgres.WordName, String, XmlAttributes, List)
      */
-    private static SimpleExpression _xmlElement(final PostgreSyntax.WordName nameWord, final @Nullable String name,
+    private static SimpleExpression _xmlElement(final Postgres.WordName nameWord, final @Nullable String name,
                                                 final @Nullable XmlAttributes attributes,
                                                 Consumer<Consumer<Object>> consumer) {
         final String funcName = "XMLELEMENT";
@@ -7193,12 +7193,12 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * The {@link MappingType} of function return type: {@link  XmlType#TEXT}
      * </p>
      *
-     * @see #xmlPi(PostgreSyntax.WordName, String)
-     * @see #xmlPi(PostgreSyntax.WordName, String, Expression)
+     * @see #xmlPi(Postgres.WordName, String)
+     * @see #xmlPi(Postgres.WordName, String, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-xml.html#FUNCTIONS-PRODUCING-XML">xmlpi ( NAME name [, content ] ) → xml<br/>
      * </a>
      */
-    private static SimpleExpression _xmlPi(PostgreSyntax.WordName wordName, String name, @Nullable Expression content) {
+    private static SimpleExpression _xmlPi(Postgres.WordName wordName, String name, @Nullable Expression content) {
         final String funcName = "XMLPI";
         if (wordName != Postgres.NAME) {
             throw CriteriaUtils.funcArgError(funcName, wordName);

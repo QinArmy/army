@@ -62,7 +62,7 @@ abstract class PostgreWords {
     }//WordTimeField
 
 
-    enum KeyWordName implements PostgreSyntax.WordName, SQLs.ArmyKeyWord {
+    enum KeyWordName implements Postgres.WordName, SQLs.ArmyKeyWord {
 
         NAME(" NAME");
 
@@ -218,7 +218,7 @@ abstract class PostgreWords {
     }//WordPassingOption
 
 
-    enum SelectModifier implements PostgreSyntax.Modifier {
+    enum SelectModifier implements Postgres.Modifier {
 
         ALL(" ALL");
 
@@ -242,7 +242,7 @@ abstract class PostgreWords {
 
     }//SelectModifier
 
-    enum KeyWordDistinct implements PostgreSyntax.WordDistinct {
+    enum KeyWordDistinct implements Postgres.WordDistinct {
 
         DISTINCT(" DISTINCT");
 
@@ -264,7 +264,7 @@ abstract class PostgreWords {
         }
     }//KeyWordDistinct
 
-    enum KeyWordMaterialized implements PostgreSyntax.WordMaterialized {
+    enum KeyWordMaterialized implements Postgres.WordMaterialized {
 
         MATERIALIZED(" MATERIALIZED"),
         NOT_MATERIALIZED(" NOT MATERIALIZED");
@@ -349,5 +349,12 @@ abstract class PostgreWords {
 
 
     }//NullTreatModeLiteral
+
+    enum SymbolDoubleColon implements Postgres.DoubleColon {
+
+        DOUBLE_COLON
+
+    }//SymbolDoubleColon
+
 
 }

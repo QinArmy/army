@@ -60,7 +60,7 @@ public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerTy
             case MySQL:
                 type = MySQLType.MEDIUMINT_UNSIGNED;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.INTEGER;
                 break;
             case Oracle:

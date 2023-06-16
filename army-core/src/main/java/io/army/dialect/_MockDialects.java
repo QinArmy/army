@@ -92,7 +92,7 @@ public abstract class _MockDialects implements DialectEnv {
             case MySQL:
                 meta = createMySQLServerMeta((MySQLDialect) dialect);
                 break;
-            case Postgre:
+            case PostgreSQL:
                 meta = createPostgreServerMeta((PostgreDialect) dialect);
                 break;
             case Oracle:
@@ -144,7 +144,7 @@ public abstract class _MockDialects implements DialectEnv {
         final ServerMeta.Builder builder;
         builder = ServerMeta.builder()
                 .name("PostgreSQL")
-                .database(Database.Postgre)
+                .database(Database.PostgreSQL)
                 .catalog("army")
                 .schema("mock")
                 .usedDialect(dialect)

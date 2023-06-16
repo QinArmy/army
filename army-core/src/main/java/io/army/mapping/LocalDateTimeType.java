@@ -56,7 +56,7 @@ public final class LocalDateTimeType extends _ArmyNoInjectionMapping implements 
             case MySQL:
                 type = MySQLType.DATETIME;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.TIMESTAMP;
                 break;
             default:

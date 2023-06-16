@@ -115,7 +115,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
 
     @Override
     public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        if (meta.dialectDatabase() != Database.Postgre) {
+        if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
         return PostgreSqlType.TEXT_ARRAY;

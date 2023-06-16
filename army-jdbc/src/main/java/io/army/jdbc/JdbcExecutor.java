@@ -635,7 +635,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 }
             }
             break;
-            case Postgre:
+            case PostgreSQL:
             case Oracle:
             case H2:
                 statement.setFetchSize(options.fetchSize);

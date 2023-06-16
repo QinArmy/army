@@ -179,7 +179,7 @@ public enum PostgreSqlType implements SqlType {
 
     @Override
     public final Database database() {
-        return Database.Postgre;
+        return Database.PostgreSQL;
     }
 
     @Override

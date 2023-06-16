@@ -1138,7 +1138,7 @@ abstract class FunctionUtils {
             final Database database;
             database = context.parser().dialect().database();
             switch (database) {
-                case Postgre: {
+                case PostgreSQL: {
                     context.sqlBuilder()
                             .append(_Constant.SPACE)
                             .append(this.name) // TODO validate whether import key word or not.

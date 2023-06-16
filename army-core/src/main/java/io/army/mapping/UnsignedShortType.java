@@ -57,7 +57,7 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
             case MySQL:
                 type = MySQLType.SMALLINT_UNSIGNED;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.INTEGER;
                 break;
             case Oracle:

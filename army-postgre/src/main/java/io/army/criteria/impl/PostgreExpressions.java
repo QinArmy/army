@@ -29,8 +29,8 @@ abstract class PostgreExpressions {
     /**
      * @see Postgres#period(Expression, Expression)
      */
-    static PostgreSyntax._PeriodOverlapsClause overlaps(final @Nullable Expression start,
-                                                        final @Nullable Expression endOrLength) {
+    static Postgres._PeriodOverlapsClause overlaps(final @Nullable Expression start,
+                                                   final @Nullable Expression endOrLength) {
         if (start == null || endOrLength == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (start instanceof SqlValueParam.MultiValue || endOrLength instanceof SqlValueParam.MultiValue) {
@@ -438,7 +438,7 @@ abstract class PostgreExpressions {
 
 
     private static final class PeriodOverlapsPredicate extends OperationPredicate.OperationCompoundPredicate
-            implements PostgreSyntax._PeriodOverlapsClause {
+            implements Postgres._PeriodOverlapsClause {
 
         private final ArmyExpression start1;
 

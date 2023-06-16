@@ -56,7 +56,7 @@ public final class ByteType extends _NumericType._IntegerType {
             case MySQL:
                 type = MySQLType.TINYINT;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.SMALLINT;
                 break;
 
@@ -88,7 +88,7 @@ public final class ByteType extends _NumericType._IntegerType {
             case MySQL:
                 value = (byte) intValue;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 value = (short) intValue;
                 break;
             default:

@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
+import io.army.mapping.NoCastIntegerType;
+import io.army.mapping.NoCastTextType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
@@ -67,8 +69,8 @@ abstract class SQLsSyntax extends Functions {
      * @return parameter expression
      * @see #literalValue(Object)
      */
-    public static SimpleExpression paramValue(final Object value) {
-        return ParamExpression.from(value);
+    public static ParamExpression paramValue(final Object value) {
+        return ArmyParamExpression.from(value);
     }
 
 
@@ -82,12 +84,12 @@ abstract class SQLsSyntax extends Functions {
      * @see #param(TypeInfer, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static SimpleExpression param(final TypeInfer type, final @Nullable Object value) {
-        final SimpleExpression result;
+    public static ParamExpression param(final TypeInfer type, final @Nullable Object value) {
+        final ParamExpression result;
         if (value instanceof Supplier) {
-            result = ParamExpression.single(type, ((Supplier<?>) value).get());
+            result = ArmyParamExpression.single(type, ((Supplier<?>) value).get());
         } else {
-            result = ParamExpression.single(type, value);
+            result = ArmyParamExpression.single(type, value);
         }
         return result;
     }
@@ -101,12 +103,12 @@ abstract class SQLsSyntax extends Functions {
      * @see #param(TypeInfer, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static SimpleExpression encodingParam(final TypeInfer type, final @Nullable Object value) {
-        final SimpleExpression result;
+    public static ParamExpression encodingParam(final TypeInfer type, final @Nullable Object value) {
+        final ParamExpression result;
         if (value instanceof Supplier) {
-            result = ParamExpression.encodingSingle(type, ((Supplier<?>) value).get());
+            result = ArmyParamExpression.encodingSingle(type, ((Supplier<?>) value).get());
         } else {
-            result = ParamExpression.encodingSingle(type, value);
+            result = ArmyParamExpression.encodingSingle(type, value);
         }
         return result;
     }
@@ -129,8 +131,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static SimpleExpression namedParam(final TypeInfer type, final String name) {
-        return ParamExpression.named(type, name);
+    public static ParamExpression namedParam(final TypeInfer type, final String name) {
+        return ArmyParamExpression.named(type, name);
     }
 
     /**
@@ -150,8 +152,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static SimpleExpression encodingNamedParam(final TypeInfer type, final String name) {
-        return ParamExpression.encodingNamed(type, name);
+    public static ParamExpression encodingNamedParam(final TypeInfer type, final String name) {
+        return ArmyParamExpression.encodingNamed(type, name);
     }
 
     /**
@@ -171,8 +173,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static SimpleExpression namedNullableParam(final TypeInfer type, final String name) {
-        return ParamExpression.namedNullable(type, name);
+    public static ParamExpression namedNullableParam(final TypeInfer type, final String name) {
+        return ArmyParamExpression.namedNullable(type, name);
     }
 
     /**
@@ -192,8 +194,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static SimpleExpression encodingNamedNullableParam(final TypeInfer type, final String name) {
-        return ParamExpression.encodingNamedNullable(type, name);
+    public static ParamExpression encodingNamedNullableParam(final TypeInfer type, final String name) {
+        return ArmyParamExpression.encodingNamedNullable(type, name);
     }
 
 
@@ -234,8 +236,32 @@ abstract class SQLsSyntax extends Functions {
      * @return literal expression
      * @see #paramValue(Object)
      */
-    public static SimpleExpression literalValue(final Object value) {
-        return LiteralExpression.from(value);
+    public static LiteralExpression literalValue(final Object value) {
+        return ArmyLiteralExpression.from(value);
+    }
+
+    /**
+     * <p>
+     * Create literal expression with nonNullValue.
+     * This method is similar to {@link SQLs#literalValue(Object)},except that two exceptions :
+     *     <ul>
+     *         <li>{@link String} map to {@link NoCastTextType} not {@link io.army.mapping.StringType}</li>
+     *         <li>{@link Integer} map to {@link NoCastIntegerType} not {@link io.army.mapping.IntegerType}</li>
+     *     </ul>
+     * </p>
+     *
+     * @param nonNullValue non-null value
+     */
+    public static LiteralExpression space(final Object nonNullValue) {
+        final LiteralExpression expression;
+        if (nonNullValue instanceof String) {
+            expression = ArmyLiteralExpression.single(NoCastTextType.INSTANCE, nonNullValue);
+        } else if (nonNullValue instanceof Integer) {
+            expression = ArmyLiteralExpression.single(NoCastIntegerType.INSTANCE, nonNullValue);
+        } else {
+            expression = ArmyLiteralExpression.from(nonNullValue);
+        }
+        return expression;
     }
 
 
@@ -249,12 +275,12 @@ abstract class SQLsSyntax extends Functions {
      * @see #param(TypeInfer, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static SimpleExpression literal(final TypeInfer type, final @Nullable Object value) {
-        final SimpleExpression result;
+    public static LiteralExpression literal(final TypeInfer type, final @Nullable Object value) {
+        final LiteralExpression result;
         if (value instanceof Supplier) {
-            result = LiteralExpression.single(type, ((Supplier<?>) value).get());
+            result = ArmyLiteralExpression.single(type, ((Supplier<?>) value).get());
         } else {
-            result = LiteralExpression.single(type, value);
+            result = ArmyLiteralExpression.single(type, value);
         }
         return result;
     }
@@ -269,12 +295,12 @@ abstract class SQLsSyntax extends Functions {
      * @see #param(TypeInfer, Object)
      * @see #literal(TypeInfer, Object)
      */
-    public static SimpleExpression encodingLiteral(final TypeInfer type, final @Nullable Object value) {
-        final SimpleExpression result;
+    public static LiteralExpression encodingLiteral(final TypeInfer type, final @Nullable Object value) {
+        final LiteralExpression result;
         if (value instanceof Supplier) {
-            result = LiteralExpression.encodingSingle(type, ((Supplier<?>) value).get());
+            result = ArmyLiteralExpression.encodingSingle(type, ((Supplier<?>) value).get());
         } else {
-            result = LiteralExpression.encodingSingle(type, value);
+            result = ArmyLiteralExpression.encodingSingle(type, value);
         }
         return result;
     }
@@ -303,8 +329,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static SimpleExpression namedLiteral(final TypeInfer type, final String name) {
-        return LiteralExpression.named(type, name);
+    public static LiteralExpression namedLiteral(final TypeInfer type, final String name) {
+        return ArmyLiteralExpression.named(type, name);
     }
 
     /**
@@ -330,8 +356,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableParam(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static SimpleExpression encodingNamedLiteral(final TypeInfer type, final String name) {
-        return LiteralExpression.encodingNamed(type, name);
+    public static LiteralExpression encodingNamedLiteral(final TypeInfer type, final String name) {
+        return ArmyLiteralExpression.encodingNamed(type, name);
     }
 
     /**
@@ -357,8 +383,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedLiteral(TypeInfer, String)
      * @see #encodingNamedNullableLiteral(TypeInfer, String)
      */
-    public static SimpleExpression namedNullableLiteral(final TypeInfer type, final String name) {
-        return LiteralExpression.namedNullable(type, name);
+    public static LiteralExpression namedNullableLiteral(final TypeInfer type, final String name) {
+        return ArmyLiteralExpression.namedNullable(type, name);
     }
 
     /**
@@ -384,8 +410,8 @@ abstract class SQLsSyntax extends Functions {
      * @see #encodingNamedNullableParam(TypeInfer, String)
      * @see #encodingNamedLiteral(TypeInfer, String)
      */
-    public static SimpleExpression encodingNamedNullableLiteral(final TypeInfer type, final String name) {
-        return LiteralExpression.encodingNamedNullable(type, name);
+    public static LiteralExpression encodingNamedNullableLiteral(final TypeInfer type, final String name) {
+        return ArmyLiteralExpression.encodingNamedNullable(type, name);
     }
 
     /**

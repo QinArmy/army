@@ -1,38 +1,39 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
+import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
-import io.army.stmt.SingleParam;
 import io.army.util._StringUtils;
 
 import java.util.Objects;
 
+
 /**
  * <p>
- * This class representing single-value parameter expression.
+ * This class representing single-literal expression.
  * </p>
  * <p>
  * Below is chinese signature:<br/>
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  *
- * @see LiteralExpression
- * @see ParamRowExpression
+ * @see ArmyParamExpression
  * @see LiteralRowExpression
+ * @see ParamRowExpression
  * @since 1.0
  */
-abstract class ParamExpression extends OperationExpression.OperationSimpleExpression
-        implements SqlValueParam.SingleValue, SQLParam, ArmyExpression {
+abstract class ArmyLiteralExpression extends OperationExpression.OperationSimpleExpression
+        implements LiteralExpression {
 
     /**
-     * @see SQLs#paramValue(Object)
+     * @see SQLs#literalValue(Object)
      */
-    static ParamExpression from(final @Nullable Object value) {
+    static ArmyLiteralExpression from(final @Nullable Object value) {
         if (value == null) {
             throw ContextStack.clearStackAndNullPointer();
         }
@@ -41,157 +42,134 @@ abstract class ParamExpression extends OperationExpression.OperationSimpleExpres
         if (type == null) {
             throw CriteriaUtils.clearStackAndNonDefaultType(value);
         }
-        return new AnonymousParam(type, value);
+        return new AnonymousLiteral(type, value);
     }
 
 
     /**
      * @throws CriteriaException throw when infer return codec {@link TableField}.
-     * @see SQLs#param(TypeInfer, Object)
+     * @see SQLs#literal(TypeInfer, Object)
      */
-    static ParamExpression single(final @Nullable TypeInfer infer, final @Nullable Object value) {
+    static ArmyLiteralExpression single(final @Nullable TypeInfer infer, final @Nullable Object value) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw ParamExpression.typeInferReturnCodecField("encodingParam");
+            throw ArmyParamExpression.typeInferReturnCodecField("encodingLiteral");
         }
-        return new AnonymousParam(type, value);
+        return new AnonymousLiteral(type, value);
     }
-
 
     /**
      * @throws CriteriaException throw when <ul>
-     *                           <li>infer return codec {@link FieldMeta}.</li>
+     *                           <li>infer return codec {@link TableField}.</li>
      *                           <li>name have no text</li>
      *                           </ul>
-     * @see SQLs#namedParam(TypeInfer, String)
+     * @see SQLs#namedLiteral(TypeInfer, String)
      */
-    static ParamExpression named(final @Nullable TypeInfer infer, final @Nullable String name) {
+    static ArmyLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
             throw nameHaveNoText();
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw ParamExpression.typeInferReturnCodecField("encodingNamedParam");
+            throw ArmyParamExpression.typeInferReturnCodecField("encodingNamedLiteral");
         }
-        return new ImmutableNamedNonNullParam(name, type);
+        return new NamedNonNullLiteral(name, type);
     }
-
 
     /**
      * @throws CriteriaException throw when <ul>
-     *                           <li>infer return codec {@link FieldMeta}.</li>
+     *                           <li>infer return codec {@link TableField}.</li>
      *                           <li>name have no text</li>
      *                           </ul>
-     * @see SQLs#namedNullableParam(TypeInfer, String)
+     * @see SQLs#namedNullableLiteral(TypeInfer, String)
      */
-    static ParamExpression namedNullable(@Nullable TypeInfer infer, @Nullable String name) {
+    static ArmyLiteralExpression namedNullable(final @Nullable TypeInfer infer, final @Nullable String name) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
             throw nameHaveNoText();
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw ParamExpression.typeInferReturnCodecField("encodingNamedNullableParam");
+            throw ArmyParamExpression.typeInferReturnCodecField("encodingNamedNullableLiteral");
         }
-        return new ImmutableNamedParam(name, type);
+        return new NamedLiteral(name, type);
     }
 
 
     /**
      * @throws CriteriaException throw when infer isn't codec {@link TableField}.
-     * @see SQLs#encodingParam(TypeInfer, Object)
+     * @see SQLs#encodingLiteral(TypeInfer, Object)
      */
-    static ParamExpression encodingSingle(final @Nullable TypeInfer infer, final @Nullable Object value) {
+    static ArmyLiteralExpression encodingSingle(final @Nullable TypeInfer infer, final @Nullable Object value) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw ParamExpression.typeInferIsNotCodecField("param");
+            throw ArmyParamExpression.typeInferIsNotCodecField("literal");
         }
-        return new AnonymousParam((TableField) infer, value);
+        return new AnonymousLiteral((TableField) infer, value);
     }
-
 
     /**
      * @throws CriteriaException throw when <ul>
      *                           <li>infer isn't codec {@link TableField}.</li>
      *                           <li>name have no text</li>
      *                           </ul>
-     * @see SQLs#encodingNamedParam(TypeInfer, String)
+     * @see SQLs#encodingNamedLiteral(TypeInfer, String)
      */
-    static ParamExpression encodingNamed(final @Nullable TypeInfer infer, final @Nullable String name) {
+    static ArmyLiteralExpression encodingNamed(final @Nullable TypeInfer infer, final @Nullable String name) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
             throw nameHaveNoText();
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw ParamExpression.typeInferIsNotCodecField("namedParam");
+            throw ArmyParamExpression.typeInferIsNotCodecField("namedLiteral");
         }
-        return new ImmutableNamedNonNullParam(name, (TableField) infer);
+        return new NamedNonNullLiteral(name, (TableField) infer);
     }
 
     /**
      * @throws CriteriaException throw when <ul>
-     *                           <li>infer isn't codec {@link FieldMeta}.</li>
+     *                           <li>infer isn't codec {@link TableField}.</li>
      *                           <li>name have no text</li>
      *                           </ul>
-     * @see SQLs#encodingNamedNullableParam(TypeInfer, String)
+     * @see SQLs#encodingNamedNullableLiteral(TypeInfer, String)
      */
-    static ParamExpression encodingNamedNullable(final @Nullable TypeInfer infer, final @Nullable String name) {
+    static ArmyLiteralExpression encodingNamedNullable(final @Nullable TypeInfer infer, final @Nullable String name) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
             throw nameHaveNoText();
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw ParamExpression.typeInferIsNotCodecField("namedNullableParam");
+            throw ArmyParamExpression.typeInferIsNotCodecField("namedNullableLiteral");
         }
-        return new ImmutableNamedParam(name, (TableField) infer);
+        return new NamedLiteral(name, (TableField) infer);
     }
-
-
-    static CriteriaException typeInferReturnCodecField(String methodName) {
-        String m = String.format("infer return codec field,you should invoke %s.%s(TypeInfer,Object)",
-                SQLs.class.getName(), methodName);
-        return ContextStack.clearStackAndCriteriaError(m);
-    }
-
-    static CriteriaException typeInferIsNotCodecField(String methodName) {
-        String m = String.format("infer isn't codec field,you should invoke %s.%s(TypeInfer,Object)",
-                SQLs.class.getName(), methodName);
-        return ContextStack.clearStackAndCriteriaError(m);
-    }
-
 
     private static CriteriaException nameHaveNoText() {
-        return ContextStack.clearStackAndCriteriaError("name must have text for single-parameter.");
+        return ContextStack.clearStackAndCriteriaError("name must have text for single-literal.");
     }
 
     /**
      * private constructor
      */
-    private ParamExpression() {
+    private ArmyLiteralExpression() {
     }
 
-    @Override
-    public final void appendSql(_SqlContext context) {
-        context.appendParam(this);
-    }
-
-
-    private static final class AnonymousParam extends ParamExpression
-            implements SingleParam, SingleAnonymousValue {
-
-        private final TypeMeta type;
+    private static class AnonymousLiteral extends ArmyLiteralExpression
+            implements SingleAnonymousValue {
 
         private final Object value;
 
+        private final TypeMeta type;
 
         /**
          * @see #single(TypeInfer, Object)
+         * @see #encodingSingle(TypeInfer, Object)
          */
-        private AnonymousParam(TypeMeta type, @Nullable Object value) {
+        private AnonymousLiteral(TypeMeta type, @Nullable Object value) {
             if (type instanceof QualifiedField) {
                 this.type = ((QualifiedField<?>) type).fieldMeta();
             } else {
@@ -202,32 +180,33 @@ abstract class ParamExpression extends OperationExpression.OperationSimpleExpres
         }
 
         @Override
-        public TypeMeta typeMeta() {
+        public final Object value() {
+            return this.value;
+        }
+
+
+        @Override
+        public final TypeMeta typeMeta() {
             return this.type;
         }
 
         @Override
-        public Object value() {
-            return this.value;
+        public final void appendSql(_SqlContext context) {
+            context.appendLiteral(this.type, this.value);
         }
 
         @Override
-        public String toString() {
-            return " ?";
-        }
-
-        @Override
-        public int hashCode() {
+        public final int hashCode() {
             return Objects.hash(this.type, this.value);
         }
 
         @Override
-        public boolean equals(final Object obj) {
+        public final boolean equals(final Object obj) {
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof AnonymousParam) {
-                final AnonymousParam o = (AnonymousParam) obj;
+            } else if (obj instanceof AnonymousLiteral) {
+                final AnonymousLiteral o = (AnonymousLiteral) obj;
                 match = o.type.equals(this.type)
                         && Objects.equals(o.value, this.value);
             } else {
@@ -236,21 +215,31 @@ abstract class ParamExpression extends OperationExpression.OperationSimpleExpres
             return match;
         }
 
+        @Override
+        public final String toString() {
+            final String s;
+            if (this.value == null) {
+                s = _Constant.SPACE_NULL;
+            } else if (this.type instanceof TableField && ((TableField) this.type).codec()) {
+                s = " {LITERAL}";
+            } else {
+                s = " " + this.value;
+            }
+            return s;
+        }
 
-    }//AnonymousParam
+
+    }//AnonymousLiteral
 
 
-    private static class ImmutableNamedParam extends ParamExpression implements NamedParam.NamedSingle {
+    private static class NamedLiteral extends ArmyLiteralExpression implements io.army.criteria.NamedLiteral {
 
         private final String name;
+
+
         private final TypeMeta type;
 
-
-        /**
-         * @see #namedNullable(TypeInfer, String)
-         * @see #encodingNamedNullable(TypeInfer, String)
-         */
-        private ImmutableNamedParam(String name, TypeMeta type) {
+        private NamedLiteral(String name, TypeMeta type) {
             this.name = name;
             if (type instanceof QualifiedField) {
                 this.type = ((QualifiedField<?>) type).fieldMeta();
@@ -260,10 +249,6 @@ abstract class ParamExpression extends OperationExpression.OperationSimpleExpres
             }
         }
 
-        @Override
-        public final TypeMeta typeMeta() {
-            return this.type;
-        }
 
         @Override
         public final String name() {
@@ -271,10 +256,20 @@ abstract class ParamExpression extends OperationExpression.OperationSimpleExpres
         }
 
         @Override
+        public final TypeMeta typeMeta() {
+            return this.type;
+        }
+
+        @Override
+        public final void appendSql(final _SqlContext context) {
+            context.appendLiteral(this);
+        }
+
+
+        @Override
         public final String toString() {
             return " ?:" + this.name;
         }
-
 
         @Override
         public final int hashCode() {
@@ -286,9 +281,9 @@ abstract class ParamExpression extends OperationExpression.OperationSimpleExpres
             final boolean match;
             if (obj == this) {
                 match = true;
-            } else if (obj instanceof ImmutableNamedParam) {
-                final ImmutableNamedParam o = (ImmutableNamedParam) obj;
-                match = (o instanceof ImmutableNamedNonNullParam == this instanceof ImmutableNamedNonNullParam)
+            } else if (obj instanceof NamedLiteral) {
+                final NamedLiteral o = (NamedLiteral) obj;
+                match = (o instanceof NamedNonNullLiteral == this instanceof NamedNonNullLiteral)
                         && o.name.equals(this.name)
                         && o.type.equals(this.type);
             } else {
@@ -298,22 +293,18 @@ abstract class ParamExpression extends OperationExpression.OperationSimpleExpres
         }
 
 
-    }//ImmutableNamedParam
+    }//NamedLiteral
 
 
-    private static final class ImmutableNamedNonNullParam extends ImmutableNamedParam
+    private static final class NamedNonNullLiteral extends NamedLiteral
             implements SqlValueParam.NonNullValue {
 
-        /**
-         * @see #named(TypeInfer, String)
-         * @see #encodingNamed(TypeInfer, String)
-         */
-        private ImmutableNamedNonNullParam(String name, TypeMeta type) {
+        private NamedNonNullLiteral(String name, TypeMeta type) {
             super(name, type);
         }
 
 
-    }//ImmutableNamedNonNullParam
+    }//NamedNonNullLiteral
 
 
 }

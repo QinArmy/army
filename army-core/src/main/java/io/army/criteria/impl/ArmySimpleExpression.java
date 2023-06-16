@@ -6,8 +6,8 @@ package io.army.criteria.impl;
  *     <ul>
  *         <li>{@link OperationExpression.OperationSimpleExpression}</li>
  *         <li>{@link OperationExpression.BracketsExpression}</li>
- *         <li>{@link ParamExpression}</li>
- *         <li>{@link LiteralExpression}</li>
+ *         <li>{@link ArmyParamExpression}</li>
+ *         <li>{@link ArmyLiteralExpression}</li>
  *         <li>{@link SQLs#NULL}</li>
  *         <li>{@link SQLs#TRUE}</li>
  *         <li>{@link SQLs#FALSE}</li>

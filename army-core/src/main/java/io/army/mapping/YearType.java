@@ -57,7 +57,7 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
             case MySQL:
                 type = MySQLType.YEAR;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.DATE;
                 break;
             default:
@@ -84,7 +84,7 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
             case MySQL:
                 value = _convertToYear(this, env, nonNull, PARAM_ERROR_HANDLER_0);
                 break;
-            case Postgre: {
+            case PostgreSQL: {
                 if (nonNull instanceof LocalDate) {
                     value = (LocalDate) nonNull;
                 } else if (nonNull instanceof LocalDateTime) {

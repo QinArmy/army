@@ -53,7 +53,7 @@ public final class DoubleType extends _NumericType._FloatNumericType {
             case MySQL:
                 type = MySQLType.DOUBLE;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.FLOAT8;
                 break;
             default:

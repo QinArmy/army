@@ -534,8 +534,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             match = false;
         } else if (dualPredicate.operator == DualBooleanOperator.EQUAL) {
             match = dualPredicate.right instanceof SqlValueParam.SingleValue
-                    && (dualPredicate.right instanceof ParamExpression
-                    || dualPredicate.right instanceof LiteralExpression);
+                    && (dualPredicate.right instanceof ArmyParamExpression
+                    || dualPredicate.right instanceof ArmyLiteralExpression);
         } else if (dualPredicate.operator == DualBooleanOperator.IN) {
             match = dualPredicate.right instanceof NonOperationExpression.MultiValueExpression;
         } else {

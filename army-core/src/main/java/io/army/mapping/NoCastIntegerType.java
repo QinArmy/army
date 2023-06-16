@@ -36,7 +36,7 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
     public SqlType map(final ServerMeta meta) {
         final SqlType type;
         switch (meta.dialectDatabase()) {
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.NO_CAST_INTEGER;
                 break;
             case MySQL:

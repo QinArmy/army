@@ -17,7 +17,7 @@ public enum Database {
 
     MySQL(MySQLDialect::values, MySQLDialect::valueOf),
     Oracle(OracleDialect::values, OracleDialect::valueOf),
-    Postgre(PostgreDialect::values, PostgreDialect::valueOf),
+    PostgreSQL(PostgreDialect::values, PostgreDialect::valueOf),
     H2(H2Dialect::values, H2Dialect::valueOf);
 
 
@@ -56,7 +56,7 @@ public enum Database {
             case MySQL:
                 dialect = MySQLDialect.from(meta);
                 break;
-            case Postgre:
+            case PostgreSQL:
                 dialect = PostgreDialect.from(meta);
                 break;
             case Oracle:

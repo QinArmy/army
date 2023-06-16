@@ -271,7 +271,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final List<String> columnAliasList;
 
-        private final PostgreSyntax.WordMaterialized modifier;
+        private final Postgres.WordMaterialized modifier;
 
         private final SubStatement subStatement;
 
@@ -281,12 +281,12 @@ abstract class PostgreSupports extends CriteriaSupports {
         private final _CycleClause cycleClause;
 
         PostgreCte(String name, @Nullable List<String> columnAliasList,
-                   @Nullable PostgreSyntax.WordMaterialized modifier, SubStatement subStatement) {
+                   @Nullable Postgres.WordMaterialized modifier, SubStatement subStatement) {
             this(name, columnAliasList, modifier, subStatement, null, null);
         }
 
         PostgreCte(String name, final @Nullable List<String> columnAliasList,
-                   @Nullable PostgreSyntax.WordMaterialized modifier, SubStatement subStatement,
+                   @Nullable Postgres.WordMaterialized modifier, SubStatement subStatement,
                    final @Nullable _SearchClause searchClause, final @Nullable _CycleClause cycleClause) {
             this.name = name;
             this.columnAliasList = _Collections.safeUnmodifiableList(columnAliasList);

@@ -56,7 +56,7 @@ public final class ShortType extends _NumericType._IntegerType {
             case MySQL:
                 type = MySQLType.SMALLINT;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.SMALLINT;
                 break;
 

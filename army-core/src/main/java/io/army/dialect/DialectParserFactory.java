@@ -24,7 +24,7 @@ public abstract class DialectParserFactory {
             case MySQL:
                 parser = _MySQLDialectFactory.mysqlDialectParser(environment);
                 break;
-            case Postgre:
+            case PostgreSQL:
                 parser = _PostgreDialectFactory.postgreDialectParser(environment);
                 break;
             case Oracle:

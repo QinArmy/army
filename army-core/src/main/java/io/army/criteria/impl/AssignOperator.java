@@ -22,7 +22,7 @@ enum AssignOperator {
     final void appendOperator(final Dialect dialect, final SQLField field, final _SqlContext context) {
         switch (dialect.database()) {
             case MySQL:
-            case Postgre:
+            case PostgreSQL:
                 this.simpleOperator(field, context);
                 break;
             default:

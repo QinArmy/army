@@ -25,8 +25,8 @@ import java.util.Objects;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  *
- * @see ParamExpression
- * @see LiteralExpression
+ * @see ArmyParamExpression
+ * @see ArmyLiteralExpression
  * @see LiteralRowExpression
  * @since 1.0
  */
@@ -49,7 +49,7 @@ abstract class ParamRowExpression extends OperationRowExpression
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw ParamExpression.typeInferReturnCodecField("encodingMultiParam");
+            throw ArmyParamExpression.typeInferReturnCodecField("encodingMultiParam");
         }
         return new AnonymousMultiParam(type, values);
     }
@@ -71,7 +71,7 @@ abstract class ParamRowExpression extends OperationRowExpression
         } else if (size < 1) {
             throw sizeLessThanOne(size);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw ParamExpression.typeInferReturnCodecField("encodingNamedMultiParam");
+            throw ArmyParamExpression.typeInferReturnCodecField("encodingNamedMultiParam");
         }
         return new NamedMultiParam(type, name, size);
     }
@@ -91,7 +91,7 @@ abstract class ParamRowExpression extends OperationRowExpression
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw ParamExpression.typeInferIsNotCodecField("multiParam");
+            throw ArmyParamExpression.typeInferIsNotCodecField("multiParam");
         }
         return new AnonymousMultiParam((TableField) infer, values);
     }
@@ -112,7 +112,7 @@ abstract class ParamRowExpression extends OperationRowExpression
         } else if (size < 1) {
             throw sizeLessThanOne(size);
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw ParamExpression.typeInferIsNotCodecField("namedMultiParam");
+            throw ArmyParamExpression.typeInferIsNotCodecField("namedMultiParam");
         }
         return new NamedMultiParam((TableField) infer, name, size);
     }

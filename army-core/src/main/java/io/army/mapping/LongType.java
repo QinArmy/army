@@ -62,7 +62,7 @@ public final class LongType extends _NumericType._IntegerType {
             case MySQL:
                 type = MySQLType.BIGINT;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.BIGINT;
                 break;
             default:

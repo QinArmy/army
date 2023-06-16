@@ -59,7 +59,8 @@ public class MySQLCriteriaUnitTests {
 
         final Update stmt;
         stmt = MySQLs.singleUpdate()
-                .update(supplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), ChinaCity_.T)
+                .update(supplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE))
+                .space(ChinaCity_.T)
                 .partition("p2", "p1")
                 .as("t")
 
@@ -107,8 +108,8 @@ public class MySQLCriteriaUnitTests {
                 .setNamed(ChinaRegion_.name, SQLs::namedParam)
                 .where(ChinaRegion_.id::equal, SQLs::literal, paramMap.get(ChinaRegion_.ID))
                 .limit(SQLs::param, 10)
-                .namedParamList(paramList)
-                .asUpdate();
+                .asUpdate()
+                .namedParamList(paramList);
 
         printStmt(stmt);
     }
@@ -331,7 +332,8 @@ public class MySQLCriteriaUnitTests {
 
             final Update stmt;
             stmt = MySQLs.multiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), BankUser_.T)
+                    .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE))
+                    .space(BankUser_.T)
                     .partition("p1").as("u")
                     .useIndex().forJoin().parens("PRIMARY")
                     .join(BankAccount_.T, AS, "a")
@@ -480,7 +482,8 @@ public class MySQLCriteriaUnitTests {
 
             final BatchUpdate stmt;
             stmt = MySQLs.batchMultiUpdate()
-                    .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE), PillUser_.T)
+                    .update(hintSupplier, Arrays.asList(MySQLs.LOW_PRIORITY, MySQLs.IGNORE))
+                    .space(PillUser_.T)
                     .partition("p1").as("u")
                     .useIndex().forJoin().parens("PRIMARY")
                     .join(BankAccount_.T, AS, "a")
@@ -493,8 +496,8 @@ public class MySQLCriteriaUnitTests {
                     .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
                     .ifAnd(BankAccount_.createTime::between, SQLs::literal, map::get, "startTime", AND, "endTime")
                     .ifAnd(BankAccount_.version::equal, SQLs::literal, map::get, "version")
-                    .namedParamList(paramList)
-                    .asUpdate();
+                    .asUpdate()
+                    .namedParamList(paramList);
 
             printStmt(stmt);
 

@@ -58,7 +58,7 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
             case MySQL:
                 type = MySQLType.BIT;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.VARBIT;
                 break;
             default:
@@ -87,7 +87,7 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
             case MySQL:
                 value = _MappingUtils.bitwiseToLong(this, nonNull, PARAM_ERROR_HANDLER_0);
                 break;
-            case Postgre:
+            case PostgreSQL:
                 value = _MappingUtils.bitwiseToString(this, nonNull, PARAM_ERROR_HANDLER_0);
                 break;
             default:

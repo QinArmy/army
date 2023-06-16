@@ -80,7 +80,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
                 value = dateTime.withZoneSameInstant(env.databaseZoneOffset())
                         .toLocalDateTime();
                 break;
-            case Postgre:
+            case PostgreSQL:
             case H2:
             default:
                 value = dateTime;
@@ -146,7 +146,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
                 }
             }
             break;
-            case Postgre:
+            case PostgreSQL:
             default: {
                 try {
                     value = ZonedDateTime.parse((String) nonNull, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
@@ -169,7 +169,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
                 value = ZonedDateTime.of(LocalDateTime.parse((String) nonNull, _TimeUtils.DATETIME_FORMATTER_6),
                         env.databaseZoneOffset());
                 break;
-            case Postgre:
+            case PostgreSQL:
             default: {
                 ZonedDateTime v;
                 try {

@@ -83,7 +83,7 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
             case MySQL:
                 sqlType = MySQLType.DATE;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 sqlType = PostgreSqlType.DATE;
                 break;
             default:

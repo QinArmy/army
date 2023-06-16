@@ -971,7 +971,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             extends WithDistinctOnSelectClauseDispatcher<
             PostgreCtes,
             WE,
-            PostgreSyntax.Modifier,
+            Postgres.Modifier,
             PostgreQuery._PostgreSelectCommaSpec<I>,
             PostgreQuery._FromSpec<I>> implements PostgreQuery._PostgreSelectClause<I> {
 
@@ -1244,7 +1244,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         private List<String> columnAliasList;
 
-        private PostgreSyntax.WordMaterialized modifier;
+        private Postgres.WordMaterialized modifier;
 
 
         private StaticCteAsClause(String name, StaticCteComma<I> comma) {
@@ -1273,7 +1273,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
         @Override
-        public <R extends _CteComma<I>> R as(@Nullable PostgreSyntax.WordMaterialized modifier,
+        public <R extends _CteComma<I>> R as(@Nullable Postgres.WordMaterialized modifier,
                                              Function<_StaticCteComplexCommandSpec<I>, R> function) {
             if (modifier != null && modifier != Postgres.MATERIALIZED && modifier != Postgres.NOT_MATERIALIZED) {
                 throw CriteriaUtils.errorModifier(this.comma.context, modifier);

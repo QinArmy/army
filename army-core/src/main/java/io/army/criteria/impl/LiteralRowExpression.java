@@ -23,8 +23,8 @@ import java.util.Objects;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  * </p>
  *
- * @see ParamExpression
- * @see LiteralExpression
+ * @see ArmyParamExpression
+ * @see ArmyLiteralExpression
  * @see ParamRowExpression
  * @since 1.0
  */
@@ -48,7 +48,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw ParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
+            throw ArmyParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
         }
         return new AnonymousMultiLiteral(type, values);
     }
@@ -64,7 +64,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw ParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
+            throw ArmyParamExpression.typeInferReturnCodecField("encodingMultiLiteral");
         }
         return new AnonymousMultiLiteral(type, values);
     }
@@ -87,7 +87,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
         } else if (size < 1) {
             throw sizeLessThanOne(size);
         } else if ((type = infer.typeMeta()) instanceof TableField && ((TableField) type).codec()) {
-            throw ParamExpression.typeInferReturnCodecField("encodingNamedMultiLiteral");
+            throw ArmyParamExpression.typeInferReturnCodecField("encodingNamedMultiLiteral");
         }
         return new NamedMultiLiteral(name, type, size);
     }
@@ -107,7 +107,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
         } else if (values.size() == 0) {
             throw valuesIsEmpty();
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw ParamExpression.typeInferIsNotCodecField("multiLiteral");
+            throw ArmyParamExpression.typeInferIsNotCodecField("multiLiteral");
         }
         return new AnonymousMultiLiteral((TableField) infer, values);
     }
@@ -128,7 +128,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
         } else if (size < 1) {
             throw sizeLessThanOne(size);
         } else if (!(infer instanceof TableField && ((TableField) infer).codec())) {
-            throw ParamExpression.typeInferIsNotCodecField("namedMultiLiteral");
+            throw ArmyParamExpression.typeInferIsNotCodecField("namedMultiLiteral");
         }
         return new NamedMultiLiteral(name, (TableField) infer, size);
     }

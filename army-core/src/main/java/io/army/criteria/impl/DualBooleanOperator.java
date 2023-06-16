@@ -61,7 +61,7 @@ enum DualBooleanOperator implements Operator.SqlDualBooleanOperator {
             case MySQL:
                 operator = " <=>";
                 break;
-            case Postgre:
+            case PostgreSQL:
             case H2:
                 operator = " IS NOT DISTINCT FROM";
                 break;

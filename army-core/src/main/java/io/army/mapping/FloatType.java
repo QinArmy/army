@@ -52,7 +52,7 @@ public final class FloatType extends _NumericType._FloatNumericType {
             case MySQL:
                 type = MySQLType.FLOAT;
                 break;
-            case Postgre:
+            case PostgreSQL:
                 type = PostgreSqlType.REAL;
                 break;
             default:
