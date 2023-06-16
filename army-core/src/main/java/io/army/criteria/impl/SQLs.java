@@ -884,8 +884,6 @@ public abstract class SQLs extends SQLsSyntax {
     private static final class DefaultWord extends NonOperationExpression
             implements WordDefault, ArmyKeyWord {
 
-        private static final DefaultWord INSTANCE = new DefaultWord();
-
         private DefaultWord() {
         }
 
@@ -917,8 +915,6 @@ public abstract class SQLs extends SQLsSyntax {
      */
     private static final class LiteralSymbolAsterisk extends NonOperationExpression
             implements FunctionArg.SingleFunctionArg {
-
-        private static final LiteralSymbolAsterisk INSTANCE = new LiteralSymbolAsterisk();
 
         private LiteralSymbolAsterisk() {
         }

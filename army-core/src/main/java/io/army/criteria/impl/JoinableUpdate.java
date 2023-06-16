@@ -26,15 +26,22 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableUpdate<I extends Item, F extends SQLField, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
+abstract class JoinableUpdate<I extends Item, BI extends Item, B extends CteBuilderSpec, WE extends Item, F extends SQLField, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, Object, Object, Object, Object, Object>
         implements _Update,
+        DialectStatement._DynamicWithClause<B, WE>,
+        _Statement._WithClauseSpec,
         _Statement._JoinableStatement,
         UpdateStatement._StaticBatchSetClause<F, SR>,
         UpdateStatement._StaticRowSetClause<F, SR>,
         _Statement._ItemPairList,
         Statement._DmlUpdateSpec<I>,
+        Statement._BatchParamClause<BI>,
         Statement {
+
+    private boolean recursive;
+
+    private List<_Cte> cteList;
 
     private List<_TabularBlock> tableBlockList;
 
@@ -42,10 +49,64 @@ abstract class JoinableUpdate<I extends Item, F extends SQLField, SR, FT, FS, FC
 
     private Boolean prepared;
 
-    JoinableUpdate(CriteriaContext context) {
+    JoinableUpdate(@Nullable ArmyStmtSpec spec, CriteriaContext context) {
         super(context);
+        if (spec != null) {
+            this.recursive = spec.isRecursive();
+            this.cteList = spec.cteList();
+        }
     }
 
+
+    @Override
+    public final WE with(Consumer<B> consumer) {
+        final B builder;
+        builder = this.createCteBuilder(false);
+        consumer.accept(builder);
+        return this.endDynamicWithClause(builder, true);
+    }
+
+
+    @Override
+    public final WE withRecursive(Consumer<B> consumer) {
+        final B builder;
+        builder = this.createCteBuilder(true);
+        consumer.accept(builder);
+        return this.endDynamicWithClause(builder, true);
+    }
+
+
+    @Override
+    public final WE ifWith(Consumer<B> consumer) {
+        final B builder;
+        builder = this.createCteBuilder(false);
+        consumer.accept(builder);
+        return this.endDynamicWithClause(builder, false);
+    }
+
+
+    @Override
+    public final WE ifWithRecursive(Consumer<B> consumer) {
+        final B builder;
+        builder = this.createCteBuilder(true);
+        consumer.accept(builder);
+        return this.endDynamicWithClause(builder, false);
+    }
+
+    @Override
+    public final boolean isRecursive() {
+        return this.recursive;
+    }
+
+    @Override
+    public final List<_Cte> cteList() {
+        List<_Cte> cteList = this.cteList;
+        if (cteList == null) {
+            cteList = Collections.emptyList();
+            this.cteList = cteList;
+        }
+        return cteList;
+    }
 
     @Override
     public final SR set(F field, Expression value) {
@@ -232,6 +293,21 @@ abstract class JoinableUpdate<I extends Item, F extends SQLField, SR, FT, FS, FC
     }
 
     @Override
+    public final <P> BI namedParamList(@Nullable List<P> paramList) {
+        return this.onAsBatchUpdate(CriteriaUtils.paramList(paramList));
+    }
+
+    @Override
+    public final <P> BI namedParamList(Supplier<List<P>> supplier) {
+        return this.onAsBatchUpdate(CriteriaUtils.paramList(supplier.get()));
+    }
+
+    @Override
+    public final <K> BI namedParamList(Function<K, ?> function, K key) {
+        return this.onAsBatchUpdate(CriteriaUtils.paramListFromMap(function, key));
+    }
+
+    @Override
     public final List<_TabularBlock> tableBlockList() {
         final List<_TabularBlock> list = this.tableBlockList;
         if (list == null) {
@@ -280,6 +356,8 @@ abstract class JoinableUpdate<I extends Item, F extends SQLField, SR, FT, FS, FC
 
     abstract I onAsUpdate();
 
+    abstract BI onAsBatchUpdate(List<?> paramList);
+
     void onClear() {
         //no-op
     }
@@ -287,6 +365,9 @@ abstract class JoinableUpdate<I extends Item, F extends SQLField, SR, FT, FS, FC
     void onBeforeContextEnd() {
         //no-op
     }
+
+
+    abstract B createCteBuilder(boolean recursive);
 
     final SR onAddItemPair(final ItemPair pair) {
         if (!(pair instanceof SQLs.ArmyItemPair)) {
@@ -303,6 +384,13 @@ abstract class JoinableUpdate<I extends Item, F extends SQLField, SR, FT, FS, FC
         itemPairList.add((_ItemPair) pair);
         return (SR) this;
     }
+
+    final WE endStaticWithClause(final boolean recursive) {
+        this.recursive = recursive;
+        this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
+        return (WE) this;
+    }
+
 
     final void endUpdateStatement() {
         _Assert.nonPrepared(this.prepared);
@@ -326,6 +414,18 @@ abstract class JoinableUpdate<I extends Item, F extends SQLField, SR, FT, FS, FC
     }
 
 
+    @SuppressWarnings("unchecked")
+    private WE endDynamicWithClause(final B builder, final boolean required) {
+        ((CriteriaSupports.CteBuilder) builder).endLastCte();
+
+        final boolean recursive;
+        recursive = builder.isRecursive();
+        this.recursive = recursive;
+        this.cteList = this.context.endWithClause(recursive, required);
+        return (WE) this;
+    }
+
+
     private SR onAddAssignmentItemPair(final F field, final @Nullable AssignmentItem item) {
         final ItemPair pair;
         if (item == null) {
@@ -341,56 +441,38 @@ abstract class JoinableUpdate<I extends Item, F extends SQLField, SR, FT, FS, FC
     }
 
 
-    static abstract class WithMultiUpdate<I extends Item, B extends CteBuilderSpec, WE extends Item, F extends SQLField, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
-            extends JoinableUpdate<I, F, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
-            implements DialectStatement._DynamicWithClause<B, WE>
-            , _Statement._WithClauseSpec {
+    protected static abstract class ArmyBatchJoinableUpdate extends CriteriaSupports.StatementMockSupport
+            implements _MultiUpdate,
+            UpdateStatement,
+            _BatchStatement,
+            _Statement._WithClauseSpec {
 
-        private boolean recursive;
+        private final boolean recursive;
 
-        private List<_Cte> cteList;
+        private final List<_Cte> cteList;
 
-        WithMultiUpdate(@Nullable ArmyStmtSpec spec, CriteriaContext context) {
-            super(context);
-            if (spec != null) {
-                this.recursive = spec.isRecursive();
-                this.cteList = spec.cteList();
-            }
-        }
+        private final List<_TabularBlock> tableBlockList;
 
-        @Override
-        public final WE with(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
-        }
+        private final List<_ItemPair> itemPairList;
 
+        private final List<_Predicate> wherePredicateList;
 
-        @Override
-        public final WE withRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
-        }
+        private final List<?> paramList;
 
+        private boolean prepared = true;
 
-        @Override
-        public final WE ifWith(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
-        }
+        ArmyBatchJoinableUpdate(JoinableUpdate<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> clause,
+                                List<?> paramList) {
+            super(clause.context);
 
+            this.recursive = clause.recursive;
+            this.cteList = clause.cteList();
+            this.tableBlockList = clause.tableBlockList;
+            this.itemPairList = clause.itemPairList;
 
-        @Override
-        public final WE ifWithRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
+            this.wherePredicateList = clause.wherePredicateList();
+            this.paramList = paramList;
+
         }
 
         @Override
@@ -400,38 +482,57 @@ abstract class JoinableUpdate<I extends Item, F extends SQLField, SR, FT, FS, FC
 
         @Override
         public final List<_Cte> cteList() {
-            List<_Cte> cteList = this.cteList;
-            if (cteList == null) {
-                cteList = Collections.emptyList();
-                this.cteList = cteList;
+            return this.cteList;
+        }
+
+
+        @Override
+        public final List<_TabularBlock> tableBlockList() {
+            return this.tableBlockList;
+        }
+
+        @Override
+        public final List<_ItemPair> itemPairList() {
+            return this.itemPairList;
+        }
+
+
+        @Override
+        public final List<_Predicate> wherePredicateList() {
+            return this.wherePredicateList;
+        }
+
+        @Override
+        public final List<?> paramList() {
+            return this.paramList;
+        }
+
+        @Override
+        public final void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            return this.prepared;
+        }
+
+        @Override
+        public final void clear() {
+            if (!this.prepared) {
+                return;
             }
-            return cteList;
+            this.prepared = false;
+            this.onClear();
         }
 
 
-        final WE endStaticWithClause(final boolean recursive) {
-            this.recursive = recursive;
-            this.cteList = this.context.endWithClause(recursive, true);//static with syntax is required
-            return (WE) this;
+        void onClear() {
+            //no-op
         }
 
 
-        abstract B createCteBuilder(boolean recursive);
-
-
-        @SuppressWarnings("unchecked")
-        private WE endDynamicWithClause(final B builder, final boolean required) {
-            ((CriteriaSupports.CteBuilder) builder).endLastCte();
-
-            final boolean recursive;
-            recursive = builder.isRecursive();
-            this.recursive = recursive;
-            this.cteList = this.context.endWithClause(recursive, required);
-            return (WE) this;
-        }
-
-
-    }//WithMultiUpdate
+    }//ArmyBatchJoinableUpdate
 
 
 }

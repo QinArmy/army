@@ -12,7 +12,10 @@ import io.army.meta.TableMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -41,8 +44,8 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
      */
     SetWhereClause(CriteriaContext context, TableMeta<?> updateTable, String tableAlias) {
         super(context);
-        Objects.requireNonNull(updateTable);
-        Objects.requireNonNull(tableAlias);
+        ContextStack.assertNonNull(updateTable);
+        ContextStack.assertNonNull(tableAlias);
         this.updateTable = updateTable;
         this.tableAlias = tableAlias;
 

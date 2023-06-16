@@ -12,7 +12,11 @@ import java.util.function.Function;
 
 /**
  * <p>
- * This class representing non-operation expression
+ * This class representing non-operation expression.
+ * This class is base class of following : <ul>
+ * <li>{@link SQLs#DEFAULT}</li>
+ * <li>{@link SQLs#_ASTERISK_EXP}</li>
+ * </ul>
  * </p>
  */
 abstract class NonOperationExpression implements ArmyExpression {
@@ -463,7 +467,6 @@ abstract class NonOperationExpression implements ArmyExpression {
         }
 
     }//NonOperationFunction
-
 
 
 }
