@@ -1,13 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.CteBuilderSpec;
-import io.army.criteria.DialectStatement;
-import io.army.criteria.Item;
-import io.army.criteria.Statement;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._Delete;
-import io.army.criteria.impl.inner._Statement;
-import io.army.criteria.impl.inner._TabularBlock;
+import io.army.criteria.*;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
 
@@ -206,6 +200,89 @@ abstract class JoinableDelete<I extends Item, BI extends Item, B extends CteBuil
     }
 
 
+    static abstract class ArmyBatchJoinableDelete extends CriteriaSupports.StatementMockSupport
+            implements _JoinableDelete,
+            DeleteStatement,
+            _BatchStatement,
+            _Statement._WithClauseSpec {
+
+        private final boolean recursive;
+
+        private final List<_Cte> cteList;
+
+        private final List<_TabularBlock> tableBlockList;
+
+        private final List<_Predicate> wherePredicateList;
+
+        private final List<?> paramList;
+
+        private boolean prepared = true;
+
+        ArmyBatchJoinableDelete(JoinableDelete<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> clause,
+                                List<?> paramList) {
+            super(clause.context);
+
+            this.recursive = clause.recursive;
+            this.cteList = clause.cteList();
+            this.tableBlockList = clause.tableBlockList;
+
+            this.wherePredicateList = clause.wherePredicateList();
+            this.paramList = paramList;
+
+        }
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            return this.cteList;
+        }
+
+
+        @Override
+        public final List<_TabularBlock> tableBlockList() {
+            return this.tableBlockList;
+        }
+
+        @Override
+        public final List<_Predicate> wherePredicateList() {
+            return this.wherePredicateList;
+        }
+
+        @Override
+        public final List<?> paramList() {
+            return this.paramList;
+        }
+
+        @Override
+        public final void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            return this.prepared;
+        }
+
+        @Override
+        public final void clear() {
+            if (!this.prepared) {
+                return;
+            }
+            this.prepared = false;
+            this.onClear();
+        }
+
+
+        void onClear() {
+            //no-op
+        }
+
+
+    }//ArmyBatchJoinableUpdate
 
 
 }

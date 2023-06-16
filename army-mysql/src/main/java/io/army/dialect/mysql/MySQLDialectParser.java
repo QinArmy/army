@@ -394,7 +394,7 @@ final class MySQLDialectParser extends MySQLParser {
         this.deleteModifiers(stmt.modifierList(), sqlBuilder);
 
         final SingleTableMeta<?> deleteTable;
-        deleteTable = stmt.table();
+        deleteTable = (SingleTableMeta<?>) stmt.table();
 
         //5. FROM clause
         sqlBuilder.append(_Constant.SPACE_FROM_SPACE);

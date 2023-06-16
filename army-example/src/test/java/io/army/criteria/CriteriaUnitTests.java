@@ -18,7 +18,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class CriteriaUnitTests {
 
-    private static final List<String> REGION_LIST = ArrayUtils.asUnmodifiableList(
+    private static final List<String> REGION_LIST = ArrayUtils.of(
             "绿叶港", "幽龙潭", "涡流岛", "元泱界", "曲境", "迷离谷", "万诗之海", "马鱼腮角", "雪谷海沟",
             "光之森林", "铁河流域", "长梦之河", "灵山塔", "舞阳河"//, "" , "","","","",
             // "","","","","", "" , "","","","",
@@ -27,7 +27,7 @@ public abstract class CriteriaUnitTests {
             // "","","","","", "" , "","","","",
     );
 
-    private static final List<String> PROVINCE_LIST = ArrayUtils.asUnmodifiableList(
+    private static final List<String> PROVINCE_LIST = ArrayUtils.of(
             "树国", "兽国", "龙国", "海国", "翼国", "雪国", "商国", "风国", "虫国", "沙国",
             "夜国", "谢都", "马林拉都", "勾雨港"//,"", "" , "","","","",
             // "","","","","", "" , "","","","",
@@ -35,7 +35,7 @@ public abstract class CriteriaUnitTests {
             // "","","","","", "" , "","","","",
     );
 
-    private static final List<String> CITY_LIST = ArrayUtils.asUnmodifiableList(
+    private static final List<String> CITY_LIST = ArrayUtils.of(
             "米拉都", "铁河郡", "游尾郡", "马驴耳城", "熊咆城", "獐腿城", "豹纹城", "孔屏城", "鲸鼻城", "首尾港",
             "铁湖城", "光荣城", "比邻都", "风之要塞", "常皙城", "言蹊城", "朝绯城", "始碧城", "呼啸1号城", "呼啸2号城",
             "呼啸3号城", "港口1号", "港口2号", "补给站1号"//,"", "" , "","","","",
@@ -43,7 +43,7 @@ public abstract class CriteriaUnitTests {
             // "","","","","", "" , "","","","",
     );
 
-    private static final List<String> PERSON_LIST = ArrayUtils.asUnmodifiableList(
+    private static final List<String> PERSON_LIST = ArrayUtils.of(
             "朴心", "魁拔", "幽弥狂", "奇衡三", "镜心", "蛮小满", "蛮吉", "谷鸡泰", "雪伦", "雷光",
             "燃谷", "幽若离", "大仓", "吧咕哒", "卡拉肖克·玲", "卡拉肖克·潘", "狄秋", "远浪", "离离艾", "白落提",
             "丰和", "桓泽金", "广秀", "英宋", "海问香", "脉兽秀秀", "玛朵布莎·爪云", "玛朵布莎·辞", "梅龙尼卡·嘉", "梅龙尼卡·蹄",
@@ -54,7 +54,7 @@ public abstract class CriteriaUnitTests {
             // "","","","","", "" , "","","",""
     );
 
-    private static final List<String> NATION_LIST = ArrayUtils.asUnmodifiableList(
+    private static final List<String> NATION_LIST = ArrayUtils.of(
             "龙族", "兽族", "辉妖族", "独行族", "特得克族", "神族", "粼妖", "格洛莫赫人", "基思卡人", "翼族",
             "萨库人", "蛰族", "默拓人" //,"","", "" , "","","","",
             // "","","","","", "" , "","","","",

@@ -424,7 +424,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             if (fieldList.size() != 1) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
-            this.fieldList = ArrayUtils.asUnmodifiableList(fieldList.get(0), ORDINALITY_FIELD);
+            this.fieldList = ArrayUtils.of(fieldList.get(0), ORDINALITY_FIELD);
             return this;
         }
 

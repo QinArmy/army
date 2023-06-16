@@ -72,6 +72,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         this.blockConsumer = context::onAddBlock;
     }
 
+
     @Override
     public final FT from(TableMeta<?> table, SQLs.WordAs as, String tableAlias) {
         return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
@@ -152,6 +153,9 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
     @Override
     public final FT using(TableMeta<?> table, SQLs.WordAs wordAs, String tableAlias) {
+        if (this instanceof UsingClauseListener) {
+            ((UsingClauseListener) this).onUsing();
+        }
         return this.onFromTable(_JoinType.NONE, null, table, tableAlias);
     }
 
@@ -160,6 +164,9 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         if (modifier != null && this.isIllegalTableModifier(modifier)) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }
+        if (this instanceof UsingClauseListener) {
+            ((UsingClauseListener) this).onUsing();
+        }
         return this.onFromTable(_JoinType.NONE, modifier, table, tableAlias);
     }
 
@@ -167,6 +174,9 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     public final FS using(@Nullable DerivedTable derivedTable) {
         if (derivedTable == null) {
             throw ContextStack.nullPointer(this.context);
+        }
+        if (this instanceof UsingClauseListener) {
+            ((UsingClauseListener) this).onUsing();
         }
         return this.onFromDerived(_JoinType.NONE, null, derivedTable);
     }
@@ -182,6 +192,9 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
             throw ContextStack.nullPointer(this.context);
         } else if (modifier != null && this.isIllegalDerivedModifier(modifier)) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
+        }
+        if (this instanceof UsingClauseListener) {
+            ((UsingClauseListener) this).onUsing();
         }
         return this.onFromDerived(_JoinType.NONE, modifier, derivedTable);
     }
@@ -203,26 +216,41 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         } else if (modifier != null && this.isIllegalDerivedModifier(modifier)) {
             throw CriteriaUtils.errorModifier(this.context, modifier);
         }
+        if (this instanceof UsingClauseListener) {
+            ((UsingClauseListener) this).onUsing();
+        }
         return this.onFromUndoneFunc(_JoinType.NONE, modifier, func);
     }
 
     @Override
     public final FC using(String cteName) {
+        if (this instanceof UsingClauseListener) {
+            ((UsingClauseListener) this).onUsing();
+        }
         return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), "");
     }
 
     @Override
     public final FC using(String cteName, SQLs.WordAs wordAs, String alias) {
+        if (this instanceof UsingClauseListener) {
+            ((UsingClauseListener) this).onUsing();
+        }
         return this.onFromCte(_JoinType.NONE, null, this.context.refCte(cteName), this.cteAlias(alias));
     }
 
     @Override
     public final FC using(Query.DerivedModifier modifier, String cteName) {
+        if (this instanceof UsingClauseListener) {
+            ((UsingClauseListener) this).onUsing();
+        }
         return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), "");
     }
 
     @Override
     public final FC using(Query.DerivedModifier modifier, String cteName, SQLs.WordAs wordAs, String alias) {
+        if (this instanceof UsingClauseListener) {
+            ((UsingClauseListener) this).onUsing();
+        }
         return this.onFromCte(_JoinType.NONE, modifier, this.context.refCte(cteName), this.cteAlias(alias));
     }
 
@@ -732,6 +760,13 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         throw ContextStack.castCriteriaApi(this.context);
     }
 
+
+    interface UsingClauseListener {
+
+        void onUsing();
+    }
+
+
     static abstract class NestedLeftParenClause<I extends Item, LT, LS, LC, LF>
             implements _NestedItems,
             Statement._NestedLeftParenModifierClause<LT, LS>,
@@ -937,7 +972,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
         @Override
         public final OR on(IPredicate predicate1, IPredicate predicate2) {
-            this.onPredicateList = ArrayUtils.asUnmodifiableList(
+            this.onPredicateList = ArrayUtils.of(
                     (OperationPredicate) predicate1,
                     (OperationPredicate) predicate2
             );
@@ -953,7 +988,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         @Override
         public final OR on(Function<Expression, IPredicate> operator1, SQLField operandField1
                 , Function<Expression, IPredicate> operator2, SQLField operandField2) {
-            this.onPredicateList = ArrayUtils.asUnmodifiableList(
+            this.onPredicateList = ArrayUtils.of(
                     (OperationPredicate) operator1.apply(operandField1),
                     (OperationPredicate) operator2.apply(operandField2)
             );

@@ -28,7 +28,7 @@ public final class MySubRowType extends MappingType
         return INSTANCE;
     }
 
-    private static final List<CompositeTypeField> FIELD_LIST = ArrayUtils.asUnmodifiableList(
+    private static final List<CompositeTypeField> FIELD_LIST = ArrayUtils.of(
             CompositeTypeField.from("d", IntegerType.INSTANCE),
             CompositeTypeField.from("e", TextType.INSTANCE)
     );

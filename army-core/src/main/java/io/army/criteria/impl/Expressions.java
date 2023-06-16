@@ -453,7 +453,7 @@ abstract class Expressions {
         }
 
         final List<ArmyGroupByItem> list;
-        list = ArrayUtils.asUnmodifiableList((ArmyGroupByItem) exp1, (ArmyGroupByItem) exp2);
+        list = ArrayUtils.of((ArmyGroupByItem) exp1, (ArmyGroupByItem) exp2);
         final GroupByItem item;
         if (modifier == null) {
             item = new ParensGroupByItemGroup(null, list);

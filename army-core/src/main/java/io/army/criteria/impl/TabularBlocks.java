@@ -297,7 +297,7 @@ abstract class TabularBlocks {
         @Override
         public final R on(IPredicate predicate1, IPredicate predicate2) {
 
-            this.predicateList = ArrayUtils.asUnmodifiableList(
+            this.predicateList = ArrayUtils.of(
                     (OperationPredicate) predicate1,
                     (OperationPredicate) predicate2
             );
@@ -313,7 +313,7 @@ abstract class TabularBlocks {
         @Override
         public final R on(Function<Expression, IPredicate> operator1, SQLField operandField1,
                           Function<Expression, IPredicate> operator2, SQLField operandField2) {
-            this.predicateList = ArrayUtils.asUnmodifiableList(
+            this.predicateList = ArrayUtils.of(
                     (OperationPredicate) operator1.apply(operandField1),
                     (OperationPredicate) operator2.apply(operandField2)
             );

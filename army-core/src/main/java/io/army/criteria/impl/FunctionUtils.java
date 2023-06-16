@@ -704,7 +704,7 @@ abstract class FunctionUtils {
         } else if (two instanceof _SelectionGroup._TableFieldGroup || two instanceof SubQuery) {
             throw CriteriaUtils.funcArgError(name, two);
         }
-        return new MultiArgRowElementFunc(name, true, ArrayUtils.asUnmodifiableList(one, two), returnType);
+        return new MultiArgRowElementFunc(name, true, ArrayUtils.of(one, two), returnType);
     }
 
     static SimpleExpression threeAndRestRowElementFunc(final String name, final TypeMeta returnType, final Object one,

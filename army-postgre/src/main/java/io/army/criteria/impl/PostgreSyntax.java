@@ -70,7 +70,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
     public static SQLs._ArrayConstructorSpec array(Object one, Object two) {
-        return Expressions.array(Expressions::nonNullFirstArrayType, ArrayUtils.asUnmodifiableList(one, two));
+        return Expressions.array(Expressions::nonNullFirstArrayType, ArrayUtils.of(one, two));
     }
 
     /**
@@ -81,7 +81,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      * @see <a href="https://www.postgresql.org/docs/15/sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS">Array Constructors</a>
      */
     public static SQLs._ArrayConstructorSpec array(Object one, Object two, Object three) {
-        return Expressions.array(Expressions::nonNullFirstArrayType, ArrayUtils.asUnmodifiableList(one, two, three));
+        return Expressions.array(Expressions::nonNullFirstArrayType, ArrayUtils.of(one, two, three));
     }
 
     /**
@@ -93,7 +93,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
      */
     public static SQLs._ArrayConstructorSpec array(Object one, Object two, Object three, Object four) {
         return Expressions.array(Expressions::nonNullFirstArrayType,
-                ArrayUtils.asUnmodifiableList(one, two, three, four)
+                ArrayUtils.of(one, two, three, four)
         );
     }
 
@@ -107,7 +107,7 @@ abstract class PostgreSyntax extends PostgreWindowFunctions {
     public static SQLs._ArrayConstructorSpec array(Object one, Object two, Object three, Object four, Object five,
                                                    Object... rest) {
         return Expressions.array(Expressions::nonNullFirstArrayType,
-                ArrayUtils.asUnmodifiableList(one, two, three, four, five, rest)
+                ArrayUtils.of(one, two, three, four, five, rest)
         );
     }
 

@@ -1373,7 +1373,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (this.clauseEnd) {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
-            this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2);
+            this.tableAliasList = ArrayUtils.of(tableAlias1, tableAlias2);
             return (LT) this;
         }
 
@@ -1382,7 +1382,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (this.clauseEnd) {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
-            this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3);
+            this.tableAliasList = ArrayUtils.of(tableAlias1, tableAlias2, tableAlias3);
             return (LT) this;
         }
 
@@ -1391,7 +1391,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (this.clauseEnd) {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
-            this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3, tableAlias4);
+            this.tableAliasList = ArrayUtils.of(tableAlias1, tableAlias2, tableAlias3, tableAlias4);
             return (LT) this;
         }
 
@@ -1401,7 +1401,7 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
             if (this.clauseEnd) {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
-            this.tableAliasList = ArrayUtils.asUnmodifiableList(tableAlias1, tableAlias2, tableAlias3, tableAlias4,
+            this.tableAliasList = ArrayUtils.of(tableAlias1, tableAlias2, tableAlias3, tableAlias4,
                     tableAlias5, restTableAlias);
             return (LT) this;
         }

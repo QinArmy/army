@@ -377,8 +377,8 @@ public interface MySQLUpdate extends MySQLStatement {
      * @since 1.0
      */
     interface _MultiIndexHintJoinSpec<I extends Item>
-            extends MySQLQuery._IndexHintForJoinClause<_MultiIndexHintJoinSpec<I>>,
-            MySQLQuery._DynamicIndexHintClause<_IndexForJoinSpec<Object>, _MultiIndexHintJoinSpec<I>>,
+            extends _IndexHintForJoinClause<_MultiIndexHintJoinSpec<I>>,
+            _DynamicIndexHintClause<_IndexForJoinSpec<Object>, _MultiIndexHintJoinSpec<I>>,
             _MultiJoinSpec<I> {
 
     }

@@ -47,14 +47,14 @@ public abstract class ArrayUtils {
     }
 
 
-    public static <T> List<T> asUnmodifiableList(T t1, T t2) {
+    public static <T> List<T> of(T t1, T t2) {
         final List<T> list = _Collections.arrayList(2);
         list.add(t1);
         list.add(t2);
         return Collections.unmodifiableList(list);
     }
 
-    public static <T> List<T> asUnmodifiableList(T t1, T t2, T t3) {
+    public static <T> List<T> of(T t1, T t2, T t3) {
         final List<T> list = _Collections.arrayList(3);
         list.add(t1);
         list.add(t2);
@@ -62,7 +62,7 @@ public abstract class ArrayUtils {
         return Collections.unmodifiableList(list);
     }
 
-    public static <T> List<T> asUnmodifiableList(T t1, T t2, T t3, T t4) {
+    public static <T> List<T> of(T t1, T t2, T t3, T t4) {
         final List<T> list = _Collections.arrayList(4);
         list.add(t1);
         list.add(t2);
@@ -75,7 +75,7 @@ public abstract class ArrayUtils {
     @SafeVarargs
     @SuppressWarnings("varargs")
     @NonNull
-    public static <T> List<T> asUnmodifiableList(T t1, T t2, T t3, T t4, T t5, @Nullable T... rest) {
+    public static <T> List<T> of(T t1, T t2, T t3, T t4, T t5, @Nullable T... rest) {
         final List<T> list;
         if (rest == null) {
             list = _Collections.arrayList(5);

@@ -2407,7 +2407,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      */
     public static _TabularWithOrdinalityFunction pgOptionsToTable(Expression optionsArray) {
         final List<Selection> fieldList;
-        fieldList = ArrayUtils.asUnmodifiableList(
+        fieldList = ArrayUtils.of(
                 ArmySelections.forName("option_name", TextType.INSTANCE),
                 ArmySelections.forName("option_value", TextType.INSTANCE)
         );
@@ -2620,7 +2620,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      */
     public static _TabularWithOrdinalityFunction pgIdentifyObject(Expression classId, Expression objId, Expression objSubId) {
         final List<Selection> fieldList;
-        fieldList = ArrayUtils.asUnmodifiableList(
+        fieldList = ArrayUtils.of(
                 ArmySelections.forName("type", TextType.INSTANCE),
                 ArmySelections.forName("schema", TextType.INSTANCE),
                 ArmySelections.forName("name", TextType.INSTANCE),
@@ -2645,7 +2645,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      */
     public static _TabularWithOrdinalityFunction pgIdentifyObjectAsAddress(Expression classId, Expression objId, Expression objSubId) {
         final List<Selection> fieldList;
-        fieldList = ArrayUtils.asUnmodifiableList(
+        fieldList = ArrayUtils.of(
                 ArmySelections.forName("type", TextType.INSTANCE),
                 ArmySelections.forName("object_names", TextArrayType.LINEAR),
                 ArmySelections.forName("object_args", TextArrayType.LINEAR)
@@ -2670,7 +2670,7 @@ abstract class PostgreMiscellaneous2Functions extends PostgreMiscellaneousFuncti
      */
     public static _TabularWithOrdinalityFunction pgGetObjectAddress(Expression type, Expression objectNames, Expression objectArgs) {
         final List<Selection> fieldList;
-        fieldList = ArrayUtils.asUnmodifiableList(
+        fieldList = ArrayUtils.of(
                 ArmySelections.forName("classid", LongType.INSTANCE),
                 ArmySelections.forName("objid", LongType.INSTANCE),
                 ArmySelections.forName("objsubid", IntegerType.INSTANCE)

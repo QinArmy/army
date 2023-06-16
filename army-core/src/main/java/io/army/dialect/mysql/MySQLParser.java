@@ -61,7 +61,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
         if (isolation == Isolation.DEFAULT) {
             stmtList = Collections.singletonList(startStmt);
         } else {
-            stmtList = ArrayUtils.asUnmodifiableList(
+            stmtList = ArrayUtils.of(
                     "SET TRANSACTION ISOLATION LEVEL " + isolation.command,  // no key word 'SESSION' or 'GLOBAL',so Next transaction only
                     startStmt);
         }

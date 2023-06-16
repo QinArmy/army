@@ -234,7 +234,8 @@ abstract class SQLsSyntax extends Functions {
      *
      * @param value non null
      * @return literal expression
-     * @see #paramValue(Object)
+     * @see SQLs#paramValue(Object)
+     * @see SQLs#space(Object)
      */
     public static LiteralExpression literalValue(final Object value) {
         return ArmyLiteralExpression.from(value);
@@ -251,6 +252,7 @@ abstract class SQLsSyntax extends Functions {
      * </p>
      *
      * @param nonNullValue non-null value
+     *@see SQLs#literalValue(Object)
      */
     public static LiteralExpression space(final Object nonNullValue) {
         final LiteralExpression expression;

@@ -175,54 +175,7 @@ public interface MySQLDelete extends MySQLStatement {
 
     /*################################## blow multi-table delete api interface ##################################*/
 
-    interface _MultiDeleteFromAliasClause<R> {
 
-        R from(String alias);
-
-        R from(String alias1, String alias2);
-
-        R from(String alias1, String alias2, String alias3);
-
-        R from(String alias1, String alias2, String alias3, String alias4);
-
-        R from(List<String> aliasList);
-
-        R from(Consumer<Consumer<String>> consumer);
-
-    }
-
-
-    interface _MultiDeleteHintClause<I extends Item> extends Item {
-
-        _MultiDeleteFromAliasClause<I> delete(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers);
-    }
-
-    /**
-     * <p>
-     * This interface representing DELETE clause for multi-table DELETE syntax.
-     * </p>
-     * <p>
-     * <strong>Note:</strong><br/>
-     * Application developer isn't allowed to directly use this interface,so you couldn't declare this interface type variable
-     * ,because army don't guarantee compatibility to future distribution.
-     * </p>
-     *
-     * @since 1.0
-     */
-    interface _MultiDeleteAliasClause<R> {
-
-        R delete(String alias);
-
-        R delete(String alias1, String alias2);
-
-        R delete(String alias1, String alias2, String alias3);
-
-        R delete(String alias1, String alias2, String alias3, String alias4);
-
-        R delete(List<String> aliasList);
-
-        R delete(Consumer<Consumer<String>> consumer);
-    }
 
 
     /**
@@ -318,7 +271,8 @@ public interface MySQLDelete extends MySQLStatement {
     }
 
     interface _MultiIndexHintJoinSpec<I extends Item>
-            extends MySQLQuery._IndexHintForJoinClause<_MultiIndexHintJoinSpec<I>>,
+            extends _IndexHintForJoinClause<_MultiIndexHintJoinSpec<I>>,
+            _DynamicIndexHintClause<_IndexForJoinSpec<Object>, _MultiIndexHintJoinSpec<I>>,
             _MultiJoinSpec<I> {
 
     }
@@ -346,7 +300,7 @@ public interface MySQLDelete extends MySQLStatement {
 
 
     interface _SimpleMultiDeleteUsingClause<I extends Item>
-            extends _UsingModifierClause<_MultiIndexHintJoinSpec<I>, Statement._AsClause<_ParensJoinSpec<I>>>,
+            extends _UsingModifierClause<_MultiIndexHintJoinSpec<I>, _AsClause<_ParensJoinSpec<I>>>,
             _UsingCteClause<_MultiJoinSpec<I>>,
             _MySQLUsingTableClause<_MultiPartitionJoinClause<I>>,
             _MySQLUsingNestedClause<_MultiJoinSpec<I>> {
@@ -358,6 +312,35 @@ public interface MySQLDelete extends MySQLStatement {
             extends _MySQLFromClause<_MultiIndexHintJoinSpec<I>, _ParensJoinSpec<I>>,
             Query._FromTableClause<_MultiPartitionJoinClause<I>>,
             _MySQLFromNestedClause<_MultiJoinSpec<I>> {
+
+    }
+
+
+    interface _MultiDeleteFromAliasClause<I extends Item> {
+
+        _SimpleMultiDeleteUsingClause<I> from(String alias);
+
+        _SimpleMultiDeleteUsingClause<I> from(String alias1, String alias2);
+
+        _SimpleMultiDeleteUsingClause<I> from(String alias1, String alias2, String alias3);
+
+        _SimpleMultiDeleteUsingClause<I> from(String alias1, String alias2, String alias3, String alias4);
+
+        _SimpleMultiDeleteUsingClause<I> from(List<String> aliasList);
+
+        _SimpleMultiDeleteUsingClause<I> from(Consumer<Consumer<String>> consumer);
+
+        _MultiDeleteFromTableClause<I> space(String alias);
+
+        _MultiDeleteFromTableClause<I> space(String alias1, String alias2);
+
+        _MultiDeleteFromTableClause<I> space(String alias1, String alias2, String alias3);
+
+        _MultiDeleteFromTableClause<I> space(String alias1, String alias2, String alias3, String alias4);
+
+        _MultiDeleteFromTableClause<I> space(List<String> aliasList);
+
+        _MultiDeleteFromTableClause<I> space(Consumer<Consumer<String>> consumer);
 
     }
 
@@ -374,8 +357,21 @@ public interface MySQLDelete extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _SimpleMultiDeleteClause<I extends Item> extends _MultiDeleteAliasClause<_MultiDeleteFromTableClause<I>>,
-            _MultiDeleteHintClause<_SimpleMultiDeleteUsingClause<I>> {
+    interface _MySQLMultiDeleteClause<I extends Item> extends Item {
+
+        _MultiDeleteFromAliasClause<I> delete(Supplier<List<Hint>> hints, List<MySQLs.Modifier> modifiers);
+
+        _MultiDeleteFromTableClause<I> delete(String alias);
+
+        _MultiDeleteFromTableClause<I> delete(String alias1, String alias2);
+
+        _MultiDeleteFromTableClause<I> delete(String alias1, String alias2, String alias3);
+
+        _MultiDeleteFromTableClause<I> delete(String alias1, String alias2, String alias3, String alias4);
+
+        _MultiDeleteFromTableClause<I> delete(List<String> aliasList);
+
+        _MultiDeleteFromTableClause<I> delete(Consumer<Consumer<String>> consumer);
 
     }
 
@@ -385,7 +381,7 @@ public interface MySQLDelete extends MySQLStatement {
      *     <ul>
      *          <li>{@link _MySQLDynamicWithClause}</li>
      *          <li>{@link _StaticWithClause}</li>
-     *          <li>{@link _SimpleMultiDeleteClause}</li>
+     *          <li>{@link _MySQLMultiDeleteClause}</li>
      *     </ul>
      * </p>
      * <p>
@@ -396,9 +392,9 @@ public interface MySQLDelete extends MySQLStatement {
      *
      * @since 1.0
      */
-    interface _MultiWithSpec<I extends Item> extends _MySQLDynamicWithClause<_SimpleMultiDeleteClause<I>>,
-            _MySQLStaticWithClause<_SimpleMultiDeleteClause<I>>,
-            _SimpleMultiDeleteClause<I> {
+    interface _MultiWithSpec<I extends Item> extends _MySQLDynamicWithClause<_MySQLMultiDeleteClause<I>>,
+            _MySQLStaticWithClause<_MySQLMultiDeleteClause<I>>,
+            _MySQLMultiDeleteClause<I> {
 
     }
 

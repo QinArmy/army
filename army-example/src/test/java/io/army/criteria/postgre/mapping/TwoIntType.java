@@ -30,7 +30,7 @@ public final class TwoIntType extends MappingType
         return INSTANCE;
     }
 
-    private static final List<CompositeTypeField> FIELD_LIST = ArrayUtils.asUnmodifiableList(
+    private static final List<CompositeTypeField> FIELD_LIST = ArrayUtils.of(
             CompositeTypeField.from("a", IntegerType.INSTANCE),
             CompositeTypeField.from("b", IntegerType.INSTANCE)
     );

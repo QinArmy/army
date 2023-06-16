@@ -1160,7 +1160,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      */
     public static _TabularWithOrdinalityFunction pgXactCommitTimestampOrigin(Expression xid) {
         final List<Selection> fieldList;
-        fieldList = ArrayUtils.asUnmodifiableList(
+        fieldList = ArrayUtils.of(
                 ArmySelections.forName("timestamp", OffsetDateTimeType.INSTANCE),
                 ArmySelections.forName("roident", LongType.INSTANCE)
         );
@@ -1183,7 +1183,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      */
     public static _TabularWithOrdinalityFunction pgLastCommittedXact() {
         final List<Selection> fieldList;
-        fieldList = ArrayUtils.asUnmodifiableList(
+        fieldList = ArrayUtils.of(
                 ArmySelections.forName("xid", IntegerType.INSTANCE),
                 ArmySelections.forName("timestamp", OffsetDateTimeType.INSTANCE),
                 ArmySelections.forName("roident", LongType.INSTANCE)
@@ -1282,7 +1282,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      */
     public static _TabularWithOrdinalityFunction pgControlSystem() {
         final List<Selection> fieldList;
-        fieldList = ArrayUtils.asUnmodifiableList(
+        fieldList = ArrayUtils.of(
                 ArmySelections.forName("pg_control_version", IntegerType.INSTANCE),
                 ArmySelections.forName("catalog_version_no", IntegerType.INSTANCE),
                 ArmySelections.forName("system_identifier", LongType.INSTANCE),

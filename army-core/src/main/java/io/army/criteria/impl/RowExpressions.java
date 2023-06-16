@@ -65,7 +65,7 @@ abstract class RowExpressions {
     static RowExpression row(final Object element1, final Object element2) {
         final int columnSize;
         columnSize = rowElementColumnSize(element1) + rowElementColumnSize(element2);
-        return new ImmutableRowConstructor(ArrayUtils.asUnmodifiableList(element1, element2), columnSize);
+        return new ImmutableRowConstructor(ArrayUtils.of(element1, element2), columnSize);
     }
 
     static RowExpression row(final Object element1, final Object element2, final Object element3, final Object... rest) {
