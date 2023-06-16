@@ -8,7 +8,6 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreUpdate;
 import io.army.criteria.postgre.*;
 import io.army.dialect.Dialect;
-import io.army.dialect.postgre.PostgreDialect;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.meta.ComplexTableMeta;
@@ -17,6 +16,8 @@ import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,11 +34,12 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-@SuppressWarnings("unchecked")
-abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, BQ extends Item, T>
+abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T>
         extends JoinableUpdate<
         I,
         BI,
+        PostgreCtes,
+        PostgreUpdate._SingleUpdateClause<I, Q>,
         FieldMeta<T>,
         PostgreUpdate._SingleSetFromSpec<I, Q, T>,
         PostgreUpdate._TableSampleJoinSpec<I, Q>,
@@ -74,16 +76,6 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
 
     /**
      * <p>
-     * create new simple(non-batch) single-table UPDATE statement that is primary statement for multi-statement.
-     * </p>
-     */
-    static <I extends Item> PostgreUpdate._SingleUpdateClause<I, I> simple(
-            ArmyStmtSpec spec, Function<PrimaryStatement, I> function) {
-        return new PrimarySimpleUpdateClauseForMultiStmt<>(spec, function);
-    }
-
-    /**
-     * <p>
      * create new simple(non-batch) single-table UPDATE statement that is sub statement in with clause.
      * </p>
      */
@@ -97,8 +89,8 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
      * create new batch single-table UPDATE statement that is primary statement.
      * </p>
      */
-    static PostgreUpdate._SingleWithSpec<BatchUpdate, BatchReturningUpdate> batchUpdate() {
-        return null;
+    static PostgreUpdate._SingleWithSpec<_BatchParamClause<BatchUpdate>, _BatchParamClause<BatchReturningUpdate>> batchUpdate() {
+        return new PrimaryBatchUpdateClause();
     }
 
 
@@ -108,24 +100,34 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
 
     private final SQLs.WordOnly onlyModifier;
 
-    final TableMeta<?> targetTable;
+    private final TableMeta<T> targetTable;
 
-    private final SQLs.SymbolAsterisk starModifier;
+    private final SQLs.SymbolAsterisk asterisk;
 
-    final String targetTableAlias;
+    private final String targetTableAlias;
 
-    _TabularBlock fromCrossBlock;
+    private _TabularBlock fromCrossBlock;
 
-    private PostgreUpdates(PostgreUpdateClause<?> clause) {
-        super(clause.context);
+    private List<_SelectItem> returningList;
+
+    private PostgreUpdates(PostgreUpdateClause<I, Q> clause, TableMeta<T> updateTable) {
+        super(clause, clause.context);
         this.recursive = clause.isRecursive();
         this.cteList = clause.cteList();
         this.onlyModifier = clause.onlyModifier;
-        this.targetTable = clause.targetTable;
+        this.targetTable = updateTable;
 
-        this.starModifier = clause.starModifier;
+        this.asterisk = clause.starModifier;
         this.targetTableAlias = clause.targetTableAlias;
-        assert this.targetTable != null && this.targetTableAlias != null;
+        if (!_StringUtils.hasText(this.targetTableAlias)) {
+            throw ContextStack.criteriaError(this.context, _Exceptions::tableAliasIsEmpty);
+        }
+    }
+
+    @Override
+    public final _SingleFromSpec<I, Q> sets(Consumer<UpdateStatement._RowPairs<FieldMeta<T>>> consumer) {
+        consumer.accept(CriteriaSupports.rowPairs(this::onAddItemPair));
+        return this;
     }
 
 
@@ -330,6 +332,215 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
         return this;
     }
 
+
+    @Override
+    public final _DqlUpdateSpec<Q> returningAll() {
+        this.returningList = PostgreSupports.EMPTY_SELECT_ITEM_LIST;
+        return this;
+    }
+
+    @Override
+    public final _DqlUpdateSpec<Q> returning(Consumer<Returnings> consumer) {
+        this.returningList = CriteriaUtils.selectionList(this.context, consumer);
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> returning(Selection selection) {
+        this.onAddSelection(selection);
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> returning(Selection selection1, Selection selection2) {
+        this.onAddSelection(selection1)
+                .onAddSelection(selection2);
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias) {
+        this.onAddSelection(function.apply(alias));
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function1, String alias1,
+                                                        Function<String, Selection> function2, String alias2) {
+        this.onAddSelection(function1.apply(alias1))
+                .onAddSelection(function2.apply(alias2));
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias,
+                                                        Selection selection) {
+        this.onAddSelection(function.apply(alias))
+                .onAddSelection(selection);
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> returning(Selection selection, Function<String, Selection> function,
+                                                        String alias) {
+        this.onAddSelection(selection)
+                .onAddSelection(function.apply(alias));
+        return this;
+    }
+
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> returning(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
+        this.onAddSelection(SelectionGroups.derivedGroup(this.context.getNonNullDerived(derivedAlias), derivedAlias));
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> returning(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
+        this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
+        return this;
+    }
+
+    @Override
+    public final <P> _StaticReturningCommaSpec<Q> returning(
+            String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+            String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+        if (child.parentMeta() != parent) {
+            throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
+        }
+        this.onAddSelection(SelectionGroups.singleGroup(parent, parenAlias))
+                .onAddSelection(SelectionGroups.groupWithoutId(child, childAlias));
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3) {
+        this.onAddSelection(field1)
+                .onAddSelection(field2)
+                .onAddSelection(field3);
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3,
+                                                        TableField field4) {
+        this.onAddSelection(field1)
+                .onAddSelection(field2)
+                .onAddSelection(field3)
+                .onAddSelection(field4);
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> comma(Selection selection) {
+        this.onAddSelection(selection);
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> comma(Selection selection1, Selection selection2) {
+        this.onAddSelection(selection1)
+                .onAddSelection(selection2);
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias) {
+        this.onAddSelection(function.apply(alias));
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function1, String alias1,
+                                                    Function<String, Selection> function2, String alias2) {
+        this.onAddSelection(function1.apply(alias1))
+                .onAddSelection(function2.apply(alias2));
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias,
+                                                    Selection selection) {
+        this.onAddSelection(function.apply(alias))
+                .onAddSelection(selection);
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> comma(Selection selection, Function<String, Selection> function,
+                                                    String alias) {
+        this.onAddSelection(selection)
+                .onAddSelection(function.apply(alias));
+        return this;
+    }
+
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> comma(String derivedAlias, SQLs.SymbolPeriod period,
+                                                    SQLs.SymbolAsterisk star) {
+        this.onAddSelection(SelectionGroups.derivedGroup(this.context.getNonNullDerived(derivedAlias), derivedAlias));
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> comma(String tableAlias, SQLs.SymbolPeriod period,
+                                                    TableMeta<?> table) {
+        this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
+        return this;
+    }
+
+    @Override
+    public final <P> _StaticReturningCommaSpec<Q> comma(
+            String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
+            String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
+        if (child.parentMeta() != parent) {
+            throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
+        }
+        this.onAddSelection(SelectionGroups.singleGroup(parent, parenAlias))
+                .onAddSelection(SelectionGroups.groupWithoutId(child, childAlias));
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3) {
+        this.onAddSelection(field1)
+                .onAddSelection(field2)
+                .onAddSelection(field3);
+        return this;
+    }
+
+    @Override
+    public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3,
+                                                    TableField field4) {
+        this.onAddSelection(field1)
+                .onAddSelection(field2)
+                .onAddSelection(field3)
+                .onAddSelection(field4);
+        return this;
+    }
+
+
+    @Override
+    public final List<? extends _SelectItem> returningList() {
+        // use wrapper,never here
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final Q asReturningUpdate() {
+        final List<_SelectItem> returningList = this.returningList;
+        if (!(returningList instanceof ArrayList || returningList == PostgreSupports.EMPTY_SELECT_ITEM_LIST)) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        this.endUpdateStatement();
+        if (returningList instanceof ArrayList) {
+            this.returningList = _Collections.unmodifiableList(returningList);
+        } else {
+            this.returningList = CriteriaUtils.returningAll(this.targetTable, this.targetTableAlias, this.tableBlockList());
+        }
+        return this.onAsReturningUpdate();
+    }
+
     @Override
     public final SQLWords modifier() {
         return this.onlyModifier;
@@ -341,36 +552,45 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
     }
 
     @Override
+    public final SQLs.SymbolAsterisk asterisk() {
+        return this.asterisk;
+    }
+
+    @Override
     public final String tableAlias() {
         return this.targetTableAlias;
     }
 
 
     @Override
+    final I onAsUpdate() {
+        if (this.returningList != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        this.returningList = Collections.emptyList();
+        return this.onAsPostgreUpdate();
+    }
+
+    @Override
     final Dialect statementDialect() {
-        return PostgreDialect.POSTGRE15;
+        return PostgreUtils.DIALECT;
     }
 
 
     @Override
     final void onBeforeContextEnd() {
-
+        //no-op
     }
 
     @Override
     final void onClear() {
-
+        this.returningList = null;
     }
 
-    @Override
-    I onAsUpdate() {
-        return null;
-    }
+    abstract I onAsPostgreUpdate();
 
-    @Override
-    BI onAsBatchUpdate(List<?> paramList) {
-        return null;
-    }
+    abstract Q onAsReturningUpdate();
+
 
     @Override
     final boolean isIllegalTableModifier(@Nullable Query.TableModifier modifier) {
@@ -380,6 +600,12 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
     @Override
     final boolean isIllegalDerivedModifier(@Nullable Query.DerivedModifier modifier) {
         return CriteriaUtils.isIllegalLateral(modifier);
+    }
+
+    @Override
+    final PostgreCtes createCteBuilder(boolean recursive) {
+        // user cast criteria api
+        throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
     }
 
     @Override
@@ -498,7 +724,7 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
         return (TabularBlocks.FromClauseAliasDerivedBlock) block;
     }
 
-    private PostgreUpdates<I, BI, Q, BQ, T> onAddSelection(final @Nullable SelectItem selectItem) {
+    private PostgreUpdates<I, BI, Q, T> onAddSelection(final @Nullable SelectItem selectItem) {
         if (selectItem == null) {
             throw ContextStack.nullPointer(this.context);
         }
@@ -527,253 +753,11 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
     }
 
 
-    private static abstract class SimpleUpdate<I extends Item, BI extends Item, Q extends Item, BQ extends Item, T>
-            extends PostgreUpdates<I, BI, Q, BQ, T> {
-
-        private List<_SelectItem> returningList;
-
-        private SimpleUpdate(PostgreUpdateClause<?> clause) {
-            super(clause);
-
-        }
-
-        @Override
-        public final _SingleFromSpec<I, Q> sets(Consumer<UpdateStatement._RowPairs<FieldMeta<T>>> consumer) {
-            consumer.accept(CriteriaSupports.rowPairs(this::onAddItemPair));
-            return this;
-        }
-
-
-        @Override
-        public final _DqlUpdateSpec<Q> returningAll() {
-            this.returningList = PostgreSupports.EMPTY_SELECT_ITEM_LIST;
-            return this;
-        }
-
-        @Override
-        public final _DqlUpdateSpec<Q> returning(Consumer<Returnings> consumer) {
-            this.returningList = CriteriaUtils.selectionList(this.context, consumer);
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(Selection selection) {
-            this.onAddSelection(selection);
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(Selection selection1, Selection selection2) {
-            this.onAddSelection(selection1)
-                    .onAddSelection(selection2);
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias) {
-            this.onAddSelection(function.apply(alias));
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function1, String alias1,
-                                                            Function<String, Selection> function2, String alias2) {
-            this.onAddSelection(function1.apply(alias1))
-                    .onAddSelection(function2.apply(alias2));
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(Function<String, Selection> function, String alias,
-                                                            Selection selection) {
-            this.onAddSelection(function.apply(alias))
-                    .onAddSelection(selection);
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(Selection selection, Function<String, Selection> function,
-                                                            String alias) {
-            this.onAddSelection(selection)
-                    .onAddSelection(function.apply(alias));
-            return this;
-        }
-
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(String derivedAlias, SQLs.SymbolPeriod period, SQLs.SymbolAsterisk star) {
-            this.onAddSelection(SelectionGroups.derivedGroup(this.context.getNonNullDerived(derivedAlias), derivedAlias));
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table) {
-            this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
-            return this;
-        }
-
-        @Override
-        public final <P> _StaticReturningCommaSpec<Q> returning(
-                String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
-                String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-            if (child.parentMeta() != parent) {
-                throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
-            }
-            this.onAddSelection(SelectionGroups.singleGroup(parent, parenAlias))
-                    .onAddSelection(SelectionGroups.groupWithoutId(child, childAlias));
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3) {
-            this.onAddSelection(field1)
-                    .onAddSelection(field2)
-                    .onAddSelection(field3);
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> returning(TableField field1, TableField field2, TableField field3,
-                                                            TableField field4) {
-            this.onAddSelection(field1)
-                    .onAddSelection(field2)
-                    .onAddSelection(field3)
-                    .onAddSelection(field4);
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(Selection selection) {
-            this.onAddSelection(selection);
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(Selection selection1, Selection selection2) {
-            this.onAddSelection(selection1)
-                    .onAddSelection(selection2);
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias) {
-            this.onAddSelection(function.apply(alias));
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function1, String alias1,
-                                                        Function<String, Selection> function2, String alias2) {
-            this.onAddSelection(function1.apply(alias1))
-                    .onAddSelection(function2.apply(alias2));
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(Function<String, Selection> function, String alias,
-                                                        Selection selection) {
-            this.onAddSelection(function.apply(alias))
-                    .onAddSelection(selection);
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(Selection selection, Function<String, Selection> function,
-                                                        String alias) {
-            this.onAddSelection(selection)
-                    .onAddSelection(function.apply(alias));
-            return this;
-        }
-
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(String derivedAlias, SQLs.SymbolPeriod period,
-                                                        SQLs.SymbolAsterisk star) {
-            this.onAddSelection(SelectionGroups.derivedGroup(this.context.getNonNullDerived(derivedAlias), derivedAlias));
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(String tableAlias, SQLs.SymbolPeriod period,
-                                                        TableMeta<?> table) {
-            this.onAddSelection(SelectionGroups.singleGroup(table, tableAlias));
-            return this;
-        }
-
-        @Override
-        public final <P> _StaticReturningCommaSpec<Q> comma(
-                String parenAlias, SQLs.SymbolPeriod period1, ParentTableMeta<P> parent,
-                String childAlias, SQLs.SymbolPeriod period2, ComplexTableMeta<P, ?> child) {
-            if (child.parentMeta() != parent) {
-                throw CriteriaUtils.childParentNotMatch(this.context, parent, child);
-            }
-            this.onAddSelection(SelectionGroups.singleGroup(parent, parenAlias))
-                    .onAddSelection(SelectionGroups.groupWithoutId(child, childAlias));
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3) {
-            this.onAddSelection(field1)
-                    .onAddSelection(field2)
-                    .onAddSelection(field3);
-            return this;
-        }
-
-        @Override
-        public final _StaticReturningCommaSpec<Q> comma(TableField field1, TableField field2, TableField field3,
-                                                        TableField field4) {
-            this.onAddSelection(field1)
-                    .onAddSelection(field2)
-                    .onAddSelection(field3)
-                    .onAddSelection(field4);
-            return this;
-        }
-
-
-        @Override
-        public final List<? extends _SelectItem> returningList() {
-            // use wrapper,never here
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public final Q asReturningUpdate() {
-            final List<_SelectItem> returningList = this.returningList;
-            if (!(returningList instanceof ArrayList || returningList == PostgreSupports.EMPTY_SELECT_ITEM_LIST)) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.endUpdateStatement();
-            if (returningList instanceof ArrayList) {
-                this.returningList = _Collections.unmodifiableList(returningList);
-            } else {
-                this.returningList = CriteriaUtils.returningAll(this.targetTable, this.targetTableAlias, this.tableBlockList());
-            }
-            return this.onAsReturningUpdate();
-        }
-
-        @Override
-        final I onAsUpdate() {
-            if (this.returningList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.returningList = Collections.emptyList();
-            return this.onAsPostgreUpdate();
-        }
-
-        abstract Q onAsReturningUpdate();
-
-        abstract I onAsPostgreUpdate();
-
-
-    }//SimpleUpdate
-
-    private static final class PrimarySimpleUpdate<T>
-            extends SimpleUpdate<Update, ReturningUpdate, T>
+    private static final class PrimarySimpleUpdate<T> extends PostgreUpdates<Update, Item, ReturningUpdate, T>
             implements Update {
 
-        private PrimarySimpleUpdate(PrimarySimpleUpdateClause clause) {
-            super(clause);
+        private PrimarySimpleUpdate(PrimarySimpleUpdateClause clause, TableMeta<T> updateTable) {
+            super(clause, updateTable);
         }
 
         @Override
@@ -786,45 +770,76 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
             return new ReturningUpdateWrapper(this);
         }
 
+        @Override
+        Item onAsBatchUpdate(List<?> paramList) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+
+
     }//PrimarySimpleUpdate
 
-    private static final class PrimarySimpleUpdateForMultiStmt<I extends Item, T>
-            extends SimpleUpdate<I, I, T>
-            implements Update {
+    private static final class BatchPrimarySimpleUpdate<T> extends PostgreUpdates<
+            _BatchParamClause<BatchUpdate>,
+            BatchUpdate,
+            _BatchParamClause<BatchReturningUpdate>,
+            T> {
 
-        private final Function<PrimaryStatement, I> function;
+        private BatchPrimarySimpleUpdate(PrimaryBatchUpdateClause clause, TableMeta<T> updateTable) {
+            super(clause, updateTable);
+        }
 
-        /**
-         * @see #simple(ArmyStmtSpec, Function)
-         */
-        private PrimarySimpleUpdateForMultiStmt(PrimarySimpleUpdateClauseForMultiStmt<I> clause) {
-            super(clause);
-            this.function = clause.function;
+
+        @Override
+        _BatchParamClause<BatchReturningUpdate> onAsReturningUpdate() {
+            return new _BatchParamClause<BatchReturningUpdate>() {
+                @Override
+                public <P> BatchReturningUpdate namedParamList(List<P> paramList) {
+                    return new PostgreBatchReturningUpdate(BatchPrimarySimpleUpdate.this,
+                            CriteriaUtils.paramList(paramList)
+                    );
+                }
+
+                @Override
+                public <P> BatchReturningUpdate namedParamList(Supplier<List<P>> supplier) {
+                    return new PostgreBatchReturningUpdate(BatchPrimarySimpleUpdate.this,
+                            CriteriaUtils.paramList(supplier.get())
+                    );
+                }
+
+                @Override
+                public <K> BatchReturningUpdate namedParamList(Function<K, ?> function, K key) {
+
+                    return new PostgreBatchReturningUpdate(BatchPrimarySimpleUpdate.this,
+                            CriteriaUtils.paramListFromMap(function, key)
+                    );
+                }
+            };
         }
 
         @Override
-        I onAsReturningUpdate() {
-            return this.function.apply(this);
+        _BatchParamClause<BatchUpdate> onAsPostgreUpdate() {
+            return this;
         }
 
         @Override
-        I onAsPostgreUpdate() {
-            return this.function.apply(new ReturningUpdateWrapper(this));
+        BatchUpdate onAsBatchUpdate(List<?> paramList) {
+            return new PostgreBatchUpdate(this, paramList);
         }
 
 
-    }//PrimarySimpleUpdateForMultiStmt
+    }//BatchPrimarySimpleUpdate
 
-    private static final class SubSimpleUpdate<I extends Item, T>
-            extends SimpleUpdate<I, I, T>
+
+    private static final class SubSimpleUpdate<I extends Item, T> extends PostgreUpdates<I, Item, I, T>
             implements SubStatement {
 
         private final Function<SubStatement, I> function;
 
-        private SubSimpleUpdate(SubSimpleUpdateClause<I> clause) {
-            super(clause);
+        private SubSimpleUpdate(SubSimpleUpdateClause<I> clause, TableMeta<T> updateTable) {
+            super(clause, updateTable);
             this.function = clause.function;
         }
+
 
         @Override
         I onAsPostgreUpdate() {
@@ -833,42 +848,31 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
 
         @Override
         I onAsReturningUpdate() {
-            return this.function.apply(this);
+            return this.function.apply(new SubReturningUpdate(this));
         }
+
+        @Override
+        Item onAsBatchUpdate(List<?> paramList) {
+            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+        }
+
 
     }//SubSimpleUpdate
 
 
-    private static abstract class SimpleUpdateClause<I extends Item, BI extends Item, Q extends Item, BQ extends Item>
+    private static abstract class PostgreUpdateClause<I extends Item, Q extends Item>
             extends CriteriaSupports.WithClause<PostgreCtes, PostgreUpdate._SingleUpdateClause<I, Q>>
-            implements PostgreUpdate._SingleWithSpec<I, Q> {
+            implements PostgreUpdate._SingleWithSpec<I, Q>, ArmyStmtSpec {
 
-        private final Function<? super BatchUpdateSpec<BI>, I> dmlFunc;
-
-        private final Function<? super BatchUpdate, BI> batchDmlFunc;
-
-        private final Function<? super BatchReturningUpdateSpec<BQ>, Q> dqlFunc;
-
-        private final Function<? super BatchReturningUpdate, BQ> batchDqlFunc;
 
         private SQLs.WordOnly onlyModifier;
-
-        private TableMeta<?> targetTable;
 
         private SQLs.SymbolAsterisk starModifier;
 
         private String targetTableAlias;
 
-        private SimpleUpdateClause(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context,
-                                   Function<? super BatchUpdateSpec<BI>, I> dmlFunc,
-                                   Function<? super BatchUpdate, BI> batchDmlFunc,
-                                   Function<? super BatchReturningUpdateSpec<BQ>, Q> dqlFunc,
-                                   Function<? super BatchReturningUpdate, BQ> batchDqlFunc) {
+        private PostgreUpdateClause(@Nullable _Statement._WithClauseSpec spec, CriteriaContext context) {
             super(spec, context);
-            this.dmlFunc = dmlFunc;
-            this.batchDmlFunc = batchDmlFunc;
-            this.dqlFunc = dqlFunc;
-            this.batchDqlFunc = batchDqlFunc;
         }
 
         @Override
@@ -895,7 +899,7 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
         }
 
         @Override
-        public final <T> _SingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star,
+        public final <T> _SingleSetClause<I, Q, T> update(TableMeta<T> table, @Nullable SQLs.SymbolAsterisk star,
                                                           SQLs.WordAs as, String tableAlias) {
             return this.doUpdate(null, table, star, as, tableAlias);
         }
@@ -906,68 +910,75 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
         }
 
 
-        private <T> _SingleSetClause<I, Q, T> doUpdate(@Nullable SQLs.WordOnly only, @Nullable TableMeta<?> table,
+        private <T> _SingleSetClause<I, Q, T> doUpdate(@Nullable SQLs.WordOnly only, @Nullable TableMeta<T> table,
                                                        @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as,
                                                        @Nullable String tableAlias) {
-            if (this.targetTable != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            } else if (only != null && only != SQLs.ONLY) {
+            if (only != null && only != SQLs.ONLY) {
                 throw CriteriaUtils.errorModifier(this.context, only);
             } else if (star != null && star != SQLs.ASTERISK) {
-                throw CriteriaUtils.errorModifier(this.context, only);
+                throw CriteriaUtils.errorModifier(this.context, star);
+            } else if (as != SQLs.AS) {
+                throw CriteriaUtils.errorModifier(this.context, as);
             } else if (table == null) {
                 throw ContextStack.nullPointer(this.context);
             } else if (tableAlias == null) {
                 throw ContextStack.nullPointer(this.context);
             }
             this.onlyModifier = only;
-            this.targetTable = table;
             this.starModifier = star;
             this.targetTableAlias = tableAlias;
-            return this;
+            return this.createUpdateStmt(table);
         }
+
+        abstract <T> _SingleSetClause<I, Q, T> createUpdateStmt(TableMeta<T> table);
 
 
     }//SimpleUpdateClause
 
-    private static final class PrimarySimpleUpdateClause
-            extends SimpleUpdateClause<Update, Item, ReturningUpdate, Item> {
+    private static final class PrimarySimpleUpdateClause extends PostgreUpdateClause<Update, ReturningUpdate> {
 
 
         private PrimarySimpleUpdateClause() {
-            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null),
-                    SQLs.SIMPLE_UPDATE, SQLs.ERROR_FUNC, SQLs.SIMPLE_RETURNING_UPDATE, SQLs.ERROR_FUNC);
+            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null));
+        }
 
+        @Override
+        <T> _SingleSetClause<Update, ReturningUpdate, T> createUpdateStmt(TableMeta<T> table) {
+            return new PrimarySimpleUpdate<>(this, table);
         }
 
 
     }//PrimarySimpleUpdateClause
 
-    private static final class PrimaryBatchUpdateClause extends SimpleUpdateClause<
+    private static final class PrimaryBatchUpdateClause extends PostgreUpdateClause<
             _BatchParamClause<BatchUpdate>,
-            BatchUpdate,
-            _BatchParamClause<BatchReturningUpdate>,
-            BatchReturningUpdate> {
+            _BatchParamClause<BatchReturningUpdate>> {
 
         private PrimaryBatchUpdateClause() {
-            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null),
-                    SQLs::forBatchUpdate, SQLs.BATCH_UPDATE, SQLs::forBatchReturningUpdate, SQLs.BATCH_RETURNING_UPDATE);
+            super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null));
+        }
 
+        @Override
+        <T> _SingleSetClause<_BatchParamClause<BatchUpdate>, _BatchParamClause<BatchReturningUpdate>, T> createUpdateStmt(TableMeta<T> table) {
+            return new BatchPrimarySimpleUpdate<>(this, table);
         }
 
 
     }//PrimaryBatchUpdateClause
 
 
-    private static final class SubSimpleUpdateClause<I extends Item>
-            extends SimpleUpdateClause<I, Item, I, Item> {
+    private static final class SubSimpleUpdateClause<I extends Item> extends PostgreUpdateClause<I, I> {
 
         private final Function<SubStatement, I> function;
 
         private SubSimpleUpdateClause(CriteriaContext outerContext, Function<SubStatement, I> function) {
-            super(null, CriteriaContexts.subJoinableSingleDmlContext(PostgreUtils.DIALECT, outerContext),
-                    function, SQLs.ERROR_FUNC, function, SQLs.ERROR_FUNC);
+            super(null, CriteriaContexts.subJoinableSingleDmlContext(PostgreUtils.DIALECT, outerContext));
             this.function = function;
+        }
+
+        @Override
+        <T> _SingleSetClause<I, I, T> createUpdateStmt(TableMeta<T> table) {
+            return new SubSimpleUpdate<>(this, table);
         }
 
 
@@ -990,8 +1001,8 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
     }//SimpleJoinClauseTableBlock
 
 
-    static abstract class PostgreReturningUpdateWrapper extends CriteriaSupports.StatementMockSupport
-            implements PostgreUpdate, _PostgreUpdate, _ReturningDml {
+    static abstract class PostgreUpdateWrapper extends CriteriaSupports.StatementMockSupport
+            implements PostgreUpdate, _PostgreUpdate {
 
         private final boolean recursive;
 
@@ -1000,6 +1011,8 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
         private final SQLs.WordOnly only;
 
         private final TableMeta<?> targetTable;
+
+        private final SQLs.SymbolAsterisk asterisk;
 
         private final String tableAlias;
 
@@ -1013,41 +1026,36 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
 
         private Boolean prepared = Boolean.TRUE;
 
-        private PostgreReturningUpdateWrapper(PostgreUpdates<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> stmt) {
+        private PostgreUpdateWrapper(PostgreUpdates<?, ?, ?, ?> stmt) {
             super(stmt.context);
+
             this.recursive = stmt.recursive;
             this.cteList = stmt.cteList;
             this.only = stmt.onlyModifier;
             this.targetTable = stmt.targetTable;
 
+            this.asterisk = stmt.asterisk;
             this.tableAlias = stmt.targetTableAlias;
             this.itemPairList = stmt.itemPairList();
             this.tableBlockList = stmt.tableBlockList();
-            this.wherePredicateList = stmt.wherePredicateList();
 
+            this.wherePredicateList = stmt.wherePredicateList();
             this.returningList = stmt.innerReturningList();
         }
 
         @Override
-        public final void prepared() {
-            _Assert.prepared(this.prepared);
+        public final boolean isRecursive() {
+            return this.recursive;
         }
 
         @Override
-        public final boolean isPrepared() {
-            final Boolean prepared = this.prepared;
-            return prepared != null && prepared;
+        public final List<_Cte> cteList() {
+            return this.cteList;
         }
 
         @Override
-        public final void clear() {
-            _Assert.prepared(this.prepared);
-            this.prepared = null;
-        }
-
-        @Override
-        final Dialect statementDialect() {
-            return PostgreDialect.POSTGRE15;
+        public final SQLWords modifier() {
+            return this.only;
         }
 
         @Override
@@ -1055,6 +1063,11 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
             return this.targetTable;
         }
 
+
+        @Override
+        public final SQLs.SymbolAsterisk asterisk() {
+            return this.asterisk;
+        }
 
         @Override
         public final String tableAlias() {
@@ -1078,41 +1091,92 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, B
 
 
         @Override
-        public final boolean isRecursive() {
-            return this.recursive;
-        }
-
-        @Override
-        public final List<_Cte> cteList() {
-            return this.cteList;
-        }
-
-        @Override
-        public final SQLWords modifier() {
-            return this.only;
-        }
-
-        @Override
         public final List<? extends _SelectItem> returningList() {
             return this.returningList;
+        }
+
+        @Override
+        public final void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            final Boolean prepared = this.prepared;
+            return prepared != null && prepared;
+        }
+
+        @Override
+        public final void clear() {
+            _Assert.prepared(this.prepared);
+            this.prepared = null;
+        }
+
+        @Override
+        final Dialect statementDialect() {
+            return PostgreUtils.DIALECT;
         }
 
 
     }//PostgreUpdateWrapper
 
 
-    private static final class ReturningUpdateWrapper extends PostgreReturningUpdateWrapper
-            implements ReturningUpdate {
+    private static final class ReturningUpdateWrapper extends PostgreUpdateWrapper
+            implements ReturningUpdate, _ReturningDml {
 
         private ReturningUpdateWrapper(PrimarySimpleUpdate<?> stmt) {
             super(stmt);
         }
 
-        private ReturningUpdateWrapper(PrimarySimpleUpdateForMultiStmt<?, ?> stmt) {
+
+    }//ReturningUpdateWrapper
+
+    private static final class SubReturningUpdate extends PostgreUpdateWrapper
+            implements SubStatement, _ReturningDml {
+
+        private SubReturningUpdate(SubSimpleUpdate<?, ?> stmt) {
             super(stmt);
         }
 
+
     }//ReturningUpdateWrapper
+
+
+    private static final class PostgreBatchUpdate extends PostgreUpdateWrapper
+            implements BatchUpdate, _BatchStatement {
+
+        private final List<?> paramList;
+
+        private PostgreBatchUpdate(PostgreUpdates<?, ?, ?, ?> stmt, List<?> paramList) {
+            super(stmt);
+            this.paramList = paramList;
+        }
+
+        @Override
+        public List<?> paramList() {
+            return this.paramList;
+        }
+
+
+    }//PostgreBatchUpdate
+
+    private static final class PostgreBatchReturningUpdate extends PostgreUpdateWrapper
+            implements BatchReturningUpdate, _BatchStatement, _ReturningDml {
+
+        private final List<?> paramList;
+
+        private PostgreBatchReturningUpdate(PostgreUpdates<?, ?, ?, ?> stmt, List<?> paramList) {
+            super(stmt);
+            this.paramList = paramList;
+        }
+
+        @Override
+        public List<?> paramList() {
+            return this.paramList;
+        }
+
+
+    }//PostgreBatchReturningUpdate
 
 
 }

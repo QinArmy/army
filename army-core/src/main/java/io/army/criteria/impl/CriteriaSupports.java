@@ -98,7 +98,7 @@ abstract class CriteriaSupports {
 
     static abstract class WithClause<B extends CteBuilderSpec, WE extends Item>
             implements DialectStatement._DynamicWithClause<B, WE>,
-            _Statement._WithClauseSpec {
+            _Statement._WithClauseSpec, CriteriaContextSpec {
 
         final CriteriaContext context;
 
@@ -112,6 +112,11 @@ abstract class CriteriaSupports {
                 this.cteList = spec.cteList();
             }
             this.context = context;
+        }
+
+        @Override
+        public final CriteriaContext getContext() {
+            return this.context;
         }
 
         @Override

@@ -227,7 +227,7 @@ public abstract class Postgres extends PostgreSyntax {
      * create batch single-table UPDATE statement that is primary statement.
      * </p>
      */
-    public static PostgreUpdate._BatchSingleWithSpec<BatchUpdate, BatchReturningUpdate> batchSingleUpdate() {
+    public static PostgreUpdate._SingleWithSpec<Statement._BatchParamClause<BatchUpdate>, Statement._BatchParamClause<BatchReturningUpdate>> batchSingleUpdate() {
         return PostgreUpdates.batchUpdate();
     }
 
