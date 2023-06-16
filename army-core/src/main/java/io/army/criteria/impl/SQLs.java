@@ -2,6 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
+import io.army.criteria.dialect.BatchReturningUpdate;
+import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardDelete;
@@ -137,7 +139,12 @@ public abstract class SQLs extends SQLsSyntax {
 
     static UnaryOperator<Update> SIMPLE_UPDATE = SQLs::identity;
 
+    static UnaryOperator<ReturningUpdate> SIMPLE_RETURNING_UPDATE = SQLs::identity;
+
     static UnaryOperator<BatchUpdate> BATCH_UPDATE = SQLs::identity;
+
+    static UnaryOperator<BatchReturningUpdate> BATCH_RETURNING_UPDATE = SQLs::identity;
+
     static UnaryOperator<Item> ERROR_FUNC = SQLs::castCriteria;
 
     static final UnaryOperator<Delete> SIMPLE_DELETE = SQLs::identity;
@@ -315,6 +322,10 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
     static <T extends Item> Statement._BatchParamClause<T> forBatchDelete(BatchDeleteSpec<T> spec) {
+        return spec;
+    }
+
+    static <T extends Item> Statement._BatchParamClause<T> forBatchReturningUpdate(BatchReturningUpdateSpec<T> spec) {
         return spec;
     }
 

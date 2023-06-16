@@ -119,7 +119,6 @@ public interface PostgreUpdate extends PostgreStatement {
 
         <T> _SingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias);
 
-        <T> _SingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias);
 
     }
 
@@ -142,125 +141,6 @@ public interface PostgreUpdate extends PostgreStatement {
 
     }
 
-
-    /*-------------------below batch syntax -------------------*/
-
-
-    interface _BatchStaticReturningCommaSpec<Q extends Item>
-            extends _StaticDmlReturningCommaClause<_BatchStaticReturningCommaSpec<Q>>,
-            _BatchParamClause<_DqlUpdateSpec<Q>> {
-
-    }
-
-    interface _BatchReturningSpec<I extends Item, Q extends Item>
-            extends _StaticDmlReturningClause<_BatchStaticReturningCommaSpec<Q>>,
-            _DynamicReturningClause<_BatchParamClause<_DqlUpdateSpec<Q>>>,
-            _BatchParamClause<_DmlUpdateSpec<I>> {
-
-    }
-
-
-    interface _BatchSingleWhereAndSpec<I extends Item, Q extends Item>
-            extends UpdateStatement._UpdateWhereAndClause<_BatchSingleWhereAndSpec<I, Q>>,
-            _BatchReturningSpec<I, Q> {
-
-    }
-
-
-    interface _BatchSingleWhereClause<I extends Item, Q extends Item>
-            extends _WhereClause<_BatchReturningSpec<I, Q>, _BatchSingleWhereAndSpec<I, Q>>,
-            _WhereCurrentOfClause<_BatchReturningSpec<I, Q>> {
-
-
-    }
-
-
-    interface _BatchRepeatableOnClause<I extends Item, Q extends Item>
-            extends PostgreQuery._RepeatableClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>,
-            _OnClause<_BatchSingleJoinSpec<I, Q>> {
-
-    }
-
-    interface _BatchTableSampleOnSpec<I extends Item, Q extends Item>
-            extends _StaticTableSampleClause<_BatchRepeatableOnClause<I, Q>>,
-            _OnClause<_BatchSingleJoinSpec<I, Q>> {
-
-    }
-
-
-    interface _BatchSingleJoinSpec<I extends Item, Q extends Item>
-            extends _JoinModifierClause<_BatchTableSampleOnSpec<I, Q>, _AsParensOnClause<_BatchSingleJoinSpec<I, Q>>>,
-            _PostgreJoinUndoneFuncClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>,
-            _PostgreCrossClause<_BatchTableSampleJoinSpec<I, Q>, _BatchParensJoinSpec<I, Q>>,
-            _PostgreCrossUndoneFuncClause<_BatchSingleJoinSpec<I, Q>>,
-            _JoinCteClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>,
-            _CrossJoinCteClause<_BatchSingleJoinSpec<I, Q>>,
-            _PostgreJoinNestedClause<_OnClause<_BatchSingleJoinSpec<I, Q>>>,
-            _PostgreCrossNestedClause<_BatchSingleJoinSpec<I, Q>>,
-            _PostgreDynamicJoinCrossClause<_BatchSingleJoinSpec<I, Q>>,
-            _BatchSingleWhereClause<I, Q> {
-
-    }
-
-    interface _BatchRepeatableJoinClause<I extends Item, Q extends Item>
-            extends PostgreQuery._RepeatableClause<_BatchSingleJoinSpec<I, Q>>, _BatchSingleJoinSpec<I, Q> {
-
-    }
-
-
-    interface _BatchTableSampleJoinSpec<I extends Item, Q extends Item>
-            extends _StaticTableSampleClause<_BatchRepeatableJoinClause<I, Q>>, _BatchSingleJoinSpec<I, Q> {
-
-    }
-
-    interface _BatchParensJoinSpec<I extends Item, Q extends Item>
-            extends _OptionalParensStringClause<_BatchSingleJoinSpec<I, Q>>, _BatchSingleJoinSpec<I, Q> {
-
-    }
-
-
-    interface _BatchSingleFromClause<I extends Item, Q extends Item>
-            extends _PostgreFromClause<_BatchTableSampleJoinSpec<I, Q>, _BatchParensJoinSpec<I, Q>>,
-            _PostgreFromUndoneFuncClause<_BatchSingleJoinSpec<I, Q>>,
-            _FromCteClause<_BatchSingleJoinSpec<I, Q>>,
-            _PostgreFromNestedClause<_BatchSingleJoinSpec<I, Q>>,
-            _BatchSingleWhereClause<I, Q> {
-
-    }
-
-    interface _BatchSingleSetClause<I extends Item, Q extends Item, T>
-            extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _BatchSingleSetFromSpec<I, Q, T>>,
-            UpdateStatement._StaticBatchSetClause<FieldMeta<T>, _BatchSingleSetFromSpec<I, Q, T>>,
-            UpdateStatement._DynamicSetClause<UpdateStatement._BatchRowPairs<FieldMeta<T>>, _BatchSingleFromClause<I, Q>> {
-
-    }
-
-
-    interface _BatchSingleSetFromSpec<I extends Item, Q extends Item, T> extends _BatchSingleFromClause<I, Q>,
-            _BatchSingleSetClause<I, Q, T> {
-
-    }
-
-    interface _BatchSingleUpdateClause<I extends Item, Q extends Item> extends Item {
-
-        <T> _BatchSingleSetClause<I, Q, T> update(TableMeta<T> table, SQLs.WordAs as, String tableAlias);
-
-        <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<T> table, SQLs.WordAs as,
-                                                  String tableAlias);
-
-        <T> _BatchSingleSetClause<I, Q, T> update(TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias);
-
-        <T> _BatchSingleSetClause<I, Q, T> update(@Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias);
-
-    }
-
-
-    interface _BatchSingleWithSpec<I extends Item, Q extends Item>
-            extends _PostgreDynamicWithClause<_BatchSingleUpdateClause<I, Q>>,
-            PostgreQuery._PostgreStaticWithClause<_BatchSingleUpdateClause<I, Q>>,
-            _BatchSingleUpdateClause<I, Q> {
-
-    }
 
 
 }
