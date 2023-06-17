@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, LF>
         extends WhereClause<WR, WA, OR, OD, LR, LO, LF>
         implements UpdateStatement._StaticBatchSetClause<F, SR>,
-        UpdateStatement._StaticRowSetClause<F, SR>,
+        UpdateStatement._StaticBatchRowSetClause<F, SR>,
         _Statement._ItemPairList,
         _Statement._TableMetaSpec {
 

@@ -26,17 +26,16 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableUpdate<I extends Item, BI extends Item, B extends CteBuilderSpec, WE extends Item, F extends SQLField, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
+abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE extends Item, F extends SQLField, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, Object, Object, Object, Object, Object>
         implements _Update,
         DialectStatement._DynamicWithClause<B, WE>,
         _Statement._WithClauseSpec,
         _Statement._JoinableStatement,
         UpdateStatement._StaticBatchSetClause<F, SR>,
-        UpdateStatement._StaticRowSetClause<F, SR>,
+        UpdateStatement._StaticBatchRowSetClause<F, SR>,
         _Statement._ItemPairList,
         Statement._DmlUpdateSpec<I>,
-        Statement._BatchParamClause<BI>,
         Statement {
 
     private boolean recursive;
@@ -293,21 +292,6 @@ abstract class JoinableUpdate<I extends Item, BI extends Item, B extends CteBuil
     }
 
     @Override
-    public final <P> BI namedParamList(@Nullable List<P> paramList) {
-        return this.onAsBatchUpdate(CriteriaUtils.paramList(paramList));
-    }
-
-    @Override
-    public final <P> BI namedParamList(Supplier<List<P>> supplier) {
-        return this.onAsBatchUpdate(CriteriaUtils.paramList(supplier.get()));
-    }
-
-    @Override
-    public final <K> BI namedParamList(Function<K, ?> function, K key) {
-        return this.onAsBatchUpdate(CriteriaUtils.paramListFromMap(function, key));
-    }
-
-    @Override
     public final List<_TabularBlock> tableBlockList() {
         final List<_TabularBlock> list = this.tableBlockList;
         if (list == null) {
@@ -355,8 +339,6 @@ abstract class JoinableUpdate<I extends Item, BI extends Item, B extends CteBuil
 
 
     abstract I onAsUpdate();
-
-    abstract BI onAsBatchUpdate(List<?> paramList);
 
     void onClear() {
         //no-op
@@ -443,7 +425,7 @@ abstract class JoinableUpdate<I extends Item, BI extends Item, B extends CteBuil
 
     protected static abstract class ArmyBatchJoinableUpdate extends CriteriaSupports.StatementMockSupport
             implements _MultiUpdate,
-            UpdateStatement,
+            Statement,
             _BatchStatement,
             _Statement._WithClauseSpec {
 
@@ -461,7 +443,7 @@ abstract class JoinableUpdate<I extends Item, BI extends Item, B extends CteBuil
 
         private boolean prepared = true;
 
-        ArmyBatchJoinableUpdate(JoinableUpdate<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> clause,
+        ArmyBatchJoinableUpdate(JoinableUpdate<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> clause,
                                 List<?> paramList) {
             super(clause.context);
 

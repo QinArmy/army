@@ -84,8 +84,8 @@ public interface PostgreUpdate extends PostgreStatement {
 
 
     interface _SingleSetClause<I extends Item, Q extends Item, T>
-            extends UpdateStatement._StaticRowSetClause<FieldMeta<T>, _SingleSetFromSpec<I, Q, T>>,
-            UpdateStatement._DynamicSetClause<UpdateStatement._RowPairs<FieldMeta<T>>, _SingleFromSpec<I, Q>> {
+            extends UpdateStatement._StaticBatchRowSetClause<FieldMeta<T>, _SingleSetFromSpec<I, Q, T>>,
+            UpdateStatement._DynamicSetClause<UpdateStatement._BatchRowPairs<FieldMeta<T>>, _SingleFromSpec<I, Q>> {
 
     }
 

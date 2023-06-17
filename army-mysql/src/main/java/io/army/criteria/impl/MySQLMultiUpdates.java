@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBlock;
@@ -10,6 +11,7 @@ import io.army.criteria.mysql.*;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,10 +29,9 @@ import java.util.function.Supplier;
  * </p>
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLMultiUpdates<I extends Item, BI extends Item>
+abstract class MySQLMultiUpdates<I extends Item>
         extends JoinableUpdate<
         I,
-        BI,
         MySQLCtes,
         MySQLUpdate._SimpleMultiUpdateClause<I>,
         TableField,
@@ -45,8 +46,7 @@ abstract class MySQLMultiUpdates<I extends Item, BI extends Item>
         Void,
         Statement._DmlUpdateSpec<I>,
         MySQLUpdate._MultiWhereAndSpec<I>>
-        implements BatchUpdateSpec<BI>,
-        _MySQLMultiUpdate,
+        implements _MySQLMultiUpdate,
         MySQLUpdate,
         MySQLUpdate._MultiWithSpec<I>,
         MySQLUpdate._MultiUpdateSpaceClause<I>,
@@ -57,16 +57,13 @@ abstract class MySQLMultiUpdates<I extends Item, BI extends Item>
 
 
     static _MultiWithSpec<Update> simple() {
-        return new MySQLSimpleUpdate<>(null, SQLs.SIMPLE_UPDATE, SQLs.ERROR_FUNC);
+        return new MySQLSimpleUpdate();
     }
 
-    static _MultiWithSpec<_BatchParamClause<BatchUpdate>> batch() {
-        return new MySQLSimpleUpdate<>(null, SQLs::forBatchUpdate, SQLs.BATCH_UPDATE);
+    static _MultiWithSpec<_BatchUpdateParamSpec> batch() {
+        return new MySQLBatchUpdate();
     }
 
-    private final Function<? super BatchUpdateSpec<BI>, I> function;
-
-    private final Function<? super BatchUpdate, BI> batchFunc;
 
     private List<Hint> hintList;
 
@@ -75,11 +72,8 @@ abstract class MySQLMultiUpdates<I extends Item, BI extends Item>
     _TabularBlock fromCrossBlock;
 
 
-    private MySQLMultiUpdates(@Nullable ArmyStmtSpec spec, Function<? super BatchUpdateSpec<BI>, I> function,
-                              Function<? super BatchUpdate, BI> batchFunc) {
+    private MySQLMultiUpdates(@Nullable ArmyStmtSpec spec) {
         super(spec, CriteriaContexts.primaryMultiDmlContext(MySQLUtils.DIALECT, spec));
-        this.function = function;
-        this.batchFunc = batchFunc;
     }
 
     @Override
@@ -347,8 +341,9 @@ abstract class MySQLMultiUpdates<I extends Item, BI extends Item>
         return this;
     }
 
+
     @Override
-    public final _MultiWhereSpec<I> sets(Consumer<_BatchItemPairs<TableField>> consumer) {
+    public final _MultiWhereSpec<I> sets(Consumer<UpdateStatement._BatchItemPairs<TableField>> consumer) {
         consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
         return this;
     }
@@ -381,13 +376,11 @@ abstract class MySQLMultiUpdates<I extends Item, BI extends Item>
         if (this.modifierList == null) {
             this.modifierList = Collections.emptyList();
         }
-        return this.function.apply(this);
+        return this.onAsMySQLUpdate();
     }
 
-    @Override
-    final BI onAsBatchUpdate(List<?> paramList) {
-        return this.batchFunc.apply(new MySQLBatchStatement(this, paramList));
-    }
+
+    abstract I onAsMySQLUpdate();
 
     @Override
     final void onClear() {
@@ -520,32 +513,72 @@ abstract class MySQLMultiUpdates<I extends Item, BI extends Item>
      * This class is the implementation of  multi-table update api.
      * </p>
      */
-    private static final class MySQLSimpleUpdate<I extends Item, BI extends Item> extends MySQLMultiUpdates<I, BI> {
+    private static final class MySQLSimpleUpdate extends MySQLMultiUpdates<Update>
+            implements Update {
 
 
-        private MySQLSimpleUpdate(@Nullable ArmyStmtSpec spec, Function<? super BatchUpdateSpec<BI>, I> function,
-                                  Function<? super BatchUpdate, BI> batchFunc) {
-            super(spec, function, batchFunc);
+        private MySQLSimpleUpdate() {
+            super(null);
+        }
+
+        @Override
+        Update onAsMySQLUpdate() {
+            return this;
         }
 
 
     }// MySQLSimpleUpdate
 
+    private static final class MySQLBatchUpdate extends MySQLMultiUpdates<_BatchUpdateParamSpec>
+            implements BatchUpdate, _BatchStatement, _BatchUpdateParamSpec {
 
-    private static final class SimplePartitionJoinClause<I extends Item, BI extends Item>
+        private List<?> paramList;
+
+        private MySQLBatchUpdate() {
+            super(null);
+        }
+
+        @Override
+        public <P> BatchUpdate namedParamList(final List<P> paramList) {
+            if (this.paramList != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.paramList = CriteriaUtils.paramList(paramList);
+            return this;
+        }
+
+        @Override
+        public List<?> paramList() {
+            final List<?> list = this.paramList;
+            if (list == null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            return list;
+        }
+
+        @Override
+        _BatchUpdateParamSpec onAsMySQLUpdate() {
+            return this;
+        }
+
+
+    }//MySQLBatchUpdate
+
+
+    private static final class SimplePartitionJoinClause<I extends Item>
             extends MySQLSupports.PartitionAsClause<_MultiIndexHintJoinSpec<I>>
             implements MySQLUpdate._MultiPartitionJoinClause<I> {
 
-        private final MySQLMultiUpdates<I, BI> stmt;
+        private final MySQLMultiUpdates<I> stmt;
 
-        private SimplePartitionJoinClause(MySQLMultiUpdates<I, BI> stmt, _JoinType joinType, TableMeta<?> table) {
+        private SimplePartitionJoinClause(MySQLMultiUpdates<I> stmt, _JoinType joinType, TableMeta<?> table) {
             super(stmt.context, joinType, table);
             this.stmt = stmt;
         }
 
         @Override
         _MultiIndexHintJoinSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
-            final MySQLMultiUpdates<I, BI> stmt = this.stmt;
+            final MySQLMultiUpdates<I> stmt = this.stmt;
 
             final MySQLSupports.FromClauseForJoinTableBlock<_MultiIndexHintJoinSpec<I>> block;
             block = new MySQLSupports.FromClauseForJoinTableBlock<>(params, stmt);
@@ -580,20 +613,20 @@ abstract class MySQLMultiUpdates<I extends Item, BI extends Item>
 
     }//SimpleJoinClauseTableBlock
 
-    private static final class SimplePartitionOnClause<I extends Item, BI extends Item>
+    private static final class SimplePartitionOnClause<I extends Item>
             extends MySQLSupports.PartitionAsClause<_MultiIndexHintOnSpec<I>>
             implements MySQLUpdate._MultiPartitionOnClause<I> {
 
-        private final MySQLMultiUpdates<I, BI> stmt;
+        private final MySQLMultiUpdates<I> stmt;
 
-        private SimplePartitionOnClause(MySQLMultiUpdates<I, BI> stmt, _JoinType joinType, TableMeta<?> table) {
+        private SimplePartitionOnClause(MySQLMultiUpdates<I> stmt, _JoinType joinType, TableMeta<?> table) {
             super(stmt.context, joinType, table);
             this.stmt = stmt;
         }
 
         @Override
         _MultiIndexHintOnSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
-            final MySQLMultiUpdates<I, BI> stmt = this.stmt;
+            final MySQLMultiUpdates<I> stmt = this.stmt;
 
             final SimpleJoinClauseTableBlock<I> block;
             block = new SimpleJoinClauseTableBlock<>(params, stmt);
@@ -604,39 +637,6 @@ abstract class MySQLMultiUpdates<I extends Item, BI extends Item>
 
     }//SimplePartitionOnClause
 
-
-    private static final class MySQLBatchStatement extends ArmyBatchJoinableUpdate
-            implements MySQLUpdate, BatchUpdate, _MySQLMultiUpdate {
-
-        private final List<Hint> hintList;
-
-        private final List<MySQLSyntax.Modifier> modifierList;
-
-        private MySQLBatchStatement(MySQLMultiUpdates<?, ?> stmt, List<?> paramList) {
-            super(stmt, paramList);
-            this.hintList = stmt.hintList;
-            this.modifierList = stmt.modifierList;
-            assert this.hintList != null;
-            assert this.modifierList != null;
-        }
-
-        @Override
-        public List<Hint> hintList() {
-            return this.hintList;
-        }
-
-        @Override
-        public List<MySQLs.Modifier> modifierList() {
-            return this.modifierList;
-        }
-
-        @Override
-        Dialect statementDialect() {
-            return MySQLUtils.DIALECT;
-        }
-
-
-    }//MySQLBatchStatement
 
 
 }

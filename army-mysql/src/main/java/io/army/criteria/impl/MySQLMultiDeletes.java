@@ -2,6 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.criteria.impl.inner._TabularBlock;
@@ -14,7 +15,6 @@ import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -29,9 +29,8 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class MySQLMultiDeletes<I extends Item, BI extends Item> extends JoinableDelete<
+abstract class MySQLMultiDeletes<I extends Item> extends JoinableDelete<
         I,
-        BI,
         MySQLCtes,
         MySQLDelete._MySQLMultiDeleteClause<I>,
         MySQLDelete._MultiIndexHintJoinSpec<I>,
@@ -52,21 +51,17 @@ abstract class MySQLMultiDeletes<I extends Item, BI extends Item> extends Joinab
         MySQLDelete._MultiIndexHintJoinSpec<I>,
         MySQLDelete._ParensJoinSpec<I>,
         MySQLDelete._MultiWhereAndSpec<I>,
-        BatchDeleteSpec<BI>,
         JoinableClause.UsingClauseListener {
 
 
     static _MultiWithSpec<Delete> simple() {
-        return new MySQLSimpleMultiDelete<>(null, SQLs.SIMPLE_DELETE, SQLs.ERROR_FUNC);
+        return new MySQLSimpleDelete();
     }
 
-    static _MultiWithSpec<_BatchParamClause<BatchDelete>> batch() {
-        return new MySQLSimpleMultiDelete<>(null, SQLs::forBatchDelete, SQLs.BATCH_DELETE);
+    static _MultiWithSpec<_BatchDeleteParamSpec> batch() {
+        return new MySQLBatchDelete();
     }
 
-    private final Function<? super BatchDeleteSpec<BI>, I> function;
-
-    private final Function<? super BatchDelete, BI> batchFunc;
 
     private List<Hint> hintList;
 
@@ -81,11 +76,8 @@ abstract class MySQLMultiDeletes<I extends Item, BI extends Item> extends Joinab
 
     _TabularBlock fromCrossBlock;
 
-    private MySQLMultiDeletes(@Nullable ArmyStmtSpec spec, Function<? super BatchDeleteSpec<BI>, I> function,
-                              Function<? super BatchDelete, BI> batchFunc) {
+    private MySQLMultiDeletes(@Nullable ArmyStmtSpec spec) {
         super(spec, CriteriaContexts.primaryMultiDmlContext(MySQLUtils.DIALECT, spec));
-        this.function = function;
-        this.batchFunc = batchFunc;
     }
 
 
@@ -358,13 +350,11 @@ abstract class MySQLMultiDeletes<I extends Item, BI extends Item> extends Joinab
         if (this.deleteTablePairList == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return this.function.apply(this);
+        return this.onAsMySQLDelete();
     }
 
-    @Override
-    final BI onAsBatchUpdate(List<?> paramList) {
-        return this.batchFunc.apply(new MySQLBatchDelete(this, paramList));
-    }
+
+    abstract I onAsMySQLDelete();
 
     @Override
     final void onClear() {
@@ -401,7 +391,7 @@ abstract class MySQLMultiDeletes<I extends Item, BI extends Item> extends Joinab
             }
             pairList = Collections.singletonList(_Pair.create(tableAlias, table));
         } else {
-            pairList = new ArrayList<>(tableAliasSize);
+            pairList = _Collections.arrayList(tableAliasSize);
             for (String tableAlias : tableAliasList) {
                 table = this.context.getTable(tableAlias);
                 if (table == null) {
@@ -409,7 +399,7 @@ abstract class MySQLMultiDeletes<I extends Item, BI extends Item> extends Joinab
                 }
                 pairList.add(_Pair.create(tableAlias, table));
             }
-            pairList = Collections.unmodifiableList(pairList);
+            pairList = _Collections.unmodifiableList(pairList);
         }
         this.tableAliasList = null;
         this.deleteTablePairList = pairList;
@@ -526,32 +516,71 @@ abstract class MySQLMultiDeletes<I extends Item, BI extends Item> extends Joinab
     }
 
 
-    private static final class MySQLSimpleMultiDelete<I extends Item, BI extends Item>
-            extends MySQLMultiDeletes<I, BI> {
+    private static final class MySQLSimpleDelete extends MySQLMultiDeletes<Delete>
+            implements Delete {
 
-        private MySQLSimpleMultiDelete(@Nullable ArmyStmtSpec spec, Function<? super BatchDeleteSpec<BI>, I> function,
-                                       Function<? super BatchDelete, BI> batchFunc) {
-            super(spec, function, batchFunc);
+        private MySQLSimpleDelete() {
+            super(null);
+        }
+
+        @Override
+        Delete onAsMySQLDelete() {
+            return this;
         }
 
 
-    }//MySQLSimpleMultiDelete
+    }//MySQLSimpleDelete
+
+    private static final class MySQLBatchDelete extends MySQLMultiDeletes<_BatchDeleteParamSpec>
+            implements BatchDelete, _BatchStatement, _BatchDeleteParamSpec {
+
+        private List<?> paramList;
+
+        private MySQLBatchDelete() {
+            super(null);
+        }
+
+        @Override
+        public <P> BatchDelete namedParamList(final List<P> paramList) {
+            if (this.paramList != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.paramList = CriteriaUtils.paramList(paramList);
+            return this;
+        }
+
+        @Override
+        public List<?> paramList() {
+            final List<?> list = this.paramList;
+            if (list == null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            return list;
+        }
+
+        @Override
+        _BatchDeleteParamSpec onAsMySQLDelete() {
+            return this;
+        }
 
 
-    private static final class SimplePartitionJoinClause<I extends Item, BI extends Item>
+    }//MySQLBatchDelete
+
+
+    private static final class SimplePartitionJoinClause<I extends Item>
             extends MySQLSupports.PartitionAsClause<_MultiIndexHintJoinSpec<I>>
             implements MySQLDelete._MultiPartitionJoinClause<I> {
 
-        private final MySQLMultiDeletes<I, BI> stmt;
+        private final MySQLMultiDeletes<I> stmt;
 
-        private SimplePartitionJoinClause(MySQLMultiDeletes<I, BI> stmt, _JoinType joinType, TableMeta<?> table) {
+        private SimplePartitionJoinClause(MySQLMultiDeletes<I> stmt, _JoinType joinType, TableMeta<?> table) {
             super(stmt.context, joinType, table);
             this.stmt = stmt;
         }
 
         @Override
         MySQLDelete._MultiIndexHintJoinSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
-            final MySQLMultiDeletes<I, BI> stmt = this.stmt;
+            final MySQLMultiDeletes<I> stmt = this.stmt;
 
             final MySQLSupports.FromClauseForJoinTableBlock<_MultiIndexHintJoinSpec<I>> block;
             block = new MySQLSupports.FromClauseForJoinTableBlock<>(params, stmt);
@@ -583,20 +612,20 @@ abstract class MySQLMultiDeletes<I extends Item, BI extends Item> extends Joinab
 
     }//SimpleJoinClauseTableBlock
 
-    private static final class SimplePartitionOnClause<I extends Item, BI extends Item>
+    private static final class SimplePartitionOnClause<I extends Item>
             extends MySQLSupports.PartitionAsClause<_MultiIndexHintOnSpec<I>>
             implements MySQLDelete._MultiPartitionOnClause<I> {
 
-        private final MySQLMultiDeletes<I, BI> stmt;
+        private final MySQLMultiDeletes<I> stmt;
 
-        private SimplePartitionOnClause(MySQLMultiDeletes<I, BI> stmt, _JoinType joinType, TableMeta<?> table) {
+        private SimplePartitionOnClause(MySQLMultiDeletes<I> stmt, _JoinType joinType, TableMeta<?> table) {
             super(stmt.context, joinType, table);
             this.stmt = stmt;
         }
 
         @Override
         MySQLDelete._MultiIndexHintOnSpec<I> asEnd(final MySQLSupports.MySQLBlockParams params) {
-            final MySQLMultiDeletes<I, BI> stmt = this.stmt;
+            final MySQLMultiDeletes<I> stmt = this.stmt;
 
             final SimpleJoinClauseTableBlock<I> block;
             block = new SimpleJoinClauseTableBlock<>(params, stmt);
@@ -611,9 +640,9 @@ abstract class MySQLMultiDeletes<I extends Item, BI extends Item> extends Joinab
     private static final class MySQLFromAliasClause<I extends Item>
             implements MySQLDelete._MultiDeleteFromAliasClause<I> {
 
-        private final MySQLMultiDeletes<I, ?> stmt;
+        private final MySQLMultiDeletes<I> stmt;
 
-        private MySQLFromAliasClause(MySQLMultiDeletes<I, ?> stmt) {
+        private MySQLFromAliasClause(MySQLMultiDeletes<I> stmt) {
             this.stmt = stmt;
         }
 
@@ -693,59 +722,6 @@ abstract class MySQLMultiDeletes<I extends Item, BI extends Item> extends Joinab
     }//MySQLFromAliasClause
 
 
-    private static final class MySQLBatchDelete extends ArmyBatchJoinableDelete
-            implements MySQLDelete, BatchDelete, _MySQLMultiDelete {
-
-        private final List<Hint> hintList;
-
-        private final List<MySQLSyntax.Modifier> modifierList;
-
-        private final List<_Pair<String, TableMeta<?>>> deleteTablePairList;
-
-        private final boolean usingSyntax;
-
-
-        private MySQLBatchDelete(MySQLMultiDeletes<?, ?> stmt, List<?> paramList) {
-            super(stmt, paramList);
-
-            this.hintList = stmt.hintList;
-            this.modifierList = stmt.modifierList;
-            this.deleteTablePairList = stmt.deleteTablePairList;
-            this.usingSyntax = stmt.usingSyntax;
-
-            if (this.hintList == null || this.modifierList == null || this.deleteTablePairList == null) {
-                throw ContextStack.clearStackAndNullPointer();
-            }
-        }
-
-
-        @Override
-        public List<_Pair<String, TableMeta<?>>> deleteTableList() {
-            return this.deleteTablePairList;
-        }
-
-        @Override
-        public List<Hint> hintList() {
-            return this.hintList;
-        }
-
-        @Override
-        public List<MySQLs.Modifier> modifierList() {
-            return this.modifierList;
-        }
-
-        @Override
-        public boolean isUsingSyntax() {
-            return this.usingSyntax;
-        }
-
-        @Override
-        Dialect statementDialect() {
-            return MySQLUtils.DIALECT;
-        }
-
-
-    }//MySQLBatchDelete
 
 
 }

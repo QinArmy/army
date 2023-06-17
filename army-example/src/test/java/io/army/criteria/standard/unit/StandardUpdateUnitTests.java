@@ -84,8 +84,8 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .and(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
                 .ifAnd(ChinaRegion_.regionGdp::plus, SQLs::namedParam, ChinaRegion_.REGION_GDP, Expression::greaterEqual, BigDecimal.ZERO) // test method infer
                 .and(ChinaRegion_.version::equal, SQLs::param, "0")
-                .namedParamList(this::createProvinceList)
-                .asUpdate();
+                .asUpdate()
+                .namedParamList(this.createProvinceList());
 
         printStmt(LOG, stmt);
 
@@ -103,8 +103,8 @@ public class StandardUpdateUnitTests extends StandardUnitTests {
                 .where(ChinaRegion_.id.equal(SQLs::namedParam, ChinaRegion_.ID))
                 .and(ChinaRegion_.name.equal(SQLs::namedParam, ChinaRegion_.NAME))
                 .and(ChinaRegion_.regionGdp::plus, SQLs::literal, gdpAmount, Expression::greaterEqual, BigDecimal.ZERO)
-                .namedParamList(this::createProvinceList)
-                .asUpdate();
+                .asUpdate()
+                .namedParamList(this.createProvinceList());
 
         printStmt(LOG, stmt);
 

@@ -120,12 +120,12 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
     }
 
-    interface _BatchRowPairs<F extends SQLField> extends _ItemPairBuilder,
-            _StaticRowSetClause<F, _BatchRowPairs<F>>,
-            _StaticBatchSetClause<F, _BatchRowPairs<F>> {
 
+    interface _StaticBatchRowSetClause<F extends SQLField, SR> extends _StaticRowSetClause<F, SR>,
+            _StaticBatchSetClause<F, SR> {
 
     }
+
 
     interface _ItemPairs<F extends SQLField> extends _ItemPairBuilder,
             _StaticSetClause<F, _ItemPairs<F>> {
@@ -141,6 +141,13 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
     interface _RowPairs<F extends SQLField> extends _ItemPairBuilder,
             _StaticRowSetClause<F, _RowPairs<F>> {
+
+
+    }
+
+    interface _BatchRowPairs<F extends SQLField> extends _ItemPairBuilder,
+            _StaticRowSetClause<F, _BatchRowPairs<F>>,
+            _StaticBatchSetClause<F, _BatchRowPairs<F>> {
 
 
     }

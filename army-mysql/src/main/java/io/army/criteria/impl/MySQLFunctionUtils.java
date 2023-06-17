@@ -583,14 +583,14 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             final PrimaryStatement statement = this.statement;
 
             final Stmt stmt;
-            if (statement instanceof Select) {
-                stmt = context.parser().select((Select) statement, this.visible);
+            if (statement instanceof SelectStatement) {
+                stmt = context.parser().select((Select) statement, false, this.visible);
             } else if (statement instanceof InsertStatement) {
                 stmt = context.parser().insert((InsertStatement) statement, this.visible);
             } else if (statement instanceof UpdateStatement) {
-                stmt = context.parser().update((UpdateStatement) statement, this.visible);
+                stmt = context.parser().update((UpdateStatement) statement, false, this.visible);
             } else if (statement instanceof DeleteStatement) {
-                stmt = context.parser().delete((DeleteStatement) statement, this.visible);
+                stmt = context.parser().delete((DeleteStatement) statement, false, this.visible);
             } else if (statement instanceof Values) {
                 stmt = context.parser().values((Values) statement, this.visible);
             } else if (statement instanceof DqlStatement) {

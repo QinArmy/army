@@ -3,23 +3,18 @@ package io.army.criteria.impl;
 import io.army.criteria.Item;
 import io.army.criteria.Statement;
 import io.army.criteria.TableField;
-import io.army.criteria.UpdateStatement;
 import io.army.criteria.impl.inner.*;
-import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
 import io.army.util._Collections;
 
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 
-abstract class SingleUpdateStatement<I extends Item, BI extends Item, F extends TableField, SR, WR, WA, OR, OD, LR, LO, LF>
+abstract class SingleUpdateStatement<I extends Item, F extends TableField, SR, WR, WA, OR, OD, LR, LO, LF>
         extends SetWhereClause<F, SR, WR, WA, OR, OD, LR, LO, LF>
         implements Statement,
         Statement._DmlUpdateSpec<I>,
-        Statement._BatchParamClause<BI>,
         _Update,
         _SingleUpdate {
 
@@ -58,21 +53,6 @@ abstract class SingleUpdateStatement<I extends Item, BI extends Item, F extends 
 
 
     @Override
-    public final <P> BI namedParamList(@Nullable List<P> paramList) {
-        return this.onAsBatchUpdate(CriteriaUtils.paramList(paramList));
-    }
-
-    @Override
-    public final <P> BI namedParamList(Supplier<List<P>> supplier) {
-        return this.onAsBatchUpdate(CriteriaUtils.paramList(supplier.get()));
-    }
-
-    @Override
-    public final <K> BI namedParamList(Function<K, ?> function, K key) {
-        return this.onAsBatchUpdate(CriteriaUtils.paramListFromMap(function, key));
-    }
-
-    @Override
     public final String tableAlias() {
         return this.tableAlias;
     }
@@ -84,8 +64,6 @@ abstract class SingleUpdateStatement<I extends Item, BI extends Item, F extends 
 
 
     abstract I onAsUpdate();
-
-    abstract BI onAsBatchUpdate(List<?> paramList);
 
 
     final void endUpdateStatement() {
@@ -101,7 +79,7 @@ abstract class SingleUpdateStatement<I extends Item, BI extends Item, F extends 
     protected static abstract class ArmySingleBathUpdate extends CriteriaSupports.StatementMockSupport
             implements _SingleUpdate,
             _BatchStatement,
-            UpdateStatement,
+            Statement,
             _Statement._WithClauseSpec {
 
         private final boolean recursive;
@@ -120,7 +98,7 @@ abstract class SingleUpdateStatement<I extends Item, BI extends Item, F extends 
 
         private boolean prepared = true;
 
-        protected ArmySingleBathUpdate(SingleUpdateStatement<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> statement,
+        protected ArmySingleBathUpdate(SingleUpdateStatement<?, ?, ?, ?, ?, ?, ?, ?, ?, ?> statement,
                                        List<?> paramList) {
             super(statement.context);
             statement.prepared();

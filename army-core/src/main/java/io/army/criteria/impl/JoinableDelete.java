@@ -31,7 +31,6 @@ abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE exten
 
     private List<_Cte> cteList;
 
-
     private Boolean prepared;
 
     private List<_TabularBlock> tableBlockList;

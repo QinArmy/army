@@ -275,8 +275,8 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
                 throw _Exceptions.castCriteriaApi();
             }
             final Stmt stmt;
-            if (this instanceof Select) {
-                stmt = parser.select((Select) this, visible);
+            if (this instanceof SelectStatement) {
+                stmt = parser.select((SelectStatement) this, false, visible);
             } else if (this instanceof Values) {
                 stmt = parser.values((Values) this, visible);
             } else if (this instanceof DqlStatement) {

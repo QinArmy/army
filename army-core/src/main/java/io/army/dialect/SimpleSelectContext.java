@@ -1,7 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.Query;
-import io.army.criteria.QueryStatement;
+import io.army.criteria.SelectStatement;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Query;
 import io.army.lang.Nullable;
@@ -9,14 +9,14 @@ import io.army.lang.Nullable;
 final class SimpleSelectContext extends MultiTableQueryContext implements  _SelectContext {
 
 
-    static SimpleSelectContext create(@Nullable _SqlContext outerContext, QueryStatement select, ArmyParser dialect
+    static SimpleSelectContext create(@Nullable _SqlContext outerContext, SelectStatement select, ArmyParser dialect
             , Visible visible) {
         final TableContext tableContext;
         tableContext = TableContext.forQuery(((_Query) select).tableBlockList(), dialect, visible);
         return new SimpleSelectContext((StatementContext) outerContext, select, tableContext, dialect, visible);
     }
 
-    static SimpleSelectContext create(final _SqlContext outerCtx, final QueryStatement select) {
+    static SimpleSelectContext create(final _SqlContext outerCtx, final SelectStatement select) {
         final StatementContext outerContext = (StatementContext) outerCtx;
         final ArmyParser parser = outerContext.parser;
 

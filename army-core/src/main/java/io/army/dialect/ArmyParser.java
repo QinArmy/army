@@ -222,7 +222,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     @Override
-    public final Stmt select(final QueryStatement select, final boolean useMultiStmt, final Visible visible) {
+    public final Stmt select(final SelectStatement select, final boolean useMultiStmt, final Visible visible) {
         return this.handleSelect(null, select, visible)   //TODO
                 .build();
     }
@@ -744,7 +744,7 @@ abstract class ArmyParser implements DialectParser {
 
     /**
      * @see #handleQuery(Query, _SqlContext)
-     * @see #handleSelect(_SqlContext, QueryStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
      * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      * @see #handleValues(_SqlContext, Values, Visible)
      */
@@ -753,7 +753,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #handleSelect(_SqlContext, QueryStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
      * @see #handleQuery(Query, _SqlContext)
      */
     protected void parseSimpleQuery(_Query query, _SimpleQueryContext context) {
@@ -803,7 +803,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleSelect(_SqlContext, QueryStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
      * @see #handleQuery(Query, _SqlContext)
      * @see #handleValues(_SqlContext, Values, Visible)
      * @see #handleValuesQuery(ValuesQuery, _SqlContext)
@@ -1117,7 +1117,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleSelect(_SqlContext, QueryStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
      * @see #handleRowSet(RowSet, _SqlContext)
      * @see #handleSubQuery(SubQuery, _SqlContext)
      * @see #withSubQuery(boolean, List, _SqlContext, Consumer)
@@ -1126,8 +1126,8 @@ abstract class ArmyParser implements DialectParser {
         query.prepared();
         if (query instanceof _Query) {
             final _SimpleQueryContext context;
-            if (query instanceof QueryStatement) {
-                context = SimpleSelectContext.create(original, (QueryStatement) query);
+            if (query instanceof SelectStatement) {
+                context = SimpleSelectContext.create(original, (SelectStatement) query);
             } else if (query instanceof SubQuery) {
                 context = SimpleSubQueryContext.forSimple(original, (SubQuery) query);
             } else {
@@ -1164,8 +1164,8 @@ abstract class ArmyParser implements DialectParser {
                 this.parseWithClause((_Statement._WithClauseSpec) query, original);
             }
             final _ParenRowSetContext context;
-            if (query instanceof QueryStatement) {
-                context = ParensSelectContext.create(original, (QueryStatement) query, this, original.visible());
+            if (query instanceof SelectStatement) {
+                context = ParensSelectContext.create(original, (SelectStatement) query, this, original.visible());
             } else if (query instanceof SubQuery) {
                 context = ParenSubRowSetContext.forSimple(original);
             } else {
@@ -2073,10 +2073,10 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #select(QueryStatement, boolean, Visible)
+     * @see #select(SelectStatement, boolean, Visible)
      * @see #handleQuery(Query, _SqlContext)
      */
-    private _SelectContext handleSelect(final @Nullable _SqlContext outerContext, final QueryStatement stmt
+    private _SelectContext handleSelect(final @Nullable _SqlContext outerContext, final SelectStatement stmt
             , final Visible visible) {
         stmt.prepared();
         final _SelectContext context;
@@ -2125,7 +2125,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #handleSelect(_SqlContext, QueryStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
      * @see #handleQuery(Query, _SqlContext)
      */
     private void handleParenRowSet(final _ParenRowSetContext context, final _ParensRowSet parensRowSet) {
@@ -2742,7 +2742,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleSelect(_SqlContext, QueryStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
      * @see #handleSubQuery(SubQuery, _SqlContext)
      */
     private void parseStandardQuery(final _StandardQuery stmt, final _SimpleQueryContext context) {

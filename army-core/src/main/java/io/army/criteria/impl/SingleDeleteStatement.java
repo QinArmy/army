@@ -9,16 +9,13 @@ import io.army.util._Assert;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 
-abstract class SingleDeleteStatement<I extends Item, BI extends Item, B extends CteBuilderSpec, WE extends Item, WR, WA, OR, OD, LR, LO, LF>
+abstract class SingleDeleteStatement<I extends Item, B extends CteBuilderSpec, WE extends Item, WR, WA, OR, OD, LR, LO, LF>
         extends WhereClause<WR, WA, OR, OD, LR, LO, LF>
         implements _SingleDelete,
         Statement,
         Statement._DmlDeleteSpec<I>,
-        Statement._BatchParamClause<BI>,
         DialectStatement._DynamicWithClause<B, WE>,
         _Statement._WithClauseSpec {
 
@@ -89,22 +86,6 @@ abstract class SingleDeleteStatement<I extends Item, BI extends Item, B extends 
     }
 
     @Override
-    public final <P> BI namedParamList(@Nullable List<P> paramList) {
-        return this.onAsBatchDelete(CriteriaUtils.paramList(paramList));
-    }
-
-    @Override
-    public final <P> BI namedParamList(Supplier<List<P>> supplier) {
-        return this.onAsBatchDelete(CriteriaUtils.paramList(supplier.get()));
-    }
-
-    @Override
-    public final <K> BI namedParamList(Function<K, ?> function, K key) {
-        return this.onAsBatchDelete(CriteriaUtils.paramListFromMap(function, key));
-    }
-
-
-    @Override
     public final void prepared() {
         _Assert.prepared(this.prepared);
     }
@@ -136,8 +117,6 @@ abstract class SingleDeleteStatement<I extends Item, BI extends Item, B extends 
 
     abstract I onAsDelete();
 
-    abstract BI onAsBatchDelete(List<?> paramList);
-
 
     @SuppressWarnings("unchecked")
     final WE endStaticWithClause(final boolean recursive) {
@@ -158,6 +137,7 @@ abstract class SingleDeleteStatement<I extends Item, BI extends Item, B extends 
         if (this.cteList != null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
+        ((CriteriaSupports.CteBuilder) builder).endLastCte();
         final boolean recursive;
         recursive = builder.isRecursive();
         this.recursive = recursive;
@@ -195,7 +175,7 @@ abstract class SingleDeleteStatement<I extends Item, BI extends Item, B extends 
 
         private boolean prepared = true;
 
-        protected ArmyBathDelete(SingleDeleteStatement<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> statement,
+        protected ArmyBathDelete(SingleDeleteStatement<?, ?, ?, ?, ?, ?, ?, ?, ?, ?> statement,
                                  List<?> paramList) {
             super(statement.context);
             statement.prepared();

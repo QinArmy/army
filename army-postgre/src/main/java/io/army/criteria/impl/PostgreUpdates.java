@@ -34,10 +34,9 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T>
+abstract class PostgreUpdates<I extends Item, Q extends Item, T>
         extends JoinableUpdate<
         I,
-        BI,
         PostgreCtes,
         PostgreUpdate._SingleUpdateClause<I, Q>,
         FieldMeta<T>,
@@ -54,7 +53,6 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
         PostgreUpdate._SingleWhereAndSpec<I, Q>>
         implements PostgreUpdate,
         _PostgreUpdate,
-        BatchUpdateSpec<BI>,
         PostgreStatement._StaticTableSampleClause<PostgreUpdate._RepeatableJoinClause<I, Q>>,
         PostgreUpdate._SingleSetFromSpec<I, Q, T>,
         PostgreUpdate._TableSampleJoinSpec<I, Q>,
@@ -89,7 +87,7 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
      * create new batch single-table UPDATE statement that is primary statement.
      * </p>
      */
-    static PostgreUpdate._SingleWithSpec<_BatchParamClause<BatchUpdate>, _BatchParamClause<BatchReturningUpdate>> batchUpdate() {
+    static PostgreUpdate._SingleWithSpec<_BatchUpdateParamSpec, _BatchReturningUpdateParamSpec> batchUpdate() {
         return new PrimaryBatchUpdateClause();
     }
 
@@ -125,8 +123,8 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
     }
 
     @Override
-    public final _SingleFromSpec<I, Q> sets(Consumer<UpdateStatement._RowPairs<FieldMeta<T>>> consumer) {
-        consumer.accept(CriteriaSupports.rowPairs(this::onAddItemPair));
+    public final _SingleFromSpec<I, Q> sets(Consumer<UpdateStatement._BatchRowPairs<FieldMeta<T>>> consumer) {
+        consumer.accept(CriteriaSupports.batchRowPairs(this::onAddItemPair));
         return this;
     }
 
@@ -585,6 +583,9 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
     @Override
     final void onClear() {
         this.returningList = null;
+        if (this instanceof PostgreUpdates.PostgreBatchUpdate) {
+            ((PostgreBatchUpdate<?>) this).paramList = null;
+        }
     }
 
     abstract I onAsPostgreUpdate();
@@ -689,15 +690,6 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
     }
 
 
-    final List<? extends _SelectItem> innerReturningList() {
-        List<? extends _SelectItem> list = this.returningList;
-        if (list == null) {
-            list = Collections.emptyList();
-        }
-        return list;
-    }
-
-
     final _OnClause<_SingleJoinSpec<I, Q>> joinNestedEnd(final _JoinType joinType, final _NestedItems nestedItems) {
 
         final TabularBlocks.JoinClauseNestedBlock<_SingleJoinSpec<I, Q>> block;
@@ -724,7 +716,7 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
         return (TabularBlocks.FromClauseAliasDerivedBlock) block;
     }
 
-    private PostgreUpdates<I, BI, Q, T> onAddSelection(final @Nullable SelectItem selectItem) {
+    private PostgreUpdates<I, Q, T> onAddSelection(final @Nullable SelectItem selectItem) {
         if (selectItem == null) {
             throw ContextStack.nullPointer(this.context);
         }
@@ -753,12 +745,13 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
     }
 
 
-    private static final class PrimarySimpleUpdate<T> extends PostgreUpdates<Update, Item, ReturningUpdate, T>
+    private static final class PostgreSimpleUpdate<T> extends PostgreUpdates<Update, ReturningUpdate, T>
             implements Update {
 
-        private PrimarySimpleUpdate(PrimarySimpleUpdateClause clause, TableMeta<T> updateTable) {
+        private PostgreSimpleUpdate(PrimarySimpleUpdateClause clause, TableMeta<T> updateTable) {
             super(clause, updateTable);
         }
+
 
         @Override
         Update onAsPostgreUpdate() {
@@ -770,72 +763,62 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
             return new ReturningUpdateWrapper(this);
         }
 
-        @Override
-        Item onAsBatchUpdate(List<?> paramList) {
-            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
-        }
 
+    }//PostgreSimpleUpdate
 
-    }//PrimarySimpleUpdate
+    private static final class PostgreBatchUpdate<T> extends PostgreUpdates<
+            _BatchUpdateParamSpec,
+            _BatchReturningUpdateParamSpec,
+            T> implements _BatchUpdateParamSpec, BatchUpdate, _BatchStatement {
 
-    private static final class BatchPrimarySimpleUpdate<T> extends PostgreUpdates<
-            _BatchParamClause<BatchUpdate>,
-            BatchUpdate,
-            _BatchParamClause<BatchReturningUpdate>,
-            T> {
+        private List<?> paramList;
 
-        private BatchPrimarySimpleUpdate(PrimaryBatchUpdateClause clause, TableMeta<T> updateTable) {
+        private PostgreBatchUpdate(PrimaryBatchUpdateClause clause, TableMeta<T> updateTable) {
             super(clause, updateTable);
         }
 
 
         @Override
-        _BatchParamClause<BatchReturningUpdate> onAsReturningUpdate() {
-            return new _BatchParamClause<BatchReturningUpdate>() {
-                @Override
-                public <P> BatchReturningUpdate namedParamList(List<P> paramList) {
-                    return new PostgreBatchReturningUpdate(BatchPrimarySimpleUpdate.this,
-                            CriteriaUtils.paramList(paramList)
-                    );
-                }
-
-                @Override
-                public <P> BatchReturningUpdate namedParamList(Supplier<List<P>> supplier) {
-                    return new PostgreBatchReturningUpdate(BatchPrimarySimpleUpdate.this,
-                            CriteriaUtils.paramList(supplier.get())
-                    );
-                }
-
-                @Override
-                public <K> BatchReturningUpdate namedParamList(Function<K, ?> function, K key) {
-
-                    return new PostgreBatchReturningUpdate(BatchPrimarySimpleUpdate.this,
-                            CriteriaUtils.paramListFromMap(function, key)
-                    );
-                }
-            };
-        }
-
-        @Override
-        _BatchParamClause<BatchUpdate> onAsPostgreUpdate() {
+        public <P> BatchUpdate namedParamList(final List<P> paramList) {
+            if (this.paramList != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.paramList = CriteriaUtils.paramList(paramList);
             return this;
         }
 
         @Override
-        BatchUpdate onAsBatchUpdate(List<?> paramList) {
-            return new PostgreBatchUpdate(this, paramList);
+        public List<?> paramList() {
+            final List<?> list = this.paramList;
+            if (list == null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            return list;
         }
 
+        @Override
+        _BatchUpdateParamSpec onAsPostgreUpdate() {
+            return this;
+        }
 
-    }//BatchPrimarySimpleUpdate
+        @Override
+        _BatchReturningUpdateParamSpec onAsReturningUpdate() {
+            return this::createBatchReturningUpdate;
+        }
+
+        private <P> BatchReturningUpdate createBatchReturningUpdate(List<P> paramList) {
+            return new PostgreBatchReturningUpdate(this, paramList);
+        }
+
+    }//PostgreBatchUpdate
 
 
-    private static final class SubSimpleUpdate<I extends Item, T> extends PostgreUpdates<I, Item, I, T>
-            implements SubStatement {
+    private static final class PostgreSubUpdate<I extends Item, T> extends PostgreUpdates<I, I, T>
+            implements SubStatement, _ReturningDml {
 
         private final Function<SubStatement, I> function;
 
-        private SubSimpleUpdate(SubSimpleUpdateClause<I> clause, TableMeta<T> updateTable) {
+        private PostgreSubUpdate(SubSimpleUpdateClause<I> clause, TableMeta<T> updateTable) {
             super(clause, updateTable);
             this.function = clause.function;
         }
@@ -848,16 +831,11 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
 
         @Override
         I onAsReturningUpdate() {
-            return this.function.apply(new SubReturningUpdate(this));
-        }
-
-        @Override
-        Item onAsBatchUpdate(List<?> paramList) {
-            throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            return this.function.apply(this);
         }
 
 
-    }//SubSimpleUpdate
+    }//PostgreSubUpdate
 
 
     private static abstract class PostgreUpdateClause<I extends Item, Q extends Item>
@@ -944,25 +922,24 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
 
         @Override
         <T> _SingleSetClause<Update, ReturningUpdate, T> createUpdateStmt(TableMeta<T> table) {
-            return new PrimarySimpleUpdate<>(this, table);
+            return new PostgreSimpleUpdate<>(this, table);
         }
 
 
     }//PrimarySimpleUpdateClause
 
     private static final class PrimaryBatchUpdateClause extends PostgreUpdateClause<
-            _BatchParamClause<BatchUpdate>,
-            _BatchParamClause<BatchReturningUpdate>> {
+            _BatchUpdateParamSpec,
+            _BatchReturningUpdateParamSpec> {
 
         private PrimaryBatchUpdateClause() {
             super(null, CriteriaContexts.primaryJoinableSingleDmlContext(PostgreUtils.DIALECT, null));
         }
 
         @Override
-        <T> _SingleSetClause<_BatchParamClause<BatchUpdate>, _BatchParamClause<BatchReturningUpdate>, T> createUpdateStmt(TableMeta<T> table) {
-            return new BatchPrimarySimpleUpdate<>(this, table);
+        <T> _SingleSetClause<_BatchUpdateParamSpec, _BatchReturningUpdateParamSpec, T> createUpdateStmt(TableMeta<T> table) {
+            return new PostgreBatchUpdate<>(this, table);
         }
-
 
     }//PrimaryBatchUpdateClause
 
@@ -978,7 +955,7 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
 
         @Override
         <T> _SingleSetClause<I, I, T> createUpdateStmt(TableMeta<T> table) {
-            return new SubSimpleUpdate<>(this, table);
+            return new PostgreSubUpdate<>(this, table);
         }
 
 
@@ -1026,7 +1003,7 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
 
         private Boolean prepared = Boolean.TRUE;
 
-        private PostgreUpdateWrapper(PostgreUpdates<?, ?, ?, ?> stmt) {
+        private PostgreUpdateWrapper(PostgreUpdates<?, ?, ?> stmt) {
             super(stmt.context);
 
             this.recursive = stmt.recursive;
@@ -1040,7 +1017,7 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
             this.tableBlockList = stmt.tableBlockList();
 
             this.wherePredicateList = stmt.wherePredicateList();
-            this.returningList = stmt.innerReturningList();
+            this.returningList = _Collections.safeUnmodifiableList(stmt.returningList);
         }
 
         @Override
@@ -1124,48 +1101,20 @@ abstract class PostgreUpdates<I extends Item, BI extends Item, Q extends Item, T
     private static final class ReturningUpdateWrapper extends PostgreUpdateWrapper
             implements ReturningUpdate, _ReturningDml {
 
-        private ReturningUpdateWrapper(PrimarySimpleUpdate<?> stmt) {
+        private ReturningUpdateWrapper(PostgreSimpleUpdate<?> stmt) {
             super(stmt);
         }
 
 
     }//ReturningUpdateWrapper
 
-    private static final class SubReturningUpdate extends PostgreUpdateWrapper
-            implements SubStatement, _ReturningDml {
-
-        private SubReturningUpdate(SubSimpleUpdate<?, ?> stmt) {
-            super(stmt);
-        }
-
-
-    }//ReturningUpdateWrapper
-
-
-    private static final class PostgreBatchUpdate extends PostgreUpdateWrapper
-            implements BatchUpdate, _BatchStatement {
-
-        private final List<?> paramList;
-
-        private PostgreBatchUpdate(PostgreUpdates<?, ?, ?, ?> stmt, List<?> paramList) {
-            super(stmt);
-            this.paramList = paramList;
-        }
-
-        @Override
-        public List<?> paramList() {
-            return this.paramList;
-        }
-
-
-    }//PostgreBatchUpdate
 
     private static final class PostgreBatchReturningUpdate extends PostgreUpdateWrapper
             implements BatchReturningUpdate, _BatchStatement, _ReturningDml {
 
         private final List<?> paramList;
 
-        private PostgreBatchReturningUpdate(PostgreUpdates<?, ?, ?, ?> stmt, List<?> paramList) {
+        private PostgreBatchReturningUpdate(PostgreBatchUpdate<?> stmt, List<?> paramList) {
             super(stmt);
             this.paramList = paramList;
         }

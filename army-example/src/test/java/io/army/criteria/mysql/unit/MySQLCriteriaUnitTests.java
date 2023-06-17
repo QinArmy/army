@@ -196,8 +196,8 @@ public class MySQLCriteriaUnitTests {
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")// common parameter
                     .orderBy(ChinaRegion_.name::desc)
                     .ifLimit(SQLs::param, map::get, "rowCount")
-                    .namedParamList(paramList)
-                    .asDelete();
+                    .asDelete()
+                    .namedParamList(paramList);
 
             printStmt(stmt);
         }; // mock dao method end
@@ -297,8 +297,8 @@ public class MySQLCriteriaUnitTests {
                     .and(ChinaRegion_.createTime::between, SQLs::literal, map.get("startTime"), AND, map.get("endTIme"))
                     .and(ChinaRegion_.updateTime::between, SQLs::literal, map.get("startTime"), AND, map.get("endTIme"))
                     .ifAnd(ChinaRegion_.version::equal, SQLs::literal, map::get, "version")
-                    .namedParamList(paramList)
-                    .asDelete();
+                    .asDelete()
+                    .namedParamList(paramList);
 
             printStmt(stmt);
         };

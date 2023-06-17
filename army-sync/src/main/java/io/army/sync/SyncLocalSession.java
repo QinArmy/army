@@ -696,8 +696,8 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     private Stmt parseDqlStatement(final DqlStatement statement, final boolean useMultiStmt,
                                    final Visible visible) {
         final Stmt stmt;
-        if (statement instanceof QueryStatement) {
-            stmt = this.factory.dialectParser.select((QueryStatement) statement, useMultiStmt, visible);
+        if (statement instanceof SelectStatement) {
+            stmt = this.factory.dialectParser.select((SelectStatement) statement, useMultiStmt, visible);
         } else if (!(statement instanceof DmlStatement)) {
             stmt = this.factory.dialectParser.dialectDql(statement, visible);
         } else if (statement instanceof _Statement._ChildStatement) {

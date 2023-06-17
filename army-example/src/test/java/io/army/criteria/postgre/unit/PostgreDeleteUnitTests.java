@@ -42,7 +42,7 @@ public class PostgreDeleteUnitTests extends PostgreUnitTests {
     public void returningDeleteParent() {
         final ReturningDelete stmt;
         stmt = Postgres.singleDelete()
-                .deleteFrom(ONLY, ChinaRegion_.T, ASTERISK, AS, "c")
+                .deleteFrom(ChinaRegion_.T, ASTERISK, AS, "c")
                 .using(HistoryChinaRegion_.T, AS, "hc")
                 .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
                 .and(ChinaRegion_.id::equal, SQLs::literal, 1)
@@ -77,8 +77,8 @@ public class PostgreDeleteUnitTests extends PostgreUnitTests {
                 .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
                 .and(ChinaRegion_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.regionGdp::less, SQLs::namedParam)
-                .namedParamList(paramList)
-                .asDelete();
+                .asDelete()
+                .namedParamList(paramList);
 
         printStmt(LOG, stmt);
     }
@@ -107,8 +107,8 @@ public class PostgreDeleteUnitTests extends PostgreUnitTests {
                 .and(ChinaRegion_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.regionGdp::less, SQLs::namedParam)
                 .returning("c", PERIOD, ChinaRegion_.T)
-                .namedParamList(paramList)
-                .asReturningDelete();
+                .asReturningDelete()
+                .namedParamList(paramList);
 
 
         printStmt(LOG, stmt);

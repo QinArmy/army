@@ -181,7 +181,7 @@ public abstract class SQLs extends SQLsSyntax {
      * Batch domain update
      * </p>
      */
-    public static StandardUpdate._DomainUpdateClause<Statement._BatchParamClause<BatchUpdate>> batchDomainUpdate() {
+    public static StandardUpdate._DomainUpdateClause<Statement._BatchUpdateParamSpec> batchDomainUpdate() {
         return StandardUpdates.batchDomain();
     }
 
@@ -191,11 +191,11 @@ public abstract class SQLs extends SQLsSyntax {
      * Batch domain update
      * </p>
      */
-    public static StandardUpdate._SingleUpdateClause<Statement._BatchParamClause<BatchUpdate>> batchSingleUpdate() {
+    public static StandardUpdate._SingleUpdateClause<Statement._BatchUpdateParamSpec> batchSingleUpdate() {
         return StandardUpdates.batchSingleUpdate(StandardDialect.STANDARD10);
     }
 
-    public static StandardUpdate._WithSpec<Statement._BatchParamClause<BatchUpdate>> batchSingleUpdate20() {
+    public static StandardUpdate._WithSpec<Statement._BatchUpdateParamSpec> batchSingleUpdate20() {
         return StandardUpdates.batchSingleUpdate(StandardDialect.STANDARD20);
     }
 
@@ -218,7 +218,7 @@ public abstract class SQLs extends SQLsSyntax {
      * Batch domain delete
      * </p>
      */
-    public static StandardDelete._StandardDeleteClause<Statement._BatchParamClause<BatchDelete>> batchSingleDelete() {
+    public static StandardDelete._StandardDeleteClause<Statement._BatchDeleteParamSpec> batchSingleDelete() {
         return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD10);
     }
 
@@ -227,12 +227,12 @@ public abstract class SQLs extends SQLsSyntax {
      * Batch domain delete
      * </p>
      */
-    public static StandardDelete._WithSpec<Statement._BatchParamClause<BatchDelete>> batchSingleDelete20() {
+    public static StandardDelete._WithSpec<Statement._BatchDeleteParamSpec> batchSingleDelete20() {
         return StandardDeletes.batchSingleDelete(StandardDialect.STANDARD20);
     }
 
 
-    public static StandardDelete._DomainDeleteClause<Statement._BatchParamClause<BatchDelete>> batchDomainDelete() {
+    public static StandardDelete._DomainDeleteClause<Statement._BatchDeleteParamSpec> batchDomainDelete() {
         return StandardDeletes.batchDomainDelete();
     }
 
@@ -316,18 +316,6 @@ public abstract class SQLs extends SQLsSyntax {
         return t;
     }
 
-
-    static <T extends Item> Statement._BatchParamClause<T> forBatchUpdate(BatchUpdateSpec<T> spec) {
-        return spec;
-    }
-
-    static <T extends Item> Statement._BatchParamClause<T> forBatchDelete(BatchDeleteSpec<T> spec) {
-        return spec;
-    }
-
-    static <T extends Item> Statement._BatchParamClause<T> forBatchReturningUpdate(BatchReturningUpdateSpec<T> spec) {
-        return spec;
-    }
 
     static Item castCriteria(Item stmt) {
         throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);

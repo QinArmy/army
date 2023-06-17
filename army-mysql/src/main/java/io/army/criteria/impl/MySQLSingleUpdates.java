@@ -2,8 +2,8 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner.mysql._IndexHint;
 import io.army.criteria.impl.inner.mysql._MySQLSingleUpdate;
 import io.army.criteria.mysql.MySQLCtes;
@@ -16,11 +16,11 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Collections;
+import io.army.util._Exceptions;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -29,10 +29,9 @@ import java.util.function.Supplier;
  * </p>
  */
 
-abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
+abstract class MySQLSingleUpdates<I extends Item, T>
         extends SingleUpdateStatement<
         I,
-        BI,
         FieldMeta<T>,
         MySQLUpdate._SingleWhereSpec<I, T>,
         MySQLUpdate._OrderBySpec<I>,
@@ -43,8 +42,6 @@ abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
         Object, Object>
         implements _MySQLSingleUpdate,
         MySQLUpdate,
-        BatchUpdateSpec<BI>,
-        Update,
         MySQLUpdate._SingleIndexHintSpec<I, T>,
         MySQLUpdate._SingleWhereSpec<I, T>,
         MySQLUpdate._SingleWhereAndSpec<I>,
@@ -56,7 +53,7 @@ abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
      * </p>
      */
     static _SingleWithSpec<Update> simple() {
-        return new SimpleUpdateClause<>(null, SQLs.SIMPLE_UPDATE, SQLs.ERROR_FUNC);
+        return new SimpleUpdateClause();
     }
 
     /**
@@ -64,13 +61,10 @@ abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
      * create batch single-table UPDATE statement that is primary statement.
      * </p>
      */
-    static _SingleWithSpec<_BatchParamClause<BatchUpdate>> batch() {
-        return new SimpleUpdateClause<>(null, SQLs::forBatchUpdate, SQLs.BATCH_UPDATE);
+    static _SingleWithSpec<_BatchUpdateParamSpec> batch() {
+        return new BatchUpdateClause();
     }
 
-    private final Function<? super BatchUpdateSpec<BI>, I> function;
-
-    private final Function<? super BatchUpdate, BI> batchFunc;
 
     private final boolean recursive;
 
@@ -84,14 +78,11 @@ abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
 
     private List<_IndexHint> indexHintList;
 
-    private MySQLSingleUpdates(SimpleUpdateClause<I, BI> clause) {
+    private MySQLSingleUpdates(MySQLUpdateClause<?> clause) {
         super(clause.context, clause.updateTable, clause.tableAlias);
 
-        this.function = clause.function;
-        this.batchFunc = clause.batchFunc;
         this.recursive = clause.isRecursive();
         this.cteList = clause.cteList();
-
         this.hintList = _Collections.safeList(clause.hintList);
         this.modifierList = _Collections.safeList(clause.modifierList);
 
@@ -99,10 +90,25 @@ abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
 
     }
 
+
     @Override
-    public final _SingleWhereClause<I> sets(Consumer<_BatchItemPairs<FieldMeta<T>>> consumer) {
-        consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
-        return this;
+    public final boolean isRecursive() {
+        return this.recursive;
+    }
+
+    @Override
+    public final List<_Cte> cteList() {
+        return this.cteList;
+    }
+
+    @Override
+    public final List<Hint> hintList() {
+        return this.hintList;
+    }
+
+    @Override
+    public final List<MySQLs.Modifier> modifierList() {
+        return this.modifierList;
     }
 
 
@@ -150,29 +156,14 @@ abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
     }
 
     @Override
-    public final boolean isRecursive() {
-        return this.recursive;
-    }
-
-    @Override
-    public final List<_Cte> cteList() {
-        return this.cteList;
-    }
-
-    @Override
-    public final List<Hint> hintList() {
-        return this.hintList;
-    }
-
-    @Override
-    public final List<MySQLs.Modifier> modifierList() {
-        return this.modifierList;
-    }
-
-
-    @Override
     public final List<String> partitionList() {
         return this.partitionList;
+    }
+
+    @Override
+    public final _SingleWhereClause<I> sets(Consumer<UpdateStatement._BatchItemPairs<FieldMeta<T>>> consumer) {
+        consumer.accept(CriteriaSupports.batchItemPairs(this::onAddItemPair));
+        return this;
     }
 
     @Override
@@ -188,13 +179,11 @@ abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
     @Override
     final I onAsUpdate() {
         this.indexHintList = _Collections.safeUnmodifiableList(this.indexHintList);
-        return this.function.apply(this);
+        return this.onAsMySQLUpdate();
     }
 
-    @Override
-    final BI onAsBatchUpdate(List<?> paramList) {
-        return this.batchFunc.apply(new MySQLBatchSingleUpdate(this, paramList));
-    }
+
+    abstract I onAsMySQLUpdate();
 
     @Override
     final void onClear() {
@@ -222,27 +211,60 @@ abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
     }
 
 
-    private static final class MySQLSimpleUpdate<I extends Item, BI extends Item, T>
-            extends MySQLSingleUpdates<I, BI, T> {
+    private static final class MySQLSimpleUpdate<T> extends MySQLSingleUpdates<Update, T>
+            implements Update {
 
-
-        private MySQLSimpleUpdate(SimpleUpdateClause<I, BI> clause) {
+        private MySQLSimpleUpdate(SimpleUpdateClause clause) {
             super(clause);
+        }
 
+        @Override
+        Update onAsMySQLUpdate() {
+            return this;
         }
 
 
-    }//SimpleUpdate
+    }//MySQLSimpleUpdate
+
+    private static final class MySQLBatchUpdate<T> extends MySQLSingleUpdates<_BatchUpdateParamSpec, T>
+            implements BatchUpdate, _BatchUpdateParamSpec, _BatchStatement {
+
+        private List<?> paramList;
+
+        private MySQLBatchUpdate(BatchUpdateClause clause) {
+            super(clause);
+        }
+
+        @Override
+        public <P> BatchUpdate namedParamList(final List<P> paramList) {
+            if (this.paramList != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            this.paramList = CriteriaUtils.paramList(paramList);
+            return this;
+        }
+
+        @Override
+        public List<?> paramList() {
+            final List<?> list = this.paramList;
+            if (list == null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            return list;
+        }
+
+        @Override
+        _BatchUpdateParamSpec onAsMySQLUpdate() {
+            return this;
+        }
 
 
-    private static final class SimpleUpdateClause<I extends Item, BI extends Item>
+    }//MySQLSimpleUpdate
+
+    private static abstract class MySQLUpdateClause<I extends Item>
             extends CriteriaSupports.WithClause<MySQLCtes, _SingleUpdateClause<I>>
             implements MySQLUpdate._SingleWithSpec<I>,
             _SingleUpdateSpaceClause<I> {
-
-        private final Function<? super BatchUpdateSpec<BI>, I> function;
-
-        private final Function<? super BatchUpdate, BI> batchFunc;
 
         private List<Hint> hintList;
 
@@ -254,99 +276,128 @@ abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
 
         private String tableAlias;
 
-        private SimpleUpdateClause(@Nullable ArmyStmtSpec spec, Function<? super BatchUpdateSpec<BI>, I> function,
-                                   Function<? super BatchUpdate, BI> batchFunc) {
-            super(spec, CriteriaContexts.primarySingleDmlContext(MySQLUtils.DIALECT, spec));
+        private MySQLUpdateClause(@Nullable ArmyStmtSpec spec) {
+            super(spec, CriteriaContexts.primarySingleDmlContext(MySQLUtils.DIALECT, null));
             ContextStack.push(this.context);
-            this.function = function;
-            this.batchFunc = batchFunc;
         }
 
         @Override
-        public MySQLQuery._StaticCteParensSpec<_SingleUpdateClause<I>> with(String name) {
+        public final MySQLQuery._StaticCteParensSpec<_SingleUpdateClause<I>> with(String name) {
             return MySQLQueries.staticCteComma(this.context, false, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
-        public MySQLQuery._StaticCteParensSpec<_SingleUpdateClause<I>> withRecursive(String name) {
+        public final MySQLQuery._StaticCteParensSpec<_SingleUpdateClause<I>> withRecursive(String name) {
             return MySQLQueries.staticCteComma(this.context, true, this::endStaticWithClause)
                     .comma(name);
         }
 
         @Override
-        public _SingleUpdateSpaceClause<I> update(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
+        public final _SingleUpdateSpaceClause<I> update(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
             this.hintList = CriteriaUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
             this.modifierList = CriteriaUtils.asModifierList(this.context, modifiers, MySQLUtils::updateModifier);
             return this;
         }
 
         @Override
-        public <T> _SingleIndexHintSpec<I, T> update(SingleTableMeta<T> table, SQLs.WordAs wordAs, String alias) {
+        public final <T> _SingleIndexHintSpec<I, T> update(SingleTableMeta<T> table, SQLs.WordAs wordAs, String alias) {
             this.updateTable = table;
             this.tableAlias = alias;
-            return new MySQLSimpleUpdate<>(this);
+            return this.createUpdateStmt();
         }
 
         @Override
-        public <P> _SingleIndexHintSpec<I, P> update(ComplexTableMeta<P, ?> table, SQLs.WordAs wordAs, String alias) {
+        public final <P> _SingleIndexHintSpec<I, P> update(ComplexTableMeta<P, ?> table, SQLs.WordAs wordAs, String alias) {
             this.updateTable = table;
             this.tableAlias = alias;
-            return new MySQLSimpleUpdate<>(this);
+            return this.createUpdateStmt();
         }
 
         @Override
-        public <T> _SinglePartitionClause<I, T> update(SingleTableMeta<T> table) {
+        public final <T> _SinglePartitionClause<I, T> update(SingleTableMeta<T> table) {
             this.updateTable = table;
             return new SimplePartitionClause<>(this);
         }
 
         @Override
-        public <P> _SinglePartitionClause<I, P> update(ComplexTableMeta<P, ?> table) {
+        public final <P> _SinglePartitionClause<I, P> update(ComplexTableMeta<P, ?> table) {
             this.updateTable = table;
             return new SimplePartitionClause<>(this);
         }
 
         @Override
-        public <T> _SingleIndexHintSpec<I, T> space(SingleTableMeta<T> table, SQLs.WordAs wordAs, String alias) {
+        public final <T> _SingleIndexHintSpec<I, T> space(SingleTableMeta<T> table, SQLs.WordAs wordAs, String alias) {
             this.updateTable = table;
             this.tableAlias = alias;
-            return new MySQLSimpleUpdate<>(this);
+            return this.createUpdateStmt();
         }
 
         @Override
-        public <P> _SingleIndexHintSpec<I, P> space(ComplexTableMeta<P, ?> table, SQLs.WordAs wordAs, String alias) {
+        public final <P> _SingleIndexHintSpec<I, P> space(ComplexTableMeta<P, ?> table, SQLs.WordAs wordAs, String alias) {
             this.updateTable = table;
             this.tableAlias = alias;
-            return new MySQLSimpleUpdate<>(this);
+            return this.createUpdateStmt();
         }
 
         @Override
-        public <T> _SinglePartitionClause<I, T> space(SingleTableMeta<T> table) {
+        public final <T> _SinglePartitionClause<I, T> space(SingleTableMeta<T> table) {
             this.updateTable = table;
             return new SimplePartitionClause<>(this);
         }
 
         @Override
-        public <P> _SinglePartitionClause<I, P> space(ComplexTableMeta<P, ?> table) {
+        public final <P> _SinglePartitionClause<I, P> space(ComplexTableMeta<P, ?> table) {
             this.updateTable = table;
             return new SimplePartitionClause<>(this);
         }
 
         @Override
-        MySQLCtes createCteBuilder(boolean recursive) {
+        final MySQLCtes createCteBuilder(boolean recursive) {
             return MySQLSupports.mysqlLCteBuilder(recursive, this.context);
         }
 
+        abstract <T> _SingleIndexHintSpec<I, T> createUpdateStmt();
+
+
+    }//PostgreUpdateClause
+
+    private static final class SimpleUpdateClause extends MySQLUpdateClause<Update> {
+
+        private SimpleUpdateClause() {
+            super(null);
+        }
+
+        @Override
+        <T> _SingleIndexHintSpec<Update, T> createUpdateStmt() {
+            return new MySQLSimpleUpdate<>(this);
+        }
+
+
     }//SimpleUpdateClause
 
-    private static final class SimplePartitionClause<I extends Item, BI extends Item, T>
+    private static final class BatchUpdateClause extends MySQLUpdateClause<_BatchUpdateParamSpec> {
+
+        private BatchUpdateClause() {
+            super(null);
+        }
+
+        @Override
+        <T> _SingleIndexHintSpec<_BatchUpdateParamSpec, T> createUpdateStmt() {
+            return new MySQLBatchUpdate<>(this);
+        }
+
+
+    }//BatchUpdateClause
+
+
+    private static final class SimplePartitionClause<I extends Item, T>
             extends MySQLSupports.PartitionAsClause<_SingleIndexHintSpec<I, T>>
             implements MySQLUpdate._SinglePartitionClause<I, T> {
 
-        private final SimpleUpdateClause<I, BI> clause;
+        private final MySQLUpdateClause<I> clause;
 
-        private SimplePartitionClause(SimpleUpdateClause<I, BI> clause) {
+        private SimplePartitionClause(MySQLUpdateClause<I> clause) {
             super(clause.context, _JoinType.NONE, clause.updateTable);
             if (this.table == null) {
                 throw ContextStack.nullPointer(clause.context);
@@ -356,86 +407,14 @@ abstract class MySQLSingleUpdates<I extends Item, BI extends Item, T>
 
         @Override
         _SingleIndexHintSpec<I, T> asEnd(MySQLSupports.MySQLBlockParams params) {
-            final SimpleUpdateClause<I, BI> clause = this.clause;
+            final MySQLUpdateClause<I> clause = this.clause;
             clause.partitionList = params.partitionList();
             clause.tableAlias = params.alias();
-            return new MySQLSimpleUpdate<>(clause);
+            return clause.createUpdateStmt();
         }
 
 
     }//SimplePartitionClause
-
-
-    private static final class MySQLBatchSingleUpdate extends ArmySingleBathUpdate
-            implements MySQLUpdate,
-            BatchUpdate,
-            _MySQLSingleUpdate {
-
-        private final List<Hint> hintList;
-
-        private final List<MySQLs.Modifier> modifierList;
-
-        private final List<String> partitionList;
-
-        private final List<_IndexHint> indexHintList;
-
-        private final List<? extends SortItem> orderByList;
-
-        private final _Expression rowCountExpression;
-
-
-        private MySQLBatchSingleUpdate(MySQLSingleUpdates<?, ?, ?> clause, List<?> paramList) {
-            super(clause, paramList);
-
-            this.hintList = clause.hintList;
-            this.modifierList = clause.modifierList;
-            this.partitionList = clause.partitionList;
-            this.indexHintList = clause.indexHintList;
-
-            assert indexHintList != null;
-            this.orderByList = clause.orderByList();
-            this.rowCountExpression = clause.rowCountExp();
-
-        }
-
-        @Override
-        public _Expression rowCountExp() {
-            return this.rowCountExpression;
-        }
-
-        @Override
-        public List<String> partitionList() {
-            return this.partitionList;
-        }
-
-        @Override
-        public List<? extends _IndexHint> indexHintList() {
-            return this.indexHintList;
-        }
-
-        @Override
-        public List<? extends SortItem> orderByList() {
-            return this.orderByList;
-        }
-
-        @Override
-        public List<Hint> hintList() {
-            return this.hintList;
-        }
-
-        @Override
-        public List<MySQLs.Modifier> modifierList() {
-            return this.modifierList;
-        }
-
-
-        @Override
-        Dialect statementDialect() {
-            return MySQLUtils.DIALECT;
-        }
-
-
-    }//MySQLBatchSingleUpdate
 
 
 }

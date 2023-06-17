@@ -7,7 +7,7 @@ package io.army.criteria;
  *
  * @since 1.0
  */
-public interface Select extends QueryStatement, SimpleDqlStatement {
+public interface Select extends SelectStatement, SimpleDqlStatement {
 
 
 }

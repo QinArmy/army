@@ -1524,21 +1524,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
 
         @Override
         public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(
-                TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias) {
-            this.endDispatcher();
-
+                TableMeta<T> table, @Nullable SQLs.SymbolAsterisk star, SQLs.WordAs as, String tableAlias) {
             return PostgreUpdates.subSimpleUpdate(this.context.getNonNullOuterContext(), this.function)
                     .update(table, star, as, tableAlias);
-        }
-
-        @Override
-        public <T> PostgreUpdate._SingleSetClause<_CteComma<I>, _CteComma<I>, T> update(
-                @Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star,
-                SQLs.WordAs as, String tableAlias) {
-            this.endDispatcher();
-
-            return PostgreUpdates.subSimpleUpdate(this.context.getNonNullOuterContext(), this.function)
-                    .update(only, table, star, as, tableAlias);
         }
 
         @Override
@@ -1565,18 +1553,9 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             this.endDispatcher();
 
             return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
-                    .deleteFrom(null, table, star, as, tableAlias);
+                    .deleteFrom(table, star, as, tableAlias);
         }
 
-        @Override
-        public PostgreDelete._SingleUsingSpec<_CteComma<I>, _CteComma<I>> deleteFrom(
-                @Nullable SQLs.WordOnly only, TableMeta<?> table, @Nullable SQLs.SymbolAsterisk star,
-                SQLs.WordAs as, String tableAlias) {
-            this.endDispatcher();
-
-            return PostgreDeletes.subSimpleDelete(this.context.getNonNullOuterContext(), this.function)
-                    .deleteFrom(only, table, star, as, tableAlias);
-        }
 
         @Override
         public PostgreValues._OrderBySpec<_CteComma<I>> values(Consumer<ValuesRowConstructor> consumer) {

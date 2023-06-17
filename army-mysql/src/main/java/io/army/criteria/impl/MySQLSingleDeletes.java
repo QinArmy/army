@@ -2,7 +2,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
-import io.army.criteria.impl.inner._Expression;
+import io.army.criteria.impl.inner._BatchStatement;
 import io.army.criteria.impl.inner.mysql._MySQLSingleDelete;
 import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLDelete;
@@ -18,7 +18,6 @@ import io.army.util._StringUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -33,11 +32,9 @@ import java.util.function.Supplier;
  *     </ul>
  * </p>
  */
-@SuppressWarnings("unchecked")
-abstract class MySQLSingleDeletes<I extends Item, BI extends Item>
+abstract class MySQLSingleDeletes<I extends Item>
         extends SingleDeleteStatement<
         I,
-        BI,
         MySQLCtes,
         MySQLDelete._SimpleSingleDeleteClause<I>,
         MySQLDelete._OrderBySpec<I>,
@@ -48,7 +45,6 @@ abstract class MySQLSingleDeletes<I extends Item, BI extends Item>
         Object, Object>
         implements MySQLDelete,
         _MySQLSingleDelete,
-        BatchDeleteSpec<BI>,
         MySQLDelete._SingleWithSpec<I>,
         DeleteStatement._SingleDeleteFromClause<MySQLDelete._SinglePartitionSpec<I>>,
         MySQLDelete._SinglePartitionSpec<I>,
@@ -57,16 +53,12 @@ abstract class MySQLSingleDeletes<I extends Item, BI extends Item>
 
 
     static _SingleWithSpec<Delete> simple() {
-        return new MySQLSimpleDelete<>(null, SQLs.SIMPLE_DELETE, SQLs.ERROR_FUNC);
+        return new MySQLSimpleDelete();
     }
 
-    static _SingleWithSpec<_BatchParamClause<BatchDelete>> batch() {
-        return new MySQLSimpleDelete<>(null, SQLs::forBatchDelete, SQLs.BATCH_DELETE);
+    static _SingleWithSpec<_BatchDeleteParamSpec> batch() {
+        return new MySQLBatchDelete();
     }
-
-    private final Function<? super BatchDeleteSpec<BI>, I> function;
-
-    private final Function<? super BatchDelete, BI> batchFunc;
 
     private List<Hint> hintList;
 
@@ -79,11 +71,8 @@ abstract class MySQLSingleDeletes<I extends Item, BI extends Item>
     private List<String> partitionList;
 
 
-    private MySQLSingleDeletes(@Nullable ArmyStmtSpec spec, Function<? super BatchDeleteSpec<BI>, I> function,
-                               Function<? super BatchDelete, BI> batchFunc) {
+    private MySQLSingleDeletes(@Nullable ArmyStmtSpec spec) {
         super(spec, CriteriaContexts.primarySingleDmlContext(MySQLUtils.DIALECT, spec));
-        this.function = function;
-        this.batchFunc = batchFunc;
     }
 
     @Override
@@ -113,8 +102,9 @@ abstract class MySQLSingleDeletes<I extends Item, BI extends Item>
         return this;
     }
 
+
     @Override
-    public final _SingleDeleteFromClause<_SinglePartitionSpec<I>> delete(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
+    public final DeleteStatement._SingleDeleteFromClause<_SinglePartitionSpec<I>> delete(Supplier<List<Hint>> hints, List<MySQLSyntax.Modifier> modifiers) {
         this.hintList = MySQLUtils.asHintList(this.context, hints.get(), MySQLHints::castHint);
         this.modifierList = MySQLUtils.asModifierList(this.context, modifiers, MySQLUtils::deleteModifier);
         return this;
@@ -204,13 +194,11 @@ abstract class MySQLSingleDeletes<I extends Item, BI extends Item>
         if (this.deleteTable == null || this.tableAlias == null) {
             throw ContextStack.castCriteriaApi(this.context);
         }
-        return this.function.apply(this);
+        return this.onAsMySQLDelete();
     }
 
-    @Override
-    final BI onAsBatchDelete(List<?> paramList) {
-        return this.batchFunc.apply(new MySQLBatchDelete(this, paramList));
-    }
+
+    abstract I onAsMySQLDelete();
 
     @Override
     final void onClear() {
@@ -230,82 +218,55 @@ abstract class MySQLSingleDeletes<I extends Item, BI extends Item>
     }
 
 
-    private static final class MySQLSimpleDelete<I extends Item, BI extends Item> extends MySQLSingleDeletes<I, BI> {
+    private static final class MySQLSimpleDelete extends MySQLSingleDeletes<Delete>
+            implements Delete {
 
-        private MySQLSimpleDelete(@Nullable ArmyStmtSpec spec, Function<? super BatchDeleteSpec<BI>, I> function,
-                                  Function<? super BatchDelete, BI> batchFunc) {
-            super(spec, function, batchFunc);
+        private MySQLSimpleDelete() {
+            super(null);
+        }
+
+        @Override
+        Delete onAsMySQLDelete() {
+            return this;
         }
 
 
     }//MySQLSimpleDelete
 
+    private static final class MySQLBatchDelete extends MySQLSingleDeletes<_BatchDeleteParamSpec>
+            implements BatchDelete, _BatchStatement, _BatchDeleteParamSpec {
 
-    private static final class MySQLBatchDelete extends ArmyBathDelete
-            implements MySQLDelete, BatchDelete, _MySQLSingleDelete {
+        private List<?> paramList;
 
-        private final List<Hint> hintList;
+        private MySQLBatchDelete() {
+            super(null);
+        }
 
-        private final List<MySQLs.Modifier> modifierList;
-
-        private final List<String> partitionList;
-
-        private final List<? extends SortItem> orderByList;
-
-        private final _Expression rowCountExpression;
-
-
-        private MySQLBatchDelete(MySQLSingleDeletes<?, ?> stmt, List<?> paramList) {
-            super(stmt, paramList);
-            this.hintList = stmt.hintList;
-            this.modifierList = stmt.modifierList;
-            this.partitionList = stmt.partitionList;
-            this.orderByList = stmt.orderByList();
-            this.rowCountExpression = stmt.rowCountExp();
-
-            if (this.hintList == null || this.modifierList == null || this.partitionList == null) {
-                throw ContextStack.clearStackAndNullPointer();
+        @Override
+        public <P> BatchDelete namedParamList(final List<P> paramList) {
+            if (this.paramList != null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
+            this.paramList = CriteriaUtils.paramList(paramList);
+            return this;
         }
 
         @Override
-        public List<Hint> hintList() {
-            return this.hintList;
+        public List<?> paramList() {
+            final List<?> list = this.paramList;
+            if (list == null) {
+                throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
+            }
+            return list;
         }
 
         @Override
-        public List<MySQLs.Modifier> modifierList() {
-            return this.modifierList;
-        }
-
-        @Override
-        public List<String> partitionList() {
-            return this.partitionList;
-        }
-
-        @Override
-        public List<? extends SortItem> orderByList() {
-            return this.orderByList;
-        }
-
-        @Override
-        public _Expression rowCountExp() {
-            return this.rowCountExpression;
-        }
-
-
-        @Override
-        Dialect statementDialect() {
-            return MySQLUtils.DIALECT;
+        _BatchDeleteParamSpec onAsMySQLDelete() {
+            return this;
         }
 
 
     }//MySQLBatchDelete
-
-
-
-
-
 
 
 }

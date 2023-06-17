@@ -180,7 +180,7 @@ final class SessionCache implements _SessionCache {
             throw _Exceptions.immutableField(table.id());
         }
 
-        final Consumer<UpdateStatement._ItemPairs<FieldMeta<?>>> pairConsumer = itemPairs -> {
+        final Consumer<UpdateStatement._BatchItemPairs<FieldMeta<?>>> pairConsumer = itemPairs -> {
             FieldMeta<?> field;
             for (String fieldName : changedFieldMap.keySet()) {
                 field = table.tryGetComplexFiled(fieldName);

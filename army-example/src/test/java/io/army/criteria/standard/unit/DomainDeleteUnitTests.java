@@ -61,8 +61,8 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
                 .deleteFrom(ChinaRegion_.T, AS, "cr")
                 .where(ChinaRegion_.id::equal, SQLs::namedParam)
                 .and(ChinaRegion_.version::equal, SQLs::param, "0")
-                .namedParamList(this::createProvinceList)
-                .asDelete();
+                .asDelete()
+                .namedParamList(this.createProvinceList());
 
         printStmt(LOG, stmt);
 
@@ -82,8 +82,8 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
                             consumer.accept(ChinaProvince_.governor.equal(SQLs::param, "方腊"));
                         })
                 )
-                .namedParamList(this::createProvinceList)
-                .asDelete();
+                .asDelete()
+                .namedParamList(this.createProvinceList());
 
         printStmt(LOG, stmt);
 

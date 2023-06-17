@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.BatchReturningUpdate;
 import io.army.criteria.dialect.ReturningDelete;
 import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.postgre.*;
@@ -226,7 +225,7 @@ public abstract class Postgres extends PostgreSyntax {
      * create batch single-table UPDATE statement that is primary statement.
      * </p>
      */
-    public static PostgreUpdate._SingleWithSpec<Statement._BatchParamClause<BatchUpdate>, Statement._BatchParamClause<BatchReturningUpdate>> batchSingleUpdate() {
+    public static PostgreUpdate._SingleWithSpec<Statement._BatchUpdateParamSpec, Statement._BatchReturningUpdateParamSpec> batchSingleUpdate() {
         return PostgreUpdates.batchUpdate();
     }
 

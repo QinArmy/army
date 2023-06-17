@@ -1,6 +1,6 @@
 package io.army.dialect;
 
-import io.army.criteria.QueryStatement;
+import io.army.criteria.SelectStatement;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._PrimaryRowSet;
@@ -15,7 +15,7 @@ import java.util.List;
 
 final class ParensSelectContext extends StatementContext implements _SelectContext, _ParenRowSetContext {
 
-    static ParensSelectContext create(@Nullable _SqlContext outerContext, QueryStatement select, ArmyParser dialect
+    static ParensSelectContext create(@Nullable _SqlContext outerContext, SelectStatement select, ArmyParser dialect
             , Visible visible) {
         return new ParensSelectContext((StatementContext) outerContext, select, dialect, visible);
     }
@@ -24,7 +24,7 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
 
     private final _SqlContext outerContext;
 
-    private ParensSelectContext(@Nullable StatementContext outerContext, QueryStatement select, ArmyParser dialect
+    private ParensSelectContext(@Nullable StatementContext outerContext, SelectStatement select, ArmyParser dialect
             , Visible visible) {
         super(outerContext, dialect, visible);
         this.outerContext = outerContext;

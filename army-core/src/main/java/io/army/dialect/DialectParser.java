@@ -30,7 +30,7 @@ public interface DialectParser {
 
     Stmt delete(DeleteStatement delete, boolean useMultiStmt, Visible visible);
 
-    Stmt select(QueryStatement select, boolean useMultiStmt, Visible visible);
+    Stmt select(SelectStatement select, boolean useMultiStmt, Visible visible);
 
     Stmt values(Values values, Visible visible);
 

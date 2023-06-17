@@ -58,7 +58,7 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLUpdate._SingleWithSpec<Statement._BatchParamClause<BatchUpdate>> batchSingleUpdate() {
+    public static MySQLUpdate._SingleWithSpec<Statement._BatchUpdateParamSpec> batchSingleUpdate() {
         return MySQLSingleUpdates.batch();
     }
 
@@ -67,7 +67,7 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLUpdate._MultiWithSpec<Statement._BatchParamClause<BatchUpdate>> batchMultiUpdate() {
+    public static MySQLUpdate._MultiWithSpec<Statement._BatchUpdateParamSpec> batchMultiUpdate() {
         return MySQLMultiUpdates.batch();
     }
 
@@ -76,7 +76,7 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLDelete._SingleWithSpec<Statement._BatchParamClause<BatchDelete>> batchSingleDelete() {
+    public static MySQLDelete._SingleWithSpec<Statement._BatchDeleteParamSpec> batchSingleDelete() {
         return MySQLSingleDeletes.batch();
     }
 
@@ -85,7 +85,7 @@ public abstract class MySQLs extends MySQLSyntax {
     }
 
 
-    public static MySQLDelete._MultiWithSpec<Statement._BatchParamClause<BatchDelete>> batchMultiDelete() {
+    public static MySQLDelete._MultiWithSpec<Statement._BatchDeleteParamSpec> batchMultiDelete() {
         return MySQLMultiDeletes.batch();
     }
 

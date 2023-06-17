@@ -9,7 +9,7 @@ import io.army.criteria.dialect.BatchDqlStatement;
  *
  * @since 1.0
  */
-public interface BatchSelect extends BatchDqlStatement, QueryStatement {
+public interface BatchSelect extends BatchDqlStatement, SelectStatement {
 
 
 }
