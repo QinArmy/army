@@ -1,6 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
+import io.army.criteria.CteBuilderSpec;
+import io.army.criteria.DialectStatement;
+import io.army.criteria.Item;
+import io.army.criteria.Statement;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.util._Assert;
@@ -8,8 +11,6 @@ import io.army.util._Assert;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 
 /**
@@ -17,14 +18,13 @@ import java.util.function.Supplier;
  * This class is base class of multi-table delete implementation.
  * </p>
  */
-abstract class JoinableDelete<I extends Item, BI extends Item, B extends CteBuilderSpec, WE extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
+abstract class JoinableDelete<I extends Item, B extends CteBuilderSpec, WE extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, Object, Object, Object, Object, Object>
         implements _Delete,
         _Statement._JoinableStatement,
         Statement._DmlDeleteSpec<I>,
         DialectStatement._DynamicWithClause<B, WE>,
         _Statement._WithClauseSpec,
-        BatchDeleteSpec<BI>,
         DialectStatement {
 
     private boolean recursive;
@@ -98,21 +98,6 @@ abstract class JoinableDelete<I extends Item, BI extends Item, B extends CteBuil
     }
 
     @Override
-    public final <P> BI namedParamList(@Nullable List<P> paramList) {
-        return this.onAsBatchUpdate(CriteriaUtils.paramList(paramList));
-    }
-
-    @Override
-    public final <P> BI namedParamList(Supplier<List<P>> supplier) {
-        return this.onAsBatchUpdate(CriteriaUtils.paramList(supplier.get()));
-    }
-
-    @Override
-    public final <K> BI namedParamList(Function<K, ?> function, K key) {
-        return this.onAsBatchUpdate(CriteriaUtils.paramListFromMap(function, key));
-    }
-
-    @Override
     public final void prepared() {
         _Assert.prepared(this.prepared);
     }
@@ -151,8 +136,6 @@ abstract class JoinableDelete<I extends Item, BI extends Item, B extends CteBuil
 
 
     abstract I onAsDelete();
-
-    abstract BI onAsBatchUpdate(List<?> paramList);
 
     abstract void onClear();
 
@@ -202,8 +185,8 @@ abstract class JoinableDelete<I extends Item, BI extends Item, B extends CteBuil
 
     static abstract class ArmyBatchJoinableDelete extends CriteriaSupports.StatementMockSupport
             implements _JoinableDelete,
-            DeleteStatement,
             _BatchStatement,
+            Statement,
             _Statement._WithClauseSpec {
 
         private final boolean recursive;
@@ -218,7 +201,7 @@ abstract class JoinableDelete<I extends Item, BI extends Item, B extends CteBuil
 
         private boolean prepared = true;
 
-        ArmyBatchJoinableDelete(JoinableDelete<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> clause,
+        ArmyBatchJoinableDelete(JoinableDelete<?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?> clause,
                                 List<?> paramList) {
             super(clause.context);
 

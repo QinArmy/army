@@ -1,5 +1,7 @@
 package io.army.criteria;
 
+import io.army.criteria.dialect.BatchReturningDelete;
+import io.army.criteria.dialect.BatchReturningUpdate;
 import io.army.criteria.dialect.SubDelete;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
@@ -261,10 +263,26 @@ public interface Statement extends Item {
     interface _BatchParamClause<R extends Item> extends Item {
 
         <P> R namedParamList(List<P> paramList);
+    }
 
-        <P> R namedParamList(Supplier<List<P>> supplier);
+    interface _BatchUpdateParamSpec extends _BatchParamClause<BatchUpdate> {
 
-        <K> R namedParamList(Function<K, ?> function, K key);
+    }
+
+    interface _BatchDeleteParamSpec extends _BatchParamClause<BatchDelete> {
+
+    }
+
+    interface _BatchReturningUpdateParamSpec extends _BatchParamClause<BatchReturningUpdate> {
+
+    }
+
+    interface _BatchReturningDeleteParamSpec extends _BatchParamClause<BatchReturningDelete> {
+
+    }
+
+    interface _BatchSelectSpec extends _BatchParamClause<BatchSelect> {
+
     }
 
 

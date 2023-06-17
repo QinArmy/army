@@ -2,7 +2,6 @@ package io.army.criteria.impl;
 
 
 import io.army.criteria.*;
-import io.army.criteria.dialect.BatchReturningDelete;
 import io.army.criteria.dialect.BatchReturningUpdate;
 import io.army.criteria.dialect.ReturningDelete;
 import io.army.criteria.dialect.ReturningUpdate;
@@ -245,7 +244,7 @@ public abstract class Postgres extends PostgreSyntax {
      * create batch single-table DELETE statement that is primary statement.
      * </p>
      */
-    public static PostgreDelete._BatchSingleWithSpec<BatchDelete, BatchReturningDelete> batchSingleDelete() {
+    public static PostgreDelete._SingleWithSpec<Statement._BatchDeleteParamSpec, Statement._BatchReturningDeleteParamSpec> batchSingleDelete() {
         return PostgreDeletes.batchDelete();
     }
 
