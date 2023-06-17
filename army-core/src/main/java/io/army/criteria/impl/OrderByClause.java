@@ -184,9 +184,9 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
 
         final RowSet left;
 
-        private final _UnionType unionType;
+         final _UnionType unionType;
 
-        private final RowSet right;
+        final RowSet right;
 
         UnionRowSet(RowSet left, _UnionType unionType, RowSet right) {
             if (((_RowSet) right).selectionSize() != ((_RowSet) left).selectionSize()) {

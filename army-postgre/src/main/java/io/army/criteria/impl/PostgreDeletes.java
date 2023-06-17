@@ -815,7 +815,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
         }
 
         @Override
-        public <P> BatchDelete namedParamList(final List<P> paramList) {
+        public BatchDelete namedParamList(final List<?> paramList) {
             if (this.paramList != null) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }

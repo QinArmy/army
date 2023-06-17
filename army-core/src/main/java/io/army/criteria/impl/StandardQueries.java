@@ -3,10 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._StandardQuery;
-import io.army.criteria.impl.inner._Window;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardCrosses;
 import io.army.criteria.standard.StandardCtes;
 import io.army.criteria.standard.StandardJoins;
@@ -79,6 +76,11 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
         return new SimpleSelect<>(dialect, null, null, SQLs.SIMPLE_SELECT, null);
     }
 
+    static _WithSpec<_BatchSelectParamSpec> batchQuery(StandardDialect dialect) {
+        return new SimpleSelect<>(dialect, null, null, StandardQueries::mapToBatchSelect, null);
+    }
+
+
     static <I extends Item> _WithSpec<I> subQuery(StandardDialect dialect, CriteriaContext outerContext,
                                                   Function<? super SubQuery, I> function) {
         return new SimpleSubQuery<>(dialect, null, outerContext, function, null);
@@ -105,6 +107,21 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             throw CriteriaUtils.standard10DontSupportWithClause(context);
         }
         return new StandardCteBuilder(recursive, context);
+    }
+
+    private static _BatchSelectParamSpec mapToBatchSelect(final Select select) {
+        final _BatchSelectParamSpec spec;
+        if (select instanceof _Query) {
+            spec = ((SimpleSelect<?>) select)::wrapToBatchSelect;
+        } else if (select instanceof UnionSelect) {
+            spec = ((UnionSelect) select)::wrapToBatchSelect;
+        } else if (select instanceof BracketSelect) {
+            spec = ((BracketSelect<?>) select)::wrapToBatchSelect;
+        } else {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        return spec;
     }
 
 
@@ -359,7 +376,6 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
     @Override
     final void onClear() {
         this.windowList = null;
-        ;
     }
 
 
@@ -493,6 +509,10 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, null, unionFunc, this.context);
         }
 
+        private StandardBatchSimpleSelect wrapToBatchSelect(List<?> paramList) {
+            return new StandardBatchSimpleSelect(this, CriteriaUtils.paramList(paramList));
+        }
+
 
     }//SimpleSelect
 
@@ -567,7 +587,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     private static final class BracketSelect<I extends Item> extends StandardBracketQuery<I>
-            implements ArmySelect {
+            implements ArmySelect, StandardQuery {
 
         private final Function<? super Select, I> function;
 
@@ -588,11 +608,32 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
             return new SimpleSelect<>(this.context.dialect(StandardDialect.class), null, null, unionFunc, this.context);
         }
 
+        BatchBracketSelect wrapToBatchSelect(List<?> paramList) {
+            return new BatchBracketSelect(this, CriteriaUtils.paramList(paramList));
+        }
+
 
     }//BracketSelect
 
+
+    private static final class BatchBracketSelect extends BracketRowSet.ArmyBatchBracketSelect
+            implements StandardQuery {
+
+        private BatchBracketSelect(BracketSelect<?> select, List<?> paramList) {
+            super(select, paramList);
+        }
+
+        @Override
+        Dialect statementDialect() {
+            return MySQLDialect.MySQL57;
+        }
+
+
+    }//BatchBracketSelect
+
+
     private static final class BracketSubQuery<I extends Item> extends StandardBracketQuery<I>
-            implements ArmySubQuery {
+            implements ArmySubQuery, StandardQuery {
 
         private final Function<? super SubQuery, I> function;
 
@@ -804,6 +845,32 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     }//StandardCteBuilder
+
+
+    private static final class StandardBatchSimpleSelect extends ArmyBatchSimpleSelect
+            implements StandardQuery, _StandardQuery {
+
+        private final SQLWords lockStrength;
+
+
+        private StandardBatchSimpleSelect(SimpleSelect<?> query, List<?> paramList) {
+            super(query, paramList);
+            this.lockStrength = query.lockStrength();
+        }
+
+
+        @Override
+        Dialect statementDialect() {
+            return MySQLDialect.MySQL57;
+        }
+
+        @Override
+        public SQLWords lockStrength() {
+            return this.lockStrength;
+        }
+
+
+    }//StandardBatchSimpleSelect
 
 
 }

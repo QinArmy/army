@@ -8,7 +8,7 @@ import java.util.List;
  * The design for dialect instance parse sql.
  * </p>
  */
-public interface _BatchStatement extends _Statement, _Statement._WherePredicateListSpec {
+public interface _BatchStatement extends _Statement {
 
     /**
      * @return a unmodifiable list

@@ -779,7 +779,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
 
 
         @Override
-        public <P> BatchUpdate namedParamList(final List<P> paramList) {
+        public BatchUpdate namedParamList(final List<?> paramList) {
             if (this.paramList != null) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }

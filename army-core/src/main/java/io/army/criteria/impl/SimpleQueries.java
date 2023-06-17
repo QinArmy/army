@@ -1034,8 +1034,6 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     }
 
 
-
-
     private void endQueryStatement(final boolean beforeSelect) {
         _Assert.nonPrepared(this.prepared);
         // hint list
@@ -1124,7 +1122,6 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
     }
-
 
 
     static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
@@ -1308,7 +1305,6 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
 
             this.registered = true;
         }
-
 
 
     }//WithCteDistinctOnSimpleQueries
@@ -1883,7 +1879,34 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
 
+        UnionBatchSelect wrapToBatchSelect(List<?> paramList) {
+            return new UnionBatchSelect(this, CriteriaUtils.paramList(paramList));
+        }
+
     }//UnionSelect
+
+
+    static final class UnionBatchSelect extends UnionRowSet implements ArmyBatchSelect {
+
+        private final List<?> paramList;
+
+        private UnionBatchSelect(UnionSelect select, List<?> paramList) {
+            super(select.left, select.unionType, select.right);
+            this.paramList = paramList;
+        }
+
+        @Override
+        public List<? extends _SelectItem> selectItemList() {
+            return ((_PrimaryRowSet) this.left).selectItemList();
+        }
+
+        @Override
+        public List<?> paramList() {
+            return this.paramList;
+        }
+
+
+    }//UnionBatchSelect
 
 
     private static final class SelectionConsumerImpl implements SelectionConsumer, Query._DeferSelectSpaceClause,
@@ -2190,8 +2213,157 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
 
-
     }//SelectionsImpl
+
+    static abstract class ArmyBatchSimpleSelect extends CriteriaSupports.StatementMockSupport implements Query,
+            _Query, _Statement._WithClauseSpec, ArmyBatchSelect {
+
+        private final boolean recursive;
+
+        private final List<_Cte> cteList;
+
+        private final List<Hint> hintList;
+
+        private final List<? extends SQLWords> modifierList;
+
+        private final int selectionSize;
+
+        private final List<? extends _SelectItem> selectItemList;
+
+        private final List<_TabularBlock> tableBlockList;
+
+        private final List<_Predicate> wherePredicateList;
+
+        private final List<? extends GroupByItem> groupByList;
+
+        private final List<_Predicate> havingList;
+
+        private final List<? extends SortItem> orderByList;
+
+        private final _Expression rowExpression;
+
+        private final _Expression offsetExpression;
+
+        private final List<?> paramList;
+
+        private boolean prepared = true;
+
+
+        ArmyBatchSimpleSelect(final _Query query, final List<?> paramList) {
+            super(((CriteriaContextSpec) query).getContext());
+            this.recursive = query.isRecursive();
+            this.cteList = query.cteList();
+            this.hintList = query.hintList();
+            this.modifierList = query.modifierList();
+
+            this.selectionSize = query.selectionSize();
+            this.selectItemList = query.selectItemList();
+            this.tableBlockList = query.tableBlockList();
+            this.wherePredicateList = query.wherePredicateList();
+
+            this.groupByList = query.groupByList();
+            this.havingList = query.havingList();
+            this.orderByList = query.orderByList();
+            this.rowExpression = query.rowCountExp();
+
+            this.offsetExpression = query.offsetExp();
+            this.paramList = paramList;
+        }
+
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            return this.cteList;
+        }
+
+
+        @Override
+        public final List<Hint> hintList() {
+            return this.hintList;
+        }
+
+        @Override
+        public final List<? extends SQLWords> modifierList() {
+            return this.modifierList;
+        }
+
+        @Override
+        public final int selectionSize() {
+            return this.selectionSize;
+        }
+
+        @Override
+        public final List<? extends _SelectItem> selectItemList() {
+            return this.selectItemList;
+        }
+
+        @Override
+        public final List<_TabularBlock> tableBlockList() {
+            return this.tableBlockList;
+        }
+
+        @Override
+        public final List<_Predicate> wherePredicateList() {
+            return this.wherePredicateList;
+        }
+
+        @Override
+        public final List<? extends GroupByItem> groupByList() {
+            return this.groupByList;
+        }
+
+        @Override
+        public final List<_Predicate> havingList() {
+            return this.havingList;
+        }
+
+        @Override
+        public final List<? extends SortItem> orderByList() {
+            return this.orderByList;
+        }
+
+
+        @Override
+        public final _Expression rowCountExp() {
+            return this.rowExpression;
+        }
+
+        @Override
+        public final _Expression offsetExp() {
+            return this.offsetExpression;
+        }
+
+
+        @Override
+        public final List<?> paramList() {
+            return this.paramList;
+        }
+
+        @Override
+        public final void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            return this.prepared;
+        }
+
+        @Override
+        public final void clear() {
+            if (!this.prepared) {
+                return;
+            }
+            this.prepared = false;
+        }
+
+
+    }//ArmyBatchSelect
 
 
 }

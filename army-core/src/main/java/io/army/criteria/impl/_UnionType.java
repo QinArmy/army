@@ -4,6 +4,7 @@ import io.army.criteria.SQLWords;
 import io.army.util._StringUtils;
 
 public enum _UnionType implements SQLWords {
+
     UNION(" UNION"),
     UNION_ALL(" UNION ALL"),
     UNION_DISTINCT(" UNION DISTINCT"),
@@ -20,7 +21,7 @@ public enum _UnionType implements SQLWords {
     MINUS_ALL(" MINUS ALL"),
     MINUS_DISTINCT(" MINUS DISTINCT");
 
-    private final String spaceWords;
+    public final String spaceWords;
 
     _UnionType(String keyWords) {
         this.spaceWords = keyWords;

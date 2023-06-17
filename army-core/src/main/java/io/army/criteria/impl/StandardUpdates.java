@@ -123,7 +123,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        public <P> BatchUpdate namedParamList(final List<P> paramList) {
+        public BatchUpdate namedParamList(final List<?> paramList) {
             if (this.paramList != null) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
@@ -230,7 +230,7 @@ abstract class StandardUpdates<I extends Item, F extends TableField, SR, WR, WA>
         }
 
         @Override
-        public <P> BatchUpdate namedParamList(final List<P> paramList) {
+        public BatchUpdate namedParamList(final List<?> paramList) {
             if (this.paramList != null) {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }

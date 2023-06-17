@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @since 1.0
  */
-public interface _Query extends Query, _PartRowSet, _RowSet._SelectItemListSpec {
+public interface _Query extends Query, _PartRowSet, _RowSet._SelectItemListSpec, _Statement._WithClauseSpec {
 
     List<Hint> hintList();
 

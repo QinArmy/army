@@ -2,8 +2,6 @@ package io.army.criteria.impl;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
-import io.army.criteria.dialect.BatchReturningUpdate;
-import io.army.criteria.dialect.ReturningUpdate;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.standard.StandardDelete;
@@ -137,29 +135,17 @@ public abstract class SQLs extends SQLsSyntax {
      */
     static final Expression _ASTERISK_EXP = new LiteralSymbolAsterisk();
 
-    static UnaryOperator<Update> SIMPLE_UPDATE = SQLs::identity;
-
-    static UnaryOperator<ReturningUpdate> SIMPLE_RETURNING_UPDATE = SQLs::identity;
-
-    static UnaryOperator<BatchUpdate> BATCH_UPDATE = SQLs::identity;
-
-    static UnaryOperator<BatchReturningUpdate> BATCH_RETURNING_UPDATE = SQLs::identity;
 
     static UnaryOperator<Item> ERROR_FUNC = SQLs::castCriteria;
 
-    static final UnaryOperator<Delete> SIMPLE_DELETE = SQLs::identity;
-
-    static UnaryOperator<BatchDelete> BATCH_DELETE = SQLs::identity;
-
     static final UnaryOperator<Select> SIMPLE_SELECT = SQLs::identity;
-
 
     static final UnaryOperator<SubQuery> SUB_QUERY = SQLs::identity;
 
 
     public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
         return StandardInserts.singleInsert();
-    }
+    } //TODO 2.0
 
 
     public static StandardUpdate._DomainUpdateClause<Update> domainUpdate() {
@@ -241,15 +227,23 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardQueries.simpleQuery(StandardDialect.STANDARD10);
     }
 
-    public static StandardQuery._SelectSpec<Select> query20() {
+    public static StandardQuery._SelectSpec<Statement._BatchSelectParamSpec> batchQuery() {
+        return StandardQueries.batchQuery(StandardDialect.STANDARD10);
+    }
+
+    public static StandardQuery._WithSpec<Select> query20() {
         return StandardQueries.simpleQuery(StandardDialect.STANDARD20);
+    }
+
+    public static StandardQuery._WithSpec<Statement._BatchSelectParamSpec> batchQuery20() {
+        return StandardQueries.batchQuery(StandardDialect.STANDARD20);
     }
 
     public static StandardQuery._SelectSpec<SubQuery> subQuery() {
         return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), SUB_QUERY);
     }
 
-    public static StandardQuery._SelectSpec<SubQuery> subQuery20() {
+    public static StandardQuery._WithSpec<SubQuery> subQuery20() {
         return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), SUB_QUERY);
     }
 
@@ -258,7 +252,7 @@ public abstract class SQLs extends SQLsSyntax {
         return StandardQueries.subQuery(StandardDialect.STANDARD10, ContextStack.peek(), Expressions::scalarExpression);
     }
 
-    public static StandardQuery._SelectSpec<Expression> scalarSubQuery20() {
+    public static StandardQuery._WithSpec<Expression> scalarSubQuery20() {
         return StandardQueries.subQuery(StandardDialect.STANDARD20, ContextStack.peek(), Expressions::scalarExpression);
     }
 

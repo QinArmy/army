@@ -262,7 +262,7 @@ public interface Statement extends Item {
      */
     interface _BatchParamClause<R extends Item> extends Item {
 
-        <P> R namedParamList(List<P> paramList);
+         R namedParamList(List<?> paramList);
     }
 
     interface _BatchUpdateParamSpec extends _BatchParamClause<BatchUpdate> {
@@ -281,7 +281,7 @@ public interface Statement extends Item {
 
     }
 
-    interface _BatchSelectSpec extends _BatchParamClause<BatchSelect> {
+    interface _BatchSelectParamSpec extends _BatchParamClause<BatchSelect> {
 
     }
 

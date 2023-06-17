@@ -210,7 +210,6 @@ abstract class PostgreDynamicJoins extends JoinableClause.DynamicJoinableBlock<
 
     private Statement._OnClause<PostgreStatement._DynamicJoinSpec> joinNestedEnd(final _JoinType joinType,
                                                                                  final _NestedItems nestedItems) {
-        joinType.assertStandardJoinType();
         final PostgreDynamicBlock block;
         block = new PostgreDynamicBlock(this.context, this.blockConsumer, joinType, null, nestedItems, "");
         this.blockConsumer.accept(block);

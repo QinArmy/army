@@ -328,7 +328,6 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
          */
         private PostgreStatement._NestedOnSpec<I> joinNestedEnd(final _JoinType joinType,
                                                                 final _NestedItems nestedItems) {
-            joinType.assertStandardJoinType();
             final PostgreNestedBlock<I> block;
             block = new PostgreNestedBlock<>(this.context, this.blockConsumer, joinType, null, nestedItems, "",
                     this.ender);

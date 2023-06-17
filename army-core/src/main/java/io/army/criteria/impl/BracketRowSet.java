@@ -227,4 +227,105 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
     }
 
 
+    static abstract class ArmyBatchBracketSelect extends CriteriaSupports.StatementMockSupport
+            implements ArmyBatchSelect, _ParensRowSet {
+
+        private final boolean recursive;
+
+        private final List<_Cte> cteList;
+
+        private final _PrimaryRowSet innerRowSet;
+
+        private final List<? extends SortItem> orderByList;
+
+        private final _Expression rowCountExpression;
+
+        private final _Expression offsetExpression;
+
+        private final List<?> paramList;
+
+        private boolean prepared = true;
+
+        ArmyBatchBracketSelect(BracketRowSet<?, ?, ?, ?, ?, ?, ?, ?> rowSet, List<?> paramList) {
+            super(rowSet.context);
+
+            this.recursive = rowSet.recursive;
+            this.cteList = rowSet.cteList;
+            this.innerRowSet = (_PrimaryRowSet) rowSet.innerRowSet;
+            this.orderByList = rowSet.orderByList();
+
+            this.rowCountExpression = rowSet.rowCountExp();
+            this.offsetExpression = rowSet.offsetExp();
+            this.paramList = paramList;
+        }
+
+        @Override
+        public final boolean isRecursive() {
+            return this.recursive;
+        }
+
+        @Override
+        public final List<_Cte> cteList() {
+            return this.cteList;
+        }
+
+        @Override
+        public final int selectionSize() {
+            return this.innerRowSet.selectionSize();
+        }
+
+        @Override
+        public final List<? extends _SelectItem> selectItemList() {
+            return this.innerRowSet.selectItemList();
+        }
+
+        @Override
+        public final _RowSet innerRowSet() {
+            return this.innerRowSet;
+        }
+
+        @Override
+        public final List<? extends SortItem> orderByList() {
+            return this.orderByList;
+        }
+
+        @Override
+        public final _Expression rowCountExp() {
+            return this.rowCountExpression;
+        }
+
+        @Override
+        public final _Expression offsetExp() {
+            return this.offsetExpression;
+        }
+
+        @Override
+        public final List<?> paramList() {
+            return this.paramList;
+        }
+
+
+        @Override
+        public final void prepared() {
+            _Assert.prepared(this.prepared);
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            return this.prepared;
+        }
+
+
+        @Override
+        public final void clear() {
+            if (!this.prepared) {
+                return;
+            }
+            this.prepared = false;
+        }
+
+
+    }//ArmyBatchBracketSelect
+
+
 }
