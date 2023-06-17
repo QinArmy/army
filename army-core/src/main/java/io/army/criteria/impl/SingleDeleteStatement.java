@@ -1,9 +1,13 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.*;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.CteBuilderSpec;
+import io.army.criteria.DialectStatement;
+import io.army.criteria.Item;
+import io.army.criteria.Statement;
+import io.army.criteria.impl.inner._Cte;
+import io.army.criteria.impl.inner._SingleDelete;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
-import io.army.meta.TableMeta;
 import io.army.util._Assert;
 
 import java.util.Collections;
@@ -155,95 +159,6 @@ abstract class SingleDeleteStatement<I extends Item, B extends CteBuilderSpec, W
     }
 
 
-    protected static abstract class ArmyBathDelete extends CriteriaSupports.StatementMockSupport
-            implements _SingleDelete,
-            _BatchStatement,
-            DeleteStatement,
-            _Statement._WithClauseSpec {
-
-        private final boolean recursive;
-
-        private final List<_Cte> cteList;
-
-        private final TableMeta<?> deleteTable;
-
-        private final String tableAlias;
-
-        private final List<_Predicate> wherePredicateList;
-
-        private final List<?> paramList;
-
-        private boolean prepared = true;
-
-        protected ArmyBathDelete(SingleDeleteStatement<?, ?, ?, ?, ?, ?, ?, ?, ?, ?> statement,
-                                 List<?> paramList) {
-            super(statement.context);
-            statement.prepared();
-            this.recursive = statement.isRecursive();
-            this.cteList = statement.cteList();
-
-            this.deleteTable = statement.table();
-            this.tableAlias = statement.tableAlias();
-            this.wherePredicateList = statement.wherePredicateList();
-            this.paramList = paramList;
-        }
-
-        @Override
-        public final boolean isRecursive() {
-            return this.recursive;
-        }
-
-        @Override
-        public final List<_Cte> cteList() {
-            return this.cteList;
-        }
-
-        @Override
-        public final TableMeta<?> table() {
-            return this.deleteTable;
-        }
-
-
-        @Override
-        public final String tableAlias() {
-            return this.tableAlias;
-        }
-
-        @Override
-        public final List<_Predicate> wherePredicateList() {
-            return this.wherePredicateList;
-        }
-
-        @Override
-        public final List<?> paramList() {
-            return this.paramList;
-        }
-
-        @Override
-        public final void prepared() {
-            _Assert.prepared(this.prepared);
-        }
-
-        @Override
-        public final boolean isPrepared() {
-            return this.prepared;
-        }
-
-        @Override
-        public final void clear() {
-            if (!this.prepared) {
-                return;
-            }
-            this.prepared = false;
-            this.onClear();
-        }
-
-        void onClear() {
-            //no-op
-        }
-
-
-    }//ArmySingleBathUpdate
 
 
 }

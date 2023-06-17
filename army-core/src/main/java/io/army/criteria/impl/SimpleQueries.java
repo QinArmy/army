@@ -30,9 +30,11 @@ import java.util.function.*;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
+abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR, LO, LF>
-        implements Query._SelectDispatcher<W, SR, SD>,
+        implements DialectStatement._DynamicWithClause<B, WE>,
+        ArmyStmtSpec,
+        Query._WithSelectDispatcher<B, WE, W, SR, SD>,
         Query._StaticSelectCommaClause<SR>,
         Query._StaticSelectSpaceClause<SR>,
         Statement._QueryWhereClause<WR, WA>,
@@ -50,6 +52,10 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         _SelectionMap,
         _Query {
 
+    private boolean recursive;
+
+    private List<_Cte> cteList;
+
 
     private List<Hint> hintList;
 
@@ -65,10 +71,48 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     private Boolean prepared;
 
 
-    SimpleQueries(CriteriaContext context) {
+    SimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
         super(context);
         ContextStack.push(this.context);
+        if (withSpec != null) {
+            this.recursive = withSpec.isRecursive();
+            this.cteList = withSpec.cteList();
+        }
     }
+
+
+    @Override
+    public final WE with(Consumer<B> consumer) {
+        final B builder;
+        builder = this.createCteBuilder(false);
+        consumer.accept(builder);
+        return this.endDynamicWithClause(builder, true);
+    }
+
+    @Override
+    public final WE withRecursive(Consumer<B> consumer) {
+        final B builder;
+        builder = this.createCteBuilder(true);
+        consumer.accept(builder);
+        return this.endDynamicWithClause(builder, true);
+    }
+
+    @Override
+    public final WE ifWith(Consumer<B> consumer) {
+        final B builder;
+        builder = this.createCteBuilder(false);
+        consumer.accept(builder);
+        return this.endDynamicWithClause(builder, false);
+    }
+
+    @Override
+    public final WE ifWithRecursive(Consumer<B> consumer) {
+        final B builder;
+        builder = this.createCteBuilder(true);
+        consumer.accept(builder);
+        return this.endDynamicWithClause(builder, false);
+    }
+
 
     /*-------------------below _StaticSelectClause method-------------------*/
 
@@ -798,6 +842,21 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     /*################################## blow _Query method ##################################*/
 
+    @Override
+    public final boolean isRecursive() {
+        return this.recursive;
+    }
+
+    @Override
+    public final List<_Cte> cteList() {
+        List<_Cte> list = this.cteList;
+        if (list == null) {
+            list = Collections.emptyList();
+            this.cteList = list;
+        }
+        return list;
+    }
+
 
     @Override
     public final List<Hint> hintList() {
@@ -893,12 +952,17 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
 
     @Override
     public final void clear() {
+        this.recursive = false;
+        this.cteList = null;
         this.hintList = null;
         this.modifierList = null;
+
         this.tableBlockList = null;
         this.groupByList = null;
-
         this.havingList = null;
+        this.clearOrderByList();
+
+        this.clearWhereClause();
         this.onClear();
     }
 
@@ -922,6 +986,29 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     abstract W distinctModifier();
 
 
+    abstract B createCteBuilder(boolean recursive);
+
+
+    final WE endStaticWithClause(final boolean recursive) {
+        if (this.cteList != null) {
+            throw ContextStack.castCriteriaApi(this.context);
+        }
+        this.recursive = recursive;
+        this.cteList = this.context.endWithClause(recursive, true);
+        return (WE) this;
+    }
+
+
+    final void endStmtBeforeCommand() {
+        this.endQueryStatement(true);
+    }
+
+    final boolean hasGroupByClause() {
+        final List<ArmyGroupByItem> itemList = this.groupByList;
+        return itemList != null && itemList.size() > 0;
+    }
+
+
     private SP onUnion(_UnionType unionType) {
         this.endQueryStatement(false);
         return this.createQueryUnion(unionType);
@@ -936,15 +1023,17 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
         return Collections.singletonList(modifier);
     }
 
+    private WE endDynamicWithClause(final B builder, final boolean required) {
+        ((CriteriaSupports.CteBuilder) builder).endLastCte();
 
-    final void endStmtBeforeCommand() {
-        this.endQueryStatement(true);
+        final boolean recursive;
+        recursive = builder.isRecursive();
+        this.recursive = recursive;
+        this.cteList = this.context.endWithClause(recursive, required);
+        return (WE) this;
     }
 
-    final boolean hasGroupByClause() {
-        final List<ArmyGroupByItem> itemList = this.groupByList;
-        return itemList != null && itemList.size() > 0;
-    }
+
 
 
     private void endQueryStatement(final boolean beforeSelect) {
@@ -1037,104 +1126,9 @@ abstract class SimpleQueries<Q extends Item, W extends Query.SelectModifier, SR 
     }
 
 
-    static abstract class WithCteSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
-            extends SimpleQueries<Q, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
-            implements DialectStatement._DynamicWithClause<B, WE>,
-            ArmyStmtSpec,
-            Query._WithSelectDispatcher<B, WE, W, SR, SD> {
-
-        private boolean recursive;
-
-        private List<_Cte> cteList;
-
-        WithCteSimpleQueries(@Nullable ArmyStmtSpec withSpec, CriteriaContext context) {
-            super(context);
-            if (withSpec != null) {
-                this.recursive = withSpec.isRecursive();
-                this.cteList = withSpec.cteList();
-            }
-        }
-
-        @Override
-        public final WE with(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
-        }
-
-        @Override
-        public final WE withRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, true);
-        }
-
-        @Override
-        public final WE ifWith(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(false);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
-        }
-
-        @Override
-        public final WE ifWithRecursive(Consumer<B> consumer) {
-            final B builder;
-            builder = this.createCteBuilder(true);
-            consumer.accept(builder);
-            return this.endDynamicWithClause(builder, false);
-        }
-
-
-        @Override
-        public final boolean isRecursive() {
-            return this.recursive;
-        }
-
-        @Override
-        public final List<_Cte> cteList() {
-            List<_Cte> list = this.cteList;
-            if (list == null) {
-                list = Collections.emptyList();
-                this.cteList = list;
-            }
-            return list;
-        }
-
-
-        abstract B createCteBuilder(boolean recursive);
-
-
-        final WE endStaticWithClause(final boolean recursive) {
-            if (this.cteList != null) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.recursive = recursive;
-            this.cteList = this.context.endWithClause(recursive, true);
-            return (WE) this;
-        }
-
-        final void clearWithClause() {
-            this.cteList = null;
-        }
-
-
-        private WE endDynamicWithClause(final B builder, final boolean required) {
-            ((CriteriaSupports.CteBuilder) builder).endLastCte();
-
-            final boolean recursive;
-            recursive = builder.isRecursive();
-            this.recursive = recursive;
-            this.cteList = this.context.endWithClause(recursive, required);
-            return (WE) this;
-        }
-
-    }//WithCteSimpleQueries
 
     static abstract class WithCteDistinctOnSimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extends Item, W extends Query.SelectModifier, SR extends Item, SD extends Item, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
-            extends WithCteSimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
+            extends SimpleQueries<Q, B, WE, W, SR, SD, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, GR, GD, HR, HD, OR, OD, LR, LO, LF, SP>
             implements _SelectDistinctOnDispatcher<W, SR, SD>,
             _Query._DistinctOnClauseSpec {
 

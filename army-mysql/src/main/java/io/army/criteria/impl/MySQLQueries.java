@@ -33,7 +33,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-abstract class MySQLQueries<I extends Item> extends SimpleQueries.WithCteSimpleQueries<
+abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         I,
         MySQLCtes,
         MySQLQuery._SelectSpec<I>,

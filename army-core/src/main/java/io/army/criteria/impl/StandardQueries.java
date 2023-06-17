@@ -33,7 +33,7 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimpleQueries<
+abstract class StandardQueries<I extends Item> extends SimpleQueries<
         I,
         StandardCtes,
         StandardQuery._SelectSpec<I>,
@@ -359,7 +359,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries.WithCteSimp
     @Override
     final void onClear() {
         this.windowList = null;
-        this.clearWithClause();
+        ;
     }
 
 
