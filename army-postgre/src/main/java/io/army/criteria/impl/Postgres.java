@@ -186,12 +186,22 @@ public abstract class Postgres extends PostgreSyntax {
 
     /**
      * <p>
-     * create SELECT statement that is primary statement.
+     * create simple(non-batch) SELECT statement that is primary statement.
      * </p>
      */
     public static PostgreQuery._WithSpec<Select> query() {
         return PostgreQueries.simpleQuery();
     }
+
+    /**
+     * <p>
+     * create batch SELECT statement that is primary statement.
+     * </p>
+     */
+    public static PostgreQuery._WithSpec<Statement._BatchSelectParamSpec> batchQuery() {
+        return PostgreQueries.batchQuery();
+    }
+
 
     /**
      * <p>

@@ -145,7 +145,11 @@ public abstract class SQLs extends SQLsSyntax {
 
     public static StandardInsert._PrimaryOptionSpec<Insert> singleInsert() {
         return StandardInserts.singleInsert();
-    } //TODO 2.0
+    }
+
+    public static StandardInsert._PrimaryOption20Spec<Insert> singleInsert20() {
+        return StandardInserts.singleInsert20();
+    }
 
 
     public static StandardUpdate._DomainUpdateClause<Update> domainUpdate() {

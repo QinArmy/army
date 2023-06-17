@@ -3,10 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TabularBlock;
-import io.army.criteria.impl.inner._Window;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreCte;
 import io.army.criteria.impl.inner.postgre._PostgreQuery;
 import io.army.criteria.postgre.*;
@@ -74,6 +71,10 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         return new SimpleSelect<>(null, null, SQLs.SIMPLE_SELECT);
     }
 
+    static PostgreQuery._WithSpec<_BatchSelectParamSpec> batchQuery() {
+        return new SimpleSelect<>(null, null, PostgreQueries::mapToBatchSelect);
+    }
+
     static <I extends Item> PostgreQueries<I> fromDispatcher(ArmyStmtSpec spec,
                                                              Function<? super Select, I> function) {
         return new SimpleSelect<>(spec, null, function);
@@ -94,6 +95,21 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     static <I extends Item> _CteComma<I> complexCte(
             final CriteriaContext context, final boolean recursive, final Function<Boolean, I> function) {
         return new StaticCteComma<>(context, recursive, function);
+    }
+
+    private static _BatchSelectParamSpec mapToBatchSelect(final Select select) {
+        final _BatchSelectParamSpec spec;
+        if (select instanceof _Query) {
+            spec = ((SimpleSelect<?>) select)::wrapToBatchSelect;
+        } else if (select instanceof UnionSelect) {
+            spec = ((UnionSelect) select)::wrapToBatchSelect;
+        } else if (select instanceof BracketSelect) {
+            spec = ((BracketSelect<?>) select)::wrapToBatchSelect;
+        } else {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        return spec;
     }
 
     private SQLs.Modifier groupByModifier;
@@ -710,7 +726,6 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
     }
 
 
-
     private static final class JonClauseTableBlock<I extends Item> extends PostgreSupports.PostgreTableOnBlock<
             PostgreQuery._RepeatableOnClause<I>,
             Statement._OnClause<PostgreQuery._JoinSpec<I>>,
@@ -925,6 +940,11 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             return new SelectDispatcher<>(this.context, unionFunc);
         }
 
+        private PostgreBatchSimpleQuery wrapToBatchSelect(List<?> paramList) {
+            return new PostgreBatchSimpleQuery(this, CriteriaUtils.paramList(paramList));
+        }
+
+
     }//SimpleSelect
 
 
@@ -995,6 +1015,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             PostgreQuery._QueryWithComplexSpec<I>>
             implements PostgreQuery._UnionOrderBySpec<I>,
             PostgreQuery._UnionOrderByCommaSpec<I>,
+            PostgreQuery,
             PostgreQuery._UnionOffsetSpec<I>,
             PostgreQuery._UnionFetchSpec<I> {
 
@@ -1039,8 +1060,28 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
             return new SelectDispatcher<>(this.context, unionFunc);
         }
 
+        BatchBracketSelect wrapToBatchSelect(List<?> paramList) {
+            return new BatchBracketSelect(this, CriteriaUtils.paramList(paramList));
+        }
+
 
     }//BracketSelect
+
+
+    private static final class BatchBracketSelect extends BracketRowSet.ArmyBatchBracketSelect
+            implements PostgreQuery {
+
+        private BatchBracketSelect(BracketSelect<?> select, List<?> paramList) {
+            super(select, paramList);
+        }
+
+        @Override
+        Dialect statementDialect() {
+            return PostgreUtils.DIALECT;
+        }
+
+
+    }//BatchBracketSelect
 
     private static final class BracketSubQuery<I extends Item> extends PostgreBracketQuery<I>
             implements ArmySubQuery {
@@ -1574,6 +1615,96 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         }
 
     }//StaticCteComplexCommand
+
+
+    private static final class PostgreBatchSimpleQuery extends ArmyBatchSimpleSelect
+            implements PostgreQuery, _PostgreQuery {
+
+        private final List<_Expression> distinctOnExpList;
+        private final SQLs.Modifier groupByModifier;
+        private final List<_Window> windowList;
+
+        private final SQLWords offsetRow;
+
+        private final SQLWords fetchFirstNext;
+
+
+        private final SQLWords fetchRowPercent;
+        private final SQLWords fetchRow;
+
+        private final SQLWords fetchOnlyWithTies;
+
+        private final List<_LockBlock> lockBlockList;
+
+
+        private PostgreBatchSimpleQuery(SimpleSelect<?> select, List<?> paramList) {
+            super(select, paramList);
+
+            this.distinctOnExpList = select.distinctOnExpressions();
+            this.groupByModifier = select.groupByModifier();
+            this.windowList = select.windowList();
+            this.offsetRow = select.offsetRowModifier();
+
+            this.fetchFirstNext = select.fetchFirstOrNext();
+            this.fetchRowPercent = select.fetchPercentModifier();
+            this.fetchRow = select.fetchRowModifier();
+            this.fetchOnlyWithTies = select.fetchOnlyOrWithTies();
+
+            this.lockBlockList = select.lockBlockList();
+        }
+
+        @Override
+        public List<_Expression> distinctOnExpressions() {
+            return this.distinctOnExpList;
+        }
+
+        @Override
+        public List<_Window> windowList() {
+            return this.windowList;
+        }
+
+        @Override
+        public SQLWords offsetRowModifier() {
+            return this.offsetRow;
+        }
+
+        @Override
+        public SQLWords fetchFirstOrNext() {
+            return this.fetchFirstNext;
+        }
+
+        @Override
+        public SQLWords fetchPercentModifier() {
+            return this.fetchRowPercent;
+        }
+
+        @Override
+        public SQLWords fetchRowModifier() {
+            return this.fetchRow;
+        }
+
+        @Override
+        public SQLWords fetchOnlyOrWithTies() {
+            return this.fetchOnlyWithTies;
+        }
+
+        @Override
+        public SQLs.Modifier groupByModifier() {
+            return this.groupByModifier;
+        }
+
+        @Override
+        public List<_LockBlock> lockBlockList() {
+            return this.lockBlockList;
+        }
+
+        @Override
+        Dialect statementDialect() {
+            return PostgreUtils.DIALECT;
+        }
+
+
+    }//PostgreBatchSimpleQuery
 
 
 }

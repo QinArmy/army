@@ -32,6 +32,10 @@ public abstract class MySQLs extends MySQLSyntax {
         return MySQLQueries.simpleQuery();
     }
 
+    public static MySQLQuery._WithSpec<Statement._BatchSelectParamSpec> batchQuery() {
+        return MySQLQueries.batchQuery();
+    }
+
 
     public static MySQLQuery._WithSpec<SubQuery> subQuery() {
         return MySQLQueries.subQuery(ContextStack.peek(), SQLs::identity);

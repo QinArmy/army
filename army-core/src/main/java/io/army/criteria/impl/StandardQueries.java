@@ -587,7 +587,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     private static final class BracketSelect<I extends Item> extends StandardBracketQuery<I>
-            implements ArmySelect, StandardQuery {
+            implements ArmySelect {
 
         private final Function<? super Select, I> function;
 
@@ -633,7 +633,7 @@ abstract class StandardQueries<I extends Item> extends SimpleQueries<
 
 
     private static final class BracketSubQuery<I extends Item> extends StandardBracketQuery<I>
-            implements ArmySubQuery, StandardQuery {
+            implements ArmySubQuery {
 
         private final Function<? super SubQuery, I> function;
 

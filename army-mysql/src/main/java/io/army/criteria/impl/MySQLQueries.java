@@ -3,10 +3,7 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Window;
-import io.army.criteria.impl.inner._Cte;
-import io.army.criteria.impl.inner._NestedItems;
-import io.army.criteria.impl.inner._TabularBlock;
-import io.army.criteria.impl.inner._Window;
+import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.mysql._MySQLQuery;
 import io.army.criteria.mysql.*;
 import io.army.dialect.Dialect;
@@ -78,6 +75,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
         return new SimpleSelect<>(null, null, SQLs.SIMPLE_SELECT);
     }
 
+    static _WithSpec<_BatchSelectParamSpec> batchQuery() {
+        return new SimpleSelect<>(null, null, MySQLQueries::mapToBatchSelect);
+    }
+
     static <I extends Item> MySQLQueries<I> fromDispatcher(ArmyStmtSpec spec,
                                                            Function<? super Select, I> function) {
         return new SimpleSelect<>(spec, null, function);
@@ -96,6 +97,21 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     static <I extends Item> _CteComma<I> staticCteComma(CriteriaContext context, boolean recursive,
                                                         Function<Boolean, I> function) {
         return new StaticCteComma<>(context, recursive, function);
+    }
+
+    private static _BatchSelectParamSpec mapToBatchSelect(final Select select) {
+        final _BatchSelectParamSpec spec;
+        if (select instanceof _Query) {
+            spec = ((SimpleSelect<?>) select)::wrapToBatchSelect;
+        } else if (select instanceof UnionSelect) {
+            spec = ((UnionSelect) select)::wrapToBatchSelect;
+        } else if (select instanceof BracketSelect) {
+            spec = ((BracketSelect<?>) select)::wrapToBatchSelect;
+        } else {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        return spec;
     }
 
     /**
@@ -659,7 +675,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
     }
 
 
-
     private MySQLQueries<I> onLockClauseEnd(final _LockBlock block) {
         if (this.lockBlock != null) {
             throw ContextStack.castCriteriaApi(this.context);
@@ -870,6 +885,10 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             return new SelectDispatcher<>(this.context, unionFunc);
         }
 
+        private MySQLBatchSimpleSelect wrapToBatchSelect(List<?> paramList) {
+            return new MySQLBatchSimpleSelect(this, CriteriaUtils.paramList(paramList));
+        }
+
 
     }//SimpleSelect
 
@@ -907,7 +926,6 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
 
     }//SimpleSubQuery
-
 
 
     private static final class PartitionJoinClause<I extends Item>
@@ -1084,6 +1102,7 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             Object,
             _QueryWithComplexSpec<I>>
             implements MySQLQuery._UnionOrderBySpec<I>,
+            MySQLQuery,
             MySQLQuery._UnionOrderByCommaSpec<I> {
 
 
@@ -1121,8 +1140,27 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
             return new SelectDispatcher<>(this.context, unionFunc);
         }
 
+        BatchBracketSelect wrapToBatchSelect(List<?> paramList) {
+            return new BatchBracketSelect(this, CriteriaUtils.paramList(paramList));
+        }
+
 
     }//BracketSelect
+
+    private static final class BatchBracketSelect extends BracketRowSet.ArmyBatchBracketSelect
+            implements MySQLQuery {
+
+        private BatchBracketSelect(BracketSelect<?> select, List<?> paramList) {
+            super(select, paramList);
+        }
+
+        @Override
+        Dialect statementDialect() {
+            return MySQLUtils.DIALECT;
+        }
+
+
+    }//BatchBracketSelect
 
 
     private static final class BracketSubQuery<I extends Item> extends MySQLBracketQuery<I>
@@ -1288,6 +1326,66 @@ abstract class MySQLQueries<I extends Item> extends SimpleQueries<
 
 
     }//SubQueryDispatcher
+
+
+    private static final class MySQLBatchSimpleSelect extends ArmyBatchSimpleSelect
+            implements MySQLQuery, _MySQLQuery {
+
+        private final boolean groupByWithRollup;
+
+        private final List<_Window> windowList;
+
+        private final boolean orderByWithRollup;
+
+        private final _LockBlock lockBlock;
+
+        private final List<String> intoVarList;
+
+        private MySQLBatchSimpleSelect(SimpleSelect<?> select, List<?> paramList) {
+            super(select, paramList);
+
+            this.groupByWithRollup = select.groupByWithRollUp();
+            this.windowList = select.windowList();
+            this.orderByWithRollup = select.orderByWithRollup();
+            this.lockBlock = select.lockBlock();
+
+            this.intoVarList = select.intoVarList();
+        }
+
+
+        @Override
+        public List<_Window> windowList() {
+            return this.windowList;
+        }
+
+        @Override
+        public boolean groupByWithRollUp() {
+            return this.groupByWithRollup;
+        }
+
+        @Override
+        public boolean orderByWithRollup() {
+            return this.orderByWithRollup;
+        }
+
+        @Override
+        public _LockBlock lockBlock() {
+            return this.lockBlock;
+        }
+
+        @Override
+        public List<String> intoVarList() {
+            return this.intoVarList;
+        }
+
+
+        @Override
+        Dialect statementDialect() {
+            return MySQLUtils.DIALECT;
+        }
+
+
+    }//MySQLBatchSelect
 
 
 }
