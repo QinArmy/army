@@ -10,6 +10,8 @@ public interface _StmtParams {
 
     String sql();
 
+    boolean hasOptimistic();
+
     /**
      * @return a unmodified list
      */

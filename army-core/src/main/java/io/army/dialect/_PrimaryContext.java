@@ -21,6 +21,11 @@ public interface _PrimaryContext extends _SqlContext {
      */
     boolean hasParam();
 
+    boolean hasNamedLiteral();
+
+
+    boolean hasOptimistic();
+
 
     Stmt build();
 

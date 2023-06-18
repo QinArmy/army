@@ -17,7 +17,7 @@ public interface DialectParser {
 
 
     /**
-     * @return possibly below type:
+     * @return one of :
      * <ul>
      *     <li>{@link SimpleStmt}</li>
      *     <li>{@link io.army.stmt.GeneratedKeyStmt}</li>
@@ -26,10 +26,28 @@ public interface DialectParser {
      */
     Stmt insert(InsertStatement insert, Visible visible);
 
+    /**
+     * @return one of <ul>
+     * <li>{@link SimpleStmt}</li>
+     * <li>{@link io.army.stmt.BatchStmt}</li>
+     * </ul>
+     */
     Stmt update(UpdateStatement update, boolean useMultiStmt, Visible visible);
 
+    /**
+     * @return one of <ul>
+     * <li>{@link SimpleStmt}</li>
+     * <li>{@link io.army.stmt.BatchStmt}</li>
+     * </ul>
+     */
     Stmt delete(DeleteStatement delete, boolean useMultiStmt, Visible visible);
 
+    /**
+     * @return one of <ul>
+     * <li>{@link SimpleStmt}</li>
+     * <li>{@link io.army.stmt.BatchStmt}</li>
+     * </ul>
+     */
     Stmt select(SelectStatement select, boolean useMultiStmt, Visible visible);
 
     Stmt values(Values values, Visible visible);

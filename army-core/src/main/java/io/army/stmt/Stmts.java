@@ -73,7 +73,7 @@ public abstract class Stmts {
         List<SQLParam> group;
         Object value;
         for (Object paramObject : paramWrapperList) {
-            group = new ArrayList<>(paramSize);
+            group = _Collections.arrayList(paramSize);
             for (SQLParam sqlParam : paramGroup) {
                 if (!(sqlParam instanceof NamedParam)) {
                     group.add(sqlParam);

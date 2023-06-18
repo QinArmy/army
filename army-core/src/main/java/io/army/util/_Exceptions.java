@@ -381,6 +381,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("multi-statement don't support parameter placeholder.");
     }
 
+    public static CriteriaException multiStmtForBatchRequiredNamedLiteral() {
+        return new CriteriaException("multi-statement for batch must exists named literal");
+    }
+
     public static CriteriaException notFondIdPredicate(Dialect dialect) {
         String m = String.format("%s update child table must specified id", dialect);
         return new CriteriaException(m);

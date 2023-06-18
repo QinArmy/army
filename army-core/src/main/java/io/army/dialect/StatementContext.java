@@ -70,7 +70,7 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
             } else {
                 this.paramConsumer = new ParamConsumerWithOuter(parentOrOuterContext.paramConsumer, this::currentRowNamedValue);
             }
-        } else if (parentOrOuterContext instanceof _MultiStatementContext && this instanceof NarrowDmlContext) {
+        } else if (parentOrOuterContext instanceof MultiStatementContext && this instanceof NarrowDmlContext) {
             this.paramConsumer = new ParamConsumerWithOuter(parentOrOuterContext.paramConsumer, this::currentRowNamedValue);
         } else if (parentOrOuterContext == null) {
             this.paramConsumer = new ParamConsumer(null);
@@ -191,6 +191,10 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
             throw new CriteriaException(m);
         }
 
+        if (!this.paramConsumer.hasNamedLiteral) {
+            this.paramConsumer.setHasNamedLiteral();
+        }
+
         final Object value;
         value = function.apply(namedLiteral.name());
         final StringBuilder sqlBuilder = this.sqlBuilder;
@@ -237,6 +241,11 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
         return this.paramConsumer.paramList.size() > 0;
     }
 
+
+    @Override
+    public final boolean hasNamedLiteral() {
+        return this.paramConsumer.hasNamedLiteral;
+    }
 
     @Override
     public final Visible visible() {
@@ -320,14 +329,17 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
 
         private boolean hasNamedParam;
 
+        private boolean hasNamedLiteral;
+
         private ParamConsumer(@Nullable Function<String, Object> function) {
-            this.paramList = new ArrayList<>();
+            this.paramList = _Collections.arrayList();
             this.function = function;
         }
 
         private ParamConsumer(ParamConsumer outerConsumer, Function<String, Object> function) {
             this.paramList = outerConsumer.paramList;
             this.hasNamedParam = outerConsumer.hasNamedParam;
+            this.hasNamedLiteral = outerConsumer.hasNamedLiteral;
             this.function = function;
         }
 
@@ -335,6 +347,13 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
             this.hasNamedParam = true;
             if (this instanceof ParamConsumerWithOuter) {
                 ((ParamConsumerWithOuter) this).outerConsumer.setHasNamedParam();
+            }
+        }
+
+        final void setHasNamedLiteral() {
+            this.hasNamedLiteral = true;
+            if (this instanceof ParamConsumerWithOuter) {
+                ((ParamConsumerWithOuter) this).outerConsumer.setHasNamedLiteral();
             }
         }
 

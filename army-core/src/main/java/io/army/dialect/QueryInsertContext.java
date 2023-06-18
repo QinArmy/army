@@ -22,7 +22,7 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
 
     static QueryInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildQueryInsert domainStmt
             , ArmyParser dialect, Visible visible) {
-        assert outerContext == null || outerContext instanceof _MultiStatementContext;
+        assert outerContext == null || outerContext instanceof MultiStatementContext;
         return new QueryInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
 

@@ -4,8 +4,7 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._BatchStatement;
-import io.army.criteria.impl.inner._DmlStatement;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.stmt.DmlStmtParams;
 import io.army.stmt.Stmt;
@@ -14,15 +13,17 @@ import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * <p>
- *     This class is base class of below:
+ * This class is base class of below:
  *     <ul>
  *         <li>{@link SingleTableDmlContext}</li>
  *         <li>{@link MultiTableDmlContext}</li>
  *     </ul>
  * </p>
+ *
  * @since 1.0
  */
 abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDmlContext, DmlStmtParams {
@@ -30,9 +31,11 @@ abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDm
 
     final boolean versionPredicate;
 
-    private final List<Selection> selectionList;
+    private final List<? extends _SelectItem> returningList;
 
     private final List<?> paramList;
+
+    private final int paramSize;
 
     private final ReadAccessor accessor;
 
@@ -47,19 +50,58 @@ abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDm
 
         this.versionPredicate = _DialectUtils.hasOptimistic(stmt.wherePredicateList());
 
-        this.selectionList = Collections.emptyList();//TODO optimize for postgre
+        if (stmt instanceof _ReturningDml) {
+            this.returningList = ((_ReturningDml) stmt).returningList();
+        } else {
+            this.returningList = Collections.emptyList();
+        }
 
         if (stmt instanceof _BatchStatement) {
             this.paramList = ((_BatchStatement) stmt).paramList();
-            if (parentOrOuterContext instanceof _MultiStatementContext) {
-                this.accessor = ObjectAccessorFactory.readOnlyFromInstance(this.paramList.get(0));
-                this.paramIndex = 0;
-            } else {
-                this.accessor = null;
-            }
+            this.paramSize = this.paramList.size();
         } else {
             this.paramList = null;
+            this.paramSize = 0;
+        }
+
+        if (parentOrOuterContext instanceof MultiStatementContext) {
+            this.accessor = ObjectAccessorFactory.readOnlyFromInstance(this.paramList.get(0));
+            this.paramIndex = 0;
+        } else {
             this.accessor = null;
+        }
+
+    }
+
+    @Override
+    public final <S extends _Statement, C extends MyBatchSpecContext> void multiStmtBatch(final BiConsumer<S, C> consumer,
+                                                                                          S statement, C context) {
+        if (context != this) {
+            //no bug,never here
+            throw new IllegalArgumentException();
+        }
+        final List<?> paramList = this.paramList;
+        if (paramList == null) {
+            //no bug,never here
+            throw _Exceptions.independentDmlDontSupportNamedValue();
+        }
+
+        int currentIndex = this.paramIndex;
+        if (currentIndex != 0) {
+            //no bug,never here
+            throw new IllegalStateException("currentIndex not zero.");
+        }
+        final StringBuilder sqlBuilder = this.sqlBuilder;
+        final int paramSize = paramList.size();
+
+
+        for (int i = 0; i < paramSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_SEMICOLON_TWO_LINE);
+            }
+            consumer.accept(statement, context);
+            currentIndex++;
+            this.paramIndex++;
         }
 
     }
@@ -114,14 +156,14 @@ abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDm
     }
 
     @Override
-    public final boolean hasVersion() {
+    public final boolean hasOptimistic() {
         return this.versionPredicate;
     }
 
 
     @Override
     public final List<Selection> selectionList() {
-        final List<Selection> list = this.selectionList;
+        final List<Selection> list = this.returningList;
         if (list == null) {
             throw new UnsupportedOperationException();
         }

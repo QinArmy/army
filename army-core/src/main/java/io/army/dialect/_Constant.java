@@ -137,6 +137,8 @@ public interface _Constant {
 
     String SPACE_SEMICOLON = " ;";
 
+    String SPACE_SEMICOLON_TWO_LINE = " ;\n\n";
+
     String SPACE_COMMA_SPACE = " , ";
 
     String SPACE_LEFT_PAREN = " (";

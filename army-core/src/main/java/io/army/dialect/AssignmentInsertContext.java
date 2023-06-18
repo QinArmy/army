@@ -33,7 +33,7 @@ final class AssignmentInsertContext extends InsertContext
 
     static AssignmentInsertContext forParent(@Nullable _SqlContext outerContext, _Insert._ChildAssignmentInsert stmt
             , ArmyParser dialect, Visible visible) {
-        assert outerContext == null || outerContext instanceof _MultiStatementContext;
+        assert outerContext == null || outerContext instanceof MultiStatementContext;
 
         return new AssignmentInsertContext((StatementContext) outerContext, stmt, dialect, visible);
     }

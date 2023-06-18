@@ -12,7 +12,7 @@ package io.army.dialect;
  *
  * @since 1.0
  */
-interface NarrowDmlContext extends _DmlContext {
+interface NarrowDmlContext extends _DmlContext, MyBatchSpecContext {
 
    /**
     * <p>
@@ -21,10 +21,13 @@ interface NarrowDmlContext extends _DmlContext {
     *
     * @throws UnsupportedOperationException non-batch and not multi-statement
     */
+   @Deprecated
    void nextElement();
 
+   @Deprecated
    int currentIndex();
 
+   //@Deprecated
    boolean hasNamedValue();
 
    boolean isBatchEnd();
