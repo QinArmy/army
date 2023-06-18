@@ -1,19 +1,17 @@
 package io.army.dialect;
 
-import io.army.bean.ObjectAccessorFactory;
-import io.army.bean.ReadAccessor;
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner.*;
+import io.army.criteria.impl.inner._DmlStatement;
+import io.army.criteria.impl.inner._ReturningDml;
+import io.army.criteria.impl.inner._SelectItem;
 import io.army.lang.Nullable;
-import io.army.stmt.DmlStmtParams;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
 
 /**
  * <p>
@@ -26,27 +24,17 @@ import java.util.function.BiConsumer;
  *
  * @since 1.0
  */
-abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDmlContext, DmlStmtParams {
+abstract class NarrowDmlStmtContext extends BatchSpecStatementContext implements NarrowDmlContext {
 
 
     final boolean versionPredicate;
 
     private final List<? extends _SelectItem> returningList;
 
-    private final List<?> paramList;
-
-    private final int paramSize;
-
-    private final ReadAccessor accessor;
-
-    private int paramIndex;
-
-    private boolean existsNamedValued;
-
 
     NarrowDmlStmtContext(@Nullable StatementContext parentOrOuterContext, _DmlStatement stmt
             , ArmyParser parser, Visible visible) {
-        super(parentOrOuterContext, parser, visible);
+        super(parentOrOuterContext, stmt, parser, visible);
 
         this.versionPredicate = _DialectUtils.hasOptimistic(stmt.wherePredicateList());
 
@@ -56,86 +44,10 @@ abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDm
             this.returningList = Collections.emptyList();
         }
 
-        if (stmt instanceof _BatchStatement) {
-            this.paramList = ((_BatchStatement) stmt).paramList();
-            this.paramSize = this.paramList.size();
-        } else {
-            this.paramList = null;
-            this.paramSize = 0;
-        }
-
-        if (parentOrOuterContext instanceof MultiStatementContext) {
-            this.accessor = ObjectAccessorFactory.readOnlyFromInstance(this.paramList.get(0));
-            this.paramIndex = 0;
-        } else {
-            this.accessor = null;
-        }
 
     }
 
-    @Override
-    public final <S extends _Statement, C extends MyBatchSpecContext> void multiStmtBatch(final BiConsumer<S, C> consumer,
-                                                                                          S statement, C context) {
-        if (context != this) {
-            //no bug,never here
-            throw new IllegalArgumentException();
-        }
-        final List<?> paramList = this.paramList;
-        if (paramList == null) {
-            //no bug,never here
-            throw _Exceptions.independentDmlDontSupportNamedValue();
-        }
 
-        int currentIndex = this.paramIndex;
-        if (currentIndex != 0) {
-            //no bug,never here
-            throw new IllegalStateException("currentIndex not zero.");
-        }
-        final StringBuilder sqlBuilder = this.sqlBuilder;
-        final int paramSize = paramList.size();
-
-
-        for (int i = 0; i < paramSize; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_SEMICOLON_TWO_LINE);
-            }
-            consumer.accept(statement, context);
-            currentIndex++;
-            this.paramIndex++;
-        }
-
-    }
-
-    @Override
-    public final void nextElement() {
-        final List<?> paramList = this.paramList;
-        if (paramList == null) {
-            throw _Exceptions.independentDmlDontSupportNamedValue();
-        }
-        final int paramSize, paramIndex;
-        paramSize = paramList.size();
-        paramIndex = this.paramIndex;
-        assert paramIndex >= 0 && paramIndex < (paramSize - 1);
-        this.paramIndex++;
-    }
-
-    @Override
-    public final int currentIndex() {
-        return this.paramIndex;
-    }
-
-    @Override
-    public final boolean hasNamedValue() {
-        return this.existsNamedValued;
-    }
-
-    @Override
-    public final boolean isBatchEnd() {
-        final List<?> paramList = this.paramList;
-        return paramList == null
-                || this.accessor == null
-                || this.paramIndex == (paramList.size() - 1);
-    }
 
     @Override
     public final Stmt build() {
@@ -163,30 +75,14 @@ abstract class NarrowDmlStmtContext extends StatementContext implements NarrowDm
 
     @Override
     public final List<Selection> selectionList() {
-        final List<Selection> list = this.returningList;
+        final List<? extends _SelectItem> list = this.returningList;
         if (list == null) {
             throw new UnsupportedOperationException();
         }
-        return list;
+        return _DialectUtils.flatSelectItem(list);
     }
 
 
-    @Override
-    final Object currentRowNamedValue(final String name) {
-        final List<?> paramList = this.paramList;
-        final ReadAccessor accessor = this.accessor;
-        if (paramList == null || accessor == null) {
-            throw _Exceptions.independentDmlDontSupportNamedValue();
-        }
-        final int paramSize, paramIndex;
-        paramSize = paramList.size();
-        paramIndex = this.paramIndex;
-        assert paramIndex >= 0 && paramIndex < paramSize;
-        if (!this.existsNamedValued) {
-            this.existsNamedValued = true;
-        }
-        return accessor.get(paramList.get(paramIndex), name);
-    }
 
 
 }

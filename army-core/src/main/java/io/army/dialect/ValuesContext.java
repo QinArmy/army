@@ -36,6 +36,11 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
 
 
     @Override
+    public boolean hasOptimistic() {
+        return false;
+    }
+
+    @Override
     public void appendField(String tableAlias, FieldMeta<?> field) {
         throw _Exceptions.unknownColumn(tableAlias, field);
     }

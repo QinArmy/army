@@ -13,6 +13,11 @@ final class LiteralMultiStmtContext extends StatementContext {
 
 
     @Override
+    public boolean hasOptimistic() {
+        return false;
+    }
+
+    @Override
     public SimpleStmt build() {
         return null;
     }

@@ -6,10 +6,9 @@ import io.army.criteria.impl.inner._MultiDelete;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
-import io.army.stmt.DmlStmtParams;
 import io.army.util._Exceptions;
 
-final class MultiDeleteContext extends MultiTableDmlContext implements _MultiDeleteContext, DmlStmtParams {
+final class MultiDeleteContext extends MultiTableDmlContext implements _MultiDeleteContext {
 
     static MultiDeleteContext create(@Nullable _SqlContext outerContext, _MultiDelete stmt, ArmyParser dialect
             , Visible visible) {

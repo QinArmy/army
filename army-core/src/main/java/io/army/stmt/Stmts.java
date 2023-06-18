@@ -46,7 +46,7 @@ public abstract class Stmts {
     }
 
 
-    public static SimpleStmt dml(DmlStmtParams params) {
+    public static SimpleStmt dml(_StmtParams params) {
         return new SimpleDmlStmt(params);
     }
 
@@ -63,7 +63,7 @@ public abstract class Stmts {
         return new PairBatchStmtImpl(first, second);
     }
 
-    public static BatchStmt batchDml(final DmlStmtParams params, final List<?> paramWrapperList) {
+    public static BatchStmt batchDml(final _StmtParams params, final List<?> paramWrapperList) {
         final List<SQLParam> paramGroup = params.paramList();
         final int paramSize = paramGroup.size();
         final List<List<SQLParam>> groupList = new ArrayList<>(paramWrapperList.size());
@@ -268,11 +268,11 @@ public abstract class Stmts {
 
         private final boolean hasOptimistic;
 
-        private SimpleDmlStmt(DmlStmtParams params) {
+        private SimpleDmlStmt(_StmtParams params) {
             this.sql = params.sql();
             this.paramGroup = params.paramList();
             this.selectionList = params.selectionList();
-            this.hasOptimistic = params.hasVersion();
+            this.hasOptimistic = params.hasOptimistic();
         }
 
         @Override
@@ -314,10 +314,10 @@ public abstract class Stmts {
 
         private final boolean hasOptimistic;
 
-        private MinBatchDmlStmt(DmlStmtParams params, List<List<SQLParam>> paramGroupList) {
+        private MinBatchDmlStmt(_StmtParams params, List<List<SQLParam>> paramGroupList) {
             this.sql = params.sql();
             this.paramGroupList = Collections.unmodifiableList(paramGroupList);
-            this.hasOptimistic = params.hasVersion();
+            this.hasOptimistic = params.hasOptimistic();
         }
 
         @Override

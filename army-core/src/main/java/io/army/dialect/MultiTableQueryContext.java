@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._SelectItem;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
@@ -11,16 +12,16 @@ import io.army.stmt.Stmts;
 
 import java.util.List;
 
-abstract class MultiTableQueryContext extends StatementContext implements _MultiTableStmtContext, _SimpleQueryContext {
+abstract class MultiTableQueryContext extends BatchSpecStatementContext implements _MultiTableStmtContext, _SimpleQueryContext {
 
     final MultiTableContext multiTableContext;
 
     private final List<? extends _SelectItem> selectItemList;
 
 
-    MultiTableQueryContext(@Nullable StatementContext outerContext, Query query, TableContext tableContext
-            , ArmyParser parser, Visible visible) {
-        super(outerContext, parser, visible);
+    MultiTableQueryContext(@Nullable StatementContext outerContext, Query query, TableContext tableContext,
+                           ArmyParser parser, Visible visible) {
+        super(outerContext, (_Statement) query, parser, visible);
 
         this.selectItemList = ((_Query) query).selectItemList();
         if (query instanceof SubQuery) {
@@ -70,6 +71,13 @@ abstract class MultiTableQueryContext extends StatementContext implements _Multi
     @Override
     public final List<? extends Selection> selectionList() {
         return _DialectUtils.flatSelectItem(this.selectItemList);
+    }
+
+
+    @Override
+    public final boolean hasOptimistic() {
+        // query must false
+        return false;
     }
 
     @Override

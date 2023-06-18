@@ -27,7 +27,7 @@ final class MultiStmtBatchContext extends StatementContext implements MultiState
 
     private boolean optimistic;
 
-    private List<Selection> selectionList;
+    private List<? extends Selection> selectionList;
 
     private MultiStmtBatchContext(ArmyParser parser, Visible visible, int batchSize) {
         super(null, parser, visible);
@@ -48,8 +48,8 @@ final class MultiStmtBatchContext extends StatementContext implements MultiState
     }
 
     @Override
-    public <S extends _Statement, C extends MyBatchSpecContext> void appendBatch(final BiConsumer<S, C> consumer,
-                                                                                 final S statement, final C context) {
+    public <S extends _Statement, C extends BatchSpecContext> void appendBatch(final BiConsumer<S, C> consumer,
+                                                                               final S statement, final C context) {
 
         final int batchSize = this.batchSize;
         final StringBuilder sqlBuilder = this.sqlBuilder;

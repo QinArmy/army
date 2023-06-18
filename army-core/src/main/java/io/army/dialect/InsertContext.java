@@ -259,6 +259,11 @@ abstract class InsertContext extends StatementContext
     }
 
     @Override
+    public final boolean hasOptimistic() {
+        return false;
+    }
+
+    @Override
     public final _InsertContext parentContext() {
         return this.parentContext;
     }

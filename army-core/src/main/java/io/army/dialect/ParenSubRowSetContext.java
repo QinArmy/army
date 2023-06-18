@@ -33,6 +33,11 @@ final class ParenSubRowSetContext extends StatementContext implements _ParenRowS
     }
 
     @Override
+    public boolean hasOptimistic() {
+        return false;
+    }
+
+    @Override
     public SimpleStmt build() {
         if (this.outerContext != null) {
             throw new UnsupportedOperationException();

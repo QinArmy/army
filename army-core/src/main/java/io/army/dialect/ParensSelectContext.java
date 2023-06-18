@@ -5,6 +5,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._PrimaryRowSet;
 import io.army.criteria.impl.inner._SelectItem;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
@@ -13,7 +14,7 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 
-final class ParensSelectContext extends StatementContext implements _SelectContext, _ParenRowSetContext {
+final class ParensSelectContext extends BatchSpecStatementContext implements _SelectContext, _ParenRowSetContext {
 
     static ParensSelectContext create(@Nullable _SqlContext outerContext, SelectStatement select, ArmyParser dialect
             , Visible visible) {
@@ -26,11 +27,15 @@ final class ParensSelectContext extends StatementContext implements _SelectConte
 
     private ParensSelectContext(@Nullable StatementContext outerContext, SelectStatement select, ArmyParser dialect
             , Visible visible) {
-        super(outerContext, dialect, visible);
+        super(outerContext, (_Statement) select, dialect, visible);
         this.outerContext = outerContext;
         this.selectItemList = ((_PrimaryRowSet) select).selectItemList();
     }
 
+    @Override
+    public boolean hasOptimistic() {
+        return false;
+    }
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?> field) {

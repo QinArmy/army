@@ -32,11 +32,16 @@ final class OtherDmlContext extends StatementContext implements _OtherDmlContext
         this.parentContext = null;
     }
 
-    private OtherDmlContext(@Nullable  StatementContext outerContext, Predicate<FieldMeta<?>> predicate
-            ,OtherDmlContext parentContext) {
-        super(outerContext, parentContext.parser,parentContext.visible);
+    private OtherDmlContext(@Nullable StatementContext outerContext, Predicate<FieldMeta<?>> predicate
+            , OtherDmlContext parentContext) {
+        super(outerContext, parentContext.parser, parentContext.visible);
         this.predicate = predicate;
         this.parentContext = parentContext;
+    }
+
+    @Override
+    public boolean hasOptimistic() {
+        return false;
     }
 
     @Override
