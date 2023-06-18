@@ -1,6 +1,6 @@
 package io.army.stmt;
 
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * @see SimpleStmt
@@ -11,7 +11,7 @@ public interface Stmt {
 
     boolean hasOptimistic();
 
-    String printSql(Function<String, String> function);
+    String printSql(UnaryOperator<String> function);
 
     @Override
     String toString();

@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Statement;
 import io.army.meta.FieldMeta;
 import io.army.stmt.MultiStmtBatchStmt;
+import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
 import java.util.List;
@@ -90,8 +91,22 @@ final class MultiStmtBatchContext extends StatementContext implements MultiState
 
     @Override
     public MultiStmtBatchStmt build() {
-        // no bug,never here
-        throw new UnsupportedOperationException();
+        if (this.selectionList == null) {
+            //no bug,never here
+            throw new IllegalStateException();
+        }
+        return Stmts.multiStmtBatchStmt(this, this.batchSize);
+    }
+
+
+    @Override
+    public List<? extends Selection> selectionList() {
+        final List<? extends Selection> list = this.selectionList;
+        if (list == null) {
+            //no bug,never here
+            throw new IllegalStateException();
+        }
+        return list;
     }
 
     @Override

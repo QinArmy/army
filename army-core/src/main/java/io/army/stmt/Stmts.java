@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 public abstract class Stmts {
 
@@ -95,7 +96,7 @@ public abstract class Stmts {
             }
 
             if (group.size() != paramSize) {
-                //here bug
+                //no bug, never here
                 throw new IllegalStateException("create parameter group error.");
             }
             groupList.add(_Collections.unmodifiableList(group));
@@ -104,6 +105,20 @@ public abstract class Stmts {
             throw new CriteriaException("Not found any named parameter in batch statement.");
         }
         return new MinBatchDmlStmt(params, groupList);
+    }
+
+    public static MultiStmtBatchStmt multiStmtBatchStmt(final _StmtParams params, final int batchSize) {
+        final List<SQLParam> paramGroup;
+        paramGroup = params.paramList();
+        if (paramGroup.size() > 0 || batchSize < 1) {
+            //no bug, never here
+            throw new IllegalArgumentException();
+        }
+        final List<List<SQLParam>> groupList = _Collections.arrayList(batchSize);
+        for (int i = 0; i < batchSize; i++) {
+            groupList.add(paramGroup);
+        }
+        return new MultiStmtBatchStmtImpl(params, groupList);
     }
 
 
@@ -139,7 +154,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public String printSql(Function<String, String> function) {
+        public String printSql(UnaryOperator<String> function) {
             return function.apply(this.sql);
         }
 
@@ -178,7 +193,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public String printSql(final Function<String, String> function) {
+        public String printSql(final UnaryOperator<String> function) {
             return _StringUtils.builder()
                     .append(function.apply(this.first.sqlText()))
                     .append('\n')
@@ -220,7 +235,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public String printSql(Function<String, String> function) {
+        public String printSql(UnaryOperator<String> function) {
             return _StringUtils.builder()
                     .append("batch pair first:\n")
                     .append(function.apply(this.first.sqlText()))
@@ -281,7 +296,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public String printSql(Function<String, String> function) {
+        public String printSql(UnaryOperator<String> function) {
             return function.apply(this.sql);
         }
 
@@ -291,7 +306,7 @@ public abstract class Stmts {
         }
     }//MinDml
 
-    private static final class MinBatchDmlStmt implements BatchStmt {
+    private static class MinBatchDmlStmt implements BatchStmt {
 
         private final String sql;
 
@@ -306,13 +321,52 @@ public abstract class Stmts {
         }
 
         @Override
-        public List<? extends Selection> selectionList() {
+        public final List<? extends Selection> selectionList() {
             return Collections.emptyList();
         }
 
         @Override
-        public List<List<SQLParam>> groupList() {
+        public final List<List<SQLParam>> groupList() {
             return this.paramGroupList;
+        }
+
+
+        public final String sqlText() {
+            return this.sql;
+        }
+
+        @Override
+        public final boolean hasOptimistic() {
+            return this.hasOptimistic;
+        }
+
+        @Override
+        public final String printSql(UnaryOperator<String> function) {
+            return function.apply(this.sql);
+        }
+
+        @Override
+        public final String toString() {
+            return this.sql;
+        }
+
+    }//MinBatchDmlStmt
+
+    private static final class MultiStmtBatchStmtImpl implements MultiStmtBatchStmt {
+
+        private final String sql;
+
+        private final List<? extends Selection> selectionList;
+
+        private final List<List<SQLParam>> paramGroupList;
+
+        private final boolean optimistic;
+
+        private MultiStmtBatchStmtImpl(_StmtParams params, List<List<SQLParam>> paramGroupList) {
+            this.sql = params.sql();
+            this.selectionList = params.selectionList();
+            this.paramGroupList = _Collections.unmodifiableList(paramGroupList);
+            this.optimistic = params.hasOptimistic();
         }
 
         @Override
@@ -321,12 +375,22 @@ public abstract class Stmts {
         }
 
         @Override
-        public boolean hasOptimistic() {
-            return this.hasOptimistic;
+        public List<? extends Selection> selectionList() {
+            return this.selectionList;
         }
 
         @Override
-        public String printSql(Function<String, String> function) {
+        public List<List<SQLParam>> groupList() {
+            return this.paramGroupList;
+        }
+
+        @Override
+        public boolean hasOptimistic() {
+            return this.optimistic;
+        }
+
+        @Override
+        public String printSql(UnaryOperator<String> function) {
             return function.apply(this.sql);
         }
 
@@ -334,7 +398,9 @@ public abstract class Stmts {
         public String toString() {
             return this.sql;
         }
-    }//MinBatchDmlStmt
+
+    }//MultiStmtBatchStm
+
 
     private static final class QueryStmt implements io.army.stmt.SimpleStmt {
 
@@ -371,7 +437,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public String printSql(Function<String, String> function) {
+        public String printSql(UnaryOperator<String> function) {
             return function.apply(this.sql);
         }
 
@@ -435,7 +501,7 @@ public abstract class Stmts {
         }
 
         @Override
-        public final String printSql(Function<String, String> function) {
+        public final String printSql(UnaryOperator<String> function) {
             return function.apply(this.sql);
         }
 
