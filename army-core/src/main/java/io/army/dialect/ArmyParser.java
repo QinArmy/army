@@ -195,17 +195,16 @@ abstract class ArmyParser implements DialectParser {
     @Override
     public final Stmt update(final UpdateStatement update, final boolean useMultiStmt, final Visible visible) {
         final _UpdateContext context;
+        final _UpdateContext parentContext;
+        final Stmt stmt;
         if (useMultiStmt) {
             final int batchSize = ((_BatchStatement) update).paramList().size();
-            context = this.handleUpdate(MultiStmtBatchContext.create(this, visible, batchSize), update, visible);
-        } else {
-            context = this.handleUpdate(null, update, visible);
-        }
-
-        final _UpdateContext parentContext;
-
-        final Stmt stmt;
-        if (context instanceof _MultiUpdateContext || (parentContext = context.parentContext()) == null) {
+            final MultiStmtBatchContext multiStmtContext;
+            multiStmtContext = MultiStmtBatchContext.create(this, visible, batchSize);
+            this.handleUpdate(multiStmtContext, update, visible);
+            stmt = multiStmtContext.build();
+        } else if ((context = this.handleUpdate(null, update, visible)) instanceof _MultiUpdateContext
+                || (parentContext = context.parentContext()) == null) {
             stmt = context.build();
         } else if (this.childUpdateMode == ChildUpdateMode.CTE) {
             assert context instanceof DomainUpdateContext;
@@ -224,7 +223,6 @@ abstract class ArmyParser implements DialectParser {
                 stmt = Stmts.pairBatch((BatchStmt) childStmt, (BatchStmt) parentStmt);
             }
         }
-        assert !useMultiStmt || stmt instanceof MultiStmtBatchStmt;
         return stmt;
     }
 
@@ -232,16 +230,16 @@ abstract class ArmyParser implements DialectParser {
     @Override
     public final Stmt delete(final DeleteStatement delete, boolean useMultiStmt, final Visible visible) {
         final _DeleteContext context;
-        if (useMultiStmt) {
-            final int batchSize = ((_BatchStatement) delete).paramList().size();
-            context = this.handleDelete(MultiStmtBatchContext.create(this, visible, batchSize), delete, visible);
-        } else {
-            context = this.handleDelete(null, delete, visible);
-        }
-
         final _DeleteContext parentContext;
         final Stmt stmt;
-        if (context instanceof _MultiDeleteContext || (parentContext = context.parentContext()) == null) {
+        if (useMultiStmt) {
+            final int batchSize = ((_BatchStatement) delete).paramList().size();
+            final MultiStmtBatchContext multiStmtContext;
+            multiStmtContext = MultiStmtBatchContext.create(this, visible, batchSize);
+            this.handleDelete(multiStmtContext, delete, visible);
+            stmt = multiStmtContext.build();
+        } else if ((context = this.handleDelete(null, delete, visible)) instanceof _MultiDeleteContext
+                || (parentContext = context.parentContext()) == null) {
             stmt = context.build();
         } else if (this.childUpdateMode == ChildUpdateMode.CTE) {
             assert context instanceof DomainDeleteContext;
@@ -265,9 +263,17 @@ abstract class ArmyParser implements DialectParser {
 
     @Override
     public final Stmt select(final SelectStatement select, final boolean useMultiStmt, final Visible visible) {
-        return this.handleSelect(null, select, visible)   //TODO
-                .build();
+        final Stmt stmt;
+        if (useMultiStmt) {
+            stmt = this.selectWithMultiSmt(MultiStmtBatchContext.create(this, visible), select)
+                    .build();
+        } else {
+            stmt = this.handleSelect(null, select, visible, null)
+                    .build();
+        }
+        return stmt;
     }
+
 
     @Override
     public final Stmt values(final Values values, final Visible visible) {
@@ -786,7 +792,7 @@ abstract class ArmyParser implements DialectParser {
 
     /**
      * @see #handleQuery(Query, _SqlContext)
-     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible, _SelectContext)
      * @see #handleValuesQuery(ValuesQuery, _SqlContext)
      * @see #handleValues(_SqlContext, Values, Visible)
      */
@@ -795,7 +801,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible, _SelectContext)
      * @see #handleQuery(Query, _SqlContext)
      */
     protected void parseSimpleQuery(_Query query, _SimpleQueryContext context) {
@@ -845,7 +851,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible, _SelectContext)
      * @see #handleQuery(Query, _SqlContext)
      * @see #handleValues(_SqlContext, Values, Visible)
      * @see #handleValuesQuery(ValuesQuery, _SqlContext)
@@ -1159,7 +1165,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible, _SelectContext)
      * @see #handleRowSet(RowSet, _SqlContext)
      * @see #handleSubQuery(SubQuery, _SqlContext)
      * @see #withSubQuery(boolean, List, _SqlContext, Consumer)
@@ -2114,16 +2120,48 @@ abstract class ArmyParser implements DialectParser {
         return context;
     }
 
+
+    /**
+     * @see #select(SelectStatement, boolean, Visible)
+     */
+    private MultiStatementContext selectWithMultiSmt(final MultiStatementContext multiStmtContext,
+                                                     final SelectStatement select) {
+        final int batchSize = ((_BatchStatement) select).paramList().size();
+        final Visible visible = multiStmtContext.visible();
+
+
+        _SelectContext context = null, tempContext;
+        MultiStmt.QueryStmt queryStmt = null;
+
+        multiStmtContext.batchStmtStart(batchSize);
+        for (int i = 0; i < batchSize; i++) {
+            if (i == 0) {
+                context = this.handleSelect(multiStmtContext, select, visible, null);
+                queryStmt = Stmts.queryStmtItem((_StmtParams) context);
+            } else {
+                tempContext = this.handleSelect(multiStmtContext, select, visible, context);
+                assert tempContext == context;
+            }
+            multiStmtContext.addBatchItem(queryStmt);
+        }
+
+        return multiStmtContext.batchStmtEnd();
+    }
+
     /**
      * @see #select(SelectStatement, boolean, Visible)
      * @see #handleQuery(Query, _SqlContext)
      */
-    private _SelectContext handleSelect(final @Nullable _SqlContext outerContext, final SelectStatement stmt
-            , final Visible visible) {
+    private _SelectContext handleSelect(final @Nullable _SqlContext outerContext, final SelectStatement stmt,
+                                        final Visible visible, final @Nullable _SelectContext prevContext) {
         stmt.prepared();
         final _SelectContext context;
         if (stmt instanceof _Query) {
-            context = SimpleSelectContext.create(outerContext, stmt, this, visible);
+            if (prevContext == null) {
+                context = SimpleSelectContext.create(outerContext, stmt, this, visible);
+            } else {
+                context = prevContext;
+            }
             if (stmt instanceof StandardQuery) {
                 _SQLConsultant.assertStandardQuery(stmt);
                 this.parseStandardQuery((_StandardQuery) stmt, (_SimpleQueryContext) context);
@@ -2133,15 +2171,17 @@ abstract class ArmyParser implements DialectParser {
             }
         } else if (stmt instanceof _UnionRowSet) {
             _SQLConsultant.assertUnionRowSet(stmt);
-            context = ParensSelectContext.create(outerContext, stmt, this, visible);
+            if (prevContext == null) {
+                context = ParensSelectContext.create(outerContext, stmt, this, visible);
+            } else {
+                context = prevContext;
+            }
             final _UnionRowSet union = (_UnionRowSet) stmt;
             this.handleQuery((Query) union.leftRowSet(), context);
-
             if (this.validateUnionType) {
-
+                this.validateUnionType(union.unionType());
             }
-            context.sqlBuilder().append(union.unionType().spaceRender());
-
+            context.sqlBuilder().append(union.unionType().spaceWords);
             this.handleRowSet(union.rightRowSet(), context);
         } else if (stmt instanceof _ParensRowSet) {
             if (stmt instanceof StandardQuery) {
@@ -2149,17 +2189,15 @@ abstract class ArmyParser implements DialectParser {
             } else {
                 this.assertRowSet(stmt);
             }
-            final _ParenRowSetContext parenContext;
-            if (((_Statement._WithClauseSpec) stmt).cteList().size() > 0) {
+            if (prevContext == null) {
                 context = ParensSelectContext.create(outerContext, stmt, this, visible);
-
-                this.parseWithClause((_Statement._WithClauseSpec) stmt, context);
-                parenContext = ParensSelectContext.create(context, stmt, this, visible);
             } else {
-                parenContext = ParensSelectContext.create(outerContext, stmt, this, visible);
-                context = (_SelectContext) parenContext;
+                context = prevContext;
             }
-            this.handleParenRowSet(parenContext, (_ParensRowSet) stmt);
+            if (((_Statement._WithClauseSpec) stmt).cteList().size() > 0) {
+                this.parseWithClause((_Statement._WithClauseSpec) stmt, context);
+            }
+            this.handleParenRowSet((_ParenRowSetContext) context, (_ParensRowSet) stmt);
         } else {
             throw _Exceptions.unknownRowSetType(stmt);
         }
@@ -2167,7 +2205,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible, _SelectContext)
      * @see #handleQuery(Query, _SqlContext)
      */
     private void handleParenRowSet(final _ParenRowSetContext context, final _ParensRowSet parensRowSet) {
@@ -2522,7 +2560,7 @@ abstract class ArmyParser implements DialectParser {
     }
 
     /**
-     * @see #handleDelete(_SqlContext, DeleteStatement, Visible, Function)
+     * @see #handleDelete(_SqlContext, DeleteStatement, Visible)
      */
     private _DeleteContext handleDomainDelete(final @Nullable _SqlContext outerContext, final _DomainDelete stmt,
                                               final Visible visible) {
@@ -2738,7 +2776,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleDelete(_SqlContext, DeleteStatement, Visible, Function)
+     * @see #handleDelete(_SqlContext, DeleteStatement, Visible)
      * @see #handleDomainDelete(_SqlContext, _DomainDelete, Visible)
      */
     private void parseStandardSingleDelete(final _SingleDelete stmt, final _SingleDeleteContext context) {
@@ -2837,7 +2875,7 @@ abstract class ArmyParser implements DialectParser {
 
 
     /**
-     * @see #handleSelect(_SqlContext, SelectStatement, Visible)
+     * @see #handleSelect(_SqlContext, SelectStatement, Visible, _SelectContext)
      * @see #handleSubQuery(SubQuery, _SqlContext)
      */
     private void parseStandardQuery(final _StandardQuery stmt, final _SimpleQueryContext context) {

@@ -15,6 +15,7 @@ import java.util.List;
  * This class is base class of following <ul>
  * <li>{@link NarrowDmlStmtContext}</li>
  * <li>{@link MultiTableQueryContext}</li>
+ * <li>{@link ParensSelectContext}</li>
  * </ul>
  * </p>
  *

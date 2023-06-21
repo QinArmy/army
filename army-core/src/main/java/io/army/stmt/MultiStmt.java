@@ -67,7 +67,7 @@ public interface MultiStmt extends Stmt {
 
     interface QueryStmt extends StmtItem {
 
-        List<Selection> selectionList();
+        List<? extends Selection> selectionList();
 
 
     }

@@ -2,36 +2,34 @@ package io.army.dialect;
 
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.criteria.impl.inner._BatchStatement;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._Statement;
+import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
+import io.army.stmt.MultiStmt;
 import io.army.stmt.MultiStmtBatchStmt;
 import io.army.stmt.Stmts;
-import io.army.util._Exceptions;
+import io.army.util._Collections;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 
 final class MultiStmtBatchContext extends StatementContext implements MultiStatementContext {
 
-    static MultiStmtBatchContext create(ArmyParser parser, Visible visible, int batchSize) {
-        if (batchSize < 1) {
-            throw new IllegalArgumentException();
-        }
-        return new MultiStmtBatchContext(parser, visible, batchSize);
+    static MultiStmtBatchContext create(ArmyParser parser, Visible visible) {
+        return new MultiStmtBatchContext(parser, visible);
     }
 
 
-    private final int batchSize;
+    private int batchSize = -1;
 
     private boolean optimistic;
 
     private List<? extends Selection> selectionList;
 
-    private MultiStmtBatchContext(ArmyParser parser, Visible visible, int batchSize) {
+    private MultiStmt.StmtItem batchFirstItem;
+
+    private int batchNumber;
+
+    private MultiStmtBatchContext(ArmyParser parser, Visible visible) {
         super(null, parser, visible);
-        this.batchSize = batchSize;
     }
 
     @Override
@@ -39,54 +37,67 @@ final class MultiStmtBatchContext extends StatementContext implements MultiState
         return this.optimistic;
     }
 
+
     @Override
-    public <S extends _Statement, C extends _PrimaryContext> void appendStmt(final BiConsumer<S, C> consumer,
-                                                                             final S statement, final C context) {
-        //no bug,never here
-        throw new UnsupportedOperationException();
+    public void batchStmtStart(final int batchSize) {
+        if (this.batchSize > 0) {
+            // no bug,never here
+            throw new IllegalStateException();
+        } else if (batchSize < 1) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        this.batchSize = batchSize;
+        this.batchNumber = 0;
+    }
+
+    @Override
+    public void addBatchItem(final @Nullable MultiStmt.StmtItem item) {
+        final int batchSize = this.batchSize;
+        if (batchSize < 1) {
+            // no bug,never here
+            throw new IllegalStateException();
+        } else if (this.batchNumber++ >= batchSize) {
+            // no bug,never here
+            throw new IllegalStateException();
+        }
+
+        final MultiStmt.StmtItem firstItem = this.batchFirstItem;
+        if (firstItem == null) {
+            if (item == null) {
+                // no bug,never here
+                throw new NullPointerException();
+            }
+            this.batchFirstItem = item;
+        } else if (firstItem != item) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+
+        this.sqlBuilder.append(_Constant.SPACE_SEMICOLON_TWO_LINE);
 
     }
 
     @Override
-    public <S extends _Statement, C extends BatchSpecContext> void appendBatch(final BiConsumer<S, C> consumer,
-                                                                               final S statement, final C context) {
-
+    public MultiStatementContext batchStmtEnd() {
         final int batchSize = this.batchSize;
-        final StringBuilder sqlBuilder = this.sqlBuilder;
-        if (!(statement instanceof _BatchStatement)
-                || batchSize != context.groupSize()
-                || statement instanceof _Insert
-                || context.sqlBuilder() != sqlBuilder) {
-            //no bug,never here
-            throw new IllegalArgumentException();
-        } else if (this.selectionList != null) {
-            //no bug,never here
+        if (batchSize < 1) {
+            // no bug,never here
             throw new IllegalStateException();
         }
-
-
-        this.optimistic = context.hasOptimistic();
-        this.selectionList = context.selectionList();
-
-        for (int i = 0; i < batchSize; i++) {
-            if (i > 0) {
-                sqlBuilder.append(_Constant.SPACE_SEMICOLON_TWO_LINE);
-            }
-            if (context.nextGroup() != i) {
-                //no bug,never here
-                throw new IllegalArgumentException("context batch index error");
-            }
-            consumer.accept(statement, context);
-
+        if (this.batchNumber != batchSize) {
+            // no bug,never here
+            throw new IllegalStateException("item count error");
         }
-
-        if (this.hasParam()) {
-            throw _Exceptions.multiStmtDontSupportParam();
-        } else if (!this.hasNamedLiteral()) {
-            throw _Exceptions.multiStmtForBatchRequiredNamedLiteral();
+        final MultiStmt.StmtItem firstItem = this.batchFirstItem;
+        assert firstItem != null;
+        this.optimistic = firstItem.hasOptimistic();
+        if (firstItem instanceof MultiStmt.QueryStmt) {
+            this.selectionList = ((MultiStmt.QueryStmt) firstItem).selectionList();
+        } else {
+            this.selectionList = _Collections.emptyList();
         }
-
-
+        return this;
     }
 
     @Override

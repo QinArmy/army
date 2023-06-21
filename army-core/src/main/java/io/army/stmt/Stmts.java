@@ -121,6 +121,10 @@ public abstract class Stmts {
         return new MultiStmtBatchStmtImpl(params, groupList);
     }
 
+    public static MultiStmt.QueryStmt queryStmtItem(_StmtParams params) {
+        return new QueryStmtItem(params.hasOptimistic(), params.selectionList());
+    }
+
 
     private static final class MinSimpleStmt implements io.army.stmt.SimpleStmt {
 
@@ -621,6 +625,34 @@ public abstract class Stmts {
 
 
     }//AssignmentPostStmt
+
+
+    private static final class QueryStmtItem implements MultiStmt.QueryStmt {
+
+        private final boolean optimistic;
+
+        private final List<? extends Selection> selectionList;
+
+        /**
+         * @param selectionList unmodified list
+         */
+        private QueryStmtItem(boolean optimistic, List<? extends Selection> selectionList) {
+            this.optimistic = optimistic;
+            this.selectionList = selectionList;
+        }
+
+        @Override
+        public boolean hasOptimistic() {
+            return this.optimistic;
+        }
+
+        @Override
+        public List<? extends Selection> selectionList() {
+            return this.selectionList;
+        }
+
+
+    }//QueryStmtItem
 
 
     private static IllegalStateException duplicateId(PrimaryFieldMeta<?> field) {
