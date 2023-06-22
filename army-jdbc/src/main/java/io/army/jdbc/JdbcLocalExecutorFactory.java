@@ -44,6 +44,12 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
 
 
     @Override
+    void closeDataSource(final String dataSourceCloseMethod) throws DataAccessException {
+        doCloseDataSource(this.dataSource, dataSourceCloseMethod);
+    }
+
+
+    @Override
     Connection getConnection() throws DataAccessException {
         try {
             return this.dataSource.getConnection();

@@ -1,5 +1,6 @@
 package io.army.dialect;
 
+import io.army.annotation.GeneratorType;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.CriteriaException;
 import io.army.generator.FieldGenerator;
@@ -138,6 +139,9 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
         field = nonChild.id();
         if (field.generatorType() == null && wrapper.isNullValueParam(field)) {
             throw _Exceptions.nonNullField(field);
+        }
+        if (field.generatorType() == GeneratorType.POST) {
+            wrapper.set(field, null);
         }
 
 

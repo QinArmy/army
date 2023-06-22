@@ -22,7 +22,7 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<Dialect> DIALECT = new ArmyKey<>("dialect", Dialect.class, null);
 
-    public static final ArmyKey<Boolean> DATASOURCE_CLOSE = new ArmyKey<>("datasource.close", Boolean.class, Boolean.FALSE);
+    public static final ArmyKey<String> DATASOURCE_CLOSE_METHOD = new ArmyKey<>("datasource.close.method", String.class, null);
 
     public static final ArmyKey<ZoneOffset> ZONE_OFFSET = new ArmyKey<>("zone.offset", ZoneOffset.class, null);
 

@@ -11,6 +11,8 @@ import io.army.sync.executor.ExecutorEnv;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.MetaExecutor;
 
+import javax.sql.CommonDataSource;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 
 abstract class JdbcExecutorFactory implements ExecutorFactory {
@@ -38,6 +40,8 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
 
     final boolean databaseSessionHolder;
 
+    private final String dataSourceCloseMethod;
+
     private boolean closed;
 
     JdbcExecutorFactory(final ExecutorEnv executorEnv, final int methodFlag) {
@@ -59,6 +63,7 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
         }
 
         this.databaseSessionHolder = this.env.getOrDefault(ArmyKey.DATABASE_SESSION_HOLDER);
+        this.dataSourceCloseMethod = this.env.get(ArmyKey.DATASOURCE_CLOSE_METHOD);
 
     }
 
@@ -77,7 +82,14 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
 
     @Override
     public final void close() throws DataAccessException {
+        if (this.closed) {
+            return;
+        }
         synchronized (this) {
+            final String dataSourceCloseMethod = this.dataSourceCloseMethod;
+            if (dataSourceCloseMethod != null) {
+                this.closeDataSource(dataSourceCloseMethod);
+            }
             this.closed = true;
         }
     }
@@ -90,12 +102,26 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
 
     abstract Connection getConnection() throws DataAccessException;
 
+    abstract void closeDataSource(String dataSourceCloseMethod) throws DataAccessException;
+
 
     final void assertFactoryOpen() {
         if (this.closed) {
             String m;
             m = String.format("%s have closed.", this);
             throw new DataAccessException(m);
+        }
+    }
+
+
+    static void doCloseDataSource(final CommonDataSource dataSource, final String dataSourceCloseMethod)
+            throws DataAccessException {
+        final Method method;
+        try {
+            method = dataSource.getClass().getMethod(dataSourceCloseMethod);
+            method.invoke(dataSource);
+        } catch (Throwable e) {
+            throw new DataAccessException(e);
         }
     }
 

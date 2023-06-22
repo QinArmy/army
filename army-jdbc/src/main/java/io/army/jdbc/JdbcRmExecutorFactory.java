@@ -51,6 +51,10 @@ final class JdbcRmExecutorFactory extends JdbcExecutorFactory implements RmExecu
         }
     }
 
+    @Override
+    void closeDataSource(String dataSourceCloseMethod) throws DataAccessException {
+        doCloseDataSource(this.dataSource, dataSourceCloseMethod);
+    }
 
     private static BiFunction<JdbcRmExecutorFactory, XAConnection, RmStmtExecutor> rmFunction(final Database database) {
         final BiFunction<JdbcRmExecutorFactory, XAConnection, RmStmtExecutor> function;

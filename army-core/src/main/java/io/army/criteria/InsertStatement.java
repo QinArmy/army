@@ -152,24 +152,18 @@ public interface InsertStatement extends DmlStatement {
     /**
      * @since 1.0
      */
-    interface _ColumnDefaultClause<T, CR> {
+    interface _ColumnDefaultClause<T, R> {
 
-        CR defaultValue(FieldMeta<T> field, Expression value);
+        R defaultValue(FieldMeta<T> field, Expression value);
 
-        CR defaultValue(FieldMeta<T> field, Supplier<Expression> supplier);
+        R defaultValue(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        CR defaultValue(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+        R defaultValue(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        CR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, Expression> operator,
-                        Expression expression);
+        <E> R defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, @Nullable E value);
 
-        CR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator,
-                        @Nullable Object value);
-
-        <E> CR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier);
-
-        CR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator,
-                        Function<String, ?> function, String keyName);
+        <K, V> R defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
+                              Function<K, V> function, K key);
 
     }
 

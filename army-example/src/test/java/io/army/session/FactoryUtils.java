@@ -48,8 +48,10 @@ public abstract class FactoryUtils {
             default:
                 throw _Exceptions.unexpectedEnum(database);
         }
-        map.put(ArmyKey.DATASOURCE_CLOSE.name, Boolean.TRUE);
+        map.put(ArmyKey.DATASOURCE_CLOSE_METHOD.name, "close");
         map.put(ArmyKey.DDL_MODE.name, DdlMode.UPDATE);
+        map.put(ArmyKey.SQL_LOG_SHOW.name, Boolean.TRUE);
+        map.put(ArmyKey.SQL_LOG_DEBUG.name, Boolean.TRUE);
         return StandardEnvironment.from(map);
     }
 

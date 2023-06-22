@@ -805,27 +805,15 @@ abstract class InsertSupports {
         }
 
         @Override
-        public final DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Expression, Expression> operator,
-                                     Expression expression) {
-            return this.defaultValue(field, operator.apply(field, expression));
-        }
-
-        @Override
-        public final DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator,
-                                     @Nullable Object value) {
+        public final <E> DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator,
+                                         @Nullable E value) {
             return this.defaultValue(field, operator.apply(field, value));
         }
 
         @Override
-        public final <E> DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator,
-                                         Supplier<E> supplier) {
-            return this.defaultValue(field, operator.apply(field, supplier.get()));
-        }
-
-        @Override
-        public final DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> operator,
-                                     Function<String, ?> function, String keyName) {
-            return this.defaultValue(field, operator.apply(field, function.apply(keyName)));
+        public final <K, V> DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
+                                            Function<K, V> function, K key) {
+            return this.defaultValue(field, operator.apply(field, function.apply(key)));
         }
 
         @Override

@@ -485,10 +485,10 @@ final class PostgreDialectParser extends PostgreParser {
         this.safeObjectName(insertTable, sqlBuilder);
 
         // 3. row alias
-        final String safeRowAlias;
-        if ((safeRowAlias = context.safeRowAlias()) != null) {
+        final String safeTableAlias;
+        if ((safeTableAlias = context.safeTableAlias()) != null) {
             sqlBuilder.append(_Constant.SPACE_AS_SPACE)
-                    .append(safeRowAlias);
+                    .append(safeTableAlias);
         }
 
         // 4. append column list
