@@ -7,6 +7,7 @@ import io.army.dialect.postgre.PostgreDialect;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.StandardEnvironment;
+import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.sync.LocalFactoryBuilder;
 import io.army.sync.LocalSessionFactory;
 import io.army.util._Collections;
@@ -29,24 +30,25 @@ public abstract class FactoryUtils {
                 .packagesToScan(Collections.singletonList("io.army.example.bank.domain"))
                 .datasource(dataSource)
                 .environment(createEnvironment(database))
+                .fieldGeneratorFactory(new SimpleFieldGeneratorFactory())
                 .build();
     }
 
 
     private static ArmyEnvironment createEnvironment(final Database database) {
-        final Map<String, String> map = _Collections.hashMap();
-        map.put(ArmyKey.DIALECT.name, database.name());
+        final Map<String, Object> map = _Collections.hashMap();
+        map.put(ArmyKey.DATABASE.name, database);
         switch (database) {
             case MySQL:
-                map.put(ArmyKey.DIALECT.name, MySQLDialect.MySQL80.name());
+                map.put(ArmyKey.DIALECT.name, MySQLDialect.MySQL80);
                 break;
             case PostgreSQL:
-                map.put(ArmyKey.DIALECT.name, PostgreDialect.POSTGRE15.name());
+                map.put(ArmyKey.DIALECT.name, PostgreDialect.POSTGRE15);
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(database);
         }
-        map.put(ArmyKey.DATASOURCE_CLOSE.name, "true");
+        map.put(ArmyKey.DATASOURCE_CLOSE.name, Boolean.TRUE);
         return StandardEnvironment.from(map);
     }
 

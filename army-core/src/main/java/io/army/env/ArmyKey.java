@@ -16,7 +16,7 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<Boolean> READ_ONLY = new ArmyKey<>("readonly", Boolean.class, Boolean.FALSE);
 
-    public static final ArmyKey<DdlMode> DDL_MODE = new ArmyKey<>("ddl.mode", DdlMode.class, DdlMode.VALIDATE_UNIQUE);
+    public static final ArmyKey<DdlMode> DDL_MODE = new ArmyKey<>("ddl.mode", DdlMode.class, DdlMode.VALIDATE);
 
     public static final ArmyKey<Database> DATABASE = new ArmyKey<>("database", Database.class, null);
 

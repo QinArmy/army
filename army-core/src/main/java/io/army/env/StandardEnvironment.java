@@ -1,7 +1,7 @@
 package io.army.env;
 
 import io.army.dialect.Database;
-import io.army.dialect.Dialect;
+import io.army.util._Exceptions;
 import io.qinarmy.env.convert.Converter;
 import io.qinarmy.env.convert.ConverterManager;
 import io.qinarmy.env.convert.ImmutableConverterManager;
@@ -12,23 +12,23 @@ import java.util.Map;
 
 public final class StandardEnvironment implements ArmyEnvironment {
 
-    public static StandardEnvironment from(Map<String, String> map) {
+    public static StandardEnvironment from(Map<String, Object> map) {
         final ConverterManager converterManager;
         converterManager = ImmutableConverterManager.create(consumer -> {
         });
         return new StandardEnvironment(converterManager, map);
     }
 
-    public static StandardEnvironment create(ConverterManager converterManager, Map<String, String> map) {
+    public static StandardEnvironment create(ConverterManager converterManager, Map<String, Object> map) {
         return new StandardEnvironment(converterManager, map);
     }
 
 
     private final ConverterManager converterManager;
 
-    private final Map<String, String> map;
+    private final Map<String, Object> map;
 
-    private StandardEnvironment(ConverterManager converterManager, Map<String, String> map) {
+    private StandardEnvironment(ConverterManager converterManager, Map<String, Object> map) {
         this.converterManager = converterManager;
         this.map = Collections.unmodifiableMap(new HashMap<>(map));
     }
@@ -36,33 +36,49 @@ public final class StandardEnvironment implements ArmyEnvironment {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T get(final ArmyKey<T> key) {
-        final String textValue;
-        textValue = this.map.get(key.name);
-        if (textValue == null) {
-            return null;
-        }
+        final Object userValue;
+        userValue = this.map.get(key.name);
+
         final Class<T> javaType = key.javaType;
-        if (javaType == String.class) {
-            return (T) textValue;
+        final T value;
+        if (userValue == null) {
+            value = key.defaultValue;
+        } else if (javaType.isInstance(userValue)) {
+            value = (T) userValue;
+        } else if (!(userValue instanceof String)) {
+            throw _Exceptions.convertFail(key, userValue, null);
+        } else if (key == ArmyKey.DIALECT) {
+            final Database database;
+            database = this.getRequired(ArmyKey.DATABASE);
+            try {
+                value = (T) database.dialectOf((String) userValue);
+            } catch (IllegalArgumentException e) {
+                String m = String.format("%s value error,couldn't get %s.", ArmyKey.DIALECT.name, ArmyKey.DIALECT);
+                throw new IllegalStateException(m);
+            }
+        } else {
+            final Converter<T> converter;
+            converter = this.converterManager.getConverter(javaType);
+            if (converter == null) {
+                String m = String.format("Not found %s for key[%s]", Converter.class.getName(), key.name);
+                throw new IllegalStateException(m);
+            }
+
+            try {
+                value = converter.convert((String) userValue);
+            } catch (IllegalArgumentException e) {
+                throw _Exceptions.convertFail(key, userValue, e);
+            }
         }
-        final Converter<T> converter;
-        converter = this.converterManager.getConverter(javaType);
-        if (converter == null) {
-            String m = String.format("Not found %s for key[%s]", Converter.class.getName(), key.name);
-            throw new IllegalStateException(m);
-        }
-        return converter.convert(textValue);
+
+        return value;
     }
 
-    @SuppressWarnings("unchecked")
+
     @Override
     public <T> T getRequired(final ArmyKey<T> key) {
         final T value;
-        if (key == ArmyKey.DIALECT) {
-            value = (T) getDialect();
-        } else {
-            value = this.get(key);
-        }
+        value = this.get(key);
         if (value == null) {
             String m = String.format("value of %s is null", key.name);
             throw new IllegalStateException(m);
@@ -72,46 +88,13 @@ public final class StandardEnvironment implements ArmyEnvironment {
 
     @Override
     public <T> T getOrDefault(ArmyKey<T> key) {
-        final T defaultValue;
-        defaultValue = key.defaultValue;
-        if (defaultValue == null) {
+        final T value;
+        value = this.get(key);
+        if (value == null) {
             String m = String.format("%s %s no default value.", ArmyKey.class.getName(), key.name);
             throw new IllegalArgumentException(m);
         }
-        final T value;
-        value = get(key);
-        return value == null ? defaultValue : value;
-    }
-
-
-    private Dialect getDialect() {
-        String textValue;
-        textValue = this.map.get(ArmyKey.DATABASE.name);
-        if (textValue == null) {
-            String m = String.format("Not specified %s value,couldn't get %s.", ArmyKey.DATABASE, ArmyKey.DIALECT);
-            throw new IllegalStateException(m);
-        }
-        final Database database;
-        try {
-            database = Database.valueOf(textValue);
-        } catch (IllegalArgumentException e) {
-            String m = String.format("%s value error,couldn't get %s.", ArmyKey.DATABASE, ArmyKey.DIALECT);
-            throw new IllegalStateException(m);
-        }
-
-        textValue = this.map.get(ArmyKey.DIALECT.name);
-
-        if (textValue == null) {
-            String m = String.format("%s value is null,couldn't get %s.", ArmyKey.DIALECT.name, ArmyKey.DIALECT);
-            throw new IllegalStateException(m);
-        }
-        try {
-            return database.dialectOf(textValue);
-        } catch (IllegalArgumentException e) {
-            String m = String.format("%s value error,couldn't get %s.", ArmyKey.DIALECT.name, ArmyKey.DIALECT);
-            throw new IllegalStateException(m);
-        }
-
+        return value;
     }
 
 

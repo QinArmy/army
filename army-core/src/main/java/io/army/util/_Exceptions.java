@@ -1099,4 +1099,15 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
+    public static IllegalStateException convertFail(ArmyKey<?> key, Object userValue, @Nullable Throwable cause) {
+        String m = String.format("couldn't convert key[%s] %s type to %s", key.name,
+                userValue.getClass().getName(), key.javaType.getName());
+        final IllegalStateException e;
+        if (cause == null) {
+            e = new IllegalStateException(m);
+        } else {
+            e = new IllegalStateException(m, cause);
+        }
+        return e;
+    }
 }

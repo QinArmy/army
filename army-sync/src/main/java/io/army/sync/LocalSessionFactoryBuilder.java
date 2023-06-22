@@ -211,7 +211,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
         if (codecs == null) {
             map = Collections.emptyMap();
         } else {
-            map = new HashMap<>((int) (codecs.size() / 0.75F));
+            map = _Collections.hashMap((int) (codecs.size() / 0.75F));
             for (FieldCodec codec : codecs) {
                 for (FieldMeta<?> fieldMeta : codec.fieldMetaSet()) {
                     if (map.putIfAbsent(fieldMeta, codec) == null) {
