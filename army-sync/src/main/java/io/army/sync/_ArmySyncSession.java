@@ -23,6 +23,9 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
         super(builder);
     }
 
+    protected _ArmySyncSession(String name, boolean readonly, Visible visible, boolean allowQueryInsert) {
+        super(name, readonly, visible, allowQueryInsert);
+    }
 
     @Nullable
     @Override

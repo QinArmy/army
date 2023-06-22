@@ -48,10 +48,16 @@ public interface SessionFactory {
 
     boolean isReactive();
 
-    boolean uniqueCache();
+    @Deprecated
+    default boolean uniqueCache() {
+        throw new UnsupportedOperationException();
+    }
 
 
-    Function<ArmyException, RuntimeException> exceptionFunction();
+    @Deprecated
+    default Function<ArmyException, RuntimeException> exceptionFunction() {
+        throw new UnsupportedOperationException();
+    }
 
 
     interface SessionBuilderSpec<B, S extends Session> {

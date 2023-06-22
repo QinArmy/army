@@ -121,8 +121,19 @@ public abstract class Stmts {
         return new MultiStmtBatchStmtImpl(params, groupList);
     }
 
-    public static MultiStmt.QueryStmt queryStmtItem(_StmtParams params) {
-        return new QueryStmtItem(params.hasOptimistic(), params.selectionList());
+    public static MultiStmt.StmtItem queryOrUpdateItem(final _StmtParams params) {
+        final List<? extends Selection> selectionList;
+        selectionList = params.selectionList();
+
+        final MultiStmt.StmtItem item;
+        if (selectionList.size() > 0) {
+            item = new QueryStmtItem(params.hasOptimistic(), selectionList);
+        } else if (params.hasOptimistic()) {
+            item = MultiStmt.UpdateStmt.OPTIMISTIC;
+        } else {
+            item = MultiStmt.UpdateStmt.NON_OPTIMISTIC;
+        }
+        return item;
     }
 
 

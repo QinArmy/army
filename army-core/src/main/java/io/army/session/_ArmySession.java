@@ -34,6 +34,12 @@ public abstract class _ArmySession implements Session {
 
     }
 
+    protected _ArmySession(String name, boolean readonly, Visible visible, boolean allowQueryInsert) {
+        this.name = name;
+        this.readonly = readonly;
+        this.visible = visible;
+        this.allowQueryInsert = allowQueryInsert;
+    }
 
     @Override
     public final String name() {

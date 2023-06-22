@@ -70,7 +70,7 @@ abstract class StatementContext implements _PrimaryContext, _StmtParams {
             } else {
                 this.paramConsumer = new ParamConsumerWithOuter(parentOrOuterContext.paramConsumer, this::currentRowNamedValue);
             }
-        } else if (parentOrOuterContext instanceof MultiStatementContext && this instanceof NarrowDmlContext) {
+        } else if (parentOrOuterContext instanceof MultiStmtContext && this instanceof NarrowDmlContext) {
             this.paramConsumer = new ParamConsumerWithOuter(parentOrOuterContext.paramConsumer, this::currentRowNamedValue);
         } else if (parentOrOuterContext == null) {
             this.paramConsumer = new ParamConsumer(null);

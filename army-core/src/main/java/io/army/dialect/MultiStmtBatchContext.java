@@ -11,7 +11,7 @@ import io.army.util._Collections;
 
 import java.util.List;
 
-final class MultiStmtBatchContext extends StatementContext implements MultiStatementContext {
+final class MultiStmtBatchContext extends StatementContext implements MultiStmtContext {
 
     static MultiStmtBatchContext create(ArmyParser parser, Visible visible) {
         return new MultiStmtBatchContext(parser, visible);
@@ -52,6 +52,18 @@ final class MultiStmtBatchContext extends StatementContext implements MultiState
     }
 
     @Override
+    public void startChildItem() {
+        //TODO for h2,firebird
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void appendItemForChild() {
+        //TODO for h2,firebird
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void addBatchItem(final @Nullable MultiStmt.StmtItem item) {
         final int batchSize = this.batchSize;
         if (batchSize < 1) {
@@ -79,7 +91,13 @@ final class MultiStmtBatchContext extends StatementContext implements MultiState
     }
 
     @Override
-    public MultiStatementContext batchStmtEnd() {
+    public void endChildItem() {
+        //TODO for h2,firebird
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public MultiStmtContext batchStmtEnd() {
         final int batchSize = this.batchSize;
         if (batchSize < 1) {
             // no bug,never here

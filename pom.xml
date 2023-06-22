@@ -41,6 +41,7 @@
         <mssql-jdbc.version>8.2.2.jre13</mssql-jdbc.version>
         <db2-jdbc.version>11.5.0.0</db2-jdbc.version>
         <mysql.versioin>8.0.28</mysql.versioin>
+        <postgresql.version>42.6.0</postgresql.version>
         <!-- javax  -->
         <jsr305.version>3.0.2</jsr305.version>
         <army.version>${project.version}</army.version>

@@ -6,7 +6,7 @@ import io.army.stmt.MultiStmt;
 
 import java.util.function.BiConsumer;
 
-interface MultiStatementContext extends _PrimaryContext {
+interface MultiStmtContext extends _PrimaryContext {
 
 
     default <S extends _Statement, C extends _PrimaryContext> void appendStmt(BiConsumer<S, C> consumer, S statement, C context) {
@@ -18,11 +18,17 @@ interface MultiStatementContext extends _PrimaryContext {
     }
 
 
+    void startChildItem();
+
+    void appendItemForChild();
+
+    void endChildItem();
+
     void batchStmtStart(int batchSize);
 
     void addBatchItem(MultiStmt.StmtItem item);
 
-    MultiStatementContext batchStmtEnd();
+    MultiStmtContext batchStmtEnd();
 
 
 }

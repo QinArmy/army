@@ -49,14 +49,13 @@ abstract class BatchSpecStatementContext extends StatementContext implements Bat
         }
 
 
-        if (this.paramList != null && parentOrOuterContext instanceof MultiStatementContext) {
+        if (this.paramList != null && parentOrOuterContext instanceof MultiStmtContext) {
             this.accessor = ObjectAccessorFactory.readOnlyFromInstance(this.paramList.get(0));
             this.multiStmtBatch = parentOrOuterContext instanceof MultiStmtBatchContext;
             this.paramIndex = 0;
         } else {
             this.accessor = null;
             this.multiStmtBatch = false;
-            ;
             this.paramIndex = -1;
 
         }
@@ -70,12 +69,12 @@ abstract class BatchSpecStatementContext extends StatementContext implements Bat
             // no bug,never here
             throw new IllegalStateException("don't support named literal.");
         }
-        final int currentIndex = this.paramIndex++;
-        if (currentIndex < 0 || currentIndex >= this.paramSize) {
-            String m = String.format("index[%s] not in [0,%s]", currentIndex, this.paramSize);
+        final int nextIndex = ++this.paramIndex;
+        if (nextIndex < 0 || nextIndex >= this.paramSize) {
+            String m = String.format("index[%s] not in [0,%s]", nextIndex, this.paramSize);
             throw new ArrayIndexOutOfBoundsException(m);
         }
-        return currentIndex;
+        return nextIndex;
     }
 
 

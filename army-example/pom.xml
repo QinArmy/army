@@ -50,6 +50,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>io.jdbd</groupId>
             <artifactId>jdbd-postgre</artifactId>
         </dependency>
