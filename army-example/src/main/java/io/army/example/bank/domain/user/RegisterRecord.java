@@ -6,8 +6,9 @@ import io.army.example.common.BaseVersionDomain;
 
 import java.time.LocalDateTime;
 
-@Table(name = "r_register_record", indexes = {@Index(name = "uni_request_no", fieldList = "requestNo", unique = true)}
-        , comment = "user register request record")
+@Table(name = "r_register_record",
+        indexes = {@Index(name = "r_register_record_uni_request_no", fieldList = "requestNo", unique = true)},
+        comment = "user register request record")
 public class RegisterRecord extends BaseVersionDomain<RegisterRecord> {
 
     @Generator(value = SNOWFLAKE, params = {@Param(name = START_TIME, value = startTime)})

@@ -1,5 +1,6 @@
 package io.army.jdbc;
 
+import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
@@ -55,10 +56,14 @@ final class JdbcMetaExecutor implements MetaExecutor {
 
     @Override
     public void executeDdl(final List<String> ddlList) throws DataAccessException {
+        final int size = ddlList.size();
+        if (size == 0) {
+            return;
+        }
         try (Statement stmt = this.conn.createStatement()) {
 
             // execute ddl
-            final int size = ddlList.size();
+
             final StringBuilder builder = new StringBuilder(size * 40);
             String ddl;
             for (int i = 0; i < size; i++) {
@@ -66,8 +71,10 @@ final class JdbcMetaExecutor implements MetaExecutor {
                     builder.append("\n\n");
                 }
                 ddl = ddlList.get(i);
-                builder.append(ddl);
                 stmt.addBatch(ddl);
+
+                builder.append(ddl)
+                        .append(_Constant.SPACE_SEMICOLON);
             }
             LOG.info(builder.toString());
             stmt.executeBatch();

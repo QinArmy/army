@@ -4,10 +4,11 @@ import io.army.dialect.Database;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
+import io.army.meta.TableMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 
-final class MySQLComparer extends AbstractSchemaComparer {
+final class MySQLComparer extends ArmySchemaComparer {
 
     static MySQLComparer create(ServerMeta serverMeta) {
         return new MySQLComparer(serverMeta);
@@ -173,7 +174,7 @@ final class MySQLComparer extends AbstractSchemaComparer {
     }
 
     @Override
-    String primaryKeyName() {
+    String primaryKeyName(TableMeta<?> table) {
         return "PRIMARY";
     }
 

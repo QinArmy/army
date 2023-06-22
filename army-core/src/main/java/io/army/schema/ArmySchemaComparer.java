@@ -8,12 +8,12 @@ import io.army.util._Collections;
 
 import java.util.*;
 
-abstract class AbstractSchemaComparer implements _SchemaComparer {
+abstract class ArmySchemaComparer implements _SchemaComparer {
 
     final ServerMeta serverMeta;
 
 
-    AbstractSchemaComparer(ServerMeta serverMeta) {
+    ArmySchemaComparer(ServerMeta serverMeta) {
         this.serverMeta = serverMeta;
     }
 
@@ -74,7 +74,7 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
 
     abstract boolean supportTableComment();
 
-    abstract String primaryKeyName();
+    abstract String primaryKeyName(TableMeta<?> table);
 
 
     private void compareColumns(_TableInfo tableInfo, TableMeta<?> table, _TableResult.Builder tableBuilder) {
@@ -114,8 +114,8 @@ abstract class AbstractSchemaComparer implements _SchemaComparer {
 
     }
 
-    private <T> void compareIndex(_TableInfo tableInfo, TableMeta<T> table
-            , _TableResult.Builder tableBuilder) {
+    private <T> void compareIndex(final _TableInfo tableInfo, final TableMeta<T> table,
+                                  final _TableResult.Builder tableBuilder) {
 
         final Map<String, _IndexInfo> indexMap = tableInfo.indexMap();
         _IndexInfo indexInfo;

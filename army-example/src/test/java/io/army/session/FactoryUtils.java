@@ -49,6 +49,7 @@ public abstract class FactoryUtils {
                 throw _Exceptions.unexpectedEnum(database);
         }
         map.put(ArmyKey.DATASOURCE_CLOSE.name, Boolean.TRUE);
+        map.put(ArmyKey.DDL_MODE.name, DdlMode.UPDATE);
         return StandardEnvironment.from(map);
     }
 

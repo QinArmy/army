@@ -6,7 +6,7 @@ import io.army.annotation.Index;
 import io.army.annotation.Table;
 
 @Table(name = "history_china_province", indexes =
-@Index(name = "uni_provincial_capital", fieldList = "provincialCapital", unique = true),
+@Index(name = "history_china_province_uni_provincial_capital", fieldList = "provincialCapital", unique = true),
         comment = "history china province")
 @DiscriminatorValue(RegionType.Constant.PROVINCE)
 public class HistoryChinaProvince extends HistoryChinaRegion<HistoryChinaProvince> {

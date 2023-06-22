@@ -562,6 +562,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 type = PostgreSqlType.VARCHAR_ARRAY;
                 break;
             case "text[]":
+            case "txid_snapshot[]":
                 type = PostgreSqlType.TEXT_ARRAY;
                 break;
             case "bytea[]":

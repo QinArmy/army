@@ -15,7 +15,7 @@ public class JdbcTests {
 
     @Test
     public void connection() throws Exception {
-        try (Connection conn = createConnection()) {
+        try (Connection conn = createPostgreConnection()) {
             String sql = "INSERT INTO\n" +
                     "               china_region(`name`, region_type)\n" +
                     "               VALUES\n" +
@@ -43,8 +43,37 @@ public class JdbcTests {
     }
 
 
+    @Test
+    public void indexMeta() throws Exception {
+        try (Connection conn = createPostgreConnection()) {
+            final DatabaseMetaData metaData;
+            metaData = conn.getMetaData();
+
+            try (ResultSet resultSet = metaData.getIndexInfo("army_bank", "public", "china_region", true, true)) {
+                while (resultSet.next()) {
+                    LOG.debug(resultSet.getString("INDEX_NAME"));
+                }
+
+            }
+
+        }
+    }
+
+
     private Connection createConnection() {
         String url = "jdbc:mysql://localhost:3306/army_bank?sslMode=DISABLED";
+        Properties properties = new Properties();
+        properties.setProperty("user", "army_w");
+        properties.setProperty("password", "army123");
+        try {
+            return DriverManager.getConnection(url, properties);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Connection createPostgreConnection() {
+        String url = "jdbc:postgresql://localhost:5432/army_bank";
         Properties properties = new Properties();
         properties.setProperty("user", "army_w");
         properties.setProperty("password", "army123");

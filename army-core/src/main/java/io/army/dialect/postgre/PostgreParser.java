@@ -1133,6 +1133,17 @@ abstract class PostgreParser extends _ArmyDialectParser {
 //            case LINE_SEGMENT:
 //
 //            case TSTZRANGE:
+//           case INT4MULTIRANGE:
+//            case INT8MULTIRANGE:
+//            case NUMMULTIRANGE:
+//            case DATEMULTIRANGE:
+//            case TSMULTIRANGE:
+//            case TSTZMULTIRANGE:
+//
+//            case PG_SNAPSHOT:
+//            case PG_LSN:
+//            case LSEG:
+//            case ACLITEM:
 //
 //            case BIT_ARRAY:
 //            case XML_ARRAY:
@@ -1176,6 +1187,13 @@ abstract class PostgreParser extends _ArmyDialectParser {
 //            case TIMESTAMP_ARRAY:
 //            case TSTZRANGE_ARRAY:
 //            case TIMESTAMPTZ_ARRAY:
+
+//    case INT4MULTIRANGE_ARRAY:
+//            case INT8MULTIRANGE_ARRAY:
+//            case NUMMULTIRANGE_ARRAY:
+//            case DATEMULTIRANGE_ARRAY:
+//            case TSMULTIRANGE_ARRAY:
+//            case TSTZMULTIRANGE_ARRAY:
 //                break;
 //            default:
 //                throw _Exceptions.unexpectedEnum((PostgreType) type);
