@@ -1,9 +1,9 @@
 package io.army.session.suite.postgre;
 
 
+import com.alibaba.fastjson2.JSON;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
-import io.army.criteria.LiteralMode;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
@@ -121,7 +121,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         // insert data
         stmt = Postgres.singleInsert()
-                .literalMode(LiteralMode.LITERAL)
+                //.literalMode(LiteralMode.LITERAL)
                 .insertInto(ChinaRegion_.T)
                 .values(regionList)
                 .returningAll()
@@ -134,8 +134,8 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         // conflict stmt
 
         stmt = Postgres.singleInsert()
-                .ignoreReturnIds()  // required ,because exists doNothing
-                .literalMode(LiteralMode.LITERAL)
+                .ignoreReturnIds()  // required ,because ChinaRegion_ contain visible field
+                //.literalMode(LiteralMode.LITERAL)
                 .insertInto(ChinaRegion_.T).as("c")
                 .leftParen(ChinaRegion_.name, ChinaRegion_.parentId, ChinaRegion_.regionGdp)
                 .rightParen()
@@ -153,7 +153,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         Assert.assertTrue(stmt instanceof _ReturningDml);
         resultList = session.query(stmt, ChinaRegion_.CLASS);
         Assert.assertEquals(resultList.size(), regionList.size());
-
+        LOG.debug("{}", JSON.toJSONString(resultList));
         releaseSyncSession(session);
 
     }
