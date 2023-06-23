@@ -574,7 +574,7 @@ final class PostgreDialectParser extends PostgreParser {
         }
 
         //3. below conflict_action clause
-        if (clause.isIgnorableConflict()) {
+        if (clause.isDoNothing()) {
             if (clause.updateSetClauseList().size() > 0 || clause.updateSetPredicateList().size() > 0) {
                 throw _Exceptions.castCriteriaApi();
             }
@@ -634,7 +634,7 @@ final class PostgreDialectParser extends PostgreParser {
                 sqlBuilder.append(_Constant.SPACE_WHERE);
             }
             if (insertTable instanceof SingleTableMeta) {
-                this.visiblePredicate((SingleTableMeta<?>) insertTable, null, context, visibleIsFirstPredicate);
+                this.visiblePredicate((SingleTableMeta<?>) insertTable, context.safeTableAlias(), context, visibleIsFirstPredicate);
             } else {
                 this.parentVisiblePredicate(context, visibleIsFirstPredicate);
             }

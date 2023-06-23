@@ -72,11 +72,6 @@ public final class UnsignedMediumIntType extends _NumericType._UnsignedIntegerTy
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
-    @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return IntegerType._convertToInt(this, nonNull, 0, MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }

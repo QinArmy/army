@@ -62,12 +62,6 @@ public final class DoubleType extends _NumericType._FloatNumericType {
         return type;
     }
 
-
-    @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
     @Override
     public Object convert(MappingEnv env, final Object nonNull) throws CriteriaException {
         return convertToDouble(this, nonNull, PARAM_ERROR_HANDLER_0);

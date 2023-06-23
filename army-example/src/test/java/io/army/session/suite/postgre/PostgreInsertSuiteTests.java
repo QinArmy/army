@@ -3,6 +3,7 @@ package io.army.session.suite.postgre;
 
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
@@ -86,7 +87,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         regionList = this.createReginList();
         final ReturningInsert stmt;
         stmt = Postgres.singleInsert()
-                .ignoreReturnIds()
+                .ignoreReturnIds()  // required ,because exists doNothing
                 .insertInto(ChinaRegion_.T).as("c")
                 .leftParen(ChinaRegion_.name, ChinaRegion_.parentId, ChinaRegion_.regionGdp)
                 .rightParen()
@@ -105,6 +106,56 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         Assert.assertEquals(resultList.size(), regionList.size());
 
         releaseSyncSession(session);
+    }
+
+    @Test
+    public void insertParentWithUpdateSet(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaRegion<?>> regionList;
+        regionList = this.createReginList();
+
+        List<ChinaRegion<?>> resultList;
+
+        ReturningInsert stmt;
+
+        // insert data
+        stmt = Postgres.singleInsert()
+                .literalMode(LiteralMode.LITERAL)
+                .insertInto(ChinaRegion_.T)
+                .values(regionList)
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+        resultList = session.query(stmt, ChinaRegion_.CLASS);
+        Assert.assertEquals(resultList.size(), regionList.size());
+
+        // conflict stmt
+
+        stmt = Postgres.singleInsert()
+                .ignoreReturnIds()  // required ,because exists doNothing
+                .literalMode(LiteralMode.LITERAL)
+                .insertInto(ChinaRegion_.T).as("c")
+                .leftParen(ChinaRegion_.name, ChinaRegion_.parentId, ChinaRegion_.regionGdp)
+                .rightParen()
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values(regionList)
+                .onConflict()
+                .leftParen(ChinaRegion_.name)
+                .comma(ChinaRegion_.regionType)
+                .rightParen()
+                .doUpdate()
+                .set(ChinaRegion_.name, Postgres::excluded)
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+        resultList = session.query(stmt, ChinaRegion_.CLASS);
+        Assert.assertEquals(resultList.size(), regionList.size());
+
+        releaseSyncSession(session);
+
     }
 
 

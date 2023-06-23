@@ -42,11 +42,6 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
-    @Override
     public BigDecimal convert(MappingEnv env, Object nonNull) throws CriteriaException {
         final BigDecimal value;
         value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0);

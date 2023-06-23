@@ -68,10 +68,6 @@ public final class ShortType extends _NumericType._IntegerType {
         return type;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public Short convert(MappingEnv env, Object nonNull) throws CriteriaException {

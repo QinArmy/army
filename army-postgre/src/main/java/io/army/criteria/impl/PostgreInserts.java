@@ -777,7 +777,7 @@ abstract class PostgreInserts extends InsertSupports {
             }
             List<_ConflictTargetItem> targetItemList = this.targetItemList;
             if (targetItemList == null) {
-                targetItemList = new ArrayList<>();
+                targetItemList = _Collections.arrayList();
                 this.targetItemList = targetItemList;
             } else if (!(targetItemList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.valuesClause.context);
@@ -867,7 +867,7 @@ abstract class PostgreInserts extends InsertSupports {
         @Override
         public boolean isIgnorableConflict() {
             //true,Postgre support DO NOTHING and conflict_target and WHERE
-            return this.doNothing;
+            return true;
         }
 
         @Override
@@ -1188,18 +1188,58 @@ abstract class PostgreInserts extends InsertSupports {
             return this;
         }
 
+
         @SuppressWarnings("unchecked")
         private List<? extends _SelectItem> effectiveReturningList() {
-            final List<_SelectItem> selectionList = this.returningList;
+            final List<_SelectItem> returningList = this.returningList;
             final List<? extends _SelectItem> effectiveList;
-            if (selectionList == PostgreSupports.EMPTY_SELECT_ITEM_LIST) {
-                effectiveList = (List<? extends _Selection>) this.effectiveFieldList();
-            } else if (selectionList == null || selectionList instanceof ArrayList) {
+            final _PostgreInsert._ConflictActionClauseResult conflictAction;
+
+            if (returningList == null || returningList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
+            } else if (returningList != PostgreSupports.EMPTY_SELECT_ITEM_LIST) {
+                effectiveList = returningList;
+            } else if ((conflictAction = this.conflictAction) == null) {
+                effectiveList = (List<? extends _Selection>) this.effectiveFieldList();
             } else {
-                effectiveList = selectionList;
+                effectiveList = this.doEffectiveFieldList(conflictAction.updateSetClauseList());
             }
+
             return effectiveList;
+        }
+
+        @SuppressWarnings("unchecked")
+        private List<? extends _Selection> doEffectiveFieldList(final List<_ItemPair> itemPairList) {
+            final List<? extends TableField> columnList = this.effectiveFieldList();
+            final int itemPairSize;
+            if (this.insertTable.fieldList() == columnList || (itemPairSize = itemPairList.size()) == 0) {
+                return (List<? extends _Selection>) columnList;
+            }
+            final int totalSize = columnList.size() + itemPairSize;
+            final Map<FieldMeta<?>, Boolean> fieldMap = _Collections.hashMap((int) (totalSize / 0.75f));
+            final List<_Selection> fieldList = _Collections.arrayList(totalSize);
+
+            FieldMeta<?> field;
+            for (TableField column : columnList) {
+                if (column instanceof FieldMeta) {
+                    field = (FieldMeta<?>) column;
+                } else if (column instanceof QualifiedField) {
+                    field = column.fieldMeta();
+                } else {
+                    throw _Exceptions.unknownColumn(column);
+                }
+                if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
+                    // no bug,never here
+                    throw new IllegalStateException("duplication field");
+                }
+                fieldList.add((_Selection) field);
+            }
+            CriteriaUtils.addAllField(itemPairList, f -> {
+                if (fieldMap.putIfAbsent(f, Boolean.TRUE) == null) {
+                    fieldList.add((_Selection) f);
+                }
+            });
+            return _Collections.unmodifiableList(fieldList);
         }
 
 
@@ -1209,8 +1249,7 @@ abstract class PostgreInserts extends InsertSupports {
             }
             List<_SelectItem> list = this.returningList;
             if (list == null) {
-                list = new ArrayList<>();
-                this.returningList = list;
+                this.returningList = list = _Collections.arrayList();
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }

@@ -68,10 +68,6 @@ public final class IntegerType extends _NumericType._IntegerType {
         return mapToInteger(this, meta);
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {

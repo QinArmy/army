@@ -68,10 +68,6 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
         return type;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
 
     @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {

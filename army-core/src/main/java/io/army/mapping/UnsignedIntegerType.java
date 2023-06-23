@@ -69,11 +69,6 @@ public final class UnsignedIntegerType extends _NumericType._UnsignedIntegerType
         return type;
     }
 
-    @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
 
     @Override
     public Long convert(MappingEnv env, Object nonNull) throws CriteriaException {

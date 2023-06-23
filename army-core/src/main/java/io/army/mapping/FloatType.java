@@ -63,11 +63,6 @@ public final class FloatType extends _NumericType._FloatNumericType {
 
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
-    @Override
     public Float convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return convertToFloat(this, nonNull, PARAM_ERROR_HANDLER_0);
     }

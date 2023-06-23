@@ -10,10 +10,7 @@ import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.TableMeta;
-import io.army.meta.TypeMeta;
+import io.army.meta.*;
 import io.army.sqltype.SqlType;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
@@ -90,6 +87,40 @@ abstract class CriteriaUtils {
             throw ContextStack.criteriaError(ctx, CriteriaUtils::dontAddAnyItem);
         }
         return list;
+    }
+
+
+    static void addAllField(final List<_ItemPair> itemPairList, final Consumer<FieldMeta<?>> consumer) {
+        SQLField sqlField;
+        for (_ItemPair itemPair : itemPairList) {
+            if (itemPair instanceof _ItemPair._FieldItemPair) {
+                sqlField = ((_ItemPair._FieldItemPair) itemPair).field();
+                if (sqlField instanceof FieldMeta) {
+                    consumer.accept((FieldMeta<?>) sqlField);
+                } else if (sqlField instanceof QualifiedField) {
+                    consumer.accept(((QualifiedField<?>) sqlField).fieldMeta());
+                } else {
+                    //TODO oracle ?
+                    throw new UnsupportedOperationException();
+                }
+                continue;
+            }
+            if (!(itemPair instanceof _ItemPair._RowItemPair)) {
+                throw new IllegalArgumentException("unknown itemPair");
+            }
+            for (SQLField field : ((_ItemPair._RowItemPair) itemPair).rowFieldList()) {
+                if (field instanceof FieldMeta) {
+                    consumer.accept((FieldMeta<?>) field);
+                } else if (field instanceof QualifiedField) {
+                    consumer.accept(((QualifiedField<?>) field).fieldMeta());
+                } else {
+                    //TODO oracle ?
+                    throw new UnsupportedOperationException();
+                }
+            }// inner for
+
+        }// outer for
+
     }
 
 

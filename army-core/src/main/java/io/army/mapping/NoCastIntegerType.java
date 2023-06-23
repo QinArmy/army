@@ -49,11 +49,6 @@ public final class NoCastIntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
-    }
-
-    @Override
     public Integer convert(MappingEnv env, Object nonNull) throws CriteriaException {
         return IntegerType._convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
