@@ -6,6 +6,7 @@ import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.postgre.PostgreDialect;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
+import io.army.env.SqlLogMode;
 import io.army.env.StandardEnvironment;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.sync.LocalFactoryBuilder;
@@ -50,8 +51,7 @@ public abstract class FactoryUtils {
         }
         map.put(ArmyKey.DATASOURCE_CLOSE_METHOD.name, "close");
         map.put(ArmyKey.DDL_MODE.name, DdlMode.UPDATE);
-        map.put(ArmyKey.SQL_LOG_SHOW.name, Boolean.TRUE);
-        map.put(ArmyKey.SQL_LOG_DEBUG.name, Boolean.TRUE);
+        map.put(ArmyKey.SQL_LOG_MODE.name, SqlLogMode.FORMAT_DEBUG);
         return StandardEnvironment.from(map);
     }
 

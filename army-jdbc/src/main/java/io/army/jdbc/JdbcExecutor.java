@@ -1555,7 +1555,12 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                         compatible = accessor.isWritable(fieldName, mappingType.javaType());
                     }
                     if (!compatible) {
-                        mappingType = mappingType.compatibleFor(accessor.getJavaType(fieldName));
+                        if (row == null) {
+                            mappingType = mappingType.compatibleFor(this.resultClass);
+                        } else {
+                            mappingType = mappingType.compatibleFor(accessor.getJavaType(fieldName));
+                        }
+
                         if (compatibleTypeArray == null) {
                             compatibleTypeArray = new MappingType[sqlTypeArray.length];
                             this.compatibleTypeArray = compatibleTypeArray;

@@ -441,9 +441,18 @@ final class SourceCodeCreator {
         }
         builder.append("> ")
                 .append(_MetaBridge.TABLE_META)
-                .append(";\n\n")
+                .append(";\n\n");
 
-                .append(MEMBER_PRE)
+        if (paramSize > 0) {
+            builder.append(FIELD_PREFIX)
+                    .append("Class<")
+                    .append(domainName)
+                    .append("> ")
+                    .append(_MetaBridge.CLASS_META)
+                    .append(";\n\n");
+        }
+
+        builder.append(MEMBER_PRE)
                 .append("static {\n")
                 .append(MEMBER_PRE)
                 .append('\t');
@@ -528,7 +537,20 @@ final class SourceCodeCreator {
                 .append("\t\tthrow new IllegalStateException(m);\n")
                 .append(MEMBER_PRE)
                 .append("\t}\n")
-                .append(MEMBER_PRE)
+                .append(MEMBER_PRE);
+
+        if (paramSize > 0) {
+            builder.append("\tfinal Class<?> clazz = ")
+                    .append(simpleClassName)
+                    .append(".class;\n")
+                    .append(MEMBER_PRE)
+                    .append('\t')
+                    .append(_MetaBridge.CLASS_META)
+                    .append(" = (Class<")
+                    .append(domainName)
+                    .append(">)clazz;\n");
+        }
+        builder.append(MEMBER_PRE)
                 .append("}\n\n");
 
         return domainName;

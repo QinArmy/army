@@ -867,7 +867,7 @@ abstract class PostgreInserts extends InsertSupports {
         @Override
         public boolean isIgnorableConflict() {
             //true,Postgre support DO NOTHING and conflict_target and WHERE
-            return true;
+            return this.doNothing;
         }
 
         @Override

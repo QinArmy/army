@@ -5,11 +5,15 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._MultiDml;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
+import io.army.env.ArmyKey;
+import io.army.env.SqlLogMode;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
+import io.army.stmt.Stmt;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
+import org.slf4j.Logger;
 
 public abstract class _ArmySession implements Session {
 
@@ -22,6 +26,8 @@ public abstract class _ArmySession implements Session {
 
     protected final boolean allowQueryInsert;
 
+    private _ArmySessionFactory armyFactory;
+
     protected _ArmySession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
 
         this.name = builder.name;
@@ -31,15 +37,9 @@ public abstract class _ArmySession implements Session {
 
         assert _StringUtils.hasText(this.name);
         assert this.visible != null;
-
+        this.armyFactory = builder.armyFactory;
     }
 
-    protected _ArmySession(String name, boolean readonly, Visible visible, boolean allowQueryInsert) {
-        this.name = name;
-        this.readonly = readonly;
-        this.visible = visible;
-        this.allowQueryInsert = allowQueryInsert;
-    }
 
     @Override
     public final String name() {
@@ -79,6 +79,39 @@ public abstract class _ArmySession implements Session {
     @Nullable
     protected abstract String transactionName();
 
+    protected abstract Logger getLogger();
+
+
+    protected final void printSqlIfNeed(final Stmt stmt) {
+        final SqlLogMode mode;
+        final _ArmySessionFactory factory = this.armyFactory;
+        if (factory.sqlLogDynamic) {
+            mode = factory.env.getOrDefault(ArmyKey.SQL_LOG_MODE);
+        } else {
+            mode = factory.sqlLogMode;
+        }
+
+        switch (mode) {
+            case OFF:
+                break;
+            case SIMPLE:
+                this.getLogger().info(factory.dialectParser().printStmt(stmt, false));
+                break;
+            case DEBUG:
+                this.getLogger().debug(factory.dialectParser().printStmt(stmt, false));
+                break;
+            case FORMAT:
+                this.getLogger().info(factory.dialectParser().printStmt(stmt, true));
+                break;
+            case FORMAT_DEBUG:
+                this.getLogger().debug(factory.dialectParser().printStmt(stmt, true));
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+
+    }
+
     protected static int restSecond(final ChildTableMeta<?> domainTable, final long startTime, final int timeout) {
         final int restSeconds;
         final long restMills;
@@ -111,6 +144,7 @@ public abstract class _ArmySession implements Session {
         }
         return domainTable;
     }
+
 
     protected static ChildDmlNoTractionException updateChildNoTransaction() {
         return new ChildDmlNoTractionException("update/delete child must in transaction.");

@@ -49,11 +49,6 @@ public class ArmyKey<T> {
     public static final ArmyKey<Boolean> SQL_LOG_DYNAMIC = new ArmyKey<>("sql.log.dynamic", Boolean.class, Boolean.FALSE);
 
     public static final ArmyKey<SqlLogMode> SQL_LOG_MODE = new ArmyKey<>("sql.log.mode", SqlLogMode.class, SqlLogMode.OFF);
-    public static final ArmyKey<Boolean> SQL_LOG_SHOW = new ArmyKey<>("sql.log.show", Boolean.class, Boolean.FALSE);
-
-    public static final ArmyKey<Boolean> SQL_LOG_BEAUTIFY = new ArmyKey<>("sql.log.format", Boolean.class, Boolean.FALSE);
-
-    public static final ArmyKey<Boolean> SQL_LOG_DEBUG = new ArmyKey<>("sql.log.debug", Boolean.class, Boolean.FALSE);
 
 
     public final String name;

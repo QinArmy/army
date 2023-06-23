@@ -624,7 +624,7 @@ abstract class InsertSupports {
         public final List<FieldMeta<?>> fieldList() {
             List<FieldMeta<?>> fieldList = this.fieldList;
             if (fieldList == null) {
-                fieldList = Collections.emptyList();
+                fieldList = _Collections.emptyList();
                 this.fieldList = fieldList;
             } else if (fieldList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -639,14 +639,16 @@ abstract class InsertSupports {
             final List<FieldMeta<?>> fieldList = this.fieldList;
             final PrimaryFieldMeta<?> idField;
             final List<? extends TableField> effectiveList;
-            if (fieldList == null) {
-                effectiveList = this.insertTable.fieldList();
-            } else if (fieldList instanceof ArrayList) {
+            if (fieldList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
+            } else if (fieldList == null || fieldList.size() == 0) {
+                effectiveList = this.insertTable.fieldList();
+            } else if (this.migration) {
+                effectiveList = fieldList;
             } else if (this.insertTable instanceof SingleTableMeta
                     && (idField = this.insertTable.id()).generatorType() == GeneratorType.POST) {
-                assert !fieldList.contains(idField);
-                final List<FieldMeta<?>> list = new ArrayList<>(fieldList.size() + 1);
+                assert !this.fieldMap.containsKey(idField);
+                final List<FieldMeta<?>> list = _Collections.arrayList(fieldList.size() + 1);
                 list.add(idField);
                 list.addAll(fieldList);
                 effectiveList = Collections.unmodifiableList(list);
@@ -690,14 +692,17 @@ abstract class InsertSupports {
 
         private Map<FieldMeta<?>, Boolean> createFieldMap() {
             final TableMeta<?> insertTable = this.insertTable;
-            final Map<FieldMeta<?>, Boolean> fieldMap = new HashMap<>();
-            final List<FieldMeta<?>> fieldList = new ArrayList<>();
+            final Map<FieldMeta<?>, Boolean> fieldMap = _Collections.hashMap();
+            final List<FieldMeta<?>> fieldList = _Collections.arrayList();
 
             FieldMeta<?> field;
 
             if (!this.migration && insertTable instanceof SingleTableMeta) {
                 for (String reservedField : _MetaBridge.RESERVED_FIELDS) {
                     field = insertTable.tryGetField(reservedField);
+                    if (field instanceof PrimaryFieldMeta && field.generatorType() == GeneratorType.POST) {
+                        continue;
+                    }
                     if (field != null && fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
                         fieldList.add(field);
                     }

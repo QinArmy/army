@@ -5,15 +5,14 @@ import io.army.criteria.Visible;
 import io.army.dialect.DialectParser;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
+import io.army.env.SqlLogMode;
 import io.army.lang.Nullable;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
-import io.army.stmt.Stmt;
 import io.army.util._Assert;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
-import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.Objects;
@@ -51,14 +50,9 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     private final Map<String, Boolean> visibleWhiteMap;
 
+    final boolean sqlLogDynamic;
 
-    private final boolean sqlLogDynamic;
-
-    private final boolean sqlLogShow;
-
-    private final boolean sqlLogBeautify;
-
-    private final boolean sqlLogDebug;
+    final SqlLogMode sqlLogMode;
 
 
     protected _ArmySessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
@@ -83,9 +77,8 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         this.visibleWhiteMap = createWhitMap(this.visibleMode, env, ArmyKey.VISIBLE_SESSION_WHITE_LIST);
 
         this.sqlLogDynamic = env.getOrDefault(ArmyKey.SQL_LOG_DYNAMIC);
-        this.sqlLogShow = env.getOrDefault(ArmyKey.SQL_LOG_SHOW);
-        this.sqlLogBeautify = env.getOrDefault(ArmyKey.SQL_LOG_BEAUTIFY);
-        this.sqlLogDebug = env.getOrDefault(ArmyKey.SQL_LOG_DEBUG);
+        this.sqlLogMode = env.getOrDefault(ArmyKey.SQL_LOG_MODE);
+
     }
 
 
@@ -158,31 +151,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         return obj == this;
     }
 
-
-    @Nullable
-    protected final void printSqlLog(final DialectParser parser, final Stmt stmt, final Logger factoryLogger) {
-        String sqlLog = null;
-        boolean debugLevel = false;
-        if (this.sqlLogDynamic) {
-            final ArmyEnvironment env = this.env;
-            if (env.getOrDefault(ArmyKey.SQL_LOG_SHOW)) {
-                sqlLog = parser.printStmt(stmt, env.getOrDefault(ArmyKey.SQL_LOG_BEAUTIFY));
-                debugLevel = env.getOrDefault(ArmyKey.SQL_LOG_DEBUG);
-            }
-        } else if (this.sqlLogShow) {
-            sqlLog = parser.printStmt(stmt, this.sqlLogBeautify);
-            debugLevel = this.sqlLogDebug;
-        }
-
-        if (sqlLog != null) {
-            if (debugLevel) {
-                factoryLogger.debug(sqlLog);
-            } else {
-                factoryLogger.info(sqlLog);
-            }
-        }
-
-    }
+    protected abstract DialectParser dialectParser();
 
 
     private boolean isSessionDontSupportQueryInsert(final String sessionName) {
@@ -263,7 +232,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     public static abstract class ArmySessionBuilder<B, S extends Session>
             implements SessionFactory.SessionBuilderSpec<B, S> {
 
-        private final _ArmySessionFactory armyFactory;
+        final _ArmySessionFactory armyFactory;
 
         String name;
 

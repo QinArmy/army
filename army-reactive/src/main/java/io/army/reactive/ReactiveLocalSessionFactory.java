@@ -1,5 +1,6 @@
 package io.army.reactive;
 
+import io.army.dialect.DialectParser;
 import io.army.meta.ServerMeta;
 import io.army.session.SessionException;
 import io.army.session._ArmySessionFactory;
@@ -58,6 +59,11 @@ final class ReactiveLocalSessionFactory extends _ArmySessionFactory implements S
     @Override
     public Mono<Void> close() {
         return Mono.empty();
+    }
+
+    @Override
+    protected DialectParser dialectParser() {
+        throw new UnsupportedOperationException();
     }
 
     /*################################## blow private static inner class ##################################*/

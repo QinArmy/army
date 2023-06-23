@@ -11,7 +11,6 @@ import io.army.proxy._SessionCacheFactory;
 import io.army.session.DataAccessException;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmySessionFactory;
-import io.army.stmt.Stmt;
 import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.LocalStmtExecutor;
@@ -133,9 +132,11 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
                 , LocalSessionFactory.class.getName(), this.name, this.readonly);
     }
 
-    void printSqlIfNeed(final Stmt stmt) {
-        super.printSqlLog(this.dialectParser, stmt, LOG);
+    @Override
+    protected DialectParser dialectParser() {
+        return this.dialectParser;
     }
+
 
     /*################################## blow package method ##################################*/
 

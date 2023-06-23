@@ -209,8 +209,10 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     @Override
     public SimpleStmt build() {
         final SimpleStmt stmt;
-        if (this.returnId == null) {
+        if (this.returningList.size() == 0) {
             stmt = Stmts.minSimple(this);
+        } else if (this.returnId == null) {
+            stmt = Stmts.queryStmt(this);
         } else {
             stmt = Stmts.domainPost(this);
         }
