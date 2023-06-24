@@ -81,12 +81,22 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         assertSession(statement instanceof DmlStatement, visible);
         try {
 
-            final SimpleStmt stmt;
-            stmt = (SimpleStmt) this.parseDqlStatement(statement, false, visible);
+            final Stmt stmt;
+            stmt = this.parseDqlStatement(statement, false, visible);
 
             final List<R> resultList;
-            resultList = this.stmtExecutor.query(stmt, this.getTxTimeout(), resultClass, listConstructor);
+            final int timeout = this.getTxTimeout();
+            if (stmt instanceof SimpleStmt) {
+                resultList = this.stmtExecutor.query((SimpleStmt) stmt, timeout, resultClass, listConstructor);
+            } else if (stmt instanceof PairStmt) {
+                final PairStmt pairStmt = (PairStmt) stmt;
+                SimpleStmt simpleStmt;
+                simpleStmt = pairStmt.firstStmt();
+                resultList = this.stmtExecutor.query(simpleStmt, timeout, resultClass, listConstructor);
 
+            } else {
+                throw _Exceptions.unexpectedStmt(stmt);
+            }
             if (!this.factory.buildInExecutor) {
                 Objects.requireNonNull(resultList);
             }
@@ -109,10 +119,10 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public List<Map<String, Object>> queryAsMap(final SimpleDqlStatement statement,
-                                                final Supplier<Map<String, Object>> mapConstructor,
-                                                final Supplier<List<Map<String, Object>>> listConstructor,
-                                                final Visible visible) {
+    public List<Map<String, Object>> queryMap(final SimpleDqlStatement statement,
+                                              final Supplier<Map<String, Object>> mapConstructor,
+                                              final Supplier<List<Map<String, Object>>> listConstructor,
+                                              final Visible visible) {
         //1.assert session status
         assertSession(statement instanceof DmlStatement, visible);
         try {
@@ -693,7 +703,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     /**
      * @see #query(SimpleDqlStatement, Class, Supplier, Visible)
-     * @see #queryAsMap(SimpleDqlStatement, Supplier, Supplier, Visible)
+     * @see #queryMap(SimpleDqlStatement, Supplier, Supplier, Visible)
      * @see #queryStream(SimpleDqlStatement, Class, StreamOptions, Visible)
      * @see #queryMapStream(SimpleDqlStatement, Supplier, StreamOptions, Visible)
      */
@@ -704,10 +714,10 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             stmt = this.factory.dialectParser.select((SelectStatement) statement, useMultiStmt, visible);
         } else if (!(statement instanceof DmlStatement)) {
             stmt = this.factory.dialectParser.dialectDql(statement, visible);
-        } else if (statement instanceof _Statement._ChildStatement) {
-            throw new ArmyException("stream api don't support child statement.");
         } else if (statement instanceof InsertStatement) {
             stmt = this.factory.dialectParser.insert((InsertStatement) statement, visible);
+        } else if (statement instanceof _Statement._ChildStatement) {
+            throw new ArmyException("current api don't support child dml statement.");
         } else if (statement instanceof UpdateStatement) {
             stmt = this.factory.dialectParser.update((UpdateStatement) statement, useMultiStmt, visible);
         } else if (statement instanceof DeleteStatement) {

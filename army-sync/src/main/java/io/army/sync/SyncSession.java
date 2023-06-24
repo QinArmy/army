@@ -50,7 +50,7 @@ public interface SyncSession extends Session {
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, Visible visible);
 
     @Nullable
-    Map<String, Object> queryOneAsMap(SimpleDqlStatement statement);
+    Map<String, Object> queryOneMap(SimpleDqlStatement statement);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -62,10 +62,10 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
     @Nullable
-    Map<String, Object> queryOneAsMap(SimpleDqlStatement statement, Visible visible);
+    Map<String, Object> queryOneMap(SimpleDqlStatement statement, Visible visible);
 
     @Nullable
-    Map<String, Object> queryOneAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor);
+    Map<String, Object> queryOneMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -77,7 +77,7 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
     @Nullable
-    Map<String, Object> queryOneAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
+    Map<String, Object> queryOneMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
@@ -124,7 +124,7 @@ public interface SyncSession extends Session {
     <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
 
 
-    List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement);
+    List<Map<String, Object>> queryMap(SimpleDqlStatement statement);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -135,7 +135,7 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Visible visible);
+    List<Map<String, Object>> queryMap(SimpleDqlStatement statement, Visible visible);
 
 
     /**
@@ -144,8 +144,8 @@ public interface SyncSession extends Session {
      * and column value is null ,army remove element not put element.
      * </p>
      */
-    List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                         Supplier<List<Map<String, Object>>> listConstructor);
+    List<Map<String, Object>> queryMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
+                                       Supplier<List<Map<String, Object>>> listConstructor);
 
     /**
      * <p>
@@ -161,8 +161,8 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                         Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
+    List<Map<String, Object>> queryMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
+                                       Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
 
 
 

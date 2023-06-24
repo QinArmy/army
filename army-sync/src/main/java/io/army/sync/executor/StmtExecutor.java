@@ -7,6 +7,7 @@ import io.army.session.DataAccessException;
 import io.army.session.OptimisticLockException;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.MultiStmt;
+import io.army.stmt.SecondQueryStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.sync.MultiResult;
 import io.army.sync.MultiStream;
@@ -82,6 +83,8 @@ public interface StmtExecutor {
     List<Map<String, Object>> queryAsMap(SimpleStmt stmt, int timeout, Supplier<Map<String, Object>> mapConstructor,
                                          Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException;
+
+    <R> int childQuery(SecondQueryStmt stmt, int timeout, Class<R> resultClass, List<R> resultList);
 
     <R> List<R> batchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
                            Supplier<List<R>> listConstructor) throws DataAccessException;

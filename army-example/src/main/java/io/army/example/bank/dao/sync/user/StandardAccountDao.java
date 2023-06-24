@@ -47,7 +47,7 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
                 .and(RegisterRecord_.id.equal(SQLs.field("u", BankUser_.registerRecordId)))
                 .and(RegisterRecord_.id.equal(BankAccount_.registerRecordId))
                 .asQuery();
-        return this.sessionContext.currentSession().queryOneAsMap(stmt);
+        return this.sessionContext.currentSession().queryOneMap(stmt);
     }
 
 
@@ -70,7 +70,7 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
                 .and(BankUser_.registerRecordId::equal, RegisterRecord_.id)
                 .and(BankAccount_.registerRecordId::equal, RegisterRecord_.id)
                 .asQuery();
-        return this.sessionContext.currentSession().queryOneAsMap(stmt);
+        return this.sessionContext.currentSession().queryOneMap(stmt);
     }
 
 

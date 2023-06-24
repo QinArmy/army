@@ -205,5 +205,53 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     }
 
+    @Test
+    public void returningInsertChildWithTowStmtMode(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaProvince> provinceList;
+        provinceList = this.createProvinceList();
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .values(provinceList)
+                .returningAll()
+                .asReturningInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .values(provinceList)
+                .returningAll()
+                .asReturningInsert();
+
+        final LocalTransaction tx;
+        tx = session.builder()
+                .isolation(Isolation.READ_COMMITTED)
+                .build();
+
+        try {
+            tx.start();
+            final List<ChinaProvince> resultList;
+            resultList = session.query(stmt, ChinaProvince.class);
+
+            Assert.assertEquals(resultList.size(), provinceList.size());
+
+            for (ChinaProvince province : provinceList) {
+                Assert.assertNotNull(province.getId());
+            }
+            tx.commit();
+            LOG.debug("resultList:\n{}", resultList);
+        } catch (Exception e) {
+            LOG.error("insert child error", e);
+            tx.rollback();
+            throw e;
+        }
+
+        releaseSyncSession(session);
+
+    }
+
 
 }

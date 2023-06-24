@@ -1,5 +1,9 @@
 package io.army.session;
 
+import io.army.bean.ObjectAccessor;
+import io.army.bean.ObjectAccessorFactory;
+import io.army.mapping.MappingType;
+import io.army.mapping.NoMatchMappingException;
 import io.army.util._Exceptions;
 
 public abstract class ExecutorSupport {
@@ -27,6 +31,25 @@ public abstract class ExecutorSupport {
             restSec++;
         }
         return restSec;
+    }
+
+
+    protected static MappingType compatibleTypeFrom(final MappingType type, final Class<?> resultClass,
+                                                    final ObjectAccessor accessor, final String fieldName)
+            throws NoMatchMappingException {
+        MappingType compatibleType;
+        if (accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR) {
+            if (resultClass.isAssignableFrom(type.javaType())) {
+                compatibleType = type;
+            } else {
+                compatibleType = type.compatibleFor(resultClass);
+            }
+        } else if (accessor.isWritable(fieldName, type.javaType())) {
+            compatibleType = type;
+        } else {
+            compatibleType = type.compatibleFor(accessor.getJavaType(fieldName));
+        }
+        return compatibleType;
     }
 
 

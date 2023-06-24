@@ -54,26 +54,26 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
 
 
     @Override
-    public final Map<String, Object> queryOneAsMap(SimpleDqlStatement statement) {
-        return this.queryOneAsMap(statement, _Collections::hashMap, Visible.ONLY_VISIBLE);
+    public final Map<String, Object> queryOneMap(SimpleDqlStatement statement) {
+        return this.queryOneMap(statement, _Collections::hashMap, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final Map<String, Object> queryOneAsMap(SimpleDqlStatement statement, Visible visible) {
-        return this.queryOneAsMap(statement, _Collections::hashMap, visible);
+    public final Map<String, Object> queryOneMap(SimpleDqlStatement statement, Visible visible) {
+        return this.queryOneMap(statement, _Collections::hashMap, visible);
     }
 
     @Override
-    public final Map<String, Object> queryOneAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor) {
-        return this.queryOneAsMap(statement, mapConstructor, Visible.ONLY_VISIBLE);
+    public final Map<String, Object> queryOneMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor) {
+        return this.queryOneMap(statement, mapConstructor, Visible.ONLY_VISIBLE);
     }
 
     @Nullable
     @Override
-    public final Map<String, Object> queryOneAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor
+    public final Map<String, Object> queryOneMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor
             , Visible visible) {
         final List<Map<String, Object>> list;
-        list = this.queryAsMap(statement, mapConstructor, _Collections::arrayList, visible);
+        list = this.queryMap(statement, mapConstructor, _Collections::arrayList, visible);
         final Map<String, Object> result;
         switch (list.size()) {
             case 1:
@@ -105,19 +105,19 @@ public abstract class _ArmySyncSession extends _ArmySession implements SyncSessi
 
 
     @Override
-    public final List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement) {
-        return this.queryAsMap(statement, _Collections::hashMap, _Collections::arrayList, Visible.ONLY_VISIBLE);
+    public final List<Map<String, Object>> queryMap(SimpleDqlStatement statement) {
+        return this.queryMap(statement, _Collections::hashMap, _Collections::arrayList, Visible.ONLY_VISIBLE);
     }
 
     @Override
-    public final List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Visible visible) {
-        return this.queryAsMap(statement, _Collections::hashMap, _Collections::arrayList, visible);
+    public final List<Map<String, Object>> queryMap(SimpleDqlStatement statement, Visible visible) {
+        return this.queryMap(statement, _Collections::hashMap, _Collections::arrayList, visible);
     }
 
     @Override
-    public final List<Map<String, Object>> queryAsMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor
+    public final List<Map<String, Object>> queryMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor
             , Supplier<List<Map<String, Object>>> listConstructor) {
-        return this.queryAsMap(statement, _Collections::hashMap, _Collections::arrayList, Visible.ONLY_VISIBLE);
+        return this.queryMap(statement, _Collections::hashMap, _Collections::arrayList, Visible.ONLY_VISIBLE);
     }
 
 

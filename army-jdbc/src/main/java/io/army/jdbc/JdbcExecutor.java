@@ -280,6 +280,93 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }
 
     @Override
+    public final <R> int childQuery(SecondQueryStmt stmt, int timeout, Class<R> resultClass, List<R> resultList) {
+
+
+        final List<? extends Selection> selectionList = stmt.selectionList();
+        final int selectionSize = selectionList.size();
+
+        if (timeout < 0 || selectionSize == 0) {
+            throw new IllegalArgumentException();
+        }
+
+        final String sql = stmt.sqlText();
+        final List<SQLParam> paramGroup = stmt.paramGroup();
+
+
+        try (Statement statement = this.createQueryStatement(sql, paramGroup.size())) {
+
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+            final ResultSet rs;
+            if (statement instanceof PreparedStatement) {
+                bindParameter((PreparedStatement) statement, paramGroup);
+                rs = ((PreparedStatement) statement).executeQuery();
+            } else {
+                rs = statement.executeQuery(sql);
+            }
+
+            try (ResultSet resultSet = rs) {
+
+                final ObjectAccessor accessor;
+                if (resultClass == Map.class) {
+                    accessor = ObjectAccessorFactory.forMap();
+                } else if (selectionSize > 1) {
+                    accessor = ObjectAccessorFactory.forBean(resultClass);
+                } else {
+                    accessor = ObjectAccessorFactory.PSEUDO_ACCESSOR;
+                }
+
+                final SqlType[] sqlTypeArray;
+                sqlTypeArray = createSqlTypArray(resultSet.getMetaData());
+
+                final SecondRowReader<R> rowReader;
+                rowReader = new SecondRowReader<>(this, selectionList, sqlTypeArray, resultClass, accessor);
+
+                final int idSelectionIndex, firstStmtResultSize;
+                idSelectionIndex = stmt.idSelectionIndex();
+                firstStmtResultSize = resultList.size();
+
+                final Selection idSelection = selectionList.get(idSelectionIndex);
+                final SqlType idSqlType = sqlTypeArray[idSelectionIndex];
+                final String idFieldName = idSelection.alias();
+
+                final MappingType compatibleType;
+                compatibleType = compatibleTypeFrom(idSelection.typeMeta().mappingType(), resultClass, accessor,
+                        idFieldName);
+
+                Object secondStmtId, oldId;
+                int rowCount = 0;
+                R row, rowOfFirstStmt;
+                for (final int idIndexBasedOne = idSelectionIndex + 1; resultSet.next(); rowCount++) {
+                    if (rowCount >= firstStmtResultSize) {
+                        //here, error,invoker throw Exception
+                        continue;
+                    }
+
+                    secondStmtId = get(resultSet, idIndexBasedOne, idSqlType);
+
+                    if (secondStmtId == null) {
+                        throw new DataAccessException("");
+                    }
+
+                    secondStmtId = compatibleType.afterGet(idSqlType, this.factory.mappingEnv, secondStmtId);
+
+                    rowOfFirstStmt = resultList.get(rowCount);
+
+                }
+                return rowCount;
+            }
+        } catch (DataAccessException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw wrapError(e);
+        }
+    }
+
+
+    @Override
     public final <R> List<R> batchQuery(final BatchStmt stmt, final int timeout, final Class<R> resultClass,
                                         final @Nullable R terminator,
                                         final Supplier<List<R>> listConstructor) throws DataAccessException {
@@ -1542,32 +1629,18 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                     continue;
                 }
 
-                typeMeta = selection.typeMeta();
                 if (compatibleTypeArray == null || (mappingType = compatibleTypeArray[i]) == null) {
+                    typeMeta = selection.typeMeta();
                     if (typeMeta instanceof MappingType) {
                         mappingType = (MappingType) typeMeta;
                     } else {
                         mappingType = typeMeta.mappingType();
                     }
-                    if (row == null) {
-                        compatible = this.resultClass.isAssignableFrom(mappingType.javaType());
-                    } else {
-                        compatible = accessor.isWritable(fieldName, mappingType.javaType());
+                    if (compatibleTypeArray == null) {
+                        compatibleTypeArray = new MappingType[sqlTypeArray.length];
+                        this.compatibleTypeArray = compatibleTypeArray;
                     }
-                    if (!compatible) {
-                        if (row == null) {
-                            mappingType = mappingType.compatibleFor(this.resultClass);
-                        } else {
-                            mappingType = mappingType.compatibleFor(accessor.getJavaType(fieldName));
-                        }
-
-                        if (compatibleTypeArray == null) {
-                            compatibleTypeArray = new MappingType[sqlTypeArray.length];
-                            this.compatibleTypeArray = compatibleTypeArray;
-                        }
-                        compatibleTypeArray[i] = mappingType;
-                    }
-
+                    compatibleTypeArray[i] = compatibleTypeFrom(mappingType, resultClass, accessor, fieldName);
                 }
 
                 columnValue = mappingType.afterGet(sqlType, env, columnValue);
@@ -1660,6 +1733,22 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
 
     }//MapReader
+
+    private static final class SecondRowReader<R> extends RowReader<R> {
+
+        private R currentRow;
+
+        private SecondRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
+                                SqlType[] sqlTypeArray, Class<R> resultClass, ObjectAccessor accessor) {
+            super(executor, selectionList, sqlTypeArray, resultClass, accessor);
+        }
+
+        @Override
+        R createRow() {
+            return this.currentRow;
+        }
+
+    }//SecondRowReader
 
 
     private static abstract class JdbcRowSpliterator<R> implements Spliterator<R> {
