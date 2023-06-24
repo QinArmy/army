@@ -50,9 +50,9 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     private final Map<String, Boolean> visibleWhiteMap;
 
-    final boolean sqlLogDynamic;
+    public final boolean sqlLogDynamic;
 
-    final SqlLogMode sqlLogMode;
+    public final SqlLogMode sqlLogMode;
 
 
     protected _ArmySessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {

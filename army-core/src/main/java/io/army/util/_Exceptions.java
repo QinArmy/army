@@ -757,8 +757,8 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static SessionException childDmlNoTransaction(Session session, ChildTableMeta<?> table) {
         String m;
-        m = String.format("%s of %s no transaction,so you don't execute dml about child table %s."
-                , session.sessionFactory(), session, table);
+        m = String.format("%s no transaction,so you don't execute dml about child table %s."
+                , session, table);
         return new ChildDmlNoTractionException(m);
     }
 

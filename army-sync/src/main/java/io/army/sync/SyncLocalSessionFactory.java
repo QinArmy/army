@@ -128,8 +128,12 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
 
     @Override
     public String toString() {
-        return String.format("[%s name:%s,readonly:%s]"
-                , LocalSessionFactory.class.getName(), this.name, this.readonly);
+        return String.format("%s[name:%s,hash:%s,readonly:%s]",
+                LocalSessionFactory.class.getName(),
+                this.name,
+                System.identityHashCode(this),
+                this.readonly
+        );
     }
 
     @Override

@@ -1,10 +1,10 @@
 package io.army.reactive;
 
 import io.army.tx.TransactionException;
-import io.army.tx._AbstractGenericTransaction;
+import io.army.tx._ArmyTransaction;
 import reactor.core.publisher.Mono;
 
-final class LocalTransaction extends _AbstractGenericTransaction implements Transaction {
+final class LocalTransaction extends _ArmyTransaction implements Transaction {
 
 
     private final LocalSession session;

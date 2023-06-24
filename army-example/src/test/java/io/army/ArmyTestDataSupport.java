@@ -174,21 +174,22 @@ public abstract class ArmyTestDataSupport {
         ChinaProvince c;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
+        String suffix;
         for (int i = 0; i < rowSize; i++) {
+            suffix = "_" + Instant.now() + "#" + i;
             c = new ChinaProvince()
-                    .setId(Math.abs(random.nextLong()))
                     .setCreateTime(now)
                     .setUpdateTime(now)
 
-                    .setName(randomProvince(random))
+                    .setName(randomProvince(random) + suffix)
                     .setRegionType(RegionType.CITY)
                     .setRegionGdp(randomDecimal(random))
 
                     .setVersion(0)
                     .setVisible(Boolean.TRUE)
 
-                    .setGovernor(randomPerson(random))
-                    .setProvincialCapital(randomPerson(random));
+                    .setGovernor(randomPerson(random) + suffix)
+                    .setProvincialCapital(randomCity(random) + suffix);
 
             list.add(c);
         }

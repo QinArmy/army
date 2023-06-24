@@ -10,7 +10,7 @@ public interface LocalTransaction extends Transaction {
     LocalSession session();
 
 
-    void start() throws TransactionException;
+    LocalTransaction start() throws TransactionException;
 
     void commit() throws TransactionException;
 
@@ -27,7 +27,6 @@ public interface LocalTransaction extends Transaction {
     void rollbackToSavePoint(Object savepoint) throws TransactionException;
 
     void releaseSavePoint(Object savepoint) throws TransactionException;
-
 
 
 }

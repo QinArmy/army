@@ -694,12 +694,6 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                         .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                         .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
-                        .union()
-                        .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
-                        .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
-                        .limit(SQLs::literal, 6)
                         .asQuery()
 
                 )

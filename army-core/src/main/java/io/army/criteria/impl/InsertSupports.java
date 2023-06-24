@@ -946,8 +946,8 @@ abstract class InsertSupports {
             }
             this.endColumnDefaultClause();
 
-            final DynamicValuesParensClauseImpl<T> clause;
-            clause = new DynamicValuesParensClauseImpl<>(this.context, this::validateField);
+            final ValuesConstructorImpl<T> clause;
+            clause = new ValuesConstructorImpl<>(this.context, this::validateField);
 
             consumer.accept(clause);
 
@@ -1635,7 +1635,7 @@ abstract class InsertSupports {
     }//ValuesParensClauseImpl
 
 
-    private static final class DynamicValuesParensClauseImpl<T>
+    private static final class ValuesConstructorImpl<T>
             extends ValuesParensClauseImpl<T, Statement._CommaClause<ValuesConstructor<T>>>
             implements Statement._CommaClause<ValuesConstructor<T>>,
             ValuesConstructor<T> {
@@ -1643,8 +1643,8 @@ abstract class InsertSupports {
         /**
          * @see ComplexInsertValuesClause#values(Consumer)
          */
-        private DynamicValuesParensClauseImpl(CriteriaContext context,
-                                              BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
+        private ValuesConstructorImpl(CriteriaContext context,
+                                      BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
             super(context, validator);
         }
 
@@ -1653,7 +1653,7 @@ abstract class InsertSupports {
             return this;
         }
 
-    }//DynamicValuesParensClauseImpl
+    }//ValuesConstructorImpl
 
 
     static abstract class AssignmentSetClause<T, SR> extends DynamicAssignmentSetClause<T, SR>

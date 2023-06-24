@@ -2,10 +2,14 @@ package io.army.sync;
 
 import io.army.session.DataAccessException;
 import io.army.tx.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-final class SyncLocalTransaction extends _AbstractGenericTransaction implements LocalTransaction {
+final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransaction {
+
+    private static final Logger LOG = LoggerFactory.getLogger(SyncLocalTransaction.class);
 
     final SyncLocalSession session;
 
@@ -33,7 +37,7 @@ final class SyncLocalTransaction extends _AbstractGenericTransaction implements 
     }
 
     @Override
-    public void start() throws TransactionException {
+    public LocalTransaction start() throws TransactionException {
         if (this.status != TransactionStatus.NOT_ACTIVE) {
             String m = String.format("%s status isn't %s,can't start transaction.", this, TransactionStatus.NOT_ACTIVE);
             throw new IllegalTransactionStateException(m);
@@ -42,8 +46,13 @@ final class SyncLocalTransaction extends _AbstractGenericTransaction implements 
             final SyncLocalSession session = this.session;
             final List<String> stmtList;
             stmtList = session.factory.dialectParser.startTransaction(this.isolation, this.readonly);
+
+            printStmtListIfNeed(session.factory, LOG, stmtList);
+
             session.stmtExecutor.executeBatch(stmtList);
             this.status = TransactionStatus.ACTIVE;
+
+            return this;
         } catch (DataAccessException e) {
             String m = String.format("%s start failure.", this);
             throw new TransactionSystemException(m, e);
@@ -61,7 +70,9 @@ final class SyncLocalTransaction extends _AbstractGenericTransaction implements 
         this.status = TransactionStatus.COMMITTING;
         final SyncLocalSession session = this.session;
         try {
-            session.stmtExecutor.execute("COMMIT");
+            final String command = "COMMIT";
+            printStmtIfNeed(session.factory, LOG, command);
+            session.stmtExecutor.execute(command);
             this.status = TransactionStatus.COMMITTED;
         } catch (DataAccessException e) {
             this.status = TransactionStatus.FAILED_COMMIT;
@@ -89,7 +100,12 @@ final class SyncLocalTransaction extends _AbstractGenericTransaction implements 
                 final SyncLocalSession session = this.session;
                 try {
                     session.clearChangedCache(this);
-                    session.stmtExecutor.execute("ROLLBACK");
+
+                    final String command = "ROLLBACK";
+
+                    printStmtIfNeed(session.factory, LOG, command);
+
+                    session.stmtExecutor.execute(command);
                     this.status = TransactionStatus.ROLLED_BACK;
                 } catch (DataAccessException e) {
                     this.status = TransactionStatus.FAILED_ROLLBACK;
@@ -106,6 +122,9 @@ final class SyncLocalTransaction extends _AbstractGenericTransaction implements 
                 }
             }
             break;
+            case NOT_ACTIVE:
+                // no-op
+                break;
             default: {
                 String m = String.format("%s status not in [%s,%s],can't rollback transaction."
                         , this, TransactionStatus.ACTIVE, TransactionStatus.MARKED_ROLLBACK);

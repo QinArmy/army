@@ -26,7 +26,7 @@ public abstract class _ArmySession implements Session {
 
     protected final boolean allowQueryInsert;
 
-    private _ArmySessionFactory armyFactory;
+    private final _ArmySessionFactory armyFactory;
 
     protected _ArmySession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
 
@@ -90,21 +90,20 @@ public abstract class _ArmySession implements Session {
         } else {
             mode = factory.sqlLogMode;
         }
-
         switch (mode) {
             case OFF:
                 break;
             case SIMPLE:
-                this.getLogger().info(factory.dialectParser().printStmt(stmt, false));
+                this.getLogger().info("session[name : {}] \n{}", this.name, factory.dialectParser().printStmt(stmt, false));
                 break;
             case DEBUG:
-                this.getLogger().debug(factory.dialectParser().printStmt(stmt, false));
+                this.getLogger().debug("session[name : {}] \n{}", this.name, factory.dialectParser().printStmt(stmt, false));
                 break;
             case FORMAT:
-                this.getLogger().info(factory.dialectParser().printStmt(stmt, true));
+                this.getLogger().info("session[name : {}] \n{}", this.name, factory.dialectParser().printStmt(stmt, true));
                 break;
             case FORMAT_DEBUG:
-                this.getLogger().debug(factory.dialectParser().printStmt(stmt, true));
+                this.getLogger().debug("session[name : {}] \n{}", this.name, factory.dialectParser().printStmt(stmt, true));
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(mode);
