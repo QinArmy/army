@@ -39,9 +39,9 @@ public class MySQLReplaceUnitTests extends MySQLUnitTests {
                 .replace(hintSupplier, Collections.singletonList(MySQLs.DELAYED))
                 .into(BankUser_.T)
                 .partition("p1")
-                .leftParen(BankUser_.nickName, BankUser_.certificateId)
-                .comma(BankUser_.registerRecordId)
-                .rightParen()
+                .parens(s -> s.space(BankUser_.nickName, BankUser_.certificateId)
+                        .comma(BankUser_.registerRecordId)
+                )
                 .defaultValue(BankUser_.visible, SQLs::literal, true)
                 .values(this::createBankUserList)
                 .asInsert();
@@ -66,9 +66,9 @@ public class MySQLReplaceUnitTests extends MySQLUnitTests {
                 .replace(hintSupplier, Collections.singletonList(MySQLs.LOW_PRIORITY))
                 .into(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .comma(ChinaRegion_.parentId)
-                .rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
                 .asInsert();
@@ -76,11 +76,6 @@ public class MySQLReplaceUnitTests extends MySQLUnitTests {
         print80Stmt(LOG, stmt);
 
     }
-
-
-
-
-
 
 
 }

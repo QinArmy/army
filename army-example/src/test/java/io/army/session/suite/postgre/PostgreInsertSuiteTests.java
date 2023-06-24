@@ -89,8 +89,9 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         stmt = Postgres.singleInsert()
                 .ignoreReturnIds()  // required ,because exists doNothing
                 .insertInto(ChinaRegion_.T).as("c")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.parentId, ChinaRegion_.regionGdp)
-                .rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.parentId)
+                        .comma(ChinaRegion_.regionGdp)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
                 .values(regionList)
                 .onConflict()
@@ -137,8 +138,9 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 .ignoreReturnIds()  // required ,because ChinaRegion_ contain visible field
                 //.literalMode(LiteralMode.LITERAL)
                 .insertInto(ChinaRegion_.T).as("c")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.parentId, ChinaRegion_.regionGdp)
-                .rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.parentId)
+                        .comma(ChinaRegion_.regionGdp)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
                 .values(regionList)
                 .onConflict()

@@ -50,8 +50,7 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
         final Insert stmt;
         stmt = SQLs.singleInsert()
                 .insertInto(ChinaRegion_.T)
-                .leftParen(ChinaRegion_.name, ChinaRegion_.parentId)
-                .rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.parentId))
                 .values(domainList)
                 .asInsert()
                 .child()

@@ -52,7 +52,7 @@ public interface PostgreMerge extends PostgreStatement, DmlStatement {
 
 
     interface _MergeInsertColumnListSpec<T, I extends Item>
-            extends InsertStatement._ColumnListClause<T, _MergeInsertOverridingValueSpec<T, I>>
+            extends InsertStatement._ColumnListParensClause<T, _MergeInsertOverridingValueSpec<T, I>>
             , _MergeInsertOverridingValueSpec<T, I> {
 
     }

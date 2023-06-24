@@ -482,9 +482,9 @@ abstract class InsertSupports {
 
 
     static abstract class ColumnsClause<T, RR>
-            implements InsertStatement._ColumnListClause<T, RR>,
-            InsertStatement._StaticColumnDualClause<T, RR>,
-            InsertStatement._StaticColumnQuadraClause<T, RR>,
+            implements InsertStatement._ColumnListParensClause<T, RR>,
+            InsertStatement._StaticColumnSpaceClause<T>,
+            InsertStatement._StaticColumnCommaQuadraClause<T>,
             _Insert._ColumnListInsert,
             ColumnListClause {
 
@@ -513,49 +513,45 @@ abstract class InsertSupports {
             return this.context;
         }
 
+
         @Override
-        public final Statement._RightParenClause<RR> leftParen(FieldMeta<T> field) {
+        public final RR parens(Consumer<InsertStatement._StaticColumnSpaceClause<T>> consumer) {
+            consumer.accept(this);
+            return this.endColumnListClause(true);
+        }
+
+
+        @Override
+        public final RR parens(SQLs.SymbolSpace space, Consumer<Consumer<FieldMeta<T>>> consumer) {
+            if (space != SQLs.SPACE) {
+                throw CriteriaUtils.errorSymbol(space);
+            }
+            consumer.accept(this::comma);
+            return this.endColumnListClause(false);
+        }
+
+        @Override
+        public final InsertStatement._StaticColumnUnaryClause<T> space(FieldMeta<T> field) {
             return this.comma(field);
         }
 
         @Override
-        public final InsertStatement._StaticColumnDualClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2) {
-            this.comma(field1);
-            this.comma(field2);
-            return this;
+        public final InsertStatement._StaticColumnDualClause<T> space(FieldMeta<T> field1, FieldMeta<T> field2) {
+            return this.comma(field1)
+                    .comma(field2);
         }
 
         @Override
-        public final Statement._RightParenClause<RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2,
-                                                               FieldMeta<T> field3) {
-            this.comma(field1);
-            this.comma(field2);
-            this.comma(field3);
-            return this;
+        public final InsertStatement._StaticColumnCommaQuadraClause<T> space(FieldMeta<T> field1, FieldMeta<T> field2,
+                                                                             FieldMeta<T> field3, FieldMeta<T> field4) {
+            return this.comma(field1)
+                    .comma(field2)
+                    .comma(field3)
+                    .comma(field4);
         }
 
         @Override
-        public final InsertStatement._StaticColumnQuadraClause<T, RR> leftParen(FieldMeta<T> field1, FieldMeta<T> field2,
-                                                                                FieldMeta<T> field3, FieldMeta<T> field4) {
-            this.comma(field1);
-            this.comma(field2);
-            this.comma(field3);
-            this.comma(field4);
-            return this;
-        }
-
-        @Override
-        public final RR parens(Consumer<Consumer<FieldMeta<T>>> consumer) {
-            consumer.accept(this::comma);
-            if (this.fieldList == null) {
-                throw ContextStack.criteriaError(this.context, "You don't add any field.");
-            }
-            return this.rightParen();
-        }
-
-
-        @Override
-        public final Statement._RightParenClause<RR> comma(FieldMeta<T> field) {
+        public final InsertStatement._StaticColumnCommaQuadraClause<T> comma(FieldMeta<T> field) {
             Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             List<FieldMeta<?>> fieldList = this.fieldList;
             if (fieldMap == null) {
@@ -575,42 +571,26 @@ abstract class InsertSupports {
         }
 
         @Override
-        public final InsertStatement._StaticColumnDualClause<T, RR> comma(FieldMeta<T> field1, FieldMeta<T> field2) {
-            this.comma(field1);
-            this.comma(field2);
-            return this;
+        public final InsertStatement._StaticColumnCommaQuadraClause<T> comma(FieldMeta<T> field1, FieldMeta<T> field2) {
+            return this.comma(field1)
+                    .comma(field2);
         }
 
         @Override
-        public final Statement._RightParenClause<RR> comma(FieldMeta<T> field1, FieldMeta<T> field2,
-                                                           FieldMeta<T> field3) {
-            this.comma(field1);
-            this.comma(field2);
-            this.comma(field3);
-            return this;
+        public final InsertStatement._StaticColumnCommaQuadraClause<T> comma(FieldMeta<T> field1, FieldMeta<T> field2,
+                                                                             FieldMeta<T> field3) {
+            return this.comma(field1)
+                    .comma(field2)
+                    .comma(field3);
         }
 
         @Override
-        public final InsertStatement._StaticColumnQuadraClause<T, RR> comma(FieldMeta<T> field1, FieldMeta<T> field2,
-                                                                            FieldMeta<T> field3, FieldMeta<T> field4) {
-            this.comma(field1);
-            this.comma(field2);
-            this.comma(field3);
-            this.comma(field4);
-            return this;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public final RR rightParen() {
-            final List<FieldMeta<?>> fieldList = this.fieldList;
-            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            if (!(fieldList instanceof ArrayList && fieldMap instanceof HashMap)) {
-                throw ContextStack.castCriteriaApi(this.context);
-            }
-            this.fieldList = Collections.unmodifiableList(fieldList);
-            this.fieldMap = Collections.unmodifiableMap(fieldMap);
-            return (RR) this;
+        public final InsertStatement._StaticColumnCommaQuadraClause<T> comma(FieldMeta<T> field1, FieldMeta<T> field2,
+                                                                             FieldMeta<T> field3, FieldMeta<T> field4) {
+            return this.comma(field1)
+                    .comma(field2)
+                    .comma(field3)
+                    .comma(field4);
         }
 
 
@@ -739,6 +719,23 @@ abstract class InsertSupports {
             assert fieldMap.size() == fieldList.size();
             this.fieldList = fieldList;
             return fieldMap;
+        }
+
+        @SuppressWarnings("unchecked")
+        private RR endColumnListClause(final boolean required) {
+            final List<FieldMeta<?>> fieldList = this.fieldList;
+            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+
+            if (fieldList == null && required) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+
+            if (fieldList != null && !(fieldList instanceof ArrayList && fieldMap instanceof HashMap)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+            this.fieldList = _Collections.safeUnmodifiableList(fieldList);
+            this.fieldMap = _Collections.safeUnmodifiableMap(fieldMap);
+            return (RR) this;
         }
 
 

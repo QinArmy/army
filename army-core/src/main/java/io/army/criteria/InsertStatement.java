@@ -1,5 +1,6 @@
 package io.army.criteria;
 
+import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 
@@ -98,26 +99,68 @@ public interface InsertStatement extends DmlStatement {
 
     }
 
+    interface _StaticColumnUnaryClause<T> {
 
-    interface _StaticColumnDualClause<T, IR> extends Statement._RightParenClause<IR> {
-
-        Statement._RightParenClause<IR> comma(FieldMeta<T> field);
-
-        _StaticColumnDualClause<T, IR> comma(FieldMeta<T> field1, FieldMeta<T> field2);
+        _StaticColumnUnaryClause<T> comma(FieldMeta<T> field);
 
     }
 
 
-    interface _StaticColumnQuadraClause<T, IR> extends Statement._RightParenClause<IR> {
+    interface _StaticColumnDualClause<T> extends _StaticColumnUnaryClause<T> {
 
-        Statement._RightParenClause<IR> comma(FieldMeta<T> field);
+        @Override
+        _StaticColumnDualClause<T> comma(FieldMeta<T> field);
 
-        Statement._RightParenClause<IR> comma(FieldMeta<T> field1, FieldMeta<T> field2);
+        _StaticColumnDualClause<T> comma(FieldMeta<T> field1, FieldMeta<T> field2);
 
-        Statement._RightParenClause<IR> comma(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3);
+    }
 
-        _StaticColumnQuadraClause<T, IR> comma(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3,
-                                               FieldMeta<T> field4);
+
+    interface _StaticColumnCommaQuadraClause<T> extends _StaticColumnDualClause<T> {
+
+        @Override
+        _StaticColumnCommaQuadraClause<T> comma(FieldMeta<T> field);
+
+        @Override
+        _StaticColumnCommaQuadraClause<T> comma(FieldMeta<T> field1, FieldMeta<T> field2);
+
+        _StaticColumnCommaQuadraClause<T> comma(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3);
+
+        _StaticColumnCommaQuadraClause<T> comma(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3,
+                                                FieldMeta<T> field4);
+
+    }
+
+    interface _StaticColumnSpaceClause<T> {
+
+        _StaticColumnUnaryClause<T> space(FieldMeta<T> field);
+
+
+        _StaticColumnDualClause<T> space(FieldMeta<T> field1, FieldMeta<T> field2);
+
+        _StaticColumnCommaQuadraClause<T> space(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3,
+                                                FieldMeta<T> field4);
+
+    }
+
+
+    interface _ColumnListParensClause<T, R> {
+
+        /**
+         * <p>
+         * INSERT static column list parens clause
+         * </p>
+         */
+        R parens(Consumer<_StaticColumnSpaceClause<T>> consumer);
+
+        /**
+         * <p>
+         * INSERT dynamic column list parens clause
+         * </p>
+         *
+         * @param space see {@link SQLs#SPACE}
+         */
+        R parens(SQLs.SymbolSpace space, Consumer<Consumer<FieldMeta<T>>> consumer);
 
     }
 
@@ -133,20 +176,6 @@ public interface InsertStatement extends DmlStatement {
     }
 
 
-    interface _ColumnListClause<T, R> {
-
-        Statement._RightParenClause<R> leftParen(FieldMeta<T> field);
-
-        _StaticColumnDualClause<T, R> leftParen(FieldMeta<T> field1, FieldMeta<T> field2);
-
-        Statement._RightParenClause<R> leftParen(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3);
-
-        _StaticColumnQuadraClause<T, R> leftParen(FieldMeta<T> field1, FieldMeta<T> field2, FieldMeta<T> field3,
-                                                  FieldMeta<T> field4);
-
-        R parens(Consumer<Consumer<FieldMeta<T>>> consumer);
-
-    }
 
 
     /**

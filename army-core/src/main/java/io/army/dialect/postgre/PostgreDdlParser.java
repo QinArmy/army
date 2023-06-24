@@ -191,7 +191,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
                 builder.append(" UNIQUE");
             }
 
-            builder.append(" INDEX IF NOT EXISTS ");
+            builder.append(" INDEX ");
             this.parser.identifier(index.name(), builder);
             builder.append(_Constant.SPACE_ON_SPACE);
             this.parser.safeObjectName(index.tableMeta(), builder);
@@ -243,7 +243,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
         String safeTypeName;
         safeTypeName = type.name();
         final int index;
-        if ((index = safeTypeName.lastIndexOf("_ARRAY")) > 0) {
+        if ((index = safeTypeName.lastIndexOf(_Constant.UNDERSCORE_ARRAY)) > 0) {
             safeTypeName = safeTypeName.substring(0, index);
         }
 

@@ -165,7 +165,7 @@ public interface MySQLInsert extends MySQLStatement {
     }
 
     interface _ColumnListSpec<I extends Item, T>
-            extends InsertStatement._ColumnListClause<T, _ComplexColumnDefaultSpec<I, T>>,
+            extends InsertStatement._ColumnListParensClause<T, _ComplexColumnDefaultSpec<I, T>>,
             _ValuesColumnDefaultSpec<I, T>,
             _MySQLStaticAssignmentClause<I, T>,
             InsertStatement._DynamicAssignmentSetClause<T, _OnAsRowAliasSpec<I, T>> {

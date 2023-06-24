@@ -57,7 +57,7 @@ public interface MySQLReplace extends MySQLStatement {
     }
 
     interface _ColumnListSpec<I extends Item, T>
-            extends InsertStatement._ColumnListClause<T, _ComplexColumnDefaultSpec<I, T>>,
+            extends InsertStatement._ColumnListParensClause<T, _ComplexColumnDefaultSpec<I, T>>,
             _ValueColumnDefaultSpec<I, T> {
 
     }

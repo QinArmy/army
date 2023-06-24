@@ -31,7 +31,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
                 .asInsert();
@@ -50,7 +52,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
                 .onDuplicateKey()
@@ -87,7 +91,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                     .literalMode(LiteralMode.PREFERENCE)
                     .insertInto(ChinaRegion_.T)
                     .partition("p1")
-                    .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                    .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                            .comma(ChinaRegion_.parentId)
+                    )
                     .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                     .values(this::createReginList)
                     .onDuplicateKey()       // here ,exists ON DUPLICATE KEY and insert multi row,so database couldn't return ids.
@@ -118,7 +124,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insert(hintSupplier, modifierList)
                 .into(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(this::createReginList)
                 .as("cr")
@@ -159,13 +167,15 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .value(province)
                 .asInsert()// parent table insert statement end
                 .child()
                 .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .value(province)
                 .onDuplicateKey()
                 .update(ChinaProvince_.governor, MySQLs::values)
@@ -208,7 +218,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insert(hintSupplier, modifierList)
                 .into(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .value(province)
                 .asInsert()// parent table insert statement end
@@ -216,7 +228,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .child()
 
                 .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .value(province)
                 .as("cp")
                 .onDuplicateKey()  // here,due to insert single row,allow ON DUPLICATE KEY clause
@@ -252,7 +264,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                     .literalMode(LiteralMode.PREFERENCE)
                     .insertInto(ChinaRegion_.T)
                     .partition("p1")
-                    .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                    .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                            .comma(ChinaRegion_.parentId)
+                    )
                     .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                     .values(provinceList)
                     .onDuplicateKey() // ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
@@ -263,7 +277,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                     .child()
 
                     .insertInto(ChinaProvince_.T)
-                    .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                    .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                     .values(provinceList)
                     .onDuplicateKey()
                     .update(ChinaProvince_.governor, MySQLs::values)
@@ -289,7 +303,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
                 .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
@@ -317,7 +333,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
                 .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
@@ -372,7 +390,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
                 .into(ChinaRegion_.T).partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
 
@@ -410,7 +430,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insert(hintSupplier, modifierList)
                 .into(ChinaRegion_.T).partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
 
@@ -450,7 +472,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         stmt = MySQLs.singleInsert()
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T).partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
                 .leftParen(ChinaRegion_.name, SQLs::literal, randomProvince(random))
@@ -468,7 +492,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .child()
 
                 .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values()
 
                 .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
@@ -494,7 +518,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
                 .leftParen(ChinaRegion_.name, SQLs::literal, randomProvince(random))
@@ -510,7 +536,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .asInsert()// parent table insert statement end
                 .child()
                 .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values()
 
                 .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
@@ -560,7 +586,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insert(hintSupplier, modifierList)
                 .into(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
                 .leftParen(ChinaRegion_.name, SQLs::literal, randomProvince(random))
@@ -578,7 +606,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .child()
 
                 .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values()
 
                 .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
@@ -604,7 +632,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
 
@@ -626,7 +656,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .child()
 
                 .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values()
 
                 .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
@@ -658,7 +688,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.population, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.population, ChinaRegion_.parentId))
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
@@ -689,7 +719,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.population, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.population, ChinaRegion_.parentId))
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
@@ -745,7 +775,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insert(hintSupplier, modifierList)
                 .into(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
@@ -776,7 +808,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
@@ -796,7 +830,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .child()
 
                 .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> param = SQLs::param;
                     final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> literal = SQLs::literal;
@@ -824,7 +858,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
@@ -842,7 +878,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .asInsert()// parent table insert statement end
                 .child()
                 .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> param = SQLs::param;
                     final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> literal = SQLs::literal;
@@ -895,7 +931,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insert(hintSupplier, modifierList)
                 .into(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
@@ -914,7 +952,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .child()
 
                 .insertInto(ChinaCity_.T)
-                .leftParen(ChinaCity_.mayorName).rightParen()
+                .parens(s -> s.space(ChinaCity_.mayorName))
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaCity>, Object, Expression> param = SQLs::param;
                     final BiFunction<FieldMeta<ChinaCity>, Object, Expression> literal = SQLs::literal;
@@ -950,7 +988,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insert(hintSupplier, modifierList)
                 .into(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
@@ -967,7 +1007,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .asInsert()// parent table insert statement end
                 .child()
                 .insertInto(ChinaCity_.T)
-                .leftParen(ChinaCity_.mayorName).rightParen()
+                .parens(s -> s.space(ChinaCity_.mayorName))
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaCity>, Object, Expression> param = SQLs::param;
                     final BiFunction<FieldMeta<ChinaCity>, Object, Expression> literal = SQLs::literal;
@@ -995,7 +1035,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .literalMode(LiteralMode.PREFERENCE)
                 .insertInto(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.parentId).rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.parentId)
+                )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
@@ -1015,7 +1057,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .asInsert() // parent table insert statement end
                 .child()
                 .insertInto(ChinaProvince_.T)
-                .leftParen(ChinaProvince_.governor, ChinaProvince_.provincialCapital).rightParen()
+                .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values(c -> {
                     final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> param = SQLs::param;
                     final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> literal = SQLs::literal;
@@ -1395,11 +1437,10 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         stmt = MySQLs.singleInsert()
                 .migration()
                 .insertInto(ChinaRegion_.T).partition("p1")
-                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
-                .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .comma(ChinaRegion_.regionType)
-                .rightParen()
-
+                .parens(s -> s.space(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                        .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.regionType)
+                )
                 .space()
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
@@ -1429,10 +1470,10 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insert(hintSupplier, Collections.emptyList())
                 .into(ChinaRegion_.T)
                 .partition("p1")
-                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
-                .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .comma(ChinaRegion_.regionType)
-                .rightParen()
+                .parens(s -> s.space(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                        .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.regionType)
+                )
                 .space()
                 .select(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
                 .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
@@ -1453,10 +1494,10 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         stmt = MySQLs.singleInsert()
                 .migration()
                 .insertInto(ChinaRegion_.T).partition("p1")
-                .leftParen(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
-                .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
-                .comma(ChinaRegion_.regionType)
-                .rightParen()
+                .parens(s -> s.space(ChinaRegion_.id, ChinaRegion_.createTime, ChinaRegion_.updateTime, ChinaRegion_.version)
+                        .comma(ChinaRegion_.visible, ChinaRegion_.parentId, ChinaRegion_.name, ChinaRegion_.regionGdp)
+                        .comma(ChinaRegion_.regionType)
+                )
 
                 .space()
 
@@ -1472,8 +1513,9 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .child()
 
                 .insertInto(ChinaProvince_.T).partition("p3")
-                .leftParen(ChinaProvince_.id, ChinaProvince_.provincialCapital, ChinaProvince_.governor)
-                .rightParen()
+                .parens(s -> s.space(ChinaProvince_.id, ChinaProvince_.provincialCapital)
+                        .comma(ChinaProvince_.governor)
+                )
 
                 .space()
 

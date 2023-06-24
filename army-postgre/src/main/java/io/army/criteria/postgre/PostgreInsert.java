@@ -206,7 +206,7 @@ public interface PostgreInsert extends PostgreStatement {
 
 
     interface _ColumnListSpec<T, I extends Item, Q extends Item>
-            extends InsertStatement._ColumnListClause<T, _ComplexOverridingValueSpec<T, I, Q>>,
+            extends InsertStatement._ColumnListParensClause<T, _ComplexOverridingValueSpec<T, I, Q>>,
             _OverridingValueSpec<T, I, Q> {
 
     }
