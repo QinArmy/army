@@ -498,14 +498,20 @@ abstract class MySQLInserts extends InsertSupports {
 
 
     private static final class MySQLStaticValuesClause<I extends Item, T>
-            extends InsertSupports.StaticColumnValuePairClause<T, MySQLInsert._StaticValuesLeftParenSpec<I, T>>
-            implements MySQLInsert._StaticValuesLeftParenSpec<I, T> {
+            extends ValuesParensClauseImpl<T, MySQLInsert._ValuesStaticParensCommaSpec<I, T>>
+            implements MySQLInsert._ValuesStaticParensCommaSpec<I, T>,
+            MySQLInsert._MySQLValuesStaticParensClause<I, T> {
 
         private final MySQLComplexValuesClause<I, T> valuesClause;
 
         private MySQLStaticValuesClause(MySQLComplexValuesClause<I, T> valuesClause) {
             super(valuesClause.context, valuesClause::validateField);
             this.valuesClause = valuesClause;
+        }
+
+        @Override
+        public MySQLInsert._MySQLValuesStaticParensClause<I, T> comma() {
+            return this;
         }
 
         @Override
@@ -609,7 +615,7 @@ abstract class MySQLInserts extends InsertSupports {
         }
 
         @Override
-        public MySQLInsert._MySQLStaticValuesLeftParenClause<I, T> values() {
+        public MySQLInsert._MySQLValuesStaticParensClause<I, T> values() {
             return new MySQLStaticValuesClause<>(this);
         }
 

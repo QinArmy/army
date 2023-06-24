@@ -971,7 +971,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public PostgreInsert._ValuesLeftParenClause<T, I, Q> values() {
+        public PostgreInsert._PostgreValuesStaticParensClause<T, I, Q> values() {
             return new StaticValuesLeftParenClause<>(this);
         }
 
@@ -1262,16 +1262,22 @@ abstract class PostgreInserts extends InsertSupports {
 
 
     private static final class StaticValuesLeftParenClause<T, I extends Item, Q extends Item>
-            extends InsertSupports.StaticColumnValuePairClause<
+            extends ValuesParensClauseImpl<
             T,
-            PostgreInsert._ValuesLeftParenSpec<T, I, Q>>
-            implements PostgreInsert._ValuesLeftParenSpec<T, I, Q> {
+            PostgreInsert._PostgreValuesStaticParensCommaSpec<T, I, Q>>
+            implements PostgreInsert._PostgreValuesStaticParensCommaSpec<T, I, Q>,
+            PostgreInsert._PostgreValuesStaticParensClause<T, I, Q> {
 
         private final PostgreComplexValuesClause<T, I, Q> clause;
 
         private StaticValuesLeftParenClause(PostgreComplexValuesClause<T, I, Q> clause) {
             super(clause.context, clause::validateField);
             this.clause = clause;
+        }
+
+        @Override
+        public PostgreInsert._PostgreValuesStaticParensClause<T, I, Q> comma() {
+            return this;
         }
 
         @Override

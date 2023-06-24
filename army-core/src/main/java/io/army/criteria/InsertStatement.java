@@ -213,17 +213,7 @@ public interface InsertStatement extends DmlStatement {
     }
 
 
-    interface _StaticValuesClause<VR> {
 
-        VR values();
-
-    }
-
-    interface _DynamicValuesClause<T, VR> {
-
-        VR values(Consumer<ValuesConstructor<T>> consumer);
-
-    }
 
 
     interface _ChildPartClause<CR> {
@@ -241,35 +231,74 @@ public interface InsertStatement extends DmlStatement {
     }
 
 
-    interface _StaticValueLeftParenClause<T, RR> {
+    interface _StaticValueSpaceClause<T> {
 
-        _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Expression value);
+        _StaticColumnValueClause<T> space(FieldMeta<T> field, Expression value);
 
-        _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Supplier<Expression> supplier);
+        _StaticColumnValueClause<T> space(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+        _StaticColumnValueClause<T> space(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        <E> _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, E value);
+        <E> _StaticColumnValueClause<T> space(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, @Nullable E value);
 
 
-        <K, V> _StaticColumnValueClause<T, RR> leftParen(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
+        <K, V> _StaticColumnValueClause<T> space(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
 
+        _StaticColumnValueClause<T> spaceIf(FieldMeta<T> field, Supplier<Expression> supplier);
+
+        _StaticColumnValueClause<T> spaceIf(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+
+        <E> _StaticColumnValueClause<T> spaceIf(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, Supplier<E> supplier);
+
+
+        <K, V> _StaticColumnValueClause<T> spaceIf(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
+
+
+    }
+
+    interface _StaticColumnValueClause<T> {
+
+        _StaticColumnValueClause<T> comma(FieldMeta<T> field, Expression value);
+
+        _StaticColumnValueClause<T> comma(FieldMeta<T> field, Supplier<Expression> supplier);
+
+        _StaticColumnValueClause<T> comma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+
+        <E> _StaticColumnValueClause<T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, @Nullable E value);
+
+        <K, V> _StaticColumnValueClause<T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
+
+        _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, Supplier<Expression> supplier);
+
+        _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+
+        <E> _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, Supplier<E> supplier);
+
+
+        <K, V> _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
 
     }
 
-    interface _StaticColumnValueClause<T, RR> extends Statement._RightParenClause<RR> {
 
-        _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Expression value);
+    interface _ValuesParensClause<T, R extends Item> extends Item {
 
-        _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Supplier<Expression> supplier);
+        R parens(Consumer<_StaticValueSpaceClause<T>> consumer);
 
-        _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+        R parens(SQLs.SymbolSpace space, Consumer<_AssignmentSetSpec<T>> consumer);
+    }
 
-        <E> _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, E value);
+    interface _StaticValuesClause<R> {
 
-        <K, V> _StaticColumnValueClause<T, RR> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
+        R values();
 
     }
+
+    interface _DynamicValuesClause<T, R> {
+
+        R values(Consumer<ValuesConstructor<T>> consumer);
+
+    }
+
 
     /**
      * <p>
@@ -281,30 +310,30 @@ public interface InsertStatement extends DmlStatement {
      * ,because army don't guarantee compatibility to future distribution.
      * </p>
      */
-    interface _StaticAssignmentSetClause<T, SR> {
+    interface _StaticAssignmentSetClause<T, R> extends Item {
 
-        SR set(FieldMeta<T> field, Expression value);
+        R set(FieldMeta<T> field, Expression value);
 
-        SR set(FieldMeta<T> field, Supplier<Expression> supplier);
+        R set(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        SR set(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+        R set(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
+        <E> R set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
 
-        <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
-
-        SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+        <K, V> R set(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> valueOperator, Function<K, V> function, K key);
 
 
-        SR ifSet(FieldMeta<T> field, Supplier<Expression> supplier);
+        R ifSet(FieldMeta<T> field, Supplier<Expression> supplier);
 
-        SR ifSet(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+        R ifSet(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
-        <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
+        <E> R ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
 
-        <E> SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
+        <K, V> R ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> valueOperator, Function<K, V> function, K key);
 
-        SR ifSet(FieldMeta<T> field, BiFunction<FieldMeta<T>, Object, Expression> valueOperator, Function<String, ?> function, String keyName);
+    }
+
+    interface _AssignmentSetSpec<T> extends _StaticAssignmentSetClause<T, _AssignmentSetSpec<T>> {
 
     }
 

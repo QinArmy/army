@@ -154,13 +154,13 @@ public interface PostgreInsert extends PostgreStatement {
 
     /*-------------------below insert syntax interfaces  -------------------*/
 
-    interface _ValuesLeftParenClause<T, I extends Item, Q extends Item>
-            extends InsertStatement._StaticValueLeftParenClause<T, _ValuesLeftParenSpec<T, I, Q>> {
+    interface _PostgreValuesStaticParensClause<T, I extends Item, Q extends Item>
+            extends InsertStatement._ValuesParensClause<T, _PostgreValuesStaticParensCommaSpec<T, I, Q>> {
 
     }
 
-    interface _ValuesLeftParenSpec<T, I extends Item, Q extends Item>
-            extends _ValuesLeftParenClause<T, I, Q>, _OnConflictSpec<T, I, Q> {
+    interface _PostgreValuesStaticParensCommaSpec<T, I extends Item, Q extends Item>
+            extends _CommaClause<_PostgreValuesStaticParensClause<T, I, Q>>, _OnConflictSpec<T, I, Q> {
 
     }
 
@@ -169,7 +169,7 @@ public interface PostgreInsert extends PostgreStatement {
             extends InsertStatement._ColumnDefaultClause<T, _ValuesDefaultSpec<T, I, Q>>,
             InsertStatement._DomainValueClause<T, _OnConflictSpec<T, I, Q>>,
             InsertStatement._DynamicValuesClause<T, _OnConflictSpec<T, I, Q>>,
-            InsertStatement._StaticValuesClause<_ValuesLeftParenClause<T, I, Q>> {
+            InsertStatement._StaticValuesClause<_PostgreValuesStaticParensClause<T, I, Q>> {
 
     }
 

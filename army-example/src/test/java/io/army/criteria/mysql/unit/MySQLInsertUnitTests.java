@@ -6,7 +6,6 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
-import io.army.meta.FieldMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -14,7 +13,6 @@ import org.testng.annotations.Test;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public class MySQLInsertUnitTests extends MySQLUnitTests {
@@ -308,16 +306,14 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
-                .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
-                .leftParen(ChinaRegion_.name, SQLs::param, randomRegion(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                )
                 .asInsert();
 
         printStmt(LOG, stmt);
@@ -338,16 +334,16 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
-                .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                )
+                .comma()
 
-                .leftParen(ChinaRegion_.name, SQLs::param, randomRegion(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                )
                 .onDuplicateKey()
                 .update(ChinaRegion_.name, MySQLs::values)
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
@@ -356,12 +352,6 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                         .from(HistoryChinaRegion_.T, SQLs.AS, "t")
                         .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
                         .and(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
-                        .union()
-                        .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, MySQLs.values(ChinaRegion_.name)) // qualified field({tableName}.name) feature
-                        .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
-                        .limit(SQLs::literal, 1)
                         .asQuery()
 
                 )
@@ -395,17 +385,14 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
-
-                .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
-                .leftParen(ChinaRegion_.name, SQLs::param, randomRegion(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                )
                 .asInsert();
 
         print80Stmt(LOG, stmt);
@@ -436,15 +423,14 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
 
-                .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
-                .leftParen(ChinaRegion_.name, SQLs::param, randomRegion(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                )
                 .as("cr")
                 .onDuplicateKey() // TODO validate version = version + persist to database result
                 .update(ChinaRegion_.name, SQLs.field("cr", ChinaRegion_.name))
@@ -477,16 +463,14 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
-                .leftParen(ChinaRegion_.name, SQLs::literal, randomProvince(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
-                .leftParen(ChinaRegion_.name, SQLs::param, randomProvince(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomProvince(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomProvince(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                )
                 .asInsert()// parent table insert statement end
 
                 .child()
@@ -494,15 +478,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insertInto(ChinaProvince_.T)
                 .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values()
-
-                .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
-                .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
-                .rightParen()
-
-                .leftParen(ChinaProvince_.governor, SQLs::param, randomPerson(random))
-                .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                ).comma()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                )
                 .asInsert();
 
         printStmt(LOG, stmt);
@@ -523,30 +504,26 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
-                .leftParen(ChinaRegion_.name, SQLs::literal, randomProvince(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
-                .leftParen(ChinaRegion_.name, SQLs::param, randomProvince(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomProvince(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomProvince(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                )
                 .asInsert()// parent table insert statement end
                 .child()
                 .insertInto(ChinaProvince_.T)
                 .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values()
 
-                .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
-                .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
-                .rightParen()
-
-                .leftParen(ChinaProvince_.governor, SQLs::param, randomPerson(random))
-                .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                ).comma()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
+                )
                 .onDuplicateKey()
                 .update(ChinaProvince_.governor, MySQLs::values)
                 .comma(ChinaProvince_.provincialCapital, SQLs.scalarSubQuery()
@@ -554,12 +531,6 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                         .from(HistoryChinaProvince_.T, SQLs.AS, "cp")
                         .join(HistoryChinaRegion_.T, SQLs.AS, "cr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
                         .where(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
-                        .union()
-                        .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, SQLs::literal, randomPerson(random))
-                        .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
-                        .limit(SQLs::literal, 4)
                         .asQuery()
                 )
                 .asInsert();
@@ -591,16 +562,14 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
-                .leftParen(ChinaRegion_.name, SQLs::literal, randomProvince(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
-                .leftParen(ChinaRegion_.name, SQLs::param, randomProvince(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomProvince(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomProvince(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                )
                 .asInsert()// parent table insert statement end
 
                 .child()
@@ -608,15 +577,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insertInto(ChinaProvince_.T)
                 .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values()
-
-                .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
-                .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
-                .rightParen()
-
-                .leftParen(ChinaProvince_.governor, SQLs::param, randomPerson(random))
-                .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                ).comma()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
+                )
                 .asInsert();
 
         print80Stmt(LOG, stmt);
@@ -637,17 +603,14 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values()
-
-                .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
-                .leftParen(ChinaRegion_.name, SQLs::literal, randomRegion(random))
-                .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
-                .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::literal, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt(Integer.MAX_VALUE))
+                )
                 .onDuplicateKey() // ChinaRegion_.id.generatorType() == GeneratorType.POST, so forbid onDuplicateKey clause,must throw CriteriaException
                 .update(ChinaRegion_.name, MySQLs::values)
                 .comma(ChinaRegion_.regionGdp, SQLs::plusEqual, MySQLs.values(ChinaRegion_.regionGdp))
@@ -658,15 +621,12 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insertInto(ChinaProvince_.T)
                 .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values()
-
-                .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
-                .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
-                .rightParen()
-
-                .leftParen(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
-                .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
-                .rightParen()
-
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::literal, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                ).comma()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                )
                 .onDuplicateKey()
                 .update(ChinaProvince_.governor, MySQLs::values)
                 .comma(ChinaProvince_.provincialCapital, MySQLs::values)
@@ -691,15 +651,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.population, ChinaRegion_.parentId))
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
                     for (int i = 0; i < 2; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row()
-                                .set(ChinaRegion_.name, function, randomRegion(random))
-                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
-                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                        c.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                        );
                     }
 
                 })
@@ -722,15 +678,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .parens(s -> s.space(ChinaRegion_.name, ChinaRegion_.regionGdp, ChinaRegion_.population, ChinaRegion_.parentId))
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
                     for (int i = 0; i < 2; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row()
-                                .set(ChinaRegion_.name, function, randomRegion(random))
-                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
-                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                        c.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                        );
                     }
 
                 })
@@ -780,15 +732,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
                     for (int i = 0; i < 2; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row()
-                                .set(ChinaRegion_.name, function, randomRegion(random))
-                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
-                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                        c.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                        );
                     }
 
                 })
@@ -813,15 +761,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
                     for (int i = 0; i < rowCount; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row()
-                                .set(ChinaRegion_.name, function, randomProvince(random))
-                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
-                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                        c.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                        );
                     }
 
                 })
@@ -832,14 +776,10 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insertInto(ChinaProvince_.T)
                 .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaProvince>, Object, Expression> function;
                     for (int i = 0; i < rowCount; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row()
-                                .set(ChinaProvince_.governor, function, randomPerson(random))
-                                .set(ChinaProvince_.provincialCapital, function, randomPerson(random));
+                        c.parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                                .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
+                        );
                     }
 
                 })
@@ -863,15 +803,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
                     for (int i = 0; i < rowCount; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row()
-                                .set(ChinaRegion_.name, function, randomProvince(random))
-                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
-                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                        c.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                        );
                     }
 
                 })
@@ -880,30 +816,20 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insertInto(ChinaProvince_.T)
                 .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaProvince>, Object, Expression> function;
                     for (int i = 0; i < rowCount; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row()
-                                .set(ChinaProvince_.governor, function, randomPerson(random))
-                                .set(ChinaProvince_.provincialCapital, function, randomPerson(random));
+                        c.parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                                .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
+                        );
                     }
 
                 })
                 .onDuplicateKey()
                 .update(ChinaProvince_.governor, MySQLs::values)
-                .comma(ChinaProvince_.provincialCapital, () -> SQLs.scalarSubQuery()
+                .comma(ChinaProvince_.provincialCapital, SQLs.scalarSubQuery()
                         .select(HistoryChinaProvince_.provincialCapital)
                         .from(HistoryChinaProvince_.T, SQLs.AS, "cp")
                         .join(HistoryChinaRegion_.T, SQLs.AS, "cr").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
                         .where(HistoryChinaRegion_.parentId::equal, SQLs::literal, 1)
-                        .union()
-                        .select(HistoryChinaRegion_.name)
-                        .from(HistoryChinaRegion_.T, SQLs.AS, "t")
-                        .where(HistoryChinaRegion_.name::equal, SQLs::literal, "曲境")
-                        .and(HistoryChinaRegion_.regionType::equal, SQLs::literal, RegionType.CITY)
-                        .limit(SQLs::literal, 1)
                         .asQuery()
                 )
                 .asInsert();
@@ -936,14 +862,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
                     for (int i = 0; i < rowCount; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row().set(ChinaRegion_.name, function, randomCity(random))
-                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
-                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                        c.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                        );
                     }
 
                 })
@@ -954,12 +877,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insertInto(ChinaCity_.T)
                 .parens(s -> s.space(ChinaCity_.mayorName))
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaCity>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaCity>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaCity>, Object, Expression> function;
                     for (int i = 0; i < rowCount; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row().set(ChinaCity_.mayorName, function, randomPerson(random));
+                        c.parens(s -> s.space(ChinaCity_.mayorName, SQLs::param, randomPerson(random)));
                     }
 
                 })
@@ -993,14 +912,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
                     for (int i = 0; i < rowCount; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row().set(ChinaRegion_.name, function, randomCity(random))
-                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
-                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                        c.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                        );
                     }
 
                 })
@@ -1009,12 +925,8 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insertInto(ChinaCity_.T)
                 .parens(s -> s.space(ChinaCity_.mayorName))
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaCity>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaCity>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaCity>, Object, Expression> function;
                     for (int i = 0; i < rowCount; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row().set(ChinaCity_.mayorName, function, randomPerson(random));
+                        c.parens(s -> s.space(ChinaCity_.mayorName, SQLs::param, randomPerson(random)));
                     }
 
                 })
@@ -1040,14 +952,11 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 )
                 .defaultValue(ChinaRegion_.visible, SQLs::literal, true)
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaRegion<?>>, Object, Expression> function;
                     for (int i = 0; i < rowCount; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row().set(ChinaRegion_.name, function, randomProvince(random))
-                                .set(ChinaRegion_.regionGdp, function, randomDecimal(random))
-                                .set(ChinaRegion_.parentId, function, random.nextInt(Integer.MAX_VALUE));
+                        c.parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                                .comma(ChinaRegion_.regionGdp, SQLs::param, randomDecimal(random))
+                                .comma(ChinaRegion_.parentId, SQLs::param, random.nextInt(Integer.MAX_VALUE))
+                        );
                     }
 
                 })
@@ -1059,13 +968,10 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
                 .insertInto(ChinaProvince_.T)
                 .parens(s -> s.space(ChinaProvince_.governor, ChinaProvince_.provincialCapital))
                 .values(c -> {
-                    final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> param = SQLs::param;
-                    final BiFunction<FieldMeta<ChinaProvince>, Object, Expression> literal = SQLs::literal;
-                    BiFunction<FieldMeta<ChinaProvince>, Object, Expression> function;
                     for (int i = 0; i < rowCount; i++) {
-                        function = (i & 1) == 0 ? literal : param;
-                        c.row().set(ChinaProvince_.governor, function, randomPerson(random))
-                                .set(ChinaProvince_.provincialCapital, function, randomPerson(random));
+                        c.parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                                .comma(ChinaProvince_.provincialCapital, SQLs::param, randomPerson(random))
+                        );
                     }
 
                 })

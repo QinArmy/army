@@ -82,6 +82,7 @@ final class PostgreExcludedField extends OperationDataField implements _Selectio
      * @see #appendSql(_SqlContext)
      */
     private StringBuilder appendExcludedField(final _SqlContext context) {
+        // TODO add only filed method
         final StringBuilder sqlBuilder;
         sqlBuilder = context.sqlBuilder()
                 .append(SPACE_EXCLUDED);

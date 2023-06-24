@@ -188,16 +188,22 @@ abstract class StandardInserts extends InsertSupports {
 
 
     private static final class StandardStaticValuesClause<T, I extends Item>
-            extends InsertSupports.StaticColumnValuePairClause<
+            extends ValuesParensClauseImpl<
             T,
-            StandardInsert._ValueStaticLeftParenSpec<T, I>>
-            implements StandardInsert._ValueStaticLeftParenSpec<T, I> {
+            StandardInsert._ValuesParensCommaSpec<T, I>>
+            implements StandardInsert._ValuesParensCommaSpec<T, I>,
+            StandardInsert._StandardValuesParensClause<T, I> {
 
         private final StandardComplexValuesClause<T, I> claus;
 
         private StandardStaticValuesClause(StandardComplexValuesClause<T, I> clause) {
             super(clause.context, clause::validateField);
             this.claus = clause;
+        }
+
+        @Override
+        public StandardInsert._StandardValuesParensClause<T, I> comma() {
+            return this;
         }
 
         @Override
@@ -236,7 +242,7 @@ abstract class StandardInserts extends InsertSupports {
 
 
         @Override
-        public StandardInsert._StandardValueStaticLeftParenClause<T, I> values() {
+        public StandardInsert._StandardValuesParensClause<T, I> values() {
             return new StandardStaticValuesClause<>(this);
         }
 

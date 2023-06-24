@@ -24,13 +24,13 @@ public interface PostgreMerge extends PostgreStatement, DmlStatement {
 
     }
 
-    interface _MergeInsertValuesLeftParenClause<T, I extends Item>
-            extends InsertStatement._StaticValueLeftParenClause<T, _MergeInsertValuesLeftParenSpec<T, I>> {
+    interface _MergeInsertValuesParensClause<T, I extends Item>
+            extends InsertStatement._ValuesParensClause<T, _MergeInsertValuesParenCommaSpec<T, I>> {
 
     }
 
-    interface _MergeInsertValuesLeftParenSpec<T, I extends Item>
-            extends _MergeInsertValuesLeftParenClause<T, I>, _DmlInsertClause<I> {
+    interface _MergeInsertValuesParenCommaSpec<T, I extends Item>
+            extends _CommaClause<_MergeInsertValuesParensClause<T, I>>, _DmlInsertClause<I> {
 
     }
 
@@ -39,7 +39,7 @@ public interface PostgreMerge extends PostgreStatement, DmlStatement {
             extends InsertStatement._ColumnDefaultClause<T, _MergeInsertValuesDefaultSpec<T, I>>
             , InsertStatement._DomainValueClause<T, _DmlInsertClause<I>>
             , InsertStatement._DynamicValuesClause<T, _DmlInsertClause<I>>
-            , InsertStatement._StaticValuesClause<_MergeInsertValuesLeftParenClause<T, I>> {
+            , InsertStatement._StaticValuesClause<_MergeInsertValuesParensClause<T, I>> {
 
     }
 

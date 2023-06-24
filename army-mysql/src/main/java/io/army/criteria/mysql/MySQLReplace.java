@@ -33,12 +33,12 @@ public interface MySQLReplace extends MySQLStatement {
 
     /*-------------------below  replace api interfaces -------------------*/
 
-    interface _MySQLStaticValuesLeftParenClause<I extends Item, T>
-            extends InsertStatement._StaticValueLeftParenClause<T, _StaticValuesLeftParenSpec<I, T>> {
+    interface _MySQLValuesStaticParensClause<I extends Item, T>
+            extends InsertStatement._ValuesParensClause<T, _ValuesStaticParensCommaSpec<I, T>> {
 
     }
 
-    interface _StaticValuesLeftParenSpec<I extends Item, T> extends _MySQLStaticValuesLeftParenClause<I, T>,
+    interface _ValuesStaticParensCommaSpec<I extends Item, T> extends _CommaClause<_MySQLValuesStaticParensClause<I, T>>,
             _DmlInsertClause<I> {
 
     }
@@ -46,7 +46,7 @@ public interface MySQLReplace extends MySQLStatement {
     interface _ValueColumnDefaultSpec<I extends Item, T>
             extends InsertStatement._ColumnDefaultClause<T, _ValueColumnDefaultSpec<I, T>>,
             InsertStatement._DomainValueClause<T, _DmlInsertClause<I>>,
-            InsertStatement._StaticValuesClause<_MySQLStaticValuesLeftParenClause<I, T>>,
+            InsertStatement._StaticValuesClause<_MySQLValuesStaticParensClause<I, T>>,
             InsertStatement._DynamicValuesClause<T, _DmlInsertClause<I>> {
 
     }

@@ -13,16 +13,16 @@ import io.army.meta.SimpleTableMeta;
  *
  * @since 1.0
  */
-public interface StandardInsert extends StandardStatement, InsertStatement {
+public interface StandardInsert extends StandardStatement {
 
 
-    interface _StandardValueStaticLeftParenClause<T, I extends Item>
-            extends InsertStatement._StaticValueLeftParenClause<T, _ValueStaticLeftParenSpec<T, I>> {
+    interface _StandardValuesParensClause<T, I extends Item>
+            extends InsertStatement._ValuesParensClause<T, _ValuesParensCommaSpec<T, I>> {
 
     }
 
-    interface _ValueStaticLeftParenSpec<T, I extends Item>
-            extends _StandardValueStaticLeftParenClause<T, I>, _DmlInsertClause<I> {
+    interface _ValuesParensCommaSpec<T, I extends Item>
+            extends _CommaClause<_StandardValuesParensClause<T, I>>, _DmlInsertClause<I> {
 
     }
 
@@ -30,7 +30,7 @@ public interface StandardInsert extends StandardStatement, InsertStatement {
             extends InsertStatement._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<T, I>>,
             InsertStatement._DomainValueClause<T, _DmlInsertClause<I>>,
             InsertStatement._DynamicValuesClause<T, _DmlInsertClause<I>>,
-            InsertStatement._StaticValuesClause<_StandardValueStaticLeftParenClause<T, I>> {
+            InsertStatement._StaticValuesClause<_StandardValuesParensClause<T, I>> {
 
     }
 
@@ -57,7 +57,7 @@ public interface StandardInsert extends StandardStatement, InsertStatement {
 
         <T> _ColumnListSpec<T, I> insertInto(SimpleTableMeta<T> table);
 
-        <P> _ColumnListSpec<P, _ParentInsert20<I, _ChildInsertIntoClause<I, P>>> insertInto(ParentTableMeta<P> table);
+        <P> _ColumnListSpec<P, InsertStatement._ParentInsert20<I, _ChildInsertIntoClause<I, P>>> insertInto(ParentTableMeta<P> table);
     }
 
     interface _PrimaryPreferLiteralSpec<I extends Item>
