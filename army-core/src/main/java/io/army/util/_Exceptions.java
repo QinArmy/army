@@ -1110,4 +1110,19 @@ public abstract class _Exceptions extends ExceptionUtils {
         }
         return e;
     }
+
+    public static DataAccessException firstStmtIdIsNull() {
+        return new DataAccessException("first statement id is null");
+    }
+
+    public static DataAccessException secondStmtIdIsNull() {
+        return new DataAccessException("second statement id is null");
+    }
+
+    public static DataAccessException noMatchFirstStmtRow(Object secondStmtRowId) {
+        String m = String.format("No match row of first statement for second statement row id[%s]", secondStmtRowId);
+        return new DataAccessException(m);
+    }
+
+
 }

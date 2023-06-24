@@ -84,7 +84,7 @@ public interface StmtExecutor {
                                          Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException;
 
-    <R> int childQuery(SecondQueryStmt stmt, int timeout, Class<R> resultClass, List<R> resultList);
+    <R> int secondQuery(SecondQueryStmt stmt, int timeout, Class<R> resultClass, List<R> resultList);
 
     <R> List<R> batchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
                            Supplier<List<R>> listConstructor) throws DataAccessException;
