@@ -1539,6 +1539,9 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final List<?> domainList;
 
+        /**
+         * @see PostgreInserts#parentInsertEnd(PostgreComplexValuesClause)
+         */
         private PrimaryParentDomainInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             this.originalDomainList = clause.originalDomainList();
@@ -1564,7 +1567,8 @@ abstract class PostgreInserts extends InsertSupports {
 
         private ReturningInsert childReturningInsertEnd(PostgreComplexValuesClause<?, ?, ?> childClause) {
             childClause.domainListForChild(this.originalDomainList);
-            return new PrimaryChildDomainReturningInsertStatement(this, childClause);
+            return new PrimaryChildDomainReturningInsertStatement(this, childClause)
+                    .asReturningInsert();
         }
 
 
@@ -1631,6 +1635,9 @@ abstract class PostgreInserts extends InsertSupports {
         private final List<?> originalDomainList;
         private final List<?> domainList;
 
+        /**
+         * @see PostgreInserts#parentReturningEnd(PostgreComplexValuesClause)
+         */
         private PrimaryParentDomainReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             this.originalDomainList = clause.originalDomainList();
@@ -1765,6 +1772,9 @@ abstract class PostgreInserts extends InsertSupports {
             extends ValueInsertStatement<PostgreInsert._ParentInsert<P>, ReturningInsert>
             implements Insert, PostgreInsert._ParentInsert<P>, ValueSyntaxOptions {
 
+        /**
+         * @see PostgreInserts#parentInsertEnd(PostgreComplexValuesClause)
+         */
         private PrimaryParentValueInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
         }
@@ -1832,6 +1842,9 @@ abstract class PostgreInserts extends InsertSupports {
             extends ValueInsertStatement<InsertStatement, PostgreInsert._ParentReturnInsert<P>>
             implements PostgreInsert._ParentReturnInsert<P>, ValueSyntaxOptions, _ReturningDml {
 
+        /**
+         * @see PostgreInserts#parentReturningEnd(PostgreComplexValuesClause)
+         */
         private PrimaryParentValueReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
         }
@@ -1839,8 +1852,7 @@ abstract class PostgreInserts extends InsertSupports {
         @Override
         public _ChildWithCteSpec<P> child() {
             this.prepared();
-            return new ChildInsertIntoClause<>(this
-                    , this::childInsertEnd, this::childReturningInsertEnd);
+            return new ChildInsertIntoClause<>(this, this::childInsertEnd, this::childReturningInsertEnd);
         }
 
         private Insert childInsertEnd(PostgreComplexValuesClause<?, ?, ?> childClause) {
@@ -2044,6 +2056,9 @@ abstract class PostgreInserts extends InsertSupports {
             extends ParentQueryInsertStatement<PostgreInsert._ParentInsert<P>, ReturningInsert>
             implements PostgreInsert._ParentInsert<P> {
 
+        /**
+         * @see PostgreInserts#parentInsertEnd(PostgreComplexValuesClause)
+         */
         private PrimaryParentQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
         }
@@ -2108,6 +2123,9 @@ abstract class PostgreInserts extends InsertSupports {
             implements PostgreInsert._ParentReturnInsert<P>,
             _ReturningDml {
 
+        /**
+         * @see PostgreInserts#parentReturningEnd(PostgreComplexValuesClause)
+         */
         private PrimaryParentQueryReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
         }

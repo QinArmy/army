@@ -51,17 +51,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         this.conn = conn;
     }
 
-    public static ArmyException wrapError(final Throwable error) {
-        final ArmyException e;
-        if (error instanceof SQLException) {
-            e = new DataAccessException(error);
-        } else if (error instanceof ArmyException) {
-            e = (ArmyException) error;
-        } else {
-            e = _Exceptions.unknownError(error.getMessage(), error);
-        }
-        return e;
-    }
+
 
     @Override
     public final long insert(final SimpleStmt stmt, final int timeout) {
@@ -331,22 +321,19 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 final String idFieldName = idSelection.alias();
 
                 final MappingType compatibleType;
-                compatibleType = compatibleTypeFrom(idSelection.typeMeta(), resultClass, accessor,
-                        idFieldName);
+                compatibleType = compatibleTypeFrom(idSelection, resultClass, accessor, idFieldName);
 
-                final boolean pseudoAccessor = accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR;
+                final boolean columnResultSet = accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR;
                 final MappingEnv env = this.factory.mappingEnv;
-                Object secondStmtId, firstStmtId, temp;
-                int rowCount = 0;
+                Object secondStmtId, firstStmtId;
+                int rowIndex = 0;
                 R rowOfFirstStmt;
                 Map<Object, Integer> rowIndexMap = null;
-                Integer rowIndex;
-                for (final int idIndexBasedOne = idSelectionIndex + 1; resultSet.next(); rowCount++) {
-                    if (rowCount == Integer.MAX_VALUE) {
-                        break;
-                    } else if (rowCount >= firstStmtResultSize) {
+                Integer rowIndexValue;
+                for (final int idIndexBasedOne = idSelectionIndex + 1; resultSet.next(); rowIndex++) {
+                    if (rowIndex == firstStmtResultSize) {
                         //here, error,invoker throw Exception
-                        continue;
+                        break;
                     }
 
                     secondStmtId = get(resultSet, idIndexBasedOne, idSqlType);
@@ -358,10 +345,10 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                     secondStmtId = compatibleType.afterGet(idSqlType, env, secondStmtId);
 
                     if (rowIndexMap != null) {
-                        rowIndex = rowIndexMap.get(secondStmtId);
+                        rowIndexValue = rowIndexMap.get(secondStmtId);
                     } else {
-                        rowOfFirstStmt = resultList.get(rowCount);
-                        if (pseudoAccessor) {
+                        rowOfFirstStmt = resultList.get(rowIndex);
+                        if (columnResultSet) {
                             firstStmtId = rowOfFirstStmt;
                         } else {
                             firstStmtId = accessor.get(rowOfFirstStmt, idFieldName);
@@ -371,19 +358,19 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                             throw _Exceptions.firstStmtIdIsNull();
                         }
                         if (firstStmtId.equals(secondStmtId)) {
-                            rowIndex = rowCount;
+                            rowIndexValue = rowIndex;
                         } else {
                             rowIndexMap = createFirstStmtRowMap(resultList, accessor, idFieldName);
-                            rowIndex = rowIndexMap.get(secondStmtId);
+                            rowIndexValue = rowIndexMap.get(secondStmtId);
                         }
                     }
 
-                    if (rowIndex == null) {
+                    if (rowIndexValue == null) {
                         throw _Exceptions.noMatchFirstStmtRow(secondStmtId);
                     }
-                    rowOfFirstStmt = resultList.get(rowIndex);
+                    rowOfFirstStmt = resultList.get(rowIndexValue);
                     rowReader.currentRow = rowOfFirstStmt;
-                    if (pseudoAccessor) {
+                    if (columnResultSet) {
                         if (!rowOfFirstStmt.equals(rowReader.readOneRow(resultSet))) {
                             throw _Exceptions.noMatchFirstStmtRow(secondStmtId);
                         }
@@ -393,11 +380,11 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                     }
                     if (rowOfFirstStmt instanceof Map && rowOfFirstStmt instanceof ImmutableSpec) {
                         rowOfFirstStmt = (R) _Collections.unmodifiableMapForDeveloper((Map<String, Object>) rowOfFirstStmt);
-                        resultList.set(rowIndex, rowOfFirstStmt);
+                        resultList.set(rowIndexValue, rowOfFirstStmt);
                     }
 
                 }// for
-                return rowCount;
+                return rowIndex;
             }
         } catch (DataAccessException e) {
             throw e;
@@ -1382,12 +1369,13 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             final boolean optimistic = stmt.hasOptimistic();
             final int idSelectionIndex = stmt.idSelectionIndex();
             final Selection idSelection = stmt.selectionList().get(idSelectionIndex);
-            final MappingType type = idSelection.typeMeta().mappingType();
 
             final MappingEnv env = this.factory.mappingEnv;
             final int rowSize = stmt.rowSize();
             final MappingType compatibleType;
-            compatibleType = compatibleTypeFrom(type, type.javaType(), rowReader.accessor, idSelection.alias());
+            compatibleType = compatibleTypeFrom(idSelection, rowReader.resultClass, rowReader.accessor,
+                    idSelection.alias()
+            );
 
             final SqlType idSqlType = rowReader.sqlTypeArray[idSelectionIndex];
             List<R> list = listConstructor.get();
@@ -1595,6 +1583,20 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         return rowReader;
     }
 
+    /*-------------------below static method-------------------*/
+
+    static ArmyException wrapError(final Throwable error) {
+        final ArmyException e;
+        if (error instanceof SQLException) {
+            e = new DataAccessException(error);
+        } else if (error instanceof ArmyException) {
+            e = (ArmyException) error;
+        } else {
+            e = _Exceptions.unknownError(error.getMessage(), error);
+        }
+        return e;
+    }
+
     /**
      * @see #secondQuery(TwoStmtQueryStmt, int, Class, List)
      */
@@ -1603,12 +1605,12 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         final int resultSize;
         resultSize = resultList.size();
         final Map<Object, Integer> map = _Collections.hashMap((int) (resultSize / 0.75f));
-        final boolean pseudoAccessor = accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR;
+        final boolean columnResultSet = accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR;
         Object id;
         R row;
         for (int i = 0; i < resultSize; i++) {
             row = resultList.get(i);
-            if (pseudoAccessor) {
+            if (columnResultSet) {
                 id = row;
             } else {
                 id = accessor.get(row, idFieldName);
@@ -1741,16 +1743,10 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 }
 
                 if (compatibleTypeArray == null || (type = compatibleTypeArray[i]) == null) {
-                    typeMeta = selection.typeMeta();
-                    if (typeMeta instanceof MappingType) {
-                        type = (MappingType) typeMeta;
-                    } else {
-                        type = typeMeta.mappingType();
-                    }
                     if (compatibleTypeArray == null) {
                         this.compatibleTypeArray = compatibleTypeArray = new MappingType[sqlTypeArray.length];
                     }
-                    type = compatibleTypeFrom(type, resultClass, accessor, fieldName);
+                    type = compatibleTypeFrom(selection, this.resultClass, accessor, fieldName);
                     compatibleTypeArray[i] = type;
                 }
 

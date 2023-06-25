@@ -15,12 +15,15 @@ import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.sync.LocalSession;
 import io.army.sync.LocalTransaction;
 import io.army.tx.Isolation;
+import io.army.util.ImmutableArrayList;
+import io.army.util.ImmutableHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.List;
+import java.util.Map;
 
 @Test(dataProvider = "getSession")
 public class PostgreInsertSuiteTests extends PostgreSuiteTests {
@@ -230,6 +233,8 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 .returningAll()
                 .asReturningInsert();
 
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
         final LocalTransaction tx;
         tx = session.builder()
                 .isolation(Isolation.READ_COMMITTED)
@@ -238,22 +243,226 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<ChinaProvince> resultList;
-            resultList = session.query(stmt, ChinaProvince.class);
+            resultList = session.query(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), provinceList.size());
 
             for (ChinaProvince province : provinceList) {
+                Assert.assertNotNull(province.getId()); // database generated key
+            }
+            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+            for (ChinaProvince province : resultList) {
                 Assert.assertNotNull(province.getId());
+
+                // parent fields
+                Assert.assertNotNull(province.getCreateTime());
+                Assert.assertNotNull(province.getUpdateTime());
+
+                // child fields
+                Assert.assertNotNull(province.getGovernor());
+                Assert.assertNotNull(province.getProvincialCapital());
             }
             tx.commit();
-            LOG.debug("resultList:\n{}", resultList);
+            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
         } catch (Exception e) {
             LOG.error("insert child error", e);
             tx.rollback();
             throw e;
+        } finally {
+            releaseSyncSession(session);
         }
 
-        releaseSyncSession(session);
+    }
+
+    @Test
+    public void returningInsertDiffMode(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaProvince> provinceList;
+        provinceList = this.createProvinceList();
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .values(provinceList)
+                .asInsert() // use asInsert not asReturningInsert
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .values(provinceList)
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
+        final LocalTransaction tx;
+        tx = session.builder()
+                .isolation(Isolation.READ_COMMITTED)
+                .build();
+
+        try {
+            tx.start();
+            final List<ChinaProvince> resultList;
+            resultList = session.query(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+
+            Assert.assertEquals(resultList.size(), provinceList.size());
+
+            for (ChinaProvince province : provinceList) {
+                Assert.assertNotNull(province.getId()); // database generated key
+            }
+            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
+            for (ChinaProvince province : resultList) {
+                // parent fields
+                Assert.assertNull(province.getCreateTime());
+                Assert.assertNull(province.getUpdateTime());
+
+                // child fields
+                Assert.assertNotNull(province.getId());
+                Assert.assertNotNull(province.getGovernor());
+                Assert.assertNotNull(province.getProvincialCapital());
+
+            }
+
+            tx.commit();
+            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
+        } catch (Exception e) {
+            LOG.error("insert child error", e);
+            tx.rollback();
+            throw e;
+        } finally {
+            releaseSyncSession(session);
+        }
+
+    }
+
+
+    @Test
+    public void returningInsertChildMapWithTowStmtMode(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaProvince> provinceList;
+        provinceList = this.createProvinceList();
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .values(provinceList)
+                .returningAll()
+                .asReturningInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .values(provinceList)
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
+        final LocalTransaction tx;
+        tx = session.builder()
+                .isolation(Isolation.READ_COMMITTED)
+                .build();
+
+        try {
+            tx.start();
+            final List<Map<String, Object>> resultList;
+            resultList = session.queryMap(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+
+            Assert.assertEquals(resultList.size(), provinceList.size());
+
+            for (ChinaProvince province : provinceList) {
+                Assert.assertNotNull(province.getId()); // database generated key
+            }
+            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+            for (Map<String, Object> map : resultList) {
+
+                Assert.assertFalse(map instanceof ImmutableHashMap);
+                Assert.assertNotNull(map.get(ChinaRegion_.ID));
+
+                // parent fields
+                Assert.assertNotNull(map.get(ChinaRegion_.CREATE_TIME));
+                Assert.assertNotNull(map.get(ChinaRegion_.UPDATE_TIME));
+
+                // child fields
+                Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
+                Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
+            }
+            tx.commit();
+            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
+        } catch (Exception e) {
+            LOG.error("insert child error", e);
+            tx.rollback();
+            throw e;
+        } finally {
+            releaseSyncSession(session);
+        }
+
+    }
+
+
+    @Test
+    public void returningInsertChildMapDiffMode(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaProvince> provinceList;
+        provinceList = this.createProvinceList();
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .values(provinceList)
+                .asInsert() // use asInsert not asReturningInsert
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .values(provinceList)
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
+        final LocalTransaction tx;
+        tx = session.builder()
+                .isolation(Isolation.READ_COMMITTED)
+                .build();
+
+        try {
+            tx.start();
+            final List<Map<String, Object>> resultList;
+            resultList = session.queryMap(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+
+            Assert.assertEquals(resultList.size(), provinceList.size());
+
+            for (ChinaProvince province : provinceList) {
+                Assert.assertNotNull(province.getId()); // database generated key
+            }
+            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+            for (Map<String, Object> map : resultList) {
+
+                Assert.assertFalse(map instanceof ImmutableHashMap);
+
+                // parent fields
+                Assert.assertNull(map.get(ChinaRegion_.CREATE_TIME));
+                Assert.assertNull(map.get(ChinaRegion_.UPDATE_TIME));
+
+                // child fields
+                Assert.assertNotNull(map.get(ChinaRegion_.ID));
+                Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
+                Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
+            }
+            tx.commit();
+            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
+        } catch (Exception e) {
+            LOG.error("insert child error", e);
+            tx.rollback();
+            throw e;
+        } finally {
+            releaseSyncSession(session);
+        }
 
     }
 
