@@ -277,7 +277,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <R> int secondQuery(final TwoStmtModeQueryStmt stmt, final int timeout, final Class<R> resultClass,
+    public final <R> int secondQuery(final TwoStmtQueryStmt stmt, final int timeout, final Class<R> resultClass,
                                      final List<R> resultList) {
 
 
@@ -331,7 +331,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 final String idFieldName = idSelection.alias();
 
                 final MappingType compatibleType;
-                compatibleType = compatibleTypeFrom(idSelection.typeMeta().mappingType(), resultClass, accessor,
+                compatibleType = compatibleTypeFrom(idSelection.typeMeta(), resultClass, accessor,
                         idFieldName);
 
                 final boolean pseudoAccessor = accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR;
@@ -843,7 +843,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             final GenericSimpleStmt stmt, final Supplier<Map<String, Object>> mapConstructor) {
         return metaData -> {
             try {
-                return new MapReader(this, stmt.selectionList(), stmt instanceof GenericSimpleStmt.TwoStmtQuerySpec,
+                return new MapReader(this, stmt.selectionList(), stmt instanceof TwoStmtModeQuerySpec,
                         this.createSqlTypArray(metaData), mapConstructor
                 );
             } catch (SQLException e) {
@@ -926,32 +926,36 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
         final String sql = stmt.sqlText();
         final List<SQLParam> paramGroup = stmt.paramGroup();
-        final int paramSize = paramGroup.size();
 
-        try (Statement statement = this.createQueryStatement(sql, paramSize)) {
+        ResultSet resultSet = null;
+        RowReader<R> rowReader = null;
+        try (Statement statement = this.createQueryStatement(sql, paramGroup.size())) {
 
-            if (statement instanceof PreparedStatement) {
-                bindParameter((PreparedStatement) statement, paramGroup);
-            }
             if (timeout > 0) {
                 statement.setQueryTimeout(timeout);
             }
 
-            final ResultSet rs;
             if (statement instanceof PreparedStatement) {
-                rs = ((PreparedStatement) statement).executeQuery();
+                bindParameter((PreparedStatement) statement, paramGroup);
+                resultSet = ((PreparedStatement) statement).executeQuery();
             } else {
-                rs = statement.executeQuery(sql);
+                resultSet = statement.executeQuery(sql);
             }
-            List<R> resultList;
-            resultList = readList(rs, function.apply(rs.getMetaData()), stmt.hasOptimistic(), listConstructor);
-            if (resultList instanceof ImmutableSpec && !(stmt instanceof GenericSimpleStmt.FirstQueryStmt)) {
-                resultList = _Collections.unmodifiableListForDeveloper(resultList);
+
+            rowReader = function.apply(resultSet.getMetaData());
+
+            final List<R> resultList;
+            if (stmt instanceof GeneratedKeyStmt) {
+                resultList = readReturningInsert(resultSet, rowReader, (GeneratedKeyStmt) stmt, listConstructor);
+            } else {
+                resultList = readList(resultSet, rowReader, stmt, stmt.hasOptimistic(), listConstructor);
             }
             return resultList;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            if (resultSet != null && rowReader == null) {
+                // create rowReader error
+                closeResource(resultSet);
+            }
             throw wrapError(e);
         }
 
@@ -1366,7 +1370,60 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     }
 
+    /**
+     * @see #doQuery(SimpleStmt, int, Supplier, Function)
+     */
+    private <R> List<R> readReturningInsert(final ResultSet set, final RowReader<R> rowReader,
+                                            final GeneratedKeyStmt stmt,
+                                            final Supplier<List<R>> listConstructor) {
 
+        try (ResultSet resultSet = set) {
+
+            final boolean optimistic = stmt.hasOptimistic();
+            final int idSelectionIndex = stmt.idSelectionIndex();
+            final Selection idSelection = stmt.selectionList().get(idSelectionIndex);
+            final MappingType type = idSelection.typeMeta().mappingType();
+
+            final MappingEnv env = this.factory.mappingEnv;
+            final int rowSize = stmt.rowSize();
+            final MappingType compatibleType;
+            compatibleType = compatibleTypeFrom(type, type.javaType(), rowReader.accessor, idSelection.alias());
+
+            final SqlType idSqlType = rowReader.sqlTypeArray[idSelectionIndex];
+            List<R> list = listConstructor.get();
+            if (list == null) {
+                throw _Exceptions.listConstructorError();
+            }
+            Object idValue;
+            int rowIndex = 0;
+            for (final int idIndexBasedOne = idSelectionIndex + 1; resultSet.next(); rowIndex++) {
+                if (rowIndex == rowSize) {
+                    throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex + 1);
+                }
+                // read id start
+                idValue = get(resultSet, idIndexBasedOne, idSqlType);
+                if (idValue == null) {
+                    throw _Exceptions.idValueIsNull(rowIndex, stmt.idField());
+                }
+                idValue = compatibleType.afterGet(idSqlType, env, idValue);
+                stmt.setGeneratedIdValue(rowIndex, idValue);
+                // read id end
+                list.add(rowReader.readOneRow(resultSet)); // read row
+            }
+            if (optimistic && rowIndex == 0) {
+                throw _Exceptions.optimisticLock(0);
+            } else if (rowIndex != rowSize) {
+                throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
+            }
+            if (list instanceof ImmutableSpec
+                    && !(stmt instanceof TwoStmtModeQuerySpec && rowReader instanceof MapReader)) {
+                list = _Collections.unmodifiableListForDeveloper(list);
+            }
+            return list;
+        } catch (SQLException e) { // other error is handled by invoker
+            throw wrapError(e);
+        }
+    }
 
 
 
@@ -1380,12 +1437,12 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
 
     /**
-     * @return a modified list
      * @see #doQuery(SimpleStmt, int, Supplier, Function)
      * @see JdbcMultiResult#query(Class, Supplier)
      * @see JdbcMultiResult#queryMap(Supplier, Supplier)
      */
-    private static <R> List<R> readList(final ResultSet set, final RowReader<R> rowReader, final boolean optimistic,
+    private static <R> List<R> readList(final ResultSet set, final RowReader<R> rowReader,
+                                        final @Nullable GenericSimpleStmt stmt, final boolean optimistic,
                                         final Supplier<List<R>> listConstructor) {
 
 
@@ -1401,6 +1458,10 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             }
             if (optimistic && list.size() == 0) {
                 throw _Exceptions.optimisticLock(0);
+            }
+            if (list instanceof ImmutableSpec
+                    && !(stmt instanceof TwoStmtModeQuerySpec && rowReader instanceof MapReader)) {
+                list = _Collections.unmodifiableListForDeveloper(list);
             }
             return list;
         } catch (SQLException e) { // other error is handled by invoker
@@ -1535,7 +1596,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }
 
     /**
-     * @see #secondQuery(TwoStmtModeQueryStmt, int, Class, List)
+     * @see #secondQuery(TwoStmtQueryStmt, int, Class, List)
      */
     private static <R> Map<Object, Integer> createFirstStmtRowMap(final List<R> resultList, final ObjectAccessor accessor,
                                                                   final String idFieldName) {
@@ -1605,14 +1666,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }
 
 
-    private static ArmyException valueInsertDomainWrapperSizeError(long insertedRows, int domainWrapperSize) {
-        String m = String.format("InsertedRows[%s] and domainWrapperSize[%s] not match.", insertedRows, domainWrapperSize);
-        throw new ArmyException(m);
-    }
-
-
-    private static SQLException insertedRowsAndGenerateIdNotMatch(int insertedRows, int generateIdCount) {
-        String m = String.format("insertedRows[%s] and generateKeys count[%s] not match.", insertedRows, generateIdCount);
+    private static SQLException insertedRowsAndGenerateIdNotMatch(int insertedRows, int actualCount) {
+        String m = String.format("insertedRows[%s] and generateKeys count[%s] not match.", insertedRows,
+                actualCount);
         return new SQLException(m);
     }
 
@@ -1669,7 +1725,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             Object columnValue;
             SqlType sqlType;
             String fieldName;
-            boolean compatible;
             for (int i = 0; i < sqlTypeArray.length; i++) {
                 sqlType = sqlTypeArray[i];
 
@@ -1803,7 +1858,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         private R currentRow;
 
         /**
-         * @see #secondQuery(TwoStmtModeQueryStmt, int, Class, List)
+         * @see #secondQuery(TwoStmtQueryStmt, int, Class, List)
          */
         private SecondRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
                                 SqlType[] sqlTypeArray, Class<R> resultClass, ObjectAccessor accessor) {
@@ -2563,7 +2618,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         public <R> List<R> query(final Class<R> resultClass, final Supplier<List<R>> listConstructor)
                 throws DataAccessException {
             return this.beanQuery(resultClass, (s, rowReader, optimistic) ->
-                    readList(s, rowReader, optimistic, listConstructor)
+                    readList(s, rowReader, null, optimistic, listConstructor) //TODO
             );
         }
 
@@ -2585,7 +2640,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                                                   final Supplier<List<Map<String, Object>>> listConstructor)
                 throws DataAccessException {
             return this.mapQuery(mapConstructor, (s, mapReader, optimistic) ->
-                    readList(s, mapReader, optimistic, listConstructor)
+                    readList(s, mapReader, null, optimistic, listConstructor) //TODO
             );
         }
 

@@ -4,6 +4,7 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
+import io.army.meta.TypeMeta;
 import io.army.util._Exceptions;
 
 public abstract class ExecutorSupport {
@@ -34,9 +35,15 @@ public abstract class ExecutorSupport {
     }
 
 
-    protected static MappingType compatibleTypeFrom(final MappingType type, final Class<?> resultClass,
+    protected static MappingType compatibleTypeFrom(final TypeMeta typeMeta, final Class<?> resultClass,
                                                     final ObjectAccessor accessor, final String fieldName)
             throws NoMatchMappingException {
+        final MappingType type;
+        if (typeMeta instanceof MappingType) {
+            type = (MappingType) typeMeta;
+        } else {
+            type = typeMeta.mappingType();
+        }
         MappingType compatibleType;
         if (accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR) {
             if (resultClass.isAssignableFrom(type.javaType())) {

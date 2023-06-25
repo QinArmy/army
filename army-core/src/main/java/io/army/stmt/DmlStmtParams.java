@@ -9,7 +9,7 @@ public interface DmlStmtParams extends StmtParams {
      * </ul>
      * @see InsertStmtParams#idSelectionIndex()
      * @see GeneratedKeyStmt#idSelectionIndex()
-     * @see TwoStmtModeQueryStmt#idSelectionIndex()
+     * @see TwoStmtQueryStmt#idSelectionIndex()
      */
     int idSelectionIndex();
 

@@ -129,7 +129,7 @@ public abstract class ArmyTestDataSupport {
                     .setCreateTime(now)
                     .setUpdateTime(now)
 
-                    .setName(randomRegion(random) + "-" + Instant.now().toString())
+                    .setName(randomRegion(random) + "-" + Instant.now() + "#" + i)
                     .setRegionType(RegionType.NONE)
                     .setRegionGdp(randomDecimal(random))
 

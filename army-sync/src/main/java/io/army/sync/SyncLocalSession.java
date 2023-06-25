@@ -658,7 +658,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
         try {
             if (firstStmtIsQuery) {
-                rows = this.stmtExecutor.secondQuery((TwoStmtModeQueryStmt) stmt.secondStmt(), restTimeout, resultClass,
+                rows = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), restTimeout, resultClass,
                         resultList);
             } else {
                 resultList = this.stmtExecutor.query(stmt.secondStmt(), restTimeout, resultClass, listConstructor);
@@ -713,7 +713,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
         try {
             if (firstStmtIsQuery) {
-                rows = this.stmtExecutor.secondQuery((TwoStmtModeQueryStmt) stmt.secondStmt(), restTimeout,
+                rows = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), restTimeout,
                         _ClassUtils.mapJavaClass(), resultList);
                 if (resultList instanceof ImmutableSpec) {
                     resultList = _Collections.unmodifiableListForDeveloper(resultList);

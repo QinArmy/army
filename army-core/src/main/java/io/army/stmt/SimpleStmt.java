@@ -11,7 +11,7 @@ import java.util.List;
  * This interface have two important sub interfaces :
  *     <ul>
  *         <li>{@link GeneratedKeyStmt}</li>
- *         <li>{@link TwoStmtModeQueryStmt}</li>
+ *         <li>{@link TwoStmtQueryStmt}</li>
  *     </ul>
  * </p>
  *

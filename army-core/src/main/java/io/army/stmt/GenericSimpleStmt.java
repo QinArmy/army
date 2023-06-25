@@ -19,18 +19,9 @@ public interface GenericSimpleStmt extends Stmt {
 
         /**
          * @see GeneratedKeyStmt#idSelectionIndex()
-         * @see TwoStmtModeQueryStmt#idSelectionIndex()
+         * @see TwoStmtQueryStmt#idSelectionIndex()
          */
         int idSelectionIndex();
-    }
-
-
-    interface TwoStmtQuerySpec {
-
-    }
-
-    interface FirstQueryStmt extends TwoStmtQuerySpec {
-
     }
 
 

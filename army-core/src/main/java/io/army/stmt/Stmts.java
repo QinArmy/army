@@ -472,7 +472,7 @@ public abstract class Stmts {
 
     }//QueryStmt
 
-    private static final class TwoStmtModeQueryStmtIml extends QueryStmt implements TwoStmtModeQueryStmt {
+    private static final class TwoStmtModeQueryStmtIml extends QueryStmt implements TwoStmtQueryStmt {
 
         private final int idSelectionIndex;
 
@@ -572,7 +572,7 @@ public abstract class Stmts {
     }//PostStmt
 
 
-    private static final class TwoStmtQueryPostStmt extends PostStmt implements TwoStmtModeQueryStmt {
+    private static final class TwoStmtQueryPostStmt extends PostStmt implements TwoStmtQueryStmt {
 
         private TwoStmtQueryPostStmt(InsertStmtParams params) {
             super(params);

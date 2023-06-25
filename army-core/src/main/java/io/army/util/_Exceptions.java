@@ -1128,6 +1128,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new DataAccessException("first statement id is null");
     }
 
+    public static DataAccessException idValueIsNull(int rowIndexBasedZero, PrimaryFieldMeta<?> field) {
+        String m = String.format("Number %s row id value is null for %s", rowIndexBasedZero + 1, field);
+        return new DataAccessException(m);
+    }
+
     public static DataAccessException secondStmtIdIsNull() {
         return new DataAccessException("second statement id is null");
     }
