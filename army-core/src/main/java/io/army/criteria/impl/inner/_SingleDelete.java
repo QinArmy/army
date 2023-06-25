@@ -5,6 +5,7 @@ public interface _SingleDelete extends _Delete, _SingleDml {
 
     interface _ChildDelete extends _SingleDelete, _ChildStatement {
 
+        @Override
         _SingleDelete parentStmt();
 
     }

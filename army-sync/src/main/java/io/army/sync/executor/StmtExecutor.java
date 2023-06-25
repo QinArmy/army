@@ -28,7 +28,6 @@ import java.util.stream.Stream;
  */
 public interface StmtExecutor {
 
-    boolean isSupportClientStream();
 
 
     /**
@@ -80,8 +79,8 @@ public interface StmtExecutor {
     <T> List<T> query(SimpleStmt stmt, int timeout, Class<T> resultClass, Supplier<List<T>> listConstructor)
             throws DataAccessException;
 
-    List<Map<String, Object>> queryAsMap(SimpleStmt stmt, int timeout, Supplier<Map<String, Object>> mapConstructor,
-                                         Supplier<List<Map<String, Object>>> listConstructor)
+    List<Map<String, Object>> queryMap(SimpleStmt stmt, int timeout, Supplier<Map<String, Object>> mapConstructor,
+                                       Supplier<List<Map<String, Object>>> listConstructor)
             throws DataAccessException;
 
     <R> int secondQuery(SecondQueryStmt stmt, int timeout, Class<R> resultClass, List<R> resultList);

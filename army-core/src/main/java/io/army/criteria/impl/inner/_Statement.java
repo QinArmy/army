@@ -117,6 +117,8 @@ public interface _Statement {
 
         TableMeta<?> table();
 
+        _Statement parentStmt();
+
     }
 
 

@@ -31,8 +31,10 @@ public enum Visible {
         final boolean match;
         switch (this) {
             case ONLY_VISIBLE:
+                match = visible == ONLY_VISIBLE;
+                break;
             case ONLY_NON_VISIBLE:
-                match = visible == this;
+                match = visible == ONLY_VISIBLE || visible == ONLY_NON_VISIBLE;
                 break;
             case BOTH:
                 match = true;

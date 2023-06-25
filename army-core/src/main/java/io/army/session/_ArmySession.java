@@ -111,15 +111,15 @@ public abstract class _ArmySession implements Session {
 
     }
 
-    protected static int restSecond(final ChildTableMeta<?> domainTable, final long startTime, final int timeout) {
+    protected final int restSeconds(final ChildTableMeta<?> domainTable, final long startTime, final int timeout) {
         final int restSeconds;
         final long restMills;
         if (timeout == 0) {
             restSeconds = 0;
         } else if ((restMills = (timeout * 1000L) - (System.currentTimeMillis() - startTime)) < 1L) {
             String m;
-            m = String.format("%s first statement completion,but timeout,so no time insert child or update parent.",
-                    domainTable);
+            m = String.format("session[%s]\n %s first statement completion,but timeout,so no time insert child or update parent.",
+                    this.name, domainTable);
             throw new ChildUpdateException(m, _Exceptions.timeout(timeout, restMills));
         } else if ((restMills % 1000L) == 0) {
             restSeconds = (int) (restMills / 1000L);
@@ -129,6 +129,9 @@ public abstract class _ArmySession implements Session {
         return restSeconds;
     }
 
+
+
+    /*-------------------below static method -------------------*/
 
     @Nullable
     protected static TableMeta<?> getBatchUpdateDomainTable(final BatchDmlStatement statement) {

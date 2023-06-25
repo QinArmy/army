@@ -51,11 +51,6 @@ abstract class PostgreExecutor extends JdbcExecutor {
         super(factory, conn);
     }
 
-    @Override
-    public boolean isSupportClientStream() {
-        //false ,postgre jdbc don't support
-        return false;
-    }
 
     @Override
     final Logger getLogger() {

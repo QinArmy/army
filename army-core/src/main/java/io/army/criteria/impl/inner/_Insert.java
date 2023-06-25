@@ -89,6 +89,7 @@ public interface _Insert extends _Statement {
 
     interface _ChildInsert extends _Insert, _Statement._ChildStatement {
 
+        @Override
         _Insert parentStmt();
     }
 

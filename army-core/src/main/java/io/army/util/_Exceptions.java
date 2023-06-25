@@ -46,6 +46,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new ArmyException(message, e);
     }
 
+    public static SessionException unknownSessionError(Session session, Throwable clause) {
+        String m = String.format("session[%s]\n occur unknown error,", session.name());
+        return new SessionException(m, clause);
+    }
+
     public static ArmyException unexpectedStmt(Stmt stmt) {
         return new ArmyException(String.format("Unexpected Stmt type[%s]", stmt));
     }
@@ -994,11 +999,18 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static ChildUpdateException parentChildRowsNotMatch(ChildTableMeta<?> domainTable, long parentRows,
-                                                               long childRows) {
-        String m = String.format("%s Parent insert/update rows[%s] and child insert/update rows[%s] not match.",
-                domainTable, parentRows, childRows);
+
+    public static ChildUpdateException parentChildRowsNotMatch(Session session, ChildTableMeta<?> domainTable,
+                                                               long parentRows, long childRows) {
+        String m = String.format("session[%s]\n %s parent insert/update rows[%s] and child insert/update rows[%s] not match.",
+                session.name(), domainTable, parentRows, childRows);
         throw new ChildUpdateException(m);
+    }
+
+    public static ChildUpdateException childInsertError(Session session, ChildTableMeta<?> domainTable, Throwable clause) {
+        String m = String.format("session[%s]\n parent of %s  insert completion,but child insert occur error.",
+                session.name(), domainTable);
+        return new ChildUpdateException(m, clause);
     }
 
 

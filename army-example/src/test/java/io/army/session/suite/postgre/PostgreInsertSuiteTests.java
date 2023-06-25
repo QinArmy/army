@@ -76,7 +76,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertEquals(resultList.size(), regionList.size());
 
-        for (ChinaRegion<?> region : resultList) {
+        for (ChinaRegion<?> region : regionList) {
             Assert.assertNotNull(region.getId());
         }
         releaseSyncSession(session);

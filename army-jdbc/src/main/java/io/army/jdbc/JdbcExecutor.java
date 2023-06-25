@@ -273,9 +273,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
 
     @Override
-    public final List<Map<String, Object>> queryAsMap(SimpleStmt stmt, int timeout,
-                                                      Supplier<Map<String, Object>> mapConstructor,
-                                                      Supplier<List<Map<String, Object>>> listConstructor) {
+    public final List<Map<String, Object>> queryMap(SimpleStmt stmt, int timeout,
+                                                    Supplier<Map<String, Object>> mapConstructor,
+                                                    Supplier<List<Map<String, Object>>> listConstructor) {
         return this.doQuery(stmt, timeout, listConstructor, this.mapReaderFunc(stmt, mapConstructor));
     }
 
@@ -377,7 +377,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                         if (firstStmtId.equals(secondStmtId)) {
                             rowIndex = rowCount;
                         } else {
-                            rowIndexMap = createFirstStmtRowMap(resultList, accessor, idFieldName))
+                            rowIndexMap = createFirstStmtRowMap(resultList, accessor, idFieldName);
                             rowIndex = rowIndexMap.get(secondStmtId);
                         }
                     }
@@ -840,7 +840,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }
 
     /**
-     * @see #queryAsMap(SimpleStmt, int, Supplier, Supplier)
+     * @see #queryMap(SimpleStmt, int, Supplier, Supplier)
      * @see #queryMapStream(SimpleStmt, int, Supplier, StreamOptions)
      */
     private Function<ResultSetMetaData, RowReader<Map<String, Object>>> mapReaderFunc(
@@ -938,7 +938,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     /**
      * @see #query(SimpleStmt, int, Class, Supplier)
-     * @see #queryAsMap(SimpleStmt, int, Supplier, Supplier)
+     * @see #queryMap(SimpleStmt, int, Supplier, Supplier)
      */
     private <R> List<R> doQuery(final SimpleStmt stmt, final int timeout, final Supplier<List<R>> listConstructor,
                                 final Function<ResultSetMetaData, RowReader<R>> function) {
