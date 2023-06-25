@@ -309,6 +309,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+
     public static CriteriaException multiStmtDontSupportPostParent(ChildTableMeta<?> childTable) {
         String m = String.format("multi-statement don't support %s with post parent", childTable);
         return new CriteriaException(m);
@@ -1133,6 +1134,12 @@ public abstract class _Exceptions extends ExceptionUtils {
 
     public static DataAccessException noMatchFirstStmtRow(Object secondStmtRowId) {
         String m = String.format("No match row of first statement for second statement row id[%s]", secondStmtRowId);
+        return new DataAccessException(m);
+    }
+
+    public static DataAccessException duplicateIdValue(int rowIndexBasedZero, PrimaryFieldMeta<?> field, Object value) {
+        String m = String.format("database return duplicate value(new value: %s) for number %s row %s",
+                value, rowIndexBasedZero + 1, field);
         return new DataAccessException(m);
     }
 

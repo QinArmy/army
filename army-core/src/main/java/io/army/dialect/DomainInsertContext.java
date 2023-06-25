@@ -14,26 +14,25 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.SimpleStmt;
+import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
-import io.army.stmt.Stmts;
-import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.ObjIntConsumer;
 
 /**
  * <p>
  * This class representing standard value insert context.
  * </p>
  */
-final class DomainInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._DomainParams {
+final class DomainInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams {
 
     static DomainInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._DomainInsert insert
             , ArmyParser dialect, Visible visible) {
-        assert  !(insert instanceof _Insert._ChildDomainInsert);
+        assert !(insert instanceof _Insert._ChildDomainInsert);
         return new DomainInsertContext((StatementContext) outerContext, insert, dialect, visible);
     }
 
@@ -44,10 +43,10 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
         return new DomainInsertContext((StatementContext) outerContext, domainStmt, dialect, visible);
     }
 
-    static DomainInsertContext forChild(@Nullable _SqlContext outerContext,_Insert._ChildDomainInsert insert
+    static DomainInsertContext forChild(@Nullable _SqlContext outerContext, _Insert._ChildDomainInsert insert
             , DomainInsertContext parentContext) {
 
-        return new DomainInsertContext((StatementContext) outerContext,insert, parentContext);
+        return new DomainInsertContext((StatementContext) outerContext, insert, parentContext);
     }
 
     private final DomainWrapper wrapper;
@@ -70,9 +69,9 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
     /**
      * create for {@link  ChildTableMeta}
      */
-    private DomainInsertContext(@Nullable StatementContext outerContext,_Insert._ChildDomainInsert stmt
+    private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._ChildDomainInsert stmt
             , DomainInsertContext parentContext) {
-        super(outerContext,stmt, parentContext);
+        super(outerContext, stmt, parentContext);
 
         this.domainList = stmt.domainList();
         assert this.domainList == parentContext.domainList;//must check for criteria api implementation
@@ -207,29 +206,37 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements _In
 
 
     @Override
-    public SimpleStmt build() {
-        final SimpleStmt stmt;
-        if (this.returningList.size() == 0) {
-            stmt = Stmts.minSimple(this);
-        } else if (this.returnId == null) {
-            stmt = Stmts.queryStmt(this);
-        } else {
-            stmt = Stmts.domainPost(this);
-        }
-        return stmt;
-    }
-
-
-    @Override
-    public List<?> domainList() {
-        return this.domainList;
+    public int rowSize() {
+        return this.domainList.size();
     }
 
     @Override
-    public ObjectAccessor domainAccessor() {
-        return this.wrapper.accessor;
-    }
+    public ObjIntConsumer<Object> idConsumer() {
+        final PrimaryFieldMeta<?> idField = this.returnId;
+        assert idField != null;
+        final String fieldName = idField.fieldName();
+        final List<?> domainList = this.domainList;
+        final int domainSize = domainList.size();
+        final ObjectAccessor accessor = this.wrapper.accessor;
 
+        return (idValue, indexBaseZero) -> {
+            if (idValue == null) {
+                //no bug,never here
+                throw new NullPointerException();
+            }
+            if (indexBaseZero < 0 || indexBaseZero >= domainSize) {
+                //no bug never here
+                throw new IllegalArgumentException();
+            }
+            final Object domain;
+            domain = domainList.get(indexBaseZero);
+            if (accessor.get(domain, fieldName) != null) {
+                throw _Exceptions.duplicateIdValue(indexBaseZero, idField, idValue);
+            }
+            accessor.set(domain, fieldName, idValue);
+
+        };
+    }
 
     @Nullable
     @Override

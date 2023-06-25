@@ -6,11 +6,12 @@ import io.army.criteria.Selection;
 
 import java.util.List;
 
-public interface _StmtParams {
+public interface StmtParams {
 
     String sql();
 
     boolean hasOptimistic();
+
 
     /**
      * @return a unmodified list

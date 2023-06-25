@@ -17,6 +17,7 @@ final class LiteralMultiStmtContext extends StatementContext {
         return false;
     }
 
+
     @Override
     public SimpleStmt build() {
         return null;

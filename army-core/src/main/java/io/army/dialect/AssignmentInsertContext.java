@@ -10,20 +10,18 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.SimpleStmt;
+import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
-import io.army.stmt.Stmts;
-import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.ObjIntConsumer;
 
 final class AssignmentInsertContext extends InsertContext
-        implements _AssignmentInsertContext, _InsertStmtParams._AssignmentParams {
+        implements _AssignmentInsertContext, InsertStmtParams {
 
     static AssignmentInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._AssignmentInsert stmt
             , ArmyParser dialect, Visible visible) {
@@ -154,21 +152,12 @@ final class AssignmentInsertContext extends InsertContext
 
 
     @Override
-    public SimpleStmt build() {
-        final SimpleStmt stmt;
-        if (this.returningList.size() == 0) {
-            stmt = Stmts.minSimple(this);
-        } else if (this.returnId == null) {
-            stmt = Stmts.queryStmt(this);
-        } else {
-            stmt = Stmts.assignmentPost(this);
-        }
-        return stmt;
+    public int rowSize() {
+        return 1;
     }
 
-
     @Override
-    public Function<Object, Object> function() {
+    public ObjIntConsumer<Object> idConsumer() {
         final DelayIdParam delayIdParam = this.rowWrapper.delayIdParam;
         assert delayIdParam != null && isValuesClauseEnd() && this.insertTable instanceof ParentTableMeta;
         this.rowWrapper.delayIdParam = null;
@@ -347,12 +336,18 @@ final class AssignmentInsertContext extends InsertContext
         }
 
         @Nullable
-        private Object parentPostId(final Object idValue) {
-            final Object oldValue = this.idValue;
-            if (oldValue == null) {
-                this.idValue = idValue;
+        private void parentPostId(final @Nullable Object idValue, final int indexBasedZero) {
+            if (idValue == null) {
+                //no bug,never here
+                throw new NullPointerException();
+            } else if (indexBasedZero != 0) {
+                //no bug,never here
+                throw new IllegalArgumentException();
             }
-            return oldValue;
+            if (this.idValue != null) {
+                throw _Exceptions.duplicateIdValue(0, this.field, idValue);
+            }
+            this.idValue = idValue;
         }
 
         @Override

@@ -1,10 +1,8 @@
 package io.army.stmt;
 
-import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
 import io.army.criteria.*;
-import io.army.lang.Nullable;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -14,8 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.ObjIntConsumer;
 import java.util.function.UnaryOperator;
 
 public abstract class Stmts {
@@ -29,31 +26,39 @@ public abstract class Stmts {
      * Post insert for generated key
      * </p>
      */
-    public static GeneratedKeyStmt domainPost(final _InsertStmtParams._DomainParams params) {
-        return new DomainPostStmt(params);
+    public static GeneratedKeyStmt postStmt(final InsertStmtParams params) {
+        final GeneratedKeyStmt stmt;
+        if (params.isTwoStmtQuery()) {
+            stmt = new TwoStmtQueryPostStmt(params);
+        } else {
+            stmt = new PostStmt(params);
+        }
+        return stmt;
     }
 
-    public static GeneratedKeyStmt valuePost(final _InsertStmtParams._ValueParams params) {
-        return new ValuePostStmt(params);
-    }
 
-    public static SimpleStmt minSimple(final _StmtParams params) {
+    public static SimpleStmt minSimple(final StmtParams params) {
         return new MinSimpleStmt(params);
     }
 
-    public static GeneratedKeyStmt assignmentPost(final _InsertStmtParams._AssignmentParams params) {
-        return new AssignmentPostStmt(params);
-    }
 
-
-    public static SimpleStmt dml(_StmtParams params) {
+    public static SimpleStmt dml(StmtParams params) {
         return new SimpleDmlStmt(params);
     }
 
 
-    public static SimpleStmt queryStmt(_StmtParams params) {
-        return new QueryStmt(params);
+    public static SimpleStmt queryStmt(final StmtParams params) {
+        final SimpleStmt stmt;
+        final int idSelectionIndex;
+        if (params instanceof DmlStmtParams
+                && (idSelectionIndex = ((DmlStmtParams) params).idSelectionIndex()) > -1) {
+            stmt = new TwoStmtModeQueryStmtIml(params, idSelectionIndex);
+        } else {
+            stmt = new QueryStmt(params);
+        }
+        return stmt;
     }
+
 
     public static PairStmt pair(SimpleStmt first, SimpleStmt second) {
         return new PairStmtImpl(first, second);
@@ -63,7 +68,7 @@ public abstract class Stmts {
         return new PairBatchStmtImpl(first, second);
     }
 
-    public static BatchStmt batchDml(final _StmtParams params, final List<?> paramWrapperList) {
+    public static BatchStmt batchDml(final StmtParams params, final List<?> paramWrapperList) {
         final List<SQLParam> paramGroup = params.paramList();
         final int paramSize = paramGroup.size();
         final List<List<SQLParam>> groupList = new ArrayList<>(paramWrapperList.size());
@@ -107,7 +112,7 @@ public abstract class Stmts {
         return new MinBatchDmlStmt(params, groupList);
     }
 
-    public static MultiStmtBatchStmt multiStmtBatchStmt(final _StmtParams params, final int batchSize) {
+    public static MultiStmtBatchStmt multiStmtBatchStmt(final StmtParams params, final int batchSize) {
         final List<SQLParam> paramGroup;
         paramGroup = params.paramList();
         if (paramGroup.size() > 0 || batchSize < 1) {
@@ -121,7 +126,7 @@ public abstract class Stmts {
         return new MultiStmtBatchStmtImpl(params, groupList);
     }
 
-    public static MultiStmt.StmtItem queryOrUpdateItem(final _StmtParams params) {
+    public static MultiStmt.StmtItem queryOrUpdateItem(final StmtParams params) {
         final List<? extends Selection> selectionList;
         selectionList = params.selectionList();
 
@@ -143,7 +148,7 @@ public abstract class Stmts {
 
         private final List<SQLParam> paramGroup;
 
-        private MinSimpleStmt(_StmtParams params) {
+        private MinSimpleStmt(StmtParams params) {
             this.sql = params.sql();
             this.paramGroup = params.paramList();
         }
@@ -283,7 +288,7 @@ public abstract class Stmts {
 
         private final boolean hasOptimistic;
 
-        private SimpleDmlStmt(_StmtParams params) {
+        private SimpleDmlStmt(StmtParams params) {
             this.sql = params.sql();
             this.paramGroup = params.paramList();
             this.selectionList = params.selectionList();
@@ -329,7 +334,7 @@ public abstract class Stmts {
 
         private final boolean hasOptimistic;
 
-        private MinBatchDmlStmt(_StmtParams params, List<List<SQLParam>> paramGroupList) {
+        private MinBatchDmlStmt(StmtParams params, List<List<SQLParam>> paramGroupList) {
             this.sql = params.sql();
             this.paramGroupList = Collections.unmodifiableList(paramGroupList);
             this.hasOptimistic = params.hasOptimistic();
@@ -377,7 +382,7 @@ public abstract class Stmts {
 
         private final boolean optimistic;
 
-        private MultiStmtBatchStmtImpl(_StmtParams params, List<List<SQLParam>> paramGroupList) {
+        private MultiStmtBatchStmtImpl(StmtParams params, List<List<SQLParam>> paramGroupList) {
             this.sql = params.sql();
             this.selectionList = params.selectionList();
             this.paramGroupList = _Collections.unmodifiableList(paramGroupList);
@@ -417,54 +422,75 @@ public abstract class Stmts {
     }//MultiStmtBatchStm
 
 
-    private static final class QueryStmt implements io.army.stmt.SimpleStmt {
+    private static class QueryStmt implements SimpleStmt {
 
         private final String sql;
 
         private final List<SQLParam> paramGroup;
 
-        private final List<? extends Selection> selectionList;
+        final List<? extends Selection> selectionList;
 
-        private QueryStmt(_StmtParams params) {
+        private final boolean optimistic;
+
+        private QueryStmt(StmtParams params) {
             this.sql = params.sql();
             this.paramGroup = params.paramList();
             this.selectionList = params.selectionList();
+            this.optimistic = params.hasOptimistic();
         }
 
         @Override
-        public String sqlText() {
+        public final String sqlText() {
             return this.sql;
         }
 
         @Override
-        public boolean hasOptimistic() {
-            return false;
+        public final boolean hasOptimistic() {
+            return this.optimistic;
         }
 
         @Override
-        public List<SQLParam> paramGroup() {
+        public final List<SQLParam> paramGroup() {
             return this.paramGroup;
         }
 
         @Override
-        public List<? extends Selection> selectionList() {
+        public final List<? extends Selection> selectionList() {
             return this.selectionList;
         }
 
         @Override
-        public String printSql(UnaryOperator<String> function) {
+        public final String printSql(UnaryOperator<String> function) {
             return function.apply(this.sql);
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
             return this.sql;
         }
 
 
-    }//SelectStmt
+    }//QueryStmt
 
-    private static abstract class PostStmt implements GeneratedKeyStmt {
+    private static final class TwoStmtModeQueryStmtIml extends QueryStmt implements TwoStmtModeQueryStmt {
+
+        private final int idSelectionIndex;
+
+        private TwoStmtModeQueryStmtIml(StmtParams params, int idSelectionIndex) {
+            super(params);
+            assert idSelectionIndex > -1 && idSelectionIndex < this.selectionList.size();
+            this.idSelectionIndex = idSelectionIndex;
+        }
+
+        @Override
+        public int idSelectionIndex() {
+            return this.idSelectionIndex;
+        }
+
+
+    }//TwoStmtModeQueryStmtIml
+
+    private static class PostStmt implements GeneratedKeyStmt {
 
         private final String sql;
 
@@ -472,17 +498,33 @@ public abstract class Stmts {
 
         private final List<? extends Selection> selectionList;
 
-        final PrimaryFieldMeta<?> field;
+        private final int rowSize;
 
-        private final String idReturnAlias;
+        private final PrimaryFieldMeta<?> field;
 
-        private PostStmt(_InsertStmtParams params) {
+        private final int idSelectionIndex;
+
+        private final ObjIntConsumer<Object> consumer;
+
+        private PostStmt(InsertStmtParams params) {
             this.sql = params.sql();
             this.paramList = params.paramList();
             this.selectionList = params.selectionList();
-            this.field = params.idField();
+            this.rowSize = params.rowSize();
 
-            this.idReturnAlias = params.idReturnAlias();
+            this.field = params.idField();
+            this.idSelectionIndex = params.idSelectionIndex();
+            this.consumer = params.idConsumer();
+        }
+
+        @Override
+        public final int rowSize() {
+            return this.rowSize;
+        }
+
+        @Override
+        public final void setGeneratedIdValue(int indexBasedZero, Object idValue) {
+            this.consumer.accept(idValue, indexBasedZero);
         }
 
         @Override
@@ -490,9 +532,10 @@ public abstract class Stmts {
             return this.field;
         }
 
+
         @Override
-        public final String idReturnAlias() {
-            return this.idReturnAlias;
+        public final int idSelectionIndex() {
+            return this.idSelectionIndex;
         }
 
         @Override
@@ -528,114 +571,14 @@ public abstract class Stmts {
 
     }//PostStmt
 
-    private static final class DomainPostStmt extends PostStmt {
 
-        private final List<?> domainList;
+    private static final class TwoStmtQueryPostStmt extends PostStmt implements TwoStmtModeQueryStmt {
 
-        private final int rowSize;
-
-        private final ObjectAccessor domainAccessor;
-
-        private DomainPostStmt(_InsertStmtParams._DomainParams params) {
+        private TwoStmtQueryPostStmt(InsertStmtParams params) {
             super(params);
-            this.domainList = params.domainList();
-            this.rowSize = this.domainList.size();
-            this.domainAccessor = params.domainAccessor();
         }
 
-        @Override
-        public int rowSize() {
-            return this.rowSize;
-        }
-
-        @Override
-        public void setGeneratedIdValue(final int indexBasedZero, final @Nullable Object idValue) {
-            if (indexBasedZero < 0 || indexBasedZero >= this.rowSize) {
-                String m = String.format("indexBasedZero[%s] not in[0,%s]", indexBasedZero, this.rowSize);
-                throw new IllegalArgumentException(m);
-            }
-            if (idValue == null) {
-                throw new NullPointerException("idValue");
-            }
-            final Object domain;
-            domain = this.domainList.get(indexBasedZero);
-            final String fieldName = this.field.fieldName();
-
-            if (this.domainAccessor.get(domain, fieldName) != null) {
-                throw duplicateId(this.field);
-            }
-            this.domainAccessor.set(domain, fieldName, idValue);
-        }
-
-
-    }//DomainPostStmt
-
-
-    private static final class ValuePostStmt extends PostStmt {
-
-        private final BiFunction<Integer, Object, Object> function;
-
-        private final int rowSize;
-
-        private ValuePostStmt(_InsertStmtParams._ValueParams params) {
-            super(params);
-            this.function = params.function();
-            this.rowSize = this.rowSize();
-        }
-
-        @Override
-        public int rowSize() {
-            return this.rowSize;
-        }
-
-        @Override
-        public void setGeneratedIdValue(final int indexBasedZero, final @Nullable Object idValue) {
-            if (indexBasedZero < 0 || indexBasedZero >= this.rowSize) {
-                String m = String.format("indexBasedZero[%s] not in[0,%s]", indexBasedZero, this.rowSize);
-                throw new IllegalArgumentException(m);
-            }
-            if (idValue == null) {
-                throw new NullPointerException("idValue");
-            }
-            if (this.function.apply(indexBasedZero, idValue) != null) {
-                throw duplicateId(this.field);
-            }
-
-        }
-    }//ValuePostStmt
-
-    private static final class AssignmentPostStmt extends PostStmt {
-
-        private final Function<Object, Object> function;
-
-        private AssignmentPostStmt(_InsertStmtParams._AssignmentParams params) {
-            super(params);
-            this.function = params.function();
-        }
-
-        @Override
-        public int rowSize() {
-            return 1;
-        }
-
-        @Override
-        public void setGeneratedIdValue(final int indexBasedZero, final @Nullable Object idValue) {
-            if (indexBasedZero != 0) {
-                String m = String.format("indexBasedZero[%s] not 0", indexBasedZero);
-                throw new IllegalArgumentException(m);
-            }
-            if (idValue == null) {
-                throw new NullPointerException("idValue");
-            }
-
-            if (this.function.apply(idValue) != null) {
-                throw duplicateId(this.field);
-            }
-
-        }
-
-
-    }//AssignmentPostStmt
+    }//TwoStmtQueryPostStmt
 
 
     private static final class QueryStmtItem implements MultiStmt.QueryStmt {

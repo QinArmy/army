@@ -15,11 +15,21 @@ public interface GenericSimpleStmt extends Stmt {
     List<? extends Selection> selectionList();
 
 
-    interface TowStmtQuerySpec {
+    interface IdSelectionIndexSpec {
+
+        /**
+         * @see GeneratedKeyStmt#idSelectionIndex()
+         * @see TwoStmtModeQueryStmt#idSelectionIndex()
+         */
+        int idSelectionIndex();
+    }
+
+
+    interface TwoStmtQuerySpec {
 
     }
 
-    interface FirstQueryStmt extends TowStmtQuerySpec {
+    interface FirstQueryStmt extends TwoStmtQuerySpec {
 
     }
 

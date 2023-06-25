@@ -8,8 +8,11 @@ import io.army.lang.Nullable;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
+import io.army.stmt.InsertStmtParams;
+import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleParam;
-import io.army.stmt._InsertStmtParams;
+import io.army.stmt.Stmts;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -25,10 +28,12 @@ abstract class InsertContext extends StatementContext
         _InsertContext._AssignmentsSpec,
         _InsertContext._QuerySyntaxSpec,
         _DmlContext._SingleTableContextSpec,
-        _InsertStmtParams,
+        InsertStmtParams,
         SelectItemListContext {
 
     private final InsertContext parentContext;
+
+    private final boolean twoStmtQuery;
 
     final TableMeta<?> insertTable;
 
@@ -52,6 +57,10 @@ abstract class InsertContext extends StatementContext
 
     final boolean conflictPredicateClause;
 
+    final List<? extends _SelectItem> returningList;
+
+    final List<Selection> returnSelectionList;
+
     /**
      * {@link #insertTable} instanceof {@link  SingleTableMeta} and  dialect support returning clause nad generated key.
      */
@@ -60,9 +69,8 @@ abstract class InsertContext extends StatementContext
     /**
      * @see #returnId
      */
-    final String idSelectionAlias;
+    final int idSelectionIndex;
 
-    final List<? extends _SelectItem> returningList;
 
     private final boolean appendReturningClause;
 
@@ -87,12 +95,14 @@ abstract class InsertContext extends StatementContext
         final _Insert targetStmt;
         if (domainStmt instanceof _Insert._ChildInsert) {
             targetStmt = ((_Insert._ChildInsert) domainStmt).parentStmt();
+            this.twoStmtQuery = domainStmt instanceof _ReturningDml && targetStmt instanceof _ReturningDml;
         } else {
             if (domainStmt instanceof _Insert._QueryInsert) {
                 //validate,because criteria implementation can't do this
                 ((_Insert._QueryInsert) domainStmt).validateOnlyParen();
             }
             targetStmt = domainStmt;
+            this.twoStmtQuery = false;
         }
         this.insertTable = targetStmt.table();
         assert this.insertTable instanceof SingleTableMeta;
@@ -160,29 +170,32 @@ abstract class InsertContext extends StatementContext
 
         if (targetStmt instanceof _ReturningDml) {
             this.returningList = ((_ReturningDml) targetStmt).returningList();
-            if (needReturnId) {
+            this.returnSelectionList = _DialectUtils.flatSelectItem(this.returningList);
+            if (needReturnId || this.twoStmtQuery) {
                 this.returnId = idField;
-                this.idSelectionAlias = returnIdSelection(parser, idField, this.returningList)
-                        .alias();
+                this.idSelectionIndex = returnIdSelection(parser, idField, this.returnSelectionList);
             } else {
                 this.returnId = null;
-                this.idSelectionAlias = null;
+                this.idSelectionIndex = -1;
             }
             this.appendReturningClause = false;
         } else if (needReturnId) {
+            this.returningList = _Collections.emptyList();
             if (targetStmt instanceof _Statement._ReturningListSpec) {
-                this.returningList = Collections.singletonList((_Selection) idField);
+                this.returnSelectionList = _Collections.singletonList(idField);
+                this.idSelectionIndex = 0;
                 this.appendReturningClause = true;
             } else {
                 this.appendReturningClause = false;
-                this.returningList = Collections.emptyList();
+                this.idSelectionIndex = -1;
+                this.returnSelectionList = Collections.emptyList();
             }
             this.returnId = idField;
-            this.idSelectionAlias = idField.alias();
         } else {
-            this.returningList = Collections.emptyList();
+            this.returningList = _Collections.emptyList();
+            this.returnSelectionList = Collections.emptyList();
             this.returnId = null;
-            this.idSelectionAlias = null;
+            this.idSelectionIndex = -1;
             this.appendReturningClause = false;
         }
 
@@ -195,12 +208,12 @@ abstract class InsertContext extends StatementContext
      * For {@link  io.army.meta.ChildTableMeta}
      * </p>
      */
-    InsertContext(@Nullable StatementContext outerContext, final _Insert._ChildInsert stmt
-            , final InsertContext parentContext) {
+    InsertContext(@Nullable StatementContext outerContext, final _Insert._ChildInsert stmt,
+                  final InsertContext parentContext) {
         super(outerContext, parentContext.parser, parentContext.visible);
         this.parentContext = parentContext;
+        this.twoStmtQuery = parentContext.twoStmtQuery;
         this.insertTable = stmt.table();
-
         if (stmt instanceof _Insert._InsertOption) {
             final _Insert._InsertOption option = (_Insert._InsertOption) stmt;
             this.literalMode = option.literalMode();
@@ -250,17 +263,29 @@ abstract class InsertContext extends StatementContext
 
         if (stmt instanceof _ReturningDml) {
             this.returningList = ((_ReturningDml) stmt).returningList();
+            this.returnSelectionList = _DialectUtils.flatSelectItem(this.returningList);
         } else {
-            this.returningList = Collections.emptyList();
+            this.returningList = _Collections.emptyList();
+            this.returnSelectionList = _Collections.emptyList();
+        }
+
+        if (this.twoStmtQuery) {
+            this.idSelectionIndex = returnIdSelection(this.parser, this.insertTable.id(), this.returnSelectionList);
+        } else {
+            this.idSelectionIndex = -1;
         }
         this.returnId = null;
-        this.idSelectionAlias = null;
         this.appendReturningClause = false;
     }
 
     @Override
     public final boolean hasOptimistic() {
         return false;
+    }
+
+    @Override
+    public final boolean isTwoStmtQuery() {
+        return this.twoStmtQuery;
     }
 
     @Override
@@ -302,7 +327,7 @@ abstract class InsertContext extends StatementContext
     public final void appendField(final @Nullable String tableAlias, final FieldMeta<?> field) {
         final String safeAlias;
         if (!(this.valuesClauseEnd
-                && (this.hasConflictClause || this.returningList.size() > 0)
+                && (this.hasConflictClause || this.returnSelectionList.size() > 0)
                 && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
         } else if (tableAlias == null) {
@@ -331,7 +356,7 @@ abstract class InsertContext extends StatementContext
     @Override
     public final void appendField(final FieldMeta<?> field) {
         if (!(this.valuesClauseEnd
-                && (this.hasConflictClause || this.returningList.size() > 0)
+                && (this.hasConflictClause || this.returnSelectionList.size() > 0)
                 && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
         }
@@ -537,13 +562,13 @@ abstract class InsertContext extends StatementContext
 
     @Override
     public final void appendReturnIdIfNeed() {
-        assert this.parser.childUpdateMode == ArmyParser.ChildUpdateMode.CTE;
+        assert this.parser.supportReturningClause;
 
         final PrimaryFieldMeta<?> returnId = this.returnId;
         if (returnId == null || !this.appendReturningClause) {
             return;
         }
-        assert this.returningList.size() == 1 && this.returningList.get(0) == returnId;
+        assert this.returnSelectionList.size() == 1 && this.returnSelectionList.get(0) == returnId;
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder
                 .append(_Constant.SPACE_RETURNING)
@@ -553,7 +578,21 @@ abstract class InsertContext extends StatementContext
         dialect.safeObjectName(returnId, sqlBuilder)
                 .append(_Constant.SPACE_AS_SPACE);
 
-        dialect.identifier(this.idSelectionAlias, sqlBuilder);
+        dialect.identifier(returnId.alias(), sqlBuilder);
+    }
+
+
+    @Override
+    public final SimpleStmt build() {
+        final SimpleStmt stmt;
+        if (this.returnId != null) {
+            stmt = Stmts.postStmt(this);
+        } else if (this.returnSelectionList.size() == 0) {
+            stmt = Stmts.minSimple(this);
+        } else {
+            stmt = Stmts.queryStmt(this);
+        }
+        return stmt;
     }
 
     @Override
@@ -567,14 +606,7 @@ abstract class InsertContext extends StatementContext
 
     @Override
     public final List<? extends Selection> selectionList() {
-        final List<? extends _SelectItem> selectItemList = this.returningList;
-        final List<? extends Selection> selectionList;
-        if (selectItemList.size() == 0) {
-            selectionList = Collections.emptyList();
-        } else {
-            selectionList = _DialectUtils.flatSelectItem(selectItemList);
-        }
-        return selectionList;
+        return this.returnSelectionList;
     }
 
     @Override
@@ -585,11 +617,10 @@ abstract class InsertContext extends StatementContext
     }
 
     @Override
-    public final String idReturnAlias() {
-        final String alias = this.idSelectionAlias;
-        assert alias != null;
-        return alias;
+    public final int idSelectionIndex() {
+        return this.idSelectionIndex;
     }
+
 
     /**
      * @return output values size
@@ -712,49 +743,40 @@ abstract class InsertContext extends StatementContext
 
     }
 
-    private static Selection returnIdSelection(final DialectParser parser, final PrimaryFieldMeta<?> idField,
-                                               final List<? extends _SelectItem> selectItemList) {
-        final int selectItemSize;
-        selectItemSize = selectItemList.size();
+    private static int returnIdSelection(final DialectParser parser, final PrimaryFieldMeta<?> idField,
+                                         final List<? extends Selection> selectionList) {
+        final int selectionSize;
+        selectionSize = selectionList.size();
 
-        assert selectItemSize > 0;
+        assert selectionSize > 0;
 
-        final TableMeta<?> insertTable;
-        insertTable = idField.tableMeta();
+        int idIndex = -1;
+        Selection selection;
+        for (int i = 0; i < selectionSize; i++) {
+            selection = selectionList.get(i);
 
-        _SelectItem selectItem;
-        Selection selection = null;
-        for (int i = 0; i < selectItemSize; i++) {
-            selectItem = selectItemList.get(i);
-
-            if (selectItem instanceof TableField) {
-                if (selectItem == idField
-                        || (selectItem instanceof QualifiedField
-                        && ((QualifiedField<?>) selectItem).fieldMeta() == idField)) {
-                    selection = (Selection) selectItem;
+            if (selection instanceof TableField) {
+                if (selection == idField
+                        || (selection instanceof QualifiedField
+                        && ((QualifiedField<?>) selection).fieldMeta() == idField)) {
+                    idIndex = i;
                     break;
                 }
-            } else if (!(selectItem instanceof DerivedField) && selectItem instanceof FieldSelection) {
-                if (((FieldSelection) selectItem).fieldMeta() == idField) {
-                    selection = (Selection) selectItem;
-                    break;
-                }
-            } else if (selectItem instanceof _SelectionGroup._TableFieldGroup) {
-                if (((_SelectionGroup._TableFieldGroup) selectItem).isLegalGroup(insertTable)
-                        && ((_SelectionGroup._TableFieldGroup) selectItem).selectionList().contains(idField)) {
-                    selection = idField;
+            } else if (!(selection instanceof DerivedField) && selection instanceof FieldSelection) {
+                if (((FieldSelection) selection).fieldMeta() == idField) {
+                    idIndex = i;
                     break;
                 }
             }
 
         }// for
 
-        if (selection == null) {
+        if (idIndex < 0) {
             String m = String.format("%s RETURNING clause must contain %s,because it's %s is %s.",
                     parser.dialect().database(), idField, GeneratorType.class.getName(), GeneratorType.POST);
             throw new CriteriaException(m);
         }
-        return selection;
+        return idIndex;
     }
 
 }

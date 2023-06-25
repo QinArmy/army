@@ -555,6 +555,12 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
+    protected final boolean isSupportReturningClause() {
+        // Postgre support RETURNING clause
+        return true;
+    }
+
+    @Override
     protected final boolean isValidateUnionType() {
         // false
         return false;

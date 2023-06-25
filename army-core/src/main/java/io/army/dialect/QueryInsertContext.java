@@ -8,10 +8,9 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmts;
 
 import java.util.List;
+import java.util.function.ObjIntConsumer;
 
 final class QueryInsertContext extends InsertContext implements _QueryInsertContext {
 
@@ -88,6 +87,18 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
 
 
     @Override
+    public int rowSize() {
+        //no bug , never here
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ObjIntConsumer<Object> idConsumer() {
+        //no bug , never here
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     int doAppendSubQuery(final int outputColumnSize, final List<FieldMeta<?>> fieldList) {
 
         assert outputColumnSize == this.subQuerySelectionSize;
@@ -96,17 +107,6 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
     }
 
 
-
-    @Override
-    public SimpleStmt build() {
-        final SimpleStmt stmt;
-        if (this.returningList.size() == 0) {
-            stmt = Stmts.minSimple(this);
-        } else {
-            stmt = Stmts.queryStmt(this);
-        }
-        return stmt;
-    }
 
 
 }

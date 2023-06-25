@@ -11,7 +11,6 @@ import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
-import io.army.modelgen._MetaBridge;
 import io.army.session.DataAccessException;
 import io.army.session.ExecutorSupport;
 import io.army.sqltype.SqlType;
@@ -119,11 +118,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 }
 
                 if (generatedKeys == Statement.RETURN_GENERATED_KEYS) {
-                    extractGenerateKeys(statement, rows, (GeneratedKeyStmt) stmt);
+                    doExtractId(statement.getGeneratedKeys(), (GeneratedKeyStmt) stmt);
                 }
-            }
-            if (rows < 1) {
-                throw new SQLException(String.format("insert statement affected %s rows", rows));
             }
             return rows;
         } catch (ArmyException e) {
@@ -281,7 +277,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <R> int secondQuery(final SecondQueryStmt stmt, final int timeout, final Class<R> resultClass,
+    public final <R> int secondQuery(final TwoStmtModeQueryStmt stmt, final int timeout, final Class<R> resultClass,
                                      final List<R> resultList) {
 
 
@@ -847,7 +843,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             final GenericSimpleStmt stmt, final Supplier<Map<String, Object>> mapConstructor) {
         return metaData -> {
             try {
-                return new MapReader(this, stmt.selectionList(), stmt instanceof GenericSimpleStmt.TowStmtQuerySpec,
+                return new MapReader(this, stmt.selectionList(), stmt instanceof GenericSimpleStmt.TwoStmtQuerySpec,
                         this.createSqlTypArray(metaData), mapConstructor
                 );
             } catch (SQLException e) {
@@ -915,24 +911,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
         }//outer for
 
-    }
-
-
-    /**
-     * @see #insert(SimpleStmt, int)
-     */
-    private void extractGenerateKeys(final Statement statement, final long insertedRows, final GeneratedKeyStmt stmt)
-            throws SQLException {
-        if (insertedRows != stmt.rowSize()) {
-            throw valueInsertDomainWrapperSizeError(insertedRows, stmt.rowSize());
-        }
-
-        final String primaryKeyName = stmt.idReturnAlias();
-        if (!_MetaBridge.ID.equals(primaryKeyName)) {
-            String m = String.format("%s primaryKeyName error", GeneratedKeyStmt.class.getName());
-            throw new IllegalArgumentException(m);
-        }
-        doExtractId(statement.getGeneratedKeys(), stmt);
     }
 
 
@@ -1434,7 +1412,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     /**
      * @see #insert(SimpleStmt, int)
-     * @see #extractGenerateKeys(Statement, long, GeneratedKeyStmt)
      */
     private static int doExtractId(final ResultSet idResultSet, final GeneratedKeyStmt stmt) throws SQLException {
         final int rowSize = stmt.rowSize();
@@ -1443,6 +1420,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             final PrimaryFieldMeta<?> idField = stmt.idField();
             final Class<?> idJavaType = idField.javaType();
             for (; resultSet.next(); rowIndex++) {
+                if (rowIndex == rowSize) {
+                    throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
+                }
                 if (idJavaType == Integer.class) {
                     stmt.setGeneratedIdValue(rowIndex, resultSet.getInt(1));
                 } else if (idJavaType == Long.class) {
@@ -1555,7 +1535,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }
 
     /**
-     * @see #secondQuery(SecondQueryStmt, int, Class, List)
+     * @see #secondQuery(TwoStmtModeQueryStmt, int, Class, List)
      */
     private static <R> Map<Object, Integer> createFirstStmtRowMap(final List<R> resultList, final ObjectAccessor accessor,
                                                                   final String idFieldName) {
@@ -1823,7 +1803,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         private R currentRow;
 
         /**
-         * @see #secondQuery(SecondQueryStmt, int, Class, List)
+         * @see #secondQuery(TwoStmtModeQueryStmt, int, Class, List)
          */
         private SecondRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
                                 SqlType[] sqlTypeArray, Class<R> resultClass, ObjectAccessor accessor) {

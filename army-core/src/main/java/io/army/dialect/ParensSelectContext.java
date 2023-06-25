@@ -37,6 +37,7 @@ final class ParensSelectContext extends BatchSpecStatementContext implements _Se
         return false;
     }
 
+
     @Override
     public void appendField(String tableAlias, FieldMeta<?> field) {
         throw _Exceptions.unknownColumn(tableAlias, field);

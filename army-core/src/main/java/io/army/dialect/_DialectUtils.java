@@ -107,9 +107,13 @@ public abstract class _DialectUtils {
     /**
      * @return a unmodified list
      */
-    public static List<Selection> flatSelectItem(final List<? extends SelectItem> selectPartList) {
-        final List<Selection> selectionList = new ArrayList<>(selectPartList.size());
-        for (SelectItem selectItem : selectPartList) {
+    public static List<Selection> flatSelectItem(final List<? extends SelectItem> selectItemList) {
+        final int itemSize;
+        itemSize = selectItemList.size();
+        final List<Selection> selectionList = _Collections.arrayList(itemSize);
+        SelectItem selectItem;
+        for (int i = 0; i < itemSize; i++) {
+            selectItem = selectItemList.get(i);
             if (selectItem instanceof Selection) {
                 selectionList.add((Selection) selectItem);
             } else if (selectItem instanceof _SelectionGroup) {
@@ -118,7 +122,7 @@ public abstract class _DialectUtils {
                 throw _Exceptions.unknownSelectItem(selectItem);
             }
         }
-        return Collections.unmodifiableList(selectionList);
+        return _Collections.unmodifiableList(selectionList);
     }
 
 

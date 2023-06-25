@@ -98,6 +98,9 @@ abstract class ArmyParser implements DialectParser {
     final boolean supportUpdateDerivedField;
 
 
+    final boolean supportReturningClause;
+
+
     final ChildUpdateMode childUpdateMode;
     final FieldValueGenerator generator;
 
@@ -137,6 +140,7 @@ abstract class ArmyParser implements DialectParser {
         this.supportUpdateRow = this.isSupportUpdateRow();
 
         this.supportUpdateDerivedField = this.isSupportUpdateDerivedField();
+        this.supportReturningClause = this.isSupportReturningClause();
 
         this.supportRowAlias = this.isSupportRowAlias();
         this.validateUnionType = this.isValidateUnionType();
@@ -377,6 +381,8 @@ abstract class ArmyParser implements DialectParser {
     protected abstract boolean isSupportUpdateRow();
 
     protected abstract boolean isSupportUpdateDerivedField();
+
+    protected abstract boolean isSupportReturningClause();
 
     protected abstract boolean isValidateUnionType();
 

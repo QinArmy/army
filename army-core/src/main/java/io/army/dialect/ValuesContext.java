@@ -40,6 +40,7 @@ final class ValuesContext extends StatementContext implements _ValuesContext {
         return false;
     }
 
+
     @Override
     public void appendField(String tableAlias, FieldMeta<?> field) {
         throw _Exceptions.unknownColumn(tableAlias, field);

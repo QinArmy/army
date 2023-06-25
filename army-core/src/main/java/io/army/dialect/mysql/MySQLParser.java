@@ -464,6 +464,12 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
+    protected final boolean isSupportReturningClause() {
+        //MySQL don't support RETURNING clause
+        return false;
+    }
+
+    @Override
     protected final boolean isValidateUnionType() {
         // MySQL 8.0 add INTERSECT and EXCEPT
         return this.dialect.compareWith(MySQLDialect.MySQL80) < 0;

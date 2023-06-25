@@ -44,6 +44,7 @@ final class OtherDmlContext extends StatementContext implements _OtherDmlContext
         return false;
     }
 
+
     @Override
     public void appendField(final String tableAlias, final FieldMeta<?> field) {
         throw _Exceptions.unknownColumn(tableAlias, field);

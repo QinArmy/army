@@ -7,7 +7,7 @@ import io.army.meta.PrimaryFieldMeta;
  * This interface representing a insert statement that has auto increment id.
  * </p>
  */
-public interface GeneratedKeyStmt extends SimpleStmt {
+public interface GeneratedKeyStmt extends SimpleStmt, GenericSimpleStmt.IdSelectionIndexSpec {
 
     int rowSize();
 
@@ -15,6 +15,13 @@ public interface GeneratedKeyStmt extends SimpleStmt {
 
     PrimaryFieldMeta<?> idField();
 
-    String idReturnAlias();
+    /**
+     * @return <ul>
+     * <li>If {@link #selectionList()} is empty, negative</li>
+     * <li>Else index</li>
+     * </ul>
+     */
+    int idSelectionIndex();
+
 
 }

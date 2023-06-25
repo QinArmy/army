@@ -80,6 +80,7 @@ abstract class MultiTableQueryContext extends BatchSpecStatementContext implemen
         return false;
     }
 
+
     @Override
     public final SimpleStmt build() {
         if (this instanceof _SubQueryContext) {

@@ -10,17 +10,15 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.SimpleStmt;
+import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
-import io.army.stmt.Stmts;
-import io.army.stmt._InsertStmtParams;
 import io.army.util._Exceptions;
 
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.ObjIntConsumer;
 
-final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _InsertStmtParams._ValueParams {
+final class ValuesInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams {
 
 
     static ValuesInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._ValuesInsert stmt
@@ -277,26 +275,27 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements _In
         return this.rowList.size();
     }
 
+
     @Override
-    public BiFunction<Integer, Object, Object> function() {
+    public ObjIntConsumer<Object> idConsumer() {
         final Map<Integer, Object> postIdMap = this.rowWrapper.postIdMap;
         assert postIdMap != null && this.isValuesClauseEnd() && this.insertTable instanceof SingleTableMeta;
-        return postIdMap::putIfAbsent;
+        final PrimaryFieldMeta<?> idField = this.returnId;
+        assert idField != null;
+        return (idValue, indexBasedZero) -> {
+            if (idValue == null) {
+                //no bug,never here
+                throw new NullPointerException();
+            }
+            if (postIdMap.putIfAbsent(indexBasedZero, idValue) != null) {
+                throw _Exceptions.duplicateIdValue(indexBasedZero, idField, idValue);
+            }
+
+        };
+
     }
 
 
-    @Override
-    public SimpleStmt build() {
-        final SimpleStmt stmt;
-        if (this.returningList.size() == 0) {
-            stmt = Stmts.minSimple(this);
-        } else if (this.returnId == null) {
-            stmt = Stmts.queryStmt(this);
-        } else {
-            stmt = Stmts.valuePost(this);
-        }
-        return stmt;
-    }
 
 
     @Override

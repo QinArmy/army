@@ -6,6 +6,7 @@ import io.army.criteria.impl.inner._DmlStatement;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.criteria.impl.inner._SelectItem;
 import io.army.lang.Nullable;
+import io.army.stmt.DmlStmtParams;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
@@ -24,7 +25,7 @@ import java.util.List;
  *
  * @since 1.0
  */
-abstract class NarrowDmlStmtContext extends BatchSpecStatementContext implements NarrowDmlContext {
+abstract class NarrowDmlStmtContext extends BatchSpecStatementContext implements NarrowDmlContext, DmlStmtParams {
 
 
     final boolean versionPredicate;
@@ -72,6 +73,12 @@ abstract class NarrowDmlStmtContext extends BatchSpecStatementContext implements
         return this.versionPredicate;
     }
 
+
+    @Override
+    public final int idSelectionIndex() {
+        //TODO for firebird
+        return -1;
+    }
 
     @Override
     public final List<Selection> selectionList() {
