@@ -483,15 +483,13 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             if (this.indexExpression instanceof FieldMeta || this.indexExpression instanceof SQLFunction) {
-                this.indexExpression.appendSql(context);
+                this.indexExpression.appendSql(sqlBuilder, context);
             } else {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
-                this.indexExpression.appendSql(context);
+                this.indexExpression.appendSql(sqlBuilder, context);
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 

@@ -191,7 +191,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationSimple
         }
 
         @Override
-        public final void appendSql(_SqlContext context) {
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             context.appendLiteral(this.type, this.value);
         }
 
@@ -261,7 +261,7 @@ abstract class ArmyLiteralExpression extends OperationExpression.OperationSimple
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             context.appendLiteral(this);
         }
 

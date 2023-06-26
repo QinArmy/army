@@ -1029,13 +1029,15 @@ abstract class PostgreParser extends _ArmyDialectParser {
     protected final void standardLimitClause(final @Nullable _Expression offset, final @Nullable _Expression rowCount,
                                              final _SqlContext context) {
 
+        final StringBuilder sqlBuilder;
+        sqlBuilder = context.sqlBuilder();
         if (rowCount != null) {
-            context.sqlBuilder().append(_Constant.SPACE_LIMIT);
-            rowCount.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_LIMIT);
+            rowCount.appendSql(sqlBuilder, context);
         }
         if (offset != null) {
-            context.sqlBuilder().append(_Constant.SPACE_OFFSET);
-            offset.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_OFFSET);
+            offset.appendSql(sqlBuilder, context);
         }
 
     }

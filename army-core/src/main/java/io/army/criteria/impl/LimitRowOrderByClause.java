@@ -490,8 +490,8 @@ abstract class LimitRowOrderByClause<OR, OD, LR, LO, LF> extends OrderByClause<O
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" ALL");
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(" ALL");
         }
 
     }//AllWord

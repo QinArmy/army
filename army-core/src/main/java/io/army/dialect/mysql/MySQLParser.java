@@ -260,15 +260,16 @@ abstract class MySQLParser extends _ArmyDialectParser {
     protected final void standardLimitClause(final @Nullable _Expression offset, final @Nullable _Expression rowCount
             , _SqlContext context) {
 
+        final StringBuilder sqlBuilder;
         if (offset != null && rowCount != null) {
-            final StringBuilder sqlBuilder;
             sqlBuilder = context.sqlBuilder().append(_Constant.SPACE_LIMIT);
-            offset.appendSql(context);
+            offset.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            rowCount.appendSql(context);
+            rowCount.appendSql(sqlBuilder, context);
         } else if (rowCount != null) {
-            context.sqlBuilder().append(_Constant.SPACE_LIMIT);
-            rowCount.appendSql(context);
+            sqlBuilder = context.sqlBuilder()
+                    .append(_Constant.SPACE_LIMIT);
+            rowCount.appendSql(sqlBuilder, context);
         }
 
     }

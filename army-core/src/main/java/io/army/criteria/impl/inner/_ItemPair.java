@@ -9,7 +9,14 @@ import java.util.List;
 public interface _ItemPair extends ItemPair {
 
 
-    void appendItemPair(_SetClauseContext context);
+    @Deprecated
+    default void appendItemPair(_SetClauseContext context) {
+
+    }
+
+    default void appendItemPair(StringBuilder sqlBuilder, _SetClauseContext context) {
+
+    }
 
 
     interface _FieldItemPair extends _ItemPair {

@@ -570,20 +570,19 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public final void appendItemPair(final _SetClauseContext context) {
+        public final void appendItemPair(final StringBuilder sqlBuilder, final _SetClauseContext context) {
             final SQLField field = this.field;
             //1. append left item
             context.appendSetLeftItem(field);
             //2. append operator
             if (this instanceof OperatorItemPair) {
                 ((OperatorItemPair) this).operator
-                        .appendOperator(context.parser().dialect(), field, context);
+                        .appendOperator(field, sqlBuilder, context);
             } else {
-                context.sqlBuilder()
-                        .append(_Constant.SPACE_EQUAL);
+                sqlBuilder.append(_Constant.SPACE_EQUAL);
             }
             //3. append right item
-            ((_Expression) this.right).appendSql(context);
+            ((_Expression) this.right).appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -895,8 +894,8 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(_Constant.SPACE_DEFAULT);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE_DEFAULT);
         }
 
         @Override
@@ -922,8 +921,8 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" *");
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(" *");
         }
 
         @Override

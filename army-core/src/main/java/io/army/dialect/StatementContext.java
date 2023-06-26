@@ -242,6 +242,16 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
     }
 
     @Override
+    public final StringBuilder identifier(String identifier, StringBuilder builder) {
+        return this.parser.identifier(identifier, builder);
+    }
+
+    @Override
+    public final String identifier(String identifier) {
+        return this.parser.identifier(identifier);
+    }
+
+    @Override
     public final boolean hasParam() {
         return this.paramConsumer.paramList.size() > 0;
     }

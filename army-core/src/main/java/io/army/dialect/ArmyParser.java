@@ -1084,7 +1084,7 @@ abstract class ArmyParser implements DialectParser {
                 if (columnIndex > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                columnList.get(columnIndex).appendSql(context);
+                columnList.get(columnIndex).appendSql(sqlBuilder, context);
             }
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -1122,7 +1122,7 @@ abstract class ArmyParser implements DialectParser {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_AND);
             }
-            predicateList.get(i).appendSql(context);
+            predicateList.get(i).appendSql(sqlBuilder, context);
         }
 
     }
@@ -1491,16 +1491,16 @@ abstract class ArmyParser implements DialectParser {
             , final _MultiTableStmtContext context) {
         final int predicateSize = predicateList.size();
 
-        final StringBuilder builder = context.sqlBuilder();
+        final StringBuilder sqlBuilder = context.sqlBuilder();
         if (predicateSize > 0) {
             //1. append where key word
-            builder.append(_Constant.SPACE_WHERE);
+            sqlBuilder.append(_Constant.SPACE_WHERE);
             //2. append where predicates
             for (int i = 0; i < predicateSize; i++) {
                 if (i > 0) {
-                    builder.append(_Constant.SPACE_AND);
+                    sqlBuilder.append(_Constant.SPACE_AND);
                 }
-                predicateList.get(i).appendSql(context);
+                predicateList.get(i).appendSql(sqlBuilder, context);
             }
 
         }
@@ -1512,13 +1512,13 @@ abstract class ArmyParser implements DialectParser {
         if (predicateSize == 0) {
             final int startIndex, endIndex;
 
-            startIndex = builder.length();
-            builder.append(_Constant.SPACE_WHERE);
-            endIndex = builder.length();
+            startIndex = sqlBuilder.length();
+            sqlBuilder.append(_Constant.SPACE_WHERE);
+            endIndex = sqlBuilder.length();
 
             multiTableVisible(tableBlockList, context, true);
-            if (builder.length() == endIndex) {
-                builder.setLength(startIndex);
+            if (sqlBuilder.length() == endIndex) {
+                sqlBuilder.setLength(startIndex);
             }
         } else {
             multiTableVisible(tableBlockList, context, false);
@@ -1589,13 +1589,13 @@ abstract class ArmyParser implements DialectParser {
         if (size == 0) {
             return;
         }
-        final StringBuilder builder = context.sqlBuilder()
+        final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_GROUP_BY);
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(_Constant.SPACE_COMMA);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            ((_SelfDescribed) groupByList.get(i)).appendSql(context);
+            ((_SelfDescribed) groupByList.get(i)).appendSql(sqlBuilder, context);
         }
 
     }
@@ -1605,13 +1605,13 @@ abstract class ArmyParser implements DialectParser {
         if (size == 0) {
             return;
         }
-        final StringBuilder builder = context.sqlBuilder()
+        final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_HAVING);
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(_Constant.SPACE_AND);
+                sqlBuilder.append(_Constant.SPACE_AND);
             }
-            havingList.get(i).appendSql(context);
+            havingList.get(i).appendSql(sqlBuilder, context);
         }
 
     }
@@ -1641,7 +1641,7 @@ abstract class ArmyParser implements DialectParser {
             }
             window = windowList.get(i);
             validator.accept(window);
-            window.appendSql(context);
+            window.appendSql(sqlBuilder, context);
         }
 
     }
@@ -1651,15 +1651,15 @@ abstract class ArmyParser implements DialectParser {
         if (size == 0) {
             return;
         }
-        final StringBuilder builder = context.sqlBuilder()
+        final StringBuilder sqlBuilder = context.sqlBuilder()
                 .append(_Constant.SPACE_ORDER_BY);
 
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(_Constant.SPACE_COMMA);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             //TODO 考虑是否 增加  append SortItem method以避免 visible field
-            ((_SelfDescribed) orderByList.get(i)).appendSql(context);
+            ((_SelfDescribed) orderByList.get(i)).appendSql(sqlBuilder, context);
         }
 
     }
@@ -1824,7 +1824,7 @@ abstract class ArmyParser implements DialectParser {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_AND);
             }
-            predicateList.get(i).appendSql(context);
+            predicateList.get(i).appendSql(sqlBuilder, context);
         }
 
     }
@@ -1854,7 +1854,7 @@ abstract class ArmyParser implements DialectParser {
 
         for (int i = 0; i < predicateCount; i++) {
             sqlBuilder.append(_Constant.SPACE_AND);
-            predicateList.get(i).appendSql(childContext);
+            predicateList.get(i).appendSql(sqlBuilder, childContext);
         }
 
     }

@@ -218,10 +218,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.appendFuncName(this.buildIn, this.name)
-                    .append(_Constant.LEFT_PAREN);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            context.appendFuncName(this.buildIn, this.name);
+            sqlBuilder.append(_Constant.LEFT_PAREN);
             FunctionUtils.appendComplexArg(this.argList, context);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
@@ -279,20 +278,20 @@ abstract class DialectFunctionUtils extends FunctionUtils {
             return this.name;
         }
 
-        @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.appendFuncName(this.buildIn, this.name);
+         @Override
+         public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            if (this instanceof NoArgFunction) {
-                sqlBuilder.append(_Constant.PARENS);
-            } else {
-                sqlBuilder.append(_Constant.LEFT_PAREN);
+             context.appendFuncName(this.buildIn, this.name);
 
-                appendArg(sqlBuilder, context);
+             if (this instanceof NoArgFunction) {
+                 sqlBuilder.append(_Constant.PARENS);
+             } else {
+                 sqlBuilder.append(_Constant.LEFT_PAREN);
 
-                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
-            }
+                 appendArg(sqlBuilder, context);
+
+                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+             }
             if (this.isWithOrdinality()) {
                 sqlBuilder.append(SPACE_WITH_ORDINALITY);
             }
@@ -517,7 +516,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -544,9 +543,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -579,13 +578,13 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.three.appendSql(context);
+            this.three.appendSql(sqlBuilder, context);
 
         }
 
@@ -627,16 +626,16 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.three.appendSql(context);
+            this.three.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.four.appendSql(context);
+            this.four.appendSql(sqlBuilder, context);
 
         }
 
@@ -795,7 +794,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -824,9 +823,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -862,11 +861,11 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.three.appendSql(context);
+            this.three.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -902,7 +901,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                this.argList.get(i).appendSql(context);
+                this.argList.get(i).appendSql(sqlBuilder, context);
             }
 
         }
@@ -939,10 +938,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.appendFuncName(this.buildIn, this.name)
-                    .append(_Constant.LEFT_PAREN);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            context.appendFuncName(this.buildIn, this.name);
+            sqlBuilder.append(_Constant.LEFT_PAREN);
 
             this.appendArg(sqlBuilder, context);
 
@@ -984,7 +982,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1022,10 +1020,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            sqlBuilder.append(_Constant.SPACE);
 
             final DialectParser parser;
             parser = context.parser();

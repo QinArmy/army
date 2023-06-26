@@ -74,13 +74,12 @@ final class PostgreExcludedField extends OperationDataField implements _Selectio
 
 
     @Override
-    public void appendSql(final _SqlContext context) {
+    public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
         if (context.visible() != Visible.BOTH && _MetaBridge.VISIBLE.equals(this.field.fieldName())) {
             throw _Exceptions.visibleField(context.visible(), this.field);
         }
 
-        context.sqlBuilder()
-                .append(SPACE_EXCLUDED)
+        sqlBuilder.append(SPACE_EXCLUDED)
                 .append(_Constant.POINT);
 
         context.appendFieldOnly(this.field);

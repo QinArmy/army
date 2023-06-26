@@ -103,14 +103,12 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public void appendSelectItem(final _SqlContext context) {
-            this.expression.appendSql(context);
+        public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.expression.appendSql(sqlBuilder, context);
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_AS_SPACE);
+            sqlBuilder.append(_Constant.SPACE_AS_SPACE);
 
-            context.parser().identifier(this.alias, sqlBuilder);
+            context.identifier(this.alias, sqlBuilder);
         }
 
         @Override
@@ -162,18 +160,16 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public void appendSelectItem(final _SqlContext context) {
-            this.appendSql(context);
+        public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.appendSql(sqlBuilder, context);
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_AS_SPACE);
+            sqlBuilder.append(_Constant.SPACE_AS_SPACE);
 
-            context.parser().identifier(this.alias, sqlBuilder);
+            context.identifier(this.alias, sqlBuilder);
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             final FieldSelection field = this.selection;
             if (field instanceof FieldMeta) {
@@ -184,7 +180,7 @@ abstract class ArmySelections implements _Selection {
                 final QualifiedFieldImpl<?> qualifiedField = (QualifiedFieldImpl<?>) this.selection;
                 context.appendField(qualifiedField.tableAlias, qualifiedField.field);
             } else {
-                ((_SelfDescribed) field).appendSql(context);
+                ((_SelfDescribed) field).appendSql(sqlBuilder, context);
             }
         }
 
@@ -332,15 +328,13 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public void appendSelectItem(final _SqlContext context) {
+        public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            ((_SelfDescribed) this.func).appendSql(context);
+            ((_SelfDescribed) this.func).appendSql(sqlBuilder, context);
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_AS_SPACE);
+            sqlBuilder.append(_Constant.SPACE_AS_SPACE);
 
-            context.parser().identifier(this.alias, sqlBuilder);
+            context.identifier(this.alias, sqlBuilder);
         }
 
         @Override

@@ -164,7 +164,7 @@ abstract class RowExpressions {
 
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             final List<Object> elementList = this.elementList;
             final int elementItemSize;
@@ -176,10 +176,6 @@ abstract class RowExpressions {
                 throw new CriteriaException(m);
             }
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
-            final DialectParser parser;
-            parser = context.parser();
 
             Object element;
             MappingType type;
@@ -212,7 +208,7 @@ abstract class RowExpressions {
                     context.appendSubQuery((SubQuery) element);
                     outputColumnCount += ((ArmySubQuery) element).refAllSelection().size();
                 } else if (element instanceof ArmySQLExpression) {
-                    ((ArmySQLExpression) element).appendSql(context);
+                    ((ArmySQLExpression) element).appendSql(sqlBuilder, context);
                     outputColumnCount++;
                 } else if (element instanceof SelectionGroups.RowElementGroup) {
                     ((SelectionGroups.RowElementGroup) element).appendRowElement(sqlBuilder, context);

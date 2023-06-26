@@ -13,10 +13,9 @@ final class PostgreCursorPredicate extends OperationPredicate.OperationCompoundP
     }
 
     @Override
-    public void appendSql(final _SqlContext context) {
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder()
-                .append(" CURRENT OF ");
+    public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+        sqlBuilder.append(" CURRENT OF ");
         context.parser().identifier(this.cursorName, sqlBuilder);
     }
 

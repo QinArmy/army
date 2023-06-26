@@ -24,8 +24,8 @@ public interface _SelectionMap {
      * <p>
      * Note,the {@link Selection} couldn't be rendered. so couldn't invoke below method:
      *     <ul>
-     *         <li>{@link io.army.criteria.impl.inner._SelfDescribed#appendSql(_SqlContext)}</li>
-     *         <li>{@link _Selection#appendSelectItem(_SqlContext)}</li>
+     *         <li>{@link io.army.criteria.impl.inner._SelfDescribed#appendSql(StringBuilder, _SqlContext)}</li>
+     *         <li>{@link _Selection#appendSelectItem(StringBuilder, _SqlContext)}</li>
      *     </ul>
      * </p>
      *
@@ -38,8 +38,8 @@ public interface _SelectionMap {
      * <p>
      * Note,any {@link Selection} of list couldn't be rendered. so couldn't invoke below method:
      *     <ul>
-     *         <li>{@link io.army.criteria.impl.inner._SelfDescribed#appendSql(_SqlContext)}</li>
-     *         <li>{@link _Selection#appendSelectItem(_SqlContext)}</li>
+     *         <li>{@link io.army.criteria.impl.inner._SelfDescribed#appendSql(StringBuilder, _SqlContext)}</li>
+     *         <li>{@link _Selection#appendSelectItem(StringBuilder, _SqlContext)}</li>
      *     </ul>
      * </p>
      *

@@ -824,7 +824,7 @@ abstract class FunctionUtils {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
 
-            argList.get(i).appendSql(context);
+            argList.get(i).appendSql(sqlBuilder, context);
         }//for
 
 
@@ -860,7 +860,7 @@ abstract class FunctionUtils {
                 if (!(o instanceof ArmySQLExpression)) {
                     throw new CriteriaException(String.format("%s non-army row expression", o));
                 }
-                ((ArmySQLExpression) o).appendSql(context); // convert to ArmyExpression to avoid non-army expression
+                ((ArmySQLExpression) o).appendSql(sqlBuilder, context); // convert to ArmyExpression to avoid non-army expression
             } else if (o == Functions.FuncWord.LEFT_PAREN) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
             } else if (o instanceof SQLWords) {
@@ -875,7 +875,7 @@ abstract class FunctionUtils {
                 sqlBuilder.append(_Constant.SPACE);
                 parser.identifier(((SQLIdentifier) o).render(), sqlBuilder);
             } else if (o instanceof ArmyFuncClause) {
-                ((ArmyFuncClause) o).appendSql(context);
+                ((ArmyFuncClause) o).appendSql(sqlBuilder, context);
             } else if (o instanceof MappingType) {
                 sqlBuilder.append(_Constant.SPACE);
                 parser.typeName((MappingType) o, sqlBuilder);
@@ -1134,16 +1134,15 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final Database database;
-            database = context.parser().dialect().database();
+            database = context.database();
             switch (database) {
                 case PostgreSQL: {
-                    context.sqlBuilder()
-                            .append(_Constant.SPACE)
+                    sqlBuilder.append(_Constant.SPACE)
                             .append(this.name) // TODO validate whether import key word or not.
                             .append(" =>");
-                    this.argument.appendSql(context);
+                    this.argument.appendSql(sqlBuilder, context);
                 }
                 break;
                 case MySQL:
@@ -1251,7 +1250,7 @@ abstract class FunctionUtils {
 
         @Override
         void appendArg(StringBuilder sqlBuilder, final _SqlContext context) {
-            this.argument.appendSql(context);
+            this.argument.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1280,9 +1279,9 @@ abstract class FunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1319,13 +1318,13 @@ abstract class FunctionUtils {
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.three.appendSql(context);
+            this.three.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1367,16 +1366,16 @@ abstract class FunctionUtils {
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.three.appendSql(context);
+            this.three.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.four.appendSql(context);
+            this.four.appendSql(sqlBuilder, context);
 
         }
 
@@ -1424,19 +1423,19 @@ abstract class FunctionUtils {
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.three.appendSql(context);
+            this.three.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.four.appendSql(context);
+            this.four.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.five.appendSql(context);
+            this.five.appendSql(sqlBuilder, context);
 
         }
 
@@ -1492,22 +1491,22 @@ abstract class FunctionUtils {
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.three.appendSql(context);
+            this.three.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.four.appendSql(context);
+            this.four.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.five.appendSql(context);
+            this.five.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.six.appendSql(context);
+            this.six.appendSql(sqlBuilder, context);
 
         }
 
@@ -1568,25 +1567,25 @@ abstract class FunctionUtils {
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.three.appendSql(context);
+            this.three.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.four.appendSql(context);
+            this.four.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.five.appendSql(context);
+            this.five.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.six.appendSql(context);
+            this.six.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
 
-            this.seven.appendSql(context);
+            this.seven.appendSql(sqlBuilder, context);
 
         }
 
@@ -1670,7 +1669,7 @@ abstract class FunctionUtils {
 
         @Override
         void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1806,7 +1805,7 @@ abstract class FunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
-            this.clause.appendSql(context);
+            this.clause.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1866,36 +1865,35 @@ abstract class FunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final int pairSize;
             final List<_Pair<ArmyExpression, ArmyExpression>> expPairList = this.expPairList;
             if (expPairList == null || (pairSize = expPairList.size()) == 0) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
+
+            sqlBuilder.append(_Constant.SPACE)
                     .append("CASE");
 
             final ArmyExpression caseValue = this.caseValue;
             if (caseValue != null) {
-                caseValue.appendSql(context);
+                caseValue.appendSql(sqlBuilder, context);
             }
             _Pair<ArmyExpression, ArmyExpression> pair;
             for (int i = 0; i < pairSize; i++) {
                 pair = expPairList.get(i);
 
                 sqlBuilder.append(" WHEN");
-                pair.first.appendSql(context);
+                pair.first.appendSql(sqlBuilder, context);
                 sqlBuilder.append(" THEN");
-                pair.second.appendSql(context);
+                pair.second.appendSql(sqlBuilder, context);
 
             }
 
             final ArmyExpression elseExpression = this.elseExpression;
             if (elseExpression != null) {
                 sqlBuilder.append(" ELSE");
-                elseExpression.appendSql(context);
+                elseExpression.appendSql(sqlBuilder, context);
             }
 
             sqlBuilder.append(" END");
@@ -2282,21 +2280,20 @@ abstract class FunctionUtils {
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final List<? extends SortItem> sortItemList;
             sortItemList = this.orderByList();
             final int itemSize;
             if ((itemSize = sortItemList.size()) == 0) {
                 return;
             }
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_ORDER_BY);
+
+            sqlBuilder.append(_Constant.SPACE_ORDER_BY);
             for (int i = 0; i < itemSize; i++) {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                ((ArmySortItem) sortItemList.get(i)).appendSql(context);
+                ((ArmySortItem) sortItemList.get(i)).appendSql(sqlBuilder, context);
 
             }
 
@@ -2341,7 +2338,7 @@ abstract class FunctionUtils {
                     }
                     context.appendLiteral(type, arg);
                 } else if (arg instanceof ArmySQLExpression) {
-                    ((ArmySQLExpression) arg).appendSql(context);
+                    ((ArmySQLExpression) arg).appendSql(sqlBuilder, context);
                 } else if (arg instanceof _SelectionGroup._TableFieldGroup || arg instanceof SubQuery) {
                     String m = String.format("function[%s] don't support %s", this.name, arg);
                     throw new CriteriaException(m);
@@ -2424,7 +2421,7 @@ abstract class FunctionUtils {
                     }
                     context.appendLiteral(type, arg);
                 } else if (arg instanceof ArmySQLExpression) {
-                    ((ArmySQLExpression) arg).appendSql(context);
+                    ((ArmySQLExpression) arg).appendSql(sqlBuilder, context);
                 } else if (arg instanceof SelectionGroups.ObjectElementGroup) {
                     ((SelectionGroups.ObjectElementGroup) arg).appendObjectElement(sqlBuilder, context);
                 } else {

@@ -147,7 +147,7 @@ final class PostgreDialectParser extends PostgreParser {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                ((_SelfDescribed) groupByItemList.get(i)).appendSql(context);
+                ((_SelfDescribed) groupByItemList.get(i)).appendSql(sqlBuilder, context);
             }
             this.havingClause(stmt.havingList(), context);
         }
@@ -376,7 +376,7 @@ final class PostgreDialectParser extends PostgreParser {
                     this.handleSubValues((SubValues) tabularItem, context);
                 } else {
                     // function
-                    ((_SelfDescribed) tabularItem).appendSql(context);
+                    ((_SelfDescribed) tabularItem).appendSql(sqlBuilder, context);
                 }
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
@@ -409,7 +409,7 @@ final class PostgreDialectParser extends PostgreParser {
                     sqlBuilder.append(modifier.spaceRender());
                 }
                 // undone function
-                ((_SelfDescribed) tabularItem).appendSql(context);
+                ((_SelfDescribed) tabularItem).appendSql(sqlBuilder, context);
 
                 sqlBuilder.append(_Constant.SPACE_AS_SPACE);
                 this.identifier(alias, sqlBuilder);
@@ -421,7 +421,7 @@ final class PostgreDialectParser extends PostgreParser {
                     if (fieldIndex > 0) {
                         sqlBuilder.append(_Constant.SPACE_COMMA);
                     }
-                    fieldList.get(fieldIndex).appendSql(context);
+                    fieldList.get(fieldIndex).appendSql(sqlBuilder, context);
                 }
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             } else {
@@ -560,7 +560,7 @@ final class PostgreDialectParser extends PostgreParser {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                targetItemList.get(i).appendSql(context);
+                targetItemList.get(i).appendSql(sqlBuilder, context);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
@@ -744,7 +744,7 @@ final class PostgreDialectParser extends PostgreParser {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            expList.get(i).appendSql(context);
+            expList.get(i).appendSql(sqlBuilder, context);
         }
         sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
@@ -769,14 +769,14 @@ final class PostgreDialectParser extends PostgreParser {
         // LIMIT clause
         if (fetchFirstNext == null && rowCountExp != null) {
             sqlBuilder.append(_Constant.SPACE_LIMIT);
-            rowCountExp.appendSql(context);
+            rowCountExp.appendSql(sqlBuilder, context);
         }
 
 
         // OFFSET clause
         if (offsetExp != null) {
             sqlBuilder.append(_Constant.SPACE_OFFSET);
-            offsetExp.appendSql(context);
+            offsetExp.appendSql(sqlBuilder, context);
             final SQLWords offsetRow;
             if ((offsetRow = stmt.offsetRowModifier()) != null) {
                 if (offsetRow != SQLs.ROW && offsetRow != SQLs.ROWS) {
@@ -807,7 +807,7 @@ final class PostgreDialectParser extends PostgreParser {
             sqlBuilder.append(_Constant.SPACE_FETCH)
                     .append(fetchFirstNext.spaceRender());
 
-            rowCountExp.appendSql(context);
+            rowCountExp.appendSql(sqlBuilder, context);
 
             sqlBuilder.append(fetchRowRows.spaceRender())
                     .append(fetchOnlyWithTies.spaceRender());

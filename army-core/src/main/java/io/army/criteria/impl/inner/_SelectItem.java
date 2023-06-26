@@ -5,6 +5,12 @@ import io.army.dialect._SqlContext;
 
 public interface _SelectItem extends SelectItem {
 
-    void appendSelectItem(_SqlContext context);
+    default void appendSelectItem(_SqlContext context) {
+
+    }
+
+    default void appendSelectItem(StringBuilder sqlBuilder, _SqlContext context) {
+
+    }
 
 }

@@ -343,8 +343,8 @@ abstract class PostgreWords {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(this.spaceLiteral);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(this.spaceLiteral);
         }
 
 

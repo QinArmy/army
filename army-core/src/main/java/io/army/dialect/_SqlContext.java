@@ -51,6 +51,16 @@ public interface _SqlContext extends SqlContextSpec {
 
     void appendLiteral(NamedLiteral namedLiteral);
 
+    /**
+     * @see DialectParser#identifier(String, StringBuilder)
+     */
+    StringBuilder identifier(String identifier, StringBuilder builder);
+
+    /**
+     * @see DialectParser#identifier(String)
+     */
+    String identifier(String identifier);
+
     Visible visible();
 
 

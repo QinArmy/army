@@ -303,7 +303,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             context.appendLiteral(this.typeMeta(), context.parser().sqlElement(this));
         }
 
@@ -331,7 +331,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @SuppressWarnings("unchecked")
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final List<Object> attValueList = this.attValueList;
             final int attValueSize;
             if (attValueList == null
@@ -343,8 +343,6 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             final DialectParser parser;
             parser = context.parser();
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
 
             Object attObject;
             _Pair<ArmyExpression, String> attrPair;
@@ -356,13 +354,13 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 if (attObject instanceof _Pair) {
                     attrPair = (_Pair<ArmyExpression, String>) attObject;
 
-                    attrPair.first.appendSql(context);
+                    attrPair.first.appendSql(sqlBuilder, context);
                     sqlBuilder.append(SQLs.AS.spaceRender());
                     sqlBuilder.append(_Constant.SPACE);
                     parser.identifier(attrPair.second, sqlBuilder);
 
                 } else if (attObject instanceof SQLField) {
-                    ((ArmyExpression) attObject).appendSql(context);
+                    ((ArmyExpression) attObject).appendSql(sqlBuilder, context);
                 } else {
                     //no bug,never here
                     throw new IllegalStateException();
@@ -451,13 +449,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            sqlBuilder.append(_Constant.SPACE)
                     .append(this.name)
                     .append(_Constant.LEFT_PAREN);
-            this.clause.appendSql(context);
+            this.clause.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
@@ -515,15 +512,13 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final List<XmlTableColumn> columnList = this.columnList;
             final int columnSize;
             if (columnList == null || columnList instanceof ArrayList || (columnSize = columnList.size()) == 0) {
                 throw _Exceptions.castCriteriaApi();
             }
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
 
             for (int i = 0; i < columnSize; i++) {
                 if (i == 0) {
@@ -531,7 +526,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 } else {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                columnList.get(i).appendSql(context);
+                columnList.get(i).appendSql(sqlBuilder, context);
             }
 
         }
@@ -877,13 +872,11 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final DialectParser parser;
             parser = context.parser();
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
+            sqlBuilder.append(_Constant.SPACE);
 
             parser.identifier(this.name, sqlBuilder)
                     .append(_Constant.SPACE);
@@ -893,12 +886,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
             final ArmyExpression columnExp = this.columnExp, defaultExp = this.defaultExp;
             if (columnExp != null) {
                 sqlBuilder.append(Postgres.PATH.spaceRender());
-                columnExp.appendSql(context);
+                columnExp.appendSql(sqlBuilder, context);
             }
 
             if (defaultExp != null) {
                 sqlBuilder.append(((SQLWords) SQLs.DEFAULT).spaceRender());
-                defaultExp.appendSql(context);
+                defaultExp.appendSql(sqlBuilder, context);
             }
 
             final SQLs.NullOption nullOption = this.nullOption;
@@ -918,13 +911,12 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            context.parser().identifier(this.name, sqlBuilder)
-                    .append(Postgres.FOR_ORDINALITY.spaceRender());
+            sqlBuilder.append(_Constant.SPACE);
+
+            context.identifier(this.name, sqlBuilder);
+            sqlBuilder.append(Postgres.FOR_ORDINALITY.spaceRender());
 
         }
 
@@ -952,7 +944,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final SimpleStmt stmt;
             stmt = (SimpleStmt) context.parser().select(this.query, false, this.visible);
             if (stmt.paramGroup().size() > 0) {
@@ -1019,7 +1011,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1043,9 +1035,9 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.COMMA);
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1074,11 +1066,11 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.COMMA);
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.COMMA);
-            this.three.appendSql(context);
+            this.three.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1139,7 +1131,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                whereList.get(i).appendSql(context);
+                whereList.get(i).appendSql(sqlBuilder, context);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
@@ -1236,7 +1228,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1264,9 +1256,9 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1384,7 +1376,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
             final OrderByOptionClause orderByClause = this.orderByClause;
             if (orderByClause != null) {
-                orderByClause.appendSql(context);
+                orderByClause.appendSql(sqlBuilder, context);
             }
         }
 
@@ -1427,7 +1419,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         void pgAppendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1456,9 +1448,9 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         void pgAppendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.two.appendSql(context);
+            this.two.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1516,7 +1508,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                list.get(i).appendSql(context);
+                list.get(i).appendSql(sqlBuilder, context);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
@@ -1582,7 +1574,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
         @Override
         void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1926,10 +1918,8 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE)
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE)
                     .append(ROWS_FROM)
                     .append(_Constant.LEFT_PAREN);
             CriteriaUtils.appendSelfDescribedList(this.functionList, sqlBuilder, context);

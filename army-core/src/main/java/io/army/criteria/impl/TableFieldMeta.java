@@ -436,7 +436,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
     }
 
     @Override
-    public final void appendSql(final _SqlContext context) {
+    public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
         if (context.visible() != Visible.BOTH && this.fieldName.equals(_MetaBridge.VISIBLE)) {
             throw _Exceptions.visibleField(context.visible(), this);
         }

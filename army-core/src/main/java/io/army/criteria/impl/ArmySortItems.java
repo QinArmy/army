@@ -46,12 +46,10 @@ class ArmySortItems implements ArmySortItem {
     }
 
     @Override
-    public final void appendSql(final _SqlContext context) {
-        this.sortItem.appendSql(context);
+    public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+        this.sortItem.appendSql(sqlBuilder, context);
 
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder()
-                .append(this.ascDesc.spaceRender());
+        sqlBuilder.append(this.ascDesc.spaceRender());
 
         if (this instanceof SortItemWithNullsOption) {
             sqlBuilder.append(((SortItemWithNullsOption) this).nullOption);

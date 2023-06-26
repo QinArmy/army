@@ -851,10 +851,9 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(" ROW(");
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            sqlBuilder.append(" ROW(");
 
             final List<ArmySQLExpression> columnList = this.columnList;
             final int size;
@@ -863,7 +862,7 @@ abstract class CriteriaSupports {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                columnList.get(i).appendSql(context);
+                columnList.get(i).appendSql(sqlBuilder, context);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 

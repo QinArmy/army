@@ -137,7 +137,7 @@ abstract class ParamRowExpression extends OperationRowExpression
     }
 
     @Override
-    public final void appendSql(_SqlContext context) {
+    public final void appendSql(final StringBuilder sqlBuilder, _SqlContext context) {
         context.appendParam(this);
     }
 

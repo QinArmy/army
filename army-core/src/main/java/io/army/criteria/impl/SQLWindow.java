@@ -534,11 +534,9 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     }
 
     @Override
-    public final void appendSql(final _SqlContext context) {
+    public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
         _Assert.prepared(this.prepared);
 
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder();
 
         final DialectParser parser;
         parser = context.parser();
@@ -567,7 +565,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                partitionByList.get(i).appendSql(context);
+                partitionByList.get(i).appendSql(sqlBuilder, context);
             }
         }
         //5.order_clause
@@ -579,7 +577,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                ((ArmySortItem) orderByList.get(i)).appendSql(context);
+                ((ArmySortItem) orderByList.get(i)).appendSql(sqlBuilder, context);
             }
         }
         //6.frame_clause
@@ -600,7 +598,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                 sqlBuilder.append(((WindowRowModifier) frameBound).spaceWords);
             } else {
                 assert frameBound instanceof WindowExpModifier;
-                frameExp.appendSql(context);
+                frameExp.appendSql(sqlBuilder, context);
                 sqlBuilder.append(((WindowExpModifier) frameBound).spaceWords);
             }
             if (betweenExtent) {
@@ -612,7 +610,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                     sqlBuilder.append(((WindowRowModifier) frameBound).spaceWords);
                 } else {
                     assert frameBound instanceof WindowExpModifier;
-                    frameExp.appendSql(context);
+                    frameExp.appendSql(sqlBuilder, context);
                     sqlBuilder.append(((WindowExpModifier) frameBound).spaceWords);
                 }
 
@@ -951,15 +949,11 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            final DialectParser parser;
-            parser = context.parser();
+            sqlBuilder.append(_Constant.SPACE);
 
-            parser.identifier(this.windowName, sqlBuilder)
+            context.identifier(this.windowName, sqlBuilder)
                     .append(_Constant.SPACE_AS);
 
             final String refWindowName = this.refWindowName;
@@ -968,7 +962,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
             } else {
                 sqlBuilder.append(_Constant.LEFT_PAREN)
                         .append(_Constant.SPACE);
-                parser.identifier(refWindowName, sqlBuilder)
+                context.identifier(refWindowName, sqlBuilder)
                         .append(_Constant.SPACE_RIGHT_PAREN);
             }
 

@@ -230,14 +230,14 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                     if (migration || nonChildIdType == null) {
                         expression = rowWrapper.nonChildRowList.get(rowIndex).get(nonChildId);
                         assert expression instanceof SqlValueParam.SingleAnonymousValue;//because io.army.dialect.FieldValueGenerator have validated
-                        expression.appendSql(this);
+                        expression.appendSql(sqlBuilder, this);
                     } else {
                         assert mockEnv;//must assert
                         this.appendInsertValue(literalMode, field, null);
                     }
                 } else if ((expression = rowValuesMap.get(field)) != null
                         || (expression = defaultValueMap.get(field)) != null) {
-                    expression.appendSql(this);
+                    expression.appendSql(sqlBuilder, this);
                 } else if (field.generatorType() == GeneratorType.PRECEDE) {
                     assert mockEnv || migration;
                     if (migration && !field.nullable()) {

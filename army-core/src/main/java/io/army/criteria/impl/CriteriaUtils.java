@@ -42,7 +42,7 @@ abstract class CriteriaUtils {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            list.get(i).appendSql(context);
+            list.get(i).appendSql(sqlBuilder, context);
         }
 
     }

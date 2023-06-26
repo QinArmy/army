@@ -162,11 +162,9 @@ abstract class PostgreUtils extends CriteriaUtils {
          * this method for ROWS FROM( ... ) syntax.
          */
         @Override
-        public void appendSql(final _SqlContext context) {
-            ((ArmySQLFunction) this.funcItem).appendSql(context);
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_AS)
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            ((ArmySQLFunction) this.funcItem).appendSql(sqlBuilder, context);
+            sqlBuilder.append(_Constant.SPACE_AS)
                     .append(_Constant.LEFT_PAREN);
             CriteriaUtils.appendSelfDescribedList(this.fieldList, sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);

@@ -176,7 +176,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                     assert mockEnv; // must assert
                     this.appendInsertValue(literalMode, field, null);
                 } else if ((expression = defaultValueMap.get(field)) != null) {
-                    expression.appendSql(this);
+                    expression.appendSql(sqlBuilder, this);
                 } else if (field.generatorType() == GeneratorType.PRECEDE) {
                     assert mockEnv || migration;
                     if (migration && !field.nullable()) {

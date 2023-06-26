@@ -516,7 +516,7 @@ final class MySQLDialectParser extends MySQLParser {
         sqlBuilder.append(SPACE_HINT_START);
         for (Hint hint : hintList) {
             _MySQLConsultant.assertHint(hint);
-            ((_SelfDescribed) hint).appendSql(context);
+            ((_SelfDescribed) hint).appendSql(sqlBuilder, context);
         }
         sqlBuilder.append(SPACE_HINT_END);
     }
@@ -1181,7 +1181,7 @@ final class MySQLDialectParser extends MySQLParser {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                columnOrVarList.get(i).appendSql(context);
+                columnOrVarList.get(i).appendSql(sqlBuilder, context);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
@@ -1208,7 +1208,7 @@ final class MySQLDialectParser extends MySQLParser {
 
                 context.appendField(pair.first);
                 sqlBuilder.append(_Constant.SPACE_EQUAL);
-                pair.second.appendSql(context);
+                pair.second.appendSql(sqlBuilder, context);
 
             }
 

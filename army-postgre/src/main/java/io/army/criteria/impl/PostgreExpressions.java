@@ -486,26 +486,25 @@ abstract class PostgreExpressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final ArmyExpression start2 = this.start2, endOrLength2 = this.endOrLength2;
             if (start2 == null || endOrLength2 == null) {
                 throw _Exceptions.castCriteriaApi();
             }
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_LEFT_PAREN);
 
-            this.start1.appendSql(context);
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+
+            this.start1.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.endOrLength1.appendSql(context);
+            this.endOrLength1.appendSql(sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN)
                     .append(" OVERLAPS")
                     .append(_Constant.SPACE_LEFT_PAREN);
 
-            start2.appendSql(context);
+            start2.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            endOrLength2.appendSql(context);
+            endOrLength2.appendSql(sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
@@ -596,9 +595,9 @@ abstract class PostgreExpressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(this.operator.spaceOperator);
-            this.operand.appendSql(context);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(this.operator.spaceOperator);
+            this.operand.appendSql(sqlBuilder, context);
         }
 
         @Override

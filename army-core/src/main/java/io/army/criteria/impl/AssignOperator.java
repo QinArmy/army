@@ -19,23 +19,22 @@ enum AssignOperator {
     }
 
 
-    final void appendOperator(final Dialect dialect, final SQLField field, final _SqlContext context) {
-        switch (dialect.database()) {
+    final void appendOperator(final SQLField field, final StringBuilder sqlBuilder, final _SqlContext context) {
+        switch (context.database()) {
             case MySQL:
             case PostgreSQL:
-                this.simpleOperator(field, context);
+                this.simpleOperator(field, sqlBuilder, context);
                 break;
             default:
-                throw _Exceptions.unexpectedEnum(dialect.database());
+                throw _Exceptions.unexpectedEnum(context.database());
         }
 
     }
 
 
-    private void simpleOperator(final SQLField field, final _SqlContext context) {
-        final StringBuilder sqlBuilder = context.sqlBuilder()
-                .append(_Constant.SPACE_EQUAL);
-        ((_SelfDescribed) field).appendSql(context);
+    private void simpleOperator(final SQLField field, final StringBuilder sqlBuilder, final _SqlContext context) {
+        sqlBuilder.append(_Constant.SPACE_EQUAL);
+        ((_SelfDescribed) field).appendSql(sqlBuilder, context);
         switch (this) {
             case PLUS_EQUAL:
                 sqlBuilder.append(DualExpOperator.PLUS.spaceOperator);

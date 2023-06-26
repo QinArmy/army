@@ -187,14 +187,12 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final List<?> valueList = this.valueList;
             final int valueSize = valueList.size();
             assert valueSize > 0;
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_LEFT_PAREN);
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             final TypeMeta type = this.type;
             for (int i = 0; i < valueSize; i++) {
                 if (i > 0) {
@@ -303,7 +301,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             context.appendLiteral(this);
         }
 

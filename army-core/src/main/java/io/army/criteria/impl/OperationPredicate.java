@@ -666,15 +666,16 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
 
         @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.appendFuncName(this.buildIn, this.name);
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            context.appendFuncName(this.buildIn, this.name);
 
             if (this instanceof FunctionUtils.NoParensFunction) {
                 return;
             }
+
             if (this instanceof FunctionUtils.NoArgFunction) {
-                sqlBuilder.append(_Constant.RIGHT_PAREN);
+                sqlBuilder.append(_Constant.PARENS);
             } else {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
                 this.appendArg(sqlBuilder, context);
@@ -684,6 +685,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             if (this instanceof FunctionUtils.FunctionOuterClause) {
                 ((FunctionUtils.FunctionOuterClause) this).appendFuncRest(sqlBuilder, context);
             }
+
         }
 
         @Override
@@ -734,12 +736,10 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_LEFT_PAREN);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
 
-            this.predicate.appendSql(context);
+            this.predicate.appendSql(sqlBuilder, context);
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 
@@ -761,8 +761,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            this.appendOrPredicate(context.sqlBuilder(), context);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.appendOrPredicate(sqlBuilder, context);
         }
 
 
@@ -794,38 +794,38 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             return builder.toString();
         }
 
-        private void appendOrPredicate(final StringBuilder builder, final @Nullable _SqlContext context) {
-            builder.append(_Constant.SPACE_LEFT_PAREN);// outer left paren
+        private void appendOrPredicate(final StringBuilder sqlBuilder, final @Nullable _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);// outer left paren
 
             final OperationPredicate left = this.left;
 
             if (context == null) {
-                builder.append(left);
+                sqlBuilder.append(left);
             } else {
-                left.appendSql(context);
+                left.appendSql(sqlBuilder, context);
             }
 
             boolean rightInnerParen;
             for (OperationPredicate right : this.rightList) {
 
-                builder.append(_Constant.SPACE_OR);
+                sqlBuilder.append(_Constant.SPACE_OR);
                 rightInnerParen = right instanceof AndPredicate;
                 if (rightInnerParen) {
-                    builder.append(_Constant.SPACE_LEFT_PAREN); // inner left bracket
+                    sqlBuilder.append(_Constant.SPACE_LEFT_PAREN); // inner left bracket
                 }
 
                 if (context == null) {
-                    builder.append(right);
+                    sqlBuilder.append(right);
                 } else {
-                    right.appendSql(context);
+                    right.appendSql(sqlBuilder, context);
                 }
 
                 if (rightInnerParen) {
-                    builder.append(_Constant.SPACE_RIGHT_PAREN);// inner right bracket
+                    sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);// inner right bracket
                 }
             }
 
-            builder.append(_Constant.SPACE_RIGHT_PAREN); // outer right paren
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN); // outer right paren
         }
 
 
@@ -844,14 +844,12 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             // 1. append left operand
-            this.left.appendSql(context);
+            this.left.appendSql(sqlBuilder, context);
 
-            final StringBuilder sqlBuilder;
             // 2. append AND operator
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_AND);
+            sqlBuilder.append(_Constant.SPACE_AND);
 
             final OperationPredicate right = this.right;
             final boolean rightOuterParens = right instanceof AndPredicate;
@@ -860,7 +858,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
             // 3. append right operand
-            right.appendSql(context);
+            right.appendSql(sqlBuilder, context);
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
@@ -906,21 +904,19 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder builder;
-            builder = context.sqlBuilder()
-                    .append(" NOT");
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE_NOT);
 
             final OperationPredicate predicate = this.predicate;
             final boolean operandOuterParens = predicate instanceof AndPredicate;
 
             if (operandOuterParens) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            predicate.appendSql(context);
+            predicate.appendSql(sqlBuilder, context);
 
             if (operandOuterParens) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
         }
@@ -990,8 +986,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(this.spaceWord);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(this.spaceWord);
         }
 
         @Override

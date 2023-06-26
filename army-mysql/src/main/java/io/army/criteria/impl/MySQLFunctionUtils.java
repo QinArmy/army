@@ -214,7 +214,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         @Override
         final void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
-            this.argument.appendSql(context);
+            this.argument.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -246,7 +246,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             if (option != null) {
                 sqlBuilder.append(option.spaceRender());
             }
-            this.argument.appendSql(context);
+            this.argument.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -474,7 +474,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             FunctionUtils.appendArguments(this.distinct, this.expList, context);
 
             if (this.clause != null) {
-                this.clause.appendSql(context);
+                this.clause.appendSql(sqlBuilder, context);
             }
         }
 
@@ -508,12 +508,10 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final List<? extends SortItem> sortItemList = this.orderByList();
             final int sortSize = sortItemList.size();
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
 
             if (sortSize > 0) {
                 sqlBuilder.append(_Constant.SPACE_ORDER_BY);
@@ -521,14 +519,14 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                     if (i > 0) {
                         sqlBuilder.append(_Constant.SPACE_COMMA);
                     }
-                    ((_SelfDescribed) sortItemList.get(i)).appendSql(context);
+                    ((_SelfDescribed) sortItemList.get(i)).appendSql(sqlBuilder, context);
                 }
             }
 
             final String stringValue = this.stringValue;
             if (stringValue != null) {
                 sqlBuilder.append(" SEPARATOR ");
-                context.parser().identifier(stringValue, sqlBuilder);
+                context.identifier(stringValue, sqlBuilder);
             }
         }
 
@@ -639,7 +637,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
     }//NullOrError
 
     /**
-     * @see JsonValueFunction#appendSql(_SqlContext)
+     * @see JsonValueFunction#appendSql(StringBuilder, _SqlContext)
      */
     private static void appendOnEmptyOrErrorClause(final List<_Pair<Object, JsonValueWord>> actionList
             , final _SqlContext context) {
@@ -652,7 +650,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 sqlBuilder.append(((JsonValueWord) pair.first).spaceWords);
             } else if (pair.first instanceof Expression) {
                 sqlBuilder.append(_Constant.SPACE_DEFAULT);
-                ((ArmyExpression) pair.first).appendSql(context);
+                ((ArmyExpression) pair.first).appendSql(sqlBuilder, context);
             } else {
                 //no bug,never here
                 throw new IllegalStateException();
@@ -932,9 +930,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         @Override
         void appendArg(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.jsonDoc.appendSql(context);
+            this.jsonDoc.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            this.path.appendSql(context);
+            this.path.appendSql(sqlBuilder, context);
 
             final List<Object> returningList = this.returningList;
             if (returningList != null) {
@@ -948,10 +946,10 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                     } else if (o instanceof SQLWords) {
                         sqlBuilder.append(((SQLWords) o).spaceRender());
                     } else if (o instanceof Expression) {
-                        ((ArmyExpression) o).appendSql(context);
+                        ((ArmyExpression) o).appendSql(sqlBuilder, context);
                     } else if (o instanceof SQLIdentifier) {
                         sqlBuilder.append(_Constant.SPACE);
-                        context.parser().identifier(((SQLIdentifier) o).render(), sqlBuilder);
+                        context.identifier(((SQLIdentifier) o).render(), sqlBuilder);
                     } else {
                         //no bug,never here
                         throw new IllegalStateException();
@@ -1022,10 +1020,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            sqlBuilder.append(_Constant.SPACE);
             context.parser().identifier(this.name, sqlBuilder);
             sqlBuilder.append(MySQLs.FOR_ORDINALITY.spaceRender());
         }
@@ -1152,19 +1149,18 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            sqlBuilder.append(_Constant.SPACE);
             context.parser().identifier(this.name, sqlBuilder)
                     .append(this.type.spaceRender());
 
             if (this.n != null) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
-                this.n.appendSql(context);
+                this.n.appendSql(sqlBuilder, context);
                 if (this.d != null) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
-                    this.d.appendSql(context);
+                    this.d.appendSql(sqlBuilder, context);
                 }
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
@@ -1193,7 +1189,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
             }
 
             sqlBuilder.append(this.pathWord.spaceRender());
-            this.path.appendSql(context);
+            this.path.appendSql(sqlBuilder, context);
 
             final JsonTableOnEmptyOrErrorAction actionClause = this.actionClause;
             if (actionClause != null) {
@@ -1927,7 +1923,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                columnList.get(i).appendSql(context);
+                columnList.get(i).appendSql(sqlBuilder, context);
             }
 
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -1973,14 +1969,13 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(" NESTED");
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            sqlBuilder.append(" NESTED");
             if (this.fullPathWord) {
                 sqlBuilder.append(" PATH");
             }
-            this.path.appendSql(context);
+            this.path.appendSql(sqlBuilder, context);
 
             final List<JsonTableColumn> columnList = this.columnList;
             assert columnList != null;
@@ -2111,17 +2106,15 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(" JSON_TABLE(");
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(" JSON_TABLE(");
 
             final ArmyExpression expr = this.expr, path = this.path;
             assert expr != null && path != null;
 
-            expr.appendSql(context);
+            expr.appendSql(sqlBuilder, context);
             sqlBuilder.append(_Constant.SPACE_COMMA);
-            path.appendSql(context);
+            path.appendSql(sqlBuilder, context);
 
             final List<JsonTableColumn> columnList = this.columnList;
             assert columnList != null;

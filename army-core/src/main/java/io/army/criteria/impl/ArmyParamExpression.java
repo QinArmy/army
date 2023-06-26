@@ -175,7 +175,7 @@ abstract class ArmyParamExpression extends OperationExpression.OperationSimpleEx
     }
 
     @Override
-    public final void appendSql(_SqlContext context) {
+    public final void appendSql(StringBuilder sqlBuilder, _SqlContext context) {
         context.appendParam(this);
     }
 

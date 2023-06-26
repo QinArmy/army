@@ -729,7 +729,7 @@ abstract class Expressions {
 
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             final DualExpOperator operator = this.operator;
             switch (operator) {
@@ -747,8 +747,6 @@ abstract class Expressions {
                     // no-op
             }
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
             final ArmyExpression left = this.left, right = this.right;
             final boolean leftOuterParens, rightOuterParens;
             leftOuterParens = left instanceof OperationPredicate.OperationCompoundPredicate; // if CompoundPredicate must append outer parens
@@ -758,7 +756,7 @@ abstract class Expressions {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
 
-            left.appendSql(context);
+            left.appendSql(sqlBuilder, context);
 
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -776,7 +774,7 @@ abstract class Expressions {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
             //3. append right expression
-            right.appendSql(context);
+            right.appendSql(sqlBuilder, context);
 
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -900,35 +898,33 @@ abstract class Expressions {
 
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             final Operator.SqlUnaryExpOperator operator = this.operator;
             final boolean outerParens;
             outerParens = operator != UnaryExpOperator.NEGATE;
 
-            final StringBuilder builder;
-            builder = context.sqlBuilder();
 
             if (outerParens) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            builder.append(operator.spaceRender(context.database()));
+            sqlBuilder.append(operator.spaceRender(context.database()));
 
             final ArmyExpression operand = this.operand;
             final boolean operandOuterParens = !(operand instanceof ArmySimpleExpression);
 
             if (operandOuterParens) {
-                builder.append(_Constant.SPACE_LEFT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
             // append expression
-            operand.appendSql(context);
+            operand.appendSql(sqlBuilder, context);
 
             if (operandOuterParens) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
             if (outerParens) {
-                builder.append(_Constant.SPACE_RIGHT_PAREN);
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
 
         }
@@ -1001,7 +997,7 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             context.appendSubQuery(this.subQuery);
         }
 
@@ -1036,9 +1032,7 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             if (this.not) {
                 sqlBuilder.append(_Constant.SPACE_NOT);
             }
@@ -1078,10 +1072,8 @@ abstract class Expressions {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
             final ArmySQLExpression left = this.left;
             final boolean leftOuterParens;
             leftOuterParens = left instanceof OperationCompoundPredicate;
@@ -1089,7 +1081,7 @@ abstract class Expressions {
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            left.appendSql(context);
+            left.appendSql(sqlBuilder, context);
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
@@ -1104,7 +1096,7 @@ abstract class Expressions {
                 if (rightOuterParens) {
                     sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
                 }
-                ((ArmySQLExpression) right).appendSql(context);
+                ((ArmySQLExpression) right).appendSql(sqlBuilder, context);
                 if (rightOuterParens) {
                     sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
                 }
@@ -1186,9 +1178,7 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             final ArmyExpression left = this.left, right = this.right, escapeChar = this.escapeChar;
             final boolean leftOuterParens, rightOuterParens, escapeCharOuterParens;
@@ -1197,7 +1187,7 @@ abstract class Expressions {
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            left.appendSql(context);
+            left.appendSql(sqlBuilder, context);
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
@@ -1226,7 +1216,7 @@ abstract class Expressions {
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            right.appendSql(context);
+            right.appendSql(sqlBuilder, context);
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
@@ -1237,7 +1227,7 @@ abstract class Expressions {
                 if (escapeCharOuterParens) {
                     sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
                 }
-                escapeChar.appendSql(context);
+                escapeChar.appendSql(sqlBuilder, context);
                 if (escapeCharOuterParens) {
                     sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
                 }
@@ -1311,10 +1301,7 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             final ArmyExpression left = this.left, center = this.center, right = this.right;
             final boolean leftOuterParens, centerOuterParens, rightOuterParens;
@@ -1323,7 +1310,7 @@ abstract class Expressions {
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            left.appendSql(context);
+            left.appendSql(sqlBuilder, context);
             if (leftOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
@@ -1348,7 +1335,7 @@ abstract class Expressions {
             if (centerOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            center.appendSql(context);
+            center.appendSql(sqlBuilder, context);
             if (centerOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
@@ -1359,7 +1346,7 @@ abstract class Expressions {
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            right.appendSql(context);
+            right.appendSql(sqlBuilder, context);
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
@@ -1457,8 +1444,8 @@ abstract class Expressions {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
-            this.expression.appendSql(context);
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.expression.appendSql(sqlBuilder, context);
         }
 
         @Override
@@ -1513,18 +1500,17 @@ abstract class Expressions {
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.left.appendSql(context);
-            context.sqlBuilder()
-                    .append(this.operator.spaceOperator)
+            this.left.appendSql(sqlBuilder, context);
+            sqlBuilder.append(this.operator.spaceOperator)
                     .append(this.queryOperator.spaceRender());
             final RightOperand right = this.left;
 
             if (right instanceof SubQuery) {
                 context.appendSubQuery((SubQuery) right);
             } else if (right instanceof ArrayExpression) {
-                ((ArmyExpression) right).appendSql(context);
+                ((ArmyExpression) right).appendSql(sqlBuilder, context);
             } else {
                 //no bug,never here
                 throw new IllegalStateException();
@@ -1565,11 +1551,8 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            this.expression.appendSql(context);
-
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.expression.appendSql(sqlBuilder, context);
             if (this.not) {
                 sqlBuilder.append(" IS NOT");
             } else {
@@ -1641,12 +1624,11 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             //TODO validate database
-            this.left.appendSql(context);
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(" IS");
+            this.left.appendSql(sqlBuilder, context);
+
+            sqlBuilder.append(" IS");
 
             if (this.not) {
                 sqlBuilder.append(" NOT");
@@ -1658,7 +1640,7 @@ abstract class Expressions {
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
-            right.appendSql(context);
+            right.appendSql(sqlBuilder, context);
 
             if (rightOuterParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -1733,12 +1715,10 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            this.left.appendSql(context);
+            this.left.appendSql(sqlBuilder, context);
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
             if (this.not) {
                 sqlBuilder.append(_Constant.SPACE_NOT);
             }
@@ -1748,7 +1728,7 @@ abstract class Expressions {
             if (right instanceof SubQuery) {
                 context.appendSubQuery((SubQuery) right);
             } else {
-                ((ArmyRowExpression) right).appendSql(context);
+                ((ArmyRowExpression) right).appendSql(sqlBuilder, context);
             }
         }
 
@@ -1802,10 +1782,7 @@ abstract class Expressions {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
-
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             final boolean outerParens;
             outerParens = !(this.arrayExp instanceof SimpleArrayExpression);
@@ -1814,7 +1791,7 @@ abstract class Expressions {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             }
 
-            this.arrayExp.appendSql(context);
+            this.arrayExp.appendSql(sqlBuilder, context);
 
             if (outerParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -1857,7 +1834,7 @@ abstract class Expressions {
                 sqlBuilder.append(_Constant.SPACE)
                         .append(index);
             } else {
-                ((ArmyArraySubscript) index).appendSql(context);
+                ((ArmyArraySubscript) index).appendSql(sqlBuilder, context);
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_SQUARE_BRACKET);
         }
@@ -2126,7 +2103,7 @@ abstract class Expressions {
             if (outerParens) {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
             }
-            this.json.appendSql(context);
+            this.json.appendSql(sqlBuilder, context);
             if (outerParens) {
                 sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
             }
@@ -2145,9 +2122,7 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.appendJson(sqlBuilder, context);
 
@@ -2213,9 +2188,7 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             this.appendJson(sqlBuilder, context);
 
@@ -2277,9 +2250,7 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             switch (context.database()) {
                 case MySQL: {
@@ -2291,7 +2262,7 @@ abstract class Expressions {
                     if (this.jsonPath instanceof String) {
                         context.appendLiteral(JsonPathType.INSTANCE, this.jsonPath);
                     } else {
-                        ((ArmyExpression) this.jsonPath).appendSql(context);
+                        ((ArmyExpression) this.jsonPath).appendSql(sqlBuilder, context);
                     }
                 }
                 break;
@@ -2306,12 +2277,12 @@ abstract class Expressions {
                     context.appendFuncName(true, funcName);
 
                     sqlBuilder.append(_Constant.LEFT_PAREN);
-                    this.json.appendSql(context);
+                    this.json.appendSql(sqlBuilder, context);
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                     if (this.jsonPath instanceof String) {
                         context.appendLiteral(JsonPathType.INSTANCE, this.jsonPath);
                     } else {
-                        ((ArmyExpression) this.jsonPath).appendSql(context);
+                        ((ArmyExpression) this.jsonPath).appendSql(sqlBuilder, context);
                     }
                     sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
                 }
@@ -2421,13 +2392,11 @@ abstract class Expressions {
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final List<Object> elementList = this.elementList;
             final int elementSize = elementList.size();
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(" ARRAY[");
+            sqlBuilder.append(" ARRAY[");
 
             Object element;
             MappingType elementType;
@@ -2439,7 +2408,7 @@ abstract class Expressions {
                 if (element == null) {
                     sqlBuilder.append(_Constant.SPACE_NULL);
                 } else if (element instanceof Expression) {
-                    ((ArmyExpression) element).appendSql(context);
+                    ((ArmyExpression) element).appendSql(sqlBuilder, context);
                 } else if (element instanceof String) {
                     context.appendLiteral(NoCastTextType.INSTANCE, element);
                 } else if (element instanceof Integer) {
@@ -2522,10 +2491,8 @@ abstract class Expressions {
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(" ARRAY[");
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(" ARRAY[");
             context.appendSubQuery(this.query);
             sqlBuilder.append(_Constant.SPACE_RIGHT_SQUARE_BRACKET);
         }
@@ -2567,12 +2534,11 @@ abstract class Expressions {
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            this.exp.appendSql(context);
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(" COLLATE ");
-            context.parser().identifier(this.collation, sqlBuilder);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            this.exp.appendSql(sqlBuilder, context);
+
+            sqlBuilder.append(" COLLATE ");
+            context.identifier(this.collation, sqlBuilder);
         }
 
         @Override
@@ -2599,8 +2565,8 @@ abstract class Expressions {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            context.sqlBuilder().append(" ()");
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(" ()");
         }
 
         @Override
@@ -2643,10 +2609,8 @@ abstract class Expressions {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
             if (this.modifier == null) {
                 sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             } else {

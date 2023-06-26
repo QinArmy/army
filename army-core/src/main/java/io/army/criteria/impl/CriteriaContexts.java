@@ -3088,15 +3088,14 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final DialectParser dialect = context.parser();
-            final StringBuilder builder;
-            builder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
 
-            dialect.identifier(this.tableName, builder)
+            sqlBuilder.append(_Constant.SPACE);
+
+            dialect.identifier(this.tableName, sqlBuilder)
                     .append(_Constant.POINT);
-            dialect.identifier(this.selection.alias(), builder);
+            dialect.identifier(this.selection.alias(), sqlBuilder);
 
         }
 
@@ -3162,12 +3161,10 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder builder;
-            builder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE);
 
-            context.parser().identifier(this.selection.alias(), builder);
+            context.parser().identifier(this.selection.alias(), sqlBuilder);
         }
 
         @Override
@@ -3206,9 +3203,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
-            context.sqlBuilder()
-                    .append(_Constant.SPACE)
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE)
                     .append(this.selectionOrdinal); //TODO consider support ?
         }
 

@@ -128,7 +128,7 @@ abstract class WindowFunctionUtils {
                     sqlBuilder.append(_Constant.SPACE);
                     parser.identifier(existingWindowName, sqlBuilder);
                 } else {
-                    anonymousWindow.appendSql(context);
+                    anonymousWindow.appendSql(sqlBuilder, context);
                 }
             }
         }
@@ -191,7 +191,7 @@ abstract class WindowFunctionUtils {
         }
 
         @Override
-        public void appendSql(final _SqlContext context) {
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             throw new UnsupportedOperationException();
         }
 
@@ -282,7 +282,7 @@ abstract class WindowFunctionUtils {
 
         @Override
         void appendArg(StringBuilder sqlBuilder, _SqlContext context) {
-            this.one.appendSql(context);
+            this.one.appendSql(sqlBuilder, context);
         }
 
         @Override

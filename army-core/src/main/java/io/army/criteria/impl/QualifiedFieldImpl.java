@@ -83,7 +83,7 @@ final class QualifiedFieldImpl<T> extends OperationDataField implements Qualifie
     }
 
     @Override
-    public void appendSql(final _SqlContext context) {
+    public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
         if (context.visible() != Visible.BOTH && _MetaBridge.VISIBLE.equals(this.field.fieldName)) {
             throw _Exceptions.visibleField(context.visible(), this);
         }

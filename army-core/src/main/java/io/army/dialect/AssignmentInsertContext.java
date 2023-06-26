@@ -126,7 +126,7 @@ final class AssignmentInsertContext extends InsertContext
             final _Expression expression;
             expression = wrapper.nonChildPairMap.get(insertTable.nonChildId());
             assert expression instanceof SqlValueParam.SingleAnonymousValue; //validated by FieldValueGenerator
-            expression.appendSql(this);
+            expression.appendSql(sqlBuilder, this);
         }
 
         //4. assignment clause of application developer
@@ -145,7 +145,7 @@ final class AssignmentInsertContext extends InsertContext
 
             parser.safeObjectName(field, sqlBuilder)
                     .append(_Constant.SPACE_EQUAL);
-            pair.second.appendSql(this);
+            pair.second.appendSql(sqlBuilder, this);
         }
 
     }
@@ -205,7 +205,7 @@ final class AssignmentInsertContext extends InsertContext
                 final _Expression expression;
                 expression = this.rowWrapper.nonChildPairMap.get(this.insertTable.nonChildId());
                 assert expression instanceof SqlValueParam.SingleAnonymousValue; //validated by FieldValueGenerator
-                expression.appendSql(this);
+                expression.appendSql(sqlBuilder, this);
                 idValue = expression;
             } else if (generatorType == GeneratorType.PRECEDE) {
                 idValue = generatedMap.get(field);

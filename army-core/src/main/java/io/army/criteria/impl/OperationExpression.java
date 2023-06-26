@@ -895,15 +895,15 @@ abstract class OperationExpression extends OperationSQLExpression
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.appendFuncName(this.buildIn, this.name);
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+
+            context.appendFuncName(this.buildIn, this.name);
 
             if (this instanceof FunctionUtils.NoParensFunction) {
                 return;
             }
             if (this instanceof FunctionUtils.NoArgFunction) {
-                sqlBuilder.append(_Constant.RIGHT_PAREN);
+                sqlBuilder.append(_Constant.PARENS);
             } else {
                 sqlBuilder.append(_Constant.LEFT_PAREN);
                 this.appendArg(sqlBuilder, context);
@@ -1004,13 +1004,12 @@ abstract class OperationExpression extends OperationSQLExpression
 
 
         @Override
-        public void appendSql(final _SqlContext context) {
-            final StringBuilder builder = context.sqlBuilder()
-                    .append(_Constant.SPACE_LEFT_PAREN);
+        public void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
 
-            this.expression.appendSql(context);
+            this.expression.appendSql(sqlBuilder, context);
 
-            builder.append(_Constant.SPACE_RIGHT_PAREN);
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
         }
 
 
@@ -1070,8 +1069,8 @@ abstract class OperationExpression extends OperationSQLExpression
         }
 
         @Override
-        public void appendSql(_SqlContext context) {
-            context.sqlBuilder().append(_Constant.SPACE_NULL);
+        public void appendSql(final StringBuilder sqlBuilder, _SqlContext context) {
+            sqlBuilder.append(_Constant.SPACE_NULL);
         }
 
         @Override

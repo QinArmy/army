@@ -508,7 +508,7 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final List<String> cycleColumnList = this.cycleColumnList;
             if (cycleColumnList == null) {
                 return;
@@ -516,9 +516,7 @@ abstract class PostgreSupports extends CriteriaSupports {
             final int columnSize = cycleColumnList.size();
             assert columnSize > 0;
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder()
-                    .append(" CYCLE ");
+            sqlBuilder.append(" CYCLE ");
 
             final DialectParser parser;
             parser = context.parser();
@@ -541,9 +539,9 @@ abstract class PostgreSupports extends CriteriaSupports {
             if (cycleMarkValue != null) {
                 assert cycleMarkDefault != null;
                 sqlBuilder.append(" TO");
-                cycleMarkValue.appendSql(context);
+                cycleMarkValue.appendSql(sqlBuilder, context);
                 sqlBuilder.append(_Constant.SPACE_DEFAULT);
-                cycleMarkDefault.appendSql(context);
+                cycleMarkDefault.appendSql(sqlBuilder, context);
             }
 
             final String cyclePathColumnName = this.cyclePathColumnName;
@@ -715,13 +713,12 @@ abstract class PostgreSupports extends CriteriaSupports {
         }
 
         @Override
-        public final void appendSql(final _SqlContext context) {
+        public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             final CteSearchOption searchOption = this.searchOption;
             if (searchOption == null) {
                 return;
             }
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
+
             final DialectParser parser;
             parser = context.parser();
 

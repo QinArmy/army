@@ -11,6 +11,6 @@ public interface _SelfDescribed {
      *     <li>append SelfDescribed instance content in sql</li>
      * </ol>
      */
-    void appendSql(_SqlContext context);
+    void appendSql(StringBuilder sqlBuilder, _SqlContext context);
 
 }
