@@ -654,12 +654,11 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public void appendItemPair(final _SetClauseContext context) {
+        public void appendItemPair(final StringBuilder sqlBuilder, final _SetClauseContext context) {
             final List<? extends SQLField> fieldList = this.fieldList;
             final int fieldSize = fieldList.size();
             //1. append left paren
-            final StringBuilder sqlBuilder = context.sqlBuilder()
-                    .append(_Constant.SPACE_LEFT_PAREN);
+            sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             //2. append field list
             for (int i = 0; i < fieldSize; i++) {
                 if (i > 0) {

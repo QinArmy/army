@@ -993,7 +993,7 @@ abstract class ArmyParser implements DialectParser {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            itemPairList.get(i).appendItemPair(context);
+            itemPairList.get(i).appendItemPair(sqlBuilder, context);
         }
 
         final TableMeta<?> insertTable;
@@ -1260,7 +1260,7 @@ abstract class ArmyParser implements DialectParser {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            itemPairList.get(i).appendItemPair(context);
+            itemPairList.get(i).appendItemPair(sqlBuilder, context);
         }
 
         if (targetTable instanceof SingleTableMeta) {
@@ -1296,14 +1296,14 @@ abstract class ArmyParser implements DialectParser {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            itemPairList.get(i).appendItemPair(context);
+            itemPairList.get(i).appendItemPair(sqlBuilder, context);
         }
 
         for (int i = 0; i < childSize; i++) {
             if (i > 0 || itemSize > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            childItemPairList.get(i).appendItemPair(context);
+            childItemPairList.get(i).appendItemPair(sqlBuilder, context);
         }
 
         final ParentTableMeta<?> parent = ((ChildTableMeta<?>) stmt.table()).parentMeta();
@@ -1331,7 +1331,7 @@ abstract class ArmyParser implements DialectParser {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             pair = itemPairList.get(i);
-            pair.appendItemPair(context);
+            pair.appendItemPair(sqlBuilder, context);
 
             if (pair instanceof _ItemPair._FieldItemPair) {
                 dataField = ((_ItemPair._FieldItemPair) pair).field();

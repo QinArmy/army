@@ -610,7 +610,7 @@ final class PostgreDialectParser extends PostgreParser {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            updateItemList.get(i).appendItemPair(context);
+            updateItemList.get(i).appendItemPair(sqlBuilder, context);
         }
         final TableMeta<?> insertTable = context.insertTable();
 
