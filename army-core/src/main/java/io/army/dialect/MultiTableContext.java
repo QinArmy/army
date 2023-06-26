@@ -9,6 +9,7 @@ import io.army.util._Exceptions;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 final class MultiTableContext implements _MultiTableContext {
 
@@ -20,15 +21,19 @@ final class MultiTableContext implements _MultiTableContext {
 
     private final BiConsumer<String, FieldMeta<?>> outerFieldConsumer;
 
-   private Map<String, String> aliasToSafeAlias;
+    private final Consumer<FieldMeta<?>> outerFieldOnlyConsumer;
+
+    private Map<String, String> aliasToSafeAlias;
 
 
-    MultiTableContext(StatementContext stmtContext, TableContext tableContext
-            , @Nullable BiConsumer<String, FieldMeta<?>> outerFieldConsumer) {
+    MultiTableContext(StatementContext stmtContext, TableContext tableContext,
+                      @Nullable BiConsumer<String, FieldMeta<?>> outerFieldConsumer,
+                      @Nullable Consumer<FieldMeta<?>> outerFieldOnlyConsumer) {
         this.stmtContext = stmtContext;
         this.aliasToTable = tableContext.aliasToTable;
         this.tableToSafeAlias = tableContext.tableToSafeAlias;
         this.outerFieldConsumer = outerFieldConsumer;
+        this.outerFieldOnlyConsumer = outerFieldOnlyConsumer;
 
     }
 
@@ -46,7 +51,7 @@ final class MultiTableContext implements _MultiTableContext {
 
 
     @Override
-    public  void appendField(final FieldMeta<?> field) {
+    public void appendField(final FieldMeta<?> field) {
         final TableMeta<?> fieldTable = field.tableMeta();
         final String safeTableAlias;
         safeTableAlias = this.tableToSafeAlias.get(fieldTable);
@@ -68,7 +73,22 @@ final class MultiTableContext implements _MultiTableContext {
 
 
     @Override
-    public  String safeTableAlias(final TableMeta<?> table, final String alias) {
+    public void appendFieldOnly(final FieldMeta<?> field) {
+        final TableMeta<?> fieldTable = field.tableMeta();
+        final Consumer<FieldMeta<?>> outerFieldOnlyConsumer;
+        if (this.tableToSafeAlias.get(fieldTable) != null) {
+            this.stmtContext.parser.safeObjectName(field, this.stmtContext.sqlBuilder);
+        } else if (this.aliasToTable.containsValue(fieldTable)) {
+            throw _Exceptions.selfJoinNonQualifiedField(field);
+        } else if ((outerFieldOnlyConsumer = this.outerFieldOnlyConsumer) != null) {
+            outerFieldOnlyConsumer.accept(field);
+        } else {
+            throw _Exceptions.unknownColumn(field);
+        }
+    }
+
+    @Override
+    public String safeTableAlias(final TableMeta<?> table, final String alias) {
         if (this.aliasToTable.get(alias) != table) {
             throw _Exceptions.unknownTable(table, alias);
         }
@@ -82,7 +102,7 @@ final class MultiTableContext implements _MultiTableContext {
     }
 
     @Override
-    public  String safeTableAlias(final String alias) {
+    public String safeTableAlias(final String alias) {
         if (this.aliasToTable.get(alias) == null) {
             throw _Exceptions.unknownTableAlias(alias);
         }
@@ -104,7 +124,7 @@ final class MultiTableContext implements _MultiTableContext {
     }
 
     @Override
-    public  TabularItem tableItemOf(final String tableAlias) {
+    public TabularItem tableItemOf(final String tableAlias) {
         final TabularItem tableItem;
         tableItem = this.aliasToTable.get(tableAlias);
         if (tableItem == null) {
@@ -114,8 +134,7 @@ final class MultiTableContext implements _MultiTableContext {
     }
 
 
-
-     Map<String, String> getAliasToSafeAlias() {
+    Map<String, String> getAliasToSafeAlias() {
         Map<String, String> aliasToSafeAlias = this.aliasToSafeAlias;
         if (aliasToSafeAlias == null) {
             aliasToSafeAlias = new HashMap<>();
@@ -124,7 +143,7 @@ final class MultiTableContext implements _MultiTableContext {
         return aliasToSafeAlias;
     }
 
-     void appendSafeField(final String tableAlias, final FieldMeta<?> field) {
+    void appendSafeField(final String tableAlias, final FieldMeta<?> field) {
         String safeTableAlias;
         safeTableAlias = this.tableToSafeAlias.get(field.tableMeta());
         if (safeTableAlias == null) {

@@ -25,9 +25,9 @@ abstract class MultiTableQueryContext extends BatchSpecStatementContext implemen
 
         this.selectItemList = ((_Query) query).selectItemList();
         if (query instanceof SubQuery) {
-            this.multiTableContext = new MultiTableContext(this, tableContext, this::appendOuterField);
+            this.multiTableContext = new MultiTableContext(this, tableContext, this::appendOuterField, this::appendOuterFieldOnly);
         } else {
-            this.multiTableContext = new MultiTableContext(this, tableContext, null);
+            this.multiTableContext = new MultiTableContext(this, tableContext, null, null);
         }
 
     }
@@ -62,6 +62,10 @@ abstract class MultiTableQueryContext extends BatchSpecStatementContext implemen
         this.multiTableContext.appendField(field);
     }
 
+    @Override
+    public final void appendFieldOnly(FieldMeta<?> field) {
+        this.multiTableContext.appendFieldOnly(field);
+    }
 
     @Override
     public List<? extends _SelectItem> selectItemList() {
@@ -94,6 +98,10 @@ abstract class MultiTableQueryContext extends BatchSpecStatementContext implemen
     }
 
     void appendOuterField(@Nullable String tableAlias, FieldMeta<?> field) {
+        throw new UnsupportedOperationException();
+    }
+
+    void appendOuterFieldOnly(FieldMeta<?> field) {
         throw new UnsupportedOperationException();
     }
 

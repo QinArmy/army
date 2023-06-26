@@ -1,8 +1,10 @@
 package io.army.dialect;
 
-import io.army.criteria.*;
+import io.army.criteria.NamedLiteral;
+import io.army.criteria.SQLParam;
+import io.army.criteria.SubQuery;
+import io.army.criteria.Visible;
 import io.army.lang.Nullable;
-import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
 /**
@@ -13,7 +15,7 @@ import io.army.meta.TypeMeta;
  *
  * @since 1.0
  */
-public interface _SqlContext {
+public interface _SqlContext extends SqlContextSpec {
 
 
     Database database();
@@ -23,33 +25,7 @@ public interface _SqlContext {
 
     StringBuilder appendFuncName(boolean buildIn, String name);
 
-    /**
-     * <p>
-     * This method is designed for the implementation of {@link QualifiedField}
-     * </p>
-     * <p>
-     *     <ol>
-     *         <li>append one space</li>
-     *         <li>append table alias and point</li>
-     *         <li>append safe column name</li>
-     *     </ol>
-     * </p>
-     */
-    void appendField(String tableAlias, FieldMeta<?> field);
 
-    /**
-     * <p>
-     * This method is designed for the implementation of {@link FieldMeta}
-     * </p>
-     * <p> steps:
-     *     <ol>
-     *         <li>append one space</li>
-     *         <li>append table alias and point if need</li>
-     *         <li>append safe column name</li>
-     *     </ol>
-     * </p>
-     */
-    void appendField(FieldMeta<?> field);
 
     void appendSubQuery(SubQuery query);
 

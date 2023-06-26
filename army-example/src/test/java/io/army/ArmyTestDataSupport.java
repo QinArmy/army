@@ -308,14 +308,6 @@ public abstract class ArmyTestDataSupport {
                 .append('#')
                 .append((random.nextLong() % 100))
                 .append('#')
-                .append(random.nextInt(Integer.MAX_VALUE) % 100)
-                .append('#')
-                .append(random.nextInt(Integer.MAX_VALUE) % 100)
-                .append('#')
-                .append(random.nextInt(Integer.MAX_VALUE) % 100)
-                .append('#')
-                .append(random.nextInt(Integer.MAX_VALUE) % 100)
-                .append('#')
                 .append(random.nextInt(Integer.MAX_VALUE) % 100);
     }
 

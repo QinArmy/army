@@ -81,10 +81,8 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertEquals(resultList.size(), regionList.size());
 
-        Long id;
         for (ChinaRegion<?> region : regionList) {
-            id = region.getId();
-            Assert.assertNotNull(id);
+            Assert.assertNotNull(region.getId());
         }
 
         LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
@@ -497,6 +495,149 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         rows = session.update(stmt);
 
         Assert.assertEquals(rows, 2);
+
+        releaseSyncSession(session);
+
+    }
+
+    @Test
+    public void staticValuesReturningInsertParent(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+        final Random random = ThreadLocalRandom.current();
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                //.literalMode(LiteralMode.LITERAL)
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                )
+                .returningAll()
+                .asReturningInsert();
+
+        final List<ChinaRegion<?>> resultList;
+        resultList = session.query(stmt, ChinaRegion_.CLASS, ImmutableArrayList::arrayList);
+
+        Assert.assertEquals(resultList.size(), 2);
+
+        for (ChinaRegion<?> region : resultList) {
+            Assert.assertNotNull(region.getId());
+
+            Assert.assertNotNull(region.getCreateTime());
+            Assert.assertNotNull(region.getUpdateTime());
+        }
+
+        LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
+        releaseSyncSession(session);
+
+    }
+
+    @Test
+    public void valuesInsertParentWithDoNothing(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final Random random = ThreadLocalRandom.current();
+        final Insert stmt;
+        stmt = Postgres.singleInsert()
+                //.literalMode(LiteralMode.LITERAL)
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                )
+                .onConflict()
+                .doNothing()
+                .asInsert();
+
+        Assert.assertFalse(stmt instanceof _ReturningDml);
+
+        final long rows;
+        rows = session.update(stmt);
+
+        Assert.assertEquals(rows, 2);
+
+        releaseSyncSession(session);
+    }
+
+    @Test
+    public void valuesInsertParentWithUpdateSet(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final Random random = ThreadLocalRandom.current();
+
+        final String regionName1, regionName2;
+        regionName1 = randomRegion(random);
+        regionName2 = randomRegion(random);
+
+        List<ChinaRegion<?>> resultList;
+
+        ReturningInsert stmt;
+
+        // insert data
+        stmt = Postgres.singleInsert()
+                //.literalMode(LiteralMode.LITERAL)
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionName1)
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionName2)
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                )
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
+        resultList = session.query(stmt, ChinaRegion_.CLASS);
+
+        Assert.assertEquals(resultList.size(), 2);
+
+        // conflict stmt
+
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T).as("c")
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionName1)
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, regionName2)
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                )
+                .onConflict()
+                .leftParen(ChinaRegion_.name)
+                .comma(ChinaRegion_.regionType)
+                .rightParen()
+                .doUpdate()
+                .set(ChinaRegion_.name, Postgres::excluded)
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
+        resultList = session.query(stmt, ChinaRegion_.CLASS);
+
+        Assert.assertEquals(resultList.size(), 2);
+
+        LOG.debug("{}", JSON.toJSONString(resultList));
 
         releaseSyncSession(session);
 

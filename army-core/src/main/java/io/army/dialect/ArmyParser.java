@@ -1718,12 +1718,10 @@ abstract class ArmyParser implements DialectParser {
         } else {
             sqlBuilder.append(_Constant.SPACE_AND_SPACE);
         }
-        if (safeTableAlias != null) {
-            sqlBuilder.append(safeTableAlias);
-        } else if (context instanceof _SingleDeleteContext) {
+        if (safeTableAlias == null) {
             this.safeObjectName(table, sqlBuilder);
         } else {
-            throw new IllegalArgumentException();
+            sqlBuilder.append(safeTableAlias);
         }
         sqlBuilder.append(_Constant.POINT);
         this.safeObjectName(field, sqlBuilder)

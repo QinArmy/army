@@ -27,4 +27,14 @@ interface _SubQueryContext extends _SqlContext {
      */
     void appendThisField(FieldMeta<?> field);
 
+    /**
+     * <p>
+     * Just append this context field,don't contain outer context field.
+     * no preceding space ,no preceding table alias.
+     * </p>
+     *
+     * @see _SqlContext#appendFieldOnly(FieldMeta)
+     */
+    void appendThisFieldOnly(FieldMeta<?> field);
+
 }

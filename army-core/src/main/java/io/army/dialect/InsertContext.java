@@ -366,18 +366,39 @@ abstract class InsertContext extends StatementContext
     }
 
     @Override
-    public final void appendFieldFromSub(FieldMeta<?> field) {
+    public final void appendFieldOnly(final FieldMeta<?> field) {
+        if (!(this.valuesClauseEnd
+                && (this.hasConflictClause || this.returnSelectionList.size() > 0)
+                && field.tableMeta() == this.insertTable)) {
+            throw _Exceptions.unknownColumn(field);
+        }
+        this.parser.safeObjectName(field, this.sqlBuilder);
+    }
+
+    @Override
+    public final void appendFieldFromSub(final FieldMeta<?> field) {
         if (!(this.valuesClauseEnd && this.hasConflictClause && field.tableMeta() == this.insertTable)) {
             throw _Exceptions.unknownColumn(field);
         }
 
-        final String safeTableName = this.safeTableName;
-        assert safeTableName != null;
+        String safeTableAlias = this.safeTableAlias;
+        if (safeTableAlias == null) {
+            safeTableAlias = this.safeTableName;
+            assert safeTableAlias != null;
+        }
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE)
-                .append(safeTableName)
+                .append(safeTableAlias)
                 .append(_Constant.POINT);
         this.parser.safeObjectName(field, sqlBuilder);
+    }
+
+    @Override
+    public final void appendFieldOnlyFromSub(final FieldMeta<?> field) {
+        if (!(this.valuesClauseEnd && this.hasConflictClause && field.tableMeta() == this.insertTable)) {
+            throw _Exceptions.unknownColumn(field);
+        }
+        this.parser.safeObjectName(field, this.sqlBuilder);
     }
 
     @Override

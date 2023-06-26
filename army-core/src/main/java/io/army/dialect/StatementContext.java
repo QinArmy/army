@@ -2,6 +2,7 @@ package io.army.dialect;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.stmt.MultiParam;
 import io.army.stmt.SingleParam;
@@ -116,6 +117,10 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
         return sqlBuilder;
     }
 
+    @Override
+    public void appendFieldOnly(FieldMeta<?> field) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public final void appendSubQuery(final SubQuery query) {

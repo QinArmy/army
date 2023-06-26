@@ -59,6 +59,11 @@ final class ParensSelectContext extends BatchSpecStatementContext implements _Se
     }
 
     @Override
+    public void appendOuterFieldOnly(FieldMeta<?> field) {
+        throw _Exceptions.unknownColumn(field);
+    }
+
+    @Override
     public SimpleStmt build() {
         final _SqlContext outerContext = this.outerContext;
         if (outerContext != null) {

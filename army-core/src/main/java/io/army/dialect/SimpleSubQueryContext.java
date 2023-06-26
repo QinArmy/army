@@ -53,6 +53,17 @@ final class SimpleSubQueryContext extends MultiTableQueryContext implements _Sub
         }
     }
 
+    @Override
+    public void appendThisFieldOnly(final FieldMeta<?> field) {
+        final TableMeta<?> fieldTable = field.tableMeta();
+        if (this.multiTableContext.tableToSafeAlias.get(fieldTable) != null) {
+            this.parser.safeObjectName(field, this.sqlBuilder);
+        } else if (this.multiTableContext.aliasToTable.containsValue(fieldTable)) {
+            throw _Exceptions.selfJoinNonQualifiedField(field);
+        } else {
+            throw _Exceptions.unknownColumn(null, field);
+        }
+    }
 
     @Override
     void appendOuterField(final @Nullable String tableAlias, final FieldMeta<?> field) {
@@ -75,6 +86,21 @@ final class SimpleSubQueryContext extends MultiTableQueryContext implements _Sub
             ((_DmlContext._SingleTableContextSpec) outerContext).appendFieldFromSub(field);
         } else {
             outerContext.appendField(field);
+        }
+
+    }
+
+    @Override
+    void appendOuterFieldOnly(final FieldMeta<?> field) {
+        final StatementContext outerContext = this.outerContext;
+        if (outerContext instanceof _ParenRowSetContext) {
+            ((_ParenRowSetContext) outerContext).appendOuterFieldOnly(field);
+        } else if (outerContext instanceof _SubQueryContext) {
+            ((_SubQueryContext) outerContext).appendThisFieldOnly(field);
+        } else if (outerContext instanceof _DmlContext._SingleTableContextSpec) {
+            ((_DmlContext._SingleTableContextSpec) outerContext).appendFieldOnlyFromSub(field);
+        } else {
+            outerContext.appendFieldOnly(field);
         }
 
     }

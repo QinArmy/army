@@ -60,8 +60,13 @@ final class PostgreExcludedField extends OperationDataField implements _Selectio
     @Override
     public void appendSelectItem(final _SqlContext context) {
         final StringBuilder sqlBuilder;
-        sqlBuilder = this.appendExcludedField(context)
-                .append(_Constant.SPACE_AS_SPACE);
+        sqlBuilder = context.sqlBuilder()
+                .append(SPACE_EXCLUDED)
+                .append(_Constant.POINT);
+
+        context.appendFieldOnly(this.field);
+
+        sqlBuilder.append(_Constant.SPACE_AS_SPACE);
 
         context.parser().identifier(this.field.fieldName(), sqlBuilder);
 
@@ -74,29 +79,13 @@ final class PostgreExcludedField extends OperationDataField implements _Selectio
             throw _Exceptions.visibleField(context.visible(), this.field);
         }
 
-        this.appendExcludedField(context);
+        context.sqlBuilder()
+                .append(SPACE_EXCLUDED)
+                .append(_Constant.POINT);
+
+        context.appendFieldOnly(this.field);
     }
 
-    /**
-     * @see #appendSelectItem(_SqlContext)
-     * @see #appendSql(_SqlContext)
-     */
-    private StringBuilder appendExcludedField(final _SqlContext context) {
-        // TODO add only filed method
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder()
-                .append(SPACE_EXCLUDED);
-
-        final int periodIndex;
-        periodIndex = sqlBuilder.length();
-
-        context.appendField(this.field);
-
-        assert sqlBuilder.charAt(periodIndex) == _Constant.SPACE;
-
-        sqlBuilder.setCharAt(periodIndex, _Constant.POINT);
-        return sqlBuilder;
-    }
 
 
 }

@@ -61,6 +61,18 @@ public  interface _DmlContext extends _PrimaryContext {
 
         void appendFieldFromSub(FieldMeta<?> field);
 
+        /**
+         * <p>
+         * just append column name, no preceding space ,no preceding table alias
+         * </p>
+         * <p>
+         * This method is designed for postgre EXCLUDED in INSERT statement.
+         * </p>
+         *
+         * @see _SqlContext#appendFieldOnly(FieldMeta)
+         */
+        void appendFieldOnlyFromSub(FieldMeta<?> field);
+
     }
 
 

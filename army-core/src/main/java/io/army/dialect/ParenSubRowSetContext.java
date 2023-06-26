@@ -57,6 +57,12 @@ final class ParenSubRowSetContext extends StatementContext implements _ParenRowS
     }
 
     @Override
+    public void appendFieldOnly(final FieldMeta<?> field) {
+        throw _Exceptions.unknownColumn(field);
+    }
+
+
+    @Override
     public void appendOuterField(final String tableAlias, final FieldMeta<?> field) {
         final _SqlContext outerContext = this.outerContext;
         if (outerContext == null) {
@@ -79,6 +85,21 @@ final class ParenSubRowSetContext extends StatementContext implements _ParenRowS
             ((_DmlContext._SingleTableContextSpec) outerContext).appendFieldFromSub(field);
         } else {
             outerContext.appendField(field);
+        }
+    }
+
+
+    @Override
+    public void appendOuterFieldOnly(final FieldMeta<?> field) {
+        final _SqlContext outerContext = this.outerContext;
+        if (outerContext == null) {
+            throw _Exceptions.unknownColumn(field);
+        } else if (outerContext instanceof _ParenRowSetContext) {
+            ((_ParenRowSetContext) outerContext).appendOuterFieldOnly(field);
+        } else if (outerContext instanceof _DmlContext._SingleTableContextSpec) {
+            ((_DmlContext._SingleTableContextSpec) outerContext).appendFieldOnlyFromSub(field);
+        } else {
+            outerContext.appendFieldOnly(field);
         }
     }
 

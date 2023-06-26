@@ -30,7 +30,7 @@ abstract class MultiTableDmlContext extends NarrowDmlStmtContext implements _Mul
             , TableContext tableContext, ArmyParser parser, Visible visible) {
         super(outerContext, stmt, parser, visible);
         this.childAliasToParentAlias = tableContext.childAliasToParentAlias;
-        this.multiTableContext = new MultiTableContext(this, tableContext, null);
+        this.multiTableContext = new MultiTableContext(this, tableContext, null, null);
     }
 
     @Override
@@ -61,6 +61,12 @@ abstract class MultiTableDmlContext extends NarrowDmlStmtContext implements _Mul
     @Override
     public final void appendField(FieldMeta<?> field) {
         this.multiTableContext.appendField(field);
+    }
+
+
+    @Override
+    public final void appendFieldOnly(FieldMeta<?> field) {
+        this.multiTableContext.appendFieldOnly(field);
     }
 
 
