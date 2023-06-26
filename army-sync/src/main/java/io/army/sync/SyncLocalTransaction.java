@@ -123,7 +123,7 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
             }
             break;
             case NOT_ACTIVE:
-                // no-op
+                LOG.debug("transaction[name : {}] non-active,so no action", this.name);
                 break;
             default: {
                 String m = String.format("%s status not in [%s,%s],can't rollback transaction."

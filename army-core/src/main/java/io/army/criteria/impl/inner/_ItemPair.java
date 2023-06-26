@@ -3,14 +3,17 @@ package io.army.criteria.impl.inner;
 import io.army.criteria.ItemPair;
 import io.army.criteria.SQLField;
 import io.army.dialect._SetClauseContext;
+import io.army.dialect._SqlContext;
 
 import java.util.List;
 
 public interface _ItemPair extends ItemPair {
 
 
-
-     void appendItemPair(StringBuilder sqlBuilder, _SetClauseContext context);
+    /**
+     * @param sqlBuilder must be {@link _SqlContext#sqlBuilder()} of context . For reducing method invoking.
+     */
+    void appendItemPair(StringBuilder sqlBuilder, _SetClauseContext context);
 
 
     interface _FieldItemPair extends _ItemPair {

@@ -644,4 +644,59 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
 
+    @Test
+    public void valuesInsertChildWithTowStmtUpdateMode(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final Random random = ThreadLocalRandom.current();
+
+        final Insert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion())
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                )
+                .asInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .values()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                ).comma()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                )
+                .asInsert();
+
+        Assert.assertFalse(stmt instanceof _ReturningDml);
+
+        final LocalTransaction tx;
+        tx = session.builder()
+                .isolation(Isolation.READ_COMMITTED)
+                .build();
+
+        try {
+            tx.start();
+            Assert.assertEquals(session.update(stmt), 2);
+            tx.commit();
+        } catch (Exception e) {
+            LOG.error("insert child error", e);
+            tx.rollback();
+            throw e;
+        }
+
+        releaseSyncSession(session);
+
+    }
+
+
 }

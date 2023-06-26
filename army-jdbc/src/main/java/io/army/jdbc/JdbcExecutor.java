@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,7 +49,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         this.factory = factory;
         this.conn = conn;
     }
-
 
 
     @Override
@@ -329,7 +327,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 int rowIndex = 0;
                 R rowOfFirstStmt;
                 Map<Object, Integer> rowIndexMap = null;
-                Integer rowIndexValue;
+                int rowIndexValue;
                 for (final int idIndexBasedOne = idSelectionIndex + 1; resultSet.next(); rowIndex++) {
                     if (rowIndex == firstStmtResultSize) {
                         //here, error,invoker throw Exception
@@ -345,7 +343,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                     secondStmtId = compatibleType.afterGet(idSqlType, env, secondStmtId);
 
                     if (rowIndexMap != null) {
-                        rowIndexValue = rowIndexMap.get(secondStmtId);
+                        rowIndexValue = rowIndexMap.getOrDefault(secondStmtId, -1);
                     } else {
                         rowOfFirstStmt = resultList.get(rowIndex);
                         if (columnResultSet) {
@@ -361,11 +359,11 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                             rowIndexValue = rowIndex;
                         } else {
                             rowIndexMap = createFirstStmtRowMap(resultList, accessor, idFieldName);
-                            rowIndexValue = rowIndexMap.get(secondStmtId);
+                            rowIndexValue = rowIndexMap.getOrDefault(secondStmtId, -1);
                         }
                     }
 
-                    if (rowIndexValue == null) {
+                    if (rowIndexValue < 0) {
                         throw _Exceptions.noMatchFirstStmtRow(secondStmtId);
                     }
                     rowOfFirstStmt = resultList.get(rowIndexValue);
@@ -1368,16 +1366,15 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
             final boolean optimistic = stmt.hasOptimistic();
             final int idSelectionIndex = stmt.idSelectionIndex();
-            final Selection idSelection = stmt.selectionList().get(idSelectionIndex);
+
+            final PrimaryFieldMeta<?> idField = stmt.idField();
+            final MappingType type = idField.mappingType();
+            final SqlType idSqlType = rowReader.sqlTypeArray[idSelectionIndex];
+
 
             final MappingEnv env = this.factory.mappingEnv;
             final int rowSize = stmt.rowSize();
-            final MappingType compatibleType;
-            compatibleType = compatibleTypeFrom(idSelection, rowReader.resultClass, rowReader.accessor,
-                    idSelection.alias()
-            );
 
-            final SqlType idSqlType = rowReader.sqlTypeArray[idSelectionIndex];
             List<R> list = listConstructor.get();
             if (list == null) {
                 throw _Exceptions.listConstructorError();
@@ -1391,9 +1388,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 // read id start
                 idValue = get(resultSet, idIndexBasedOne, idSqlType);
                 if (idValue == null) {
-                    throw _Exceptions.idValueIsNull(rowIndex, stmt.idField());
+                    throw _Exceptions.idValueIsNull(rowIndex, idField);
                 }
-                idValue = compatibleType.afterGet(idSqlType, env, idValue);
+                idValue = type.afterGet(idSqlType, env, idValue);
                 stmt.setGeneratedIdValue(rowIndex, idValue);
                 // read id end
                 list.add(rowReader.readOneRow(resultSet)); // read row
@@ -1414,80 +1411,37 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }
 
 
-
-    /*################################## blow static method ##################################*/
-
-    static IllegalArgumentException beforeBindReturnError(SqlType sqlType, Object nonNull) {
-        String m = String.format("%s beforeBind method return error type[%s] for %s.%s."
-                , MappingType.class.getName(), nonNull.getClass().getName(), sqlType.database(), sqlType);
-        return new IllegalArgumentException(m);
-    }
-
-
-    /**
-     * @see #doQuery(SimpleStmt, int, Supplier, Function)
-     * @see JdbcMultiResult#query(Class, Supplier)
-     * @see JdbcMultiResult#queryMap(Supplier, Supplier)
-     */
-    private static <R> List<R> readList(final ResultSet set, final RowReader<R> rowReader,
-                                        final @Nullable GenericSimpleStmt stmt, final boolean optimistic,
-                                        final Supplier<List<R>> listConstructor) {
-
-
-        try (ResultSet resultSet = set) {
-
-            List<R> list = listConstructor.get();
-            if (list == null) {
-                throw _Exceptions.listConstructorError();
-            }
-
-            while (resultSet.next()) {
-                list.add(rowReader.readOneRow(resultSet));
-            }
-            if (optimistic && list.size() == 0) {
-                throw _Exceptions.optimisticLock(0);
-            }
-            if (list instanceof ImmutableSpec
-                    && !(stmt instanceof TwoStmtModeQuerySpec && rowReader instanceof MapReader)) {
-                list = _Collections.unmodifiableListForDeveloper(list);
-            }
-            return list;
-        } catch (SQLException e) { // other error is handled by invoker
-            throw wrapError(e);
-        }
-
-    }
-
-
     /**
      * @see #insert(SimpleStmt, int)
      */
-    private static int doExtractId(final ResultSet idResultSet, final GeneratedKeyStmt stmt) throws SQLException {
-        final int rowSize = stmt.rowSize();
-        int rowIndex = 0;
+    private int doExtractId(final ResultSet idResultSet, final GeneratedKeyStmt stmt) throws SQLException {
+
         try (ResultSet resultSet = idResultSet) {
+
             final PrimaryFieldMeta<?> idField = stmt.idField();
-            final Class<?> idJavaType = idField.javaType();
+            final MappingType type = idField.mappingType();
+            final SqlType sqlType;
+            sqlType = getSqlType(resultSet.getMetaData(), 1);
+            final MappingEnv env = this.factory.mappingEnv;
+
+            final int rowSize = stmt.rowSize();
+            Object idValue;
+            int rowIndex = 0;
             for (; resultSet.next(); rowIndex++) {
                 if (rowIndex == rowSize) {
                     throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
                 }
-                if (idJavaType == Integer.class) {
-                    stmt.setGeneratedIdValue(rowIndex, resultSet.getInt(1));
-                } else if (idJavaType == Long.class) {
-                    stmt.setGeneratedIdValue(rowIndex, resultSet.getLong(1));
-                } else if (idJavaType == BigInteger.class) {
-                    stmt.setGeneratedIdValue(rowIndex, resultSet.getObject(1, BigInteger.class));
-                } else {
-                    throw _Exceptions.autoIdErrorJavaType(idField);
+                idValue = get(resultSet, 1, sqlType);
+                if (idValue == null) {
+                    throw _Exceptions.idValueIsNull(rowIndex, idField);
                 }
+                idValue = type.afterGet(sqlType, env, idValue);
+                stmt.setGeneratedIdValue(rowIndex, idValue);
             }
             if (rowIndex != rowSize) {
                 throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
             }
             return rowIndex;
-        } catch (IndexOutOfBoundsException e) {
-            throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
         }
     }
 
@@ -1583,7 +1537,52 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         return rowReader;
     }
 
-    /*-------------------below static method-------------------*/
+
+
+    /*################################## blow static method ##################################*/
+
+    static IllegalArgumentException beforeBindReturnError(SqlType sqlType, Object nonNull) {
+        String m = String.format("%s beforeBind method return error type[%s] for %s.%s."
+                , MappingType.class.getName(), nonNull.getClass().getName(), sqlType.database(), sqlType);
+        return new IllegalArgumentException(m);
+    }
+
+
+    /**
+     * @see #doQuery(SimpleStmt, int, Supplier, Function)
+     * @see JdbcMultiResult#query(Class, Supplier)
+     * @see JdbcMultiResult#queryMap(Supplier, Supplier)
+     */
+    private static <R> List<R> readList(final ResultSet set, final RowReader<R> rowReader,
+                                        final @Nullable GenericSimpleStmt stmt, final boolean optimistic,
+                                        final Supplier<List<R>> listConstructor) {
+
+
+        try (ResultSet resultSet = set) {
+
+            List<R> list = listConstructor.get();
+            if (list == null) {
+                throw _Exceptions.listConstructorError();
+            }
+
+            while (resultSet.next()) {
+                list.add(rowReader.readOneRow(resultSet));
+            }
+            if (optimistic && list.size() == 0) {
+                throw _Exceptions.optimisticLock(0);
+            }
+            if (list instanceof ImmutableSpec
+                    && !(stmt instanceof TwoStmtModeQuerySpec && rowReader instanceof MapReader)) {
+                list = _Collections.unmodifiableListForDeveloper(list);
+            }
+            return list;
+        } catch (SQLException e) { // other error is handled by invoker
+            throw wrapError(e);
+        }
+
+    }
+
+
 
     static ArmyException wrapError(final Throwable error) {
         final ArmyException e;
