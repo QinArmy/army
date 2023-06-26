@@ -28,10 +28,6 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<Boolean> USE_QUALIFIED_TABLE_NAME = new ArmyKey<>("use.qualified.table.name", Boolean.class, Boolean.FALSE);
 
-    public static final ArmyKey<Boolean> TABLE_NAME_UPPER = new ArmyKey<>("table.name.upper", Boolean.class, Boolean.FALSE);
-
-    public static final ArmyKey<Boolean> COLUMN_NAME_UPPER = new ArmyKey<>("column.name.upper", Boolean.class, Boolean.FALSE);
-
     public static final ArmyKey<NameMode> TABLE_NAME_MODE = new ArmyKey<>("table.name.mode", NameMode.class, NameMode.DEFAULT);
     public static final ArmyKey<NameMode> COLUMN_NAME_MODE = new ArmyKey<>("column.name.mode", NameMode.class, NameMode.DEFAULT);
 

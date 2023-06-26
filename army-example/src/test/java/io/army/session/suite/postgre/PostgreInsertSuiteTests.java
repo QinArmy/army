@@ -24,6 +24,8 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Test(dataProvider = "getSession")
 public class PostgreInsertSuiteTests extends PostgreSuiteTests {
@@ -31,7 +33,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     private static final Logger LOG = LoggerFactory.getLogger(PostgreInsertSuiteTests.class);
 
     @Test
-    public void insertParent(final LocalSession session) {
+    public void domainInsertParent(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> regionList;
@@ -58,7 +60,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test
-    public void returningInsertParent(final LocalSession session) {
+    public void returningDomainInsertParent(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> regionList;
@@ -91,7 +93,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test
-    public void insertParentWithDoNothing(final LocalSession session) {
+    public void domainInsertParentWithDoNothing(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> regionList;
@@ -121,7 +123,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test
-    public void insertParentWithUpdateSet(final LocalSession session) {
+    public void domainInsertParentWithUpdateSet(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> regionList;
@@ -172,7 +174,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test
-    public void insertChildWithTowStmtMode(final LocalSession session) {
+    public void domainInsertChildWithTowStmtUpdateMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;
@@ -190,6 +192,8 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 .values(provinceList)
                 .asInsert();
 
+        Assert.assertFalse(stmt instanceof _ReturningDml);
+
         final LocalTransaction tx;
         tx = session.builder()
                 .isolation(Isolation.READ_COMMITTED)
@@ -199,7 +203,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             tx.start();
             Assert.assertEquals(session.update(stmt), provinceList.size());
             for (ChinaProvince province : provinceList) {
-                Assert.assertNotNull(province.getId());
+                Assert.assertNotNull(province.getId()); // database generated key
             }
             tx.commit();
         } catch (Exception e) {
@@ -213,7 +217,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test
-    public void returningInsertChildWithTowStmtMode(final LocalSession session) {
+    public void returningDomainInsertChildWithTowStmtQueryMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;
@@ -275,7 +279,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test
-    public void returningInsertDiffMode(final LocalSession session) {
+    public void returningDomainInsertDiffMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;
@@ -339,7 +343,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
 
     @Test
-    public void returningInsertChildMapWithTowStmtMode(final LocalSession session) {
+    public void returningDomainInsertChildMapWithTowStmtQueryMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;
@@ -404,7 +408,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
 
     @Test
-    public void returningInsertChildMapDiffMode(final LocalSession session) {
+    public void returningDomainInsertChildMapDiffMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;
@@ -463,6 +467,38 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         } finally {
             releaseSyncSession(session);
         }
+
+    }
+
+
+    /*-------------------below values syntax tests -------------------*/
+
+    @Test
+    public void staticValuesInsertParent(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+        final Random random = ThreadLocalRandom.current();
+        final Insert stmt;
+        stmt = Postgres.singleInsert()
+                //.literalMode(LiteralMode.LITERAL)
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                )
+                .asInsert();
+
+        final long rows;
+        rows = session.update(stmt);
+
+        Assert.assertEquals(rows, 2);
+
+        releaseSyncSession(session);
 
     }
 

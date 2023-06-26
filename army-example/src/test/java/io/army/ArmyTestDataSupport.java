@@ -6,6 +6,7 @@ import io.army.example.pill.domain.PillUser;
 import io.army.example.pill.struct.IdentityType;
 import io.army.example.pill.struct.PillUserType;
 import io.army.util.ArrayUtils;
+import io.army.util._StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -73,7 +74,8 @@ public abstract class ArmyTestDataSupport {
     }
 
     protected final String randomProvince(Random random) {
-        return PROVINCE_LIST.get(random.nextInt(Integer.MAX_VALUE) % PROVINCE_LIST.size());
+        return randomSuffix(random, PROVINCE_LIST.get(random.nextInt(Integer.MAX_VALUE) % PROVINCE_LIST.size()))
+                .toString();
     }
 
     protected final String randomRegion() {
@@ -81,7 +83,8 @@ public abstract class ArmyTestDataSupport {
     }
 
     protected final String randomRegion(Random random) {
-        return REGION_LIST.get(random.nextInt(Integer.MAX_VALUE) % REGION_LIST.size());
+        return randomSuffix(random, REGION_LIST.get(random.nextInt(Integer.MAX_VALUE) % REGION_LIST.size()))
+                .toString();
     }
 
     protected final String randomCity() {
@@ -89,15 +92,19 @@ public abstract class ArmyTestDataSupport {
     }
 
     protected final String randomCity(Random random) {
-        return CITY_LIST.get(random.nextInt(Integer.MAX_VALUE) % CITY_LIST.size());
+        return randomSuffix(random, CITY_LIST.get(random.nextInt(Integer.MAX_VALUE) % CITY_LIST.size()))
+                .toString();
+
     }
+
 
     protected final String randomPerson() {
         return randomPerson(ThreadLocalRandom.current());
     }
 
     protected final String randomPerson(Random random) {
-        return PERSON_LIST.get(random.nextInt(Integer.MAX_VALUE) % PERSON_LIST.size());
+        return randomSuffix(random, PERSON_LIST.get(random.nextInt(Integer.MAX_VALUE) % PERSON_LIST.size()))
+                .toString();
     }
 
     protected final String randomNation() {
@@ -105,7 +112,8 @@ public abstract class ArmyTestDataSupport {
     }
 
     protected final String randomNation(Random random) {
-        return NATION_LIST.get(random.nextInt(Integer.MAX_VALUE) % NATION_LIST.size());
+        return randomSuffix(random, NATION_LIST.get(random.nextInt(Integer.MAX_VALUE) % NATION_LIST.size()))
+                .toString();
     }
 
     protected final BigDecimal randomDecimal() {
@@ -129,7 +137,7 @@ public abstract class ArmyTestDataSupport {
                     .setCreateTime(now)
                     .setUpdateTime(now)
 
-                    .setName(randomRegion(random) + "-" + Instant.now() + "#" + i)
+                    .setName(randomRegion(random))
                     .setRegionType(RegionType.NONE)
                     .setRegionGdp(randomDecimal(random))
 
@@ -176,20 +184,19 @@ public abstract class ArmyTestDataSupport {
         final LocalDateTime now = LocalDateTime.now();
         String suffix;
         for (int i = 0; i < rowSize; i++) {
-            suffix = "_" + Instant.now() + "#" + i;
             c = new ChinaProvince()
                     .setCreateTime(now)
                     .setUpdateTime(now)
 
-                    .setName(randomProvince(random) + suffix)
+                    .setName(randomProvince(random))
                     .setRegionType(RegionType.CITY)
                     .setRegionGdp(randomDecimal(random))
 
                     .setVersion(0)
                     .setVisible(Boolean.TRUE)
 
-                    .setGovernor(randomPerson(random) + suffix)
-                    .setProvincialCapital(randomCity(random) + suffix);
+                    .setGovernor(randomPerson(random))
+                    .setProvincialCapital(randomCity(random));
 
             list.add(c);
         }
@@ -292,5 +299,25 @@ public abstract class ArmyTestDataSupport {
         }
         return list;
     }
+
+    private static StringBuilder randomSuffix(final Random random, final String value) {
+        return _StringUtils.builder()
+                .append(value)
+                .append('@')
+                .append(Instant.now())
+                .append('#')
+                .append((random.nextLong() % 100))
+                .append('#')
+                .append(random.nextInt(Integer.MAX_VALUE) % 100)
+                .append('#')
+                .append(random.nextInt(Integer.MAX_VALUE) % 100)
+                .append('#')
+                .append(random.nextInt(Integer.MAX_VALUE) % 100)
+                .append('#')
+                .append(random.nextInt(Integer.MAX_VALUE) % 100)
+                .append('#')
+                .append(random.nextInt(Integer.MAX_VALUE) % 100);
+    }
+
 
 }

@@ -481,8 +481,8 @@ abstract class InsertSupports {
     }//SimpleValuesSyntaxOptions
 
 
-    static abstract class ColumnsClause<T, RR>
-            implements InsertStatement._ColumnListParensClause<T, RR>,
+    static abstract class ColumnsClause<T, R>
+            implements InsertStatement._ColumnListParensClause<T, R>,
             InsertStatement._StaticColumnSpaceClause<T>,
             InsertStatement._StaticColumnCommaQuadraClause<T>,
             _Insert._ColumnListInsert,
@@ -515,14 +515,14 @@ abstract class InsertSupports {
 
 
         @Override
-        public final RR parens(Consumer<InsertStatement._StaticColumnSpaceClause<T>> consumer) {
+        public final R parens(Consumer<InsertStatement._StaticColumnSpaceClause<T>> consumer) {
             consumer.accept(this);
             return this.endColumnListClause(true);
         }
 
 
         @Override
-        public final RR parens(SQLs.SymbolSpace space, Consumer<Consumer<FieldMeta<T>>> consumer) {
+        public final R parens(SQLs.SymbolSpace space, Consumer<Consumer<FieldMeta<T>>> consumer) {
             if (space != SQLs.SPACE) {
                 throw CriteriaUtils.errorSymbol(space);
             }
@@ -722,7 +722,7 @@ abstract class InsertSupports {
         }
 
         @SuppressWarnings("unchecked")
-        private RR endColumnListClause(final boolean required) {
+        private R endColumnListClause(final boolean required) {
             final List<FieldMeta<?>> fieldList = this.fieldList;
             final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
 
@@ -735,7 +735,7 @@ abstract class InsertSupports {
             }
             this.fieldList = _Collections.safeUnmodifiableList(fieldList);
             this.fieldMap = _Collections.safeUnmodifiableMap(fieldMap);
-            return (RR) this;
+            return (R) this;
         }
 
 
@@ -743,8 +743,10 @@ abstract class InsertSupports {
 
 
     @SuppressWarnings("unchecked")
-    private static abstract class ColumnDefaultClause<T, LR, DR> extends ColumnsClause<T, LR>
-            implements InsertStatement._ColumnDefaultClause<T, DR>, _Insert._ValuesSyntaxInsert {
+    private static abstract class ColumnDefaultClause<T, PR, DR extends InsertStatement._ColumnDefaultClause<T>>
+            extends ColumnsClause<T, PR>
+            implements InsertStatement._FullColumnDefaultClause<T, DR>,
+            _Insert._ValuesSyntaxInsert {
 
 
         final LiteralMode literalMode;
@@ -769,6 +771,31 @@ abstract class InsertSupports {
 
 
         @Override
+        public final DR defaults(Consumer<InsertStatement._ColumnDefaultClause<T>> consumer) {
+            Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
+            final int oldSize;
+            if (commonExpMap == null) {
+                oldSize = 0;
+            } else {
+                oldSize = commonExpMap.size();
+            }
+
+            consumer.accept(this);
+
+            commonExpMap = this.commonExpMap;
+            if (commonExpMap == null || commonExpMap.size() == oldSize) {
+                throw CriteriaUtils.dontAddAnyItem();
+            }
+            return (DR) this;
+        }
+
+        @Override
+        public final DR ifDefaults(Consumer<InsertStatement._ColumnDefaultClause<T>> consumer) {
+            consumer.accept(this);
+            return (DR) this;
+        }
+
+        @Override
         public final DR defaultValue(final FieldMeta<T> field, final @Nullable Expression value) {
             if (this.migration) {
                 String m = "migration mode not support default value clause";
@@ -784,8 +811,7 @@ abstract class InsertSupports {
 
             Map<FieldMeta<?>, _Expression> commonExpMap = this.commonExpMap;
             if (commonExpMap == null) {
-                commonExpMap = new HashMap<>();
-                this.commonExpMap = commonExpMap;
+                this.commonExpMap = commonExpMap = _Collections.hashMap();
             } else if (!(commonExpMap instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -816,6 +842,44 @@ abstract class InsertSupports {
         public final <K, V> DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
                                             Function<K, V> function, K key) {
             return this.defaultValue(field, operator.apply(field, function.apply(key)));
+        }
+
+        @Override
+        public final DR ifDefault(FieldMeta<T> field, Supplier<Expression> supplier) {
+            final Expression expression;
+            if ((expression = supplier.get()) != null) {
+                this.defaultValue(field, expression);
+            }
+            return (DR) this;
+        }
+
+        @Override
+        public final DR ifDefault(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
+            final Expression expression;
+            if ((expression = function.apply(field)) != null) {
+                this.defaultValue(field, expression);
+            }
+            return (DR) this;
+        }
+
+        @Override
+        public final <E> DR ifDefault(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator,
+                                      Supplier<E> supplier) {
+            final E value;
+            if ((value = supplier.get()) != null) {
+                this.defaultValue(field, operator.apply(field, value));
+            }
+            return (DR) this;
+        }
+
+        @Override
+        public final <K, V> DR ifDefault(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
+                                         Function<K, V> function, K key) {
+            final V value;
+            if ((value = function.apply(key)) != null) {
+                this.defaultValue(field, operator.apply(field, value));
+            }
+            return (DR) this;
         }
 
         @Override
@@ -877,7 +941,8 @@ abstract class InsertSupports {
 
 
     @SuppressWarnings("unchecked")
-    static abstract class ComplexInsertValuesClause<T, CR, DR, VR> extends ColumnDefaultClause<T, CR, DR>
+    static abstract class ComplexInsertValuesClause<T, CR, DR extends InsertStatement._ColumnDefaultClause<T>, VR>
+            extends ColumnDefaultClause<T, CR, DR>
             implements InsertStatement._DomainValueClause<T, VR>,
             InsertStatement._DynamicValuesClause<T, VR>,
             _Insert._ValuesInsert,
@@ -1219,9 +1284,8 @@ abstract class InsertSupports {
     }//_AssignmentSetSpecImpl
 
 
-
     @SuppressWarnings("unchecked")
-    static abstract class ComplexInsertValuesAssignmentClause<T, CR, DR, VR, SR>
+    static abstract class ComplexInsertValuesAssignmentClause<T, CR, DR extends InsertStatement._ColumnDefaultClause<T>, VR, SR>
             extends ComplexInsertValuesClause<T, CR, DR, VR>
             implements InsertStatement._StaticAssignmentSetClause<T, SR>
             , InsertStatement._DynamicAssignmentSetClause<T, VR>
@@ -1431,7 +1495,7 @@ abstract class InsertSupports {
         @Override
         public final R parens(Consumer<InsertStatement._StaticValueSpaceClause<T>> consumer) {
             consumer.accept(this);
-            return this.endParensClause(true);
+            return this.endParensClause();
         }
 
         @Override
@@ -1444,7 +1508,7 @@ abstract class InsertSupports {
                 this.dynamicSetClause = dynamicSetClause = new AssignmentSetSpecImpl<>(this.context, this::comma);
             }
             consumer.accept(dynamicSetClause);
-            return this.endParensClause(false);
+            return this.endParensClause();
         }
 
         @Override
@@ -1610,7 +1674,7 @@ abstract class InsertSupports {
         }
 
         @SuppressWarnings("unchecked")
-        private R endParensClause(final boolean required) {
+        private R endParensClause() {
             List<Map<FieldMeta<?>, _Expression>> rowValueList = this.rowList;
             if (rowValueList == null) {
                 rowValueList = _Collections.arrayList();
@@ -1621,8 +1685,6 @@ abstract class InsertSupports {
             final Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
             if (currentRow != null) {
                 rowValueList.add(_Collections.unmodifiableMap(currentRow));
-            } else if (required) {
-                throw CriteriaUtils.dontAddAnyItem();
             } else {
                 rowValueList.add(_Collections.emptyMap());
             }
@@ -2200,6 +2262,8 @@ abstract class InsertSupports {
             }
         } else if (_DialectUtils.isDoNothing((_Insert._ChildInsert) statement)) {
             throw _Exceptions.doNothingConflict((_Insert._ChildInsert) statement);
+        } else if (_DialectUtils.isIllegalTwoStmtMode((_Insert._ChildInsert) statement)) {
+            throw _Exceptions.illegalTwoStmtMode();
         } else if (statement instanceof _Insert._QueryInsert) {
             validateChildQueryInsert((_Insert._ChildQueryInsert) statement);
         } else if (_DialectUtils.isForbidChildInsert((_Insert._ChildInsert) statement)) {

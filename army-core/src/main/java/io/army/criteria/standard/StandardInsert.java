@@ -27,7 +27,7 @@ public interface StandardInsert extends StandardStatement {
     }
 
     interface _ValuesColumnDefaultSpec<T, I extends Item>
-            extends InsertStatement._ColumnDefaultClause<T, _ValuesColumnDefaultSpec<T, I>>,
+            extends InsertStatement._FullColumnDefaultClause<T, _ValuesColumnDefaultSpec<T, I>>,
             InsertStatement._DomainValueClause<T, _DmlInsertClause<I>>,
             InsertStatement._DynamicValuesClause<T, _DmlInsertClause<I>>,
             InsertStatement._StaticValuesClause<_StandardValuesParensClause<T, I>> {

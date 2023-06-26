@@ -12,10 +12,7 @@ import io.army.mapping.BooleanType;
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.mapping._ArmyNoInjectionMapping;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.ServerMeta;
-import io.army.meta.TypeMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
@@ -606,7 +603,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 continue;
             } else if ((ch >= '0' && ch <= '9') || ch == '$') {
                 if (i == 0) {
-                    mode = IdentifierMode.ERROR;
+                    mode = IdentifierMode.QUOTING;
                     break;
                 }
                 continue;
@@ -714,6 +711,65 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
 
     }
+
+
+    @Override
+    protected final boolean isUseObjectNameModeMethod() {
+        // true ,Postgre use objectNameMode() method
+        return true;
+    }
+
+    @Override
+    protected final IdentifierMode objectNameMode(final DatabaseObject object, final String effectiveName) {
+        final int length = effectiveName.length();
+        if (length == 0) {
+            return IdentifierMode.ERROR;
+        }
+        IdentifierMode mode = null;
+        char ch;
+        outerFor:
+        for (int i = 0; i < length; i++) {
+            ch = effectiveName.charAt(i);
+            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_') {
+                continue;
+            } else if ((ch >= '0' && ch <= '9') || ch == '$') {
+                if (i == 0) {
+                    mode = IdentifierMode.QUOTING;
+                    break;
+                }
+                continue;
+            }
+
+            switch (ch) {
+                case _Constant.NUL_CHAR:
+                    mode = IdentifierMode.ERROR;
+                    break outerFor;
+                case '\b':
+                case '\f':
+                case '\n':
+                case '\r':
+                case '\t':
+                case _Constant.DOUBLE_QUOTE:
+                case _Constant.BACK_SLASH:
+                    mode = IdentifierMode.ESCAPES;
+                    break outerFor;
+                default: {
+                    if (mode == null) {
+                        mode = IdentifierMode.QUOTING;
+                    }
+                }
+                break;
+            }// switch
+
+
+        } // for
+
+        if (mode == null) {
+            mode = IdentifierMode.SIMPLE;
+        }
+        return mode;
+    }
+
 
     @Override
     protected final String beautifySql(String sql) {

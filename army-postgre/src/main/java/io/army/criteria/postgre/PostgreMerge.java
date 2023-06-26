@@ -36,7 +36,7 @@ public interface PostgreMerge extends PostgreStatement, DmlStatement {
 
 
     interface _MergeInsertValuesDefaultSpec<T, I extends Item>
-            extends InsertStatement._ColumnDefaultClause<T, _MergeInsertValuesDefaultSpec<T, I>>
+            extends InsertStatement._StaticColumnDefaultClause<T, _MergeInsertValuesDefaultSpec<T, I>>
             , InsertStatement._DomainValueClause<T, _DmlInsertClause<I>>
             , InsertStatement._DynamicValuesClause<T, _DmlInsertClause<I>>
             , InsertStatement._StaticValuesClause<_MergeInsertValuesParensClause<T, I>> {

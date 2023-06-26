@@ -343,6 +343,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return function.apply(m);
     }
 
+    public static IllegalTwoStmtModeException illegalTwoStmtMode() {
+        return new IllegalTwoStmtModeException("illegal two statement mode,first statement exists returning clause and second statement not exists returning clause.");
+    }
+
     public static CriteriaException conflictClauseAndVisibleNotMatch(Dialect dialect, _Insert stmt, final Visible visible) {
         final StringBuilder builder = new StringBuilder();
         if (stmt instanceof _Insert._ChildInsert) {

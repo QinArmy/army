@@ -107,11 +107,13 @@ abstract class ArmyParser implements DialectParser {
     final NameMode funcNameMode;
 
     private final String qualifiedSchemaName;
-    private final boolean tableNameUpper;
+    private final NameMode tableNameMode;
 
-    private final boolean columnNameUpper;
+    private final NameMode columnNameMode;
 
     private final boolean validateUnionType;
+
+    private final boolean useObjectNameModeMethod;
 
     ArmyParser(final DialectEnv dialectEnv, final Dialect dialect) {
         this.dialect = dialect; // first
@@ -144,6 +146,7 @@ abstract class ArmyParser implements DialectParser {
 
         this.supportRowAlias = this.isSupportRowAlias();
         this.validateUnionType = this.isValidateUnionType();
+        this.useObjectNameModeMethod = this.isUseObjectNameModeMethod();
 
         this.keyWordSet = Collections.unmodifiableSet(this.createKeyWordSet());
         if (this.mockEnv) {
@@ -154,22 +157,26 @@ abstract class ArmyParser implements DialectParser {
 
         final ArmyEnvironment env;
         env = dialectEnv.environment();
-        this.tableNameUpper = env.getOrDefault(ArmyKey.TABLE_NAME_UPPER);
-        this.columnNameUpper = env.getOrDefault(ArmyKey.COLUMN_NAME_UPPER);
+        this.tableNameMode = env.getOrDefault(ArmyKey.TABLE_NAME_MODE);
+        this.columnNameMode = env.getOrDefault(ArmyKey.COLUMN_NAME_MODE);
 
         this.funcNameMode = env.getOrDefault(ArmyKey.FUNC_NAME_MODE);
 
         if (env.getOrDefault(ArmyKey.USE_QUALIFIED_TABLE_NAME)) {
-            final String schemaName, lowerSchemaName;
+            final String schemaName;
             schemaName = this.qualifiedSchemaName(this.serverMeta);
-            lowerSchemaName = schemaName.toUpperCase(Locale.ROOT);
-            if (!this.tableNameUpper) {
-                this.qualifiedSchemaName = this.identifier(schemaName);
-            } else if (lowerSchemaName.equals(schemaName)
-                    || lowerSchemaName.toUpperCase(Locale.ROOT).equals(schemaName)) {
-                this.qualifiedSchemaName = this.identifier(schemaName.toUpperCase(Locale.ROOT));
-            } else {
-                this.qualifiedSchemaName = this.identifier(schemaName);
+            switch (this.tableNameMode) {
+                case DEFAULT:
+                    this.qualifiedSchemaName = this.identifier(schemaName);
+                    break;
+                case LOWER_CASE:
+                    this.qualifiedSchemaName = this.identifier(schemaName.toLowerCase(Locale.ROOT));
+                    break;
+                case UPPER_CASE:
+                    this.qualifiedSchemaName = this.identifier(schemaName.toUpperCase(Locale.ROOT));
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(this.tableNameMode);
             }
         } else {
             this.qualifiedSchemaName = null;
@@ -187,8 +194,12 @@ abstract class ArmyParser implements DialectParser {
      * {@inheritDoc}
      */
     @Override
-    public final Stmt insert(final InsertStatement insert, final Visible visible) {
-        return this.createInsertStmt(this.handleInsert(null, insert, visible));
+    public final Stmt insert(final InsertStatement statement, final Visible visible) {
+        if (statement instanceof _Insert._ChildInsert
+                && _DialectUtils.isIllegalTwoStmtMode((_Insert._ChildInsert) statement)) {
+            throw _Exceptions.illegalTwoStmtMode();
+        }
+        return this.createInsertStmt(this.handleInsert(null, statement, visible));
     }
 
 
@@ -394,31 +405,33 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract void escapesIdentifier(String identifier, StringBuilder sqlBuilder);
 
+    /**
+     * @see #objectNameMode(DatabaseObject, String)
+     */
+    protected abstract boolean isUseObjectNameModeMethod();
+
+    /**
+     * @see #isUseObjectNameModeMethod()
+     */
+    protected abstract IdentifierMode objectNameMode(DatabaseObject object, String effectiveName);
+
 
 
 
     /*################################## blow dialect template method ##################################*/
 
     public final String safeObjectName(final DatabaseObject object) {
-        final String objectName, upperObjectName, safeObjectName;
+        final String objectName;
+        objectName = object.objectName();
+
         final StringBuilder schemaTableBuilder;
+        final NameMode nameMode;
         if (object instanceof FieldMeta) {
-            if (this.columnNameUpper) {
-                upperObjectName = object.objectName().toUpperCase(Locale.ROOT);
-                objectName = upperObjectName;// army don't allow camel
-            } else {
-                objectName = object.objectName();
-                upperObjectName = objectName.toUpperCase(Locale.ROOT);
-            }
+            nameMode = this.columnNameMode;
             schemaTableBuilder = null;
         } else if (object instanceof TableMeta) {
-            if (this.tableNameUpper) {
-                upperObjectName = object.objectName().toUpperCase(Locale.ROOT);
-                objectName = upperObjectName;// army don't allow camel
-            } else {
-                objectName = object.objectName();
-                upperObjectName = objectName.toUpperCase(Locale.ROOT);
-            }
+            nameMode = this.tableNameMode;
+
             final String schemaName;
             if ((schemaName = this.qualifiedSchemaName) == null) {
                 schemaTableBuilder = null;
@@ -432,46 +445,72 @@ abstract class ArmyParser implements DialectParser {
             throw new IllegalArgumentException();
         }
 
+        final String effectiveName, upperObjectName, safeObjectName;
+        switch (nameMode) {
+            case DEFAULT:
+                effectiveName = objectName;
+                upperObjectName = objectName.toUpperCase(Locale.ROOT);
+                break;
+            case LOWER_CASE:
+                effectiveName = objectName.toLowerCase(Locale.ROOT);
+                upperObjectName = objectName.toUpperCase(Locale.ROOT);
+                break;
+            case UPPER_CASE:
+                effectiveName = objectName.toUpperCase(Locale.ROOT);
+                upperObjectName = effectiveName;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this.columnNameMode);
+        }
+
+
         final IdentifierMode mode;
-        if (this.keyWordMap.containsKey(upperObjectName)
-                || (mode = this.identifierMode(objectName)) == IdentifierMode.QUOTING) {
-            final StringBuilder builder;
-            if (schemaTableBuilder == null) {
-                builder = new StringBuilder(objectName.length() + 2);
-            } else {
-                builder = schemaTableBuilder;
-            }
-            safeObjectName = builder.append(this.identifierQuote)
-                    .append(objectName)
-                    .append(this.identifierQuote)
-                    .toString();
-        } else switch (mode) {
+        if (this.keyWordMap.containsKey(upperObjectName)) {
+            mode = IdentifierMode.QUOTING;
+        } else if (this.useObjectNameModeMethod) {
+            mode = this.objectNameMode(object, effectiveName);
+        } else {
+            mode = this.identifierMode(effectiveName);
+        }
+        switch (mode) {
             case ERROR:
                 throw _Exceptions.objectNameError(object, this.dialect);
             case SIMPLE: {
                 if (schemaTableBuilder == null) {
-                    safeObjectName = objectName;
+                    safeObjectName = effectiveName;
                 } else {
-                    safeObjectName = schemaTableBuilder.append(objectName)
+                    safeObjectName = schemaTableBuilder.append(effectiveName)
                             .toString();
                 }
+            }
+            break;
+            case QUOTING: {
+                final StringBuilder builder;
+                if (schemaTableBuilder == null) {
+                    builder = new StringBuilder(effectiveName.length() + 2);
+                } else {
+                    builder = schemaTableBuilder;
+                }
+                safeObjectName = builder.append(this.identifierQuote)
+                        .append(effectiveName)
+                        .append(this.identifierQuote)
+                        .toString();
             }
             break;
             case ESCAPES: {
                 final StringBuilder builder;
                 if (schemaTableBuilder == null) {
-                    builder = new StringBuilder(objectName.length() + 3);
+                    builder = new StringBuilder(effectiveName.length() + 3);
                 } else {
                     builder = schemaTableBuilder;
                 }
                 final int oldLength;
                 oldLength = builder.length();
-                this.escapesIdentifier(objectName, builder);
+                this.escapesIdentifier(effectiveName, builder);
                 assert builder.length() > oldLength;
                 safeObjectName = builder.toString();
             }
             break;
-            case QUOTING:
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
@@ -480,53 +519,66 @@ abstract class ArmyParser implements DialectParser {
 
     public final StringBuilder safeObjectName(final DatabaseObject object, final StringBuilder builder) {
 
-        final String objectName, upperObjectName;
+        final NameMode nameMode;
         if (object instanceof FieldMeta) {
-            if (this.columnNameUpper) {
-                upperObjectName = object.objectName().toUpperCase(Locale.ROOT);
-                objectName = upperObjectName;// army don't allow camel
-            } else {
-                objectName = object.objectName();
-                upperObjectName = objectName.toUpperCase(Locale.ROOT);
-            }
+            nameMode = this.columnNameMode;
         } else if (object instanceof TableMeta) {
+            nameMode = this.tableNameMode;
+
             final String schemaName;
             if ((schemaName = this.qualifiedSchemaName) != null) {
                 builder.append(schemaName)
                         .append(_Constant.POINT);
-            }
-            if (this.tableNameUpper) {
-                upperObjectName = object.objectName().toUpperCase(Locale.ROOT);
-                objectName = upperObjectName;// army don't allow camel
-            } else {
-                objectName = object.objectName();
-                upperObjectName = objectName.toUpperCase(Locale.ROOT);
             }
         } else {
             // no bug,never here
             throw new IllegalArgumentException();
         }
 
+        final String effectiveName, upperObjectName;
+        switch (nameMode) {
+            case DEFAULT:
+                effectiveName = object.objectName();
+                upperObjectName = effectiveName.toUpperCase(Locale.ROOT);
+                break;
+            case LOWER_CASE:
+                effectiveName = object.objectName().toLowerCase(Locale.ROOT);
+                upperObjectName = effectiveName.toUpperCase(Locale.ROOT);
+                break;
+            case UPPER_CASE:
+                effectiveName = object.objectName().toUpperCase(Locale.ROOT);
+                upperObjectName = effectiveName;
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(this.columnNameMode);
+        }
+
         final IdentifierMode mode;
-        if (this.keyWordMap.containsKey(upperObjectName)
-                || (mode = this.identifierMode(objectName)) == IdentifierMode.QUOTING) {
-            builder.append(this.identifierQuote)
-                    .append(objectName)
-                    .append(this.identifierQuote);
-        } else switch (mode) {
+        if (this.keyWordMap.containsKey(upperObjectName)) {
+            mode = IdentifierMode.QUOTING;
+        } else if (this.useObjectNameModeMethod) {
+            mode = this.objectNameMode(object, effectiveName);
+        } else {
+            mode = this.identifierMode(effectiveName);
+        }
+        switch (mode) {
             case ERROR:
                 throw _Exceptions.objectNameError(object, this.dialect);
             case SIMPLE:
-                builder.append(objectName);
+                builder.append(effectiveName);
+                break;
+            case QUOTING:
+                builder.append(this.identifierQuote)
+                        .append(effectiveName)
+                        .append(this.identifierQuote);
                 break;
             case ESCAPES: {
                 final int oldLength;
                 oldLength = builder.length();
-                this.escapesIdentifier(objectName, builder);
+                this.escapesIdentifier(effectiveName, builder);
                 assert builder.length() > oldLength;
             }
             break;
-            case QUOTING:
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }

@@ -16,12 +16,12 @@ public abstract class PostgreSuiteTests extends ArmyTestDataSupport {
     protected static LocalSessionFactory syncSessionFactory;
 
     @BeforeClass
-    public static void beforeClass() {
+    public void beforeClass() {
         PostgreSuiteTests.syncSessionFactory = FactoryUtils.createArmyBankSyncFactory(Database.PostgreSQL);
     }
 
     @AfterClass
-    public static void afterClass() {
+    public void afterClass() {
         syncSessionFactory.close();
     }
 

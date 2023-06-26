@@ -176,23 +176,75 @@ public interface InsertStatement extends DmlStatement {
     }
 
 
+    interface _ColumnDefaultClause<T> {
 
+        _ColumnDefaultClause<T> defaultValue(FieldMeta<T> field, Expression value);
+
+        _ColumnDefaultClause<T> defaultValue(FieldMeta<T> field, Supplier<Expression> supplier);
+
+        _ColumnDefaultClause<T> defaultValue(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+
+        <E> _ColumnDefaultClause<T> defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, @Nullable E value);
+
+        <K, V> _ColumnDefaultClause<T> defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
+                                                    Function<K, V> function, K key);
+
+
+        _ColumnDefaultClause<T> ifDefault(FieldMeta<T> field, Supplier<Expression> supplier);
+
+        _ColumnDefaultClause<T> ifDefault(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+
+        <E> _ColumnDefaultClause<T> ifDefault(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier);
+
+        <K, V> _ColumnDefaultClause<T> ifDefault(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
+                                                 Function<K, V> function, K key);
+    }
 
     /**
      * @since 1.0
      */
-    interface _ColumnDefaultClause<T, R> {
+    interface _StaticColumnDefaultClause<T, R extends _ColumnDefaultClause<T>> extends _ColumnDefaultClause<T> {
 
+        @Override
         R defaultValue(FieldMeta<T> field, Expression value);
 
+        @Override
         R defaultValue(FieldMeta<T> field, Supplier<Expression> supplier);
 
+        @Override
         R defaultValue(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
+        @Override
         <E> R defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, @Nullable E value);
 
+        @Override
         <K, V> R defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
                               Function<K, V> function, K key);
+
+        @Override
+        R ifDefault(FieldMeta<T> field, Supplier<Expression> supplier);
+
+        @Override
+        R ifDefault(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+
+        @Override
+        <E> R ifDefault(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier);
+
+        @Override
+        <K, V> R ifDefault(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
+                           Function<K, V> function, K key);
+
+    }
+
+    interface _DynamicColumnDefaultClause<T, R> {
+
+        R defaults(Consumer<_ColumnDefaultClause<T>> consumer);
+
+        R ifDefaults(Consumer<_ColumnDefaultClause<T>> consumer);
+    }
+
+    interface _FullColumnDefaultClause<T, R extends _ColumnDefaultClause<T>>
+            extends _StaticColumnDefaultClause<T, R>, _DynamicColumnDefaultClause<T, R> {
 
     }
 

@@ -1,6 +1,7 @@
 package io.army.criteria.postgre.unit;
 
 import io.army.criteria.ErrorChildInsertException;
+import io.army.criteria.IllegalTwoStmtModeException;
 import io.army.criteria.Insert;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
@@ -8,6 +9,7 @@ import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.time.LocalDateTime;
@@ -183,6 +185,33 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
                 .asInsert();
 
         printStmt(LOG, stmt);
+
+    }
+
+
+    @Test(expectedExceptions = IllegalTwoStmtModeException.class)
+    public void illegalTwoStmtMode() {
+        final List<ChinaProvince> provinceList;
+        provinceList = this.createProvinceList();
+
+        try {
+            Postgres.singleInsert()
+                    .insertInto(ChinaRegion_.T)
+                    .values(provinceList)
+                    .returningAll()
+                    .asReturningInsert()  // first statement exists RETURNING clause
+
+                    .child()
+
+                    .insertInto(ChinaProvince_.T)
+                    .values(provinceList)
+                    .asInsert();            // second statement not exists RETURNING clause
+
+            Assert.fail();
+        } catch (IllegalTwoStmtModeException e) {
+            LOG.debug(e.getMessage());
+            throw e;
+        }
 
     }
 

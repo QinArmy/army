@@ -80,6 +80,10 @@ public abstract class _DialectUtils {
         return parentDoNothing || childDoNothing;
     }
 
+    public static boolean isIllegalTwoStmtMode(final _Insert._ChildInsert childStmt) {
+        return !(childStmt instanceof _ReturningDml) && childStmt.parentStmt() instanceof _ReturningDml;
+    }
+
     /**
      * @param stmt non {@link io.army.criteria.impl.inner._Insert._ChildInsert}
      */

@@ -9,10 +9,7 @@ import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.*;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
-import io.army.meta.ChildTableMeta;
-import io.army.meta.ParentTableMeta;
-import io.army.meta.ServerMeta;
-import io.army.meta.TypeMeta;
+import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
@@ -511,7 +508,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
         outerFor:
         for (int i = 0; i < length; i++) {
             ch = identifier.charAt(i);
-            if ((ch >= 'a' && ch <= 'z') || ch == '_' || (ch >= 'A' && ch <= 'Z')) {
+            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_') {
                 continue;
             } else if (ch >= '0' && ch <= '9') {
                 if (i == 0) {
@@ -520,9 +517,10 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 }
                 continue;
             } else if (ch == '$') {
-                if (i == 0 || mode == null) {
-                    mode = IdentifierMode.QUOTING;
+                if (i > 0 || this.asOf80) {
+                    continue;
                 }
+                mode = IdentifierMode.QUOTING;
                 continue;
             }
 
@@ -584,6 +582,19 @@ abstract class MySQLParser extends _ArmyDialectParser {
                 .append(BACKTICK);
 
     }
+
+    @Override
+    protected final boolean isUseObjectNameModeMethod() {
+        // false,MySQL use identifierMode() method.
+        return false;
+    }
+
+    @Override
+    protected final IdentifierMode objectNameMode(final DatabaseObject object, final String effectiveName) {
+        // no bug,never here
+        throw new UnsupportedOperationException();
+    }
+
 
     @Override
     protected final String qualifiedSchemaName(final ServerMeta meta) {

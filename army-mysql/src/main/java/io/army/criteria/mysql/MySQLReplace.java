@@ -44,7 +44,7 @@ public interface MySQLReplace extends MySQLStatement {
     }
 
     interface _ValueColumnDefaultSpec<I extends Item, T>
-            extends InsertStatement._ColumnDefaultClause<T, _ValueColumnDefaultSpec<I, T>>,
+            extends InsertStatement._FullColumnDefaultClause<T, _ValueColumnDefaultSpec<I, T>>,
             InsertStatement._DomainValueClause<T, _DmlInsertClause<I>>,
             InsertStatement._StaticValuesClause<_MySQLValuesStaticParensClause<I, T>>,
             InsertStatement._DynamicValuesClause<T, _DmlInsertClause<I>> {
