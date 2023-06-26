@@ -3079,7 +3079,7 @@ abstract class CriteriaContexts {
             sqlBuilder.append(_Constant.SPACE);
 
             parser.identifier(this.tableName, sqlBuilder)
-                    .append(_Constant.POINT)
+                    .append(_Constant.PERIOD)
                     .append(safeFieldName)
                     .append(_Constant.SPACE_AS_SPACE)
                     .append(safeFieldName);
@@ -3092,7 +3092,7 @@ abstract class CriteriaContexts {
             sqlBuilder.append(_Constant.SPACE);
 
             dialect.identifier(this.tableName, sqlBuilder)
-                    .append(_Constant.POINT);
+                    .append(_Constant.PERIOD);
             dialect.identifier(this.selection.alias(), sqlBuilder);
 
         }
@@ -3103,7 +3103,7 @@ abstract class CriteriaContexts {
             return _StringUtils.builder()
                     .append(_Constant.SPACE)
                     .append(this.tableName)
-                    .append(_Constant.POINT)
+                    .append(_Constant.PERIOD)
                     .append(this.selection.alias())
                     .toString();
         }

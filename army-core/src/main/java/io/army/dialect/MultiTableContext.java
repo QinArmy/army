@@ -60,7 +60,7 @@ final class MultiTableContext implements _MultiTableContext {
             final StringBuilder sqlBuilder = this.stmtContext.sqlBuilder;
             sqlBuilder.append(_Constant.SPACE)
                     .append(safeTableAlias)
-                    .append(_Constant.POINT);
+                    .append(_Constant.PERIOD);
             this.stmtContext.parser.safeObjectName(field, sqlBuilder);
         } else if (this.aliasToTable.containsValue(fieldTable)) {
             throw _Exceptions.selfJoinNonQualifiedField(field);
@@ -154,7 +154,7 @@ final class MultiTableContext implements _MultiTableContext {
         sqlBuilder = this.stmtContext.sqlBuilder
                 .append(_Constant.SPACE)
                 .append(safeTableAlias)
-                .append(_Constant.POINT);
+                .append(_Constant.PERIOD);
         this.stmtContext.parser.safeObjectName(field, sqlBuilder);
     }
 

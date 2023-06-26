@@ -348,7 +348,7 @@ abstract class InsertContext extends StatementContext
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE)
                 .append(safeAlias)
-                .append(_Constant.POINT);
+                .append(_Constant.PERIOD);
         this.parser.safeObjectName(field, sqlBuilder);
 
     }
@@ -389,7 +389,7 @@ abstract class InsertContext extends StatementContext
         final StringBuilder sqlBuilder;
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE)
                 .append(safeTableAlias)
-                .append(_Constant.POINT);
+                .append(_Constant.PERIOD);
         this.parser.safeObjectName(field, sqlBuilder);
     }
 
@@ -552,7 +552,7 @@ abstract class InsertContext extends StatementContext
             }
 
             sqlBuilder.append(safeTableAlias)
-                    .append(_Constant.POINT);
+                    .append(_Constant.PERIOD);
 
             safeColumnName = parser.safeObjectName(field);
             sqlBuilder.append(safeColumnName);
@@ -566,7 +566,7 @@ abstract class InsertContext extends StatementContext
                             .append(_Constant.LEFT_PAREN)
                             .append(_Constant.SPACE)
                             .append(safeTableAlias)
-                            .append(_Constant.POINT)
+                            .append(_Constant.PERIOD)
                             .append(safeColumnName)
                             .append(_Constant.SPACE_RIGHT_PAREN);
 

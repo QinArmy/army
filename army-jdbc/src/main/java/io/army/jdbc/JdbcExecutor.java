@@ -1360,7 +1360,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
      */
     private <R> List<R> readReturningInsert(final ResultSet set, final RowReader<R> rowReader,
                                             final GeneratedKeyStmt stmt,
-                                            final Supplier<List<R>> listConstructor) {
+                                            final Supplier<List<R>> listConstructor) throws SQLException {
 
         try (ResultSet resultSet = set) {
 
@@ -1405,8 +1405,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 list = _Collections.unmodifiableListForDeveloper(list);
             }
             return list;
-        } catch (SQLException e) { // other error is handled by invoker
-            throw wrapError(e);
         }
     }
 

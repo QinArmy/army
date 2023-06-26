@@ -456,7 +456,7 @@ abstract class PostgreInserts extends InsertSupports {
         public final String toString() {
             return _StringUtils.builder()
                     .append(OverridingMode.class.getSimpleName())
-                    .append(_Constant.POINT)
+                    .append(_Constant.PERIOD)
                     .append(this.name())
                     .toString();
         }

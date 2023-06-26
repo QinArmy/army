@@ -62,7 +62,7 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
             this.useExecuteLargeBatch = (methodFlag & EXECUTE_LARGE_BATCH_METHOD) != 0;
         }
 
-        this.databaseSessionHolder = this.env.getOrDefault(ArmyKey.DATABASE_SESSION_HOLDER);
+        this.databaseSessionHolder = this.env.getOrDefault(ArmyKey.DATABASE_SESSION_HOLDER_ENABLE);
         this.dataSourceCloseMethod = this.env.get(ArmyKey.DATASOURCE_CLOSE_METHOD);
 
     }

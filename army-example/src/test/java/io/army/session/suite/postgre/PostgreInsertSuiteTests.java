@@ -699,4 +699,308 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
 
+    @Test
+    public void returningValuesInsertChildWithTowStmtQueryMode(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final Random random = ThreadLocalRandom.current();
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion())
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                )
+                .returningAll()
+                .asReturningInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .values()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                ).comma()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                )
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
+        final LocalTransaction tx;
+        tx = session.builder()
+                .isolation(Isolation.READ_COMMITTED)
+                .build();
+
+        try {
+            tx.start();
+            final List<ChinaProvince> resultList;
+            resultList = session.query(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+
+            Assert.assertEquals(resultList.size(), 2);
+
+            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
+            for (ChinaProvince province : resultList) {
+                Assert.assertNotNull(province.getId());
+
+                // parent fields
+                Assert.assertNotNull(province.getCreateTime());
+                Assert.assertNotNull(province.getUpdateTime());
+
+                // child fields
+                Assert.assertNotNull(province.getGovernor());
+                Assert.assertNotNull(province.getProvincialCapital());
+            }
+            tx.commit();
+            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
+        } catch (Exception e) {
+            LOG.error("insert child error", e);
+            tx.rollback();
+            throw e;
+        } finally {
+            releaseSyncSession(session);
+        }
+
+    }
+
+    @Test
+    public void returningValuesInsertDiffMode(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final Random random = ThreadLocalRandom.current();
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion())
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                )
+                .asInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .values()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                ).comma()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                )
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
+        final LocalTransaction tx;
+        tx = session.builder()
+                .isolation(Isolation.READ_COMMITTED)
+                .build();
+
+        try {
+            tx.start();
+            final List<ChinaProvince> resultList;
+            resultList = session.query(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+
+            Assert.assertEquals(resultList.size(), 2);
+
+            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
+            for (ChinaProvince province : resultList) {
+                // parent fields
+                Assert.assertNull(province.getCreateTime());
+                Assert.assertNull(province.getUpdateTime());
+
+                // child fields
+                Assert.assertNotNull(province.getId());
+                Assert.assertNotNull(province.getGovernor());
+                Assert.assertNotNull(province.getProvincialCapital());
+
+            }
+
+            tx.commit();
+            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
+        } catch (Exception e) {
+            LOG.error("insert child error", e);
+            tx.rollback();
+            throw e;
+        } finally {
+            releaseSyncSession(session);
+        }
+
+    }
+
+
+    @Test
+    public void returningMapValuesInsertChildWithTowStmtQueryMode(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final Random random = ThreadLocalRandom.current();
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion())
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                )
+                .returningAll()
+                .asReturningInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .values()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                ).comma()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                )
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
+        final LocalTransaction tx;
+        tx = session.builder()
+                .isolation(Isolation.READ_COMMITTED)
+                .build();
+
+        try {
+            tx.start();
+
+            final List<Map<String, Object>> resultList;
+            resultList = session.queryMap(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+
+            Assert.assertEquals(resultList.size(), 2);
+
+            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
+            for (Map<String, Object> map : resultList) {
+
+                Assert.assertFalse(map instanceof ImmutableHashMap);
+                Assert.assertNotNull(map.get(ChinaRegion_.ID));
+
+                // parent fields
+                Assert.assertNotNull(map.get(ChinaRegion_.CREATE_TIME));
+                Assert.assertNotNull(map.get(ChinaRegion_.UPDATE_TIME));
+
+                // child fields
+                Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
+                Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
+            }
+            tx.commit();
+            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
+        } catch (Exception e) {
+            LOG.error("insert child error", e);
+            tx.rollback();
+            throw e;
+        } finally {
+            releaseSyncSession(session);
+        }
+
+    }
+
+
+    @Test
+    public void returningMapValuesInsertDiffMode(final LocalSession session) {
+        assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final Random random = ThreadLocalRandom.current();
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .insertInto(ChinaRegion_.T)
+                .defaultValue(ChinaRegion_.visible, SQLs::literal, Boolean.TRUE)
+                .values()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion())
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                ).comma()
+                .parens(s -> s.space(ChinaRegion_.name, SQLs::param, randomRegion(random))
+                        .comma(ChinaRegion_.regionGdp, SQLs::literal, randomDecimal(random))
+                        .comma(ChinaRegion_.parentId, SQLs::literal, random.nextInt())
+                )
+                .asInsert()
+
+                .child()
+
+                .insertInto(ChinaProvince_.T)
+                .values()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                ).comma()
+                .parens(s -> s.space(ChinaProvince_.governor, SQLs::param, randomPerson(random))
+                        .comma(ChinaProvince_.provincialCapital, SQLs::literal, randomPerson(random))
+                )
+                .returningAll()
+                .asReturningInsert();
+
+        Assert.assertTrue(stmt instanceof _ReturningDml);
+
+        final LocalTransaction tx;
+        tx = session.builder()
+                .isolation(Isolation.READ_COMMITTED)
+                .build();
+
+        try {
+            tx.start();
+            final List<Map<String, Object>> resultList;
+            resultList = session.queryMap(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+
+            Assert.assertEquals(resultList.size(), 2);
+
+            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
+            for (Map<String, Object> map : resultList) {
+
+                Assert.assertFalse(map instanceof ImmutableHashMap);
+
+                // parent fields
+                Assert.assertNull(map.get(ChinaRegion_.CREATE_TIME));
+                Assert.assertNull(map.get(ChinaRegion_.UPDATE_TIME));
+
+                // child fields
+                Assert.assertNotNull(map.get(ChinaRegion_.ID));
+                Assert.assertNotNull(map.get(ChinaProvince_.GOVERNOR));
+                Assert.assertNotNull(map.get(ChinaProvince_.PROVINCIAL_CAPITAL));
+            }
+
+            tx.commit();
+            LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
+        } catch (Exception e) {
+            LOG.error("insert child error", e);
+            tx.rollback();
+            throw e;
+        } finally {
+            releaseSyncSession(session);
+        }
+
+    }
+
+
 }

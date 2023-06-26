@@ -602,6 +602,9 @@ abstract class MySQLParser extends _ArmyDialectParser {
         final String catalog, schema, qualifiedSchema;
         catalog = meta.catalog();
         schema = meta.schema();
+        if ((catalog == null) == (schema == null)) {
+            throw _Exceptions.serverMetaError(meta);
+        }
         if (schema == null) {
             qualifiedSchema = catalog;
         } else {

@@ -975,7 +975,7 @@ abstract class Functions {
     private static String functionsKeyWordToString(final Enum<?> e) {
         return _StringUtils.builder()
                 .append(Functions.class.getName())
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(e.name())
                 .toString();
     }

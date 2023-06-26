@@ -57,7 +57,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
             } else {
                 sqlBuilder.append(this.safeTableAlias);
             }
-            sqlBuilder.append(_Constant.POINT);
+            sqlBuilder.append(_Constant.PERIOD);
             this.parser.safeObjectName(field, sqlBuilder);
         } else if (targetTable instanceof ChildTableMeta
                 && fieldTable == ((ChildTableMeta<?>) targetTable).parentMeta()) {
@@ -66,7 +66,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
                 assert this.safeRelatedAlias != null;
                 sqlBuilder.append(_Constant.SPACE)
                         .append(this.safeRelatedAlias)
-                        .append(_Constant.POINT);
+                        .append(_Constant.PERIOD);
                 this.parser.safeObjectName(field, sqlBuilder);
             } else {
                 this.parentColumnFromSubQuery(field);
@@ -76,7 +76,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
                 assert this.safeRelatedAlias != null;
                 sqlBuilder.append(_Constant.SPACE)
                         .append(this.safeRelatedAlias)
-                        .append(_Constant.POINT);
+                        .append(_Constant.PERIOD);
                 this.parser.safeObjectName(field, sqlBuilder);
             } else {
                 this.childColumnFromSubQuery(field);
@@ -110,7 +110,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
                 .append(_Constant.SPACE_SELECT_SPACE)
                 //below target parent column
                 .append(safeParentAlias)
-                .append(_Constant.POINT);
+                .append(_Constant.PERIOD);
 
         parser.safeObjectName(parentField, sqlBuilder)
                 .append(_Constant.SPACE_FROM_SPACE);
@@ -130,17 +130,17 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
         sqlBuilder.append(_Constant.SPACE_WHERE)
                 .append(_Constant.SPACE)
                 .append(safeParentAlias)
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
                 .append(_Constant.SPACE_EQUAL_SPACE)
 
                 .append(this.safeTableAlias)
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
 
                 .append(_Constant.SPACE_AND_SPACE)
                 .append(safeParentAlias)
-                .append(_Constant.POINT);
+                .append(_Constant.PERIOD);
 
         final FieldMeta<?> discriminator = parentTable.discriminator();
         parser.safeObjectName(discriminator, sqlBuilder)
@@ -168,7 +168,7 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
                 .append(_Constant.SPACE_SELECT_SPACE)
                 //below target parent column
                 .append(safeChildAlias)
-                .append(_Constant.POINT);
+                .append(_Constant.PERIOD);
 
         parser.safeObjectName(childField, sqlBuilder)
                 .append(_Constant.SPACE_FROM_SPACE);
@@ -184,11 +184,11 @@ abstract class DomainDmlStmtContext extends SingleTableDmlContext implements _Si
                 .append(_Constant.SPACE_WHERE)
                 .append(_Constant.SPACE)
                 .append(safeChildAlias)
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(this.safeTableAlias)
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
                 .append(_Constant.SPACE_RIGHT_PAREN);
 

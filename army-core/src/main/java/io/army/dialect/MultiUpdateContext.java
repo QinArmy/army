@@ -104,7 +104,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
             sqlBuilder
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
-                    .append(_Constant.POINT);
+                    .append(_Constant.PERIOD);
             this.parser.identifier(field.fieldName(), sqlBuilder);
         } else if (dataField instanceof FieldMeta) {
             final FieldMeta<?> field = (FieldMeta<?>) dataField;
@@ -117,7 +117,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
             sqlBuilder
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
-                    .append(_Constant.POINT);
+                    .append(_Constant.PERIOD);
             this.parser.safeObjectName(field, sqlBuilder);
         } else if (dataField instanceof QualifiedField) {
             final QualifiedField<?> field = (QualifiedField<?>) dataField;
@@ -131,7 +131,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
             sqlBuilder
                     .append(_Constant.SPACE)
                     .append(safeTableAlias)
-                    .append(_Constant.POINT);
+                    .append(_Constant.PERIOD);
             this.parser.safeObjectName(field, sqlBuilder);
         } else {
             throw _Exceptions.immutableField(dataField);
@@ -183,7 +183,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
 
             sqlBuilder.append(_Constant.SPACE_AND_SPACE)
                     .append(safeTableAlias)
-                    .append(_Constant.POINT);
+                    .append(_Constant.PERIOD);
 
             if (field instanceof TableField) {
                 objectName = dialect.safeObjectName((TableField) field);
@@ -205,7 +205,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
                             .append(_Constant.SPACE_LEFT_PAREN)
                             .append(_Constant.SPACE)
                             .append(safeTableAlias)
-                            .append(_Constant.POINT)
+                            .append(_Constant.PERIOD)
                             .append(objectName);
                     sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
 

@@ -68,7 +68,7 @@ public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
         }
         return builder()
                 .append(clazz.getName())
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(words.name())
                 .toString();
     }

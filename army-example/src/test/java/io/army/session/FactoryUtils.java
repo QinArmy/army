@@ -53,6 +53,9 @@ public abstract class FactoryUtils {
         map.put(ArmyKey.DDL_MODE.name, DdlMode.UPDATE);
         map.put(ArmyKey.SQL_LOG_MODE.name, SqlLogMode.FORMAT_DEBUG);
 
+        map.put(ArmyKey.QUALIFIED_TABLE_NAME_ENABLE.name, Boolean.FALSE);
+
+//         map.put(ArmyKey.DATABASE_NAME_MODE.name, NameMode.UPPER_CASE);
 //        map.put(ArmyKey.TABLE_NAME_MODE.name, NameMode.UPPER_CASE);
 //        map.put(ArmyKey.COLUMN_NAME_MODE.name, NameMode.UPPER_CASE);
         return StandardEnvironment.from(map);

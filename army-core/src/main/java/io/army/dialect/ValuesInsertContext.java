@@ -290,11 +290,11 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 throw new NullPointerException();
             }
             final int currentSize = postIdList.size();
-            if (indexBasedZero < 0 || indexBasedZero > currentSize || indexBasedZero > rowSize) {
+            if (indexBasedZero == currentSize) {
+                postIdList.add(idValue);
+            } else if (indexBasedZero < 0 || indexBasedZero > currentSize || indexBasedZero > rowSize) {
                 //no bug,never here
                 throw new IllegalArgumentException();
-            } else if (indexBasedZero == currentSize) {
-                postIdList.add(idValue);
             } else {
                 throw _Exceptions.duplicateIdValue(indexBasedZero, idField, idValue);
             }

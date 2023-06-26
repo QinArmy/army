@@ -11,6 +11,8 @@ import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.RmExecutorFactory;
 import io.army.util._ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -22,6 +24,8 @@ import java.util.Objects;
 
 @SuppressWarnings("unused")
 public final class JdbcExecutorProvider implements ExecutorProvider {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcExecutorProvider.class);
 
     public static JdbcExecutorProvider create(Object dataSource) {
         if (!(dataSource instanceof DataSource || dataSource instanceof XADataSource)) {
@@ -106,6 +110,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         try (Connection conn = connection) {
             final ServerMeta serverMeta;
             serverMeta = doCreateServerMeta(conn, usedDialect);
+            LOG.debug("create {}", serverMeta);
             int methodFlag = 0;
             try (PreparedStatement statement = conn.prepareStatement("SELECT 1 + ? AS armyJdbcTest")) {
                 final Class<?> clazz = statement.getClass();

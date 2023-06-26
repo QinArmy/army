@@ -62,36 +62,48 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
 
     @Override
     public void commit() throws TransactionException {
-        if (this.status != TransactionStatus.ACTIVE) {
-            String m;
-            m = String.format("%s status isn't %s,can't commit transaction.", this, TransactionStatus.NOT_ACTIVE);
-            throw new IllegalTransactionStateException(m);
-        }
-        this.status = TransactionStatus.COMMITTING;
-        final SyncLocalSession session = this.session;
-        try {
-            final String command = "COMMIT";
-            printStmtIfNeed(session.factory, LOG, command);
-            session.stmtExecutor.execute(command);
-            this.status = TransactionStatus.COMMITTED;
-        } catch (DataAccessException e) {
-            this.status = TransactionStatus.FAILED_COMMIT;
-            String m = String.format("%s commit failure.", this);
-            throw new TransactionSystemException(m, e);
-        } catch (Throwable e) {
-            this.status = TransactionStatus.FAILED_COMMIT;
-            throw e;
-        } finally {
-            if (this.status == TransactionStatus.COMMITTED) {// end when only COMMITTED,because rollback
-                session.endTransaction(this);
+        final TransactionStatus oldStatus = this.status;
+        switch (oldStatus) {
+            case ACTIVE: {
+                this.status = TransactionStatus.COMMITTING;
+                final SyncLocalSession session = this.session;
+                try {
+                    final String command = "COMMIT";
+                    printStmtIfNeed(session.factory, LOG, command);
+                    session.stmtExecutor.execute(command);
+                    this.status = TransactionStatus.COMMITTED;
+                } catch (DataAccessException e) {
+                    this.status = TransactionStatus.FAILED_COMMIT;
+                    String m = String.format("%s commit failure.", this);
+                    throw new TransactionSystemException(m, e);
+                } catch (Throwable e) {
+                    this.status = TransactionStatus.FAILED_COMMIT;
+                    throw e;
+                } finally {
+                    if (this.status == TransactionStatus.COMMITTED) {// end when only COMMITTED,because rollback
+                        session.endTransaction(this);
+                    }
+                }
+            }
+            break;
+            case NOT_ACTIVE:
+                LOG.debug("transaction[name : {}]'s status is {},so no action.", this.name, oldStatus);
+                this.session.endTransaction(this);
+                break;
+            default: {
+                String m;
+                m = String.format("%s status isn't %s,can't commit transaction.", this, oldStatus);
+                throw new IllegalTransactionStateException(m);
             }
         }
+
 
     }
 
     @Override
     public void rollback() throws TransactionException {
-        switch (this.status) {
+        final TransactionStatus oldStatus = this.status;
+        switch (oldStatus) {
             case ACTIVE:
             case COMMITTING:// flush failure.
             case FAILED_COMMIT:
@@ -123,11 +135,11 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
             }
             break;
             case NOT_ACTIVE:
-                LOG.debug("transaction[name : {}] non-active,so no action", this.name);
+                LOG.debug("transaction[name : {}]'s status is {},so no action", this.name, oldStatus);
+                this.session.endTransaction(this);
                 break;
             default: {
-                String m = String.format("%s status not in [%s,%s],can't rollback transaction."
-                        , this, TransactionStatus.ACTIVE, TransactionStatus.MARKED_ROLLBACK);
+                String m = String.format("%s status is %s,can't rollback transaction.", this, oldStatus);
                 throw new IllegalTransactionStateException(m);
             }
         }

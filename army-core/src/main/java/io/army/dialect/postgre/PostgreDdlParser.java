@@ -153,7 +153,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
         } else if (object instanceof FieldMeta) {
             builder.append(" COLUMN ");
             this.parser.safeObjectName(((FieldMeta<?>) object).tableMeta(), builder);
-            builder.append(_Constant.POINT);
+            builder.append(_Constant.PERIOD);
             this.parser.safeObjectName(object, builder);
         } else {
             //no bug,never here

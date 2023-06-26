@@ -150,6 +150,7 @@ final class ServerMetaImpl implements ServerMeta {
     @Override
     public String toString() {
         return _StringUtils.builder()
+                .append(ServerMetaImpl.class.getName())
                 .append("[name:")
                 .append(this.name)
                 .append(",database:")
@@ -215,7 +216,7 @@ final class ServerMetaImpl implements ServerMeta {
 
         @Override
         public Builder schema(String schemaName) {
-            this.catalogName = schemaName;
+            this.schemaName = schemaName;
             return this;
         }
 

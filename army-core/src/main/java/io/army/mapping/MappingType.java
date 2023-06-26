@@ -343,7 +343,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         public final String toString() {
             return _StringUtils.builder()
                     .append(LengthType.class.getSimpleName())
-                    .append(_Constant.POINT)
+                    .append(_Constant.PERIOD)
                     .append(this.name())
                     .toString();
         }

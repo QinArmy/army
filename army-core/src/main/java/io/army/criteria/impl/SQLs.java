@@ -368,7 +368,7 @@ public abstract class SQLs extends SQLsSyntax {
     static String sqlKeyWordsToString(Enum<?> wordEnum) {
         return _StringUtils.builder()
                 .append(SQLs.class.getSimpleName())
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(wordEnum.name())
                 .toString();
     }

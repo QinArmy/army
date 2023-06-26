@@ -5,14 +5,14 @@ import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.session.AllowMode;
 import io.army.session.DdlMode;
+import io.army.util._Collections;
 
 import java.time.ZoneOffset;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ArmyKey<T> {
 
-    private static final ConcurrentMap<String, ArmyKey<?>> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, ArmyKey<?>> INSTANCE_MAP = _Collections.concurrentHashMap();
 
     public static final ArmyKey<Boolean> READ_ONLY = new ArmyKey<>("readonly", Boolean.class, Boolean.FALSE);
 
@@ -26,14 +26,16 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<ZoneOffset> ZONE_OFFSET = new ArmyKey<>("zone.offset", ZoneOffset.class, null);
 
-    public static final ArmyKey<Boolean> USE_QUALIFIED_TABLE_NAME = new ArmyKey<>("use.qualified.table.name", Boolean.class, Boolean.FALSE);
+    public static final ArmyKey<Boolean> QUALIFIED_TABLE_NAME_ENABLE = new ArmyKey<>("qualified.table.name.enable", Boolean.class, Boolean.FALSE);
+
+    public static final ArmyKey<NameMode> DATABASE_NAME_MODE = new ArmyKey<>("database.name.mode", NameMode.class, NameMode.DEFAULT);
 
     public static final ArmyKey<NameMode> TABLE_NAME_MODE = new ArmyKey<>("table.name.mode", NameMode.class, NameMode.DEFAULT);
     public static final ArmyKey<NameMode> COLUMN_NAME_MODE = new ArmyKey<>("column.name.mode", NameMode.class, NameMode.DEFAULT);
 
     public static final ArmyKey<AllowMode> VISIBLE_MODE = new ArmyKey<>("visible.mode", AllowMode.class, AllowMode.NEVER);
 
-    public static final ArmyKey<Boolean> DATABASE_SESSION_HOLDER = new ArmyKey<>("database.session.holder", Boolean.class, Boolean.FALSE);
+    public static final ArmyKey<Boolean> DATABASE_SESSION_HOLDER_ENABLE = new ArmyKey<>("database.session.holder.enable", Boolean.class, Boolean.FALSE);
 
     public static final ArmyKey<String> VISIBLE_SESSION_WHITE_LIST = new ArmyKey<>("visible.session.white.list", String.class, null);
 

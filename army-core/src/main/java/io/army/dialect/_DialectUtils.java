@@ -244,7 +244,7 @@ public abstract class _DialectUtils {
         for (TableField field : conditionFieldList) {
             sqlBuilder.append(_Constant.SPACE_AND_SPACE)
                     .append(safeTableAlias)
-                    .append(_Constant.POINT);
+                    .append(_Constant.PERIOD);
 
             safeColumnName = dialect.safeObjectName(field);
             sqlBuilder.append(safeColumnName);
@@ -258,7 +258,7 @@ public abstract class _DialectUtils {
                             .append(_Constant.LEFT_PAREN)
                             .append(_Constant.SPACE)
                             .append(safeTableAlias)
-                            .append(_Constant.POINT)
+                            .append(_Constant.PERIOD)
                             .append(safeColumnName)
                             .append(_Constant.SPACE_RIGHT_PAREN);
 

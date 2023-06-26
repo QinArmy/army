@@ -1137,7 +1137,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
                         .append(_Constant.QUOTE)
                         .append(_Constant.SPACE_COMMA_SPACE)
                         .append(tableAlias)
-                        .append(_Constant.POINT)
+                        .append(_Constant.PERIOD)
                         .append(field.columnName());
             }
 

@@ -619,7 +619,7 @@ abstract class MySQLSyntax extends MySQLFunctions {
     private static String keyWordsToString(Enum<?> words) {
         return _StringUtils.builder()
                 .append(MySQLs.class.getSimpleName())
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(words.name())
                 .toString();
     }

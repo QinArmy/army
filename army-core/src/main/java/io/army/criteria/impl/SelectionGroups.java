@@ -198,7 +198,7 @@ abstract class SelectionGroups {
         public void rowElementToString(final StringBuilder builder) {
             builder.append(_Constant.SPACE)
                     .append(this.tableAlias)
-                    .append(_Constant.POINT)
+                    .append(_Constant.PERIOD)
                     .append(_Constant.ASTERISK);
         }
 
@@ -237,7 +237,7 @@ abstract class SelectionGroups {
                 }
                 builder.append(_Constant.SPACE)
                         .append(this.tableAlias)
-                        .append(_Constant.POINT)
+                        .append(_Constant.PERIOD)
                         .append(field.columnName())
                         .append(_Constant.SPACE_AS_SPACE)
                         .append(field.fieldName());
@@ -289,7 +289,7 @@ abstract class SelectionGroups {
                         .append(_Constant.QUOTE)
                         .append(_Constant.SPACE_COMMA)
                         .append(tableAlias)
-                        .append(_Constant.POINT)
+                        .append(_Constant.PERIOD)
                         .append(columnName);
             }
 
@@ -334,7 +334,7 @@ abstract class SelectionGroups {
                 safeFieldAlias = parser.identifier(selection.alias());
                 sqlBuilder.append(_Constant.SPACE)
                         .append(safeAlias)
-                        .append(_Constant.POINT)
+                        .append(_Constant.PERIOD)
                         .append(safeFieldAlias)
                         .append(_Constant.SPACE_AS_SPACE)
                         .append(safeFieldAlias);
@@ -354,7 +354,7 @@ abstract class SelectionGroups {
                 case PostgreSQL: {
                     sqlBuilder.append(_Constant.SPACE);
                     context.parser().identifier(this.derivedAlias, sqlBuilder);
-                    sqlBuilder.append(_Constant.POINT)
+                    sqlBuilder.append(_Constant.PERIOD)
                             .append(_Constant.ASTERISK);
                 }
                 break;
@@ -370,7 +370,7 @@ abstract class SelectionGroups {
         public void rowElementToString(final StringBuilder builder) {
             builder.append(_Constant.SPACE)
                     .append(this.derivedAlias)
-                    .append(_Constant.POINT)
+                    .append(_Constant.PERIOD)
                     .append(_Constant.ASTERISK);
         }
 
@@ -395,7 +395,7 @@ abstract class SelectionGroups {
                 context.appendLiteral(NoCastTextType.INSTANCE, selectionAlias);
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE)
                         .append(safeDerivedAlias)
-                        .append(_Constant.POINT);
+                        .append(_Constant.PERIOD);
                 parser.identifier(selectionAlias, sqlBuilder);
 
             }
@@ -408,7 +408,7 @@ abstract class SelectionGroups {
             if (selectionList == null) {
                 builder.append(_Constant.SPACE)
                         .append(this.derivedAlias)
-                        .append(_Constant.POINT)
+                        .append(_Constant.PERIOD)
                         .append(_Constant.ASTERISK);
                 return;
             }
@@ -429,7 +429,7 @@ abstract class SelectionGroups {
                         .append(_Constant.QUOTE)
                         .append(_Constant.SPACE_COMMA_SPACE)
                         .append(derivedAlias)
-                        .append(_Constant.POINT)
+                        .append(_Constant.PERIOD)
                         .append(selectionAlias);
 
             }
@@ -460,7 +460,7 @@ abstract class SelectionGroups {
                 }
                 sqlBuilder.append(_Constant.SPACE)
                         .append(safeDerivedAlias)
-                        .append(_Constant.POINT);
+                        .append(_Constant.PERIOD);
 
                 dialect.identifier(selectionList.get(i).alias(), sqlBuilder);
 

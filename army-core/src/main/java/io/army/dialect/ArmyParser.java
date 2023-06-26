@@ -161,27 +161,36 @@ abstract class ArmyParser implements DialectParser {
         this.columnNameMode = env.getOrDefault(ArmyKey.COLUMN_NAME_MODE);
 
         this.funcNameMode = env.getOrDefault(ArmyKey.FUNC_NAME_MODE);
+        this.qualifiedSchemaName = this.getQualifiedSchemaName(env, this.serverMeta);
+    }
 
-        if (env.getOrDefault(ArmyKey.USE_QUALIFIED_TABLE_NAME)) {
-            final String schemaName;
-            schemaName = this.qualifiedSchemaName(this.serverMeta);
-            switch (this.tableNameMode) {
-                case DEFAULT:
-                    this.qualifiedSchemaName = this.identifier(schemaName);
-                    break;
-                case LOWER_CASE:
-                    this.qualifiedSchemaName = this.identifier(schemaName.toLowerCase(Locale.ROOT));
-                    break;
-                case UPPER_CASE:
-                    this.qualifiedSchemaName = this.identifier(schemaName.toUpperCase(Locale.ROOT));
-                    break;
-                default:
-                    throw _Exceptions.unexpectedEnum(this.tableNameMode);
-            }
-        } else {
-            this.qualifiedSchemaName = null;
+
+    /**
+     * @see ArmyParser#ArmyParser(DialectEnv, Dialect)
+     */
+    @Nullable
+    private String getQualifiedSchemaName(final ArmyEnvironment env, final ServerMeta meta) {
+        if (!env.getOrDefault(ArmyKey.QUALIFIED_TABLE_NAME_ENABLE)) {
+            return null;
         }
-
+        final String schemaName, qualifiedSchemaName;
+        schemaName = this.qualifiedSchemaName(meta);
+        final NameMode mode;
+        mode = env.getOrDefault(ArmyKey.DATABASE_NAME_MODE);
+        switch (mode) {
+            case DEFAULT:
+                qualifiedSchemaName = schemaName;
+                break;
+            case LOWER_CASE:
+                qualifiedSchemaName = schemaName.toLowerCase(Locale.ROOT);
+                break;
+            case UPPER_CASE:
+                qualifiedSchemaName = schemaName.toUpperCase(Locale.ROOT);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+        return qualifiedSchemaName;
     }
 
 
@@ -438,7 +447,7 @@ abstract class ArmyParser implements DialectParser {
             } else {
                 schemaTableBuilder = new StringBuilder(schemaName.length() + 1 + objectName.length());
                 schemaTableBuilder.append(schemaName)
-                        .append(_Constant.POINT);
+                        .append(_Constant.PERIOD);
             }
         } else {
             // no bug,never here
@@ -528,7 +537,7 @@ abstract class ArmyParser implements DialectParser {
             final String schemaName;
             if ((schemaName = this.qualifiedSchemaName) != null) {
                 builder.append(schemaName)
-                        .append(_Constant.POINT);
+                        .append(_Constant.PERIOD);
             }
         } else {
             // no bug,never here
@@ -1576,11 +1585,11 @@ abstract class ArmyParser implements DialectParser {
         //2.1 on clause
         builder.append(_Constant.SPACE_ON_SPACE)
                 .append(safeChildTableAlias)
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
                 .append(_Constant.SPACE_EQUAL_SPACE)
                 .append(safeParentTableAlias)
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID);
     }
 
@@ -1690,7 +1699,7 @@ abstract class ArmyParser implements DialectParser {
         } else {
             sqlBuilder.append(safeTableAlias);
         }
-        sqlBuilder.append(_Constant.POINT);
+        sqlBuilder.append(_Constant.PERIOD);
 
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE)
@@ -1723,7 +1732,7 @@ abstract class ArmyParser implements DialectParser {
         } else {
             sqlBuilder.append(safeTableAlias);
         }
-        sqlBuilder.append(_Constant.POINT);
+        sqlBuilder.append(_Constant.PERIOD);
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
         this.literal(field.mappingType(), visibleValue, sqlBuilder);
@@ -1758,7 +1767,7 @@ abstract class ArmyParser implements DialectParser {
                 .append(_Constant.SPACE_SELECT_SPACE)
                 //below target parent column
                 .append(safeParentAlias)
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
                 .append(_Constant.SPACE_FROM_SPACE);
 
@@ -1774,18 +1783,18 @@ abstract class ArmyParser implements DialectParser {
                 .append(_Constant.SPACE)
 
                 .append(safeParentAlias)
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
 
                 .append(_Constant.SPACE_EQUAL_SPACE)
 
                 .append(safeChildAlias)
-                .append(_Constant.POINT)
+                .append(_Constant.PERIOD)
                 .append(_MetaBridge.ID)
 
                 .append(_Constant.SPACE_AND_SPACE)
                 .append(safeParentAlias)
-                .append(_Constant.POINT);
+                .append(_Constant.PERIOD);
 
         // below discriminator predicate
         final FieldMeta<?> discriminator = parentTable.discriminator();
@@ -1800,7 +1809,7 @@ abstract class ArmyParser implements DialectParser {
 
         sqlBuilder.append(_Constant.SPACE_AND_SPACE)
                 .append(safeParentAlias)
-                .append(_Constant.POINT);
+                .append(_Constant.PERIOD);
 
         this.safeObjectName(visibleField, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL_SPACE);
@@ -1951,7 +1960,7 @@ abstract class ArmyParser implements DialectParser {
 
         if (safeTableAlias != null && this.setClauseTableAlias) {
             sqlBuilder.append(safeTableAlias)
-                    .append(_Constant.POINT);
+                    .append(_Constant.PERIOD);
         }
         this.safeObjectName(field, sqlBuilder)
                 .append(_Constant.SPACE_EQUAL);
@@ -1973,13 +1982,13 @@ abstract class ArmyParser implements DialectParser {
 
             if (safeTableAlias != null && this.setClauseTableAlias) {
                 sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.POINT);
+                        .append(_Constant.PERIOD);
             }
             sqlBuilder.append(versionColumnName)
                     .append(_Constant.SPACE_EQUAL_SPACE);
             if (safeTableAlias != null) {  // no setClauseTableAlias
                 sqlBuilder.append(safeTableAlias)
-                        .append(_Constant.POINT);
+                        .append(_Constant.PERIOD);
             }
             sqlBuilder.append(versionColumnName)
                     .append(" + 1");

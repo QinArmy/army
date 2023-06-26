@@ -147,7 +147,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
             } else {
                 sqlBuilder.append(this.safeTargetTableName);
             }
-            sqlBuilder.append(_Constant.POINT);
+            sqlBuilder.append(_Constant.PERIOD);
         }
         this.parser.safeObjectName(field, sqlBuilder);
 
