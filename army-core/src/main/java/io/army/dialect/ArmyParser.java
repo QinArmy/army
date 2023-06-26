@@ -1392,12 +1392,12 @@ abstract class ArmyParser implements DialectParser {
         if (size == 0) {
             throw _Exceptions.selectListIsEmpty();
         }
-        final StringBuilder builder = context.sqlBuilder();
+        final StringBuilder sqlBuilder = context.sqlBuilder();
         for (int i = 0; i < size; i++) {
             if (i > 0) {
-                builder.append(_Constant.SPACE_COMMA);
+                sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            selectItemList.get(i).appendSelectItem(context);
+            selectItemList.get(i).appendSelectItem(sqlBuilder, context);
 
         }//for
 

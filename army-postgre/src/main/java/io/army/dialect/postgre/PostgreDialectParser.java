@@ -716,7 +716,7 @@ final class PostgreDialectParser extends PostgreParser {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
-            selectionList.get(i).appendSelectItem(context);
+            selectionList.get(i).appendSelectItem(sqlBuilder, context);
         }
 
 

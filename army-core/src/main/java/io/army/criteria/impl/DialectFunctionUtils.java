@@ -1014,7 +1014,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public void appendSelectItem(_SqlContext context) {
+        public void appendSelectItem(final StringBuilder sqlBuilder, _SqlContext context) {
             // no bug,never here
             throw new UnsupportedOperationException("invoking error");
         }

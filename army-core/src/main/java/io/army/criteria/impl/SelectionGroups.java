@@ -47,33 +47,6 @@ abstract class SelectionGroups {
 
     /*-------------------below private method -------------------*/
 
-    private static void appendDerivedFieldGroup(final String derivedAlias, final List<? extends Selection> selectionList,
-                                                final _SqlContext context) {
-
-        final StringBuilder builder = context.sqlBuilder();
-
-        final DialectParser dialect = context.parser();
-        final String safeAlias = dialect.identifier(derivedAlias);
-        final int size = selectionList.size();
-        assert size > 0;
-
-        Selection selection;
-        String safeFieldAlias;
-        for (int i = 0; i < size; i++) {
-            if (i > 0) {
-                builder.append(_Constant.SPACE_COMMA);
-            }
-            selection = selectionList.get(i);
-            safeFieldAlias = dialect.identifier(selection.alias());
-            builder.append(_Constant.SPACE)
-                    .append(safeAlias)
-                    .append(_Constant.POINT)
-                    .append(safeFieldAlias)
-                    .append(_Constant.SPACE_AS_SPACE)
-                    .append(safeFieldAlias);
-        }
-    }
-
 
 
 
@@ -119,7 +92,7 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public void appendSelectItem(final _SqlContext context) {
+        public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
 
             final List<FieldMeta<T>> fieldList;
             fieldList = this.insertTable.fieldList();
@@ -127,8 +100,6 @@ abstract class SelectionGroups {
             final int fieldSize;
             fieldSize = fieldList.size();
 
-            final StringBuilder sqlBuilder;
-            sqlBuilder = context.sqlBuilder();
 
             final DialectParser parser;
             parser = context.parser();
@@ -233,8 +204,7 @@ abstract class SelectionGroups {
 
 
         @Override
-        public void appendSelectItem(final _SqlContext context) {
-            final StringBuilder builder = context.sqlBuilder();
+        public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
             final String tableAlias = this.tableAlias;
             final DialectParser parser;
             parser = context.parser();
@@ -244,13 +214,13 @@ abstract class SelectionGroups {
             FieldMeta<T> field;
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
-                    builder.append(_Constant.SPACE_COMMA);
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
                 field = fieldList.get(i);
                 context.appendField(tableAlias, field);
 
-                builder.append(_Constant.SPACE_AS_SPACE);
-                parser.identifier(((TableFieldMeta<T>) field).fieldName, builder);
+                sqlBuilder.append(_Constant.SPACE_AS_SPACE);
+                parser.identifier(((TableFieldMeta<T>) field).fieldName, sqlBuilder);
             }
 
         }
@@ -346,8 +316,29 @@ abstract class SelectionGroups {
         }
 
         @Override
-        public void appendSelectItem(final _SqlContext context) {
-            appendDerivedFieldGroup(this.derivedAlias, this.selectionList, context);
+        public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final DialectParser parser = context.parser();
+            final String safeAlias = parser.identifier(this.derivedAlias);
+            final List<? extends Selection> selectionList = this.selectionList;
+
+            final int size = selectionList.size();
+            assert size > 0;
+
+            Selection selection;
+            String safeFieldAlias;
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    sqlBuilder.append(_Constant.SPACE_COMMA);
+                }
+                selection = selectionList.get(i);
+                safeFieldAlias = parser.identifier(selection.alias());
+                sqlBuilder.append(_Constant.SPACE)
+                        .append(safeAlias)
+                        .append(_Constant.POINT)
+                        .append(safeFieldAlias)
+                        .append(_Constant.SPACE_AS_SPACE)
+                        .append(safeFieldAlias);
+            }
         }
 
         @Override

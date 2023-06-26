@@ -19,7 +19,7 @@ final class PostgreExcludedField extends OperationDataField implements _Selectio
         return new PostgreExcludedField(field);
     }
 
-    private static final String SPACE_EXCLUDED = " EXCLUDED";
+    private static final String SPACE_EXCLUDED_PERIOD = " EXCLUDED.";
 
     private final FieldMeta<?> field;
 
@@ -58,11 +58,8 @@ final class PostgreExcludedField extends OperationDataField implements _Selectio
     }
 
     @Override
-    public void appendSelectItem(final _SqlContext context) {
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder()
-                .append(SPACE_EXCLUDED)
-                .append(_Constant.POINT);
+    public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
+        sqlBuilder.append(SPACE_EXCLUDED_PERIOD);
 
         context.appendFieldOnly(this.field);
 
@@ -79,8 +76,7 @@ final class PostgreExcludedField extends OperationDataField implements _Selectio
             throw _Exceptions.visibleField(context.visible(), this.field);
         }
 
-        sqlBuilder.append(SPACE_EXCLUDED)
-                .append(_Constant.POINT);
+        sqlBuilder.append(SPACE_EXCLUDED_PERIOD);
 
         context.appendFieldOnly(this.field);
     }

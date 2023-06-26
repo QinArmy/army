@@ -72,14 +72,12 @@ final class QualifiedFieldImpl<T> extends OperationDataField implements Qualifie
     }
 
     @Override
-    public void appendSelectItem(final _SqlContext context) {
+    public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
         context.appendField(this.tableAlias, this.field);
 
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder()
-                .append(_Constant.SPACE_AS_SPACE);
+        sqlBuilder.append(_Constant.SPACE_AS_SPACE);
 
-        context.parser().identifier(this.field.fieldName, sqlBuilder);
+        context.identifier(this.field.fieldName, sqlBuilder);
     }
 
     @Override

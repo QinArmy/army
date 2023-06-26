@@ -10,6 +10,8 @@ public interface _SelfDescribed {
      *     <li>append a space</li>
      *     <li>append SelfDescribed instance content in sql</li>
      * </ol>
+     *
+     * @param sqlBuilder must be {@link _SqlContext#sqlBuilder()} of context . For reducing method invoking.
      */
     void appendSql(StringBuilder sqlBuilder, _SqlContext context);
 

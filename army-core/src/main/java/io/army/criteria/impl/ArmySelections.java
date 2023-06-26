@@ -235,7 +235,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public void appendSelectItem(final _SqlContext context) {
+        public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
             //no bug,never here
             throw new CriteriaException(String.format("%s couldn't be rendered.", RenameSelection.class.getName()));
         }
@@ -281,7 +281,7 @@ abstract class ArmySelections implements _Selection {
 
 
         @Override
-        public void appendSelectItem(final _SqlContext context) {
+        public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
             //no-bug ,never here
             throw new UnsupportedOperationException();
 

@@ -3070,17 +3070,15 @@ abstract class CriteriaContexts {
 
 
         @Override
-        public final void appendSelectItem(final _SqlContext context) {
-            final DialectParser dialect = context.parser();
+        public final void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
+            final DialectParser parser = context.parser();
 
             final String safeFieldName;
-            safeFieldName = dialect.identifier(this.selection.alias());
+            safeFieldName = parser.identifier(this.selection.alias());
 
-            final StringBuilder builder;
-            builder = context.sqlBuilder()
-                    .append(_Constant.SPACE);
+            sqlBuilder.append(_Constant.SPACE);
 
-            dialect.identifier(this.tableName, builder)
+            parser.identifier(this.tableName, sqlBuilder)
                     .append(_Constant.POINT)
                     .append(safeFieldName)
                     .append(_Constant.SPACE_AS_SPACE)

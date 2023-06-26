@@ -421,13 +421,11 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
     }
 
     @Override
-    public final void appendSelectItem(final _SqlContext context) {
+    public final void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
         context.appendField(this);
-        final StringBuilder sqlBuilder;
-        sqlBuilder = context.sqlBuilder()
-                .append(_Constant.SPACE_AS_SPACE);
+        sqlBuilder.append(_Constant.SPACE_AS_SPACE);
 
-        context.parser().identifier(this.fieldName, sqlBuilder);
+        context.identifier(this.fieldName, sqlBuilder);
     }
 
     @Override

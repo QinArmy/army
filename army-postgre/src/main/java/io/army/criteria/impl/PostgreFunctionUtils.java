@@ -817,7 +817,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final void appendSelectItem(final _SqlContext context) {
+        public final void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {
             // no bug, never here
             throw new UnsupportedOperationException("invoking error");
         }

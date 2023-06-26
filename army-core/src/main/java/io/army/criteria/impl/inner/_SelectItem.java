@@ -5,12 +5,9 @@ import io.army.dialect._SqlContext;
 
 public interface _SelectItem extends SelectItem {
 
-    default void appendSelectItem(_SqlContext context) {
-
-    }
-
-    default void appendSelectItem(StringBuilder sqlBuilder, _SqlContext context) {
-
-    }
+    /**
+     * @param sqlBuilder must be {@link _SqlContext#sqlBuilder()} of context . For reducing method invoking.
+     */
+    void appendSelectItem(StringBuilder sqlBuilder, _SqlContext context);
 
 }
