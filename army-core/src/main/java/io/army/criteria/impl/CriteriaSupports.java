@@ -336,7 +336,7 @@ abstract class CriteriaSupports {
         public final Statement._RightParenClause<RR> comma(String string) {
             List<String> stringList = this.stringList;
             if (stringList == null) {
-                stringList = new ArrayList<>();
+                stringList = _Collections.arrayList();
                 this.stringList = stringList;
             } else if (!(stringList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);

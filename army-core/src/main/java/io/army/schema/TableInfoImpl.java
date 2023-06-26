@@ -1,7 +1,8 @@
 package io.army.schema;
 
+import io.army.util._Collections;
+
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -77,7 +78,7 @@ final class TableInfoImpl implements _TableInfo {
 
         private String comment;
 
-        private Map<String, _ColumnInfo> columnMap = new HashMap<>();
+        private Map<String, _ColumnInfo> columnMap = _Collections.hashMap();
 
         private Map<String, _IndexInfo> indexMap;
 
@@ -112,7 +113,7 @@ final class TableInfoImpl implements _TableInfo {
         public Builder appendIndex(_IndexInfo indexInfo) {
             Map<String, _IndexInfo> indexMap = this.indexMap;
             if (indexMap == null) {
-                indexMap = new HashMap<>();
+                indexMap = _Collections.hashMap();
                 this.indexMap = indexMap;
             }
             indexMap.put(indexInfo.indexName().toLowerCase(Locale.ROOT), indexInfo);

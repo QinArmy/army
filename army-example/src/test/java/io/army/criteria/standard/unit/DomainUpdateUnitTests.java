@@ -10,13 +10,13 @@ import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.pill.domain.PillPerson_;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.IdentityType;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.Map;
 
 import static io.army.criteria.impl.SQLs.AND;
@@ -30,7 +30,7 @@ public class DomainUpdateUnitTests extends StandardUnitTests {
     @Test
     public void domainUpdateParent() {
         final BigDecimal addGdp = new BigDecimal("888.8");
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         map.put("firstId", (byte) 1);
         map.put("secondId", "3");
 

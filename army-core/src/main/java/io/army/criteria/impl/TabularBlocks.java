@@ -5,6 +5,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.ArrayList;
@@ -353,7 +354,7 @@ abstract class TabularBlocks {
         private void addPredicate(final IPredicate predicate) {
             List<_Predicate> predicateList = this.predicateList;
             if (predicateList == null) {
-                predicateList = new ArrayList<>();
+                predicateList = _Collections.arrayList();
                 this.predicateList = predicateList;
             } else if (!(predicateList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.getContext());

@@ -14,6 +14,7 @@ import io.army.example.bank.service.sync.region.BankSyncRegionService;
 import io.army.example.bank.web.form.EnterpriseRegisterForm;
 import io.army.example.bank.web.form.PersonRegisterForm;
 import io.army.example.common.*;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -260,7 +261,7 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
                 .setHandleTime(now)
                 .setCompletionTime(now);
 
-        final Map<String, Object> result = new HashMap<>();
+        final Map<String, Object> result = _Collections.hashMap();
 
         result.put("userNo", user.getUserNo());
         result.put("userType", user.getUserType());
@@ -316,7 +317,7 @@ public class BankSyncUserServiceImpl extends BankSyncBaseService implements Bank
                 .setCompletionTime(now)
                 .setUserId(userId);
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
 
         map.put("requestNo", r.getRequestNo());
         map.put("userNo", u.getId());

@@ -33,7 +33,7 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
         _Statement._ItemPairList,
         _Statement._TableMetaSpec {
 
-    private List<_ItemPair> itemPairList = new ArrayList<>();
+    private List<_ItemPair> itemPairList = _Collections.arrayList();
 
     final TableMeta<?> updateTable;
 

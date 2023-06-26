@@ -8,6 +8,7 @@ import io.army.example.bank.domain.user.*;
 import io.army.example.pill.domain.PillPerson_;
 import io.army.example.pill.domain.PillUser_;
 import io.army.example.pill.struct.PillUserType;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -15,7 +16,6 @@ import org.testng.annotations.Test;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import static io.army.criteria.impl.SQLs.*;
@@ -125,7 +125,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
     @Test
     public void groupBy() {
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         map.put("minGdp", new BigDecimal("88888.66"));
         final LocalDateTime now = LocalDateTime.now();
 
@@ -202,7 +202,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
     @Test
     public void simpleSubQuery() {
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         map.put("nickName", "蛮吉");
 
         final Select stmt;
@@ -225,7 +225,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
     @Test(expectedExceptions = NonLateralException.class)
     public void nonLateralReferenceOuterQualifiedField() {
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         map.put("nickName", "蛮吉");
 
 
@@ -247,7 +247,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
     @Test(expectedExceptions = NonLateralException.class)
     public void nonLateralReferenceOuterDerivedField() {
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         map.put("nickName", "蛮吉");
         map.put("accountNo", "66688899");
 
@@ -271,7 +271,7 @@ public class StandardQueryUnitTests extends StandardUnitTests {
 
     @Test
     public void simpleSubQuerySelectItem() {
-        final Map<String, Object> criteria = new HashMap<>();
+        final Map<String, Object> criteria = _Collections.hashMap();
         criteria.put("offset", 0L);
         criteria.put("rowCount", 100L);
 

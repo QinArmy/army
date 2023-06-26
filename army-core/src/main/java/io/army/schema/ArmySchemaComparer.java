@@ -6,7 +6,10 @@ import io.army.meta.*;
 import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 abstract class ArmySchemaComparer implements _SchemaComparer {
 
@@ -29,8 +32,8 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
         final Map<String, _TableInfo> tableInfoMap = schemaInfo.tableMap();
 
         final _TableResult.Builder builder = _TableResult.builder();
-        final List<TableMeta<?>> newTableList = new ArrayList<>();
-        final List<_TableResult> tableResultList = new ArrayList<>();
+        final List<TableMeta<?>> newTableList = _Collections.arrayList();
+        final List<_TableResult> tableResultList = _Collections.arrayList();
         final boolean supportTableComment = this.supportTableComment();
 
         _TableInfo tableInfo;

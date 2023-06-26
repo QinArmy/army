@@ -403,7 +403,7 @@ abstract class MySQLDynamicJoins extends JoinableClause.DynamicJoinableBlock<
         private R indexHintEnd(final _IndexHint indexHint) {
             List<_IndexHint> list = this.indexHintList;
             if (list == null) {
-                list = new ArrayList<>();
+                list = _Collections.arrayList();
                 this.indexHintList = list;
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);

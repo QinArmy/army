@@ -5,12 +5,12 @@ import io.army.criteria.Insert;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static io.army.criteria.impl.SQLs.AS;
@@ -183,7 +183,7 @@ public class StandardInsertUnitTests extends StandardUnitTests {
 
 
     private List<ChinaRegion<?>> createRegionList() {
-        List<ChinaRegion<?>> domainList = new ArrayList<>();
+        List<ChinaRegion<?>> domainList = _Collections.arrayList();
         ChinaRegion<?> region;
 
         for (int i = 0; i < 3; i++) {

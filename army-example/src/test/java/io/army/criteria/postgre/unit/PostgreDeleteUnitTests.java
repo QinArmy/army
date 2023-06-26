@@ -8,13 +8,12 @@ import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
 import io.army.example.bank.domain.user.HistoryChinaRegion_;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,14 +56,14 @@ public class PostgreDeleteUnitTests extends PostgreUnitTests {
     @Test
     public void batchDeleteParent() {
         Map<String, Object> paramMap;
-        final List<Map<String, Object>> paramList = new ArrayList<>();
+        final List<Map<String, Object>> paramList = _Collections.arrayList();
 
-        paramMap = new HashMap<>();
+        paramMap = _Collections.hashMap();
         paramMap.put(HistoryChinaRegion_.ID, 1);
         paramMap.put(ChinaRegion_.REGION_GDP, new BigDecimal("100.00"));
         paramList.add(paramMap);
 
-        paramMap = new HashMap<>();
+        paramMap = _Collections.hashMap();
         paramMap.put(HistoryChinaRegion_.ID, 2);
         paramMap.put(ChinaRegion_.REGION_GDP, new BigDecimal("999.00"));
         paramList.add(paramMap);
@@ -86,14 +85,14 @@ public class PostgreDeleteUnitTests extends PostgreUnitTests {
     @Test//(invocationCount = 100)
     public void batchReturningDeleteParent() {
         Map<String, Object> paramMap;
-        final List<Map<String, Object>> paramList = new ArrayList<>();
+        final List<Map<String, Object>> paramList = _Collections.arrayList();
 
-        paramMap = new HashMap<>();
+        paramMap = _Collections.hashMap();
         paramMap.put(HistoryChinaRegion_.ID, 1);
         paramMap.put(ChinaRegion_.REGION_GDP, new BigDecimal("100.00"));
         paramList.add(paramMap);
 
-        paramMap = new HashMap<>();
+        paramMap = _Collections.hashMap();
         paramMap.put(HistoryChinaRegion_.ID, 2);
         paramMap.put(ChinaRegion_.REGION_GDP, new BigDecimal("999.00"));
         paramList.add(paramMap);

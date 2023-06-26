@@ -844,7 +844,7 @@ final class MySQLDialectParser extends MySQLParser {
                 continue;
             }
             if (aliasToLonelyParent == null) {
-                aliasToLonelyParent = new HashMap<>();
+                aliasToLonelyParent = _Collections.hashMap();
             }
             aliasToLonelyParent.put(alias, (ParentTableMeta<?>) tableItem);
 

@@ -5,9 +5,9 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 final class DomainUpdateContext extends DomainDmlStmtContext implements _SingleUpdateContext {
@@ -57,7 +57,7 @@ final class DomainUpdateContext extends DomainDmlStmtContext implements _SingleU
         }
         List<FieldMeta<?>> list = this.conditionFieldList;
         if (list == null) {
-            list = new ArrayList<>();
+            list = _Collections.arrayList();
             this.conditionFieldList = list;
         }
         list.add((FieldMeta<?>) field);

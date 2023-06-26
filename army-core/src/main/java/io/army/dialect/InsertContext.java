@@ -429,7 +429,7 @@ abstract class InsertContext extends StatementContext
                 }
                 List<FieldMeta<?>> conditionFieldList = this.conditionFieldList;
                 if (conditionFieldList == null) {
-                    conditionFieldList = new ArrayList<>();
+                    conditionFieldList = _Collections.arrayList();
                     this.conditionFieldList = conditionFieldList;
                 }
                 conditionFieldList.add(field);

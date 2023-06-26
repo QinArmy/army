@@ -19,7 +19,6 @@ import java.io.PrintWriter;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -55,7 +54,7 @@ final class SourceCodeCreator {
 
     private final String codeCreateTime;
 
-    private final Map<String, StringBuilder> fieldPairMap = new HashMap<>();
+    private final Map<String, StringBuilder> fieldPairMap = ArmyCollections.hashMap();
 
     SourceCodeCreator(Filer filer) {
         this.filer = filer;

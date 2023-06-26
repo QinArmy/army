@@ -20,11 +20,11 @@ final class AnnotationHandler {
 
     private final ProcessingEnvironment env;
 
-    final List<String> errorMsgList = new ArrayList<>();
+    final List<String> errorMsgList = ArmyCollections.arrayList();
 
-    private final Map<String, Map<String, VariableElement>> parentFieldCache = new HashMap<>();
+    private final Map<String, Map<String, VariableElement>> parentFieldCache = ArmyCollections.hashMap();
 
-    private final Map<String, Map<Integer, TypeElement>> codeMap = new HashMap<>();
+    private final Map<String, Map<Integer, TypeElement>> codeMap = ArmyCollections.hashMap();
 
     AnnotationHandler(ProcessingEnvironment env) {
         this.env = env;
@@ -130,7 +130,7 @@ final class AnnotationHandler {
                 break;
             }
             if (mappedList == null) {
-                mappedList = new ArrayList<>();
+                mappedList = ArmyCollections.arrayList();
                 mappedList.add(tableElement);
             }
             mappedList.add(superElement);
@@ -212,8 +212,8 @@ final class AnnotationHandler {
         Column column;
         boolean foundDiscriminatorColumn = false;
         String className, fieldName, columnName;
-        final Map<String, VariableElement> fieldMap = new HashMap<>();
-        final Map<String, Boolean> columnNameMap = new HashMap<>();
+        final Map<String, VariableElement> fieldMap = ArmyCollections.hashMap();
+        final Map<String, Boolean> columnNameMap = ArmyCollections.hashMap();
 
         for (TypeElement mapped : mappedList) {
             className = MetaUtils.getClassName(mapped);
@@ -445,9 +445,9 @@ final class AnnotationHandler {
         if (indexArray.length == 0) {
             return Collections.emptyMap();
         }
-        final Map<String, IndexMode> indexMetaMap = new HashMap<>();
+        final Map<String, IndexMode> indexMetaMap = ArmyCollections.hashMap();
 
-        final Map<String, Boolean> indexNameMap = new HashMap<>(indexArray.length + 3);
+        final Map<String, Boolean> indexNameMap = ArmyCollections.hashMap(indexArray.length + 3);
         String[] fieldArray;
         String indexName;
         IndexMode indexMode;

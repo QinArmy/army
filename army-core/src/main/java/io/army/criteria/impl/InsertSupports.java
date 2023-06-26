@@ -1308,9 +1308,9 @@ abstract class InsertSupports {
                     throw ContextStack.castCriteriaApi(this.context);
                 }
                 assert ((ComplexInsertValuesClause<?, ?, ?, ?>) this).insertMode == null;
-                pairList = new ArrayList<>();
+                pairList = _Collections.arrayList();
                 this.assignmentPairList = pairList;
-                assignmentMap = new HashMap<>();
+                assignmentMap = _Collections.hashMap();
                 this.assignmentMap = assignmentMap;
             } else if (!(pairList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -1774,8 +1774,8 @@ abstract class InsertSupports {
             Map<FieldMeta<?>, _Expression> fieldPairMap = this.fieldPairMap;
             List<_Pair<FieldMeta<?>, _Expression>> itemPairList = this.itemPairList;
             if (fieldPairMap == null) {
-                this.fieldPairMap = fieldPairMap = new HashMap<>();
-                this.itemPairList = itemPairList = new ArrayList<>();
+                this.fieldPairMap = fieldPairMap = _Collections.hashMap();
+                this.itemPairList = itemPairList = _Collections.arrayList();
             } else if (!(fieldPairMap instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }

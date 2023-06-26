@@ -10,6 +10,7 @@ import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
 import io.army.meta.*;
+import io.army.util._Collections;
 
 import java.util.*;
 import java.util.function.Function;
@@ -70,7 +71,7 @@ public abstract class FactoryBuilderSupport {
         List<FieldMeta<?>> fieldChain;
         GeneratorMeta meta;
 
-        final Map<FieldMeta<?>, FieldGenerator> generatorMap = new HashMap<>();
+        final Map<FieldMeta<?>, FieldGenerator> generatorMap = _Collections.hashMap();
         FieldGenerator generator;
         for (TableMeta<?> table : tableMetaMap.values()) {
             fieldChain = table.fieldChain();

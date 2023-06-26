@@ -191,7 +191,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         private R indexHintEnd(final _IndexHint indexHint) {
             List<_IndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
-                indexHintList = new ArrayList<>();
+                indexHintList = _Collections.arrayList();
                 this.indexHintList = indexHintList;
             } else if (!(indexHintList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(CriteriaUtils.getCriteriaContext(this.clause));
@@ -381,7 +381,7 @@ abstract class MySQLSupports extends CriteriaSupports {
         private RR indexHintEnd(final _IndexHint indexHint) {
             List<_IndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
-                indexHintList = new ArrayList<>();
+                indexHintList = _Collections.arrayList();
                 this.indexHintList = indexHintList;
             } else if (!(indexHintList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.getContext());
@@ -431,7 +431,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public final Statement._AsClause<R> partition(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
+            final List<String> list = _Collections.arrayList();
             consumer.accept(list::add);
             if (list.size() == 0) {
                 throw MySQLUtils.partitionListIsEmpty(this.context);
@@ -442,7 +442,7 @@ abstract class MySQLSupports extends CriteriaSupports {
 
         @Override
         public final Statement._AsClause<R> ifPartition(Consumer<Consumer<String>> consumer) {
-            final List<String> list = new ArrayList<>();
+            final List<String> list = _Collections.arrayList();
             consumer.accept(list::add);
             if (list.size() > 0) {
                 this.partitionList = _Collections.unmodifiableList(list);

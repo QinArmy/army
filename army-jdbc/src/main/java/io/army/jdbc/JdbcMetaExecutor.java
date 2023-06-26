@@ -5,11 +5,11 @@ import io.army.lang.Nullable;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.MetaExecutor;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -97,7 +97,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
             , final DatabaseMetaData metaData) throws SQLException {
 
         try (ResultSet resultSet = metaData.getTables(catalog, schema, "%", new String[]{"TABLE", "VIEW"})) {
-            final Map<String, _TableInfo.Builder> builderMap = new HashMap<>();
+            final Map<String, _TableInfo.Builder> builderMap = _Collections.hashMap();
             for (String tableName, type; resultSet.next(); ) {
                 tableName = resultSet.getString("TABLE_NAME");
                 type = resultSet.getString("TABLE_TYPE");

@@ -8,6 +8,7 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
+import io.army.util._Collections;
 import io.army.util._StringUtils;
 import io.qinarmy.util.Pair;
 
@@ -29,7 +30,7 @@ abstract class TableMetaUtils {
 
     private static final String DESC = "DESC";
 
-    private static Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = new HashMap<>();
+    private static Map<Class<?>, Map<Integer, Class<?>>> discriminatorCodeMap = _Collections.hashMap();
 
     private static Map<Class<?>, Pair<Set<String>, Field>> parentFieldPairCache = new ConcurrentHashMap<>();
 
@@ -251,9 +252,9 @@ abstract class TableMetaUtils {
             parentIdField = parentFieldPair.getSecond();
         }
         // 4. create non-index filed meta and get index filed map
-        final Map<String, Field> indexFieldToFieldMap = new HashMap<>();
+        final Map<String, Field> indexFieldToFieldMap = _Collections.hashMap();
         final Set<String> columnNameSet = new HashSet<>(); // for check column name duplication
-        final Map<String, FieldMeta<T>> fieldMetaMap = new HashMap<>();
+        final Map<String, FieldMeta<T>> fieldMetaMap = _Collections.hashMap();
         for (Class<?> mappedClass : mappedClassList) {
             for (Field field : mappedClass.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers())) {
@@ -416,7 +417,7 @@ abstract class TableMetaUtils {
      * @return map(unmodifiable) ,key: column name,value : {@link Field} ,
      */
     private static Map<String, Field> columnToFieldMap(TableMeta<?> tableMeta, List<Class<?>> mappedClassList) {
-        final Map<String, Field> map = new HashMap<>();
+        final Map<String, Field> map = _Collections.hashMap();
         final Set<String> fieldNameSet = new HashSet<>();
 
         for (Class<?> mappingClass : mappedClassList) {

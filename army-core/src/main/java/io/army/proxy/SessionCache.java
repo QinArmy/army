@@ -10,11 +10,15 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.util._ClassUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -36,7 +40,7 @@ final class SessionCache implements _SessionCache {
             this.cacheMap = new ConcurrentHashMap<>();
         } else {
             this.reactive = false;
-            this.cacheMap = new HashMap<>();
+            this.cacheMap = _Collections.hashMap();
         }
 
     }
@@ -140,7 +144,7 @@ final class SessionCache implements _SessionCache {
                     continue;
                 }
                 if (list == null) {
-                    list = new ArrayList<>();
+                    list = _Collections.arrayList();
                 }
                 list.add(createCacheBlock(entry.getKey(), w));
             }
@@ -262,7 +266,7 @@ final class SessionCache implements _SessionCache {
         if (this.reactive) {
             map = new ConcurrentHashMap<>();
         } else {
-            map = new HashMap<>();
+            map = _Collections.hashMap();
         }
         return map;
     }
@@ -357,7 +361,7 @@ final class SessionCache implements _SessionCache {
             if (reactive) {
                 this.changedMap = new ConcurrentHashMap<>();
             } else {
-                this.changedMap = new HashMap<>();
+                this.changedMap = _Collections.hashMap();
             }
         }
 

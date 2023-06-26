@@ -27,6 +27,7 @@ import io.army.schema._TableResult;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.util.ArrayUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -279,7 +280,7 @@ abstract class ArmyParser implements DialectParser {
         final DdlParser ddlDialect;
         ddlDialect = createDdlDialect();
 
-        final List<String> ddlList = new ArrayList<>();
+        final List<String> ddlList = _Collections.arrayList();
         final List<TableMeta<?>> dropTableList = schemaResult.dropTableList();
         if (dropTableList.size() > 0) {
             ddlDialect.dropTable(dropTableList, ddlList);
@@ -1327,7 +1328,7 @@ abstract class ArmyParser implements DialectParser {
         }
 
         //store SingleTableMeta alias
-        final Map<String, Boolean> aliasMap = new HashMap<>();
+        final Map<String, Boolean> aliasMap = _Collections.hashMap();
 
         //1. append SET key word
         final StringBuilder sqlBuilder = context.sqlBuilder();

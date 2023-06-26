@@ -1843,7 +1843,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         private JsonTableColumnsClause<R> onAddColumn(final JsonTableColumn column) {
             List<JsonTableColumn> columnList = this.columnList;
             if (columnList == null) {
-                columnList = new ArrayList<>();
+                columnList = _Collections.arrayList();
                 this.columnList = columnList;
             } else if (!(columnList instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -2044,9 +2044,9 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         private final Function<DerivedTable, R> function;
 
-        private List<_Selection> selectionList = new ArrayList<>();
+        private List<_Selection> selectionList = _Collections.arrayList();
 
-        private Map<String, Selection> selectionMap = new HashMap<>();
+        private Map<String, Selection> selectionMap = _Collections.hashMap();
 
         private List<String> columnAliasList;
 

@@ -227,7 +227,7 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
     @Override
     public final IPredicate ifOr(Consumer<Consumer<IPredicate>> consumer) {
-        final List<IPredicate> list = new ArrayList<>();
+        final List<IPredicate> list = _Collections.arrayList();
         consumer.accept(list::add);
         final IPredicate predicate;
         switch (list.size()) {

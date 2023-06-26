@@ -7,9 +7,9 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -145,7 +145,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
                 }
                 List<SQLField> conditionFieldList = this.conditionFieldList;
                 if (conditionFieldList == null) {
-                    conditionFieldList = new ArrayList<>();
+                    conditionFieldList = _Collections.arrayList();
                     this.conditionFieldList = conditionFieldList;
                 }
                 conditionFieldList.add(dataField);

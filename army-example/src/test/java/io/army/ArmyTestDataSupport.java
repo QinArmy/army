@@ -6,6 +6,7 @@ import io.army.example.pill.domain.PillUser;
 import io.army.example.pill.struct.IdentityType;
 import io.army.example.pill.struct.PillUserType;
 import io.army.util.ArrayUtils;
+import io.army.util._Collections;
 import io.army.util._StringUtils;
 
 import java.math.BigDecimal;
@@ -13,7 +14,6 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -128,7 +128,7 @@ public abstract class ArmyTestDataSupport {
 
     protected final List<ChinaRegion<?>> createReginList() {
         final Random random = ThreadLocalRandom.current();
-        final List<ChinaRegion<?>> list = new ArrayList<>();
+        final List<ChinaRegion<?>> list = _Collections.arrayList();
         ChinaRegion<?> c;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
@@ -152,7 +152,7 @@ public abstract class ArmyTestDataSupport {
 
     protected final List<ChinaCity> createCityList() {
         final Random random = ThreadLocalRandom.current();
-        final List<ChinaCity> list = new ArrayList<>();
+        final List<ChinaCity> list = _Collections.arrayList();
         ChinaCity c;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
@@ -178,7 +178,7 @@ public abstract class ArmyTestDataSupport {
 
     protected final List<ChinaProvince> createProvinceList() {
         final Random random = ThreadLocalRandom.current();
-        final List<ChinaProvince> list = new ArrayList<>();
+        final List<ChinaProvince> list = _Collections.arrayList();
         ChinaProvince c;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
@@ -224,7 +224,7 @@ public abstract class ArmyTestDataSupport {
 
 
     protected final List<PillPerson> createPersonList() {
-        final List<PillPerson> list = new ArrayList<>();
+        final List<PillPerson> list = _Collections.arrayList();
         PillPerson u;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
@@ -249,7 +249,7 @@ public abstract class ArmyTestDataSupport {
 
 
     protected final List<PillUser<?>> createUserList() {
-        final List<PillUser<?>> list = new ArrayList<>();
+        final List<PillUser<?>> list = _Collections.arrayList();
         PillUser<?> u;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();
@@ -273,7 +273,7 @@ public abstract class ArmyTestDataSupport {
 
 
     protected final List<BankUser<?>> createBankUserList() {
-        final List<BankUser<?>> list = new ArrayList<>();
+        final List<BankUser<?>> list = _Collections.arrayList();
         BankUser<?> u;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();

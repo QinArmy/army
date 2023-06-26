@@ -55,5 +55,19 @@ public abstract class _ClassUtils {
         return clazz;
     }
 
+    @Nullable
+    public static Class<?> tryLoadClass(final String className, @Nullable ClassLoader classLoader) {
+        if (classLoader == null) {
+            classLoader = Thread.currentThread().getContextClassLoader();
+        }
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(className, true, classLoader);
+        } catch (ClassNotFoundException e) {
+            clazz = null;
+        }
+        return clazz;
+    }
+
 
 }

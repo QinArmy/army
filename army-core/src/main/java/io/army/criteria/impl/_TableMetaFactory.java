@@ -5,6 +5,7 @@ import io.army.lang.Nullable;
 import io.army.meta.*;
 import io.army.modelgen.ArmyMetaModelDomainProcessor;
 import io.army.modelgen._MetaBridge;
+import io.army.util._Collections;
 import io.army.util._StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -60,7 +61,7 @@ public abstract class _TableMetaFactory {
             , final List<String> basePackages, @Nullable final ClassLoader classLoader) throws TableMetaLoadException {
         URL url = null;
         try {
-            final Map<Class<?>, TableMeta<?>> tableMetaMap = new HashMap<>();
+            final Map<Class<?>, TableMeta<?>> tableMetaMap = _Collections.hashMap();
             final String jarProtocol = "jar", fileProtocol = "file";
             for (String basePackage : basePackages) {
                 if (!_StringUtils.hasText(basePackage)) {

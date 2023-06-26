@@ -689,7 +689,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         window.endWindowClause();
         List<_Window> list = this.windowList;
         if (list == null) {
-            list = new ArrayList<>();
+            list = _Collections.arrayList();
             this.windowList = list;
         } else if (!(list instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);

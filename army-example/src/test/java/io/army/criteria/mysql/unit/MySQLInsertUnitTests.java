@@ -6,12 +6,16 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
@@ -109,7 +113,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -202,7 +206,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -369,7 +373,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -406,7 +410,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -545,7 +549,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -709,7 +713,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -839,7 +843,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -889,7 +893,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -1008,7 +1012,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -1109,7 +1113,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -1204,7 +1208,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -1264,7 +1268,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };
@@ -1359,7 +1363,7 @@ public class MySQLInsertUnitTests extends MySQLUnitTests {
     public void queryInsert80Parent() {
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };

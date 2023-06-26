@@ -4,11 +4,11 @@ import io.army.criteria.DeleteStatement;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaProvince_;
 import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static io.army.criteria.impl.SQLs.AND;
@@ -22,7 +22,7 @@ public class DomainDeleteUnitTests extends StandardUnitTests {
 
     @Test
     public void deleteParent() {
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         map.put("firstId", (byte) 1);
         map.put("secondId", "3");
 

@@ -9,7 +9,10 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlParser {
 
@@ -201,7 +204,7 @@ public abstract class _DdlParser<P extends _ArmyDialectParser> implements DdlPar
                 case PostgreSQL: {
                     if (result.containComment()) {
                         if (commentFieldList == null) {
-                            commentFieldList = new ArrayList<>();
+                            commentFieldList = _Collections.arrayList();
                         }
                         commentFieldList.add(field);
                     }

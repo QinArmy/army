@@ -5,9 +5,14 @@ import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.session.AllowMode;
 import io.army.session.DdlMode;
+import io.army.util._ClassUtils;
 import io.army.util._Collections;
+import io.army.util._StringUtils;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 public class ArmyKey<T> {
@@ -86,10 +91,66 @@ public class ArmyKey<T> {
 
     @Override
     public final String toString() {
-        return String.format("[%s name:%s,javaType:%s,default:%s]"
-                , this.getClass().getName(), this.name
-                , this.javaType.getName(), this.defaultValue);
+        return _StringUtils.builder()
+                .append(this.getClass().getName())
+                .append("[ name : ")
+                .append(this.name)
+                .append(" , javaType : ")
+                .append(this.javaType.getName())
+                .append(" , default : ")
+                .append(this.defaultValue)
+                .append(" ]")
+                .toString();
     }
+
+    public static List<ArmyKey<?>> keyList() {
+        return ArmyKeyListHolder.ARMY_KEY_LIST;
+    }
+
+
+    private static void addAllKey(final Class<?> keyClass, final List<ArmyKey<?>> list)
+            throws IllegalAccessException {
+        int modifier;
+        for (Field field : keyClass.getDeclaredFields()) {
+            modifier = field.getModifiers();
+            if (ArmyKey.class.isAssignableFrom(field.getType())
+                    && Modifier.isPublic(modifier)
+                    && Modifier.isStatic(modifier)
+                    && Modifier.isFinal(modifier)) {
+                list.add((ArmyKey<?>) field.get(null));
+            }
+
+        }
+    }
+
+    private static final class ArmyKeyListHolder {
+
+        private static final List<ArmyKey<?>> ARMY_KEY_LIST;
+
+        static {
+            final Class<?> syncKeyClass, reactiveKeyClass;
+            syncKeyClass = _ClassUtils.tryLoadClass("io.army.env.SyncKey", ArmyKey.class.getClassLoader());
+            reactiveKeyClass = _ClassUtils.tryLoadClass("io.army.env.ReactiveKey", ArmyKey.class.getClassLoader());
+
+
+            final List<ArmyKey<?>> list = _Collections.arrayList(ArmyKey.INSTANCE_MAP.size());
+
+            try {
+                addAllKey(ArmyKey.class, list);
+                if (syncKeyClass != null) {
+                    addAllKey(syncKeyClass, list);
+                }
+                if (reactiveKeyClass != null) {
+                    addAllKey(reactiveKeyClass, list);
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            ARMY_KEY_LIST = _Collections.unmodifiableList(list);
+        }
+
+
+    }//ArmyKeyListHolder
 
 
 }

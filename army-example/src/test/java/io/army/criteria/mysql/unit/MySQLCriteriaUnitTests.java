@@ -9,6 +9,7 @@ import io.army.example.bank.domain.account.BankAccount_;
 import io.army.example.bank.domain.user.*;
 import io.army.example.common.Criteria;
 import io.army.example.pill.domain.PillUser_;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -47,11 +48,11 @@ public class MySQLCriteriaUnitTests {
 
     @Test
     public void childSingleUpdate() {
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         map.put("rowCount", 5);
         map.put("parentId", "1");
         Supplier<List<Hint>> supplier = () -> {
-            List<Hint> list = new ArrayList<>();
+            List<Hint> list = _Collections.arrayList();
             list.add(MySQLs.qbName("qb1"));
             list.add(MySQLs.orderIndex("qb1", "t", Collections.singletonList("uni_name_region_type")));
             return list;
@@ -85,16 +86,16 @@ public class MySQLCriteriaUnitTests {
     @Test
     public void simpleBatchSingleUpdate() {
 
-        final List<Map<String, Object>> paramList = new ArrayList<>(3);
+        final List<Map<String, Object>> paramList = _Collections.arrayList(3);
         Map<String, Object> paramMap;
 
-        paramMap = new HashMap<>();
+        paramMap = _Collections.hashMap();
         paramMap.put(ChinaRegion_.ID, 3);
         paramMap.put(ChinaRegion_.NAME, "五指礁");
         paramMap.put(ChinaRegion_.REGION_GDP, 100);
         paramList.add(paramMap);
 
-        paramMap = new HashMap<>();
+        paramMap = _Collections.hashMap();
         paramMap.put(ChinaRegion_.ID, 8L);
         paramMap.put(ChinaRegion_.NAME, "荒海");
         paramMap.put(ChinaRegion_.REGION_GDP, new BigDecimal("324342"));
@@ -143,7 +144,7 @@ public class MySQLCriteriaUnitTests {
         };
 
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         final LocalDateTime now = LocalDateTime.now();
         map.put("startTime", now.minusDays(15));
         map.put("endTIme", now.plusDays(6));
@@ -169,16 +170,16 @@ public class MySQLCriteriaUnitTests {
                 return hintList;
             };
 
-            final List<Map<String, Object>> paramList = new ArrayList<>();
+            final List<Map<String, Object>> paramList = _Collections.arrayList();
             Map<String, Object> paramMap;
 
-            paramMap = new HashMap<>();
+            paramMap = _Collections.hashMap();
             paramMap.put("name", "水城");
             paramMap.put("regionGdp", "39999.00");
 
             paramList.add(paramMap);
 
-            paramMap = new HashMap<>();
+            paramMap = _Collections.hashMap();
             paramMap.put("name", "凉都");
             paramMap.put("regionGdp", new BigDecimal("99999.00"));
 
@@ -203,7 +204,7 @@ public class MySQLCriteriaUnitTests {
         }; // mock dao method end
 
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         final LocalDateTime now = LocalDateTime.now();
         map.put("startTime", now.minusDays(15));
         map.put("endTIme", now.plusDays(6));
@@ -251,7 +252,7 @@ public class MySQLCriteriaUnitTests {
         };
 
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         final LocalDateTime now = LocalDateTime.now();
         map.put("startTime", now.minusDays(15));
         map.put("endTIme", now.plusDays(6));
@@ -276,7 +277,7 @@ public class MySQLCriteriaUnitTests {
                 return hintList;
             };
 
-            final List<Map<String, Object>> paramList = new ArrayList<>();
+            final List<Map<String, Object>> paramList = _Collections.arrayList();
             paramList.add(Collections.singletonMap(ChinaCity_.ID, "33"));
             paramList.add(Collections.singletonMap(ChinaCity_.ID, (byte) 22));
             paramList.add(Collections.singletonMap(ChinaCity_.ID, (short) 44));
@@ -304,7 +305,7 @@ public class MySQLCriteriaUnitTests {
         };
 
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         final LocalDateTime now = LocalDateTime.now();
         map.put("startTime", now.minusDays(15));
         map.put("endTIme", now.plusDays(6));
@@ -352,7 +353,7 @@ public class MySQLCriteriaUnitTests {
 
         };//mock dao method end
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         final LocalDateTime now = LocalDateTime.now();
 
         map.put("amount", "888888.88");
@@ -395,7 +396,7 @@ public class MySQLCriteriaUnitTests {
 
         };//mock dao method end
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         final LocalDateTime now = LocalDateTime.now();
 
         map.put("amount", "888888.88");
@@ -437,7 +438,7 @@ public class MySQLCriteriaUnitTests {
 
         };//mock dao method end
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         final LocalDateTime now = LocalDateTime.now();
 
         map.put("amount", "888888.88");
@@ -466,15 +467,15 @@ public class MySQLCriteriaUnitTests {
                 return hintList;
             };
 
-            final List<Map<String, Object>> paramList = new ArrayList<>();
+            final List<Map<String, Object>> paramList = _Collections.arrayList();
             Map<String, Object> paramMap;
 
-            paramMap = new HashMap<>();
+            paramMap = _Collections.hashMap();
             paramMap.put("nickName", "索隆1");
             paramMap.put("balance", "666888.00");
             paramList.add(paramMap);
 
-            paramMap = new HashMap<>();
+            paramMap = _Collections.hashMap();
             paramMap.put("nickName", "索隆2");
             paramMap.put("balance", new BigDecimal("888666.00"));
             paramList.add(paramMap);
@@ -503,7 +504,7 @@ public class MySQLCriteriaUnitTests {
 
         };//mock dao method end
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
         final LocalDateTime now = LocalDateTime.now();
 
         map.put("amount", "888888.88");
@@ -545,7 +546,7 @@ public class MySQLCriteriaUnitTests {
 
 
         final LocalDateTime now = LocalDateTime.now();
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
 
 
         map.put("ids", Arrays.asList(11, 22, 33, 44, 55, 66, 77));
@@ -581,7 +582,7 @@ public class MySQLCriteriaUnitTests {
 
 
         final LocalDateTime now = LocalDateTime.now();
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = _Collections.hashMap();
 
 
         map.put("ids", Arrays.asList(11, 22, 33, 44, 55, 66, 77));

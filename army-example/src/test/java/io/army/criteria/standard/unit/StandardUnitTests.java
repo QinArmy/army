@@ -5,17 +5,17 @@ import io.army.criteria.Visible;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.example.bank.domain.user.ChinaProvince;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 abstract class StandardUnitTests {
 
 
     final List<ChinaProvince> createProvinceList() {
-        List<ChinaProvince> domainList = new ArrayList<>();
+        List<ChinaProvince> domainList = _Collections.arrayList();
         ChinaProvince p;
         for (int i = 0; i < 2; i++) {
             p = new ChinaProvince();

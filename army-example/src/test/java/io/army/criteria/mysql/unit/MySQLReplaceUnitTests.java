@@ -8,11 +8,11 @@ import io.army.criteria.impl.MySQLs;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.BankUser_;
 import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
@@ -28,7 +28,7 @@ public class MySQLReplaceUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("userBlock"));
             return hintList;
         };
@@ -55,7 +55,7 @@ public class MySQLReplaceUnitTests extends MySQLUnitTests {
 
         final Supplier<List<Hint>> hintSupplier;
         hintSupplier = () -> {
-            List<Hint> hintList = new ArrayList<>();
+            List<Hint> hintList = _Collections.arrayList();
             hintList.add(MySQLs.qbName("regionBlock"));
             return hintList;
         };

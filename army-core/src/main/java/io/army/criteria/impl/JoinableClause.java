@@ -6,6 +6,7 @@ import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
@@ -779,7 +780,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
         private final BiFunction<_JoinType, _NestedItems, I> function;
 
-        private List<_TabularBlock> blockList = new ArrayList<>();
+        private List<_TabularBlock> blockList = _Collections.arrayList();
 
         NestedLeftParenClause(CriteriaContext context, _JoinType joinType,
                               BiFunction<_JoinType, _NestedItems, I> function) {
@@ -997,7 +998,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
         @Override
         public final OR on(Consumer<Consumer<IPredicate>> consumer) {
-            final List<IPredicate> list = new ArrayList<>();
+            final List<IPredicate> list = _Collections.arrayList();
             consumer.accept(list::add);
             this.onPredicateList = CriteriaUtils.asPredicateList(this.context, list);
             return (OR) this;

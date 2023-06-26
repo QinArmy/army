@@ -4,8 +4,8 @@ import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.lang.Nullable;
+import io.army.util._Collections;
 
-import java.util.ArrayList;
 import java.util.List;
 
 final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdateContext {
@@ -60,7 +60,7 @@ final class SingleUpdateContext extends SingleDmlContext implements _SingleUpdat
     void onAddConditionField(final TableField field) {
         List<TableField> list = this.conditionFieldList;
         if (list == null) {
-            list = new ArrayList<>();
+            list = _Collections.arrayList();
             this.conditionFieldList = list;
         }
         list.add(field);

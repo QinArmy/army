@@ -432,7 +432,7 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
 
             List<_IndexHint> indexHintList = this.indexHintList;
             if (indexHintList == null) {
-                indexHintList = new ArrayList<>();
+                indexHintList = _Collections.arrayList();
                 this.indexHintList = indexHintList;
             }
             indexHintList.add(indexHint);

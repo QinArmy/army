@@ -25,7 +25,7 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
 
     private List<_Expression> columnList;
 
-    private List<List<_Expression>> rowList = new ArrayList<>();
+    private List<List<_Expression>> rowList = _Collections.arrayList();
 
     private List<_Selection> selectionList;
 
@@ -384,7 +384,7 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
     private List<_Expression> onAddColumn(final @Nullable Expression expression) {
         List<_Expression> list = this.columnList;
         if (list == null) {
-            list = new ArrayList<>();
+            list = _Collections.arrayList();
             this.columnList = list;
         } else if (!(list instanceof ArrayList)) {
             throw ContextStack.castCriteriaApi(this.context);

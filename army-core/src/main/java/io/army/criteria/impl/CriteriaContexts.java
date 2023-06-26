@@ -1759,7 +1759,7 @@ abstract class CriteriaContexts {
             }
             Map<FieldMeta<?>, QualifiedField<?>> qualifiedFieldMap = this.qualifiedFieldMap;
             if (qualifiedFieldMap == null) {
-                qualifiedFieldMap = new HashMap<>();
+                qualifiedFieldMap = _Collections.hashMap();
                 this.qualifiedFieldMap = qualifiedFieldMap;
             } else if (!(qualifiedFieldMap instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this);
@@ -1777,7 +1777,7 @@ abstract class CriteriaContexts {
         public final Expression insertValueField(final FieldMeta<?> field, final Function<FieldMeta<?>, Expression> function) {
             Map<FieldMeta<?>, Expression> insertValueFieldMap = this.insertValueFieldMap;
             if (insertValueFieldMap == null) {
-                insertValueFieldMap = new HashMap<>();
+                insertValueFieldMap = _Collections.hashMap();
                 this.insertValueFieldMap = insertValueFieldMap;
             }
             return insertValueFieldMap.computeIfAbsent(field, function);
@@ -2814,7 +2814,7 @@ abstract class CriteriaContexts {
         public SimpleExpression refSelection(final String selectionAlias) {
             Map<String, ImmutableNameRefSelection> refSelectionMap = this.refSelectionMap;
             if (refSelectionMap == null) {
-                this.refSelectionMap = refSelectionMap = new HashMap<>();
+                this.refSelectionMap = refSelectionMap = _Collections.hashMap();
             }
             return refSelectionMap.computeIfAbsent(selectionAlias, this::createRefSelection);
         }

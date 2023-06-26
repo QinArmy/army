@@ -152,7 +152,7 @@ abstract class CriteriaUtils {
 
 
     static List<_SelectItem> selectionList(CriteriaContext context, Consumer<Returnings> consumer) {
-        final List<_SelectItem> list = new ArrayList<>();
+        final List<_SelectItem> list = _Collections.arrayList();
         consumer.accept(CriteriaSupports.returningBuilder(list::add));
         if (list.size() == 0) {
             throw CriteriaUtils.returningListIsEmpty(context);

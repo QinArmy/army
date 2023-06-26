@@ -4,9 +4,9 @@ import io.army.criteria.TabularItem;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -137,7 +137,7 @@ final class MultiTableContext implements _MultiTableContext {
     Map<String, String> getAliasToSafeAlias() {
         Map<String, String> aliasToSafeAlias = this.aliasToSafeAlias;
         if (aliasToSafeAlias == null) {
-            aliasToSafeAlias = new HashMap<>();
+            aliasToSafeAlias = _Collections.hashMap();
             this.aliasToSafeAlias = aliasToSafeAlias;
         }
         return aliasToSafeAlias;

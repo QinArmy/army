@@ -4,7 +4,6 @@ import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Collections;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -113,7 +112,7 @@ final class TableResultImpl implements _TableResult {
         public void appendNewColumn(FieldMeta<?> field) {
             List<FieldMeta<?>> fieldList = this.newFieldList;
             if (fieldList == null) {
-                fieldList = new ArrayList<>();
+                fieldList = _Collections.arrayList();
                 this.newFieldList = fieldList;
             }
             fieldList.add(field);
@@ -128,7 +127,7 @@ final class TableResultImpl implements _TableResult {
         public void appendFieldResult(_FieldResult fieldResult) {
             List<_FieldResult> fieldResultList = this.fieldResultList;
             if (fieldResultList == null) {
-                fieldResultList = new ArrayList<>();
+                fieldResultList = _Collections.arrayList();
                 this.fieldResultList = fieldResultList;
             }
             fieldResultList.add(fieldResult);
@@ -138,7 +137,7 @@ final class TableResultImpl implements _TableResult {
         public void appendNewIndex(String indexName) {
             List<String> newIndexList = this.newIndexList;
             if (newIndexList == null) {
-                newIndexList = new ArrayList<>();
+                newIndexList = _Collections.arrayList();
                 this.newIndexList = newIndexList;
             }
             newIndexList.add(indexName);
@@ -148,7 +147,7 @@ final class TableResultImpl implements _TableResult {
         public void appendChangeIndex(String indexName) {
             List<String> changeIndexList = this.changeIndexList;
             if (changeIndexList == null) {
-                changeIndexList = new ArrayList<>();
+                changeIndexList = _Collections.arrayList();
                 this.changeIndexList = changeIndexList;
             }
             changeIndexList.add(indexName);

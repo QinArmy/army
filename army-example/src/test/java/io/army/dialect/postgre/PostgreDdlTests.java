@@ -12,11 +12,11 @@ import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.schema._FieldResult;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PostgreDdlTests {
@@ -28,7 +28,7 @@ public class PostgreDdlTests {
     @Test
     public void createTable() {
 
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
         ddlParser.createTable(PostgreFullType_.T, sqlList);
 
         if (ddlParser.errorMsgList().size() > 0) {
@@ -40,13 +40,13 @@ public class PostgreDdlTests {
 
     @Test
     public void dropTable() {
-        final List<TableMeta<?>> tableList = new ArrayList<>();
+        final List<TableMeta<?>> tableList = _Collections.arrayList();
 
         tableList.add(PostgreFullType_.T);
         tableList.add(BankPerson_.T);
         tableList.add(BankAccount_.T);
 
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
 
         ddlParser.dropTable(tableList, sqlList);
 
@@ -59,9 +59,9 @@ public class PostgreDdlTests {
 
     @Test
     public void addColumn() {
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
 
-        final List<FieldMeta<?>> fieldList = new ArrayList<>();
+        final List<FieldMeta<?>> fieldList = _Collections.arrayList();
         for (FieldMeta<PostgreFullType> field : PostgreFullType_.T.fieldList()) {
             if (_MetaBridge.isReserved(field.fieldName())) {
                 continue;
@@ -84,7 +84,7 @@ public class PostgreDdlTests {
     @Test
     public void modifyColumn() {
 
-        final List<_FieldResult> resultList = new ArrayList<>();
+        final List<_FieldResult> resultList = _Collections.arrayList();
         _FieldResult result;
         for (FieldMeta<PostgreFullType> field : PostgreFullType_.T.fieldList()) {
             if (_MetaBridge.isReserved(field.fieldName())) {
@@ -102,7 +102,7 @@ public class PostgreDdlTests {
 
         }
 
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
 
         ddlParser.modifyColumn(resultList, sqlList);
         if (ddlParser.errorMsgList().size() > 0) {
@@ -115,12 +115,12 @@ public class PostgreDdlTests {
 
     @Test
     public void createIndex() {
-        final List<String> indexNameList = new ArrayList<>();
+        final List<String> indexNameList = _Collections.arrayList();
         for (IndexMeta<PostgreFullType> index : PostgreFullType_.T.indexList()) {
             indexNameList.add(index.name());
         }
 
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
 
         ddlParser.createIndex(PostgreFullType_.T, indexNameList, sqlList);
 
@@ -134,7 +134,7 @@ public class PostgreDdlTests {
 
     @Test
     public void dropIndex() {
-        final List<String> indexNameList = new ArrayList<>();
+        final List<String> indexNameList = _Collections.arrayList();
         for (IndexMeta<PostgreFullType> index : PostgreFullType_.T.indexList()) {
             if (index.isPrimaryKey()) {
                 continue;
@@ -142,7 +142,7 @@ public class PostgreDdlTests {
             indexNameList.add(index.name());
         }
 
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
 
         ddlParser.dropIndex(PostgreFullType_.T, indexNameList, sqlList);
 
@@ -155,7 +155,7 @@ public class PostgreDdlTests {
 
     @Test
     public void changeIndex() {
-        final List<String> indexNameList = new ArrayList<>();
+        final List<String> indexNameList = _Collections.arrayList();
         for (IndexMeta<PostgreFullType> index : PostgreFullType_.T.indexList()) {
             if (index.isPrimaryKey()) {
                 continue;
@@ -163,7 +163,7 @@ public class PostgreDdlTests {
             indexNameList.add(index.name());
         }
 
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
 
         ddlParser.changeIndex(PostgreFullType_.T, indexNameList, sqlList);
 

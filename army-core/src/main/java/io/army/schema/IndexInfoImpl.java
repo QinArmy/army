@@ -1,8 +1,8 @@
 package io.army.schema;
 
 import io.army.lang.Nullable;
+import io.army.util._Collections;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -109,13 +109,11 @@ final class IndexInfoImpl implements _IndexInfo {
         public Builder appendColumn(String columnName, @Nullable Boolean asc) {
             List<String> columnList = this.columnList;
             if (columnList == null) {
-                columnList = new ArrayList<>();
-                this.columnList = columnList;
+                this.columnList = columnList = _Collections.arrayList();
             }
             List<Boolean> ascList = this.ascList;
             if (ascList == null) {
-                ascList = new ArrayList<>();
-                this.ascList = ascList;
+                this.ascList = ascList = _Collections.arrayList();
             }
 
             columnList.add(columnName);

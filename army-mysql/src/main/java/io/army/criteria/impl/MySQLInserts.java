@@ -651,7 +651,7 @@ abstract class MySQLInserts extends InsertSupports {
             if (this.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            final List<_ItemPair> list = new ArrayList<>();
+            final List<_ItemPair> list = _Collections.arrayList();
             consumer.accept(CriteriaSupports.simpleFieldItemPairs(this.context, this.insertTable, list::add));
             if (list.size() == 0) {
                 throw CriteriaUtils.conflictClauseIsEmpty(this.context);
@@ -665,7 +665,7 @@ abstract class MySQLInserts extends InsertSupports {
             if (this.conflictPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            final List<_ItemPair> list = new ArrayList<>();
+            final List<_ItemPair> list = _Collections.arrayList();
             consumer.accept(CriteriaSupports.simpleFieldItemPairs(this.context, this.insertTable, list::add));
 
             if (list.size() > 0) {

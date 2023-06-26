@@ -8,11 +8,15 @@ import io.army.meta.FieldMeta;
 import io.army.meta.MetaException;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 public class MySQLDdlTests {
 
@@ -20,7 +24,7 @@ public class MySQLDdlTests {
 
     @Test
     public void createTable() {
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
         MySQLDdlParser ddl;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
@@ -50,7 +54,7 @@ public class MySQLDdlTests {
     @SuppressWarnings("unchecked")
     @Test
     public void addColumn() {
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
         MySQLDdlParser ddl;
         final TableMeta<?> table = PillUser_.T;
         for (MySQLDialect dialect : MySQLDialect.values()) {
@@ -78,7 +82,7 @@ public class MySQLDdlTests {
 
     @Test
     public void modifyColumn() {
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
         MySQLDdlParser ddl;
         for (MySQLDialect dialect : MySQLDialect.values()) {
             if (dialect.database() != Database.MySQL) {
@@ -86,7 +90,7 @@ public class MySQLDdlTests {
             }
             ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
 
-            List<_FieldResult> resultList = new ArrayList<>();
+            List<_FieldResult> resultList = _Collections.arrayList();
             resultList.add(new MockFieldResult(PillUser_.nickName, false, true, false, false));
 
             resultList.add(new MockFieldResult(PillUser_.identityId, true, true, false, true));
@@ -112,7 +116,7 @@ public class MySQLDdlTests {
 
     @Test
     public void createIndex() {
-        final List<String> sqlList = new ArrayList<>();
+        final List<String> sqlList = _Collections.arrayList();
         MySQLDdlParser ddl;
         final TableMeta<?> table = PillUser_.T;
         for (MySQLDialect dialect : MySQLDialect.values()) {
@@ -148,7 +152,7 @@ public class MySQLDdlTests {
             }
             ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
 
-            final List<String> sqlList = new ArrayList<>();
+            final List<String> sqlList = _Collections.arrayList();
             sqlMap.put(dialect, sqlList);
             ddl.changeIndex(table, Collections.singletonList("idx_identity_id"), sqlList);
 
@@ -184,7 +188,7 @@ public class MySQLDdlTests {
             }
             ddl = new MySQLDdlParser((MySQLParser) _MockDialects.from(dialect));
 
-            final List<String> sqlList = new ArrayList<>();
+            final List<String> sqlList = _Collections.arrayList();
             sqlMap.put(dialect, sqlList);
             ddl.dropIndex(table, Collections.singletonList("idx_identity_id"), sqlList);
 

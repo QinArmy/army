@@ -466,7 +466,7 @@ abstract class MySQLLoads {
             }
             List<_Expression> list = this.columnExpList;
             if (list == null) {
-                list = new ArrayList<>();
+                list = _Collections.arrayList();
                 this.columnExpList = list;
             } else if (!(list instanceof ArrayList)) {
                 throw ContextStack.castCriteriaApi(this.context);

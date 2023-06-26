@@ -8,6 +8,7 @@ import io.army.mapping.optional.OffsetTimeType;
 import io.army.meta.MetaException;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;
+import io.army.util._Collections;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -21,7 +22,6 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.time.*;
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -189,7 +189,7 @@ public abstract class _MappingFactory {
 
 
     private static Map<Class<?>, Function<Class<?>, MappingType>> createDefaultMappingMap() {
-        final Map<Class<?>, Function<Class<?>, MappingType>> map = new HashMap<>();
+        final Map<Class<?>, Function<Class<?>, MappingType>> map = _Collections.hashMap();
 
         map.put(Byte.class, ByteType::from);
         map.put(Short.class, ShortType::from);

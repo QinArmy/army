@@ -7,13 +7,13 @@ import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.*;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class PostgreInsertUnitTests extends PostgreUnitTests {
@@ -217,7 +217,7 @@ public class PostgreInsertUnitTests extends PostgreUnitTests {
 
 
     private List<BankPerson> createBankPersonList() {
-        final List<BankPerson> list = new ArrayList<>();
+        final List<BankPerson> list = _Collections.arrayList();
         BankPerson u;
         final int rowSize = 3;
         final LocalDateTime now = LocalDateTime.now();

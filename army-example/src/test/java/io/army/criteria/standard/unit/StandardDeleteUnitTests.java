@@ -4,12 +4,12 @@ import io.army.criteria.BatchDelete;
 import io.army.criteria.Delete;
 import io.army.criteria.impl.SQLs;
 import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class StandardDeleteUnitTests extends StandardUnitTests {
 
     @Test
     public void batchSingleDelete() {
-        final List<Map<String, String>> paramList = new ArrayList<>();
+        final List<Map<String, String>> paramList = _Collections.arrayList();
 
         paramList.add(Collections.singletonMap(ChinaRegion_.NAME, "马鱼腮角"));
         paramList.add(Collections.singletonMap(ChinaRegion_.NAME, "五指礁"));

@@ -109,7 +109,7 @@ final class TableContext {
                 continue;
             }
             if (childMap == null) {
-                childMap = new HashMap<>();
+                childMap = _Collections.hashMap();
             }
             childMap.putIfAbsent((ChildTableMeta<?>) table, Boolean.TRUE);
         }
@@ -158,7 +158,7 @@ final class TableContext {
             return childMap;
         }
         if (childMap == null) {
-            childMap = new HashMap<>();
+            childMap = _Collections.hashMap();
         }
         childMap.putIfAbsent((ChildTableMeta<?>) table, Boolean.TRUE);
         return childMap;
@@ -397,12 +397,12 @@ final class TableContext {
             this.aliasToTable = new HashMap<>((int) (blockSize / 0.75F));
             this.tableToSafeAlias = new HashMap<>((int) (blockSize / 0.75F));
 
-            this.selfJoinMap = new HashMap<>();
+            this.selfJoinMap = _Collections.hashMap();
             if (childMap == null) {
                 this.childAliasToParentAlias = null;
                 this.childMap = Collections.emptyMap();
             } else {
-                this.childAliasToParentAlias = new HashMap<>();
+                this.childAliasToParentAlias = _Collections.hashMap();
                 this.childMap = _Collections.unmodifiableMap(childMap);
             }
 
