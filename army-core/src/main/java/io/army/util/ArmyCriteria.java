@@ -13,7 +13,7 @@ import java.util.List;
 
 public abstract class ArmyCriteria {
 
-    protected ArmyCriteria() {
+    private ArmyCriteria() {
         throw new UnsupportedOperationException();
     }
 
@@ -61,8 +61,18 @@ public abstract class ArmyCriteria {
         return stmt;
     }
 
+    /**
+     * @see TableMeta#fieldList()
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> List<FieldMeta<?>> fieldListOf(TableMeta<T> table) {
+        final List<?> fieldList;
+        fieldList = table.fieldList();
+        return (List<FieldMeta<?>>) fieldList;
+    }
 
-    protected static <P, T extends P> Insert childInsertStatement(final ChildTableMeta<T> table, final T domain) {
+
+    private static <P, T extends P> Insert childInsertStatement(final ChildTableMeta<T> table, final T domain) {
         final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) table;
 
         return SQLs.singleInsert()
@@ -77,8 +87,9 @@ public abstract class ArmyCriteria {
                 .asInsert();
     }
 
-    protected static <P, T extends P> Insert childBatchInsertStatement(final ChildTableMeta<T> table,
-                                                                       final List<T> domainList) {
+
+    private static <P, T extends P> Insert childBatchInsertStatement(final ChildTableMeta<T> table,
+                                                                     final List<T> domainList) {
         final ComplexTableMeta<P, T> child = (ComplexTableMeta<P, T>) table;
 
         return SQLs.singleInsert()

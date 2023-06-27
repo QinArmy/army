@@ -4,7 +4,10 @@ import io.army.criteria.impl.SQLs;
 import io.army.function.*;
 import io.army.mapping.BooleanType;
 
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 
 /**

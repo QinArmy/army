@@ -4,17 +4,16 @@ package io.army.session.suite.postgre;
 import com.alibaba.fastjson2.JSON;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
+import io.army.criteria.Select;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
-import io.army.example.bank.domain.user.ChinaProvince;
-import io.army.example.bank.domain.user.ChinaProvince_;
-import io.army.example.bank.domain.user.ChinaRegion;
-import io.army.example.bank.domain.user.ChinaRegion_;
+import io.army.example.bank.domain.user.*;
 import io.army.sync.LocalSession;
 import io.army.sync.LocalTransaction;
 import io.army.tx.Isolation;
+import io.army.util.Groups;
 import io.army.util.ImmutableArrayList;
 import io.army.util.ImmutableHashMap;
 import org.slf4j.Logger;
@@ -27,12 +26,15 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static io.army.criteria.impl.SQLs.AS;
+import static io.army.criteria.impl.SQLs.PERIOD;
+
 @Test(dataProvider = "getSession")
 public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreInsertSuiteTests.class);
 
-    @Test
+    @Test(groups = Groups.DOMAIN_INSERT)
     public void domainInsertParent(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -59,7 +61,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         releaseSyncSession(session);
     }
 
-    @Test
+    @Test(groups = Groups.DOMAIN_INSERT)
     public void returningDomainInsertParent(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -90,7 +92,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     }
 
-    @Test
+    @Test(groups = Groups.DOMAIN_INSERT)
     public void domainInsertParentWithDoNothing(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -120,7 +122,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         releaseSyncSession(session);
     }
 
-    @Test
+    @Test(groups = Groups.DOMAIN_INSERT)
     public void domainInsertParentWithUpdateSet(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -171,7 +173,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     }
 
-    @Test
+    @Test(groups = Groups.DOMAIN_INSERT)
     public void domainInsertChildWithTowStmtUpdateMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -214,7 +216,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     }
 
-    @Test
+    @Test(groups = Groups.DOMAIN_INSERT)
     public void returningDomainInsertChildWithTowStmtQueryMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -276,7 +278,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     }
 
-    @Test
+    @Test(groups = Groups.DOMAIN_INSERT)
     public void returningDomainInsertDiffMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -340,7 +342,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
 
-    @Test
+    @Test(groups = Groups.DOMAIN_INSERT)
     public void returningDomainInsertChildMapWithTowStmtQueryMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -405,7 +407,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
 
-    @Test
+    @Test(groups = Groups.DOMAIN_INSERT)
     public void returningDomainInsertChildMapDiffMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -471,7 +473,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     /*-------------------below values syntax tests -------------------*/
 
-    @Test
+    @Test(groups = Groups.VALUES_INSERT)
     public void staticValuesInsertParent(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
@@ -500,7 +502,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     }
 
-    @Test
+    @Test(groups = Groups.VALUES_INSERT)
     public void staticValuesReturningInsertParent(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
@@ -538,7 +540,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     }
 
-    @Test
+    @Test(groups = Groups.VALUES_INSERT)
     public void valuesInsertParentWithDoNothing(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -571,7 +573,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         releaseSyncSession(session);
     }
 
-    @Test
+    @Test(groups = Groups.VALUES_INSERT)
     public void valuesInsertParentWithUpdateSet(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -644,7 +646,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
 
-    @Test
+    @Test(groups = Groups.VALUES_INSERT)
     public void valuesInsertChildWithTowStmtUpdateMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -699,7 +701,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
 
-    @Test
+    @Test(groups = Groups.VALUES_INSERT)
     public void returningValuesInsertChildWithTowStmtQueryMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -773,7 +775,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     }
 
-    @Test
+    @Test(groups = Groups.VALUES_INSERT)
     public void returningValuesInsertDiffMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -848,7 +850,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
 
-    @Test
+    @Test(groups = Groups.VALUES_INSERT)
     public void returningMapValuesInsertChildWithTowStmtQueryMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -926,7 +928,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
 
-    @Test
+    @Test(groups = Groups.VALUES_INSERT)
     public void returningMapValuesInsertDiffMode(final LocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -964,6 +966,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         final LocalTransaction tx;
         tx = session.builder()
+                .name(session.name())
                 .isolation(Isolation.READ_COMMITTED)
                 .build();
 
@@ -994,6 +997,149 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             LOG.debug("resultList:\n{}", JSON.toJSONString(resultList));
         } catch (Exception e) {
             LOG.error("insert child error", e);
+            tx.rollback();
+            throw e;
+        } finally {
+            releaseSyncSession(session);
+        }
+
+    }
+
+    /*-------------------below query insert syntax-------------------*/
+
+    @Test(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
+    public void queryInsertParent(final LocalSession session) {
+        assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final Insert stmt;
+        stmt = Postgres.singleInsert()
+                .migration()
+                .insertInto(HistoryChinaRegion_.T)
+                .space()
+                .select("c", PERIOD, ChinaRegion_.T)
+                .from(ChinaRegion_.T, AS, "c")
+                .where(ChinaRegion_.regionType::equal, SQLs::literal, RegionType.NONE)
+                .and(SQLs::notExists, Postgres.subQuery()
+                        .select(HistoryChinaRegion_.id)
+                        .from(HistoryChinaRegion_.T, AS, "h")
+                        .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
+                        ::asQuery
+                )
+                .limit(SQLs::literal, 2)
+                .asQuery()
+                .asInsert();
+
+        final long rows;
+        rows = session.update(stmt);
+        LOG.debug("query insert rows : {}", rows);
+        Assert.assertTrue(rows > 0);
+    }
+
+    @Test(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
+    public void returningQueryInsertParent(final LocalSession session) {
+        assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .migration()
+                .insertInto(HistoryChinaRegion_.T)
+                .space()
+                .select("c", PERIOD, ChinaRegion_.T)
+                .from(ChinaRegion_.T, AS, "c")
+                .where(ChinaRegion_.regionType::equal, SQLs::literal, RegionType.NONE)
+                .and(SQLs::notExists, Postgres.subQuery()
+                        .select(HistoryChinaRegion_.id)
+                        .from(HistoryChinaRegion_.T, AS, "h")
+                        .where(HistoryChinaRegion_.id::equal, ChinaRegion_.id)
+                        ::asQuery
+                )
+                .limit(SQLs::literal, 2)
+                .asQuery()
+                .returningAll()
+                .asReturningInsert();
+
+        final List<ChinaRegion<?>> resultList;
+        resultList = session.query(stmt, ChinaRegion_.CLASS, ImmutableArrayList::arrayList);
+
+        Assert.assertFalse(resultList instanceof ImmutableArrayList);
+        Assert.assertTrue(resultList.size() > 0);
+        LOG.debug("query insert rows : {}\n resultList : {}", resultList.size(), JSON.toJSONString(resultList));
+
+
+    }
+
+    @Test(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
+    public void returningQueryInsertChildWithTwoStmtQueryMode(final LocalSession session) {
+        //TODO consider child table query insert two stmt mode reasonable ？for example firebird
+        assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final int maxRowCount = 10;
+
+        final Select select;
+        select = Postgres.query()
+                .select(ChinaRegion_.id)
+                .from(ChinaProvince_.T, AS, "p")
+                .join(ChinaRegion_.T, AS, "c").on(ChinaProvince_.id::equal, ChinaRegion_.id)
+                .where(SQLs::notExists, Postgres.subQuery()
+                        .select(HistoryChinaProvince_.id)
+                        .from(HistoryChinaProvince_.T, AS, "h")
+                        .join(HistoryChinaRegion_.T, AS, "hc").on(HistoryChinaProvince_.id::equal, HistoryChinaRegion_.id)
+                        .where(HistoryChinaProvince_.id::equal, ChinaProvince_.id)
+                        ::asQuery
+                )
+                .limit(SQLs::literal, maxRowCount)
+                .asQuery();
+
+        final List<Long> idList;
+        idList = session.query(select, Long.class);
+
+        final ReturningInsert stmt;
+        stmt = Postgres.singleInsert()
+                .migration()
+                .insertInto(HistoryChinaRegion_.T)
+                .space()
+                .select("c", PERIOD, ChinaRegion_.T)
+                .from(ChinaRegion_.T, AS, "c")
+                .where(ChinaRegion_.id.in(SQLs::rowParam, idList))
+                .and(ChinaRegion_.regionType::equal, SQLs::literal, RegionType.PROVINCE)
+                .orderBy(ChinaRegion_.id)
+                .asQuery()
+                .returningAll()
+                .asReturningInsert()
+
+                .child()
+
+                .insertInto(HistoryChinaProvince_.T)
+                .space()
+                .select("p", PERIOD, ChinaProvince_.T)
+                .from(ChinaProvince_.T, AS, "p")
+                .join(ChinaRegion_.T, AS, "c").on(ChinaProvince_.id::equal, ChinaRegion_.id)
+                .where(ChinaRegion_.id.in(SQLs::rowParam, idList))
+                .orderBy(ChinaProvince_.id)
+                .asQuery()
+                .returningAll()
+                .asReturningInsert();
+
+        final LocalTransaction tx;
+        tx = session.builder()
+                .name(session.name())
+                .isolation(Isolation.READ_COMMITTED)
+                .build();
+
+        try {
+            tx.start();
+
+            final List<ChinaProvince> resultList;
+            resultList = session.query(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+
+            Assert.assertFalse(resultList instanceof ImmutableArrayList);
+
+            final int resultRows = resultList.size();
+            Assert.assertTrue(resultRows > 0 && resultRows <= maxRowCount);
+
+            tx.commit();
+            LOG.debug("query insert rows : {}\n resultList : {}", resultList.size(), JSON.toJSONString(resultList));
+        } catch (Exception e) {
             tx.rollback();
             throw e;
         } finally {

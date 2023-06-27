@@ -197,7 +197,7 @@ abstract class StandardInserts extends InsertSupports {
         private final StandardComplexValuesClause<T, I> claus;
 
         private StandardStaticValuesClause(StandardComplexValuesClause<T, I> clause) {
-            super(clause.context, clause::validateField);
+            super(clause.context, clause.migration, clause::validateField);
             this.claus = clause;
         }
 

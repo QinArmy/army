@@ -7,7 +7,6 @@ import io.army.criteria.impl.inner._RowSet;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
-import io.army.meta.ParentTableMeta;
 
 import java.util.List;
 import java.util.function.ObjIntConsumer;
@@ -53,9 +52,6 @@ final class QueryInsertContext extends InsertContext implements _QueryInsertCont
             targetStmt = ((_Insert._ChildQueryInsert) domainStmt).parentStmt();
         } else {
             targetStmt = domainStmt;
-            if (this.insertTable instanceof ParentTableMeta) {
-                domainStmt.validateOnlyParen();
-            }
         }
         this.subQuery = targetStmt.subQuery();
         this.subQuerySelectionSize = ((_RowSet) this.subQuery).selectionSize();

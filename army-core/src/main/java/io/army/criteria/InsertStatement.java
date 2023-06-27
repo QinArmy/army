@@ -146,6 +146,7 @@ public interface InsertStatement extends DmlStatement {
 
     interface _ColumnListParensClause<T, R> {
 
+
         /**
          * <p>
          * INSERT static column list parens clause
@@ -336,7 +337,7 @@ public interface InsertStatement extends DmlStatement {
 
         R parens(Consumer<_StaticValueSpaceClause<T>> consumer);
 
-        R parens(SQLs.SymbolSpace space, Consumer<_AssignmentSetSpec<T>> consumer);
+        R parens(SQLs.SymbolSpace space, Consumer<Assignments<T>> consumer);
     }
 
     interface _StaticValuesClause<R> {
@@ -385,9 +386,6 @@ public interface InsertStatement extends DmlStatement {
 
     }
 
-    interface _AssignmentSetSpec<T> extends _StaticAssignmentSetClause<T, _AssignmentSetSpec<T>> {
-
-    }
 
 
     interface _DynamicAssignmentSetClause<T, SD> {

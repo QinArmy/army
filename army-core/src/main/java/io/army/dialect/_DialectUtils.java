@@ -43,16 +43,12 @@ public abstract class _DialectUtils {
     }
 
 
-    public static boolean isOnConflictDoNothing(final _Insert stmt) {
-        return stmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) stmt).isIgnorableConflict();
-    }
 
     /**
      * @return true : representing insert {@link ChildTableMeta} and syntax error
      * , statement executor couldn't get the auto increment primary key of {@link ParentTableMeta}
      */
-    public static boolean isForbidChildInsert(final _Insert._ChildInsert stmt) {
+    public static boolean isIllegalChildPostInsert(final _Insert._ChildInsert stmt) {
         final _Insert parentStmt;
         parentStmt = stmt.parentStmt();
 
@@ -68,16 +64,20 @@ public abstract class _DialectUtils {
         return needReturnId && cannotReturnId;
     }
 
-    public static boolean isDoNothing(final _Insert._ChildInsert childStmt) {
+    /**
+     * @deprecated validate by statement executor.
+     */
+    @Deprecated
+    public static boolean isIgnorableConflict(final _Insert._ChildInsert childStmt) {
         final _Insert parentStmt = childStmt.parentStmt();
-        final boolean parentDoNothing, childDoNothing;
-        parentDoNothing = parentStmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) parentStmt).isDoNothing();
+        final boolean parentIgnorable, childIgnorable;
+        parentIgnorable = parentStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) parentStmt).isIgnorableConflict();
 
-        childDoNothing = childStmt instanceof _Insert._SupportConflictClauseSpec
-                && ((_Insert._SupportConflictClauseSpec) childStmt).isDoNothing();
+        childIgnorable = childStmt instanceof _Insert._SupportConflictClauseSpec
+                && ((_Insert._SupportConflictClauseSpec) childStmt).isIgnorableConflict();
         //here, validate do nothing only,rest is validate by statement executor.
-        return parentDoNothing || childDoNothing;
+        return parentIgnorable || childIgnorable;
     }
 
     public static boolean isIllegalTwoStmtMode(final _Insert._ChildInsert childStmt) {
@@ -99,7 +99,8 @@ public abstract class _DialectUtils {
                 && table.id().generatorType() == GeneratorType.POST
                 && !stmt.isIgnoreReturnIds();
 
-        cannotReturnId = stmt instanceof _Insert._SupportConflictClauseSpec
+        cannotReturnId = needReturnId
+                && stmt instanceof _Insert._SupportConflictClauseSpec
                 && ((_Insert._SupportConflictClauseSpec) stmt).hasConflictAction()
                 && stmt.insertRowCount() > 1
                 && (!(stmt instanceof _Statement._ReturningListSpec) || ((_Insert._SupportConflictClauseSpec) stmt).isIgnorableConflict());

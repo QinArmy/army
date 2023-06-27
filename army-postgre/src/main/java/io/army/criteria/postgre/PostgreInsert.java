@@ -176,37 +176,19 @@ public interface PostgreInsert extends PostgreStatement {
 
     interface _ComplexColumnDefaultSpec<T, I extends Item, Q extends Item>
             extends _ValuesDefaultSpec<T, I, Q>,
-            _StaticSpaceClause<PostgreQuery._WithSpec<_OnConflictSpec<T, I, Q>>>,
             InsertStatement._QueryInsertSpaceClause<PostgreQuery._WithSpec<_OnConflictSpec<T, I, Q>>, _OnConflictSpec<T, I, Q>> {
 
     }
 
     interface _OverridingValueSpec<T, I extends Item, Q extends Item>
-            extends _ValuesDefaultSpec<T, I, Q>, _OverridingValueClause<_ValuesDefaultSpec<T, I, Q>> {
+            extends _ComplexColumnDefaultSpec<T, I, Q>, _OverridingValueClause<_ComplexColumnDefaultSpec<T, I, Q>> {
 
-
-    }
-
-    interface _ComplexOverridingValueSpec<T, I extends Item, Q extends Item>
-            extends _OverridingValueSpec<T, I, Q> {
-
-        @Override
-        _ComplexColumnDefaultSpec<T, I, Q> overridingSystemValue();
-
-        @Override
-        _ComplexColumnDefaultSpec<T, I, Q> overridingUserValue();
-
-        @Override
-        _ComplexColumnDefaultSpec<T, I, Q> ifOverridingSystemValue(BooleanSupplier supplier);
-
-        @Override
-        _ComplexColumnDefaultSpec<T, I, Q> ifOverridingUserValue(BooleanSupplier supplier);
 
     }
 
 
     interface _ColumnListSpec<T, I extends Item, Q extends Item>
-            extends InsertStatement._ColumnListParensClause<T, _ComplexOverridingValueSpec<T, I, Q>>,
+            extends InsertStatement._ColumnListParensClause<T, _OverridingValueSpec<T, I, Q>>,
             _OverridingValueSpec<T, I, Q> {
 
     }

@@ -857,10 +857,16 @@ public interface Statement extends Item {
 
         //below ordinary operator
         <T> WA where(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
-                     BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
+                     BiFunction<SimpleExpression, T, Expression> valueOperator, @Nullable T value);
+
+        <K, V> WA where(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
+                        BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
 
         <T> WA where(DialectBooleanOperator<T> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
                      BiFunction<SimpleExpression, T, Expression> func, @Nullable T value);
+
+        <K, V> WA where(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                        BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
 
         // below in operator
         WA where(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
@@ -974,10 +980,17 @@ public interface Statement extends Item {
 
         //below ordinary operator
         <T> WA and(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
-                   BiFunction<SimpleExpression, T, Expression> valueOperator, T value);
+                   BiFunction<SimpleExpression, T, Expression> valueOperator, @Nullable T value);
+
+        <K, V> WA and(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
+                      BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
 
         <T> WA and(DialectBooleanOperator<T> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
                    BiFunction<SimpleExpression, T, Expression> func, @Nullable T value);
+
+        <K, V> WA and(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                      BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
+
 
         // below in operator
         WA and(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
@@ -1001,19 +1014,20 @@ public interface Statement extends Item {
         <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                      BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
+        <K, V> WA ifAnd(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
+                        BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
+
         <T> WA ifAnd(DialectBooleanOperator<T> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
                      BiFunction<SimpleExpression, T, Expression> func, Supplier<T> getter);
+
+        <K, V> WA ifAnd(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
+                        BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
 
         WA ifAnd(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
                  TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier);
 
         //below four argument method
 
-        <K, V> WA ifAnd(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
-                        BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
-
-        <K, V> WA ifAnd(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
-                        BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
 
         WA ifAnd(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName,
                  Supplier<Integer> supplier);

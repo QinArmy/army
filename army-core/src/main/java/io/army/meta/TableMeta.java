@@ -51,7 +51,12 @@ public interface TableMeta<T> extends TabularItem, DatabaseObject {
      */
     List<IndexMeta<T>> indexList();
 
+    /**
+     * @return unmodified list, always same instance.
+     * @see io.army.util.ArmyCriteria#fieldListOf(TableMeta)
+     */
     List<FieldMeta<T>> fieldList();
+
 
     String charset();
 

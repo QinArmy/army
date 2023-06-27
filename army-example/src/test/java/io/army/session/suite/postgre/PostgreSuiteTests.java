@@ -5,6 +5,7 @@ import io.army.dialect.Database;
 import io.army.session.FactoryUtils;
 import io.army.sync.LocalSession;
 import io.army.sync.LocalSessionFactory;
+import org.testng.ITestNGMethod;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -26,10 +27,13 @@ public abstract class PostgreSuiteTests extends ArmyTestDataSupport {
     }
 
 
-    @DataProvider
-    public static Object[][] getSession() {
+    @DataProvider(parallel = true)
+    public static Object[][] getSession(final ITestNGMethod method) {
+
         return new Object[][]{{
                 syncSessionFactory.builder()
+                        .name(method.getMethodName())
+                        .allowQueryInsert(true)
                         .build()
         }};
     }

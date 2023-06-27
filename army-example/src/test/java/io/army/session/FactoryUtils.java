@@ -50,6 +50,7 @@ public abstract class FactoryUtils {
                 throw _Exceptions.unexpectedEnum(database);
         }
         map.put(ArmyKey.DATASOURCE_CLOSE_METHOD.name, "close");
+        map.put(ArmyKey.QUERY_INSERT_MODE.name, AllowMode.SUPPORT);
         map.put(ArmyKey.DDL_MODE.name, DdlMode.UPDATE);
         map.put(ArmyKey.SQL_LOG_MODE.name, SqlLogMode.FORMAT_DEBUG);
 

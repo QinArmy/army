@@ -44,7 +44,7 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<String> VISIBLE_SESSION_WHITE_LIST = new ArmyKey<>("visible.session.white.list", String.class, null);
 
-    public static final ArmyKey<AllowMode> QUERY_INSERT_MODE = new ArmyKey<>("query.insert.mode", AllowMode.class, AllowMode.SUPPORT);
+    public static final ArmyKey<AllowMode> QUERY_INSERT_MODE = new ArmyKey<>("query.insert.mode", AllowMode.class, AllowMode.WHITE_LIST);
 
     public static final ArmyKey<String> QUERY_INSERT_SESSION_WHITE_LIST = new ArmyKey<>("query.insert.session.white.list", String.class, null);
 

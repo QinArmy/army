@@ -97,10 +97,6 @@ abstract class InsertContext extends StatementContext
             targetStmt = ((_Insert._ChildInsert) domainStmt).parentStmt();
             this.twoStmtQuery = domainStmt instanceof _ReturningDml && targetStmt instanceof _ReturningDml;
         } else {
-            if (domainStmt instanceof _Insert._QueryInsert) {
-                //validate,because criteria implementation can't do this
-                ((_Insert._QueryInsert) domainStmt).validateOnlyParen();
-            }
             targetStmt = domainStmt;
             this.twoStmtQuery = false;
         }
@@ -171,11 +167,10 @@ abstract class InsertContext extends StatementContext
         if (targetStmt instanceof _ReturningDml) {
             this.returningList = ((_ReturningDml) targetStmt).returningList();
             this.returnSelectionList = _DialectUtils.flatSelectItem(this.returningList);
+            this.returnId = needReturnId ? idField : null;
             if (needReturnId || this.twoStmtQuery) {
-                this.returnId = idField;
                 this.idSelectionIndex = returnIdSelection(parser, idField, this.returnSelectionList);
             } else {
-                this.returnId = null;
                 this.idSelectionIndex = -1;
             }
             this.appendReturningClause = false;

@@ -515,13 +515,13 @@ abstract class OperationExpression extends OperationSQLExpression
         }
 
         @Override
-        public final <T extends Collection<?>> CompoundPredicate in(BiFunction<SimpleExpression, T, Expression> funcRef,
+        public final <T extends Collection<?>> CompoundPredicate in(BiFunction<SimpleExpression, T, RowExpression> funcRef,
                                                                     T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.IN, funcRef.apply(this, value));
         }
 
         @Override
-        public final <T extends Collection<?>> CompoundPredicate notIn(BiFunction<SimpleExpression, T, Expression> funcRef,
+        public final <T extends Collection<?>> CompoundPredicate notIn(BiFunction<SimpleExpression, T, RowExpression> funcRef,
                                                                        T value) {
             return Expressions.dualPredicate(this, DualBooleanOperator.NOT_IN, funcRef.apply(this, value));
         }

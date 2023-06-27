@@ -570,16 +570,6 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                         (PairStmt) stmt, this.getTxTimeout());
             }
 
-            //4. validate value insert affected rows
-            if (!(statement instanceof _Insert._QueryInsert)
-                    && affectedRows != ((_Insert) statement).insertRowCount()) {
-                String m = String.format("value list size is %s,but affected %s rows."
-                        , ((_Insert._DomainInsert) statement).domainList().size(), affectedRows);
-                throw new DataAccessException(m);
-            } else if (affectedRows < 1) {
-                String m = String.format("%s insert rows is %s .", ((_Insert) statement).table(), affectedRows);
-                throw new DataAccessException(m);
-            }
             return affectedRows;
         } catch (ChildUpdateException e) {
             final LocalTransaction tx = this.transaction;

@@ -844,7 +844,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
      */
     private void bindParameter(final PreparedStatement statement, final List<SQLParam> paramGroup)
             throws SQLException {
-        final int size = paramGroup.size();
+
         final ServerMeta serverMeta = this.factory.serverMeta;
         final MappingEnv mappingEnv = this.factory.mappingEnv;
 
@@ -854,7 +854,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         TypeMeta typeMeta;
         SqlType sqlType;
         Object attr = null;
-        for (int i = 0; i < size; i++) {
+
+        final int paramSize = paramGroup.size();
+        for (int i = 0, paramIndex = 1; i < paramSize; i++) {
             sqlParam = paramGroup.get(i);
 
             typeMeta = sqlParam.typeMeta();
@@ -869,12 +871,14 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 value = ((SingleParam) sqlParam).value();
                 if (value == null) {
                     // bind null
-                    statement.setNull(i + 1, Types.NULL);
+                    statement.setNull(paramIndex, Types.NULL);
+                    paramIndex++;
                     continue;
                 }
                 value = mappingType.beforeBind(sqlType, mappingEnv, value);
                 //TODO field codec
-                attr = bind(statement, i + 1, attr, mappingType, sqlType, value);
+                attr = bind(statement, paramIndex, attr, mappingType, sqlType, value);
+                paramIndex++;
                 continue;
             }
 
@@ -885,12 +889,14 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             for (final Object element : ((MultiParam) sqlParam).valueList()) {
                 if (element == null) {
                     // bind null
-                    statement.setNull(i + 1, Types.NULL);
+                    statement.setNull(paramIndex, Types.NULL);
+                    paramIndex++;
                     continue;
                 }
                 value = mappingType.beforeBind(sqlType, mappingEnv, element);
                 //TODO field codec
-                attr = bind(statement, i + 1, attr, mappingType, sqlType, value);
+                attr = bind(statement, paramIndex, attr, mappingType, sqlType, value);
+                paramIndex++;
             }// inner for
 
 

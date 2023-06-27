@@ -886,12 +886,12 @@ abstract class PostgreInserts extends InsertSupports {
     private static final class PostgreComplexValuesClause<T, I extends Item, Q extends Item>
             extends ComplexInsertValuesClause<
             T,
-            PostgreInsert._ComplexOverridingValueSpec<T, I, Q>,
+            PostgreInsert._OverridingValueSpec<T, I, Q>,
             PostgreInsert._ValuesDefaultSpec<T, I, Q>,
             PostgreInsert._OnConflictSpec<T, I, Q>>
             implements PostgreInsert._TableAliasSpec<T, I, Q>,
             PostgreInsert._OnConflictSpec<T, I, Q>,
-            PostgreInsert._ComplexOverridingValueSpec<T, I, Q>,
+            PostgreInsert._OverridingValueSpec<T, I, Q>,
             PostgreInsert._ComplexColumnDefaultSpec<T, I, Q>,
             PostgreInsert._StaticReturningCommaSpec<Q>,
             Statement._DqlInsertClause<Q> {
@@ -1198,7 +1198,7 @@ abstract class PostgreInserts extends InsertSupports {
             } else if (returningList != PostgreSupports.EMPTY_SELECT_ITEM_LIST) {
                 effectiveList = returningList;
             } else if ((conflictAction = this.conflictAction) == null) {
-                effectiveList = (List<? extends _Selection>) this.effectiveFieldList();
+                effectiveList = (List<? extends _Selection>) this.effictiveFieldList();
             } else {
                 effectiveList = this.doEffectiveFieldList(conflictAction.updateSetClauseList());
             }
@@ -1208,7 +1208,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         @SuppressWarnings("unchecked")
         private List<? extends _Selection> doEffectiveFieldList(final List<_ItemPair> itemPairList) {
-            final List<? extends TableField> columnList = this.effectiveFieldList();
+            final List<? extends TableField> columnList = this.effictiveFieldList();
             final int itemPairSize;
             if (this.insertTable.fieldList() == columnList || (itemPairSize = itemPairList.size()) == 0) {
                 return (List<? extends _Selection>) columnList;
@@ -1269,7 +1269,7 @@ abstract class PostgreInserts extends InsertSupports {
         private final PostgreComplexValuesClause<T, I, Q> clause;
 
         private StaticValuesLeftParenClause(PostgreComplexValuesClause<T, I, Q> clause) {
-            super(clause.context, clause::validateField);
+            super(clause.context, clause.migration, clause::validateField);
             this.clause = clause;
         }
 
@@ -1369,7 +1369,7 @@ abstract class PostgreInserts extends InsertSupports {
 
 
     static abstract class PostgreValueSyntaxInsertStatement<I extends Statement, Q extends Statement>
-            extends AbstractValueSyntaxStatement<I, Q>
+            extends ArmyValueSyntaxStatement<I, Q>
             implements PostgreInsert, _PostgreInsert {
 
         private final boolean recursive;
@@ -1897,7 +1897,7 @@ abstract class PostgreInserts extends InsertSupports {
 
 
     static abstract class PostgreQueryInsertStatement<I extends Statement, Q extends Statement>
-            extends InsertSupports.AbstractQuerySyntaxInsertStatement<I, Q>
+            extends ArmyQuerySyntaxInsertStatement<I, Q>
             implements _PostgreInsert._PostgreQueryInsert, PostgreInsert {
 
         private final boolean recursive;

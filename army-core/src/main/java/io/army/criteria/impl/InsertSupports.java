@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect._DialectUtils;
@@ -9,6 +8,7 @@ import io.army.mapping.CodeEnumType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
+import io.army.util.ArmyCriteria;
 import io.army.util._Assert;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -31,16 +31,6 @@ abstract class InsertSupports {
 
     InsertSupports() {
         throw new UnsupportedOperationException();
-    }
-
-    static void assertDomainList(List<?> parentOriginalDomainList, ComplexInsertValuesClause<?, ?, ?, ?> childClause) {
-        final List<?> childOriginalList;
-        childOriginalList = childClause.originalDomainList();
-        if (childOriginalList != parentOriginalDomainList
-                && childOriginalList.get(0) != parentOriginalDomainList.get(0)) {
-            final ChildTableMeta<?> childTable = (ChildTableMeta<?>) childClause.insertTable;
-            throw CriteriaUtils.childParentDomainListNotMatch(childClause.context, childTable);
-        }
     }
 
 
@@ -551,19 +541,21 @@ abstract class InsertSupports {
         }
 
         @Override
-        public final InsertStatement._StaticColumnCommaQuadraClause<T> comma(FieldMeta<T> field) {
+        public final InsertStatement._StaticColumnCommaQuadraClause<T> comma(final FieldMeta<T> field) {
             Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
             List<FieldMeta<?>> fieldList = this.fieldList;
-            if (fieldMap == null) {
-                fieldMap = this.createFieldMap();
-                this.fieldMap = fieldMap;
+            if (!this.migration && !field.insertable()) {
+                String m = String.format("%s is non-insertable , it can be specified only in migration mode.", field);
+                throw ContextStack.criteriaError(this.context, m);
+            } else if (fieldMap == null) {
+                this.fieldMap = fieldMap = this.createFieldMap();
                 fieldList = this.fieldList;
             } else if (!(fieldMap instanceof HashMap)) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             assert fieldList instanceof ArrayList;
             if (fieldMap.putIfAbsent(field, Boolean.TRUE) != null) {
-                String m = String.format("%s duplication", field);
+                String m = String.format("%s duplication or is managed by army.", field);
                 throw ContextStack.criteriaError(this.context, m);
             }
             fieldList.add(field);
@@ -604,45 +596,19 @@ abstract class InsertSupports {
         public final List<FieldMeta<?>> fieldList() {
             List<FieldMeta<?>> fieldList = this.fieldList;
             if (fieldList == null) {
-                fieldList = _Collections.emptyList();
-                this.fieldList = fieldList;
+                this.fieldList = fieldList = ArmyCriteria.fieldListOf(this.insertTable);
             } else if (fieldList instanceof ArrayList) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             return fieldList;
         }
 
-        /**
-         * FOR RETURNING clause
-         */
-        final List<? extends TableField> effectiveFieldList() {
-            final List<FieldMeta<?>> fieldList = this.fieldList;
-            final PrimaryFieldMeta<?> idField;
-            final List<? extends TableField> effectiveList;
-            if (fieldList instanceof ArrayList) {
-                throw ContextStack.castCriteriaApi(this.context);
-            } else if (fieldList == null || fieldList.size() == 0) {
-                effectiveList = this.insertTable.fieldList();
-            } else if (this.migration) {
-                effectiveList = fieldList;
-            } else if (this.insertTable instanceof SingleTableMeta
-                    && (idField = this.insertTable.id()).generatorType() == GeneratorType.POST) {
-                assert !this.fieldMap.containsKey(idField);
-                final List<FieldMeta<?>> list = _Collections.arrayList(fieldList.size() + 1);
-                list.add(idField);
-                list.addAll(fieldList);
-                effectiveList = Collections.unmodifiableList(list);
-            } else {
-                effectiveList = fieldList;
-            }
-            return effectiveList;
-        }
 
         @Override
         public final Map<FieldMeta<?>, Boolean> fieldMap() {
             Map<FieldMeta<?>, Boolean> map = this.fieldMap;
             if (map == null) {
-                map = Collections.emptyMap();
+                map = this.useDefaultFieldMap();
             } else if (map instanceof HashMap) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
@@ -670,6 +636,14 @@ abstract class InsertSupports {
         }
 
 
+        /**
+         * For RETURNING clause
+         */
+        final List<? extends TableField> effictiveFieldList() {
+            return this.fieldList();
+        }
+
+
         private Map<FieldMeta<?>, Boolean> createFieldMap() {
             final TableMeta<?> insertTable = this.insertTable;
             final Map<FieldMeta<?>, Boolean> fieldMap = _Collections.hashMap();
@@ -680,9 +654,6 @@ abstract class InsertSupports {
             if (!this.migration && insertTable instanceof SingleTableMeta) {
                 for (String reservedField : _MetaBridge.RESERVED_FIELDS) {
                     field = insertTable.tryGetField(reservedField);
-                    if (field instanceof PrimaryFieldMeta && field.generatorType() == GeneratorType.POST) {
-                        continue;
-                    }
                     if (field != null && fieldMap.putIfAbsent(field, Boolean.TRUE) == null) {
                         fieldList.add(field);
                     }
@@ -736,6 +707,28 @@ abstract class InsertSupports {
             this.fieldList = _Collections.safeUnmodifiableList(fieldList);
             this.fieldMap = _Collections.safeUnmodifiableMap(fieldMap);
             return (R) this;
+        }
+
+
+        private Map<FieldMeta<?>, Boolean> useDefaultFieldMap() {
+            assert this.fieldMap == null;
+
+            List<FieldMeta<?>> fieldList = this.fieldList;
+            if (fieldList == null) {
+                this.fieldList = fieldList = ArmyCriteria.fieldListOf(this.insertTable);
+            } else if (fieldList != ArmyCriteria.fieldListOf(this.insertTable)) {
+                throw ContextStack.castCriteriaApi(this.context);
+            }
+
+            final int fieldSize = fieldList.size();
+
+            Map<FieldMeta<?>, Boolean> map = _Collections.hashMap((int) (fieldSize / 0.75f));
+            for (FieldMeta<?> field : fieldList) {
+                map.put(field, Boolean.TRUE);
+            }
+            assert map.size() == fieldSize;
+            this.fieldMap = map = _Collections.unmodifiableMap(map);
+            return map;
         }
 
 
@@ -797,12 +790,9 @@ abstract class InsertSupports {
 
         @Override
         public final DR defaultValue(final FieldMeta<T> field, final @Nullable Expression value) {
-            if (this.migration) {
-                String m = "migration mode not support default value clause";
-                throw ContextStack.criteriaError(this.context, m);
-            }
-
-            if (!(value instanceof ArmyExpression)) {
+            if (!this.migration && !field.insertable()) {
+                throw _Exceptions.nonInsertableField(field);
+            } else if (!(value instanceof ArmyExpression)) {
                 throw ContextStack.nonArmyExp(this.context);
             }
             final ArmyExpression valueExp;
@@ -1012,7 +1002,7 @@ abstract class InsertSupports {
             this.endColumnDefaultClause();
 
             final ValuesConstructorImpl<T> clause;
-            clause = new ValuesConstructorImpl<>(this.context, this::validateField);
+            clause = new ValuesConstructorImpl<>(this.context, this.migration, this::validateField);
 
             consumer.accept(clause);
 
@@ -1044,10 +1034,6 @@ abstract class InsertSupports {
             return query;
         }
 
-        @Override
-        public final void validateOnlyParen() {
-            throw new UnsupportedOperationException();
-        }
 
         @Override
         public final int insertRowCount() {
@@ -1071,12 +1057,19 @@ abstract class InsertSupports {
         }
 
         final VR spaceQueryEnd(final SubQuery subQuery) {
+            final CriteriaContext subContext;
             if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             } else if (!this.migration) {
-                throw queryInsetSupportOnlyMigration();
+                throw this.queryInsetSupportOnlyMigration();
+            } else if (((_RowSet) subQuery).selectionSize() != this.fieldList().size()) {
+                throw columnCountAndSelectionCountNotMatch(subQuery);
+            } else if ((subContext = ((CriteriaContextSpec) subQuery).getContext()).getOuterContext() != this.context) {
+                throw ContextStack.criteriaError(this.context, "sub query context and current context not match");
             }
-            Expressions.validateSubQueryContext(subQuery);
+
+            this.context.validateDialect(subContext);
+
             this.endColumnDefaultClause();
 
             this.subQuery = subQuery;
@@ -1159,6 +1152,15 @@ abstract class InsertSupports {
             return e;
         }
 
+        private CriteriaException columnCountAndSelectionCountNotMatch(final SubQuery subQuery) {
+            String m = String.format("SubQuery %s size[%s] and field list size[%s] of %s not match.",
+                    Selection.class.getSimpleName(),
+                    ((_RowSet) subQuery).selectionSize(),
+                    this.fieldList().size(),
+                    this.insertTable);
+            return ContextStack.criteriaError(this.context, m);
+        }
+
 
     }//ComplexInsertValuesClause
 
@@ -1171,7 +1173,8 @@ abstract class InsertSupports {
 
         private final BiConsumer<FieldMeta<T>, Expression> consumer;
 
-        private DynamicAssignmentSetClause(CriteriaContext context, BiConsumer<FieldMeta<T>, Expression> consumer) {
+        private DynamicAssignmentSetClause(CriteriaContext context,
+                                           BiConsumer<FieldMeta<T>, Expression> consumer) {
             this.context = context;
             this.consumer = consumer;
         }
@@ -1237,7 +1240,7 @@ abstract class InsertSupports {
             final E value;
             value = supplier.get();
             if (value != null) {
-                this.set(field, valueOperator.apply(field, value));
+                this.consumer.accept(field, valueOperator.apply(field, value));
             }
             return (R) this;
         }
@@ -1248,7 +1251,7 @@ abstract class InsertSupports {
             final V value;
             value = function.apply(key);
             if (value != null) {
-                this.set(field, valueOperator.apply(field, value));
+                this.consumer.accept(field, valueOperator.apply(field, value));
             }
             return (R) this;
         }
@@ -1263,25 +1266,15 @@ abstract class InsertSupports {
     private static final class AssignmentsImpl<T> extends DynamicAssignmentSetClause<T, Assignments<T>>
             implements Assignments<T> {
 
+        /**
+         * @see ValuesParensClauseImpl#parens(SQLs.SymbolSpace, Consumer)
+         * @see ComplexInsertValuesAssignmentClause#ifSets(Consumer)
+         */
         private AssignmentsImpl(CriteriaContext context, BiConsumer<FieldMeta<T>, Expression> consumer) {
             super(context, consumer);
         }
 
     }//AssignmentsImpl
-
-    private static final class AssignmentSetSpecImpl<T>
-            extends DynamicAssignmentSetClause<T, InsertStatement._AssignmentSetSpec<T>>
-            implements InsertStatement._AssignmentSetSpec<T> {
-
-        /**
-         * @see ValuesParensClauseImpl#parens(SQLs.SymbolSpace, Consumer)
-         */
-        private AssignmentSetSpecImpl(CriteriaContext context, BiConsumer<FieldMeta<T>, Expression> consumer) {
-            super(context, consumer);
-        }
-
-
-    }//_AssignmentSetSpecImpl
 
 
     @SuppressWarnings("unchecked")
@@ -1301,6 +1294,9 @@ abstract class InsertSupports {
 
         @Override
         public final SR set(final FieldMeta<T> field, final @Nullable Expression value) {
+            if (!this.migration && !field.insertable()) {
+                throw _Exceptions.nonInsertableField(field);
+            }
             List<_Pair<FieldMeta<?>, _Expression>> pairList = this.assignmentPairList;
             Map<FieldMeta<?>, _Expression> assignmentMap = this.assignmentMap;
             if (pairList == null) {
@@ -1473,16 +1469,20 @@ abstract class InsertSupports {
 
         final CriteriaContext context;
 
+        final boolean migration;
+
         final BiConsumer<FieldMeta<?>, ArmyExpression> validator;
 
         private List<Map<FieldMeta<?>, _Expression>> rowList;
 
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
-        private InsertStatement._AssignmentSetSpec<T> dynamicSetClause;
+        private Assignments<T> assignments;
 
-        ValuesParensClauseImpl(CriteriaContext context, BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
+        ValuesParensClauseImpl(CriteriaContext context, boolean migration,
+                               BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
             this.context = context;
+            this.migration = migration;
             this.validator = validator;
         }
 
@@ -1499,15 +1499,15 @@ abstract class InsertSupports {
         }
 
         @Override
-        public final R parens(SQLs.SymbolSpace space, Consumer<InsertStatement._AssignmentSetSpec<T>> consumer) {
+        public final R parens(SQLs.SymbolSpace space, Consumer<Assignments<T>> consumer) {
             if (space != SQLs.SPACE) {
                 throw CriteriaUtils.errorSymbol(space);
             }
-            InsertStatement._AssignmentSetSpec<T> dynamicSetClause = this.dynamicSetClause;
-            if (dynamicSetClause == null) {
-                this.dynamicSetClause = dynamicSetClause = new AssignmentSetSpecImpl<>(this.context, this::comma);
+            Assignments<T> assignments = this.assignments;
+            if (assignments == null) {
+                this.assignments = assignments = new AssignmentsImpl<>(this.context, this::comma);
             }
-            consumer.accept(dynamicSetClause);
+            consumer.accept(assignments);
             return this.endParensClause();
         }
 
@@ -1572,6 +1572,8 @@ abstract class InsertSupports {
                 throw ContextStack.criteriaError(this.context, "column value must be non-field.");
             } else if (!(value instanceof ArmyExpression)) {
                 throw ContextStack.nonArmyExp(this.context);
+            } else if (!this.migration && !field.insertable()) {
+                throw _Exceptions.nonInsertableField(field);
             }
             this.validator.accept(field, (ArmyExpression) value);
             Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
@@ -1657,7 +1659,7 @@ abstract class InsertSupports {
                 throw ContextStack.castCriteriaApi(this.context);
             }
             this.rowList = rowValueList = _Collections.unmodifiableList(rowValueList);
-            this.dynamicSetClause = null; // clear
+            this.assignments = null; // clear
             return rowValueList;
         }
 
@@ -1705,9 +1707,9 @@ abstract class InsertSupports {
         /**
          * @see ComplexInsertValuesClause#values(Consumer)
          */
-        private ValuesConstructorImpl(CriteriaContext context,
+        private ValuesConstructorImpl(CriteriaContext context, boolean migration,
                                       BiConsumer<FieldMeta<?>, ArmyExpression> validator) {
-            super(context, validator);
+            super(context, migration, validator);
         }
 
         @Override
@@ -1816,7 +1818,7 @@ abstract class InsertSupports {
     }//AssignmentSetClause
 
 
-    private static abstract class AbstractInsertStatement<I extends Statement, Q extends Statement>
+    private static abstract class ArmyInsertStatement<I extends Statement, Q extends Statement>
             extends CriteriaSupports.StatementMockSupport
             implements _Insert,
             Statement.StatementMockSpec,
@@ -1832,7 +1834,7 @@ abstract class InsertSupports {
 
         private Boolean prepared;
 
-        AbstractInsertStatement(_Insert clause) {
+        ArmyInsertStatement(_Insert clause) {
             super(((CriteriaContextSpec) clause).getContext());
             this.insertTable = clause.table();
             this.tableAlias = clause.tableAlias();
@@ -1930,8 +1932,8 @@ abstract class InsertSupports {
     }//AbstractInsertStatement
 
 
-    static abstract class AbstractValueSyntaxStatement<I extends Statement, Q extends Statement>
-            extends AbstractInsertStatement<I, Q>
+    static abstract class ArmyValueSyntaxStatement<I extends Statement, Q extends Statement>
+            extends ArmyInsertStatement<I, Q>
             implements _Insert._ValuesSyntaxInsert {
 
         private final boolean migration;
@@ -1948,7 +1950,7 @@ abstract class InsertSupports {
 
         private final Map<FieldMeta<?>, _Expression> defaultExpMap;
 
-        AbstractValueSyntaxStatement(_ValuesSyntaxInsert clause) {
+        ArmyValueSyntaxStatement(_ValuesSyntaxInsert clause) {
             super(clause);
 
             this.migration = clause.isMigration();
@@ -2003,7 +2005,7 @@ abstract class InsertSupports {
 
 
     static abstract class ValueSyntaxInsertStatement<I extends Statement>
-            extends AbstractValueSyntaxStatement<I, Statement>
+            extends ArmyValueSyntaxStatement<I, Statement>
             implements ValueSyntaxOptions {
 
         ValueSyntaxInsertStatement(_ValuesSyntaxInsert clause) {
@@ -2016,7 +2018,7 @@ abstract class InsertSupports {
 
 
     private static abstract class AssignmentSyntaxInsertStatement<I extends Statement, Q extends Statement>
-            extends AbstractInsertStatement<I, Q> implements _Insert._AssignmentInsert, ValueSyntaxOptions {
+            extends ArmyInsertStatement<I, Q> implements _Insert._AssignmentInsert, ValueSyntaxOptions {
 
         private final boolean migration;
 
@@ -2080,8 +2082,8 @@ abstract class InsertSupports {
     }//AssignmentInsertStatement
 
 
-    static abstract class AbstractQuerySyntaxInsertStatement<I extends Statement, Q extends Statement>
-            extends AbstractInsertStatement<I, Q>
+    static abstract class ArmyQuerySyntaxInsertStatement<I extends Statement, Q extends Statement>
+            extends ArmyInsertStatement<I, Q>
             implements _Insert._QueryInsert, ValueSyntaxOptions {
 
         private final List<FieldMeta<?>> fieldList;
@@ -2090,7 +2092,7 @@ abstract class InsertSupports {
 
         private final SubQuery query;
 
-        AbstractQuerySyntaxInsertStatement(_QueryInsert clause) {
+        ArmyQuerySyntaxInsertStatement(_QueryInsert clause) {
             super(clause);
             this.fieldList = clause.fieldList();
             this.fieldMap = clause.fieldMap();
@@ -2112,14 +2114,6 @@ abstract class InsertSupports {
             return this.query;
         }
 
-        @Override
-        public final void validateOnlyParen() {
-            assert this.insertTable instanceof ParentTableMeta;
-            if (((ParentQueryInsert) this).discriminatorEnum() != this.insertTable.discriminatorValue()) {
-                throw discriminatorNotMatch(this.context, this.insertTable, this.insertTable.discriminatorValue());
-            }
-
-        }
 
         @Override
         public final NullMode nullHandle() {
@@ -2150,7 +2144,7 @@ abstract class InsertSupports {
 
 
     static abstract class QuerySyntaxInsertStatement<I extends Statement>
-            extends AbstractQuerySyntaxInsertStatement<I, Statement>
+            extends ArmyQuerySyntaxInsertStatement<I, Statement>
             implements InsertStatement {
 
 
@@ -2245,113 +2239,37 @@ abstract class InsertSupports {
      * Check insert statement for safety.
      * </p>
      *
-     * @see AbstractInsertStatement#asInsertStatement()
+     * @see ArmyInsertStatement#asInsertStatement()
      */
     private static void insertStatementGuard(final _Insert statement) {
         if (!(statement instanceof _Insert._ChildInsert)) {
             if (statement instanceof _Insert._SupportWithClauseInsert) { // for example,postgre insert
                 if (statement instanceof PrimaryStatement) {
                     validateSupportWithClauseInsert((_Insert._SupportWithClauseInsert) statement);
-                }
+                }// sub statement ignore
             } else if (statement instanceof _Insert._DomainInsert && _DialectUtils.isCannotReturnId((_Insert._DomainInsert) statement)) {
                 throw _Exceptions.cannotReturnPostId(statement);
-            } else if (statement instanceof _Insert._ParentQueryInsert) {
-                validateParentQueryInsert((_Insert._ParentQueryInsert) statement);
-            } else if (statement instanceof _Insert._QueryInsert) {
-                validateSimpleQueryInsert((_Insert._QueryInsert) statement);
             }
-        } else if (_DialectUtils.isDoNothing((_Insert._ChildInsert) statement)) {
-            throw _Exceptions.doNothingConflict((_Insert._ChildInsert) statement);
         } else if (_DialectUtils.isIllegalTwoStmtMode((_Insert._ChildInsert) statement)) {
             throw _Exceptions.illegalTwoStmtMode();
-        } else if (statement instanceof _Insert._QueryInsert) {
-            validateChildQueryInsert((_Insert._ChildQueryInsert) statement);
-        } else if (_DialectUtils.isForbidChildInsert((_Insert._ChildInsert) statement)) {
+        } else if (_DialectUtils.isIllegalChildPostInsert((_Insert._ChildInsert) statement)) {
             throw _Exceptions.cannotReturnPostId(statement);
         } else if (statement instanceof _Insert._ChildDomainInsert) {
             validateChildDomainInsert((_Insert._ChildDomainInsert) statement);
         } else if (statement instanceof _Insert._ChildValuesInsert) {
             validateChildValueInsert((_Insert._ChildValuesInsert) statement);
-        } else if (!(statement instanceof _Insert._ChildAssignmentInsert)) {
-            //no bug,never here
-            throw new IllegalStateException();
         }
 
     }
 
 
     /**
+     * @param statement {@link PrimaryStatement} and not {@link _Insert._ChildInsert}
      * @see #insertStatementGuard(_Insert)
      */
     private static void validateSupportWithClauseInsert(final _Insert._SupportWithClauseInsert statement) {
-        assert statement instanceof PrimaryStatement;
-        //TODO 完成校验
-//
-//        final List<Cte> cteList;
-//         cteList = statement.cteList();
-//           final int cteSize ;
-//            cteSize = cteList.size();
-//           SQLs.CteImpl cte;
-//           TableMeta<?> insertTable;
-//        _Insert._SupportWithClauseInsert subInsert;
-//        for (int i = cteSize - 1; i > -1 ; i--) {
-//             cte = (SQLs.CteImpl)cteList.get(i);
-//             if(!(cte.subStatement instanceof SubReturningInsert)){
-//                  continue;
-//             }
-//            subInsert = (_Insert._SupportWithClauseInsert)cte.subStatement;
-//            insertTable = subInsert.table();
-//            if(insertTable instanceof SimpleTableMeta){
-//                continue;
-//            }
-//
-//
-//        }
-        // throw new UnsupportedOperationException();
-    }
 
-
-    private static void validateChildQueryInsert(final _Insert._ChildQueryInsert stmt) {
-        final CriteriaContext context;
-        context = ((CriteriaContextSpec) stmt).getContext();
-
-        //validate child query selection size
-        validateSelectionSize(context, stmt);
-
-        final CodeEnum discriminatorEnum, childEnum;
-        childEnum = stmt.table().discriminatorValue();
-        assert childEnum != null;
-
-        discriminatorEnum = stmt.parentStmt().discriminatorEnum();
-
-        if (discriminatorEnum != childEnum) {
-            throw discriminatorNotMatch(context, stmt.table(), childEnum);
-        }
-
-    }
-
-
-    private static void validateParentQueryInsert(final _Insert._ParentQueryInsert stmt) {
-        final CriteriaContext context;
-        context = ((CriteriaContextSpec) stmt).getContext();
-
-        final Selection discriminatorSelection;
-        //validate parent query selection size
-        discriminatorSelection = validateSelectionSize(context, stmt);
-        assert discriminatorSelection != null;
-
-        final CodeEnum discriminatorValue;
-        discriminatorValue = getDiscriminatorValue(context, discriminatorSelection, (ParentTableMeta<?>) stmt.table());
-
-        ((ParentQueryInsert) stmt).onValidateEnd(discriminatorValue);
-
-    }
-
-
-    private static void validateSimpleQueryInsert(final _Insert._QueryInsert stmt) {
-        assert stmt.table() instanceof SimpleTableMeta;
-        validateSelectionSize(((CriteriaContextSpec) stmt).getContext(), stmt);
-
+        //TODO
     }
 
 

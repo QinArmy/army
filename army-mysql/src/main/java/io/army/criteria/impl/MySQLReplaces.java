@@ -243,7 +243,7 @@ abstract class MySQLReplaces extends InsertSupports {
         private final MySQLComplexValuesClause<I, T> clause;
 
         private MySQLStaticValuesClause(MySQLComplexValuesClause<I, T> clause) {
-            super(clause.context, clause::validateField);
+            super(clause.context, clause.migration, clause::validateField);
             this.clause = clause;
         }
 

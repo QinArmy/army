@@ -396,6 +396,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
         return this.fieldList;
     }
 
+
     @Override
     public final String charset() {
         return this.charset;

@@ -937,9 +937,9 @@ abstract class ArmyParser implements DialectParser {
                 throw _Exceptions.conflictClauseAndVisibleNotMatch(this.dialect, (_Insert) insert, visible);
             } else if (insert instanceof _Insert._ChildInsert) {
                 final _Insert._ChildInsert childStmt = (_Insert._ChildInsert) insert;
-                if (_DialectUtils.isDoNothing(childStmt)) {
+                if (_DialectUtils.isIgnorableConflict(childStmt)) {
                     throw _Exceptions.doNothingConflict(childStmt);
-                } else if (_DialectUtils.isForbidChildInsert(childStmt)) {
+                } else if (_DialectUtils.isIllegalChildPostInsert(childStmt)) {
                     throw _Exceptions.forbidChildInsertSyntaxError(childStmt);
                 }
             } else if (insert instanceof _Insert._DomainInsert

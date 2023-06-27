@@ -505,7 +505,7 @@ abstract class MySQLInserts extends InsertSupports {
         private final MySQLComplexValuesClause<I, T> valuesClause;
 
         private MySQLStaticValuesClause(MySQLComplexValuesClause<I, T> valuesClause) {
-            super(valuesClause.context, valuesClause::validateField);
+            super(valuesClause.context, valuesClause.migration, valuesClause::validateField);
             this.valuesClause = valuesClause;
         }
 
