@@ -4,6 +4,7 @@ package io.army.session.suite.postgre;
 import com.alibaba.fastjson2.JSON;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.Insert;
+import io.army.criteria.LiteralMode;
 import io.army.criteria.Select;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.impl.Postgres;
@@ -1158,12 +1159,27 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         final Insert stmt;
 
         stmt = Postgres.singleInsert()
-                .with("ch").as(s -> s.insertInto(ChinaRegion_.T)
+                .literalMode(LiteralMode.LITERAL)
+                .with("parent").as(s -> s
+                        .literalMode(LiteralMode.LITERAL)
+                        .insertInto(ChinaRegion_.T)
                         .values(provinceList)
                         .returning(ChinaRegion_.id)
                         .asReturningInsert()
-                ).space()
-                .insertInto(ChinaRegion_.T)
+                ).comma("parent_row_id").as(s -> s.select(ss -> ss.space(Postgres.rowNumber().over().as("rowId"))
+                                        .comma(SQLs.refThis("parent", ChinaRegion_.ID))
+                                )
+                                .from("parent")
+                                .asQuery()
+                )
+                .space()
+                .insertInto(ChinaProvince_.T)
+                .defaultValue(ChinaProvince_.id, Postgres.scalarSubQuery()
+                        .select(s -> s.space(SQLs.refThis("p", ChinaRegion_.ID)))
+                        .from("parent_row_id", AS, "p")
+                        .where(SQLs.refThis("p", "rowId")::equal, BATCH_NO_LITERAL)
+                        .asQuery()
+                )
                 .values(provinceList)
                 .asInsert();
 

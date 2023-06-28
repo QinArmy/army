@@ -55,11 +55,15 @@ import java.util.function.Predicate;
 abstract class ArmyParser implements DialectParser {
 
 
+    protected final Dialect dialect;
+
+    protected final Database database;
     public final DialectEnv dialectEnv;
 
     protected final MappingEnv mappingEnv;
 
     protected final ServerMeta serverMeta;
+
 
     final boolean mockEnv;
 
@@ -70,9 +74,6 @@ abstract class ArmyParser implements DialectParser {
 
     protected final Map<String, Boolean> keyWordMap;
 
-    protected final Dialect dialect;
-
-    protected final Database database;
 
     protected final char identifierQuote;
 
@@ -121,11 +122,11 @@ abstract class ArmyParser implements DialectParser {
         this.database = this.dialect.database();
         this.dialectEnv = dialectEnv;
         this.mappingEnv = dialectEnv.mappingEnv();
-        this.serverMeta = this.mappingEnv.serverMeta();
 
+        this.serverMeta = this.mappingEnv.serverMeta();
         this.mockEnv = this.dialectEnv instanceof _MockDialects;
 
-        assert this.serverMeta.dialectDatabase().isCompatible(this.dialect);
+        assert this.serverMeta.serverDatabase().isCompatible(dialect);
         this.keyWordMap = _DialectUtils.createKeyWordMap(this.createKeyWordSet());
 
         this.childUpdateMode = this.childUpdateMode();
@@ -937,9 +938,7 @@ abstract class ArmyParser implements DialectParser {
                 throw _Exceptions.conflictClauseAndVisibleNotMatch(this.dialect, (_Insert) insert, visible);
             } else if (insert instanceof _Insert._ChildInsert) {
                 final _Insert._ChildInsert childStmt = (_Insert._ChildInsert) insert;
-                if (_DialectUtils.isIgnorableConflict(childStmt)) {
-                    throw _Exceptions.doNothingConflict(childStmt);
-                } else if (_DialectUtils.isIllegalChildPostInsert(childStmt)) {
+                if (_DialectUtils.isIllegalChildPostInsert(childStmt)) {
                     throw _Exceptions.forbidChildInsertSyntaxError(childStmt);
                 }
             } else if (insert instanceof _Insert._DomainInsert
@@ -948,7 +947,12 @@ abstract class ArmyParser implements DialectParser {
             }
         }
 
+        return this.handleInsertStmt(outerContext, (_Insert) insert, visible);
 
+    }
+
+    protected final _InsertContext handleInsertStmt(final @Nullable _SqlContext outerContext, final _Insert insert,
+                                                    final Visible visible) {
         final _InsertContext context;
         if (insert instanceof _Insert._DomainInsert) {
             context = handleDomainInsert(outerContext, (_Insert._DomainInsert) insert, visible);
@@ -959,7 +963,7 @@ abstract class ArmyParser implements DialectParser {
         } else if (insert instanceof _Insert._QueryInsert) {
             context = handleQueryInsert(outerContext, (_Insert._QueryInsert) insert, visible);
         } else {
-            throw _Exceptions.unknownStatement(insert, this.dialect);
+            throw _Exceptions.unknownStatement((Statement) insert, this.dialect); // possibly sub statement
         }
         return context;
     }

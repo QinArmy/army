@@ -623,15 +623,15 @@ abstract class InsertSupports {
 
         @Override
         public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
-            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-            if (fieldMap == null) {
-                checkField(this.context, this.insertTable, this.migration, field);
-            } else if (!fieldMap.containsKey(field)) {
-                throw notContainField(this.context, field);
-            }
-            if (value != null && !field.nullable() && value.isNullValue()) {
-                throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
-            }
+//            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+//            if (fieldMap == null) {
+//                checkField(this.context, this.insertTable, this.migration, field);
+//            } else if (!fieldMap.containsKey(field)) {
+//                throw notContainField(this.context, field);
+//            }
+//            if (value != null && !field.nullable() && value.isNullValue()) {
+//                throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
+//            } // TODO 临时注释
 
         }
 
@@ -1097,7 +1097,7 @@ abstract class InsertSupports {
          * @return a unmodified list,new instance each time.
          */
         final List<?> domainListForSingle() {
-            assert this.insertTable instanceof SingleTableMeta;
+            //  assert this.insertTable instanceof SingleTableMeta;
             final List<?> domainList = this.domainList;
             if (this.insertMode != InsertMode.DOMAIN) {
                 throw insertModeNotMatch();
@@ -1111,7 +1111,6 @@ abstract class InsertSupports {
          * @return a original list
          */
         final List<?> originalDomainList() {
-            assert this.insertTable instanceof ParentTableMeta;
             final List<?> domainList = this.domainList;
             if (this.insertMode != InsertMode.DOMAIN) {
                 throw insertModeNotMatch();

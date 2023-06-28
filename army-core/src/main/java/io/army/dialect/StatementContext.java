@@ -1,6 +1,7 @@
 package io.army.dialect;
 
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 
 /**
  * <p>
@@ -33,20 +35,10 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
     protected final StringBuilder sqlBuilder;
 
-    private final ParamConsumer paramConsumer;
+    private final ParamAccepter paramAccepter;
 
     protected StatementContext(ArmyParser parser, Visible visible) {
-        this(parser, false, visible);
-    }
-
-    /**
-     * <p>
-     * This Constructor is invoked the implementation of {@link  _ValueSyntaxInsertContext}.
-     * </p>
-     */
-    @Deprecated
-    protected StatementContext(ArmyParser dialect, boolean queryInsert, Visible visible) {
-        this(null, dialect, visible);
+        this(null, parser, visible);
     }
 
 
@@ -67,16 +59,18 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
         if (this instanceof _InsertContext && !(this instanceof _QueryInsertContext)) {
             if (parentOrOuterContext == null) {
-                this.paramConsumer = new ParamConsumer(this::currentRowNamedValue);
+                this.paramAccepter = new ParamAccepter(this::readCurrentRowNamedValue, this::readCurrentBatchIndex);
             } else {
-                this.paramConsumer = new ParamConsumerWithOuter(parentOrOuterContext.paramConsumer, this::currentRowNamedValue);
+                this.paramAccepter = new ParamAccepterWithOuter(parentOrOuterContext.paramAccepter,
+                        this::readCurrentRowNamedValue, this::readCurrentBatchIndex);
             }
         } else if (parentOrOuterContext instanceof MultiStmtContext && this instanceof NarrowDmlContext) {
-            this.paramConsumer = new ParamConsumerWithOuter(parentOrOuterContext.paramConsumer, this::currentRowNamedValue);
+            this.paramAccepter = new ParamAccepterWithOuter(parentOrOuterContext.paramAccepter,
+                    this::readCurrentRowNamedValue, this::readCurrentBatchIndex);
         } else if (parentOrOuterContext == null) {
-            this.paramConsumer = new ParamConsumer(null);
+            this.paramAccepter = new ParamAccepter(null, null);
         } else {
-            this.paramConsumer = parentOrOuterContext.paramConsumer;
+            this.paramAccepter = parentOrOuterContext.paramAccepter;
         }
 
     }
@@ -140,10 +134,8 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
     @Override
     public final void appendParam(final SQLParam sqlParam) {
-        if (this instanceof _ValuesContext) {
-            throw _Exceptions.valuesStatementDontSupportParam();
-        }
-        final ArrayList<SQLParam> paramList = this.paramConsumer.paramList;
+
+        final ArrayList<SQLParam> paramList = this.paramAccepter.paramList;
         if (sqlParam instanceof SingleParam) {
             this.sqlBuilder.append(SPACE_PLACEHOLDER);
             paramList.add(sqlParam);
@@ -152,23 +144,27 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
             paramList.add(sqlParam);
         } else if (sqlParam instanceof NamedParam.NamedSingle) {
             this.sqlBuilder.append(SPACE_PLACEHOLDER);
-            if (this.paramConsumer.function == null) {
+            if (this.paramAccepter.nameValueFunc == null) {
                 paramList.add(sqlParam);
-                if (!this.paramConsumer.hasNamedParam) {
-                    this.paramConsumer.setHasNamedParam();
+                if (!this.paramAccepter.hasNamedParam) {
+                    this.paramAccepter.setHasNamedParam();
                 }
+            } else if (sqlParam == SQLs.BATCH_NO_PARAM) {
+                final IntSupplier batchNoFunc = this.paramAccepter.batchIndexFunc;
+                assert batchNoFunc != null;
+                paramList.add(SingleParam.build(sqlParam.typeMeta(), batchNoFunc.getAsInt() + 1));
             } else {
                 paramList.add(SingleParam.build(sqlParam.typeMeta(), readNamedValue((NamedParam) sqlParam)));
             }
-        } else if (sqlParam instanceof NamedParam.NamedMulti) {
+        } else if (sqlParam instanceof NamedParam.NamedRow) {
             appendMultiParamPlaceholder(this.sqlBuilder, (SqlValueParam.MultiValue) sqlParam);
-            if (this.paramConsumer.function == null) {
+            if (this.paramAccepter.nameValueFunc == null) {
                 paramList.add(sqlParam);
-                if (!this.paramConsumer.hasNamedParam) {
-                    this.paramConsumer.setHasNamedParam();
+                if (!this.paramAccepter.hasNamedParam) {
+                    this.paramAccepter.setHasNamedParam();
                 }
             } else {
-                final NamedParam.NamedMulti namedMulti = (NamedParam.NamedMulti) sqlParam;
+                final NamedParam.NamedRow namedMulti = (NamedParam.NamedRow) sqlParam;
                 paramList.add(MultiParam.build(namedMulti, readNamedMulti(namedMulti)));
             }
         } else {
@@ -186,22 +182,28 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
     @Override
     public final void appendLiteral(final NamedLiteral namedLiteral) {
-        if (this instanceof _ValuesContext) {
-            throw new CriteriaException("Values statement don't support named literal.");
-        }
-        final Function<String, Object> function = this.paramConsumer.function;
-        if (!(this instanceof _InsertContext) || this instanceof _QueryInsertContext || function == null) {
-            String m = String.format("%s don't support %s"
-                    , this.getClass().getName(), NamedLiteral.class.getName());
-            throw new CriteriaException(m);
-        }
 
-        if (!this.paramConsumer.hasNamedLiteral) {
-            this.paramConsumer.setHasNamedLiteral();
-        }
-
+        final Function<String, Object> nameValueFunc;
         final Object value;
-        value = function.apply(namedLiteral.name());
+        if (namedLiteral == SQLs.BATCH_NO_LITERAL) {
+            final IntSupplier batchNoFunc = this.paramAccepter.batchIndexFunc;
+            if (batchNoFunc == null) {
+                String m = String.format("%s don't support batch no literal", this.getClass().getName());
+                throw new CriteriaException(m);
+            }
+            value = batchNoFunc.getAsInt() + 1;
+        } else if ((nameValueFunc = this.paramAccepter.nameValueFunc) == null) {
+            String m = String.format("%s don't support batch no literal", this.getClass().getName());
+            throw new CriteriaException(m);
+        } else {
+            value = nameValueFunc.apply(namedLiteral.name());
+        }
+
+
+        if (!this.paramAccepter.hasNamedLiteral) {
+            this.paramAccepter.setHasNamedLiteral();
+        }
+
         final StringBuilder sqlBuilder = this.sqlBuilder;
 
         if (value == null) {
@@ -221,7 +223,7 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
         } else if (((Collection<?>) value).size() == ((SqlValueParam.NamedMultiValue) namedLiteral).columnSize()) {
 
             final ArmyParser parser = this.parser;
-            final TypeMeta paramMeta = namedLiteral.typeMeta();
+            final TypeMeta typeMeta = namedLiteral.typeMeta();
             sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
             int i = 0;
             for (Object v : (Collection<?>) value) {
@@ -230,7 +232,7 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
                 } else {
                     sqlBuilder.append(_Constant.SPACE);
                 }
-                parser.literal(paramMeta, v, sqlBuilder);//TODO codec field
+                parser.literal(typeMeta, v, sqlBuilder);
                 i++;
             }
             sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
@@ -253,13 +255,13 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
     @Override
     public final boolean hasParam() {
-        return this.paramConsumer.paramList.size() > 0;
+        return this.paramAccepter.paramList.size() > 0;
     }
 
 
     @Override
     public final boolean hasNamedLiteral() {
-        return this.paramConsumer.hasNamedLiteral;
+        return this.paramAccepter.hasNamedLiteral;
     }
 
     @Override
@@ -275,7 +277,7 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
 
     @Override
     public final List<SQLParam> paramList() {
-        return _Collections.unmodifiableList(this.paramConsumer.paramList);
+        return _Collections.unmodifiableList(this.paramAccepter.paramList);
     }
 
     @Override
@@ -284,20 +286,28 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
     }
 
     final boolean hasNamedParam() {
-        return this.paramConsumer.hasNamedParam;
+        return this.paramAccepter.hasNamedParam;
     }
 
 
     @Nullable
-    Object currentRowNamedValue(String name) {
+    Object readCurrentRowNamedValue(String name) {
         String m = String.format("context[%s] don't support named value.", this.getClass().getName());
+        throw new CriteriaException(m);
+    }
+
+    /**
+     * @return batch index(based zero)
+     */
+    int readCurrentBatchIndex() {
+        String m = String.format("context[%s] don't batchNo.", this.getClass().getName());
         throw new CriteriaException(m);
     }
 
 
     @Nullable
     private Object readNamedValue(final NamedParam namedParam) {
-        final Function<String, Object> function = this.paramConsumer.function;
+        final Function<String, Object> function = this.paramAccepter.nameValueFunc;
         assert function != null;
         final Object value;
         value = function.apply(namedParam.name());
@@ -307,7 +317,7 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
         return value;
     }
 
-    private Collection<?> readNamedMulti(final NamedParam.NamedMulti namedParam) {
+    private Collection<?> readNamedMulti(final NamedParam.NamedRow namedParam) {
         final Object value;
         value = readNamedValue(namedParam);
         if (!(value instanceof Collection)) {
@@ -322,66 +332,75 @@ abstract class StatementContext implements _PrimaryContext, StmtParams {
     }
 
 
-    private static void appendMultiParamPlaceholder(final StringBuilder sqlBuilder
-            , final SqlValueParam.MultiValue sqlParam) {
+    private static void appendMultiParamPlaceholder(final StringBuilder sqlBuilder,
+                                                    final SqlValueParam.MultiValue sqlParam) {
         final int paramSize;
         paramSize = sqlParam.columnSize();
         assert paramSize > 0;
+        sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
         for (int i = 0; i < paramSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
             }
             sqlBuilder.append(SPACE_PLACEHOLDER);
         }
+        sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
     }
 
 
-    private static class ParamConsumer {
+    private static class ParamAccepter {
 
         private final ArrayList<SQLParam> paramList;
 
-        private final Function<String, Object> function;
+        private final Function<String, Object> nameValueFunc;
+
+        private final IntSupplier batchIndexFunc;
 
         private boolean hasNamedParam;
 
         private boolean hasNamedLiteral;
 
-        private ParamConsumer(@Nullable Function<String, Object> function) {
+        private ParamAccepter(@Nullable Function<String, Object> nameValueFunc, @Nullable IntSupplier batchIndexFunc) {
+            assert (nameValueFunc == null) == (batchIndexFunc == null);
             this.paramList = _Collections.arrayList();
-            this.function = function;
+            this.nameValueFunc = nameValueFunc;
+            this.batchIndexFunc = batchIndexFunc;
         }
 
-        private ParamConsumer(ParamConsumer outerConsumer, Function<String, Object> function) {
+        private ParamAccepter(ParamAccepter outerConsumer, Function<String, Object> nameValueFunc,
+                              IntSupplier batchIndexFunc) {
             this.paramList = outerConsumer.paramList;
             this.hasNamedParam = outerConsumer.hasNamedParam;
             this.hasNamedLiteral = outerConsumer.hasNamedLiteral;
-            this.function = function;
+            this.nameValueFunc = nameValueFunc;
+            this.batchIndexFunc = batchIndexFunc;
         }
 
         final void setHasNamedParam() {
             this.hasNamedParam = true;
-            if (this instanceof ParamConsumerWithOuter) {
-                ((ParamConsumerWithOuter) this).outerConsumer.setHasNamedParam();
+            if (this instanceof ParamAccepterWithOuter) {
+                ((ParamAccepterWithOuter) this).outerAccepter.setHasNamedParam();
             }
         }
 
         final void setHasNamedLiteral() {
             this.hasNamedLiteral = true;
-            if (this instanceof ParamConsumerWithOuter) {
-                ((ParamConsumerWithOuter) this).outerConsumer.setHasNamedLiteral();
+            if (this instanceof ParamAccepterWithOuter) {
+                ((ParamAccepterWithOuter) this).outerAccepter.setHasNamedLiteral();
             }
         }
 
     }//ParamConsumer
 
 
-    private static final class ParamConsumerWithOuter extends ParamConsumer {
+    private static final class ParamAccepterWithOuter extends ParamAccepter {
 
-        private final ParamConsumer outerConsumer;
+        private final ParamAccepter outerAccepter;
 
-        private ParamConsumerWithOuter(ParamConsumer outerConsumer, Function<String, Object> function) {
-            super(outerConsumer, function);
-            this.outerConsumer = outerConsumer;
+        private ParamAccepterWithOuter(ParamAccepter outerAccepter, Function<String, Object> function,
+                                       IntSupplier supplier) {
+            super(outerAccepter, function, supplier);
+            this.outerAccepter = outerAccepter;
         }
 
     }//ParamConsumerWithOuter

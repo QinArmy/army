@@ -85,7 +85,7 @@ abstract class BatchSpecStatementContext extends StatementContext implements Bat
 
 
     @Override
-    final Object currentRowNamedValue(final String name) {
+    final Object readCurrentRowNamedValue(final String name) {
         final List<?> paramList = this.paramList;
         final ReadAccessor accessor = this.accessor;
         if (paramList == null || accessor == null) {

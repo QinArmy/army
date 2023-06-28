@@ -12,10 +12,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnv;
-import io.army.mapping.MappingType;
-import io.army.mapping.NoMatchMappingException;
-import io.army.mapping._ArmyBuildInMapping;
+import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
@@ -118,6 +115,11 @@ public abstract class SQLs extends SQLsSyntax {
     public static final WordBooleans TRUE = OperationPredicate.booleanWord(true);
 
     public static final WordBooleans FALSE = OperationPredicate.booleanWord(false);
+
+    public static final ParamExpression BATCH_NO_PARAM = SQLs.namedParam(IntegerType.INSTANCE, "$ARMY_BATCH_NO$");
+
+    public static final LiteralExpression BATCH_NO_LITERAL = SQLs.namedLiteral(NoCastIntegerType.INSTANCE, "$ARMY_BATCH_NO$");
+
 
     public static final WordDefault DEFAULT = new DefaultWord();
 

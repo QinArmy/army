@@ -18,7 +18,7 @@ abstract class SqlParams implements SQLParam {
         return new NullableSingleParam(paramMeta, value);
     }
 
-    static MultiParam multi(final NamedParam.NamedMulti namedParam, final Collection<?> values) {
+    static MultiParam multi(final NamedParam.NamedRow namedParam, final Collection<?> values) {
         final List<?> valueList;
         valueList = _Collections.asUnmodifiableList(values);
         if (valueList.size() != namedParam.columnSize()) {

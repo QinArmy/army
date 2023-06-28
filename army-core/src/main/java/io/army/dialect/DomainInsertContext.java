@@ -5,6 +5,7 @@ import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadWrapper;
+import io.army.criteria.CriteriaException;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.NullMode;
 import io.army.criteria.Visible;
@@ -30,6 +31,7 @@ import java.util.function.ObjIntConsumer;
  */
 final class DomainInsertContext extends ValuesSyntaxInsertContext implements InsertStmtParams {
 
+
     static DomainInsertContext forSingle(@Nullable _SqlContext outerContext, _Insert._DomainInsert insert
             , ArmyParser dialect, Visible visible) {
         assert !(insert instanceof _Insert._ChildDomainInsert);
@@ -52,6 +54,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
     private final DomainWrapper wrapper;
 
     private final List<?> domainList;
+
+    private int currentBatchIndex;
 
 
     /**
@@ -98,6 +102,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         final boolean mockEnv = dialect.mockEnv;
         final NullMode nullMode = this.nullMode;
 
+
         final DomainWrapper wrapper = this.wrapper;
         final ObjectAccessor accessor = wrapper.accessor;
         final TableMeta<?> insertTable = this.insertTable, domainTable = wrapper.domainTable;
@@ -106,9 +111,12 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         final boolean manageVisible;
         final FieldMeta<?> discriminator = domainTable.discriminator();
         final String spaceDiscriminator;
+        final boolean twoStmtMode;
         if (domainTable instanceof ChildTableMeta) {
+            twoStmtMode = this.parentContext != null;
             spaceDiscriminator = _Constant.SPACE + Integer.toString(domainTable.discriminatorValue().code());
         } else {
+            twoStmtMode = false;
             spaceDiscriminator = _Constant.SPACE_ZERO;
         }
         final FieldValueGenerator generator;
@@ -116,7 +124,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
             assert insertTable == domainTable;
             generator = null;
             manageVisible = false;
-            defaultValueMap = wrapper.childDefaultMap;
+            defaultValueMap = wrapper.nonChildDefaultMap;
         } else {
             generator = dialect.generator;
             final FieldMeta<?> visibleField;
@@ -133,8 +141,11 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         final StringBuilder sqlBuilder = this.sqlBuilder;
         sqlBuilder.append(_Constant.SPACE_VALUES); // VALUES key words
         for (int rowIndex = 0; rowIndex < rowSize; rowIndex++) {
+
+            this.currentBatchIndex = rowIndex;
+
             currentDomain = domainList.get(rowIndex);
-            wrapper.domain = currentDomain; //firstly,update current domain
+            wrapper.domain = currentDomain; //update current domain
 
             if (generator != null) {
                 if (migration) {
@@ -167,9 +178,15 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                     assert insertTable instanceof ParentTableMeta;
                     sqlBuilder.append(spaceDiscriminator);
                 } else if (postParentId && field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta) {
-                    assert delayIdParam == null;
-                    delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, currentDomain, accessor);
-                    this.appendParam(delayIdParam);
+                    if (twoStmtMode) {
+                        assert delayIdParam == null;
+                        delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, currentDomain, accessor);
+                        this.appendParam(delayIdParam);
+                    } else if ((expression = defaultValueMap.get(field)) == null) {
+                        throw oneStmtPostChildNoIdExpression();
+                    } else {
+                        expression.appendSql(sqlBuilder, this);
+                    }
                 } else if ((value = accessor.get(currentDomain, field.fieldName())) != null) {
                     this.appendInsertValue(literalMode, field, value);
                 } else if (field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta) {//child id must be managed by army
@@ -240,13 +257,24 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     @Nullable
     @Override
-    Object currentRowNamedValue(final String name) {
+    Object readCurrentRowNamedValue(final String name) {
         final DomainWrapper wrapper = this.wrapper;
         final Object domain = wrapper.domain;
         assert domain != null;
         return wrapper.accessor.get(domain, name);
     }
 
+    @Override
+    int readCurrentBatchIndex() {
+        return this.currentBatchIndex;
+    }
+
+
+    private CriteriaException oneStmtPostChildNoIdExpression() {
+        String m = String.format("error,you use %s one statement mode domain insert %s,but no child id default expression",
+                this.parser.database.name(), this.insertTable);
+        return new CriteriaException(m);
+    }
 
     private static final class DomainReadWrapper implements ReadWrapper {
 

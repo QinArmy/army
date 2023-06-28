@@ -12,7 +12,7 @@ public interface MultiParam extends SQLParam, SqlValueParam.MultiValue {
     List<?> valueList();
 
 
-    static MultiParam build(NamedParam.NamedMulti param, Collection<?> values) {
+    static MultiParam build(NamedParam.NamedRow param, Collection<?> values) {
         return SqlParams.multi(param, values);
     }
 

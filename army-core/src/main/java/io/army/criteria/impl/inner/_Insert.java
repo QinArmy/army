@@ -59,11 +59,8 @@ public interface _Insert extends _Statement {
      * This interface representing dialect support sub insert statement in with clause,for example PostgreSQL.
      * </p>
      */
-    interface _SupportWithClauseInsert extends _Insert {
+    interface _SupportWithClauseInsert extends _Insert, _WithClauseSpec {
 
-        boolean isRecursive();
-
-        List<_Cte> cteList();
     }
 
 

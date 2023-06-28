@@ -31,7 +31,7 @@ abstract class InsertContext extends StatementContext
         InsertStmtParams,
         SelectItemListContext {
 
-    private final InsertContext parentContext;
+    final InsertContext parentContext;
 
     private final boolean twoStmtQuery;
 
@@ -101,7 +101,7 @@ abstract class InsertContext extends StatementContext
             this.twoStmtQuery = false;
         }
         this.insertTable = targetStmt.table();
-        assert this.insertTable instanceof SingleTableMeta;
+        //  assert this.insertTable instanceof SingleTableMeta;
 
         if (targetStmt instanceof _Insert._InsertOption) {
             final _Insert._InsertOption option = (_Insert._InsertOption) targetStmt;

@@ -132,7 +132,7 @@ abstract class PostgreInserts extends InsertSupports {
         mode = clause.getInsertMode();
         switch (mode) {
             case DOMAIN:
-                spec = new PrimarySingleDomainInsertStatement(clause);
+                spec = new PrimaryDomainInsertStatement(clause);
                 break;
             case VALUES:
                 spec = new PrimaryValueInsertStatement(clause);
@@ -910,9 +910,8 @@ abstract class PostgreInserts extends InsertSupports {
 
 
         /**
-         * @see PrimaryInsertIntoClause#insertInto(SimpleTableMeta)
+         * @see PrimaryInsertIntoClause#insertInto(TableMeta)
          * @see PrimaryInsertIntoClause#insertInto(ParentTableMeta)
-         * @see PrimaryInsertIntoClause#insertInto(ChildTableMeta)
          * @see ChildInsertIntoClause#insertInto(ComplexTableMeta)
          */
         private PostgreComplexValuesClause(WithValueSyntaxOptions options, TableMeta<T> table,
@@ -1467,14 +1466,18 @@ abstract class PostgreInserts extends InsertSupports {
 
     }//DomainInsertStatement
 
-    private static final class PrimarySingleDomainInsertStatement extends DomainInsertStatement<Insert, ReturningInsert>
+    private static final class PrimaryDomainInsertStatement extends DomainInsertStatement<Insert, ReturningInsert>
             implements Insert {
 
         private final List<?> domainList;
 
-        private PrimarySingleDomainInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        private PrimaryDomainInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
-            this.domainList = clause.domainListForSingle();
+            if (clause.insertTable instanceof ChildTableMeta) {
+                this.domainList = clause.domainListForSingle();
+            } else {
+                this.domainList = Collections.emptyList();
+            }
         }
 
         @Override
@@ -1526,8 +1529,7 @@ abstract class PostgreInserts extends InsertSupports {
 
     private static final class PrimaryParentDomainInsertStatement<P>
             extends DomainInsertStatement<PostgreInsert._ParentInsert<P>, ReturningInsert>
-            implements PostgreInsert._ParentInsert<P>
-            , ValueSyntaxOptions {
+            implements PostgreInsert._ParentInsert<P>, ValueSyntaxOptions {
 
         private final List<?> originalDomainList;
 

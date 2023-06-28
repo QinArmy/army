@@ -19,7 +19,7 @@ final class ParenSubRowSetContext extends StatementContext implements _ParenRowS
     }
 
 
-    private final _SqlContext outerContext;
+    private final StatementContext outerContext;
 
 
     ParenSubRowSetContext(@Nullable StatementContext outerContext, ArmyParser parser, Visible visible) {

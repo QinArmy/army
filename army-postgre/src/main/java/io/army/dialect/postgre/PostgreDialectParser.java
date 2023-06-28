@@ -85,6 +85,61 @@ final class PostgreDialectParser extends PostgreParser {
 
     @Override
     protected void parseWithClause(final _Statement._WithClauseSpec spec, final _SqlContext context) {
+        final List<_Cte> cteList = spec.cteList();
+        final int cteSize = cteList.size();
+        if (cteSize == 0) {
+            return;
+        }
+        final StringBuilder sqlBuilder;
+        if ((sqlBuilder = context.sqlBuilder()).length() > 0) {
+            sqlBuilder.append(_Constant.SPACE);
+        }
+        sqlBuilder.append(_Constant.WITH);
+        if (spec.isRecursive()) {
+            sqlBuilder.append(_Constant.SPACE_RECURSIVE);
+        }
+        _PostgreCte cte;
+        SubStatement subStatement;
+        List<String> columnAliasList;
+        for (int i = 0, columnSize; i < cteSize; i++) {
+            if (i > 0) {
+                sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+            } else {
+                sqlBuilder.append(_Constant.SPACE);
+            }
+            cte = (_PostgreCte) cteList.get(i);
+
+            this.identifier(cte.name(), sqlBuilder);
+
+            columnAliasList = cte.columnAliasList();
+            columnSize = columnAliasList.size();
+            if (columnSize > 0) {
+                sqlBuilder.append(_Constant.SPACE_LEFT_PAREN);
+                for (int columnIndex = 0; columnIndex < columnSize; columnIndex++) {
+                    if (i > 0) {
+                        sqlBuilder.append(_Constant.SPACE_COMMA_SPACE);
+                    } else {
+                        sqlBuilder.append(_Constant.SPACE);
+                    }
+                    this.identifier(columnAliasList.get(columnIndex), sqlBuilder);
+                }
+                sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+            }
+            sqlBuilder.append(_Constant.SPACE_AS)
+                    .append(_Constant.SPACE_LEFT_PAREN);
+            subStatement = cte.subStatement();
+            if (subStatement instanceof SubQuery) {
+                this.handleQuery((SubQuery) subStatement, context);
+            } else if (subStatement instanceof _Insert) {
+                this.handleInsertStmt(context, (_Insert) subStatement, context.visible());
+            } else {
+                //TODO
+                throw new UnsupportedOperationException();
+            }
+            sqlBuilder.append(_Constant.SPACE_RIGHT_PAREN);
+
+
+        }
 
     }
 
@@ -468,6 +523,8 @@ final class PostgreDialectParser extends PostgreParser {
      * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre INSERT syntax</a>
      */
     private void parsePostgreInsert(final _InsertContext context, final _PostgreInsert stmt) {
+
+        this.parseWithClause(stmt, context);
 
         final StringBuilder sqlBuilder;
         if ((sqlBuilder = context.sqlBuilder()).length() > 0) {

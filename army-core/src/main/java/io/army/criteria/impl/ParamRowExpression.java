@@ -214,7 +214,7 @@ abstract class ParamRowExpression extends OperationRowExpression
     }//AnonymousMultiParam
 
 
-    private static final class NamedMultiParam extends ParamRowExpression implements NamedParam.NamedMulti {
+    private static final class NamedMultiParam extends ParamRowExpression implements NamedParam.NamedRow {
 
         private final String name;
 

@@ -3,12 +3,12 @@ package io.army.stmt;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
 import io.army.criteria.*;
+import io.army.criteria.impl.SQLs;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -71,25 +71,31 @@ public abstract class Stmts {
     public static BatchStmt batchDml(final StmtParams params, final List<?> paramWrapperList) {
         final List<SQLParam> paramGroup = params.paramList();
         final int paramSize = paramGroup.size();
-        final List<List<SQLParam>> groupList = new ArrayList<>(paramWrapperList.size());
+        final int batchSize = paramWrapperList.size();
+
+        final List<List<SQLParam>> groupList = _Collections.arrayList(batchSize);
         final ReadAccessor accessor;
         accessor = ObjectAccessorFactory.readOnlyFromInstance(paramWrapperList.get(0));
 
         NamedParam namedParam = null;
         List<SQLParam> group;
-        Object value;
-        for (Object paramObject : paramWrapperList) {
+        Object value, paramObject;
+        for (int batchIndex = 0; batchIndex < batchSize; batchIndex++) {
+            paramObject = paramWrapperList.get(batchIndex);
+
             group = _Collections.arrayList(paramSize);
             for (SQLParam sqlParam : paramGroup) {
                 if (!(sqlParam instanceof NamedParam)) {
                     group.add(sqlParam);
-                } else if (sqlParam instanceof NamedParam.NamedMulti) {
+                } else if (sqlParam instanceof NamedParam.NamedRow) {
                     namedParam = ((NamedParam) sqlParam);
                     value = accessor.get(paramObject, namedParam.name());
                     if (!(value instanceof Collection)) {
-                        throw _Exceptions.namedParamNotMatch((NamedParam.NamedMulti) namedParam, value);
+                        throw _Exceptions.namedParamNotMatch((NamedParam.NamedRow) namedParam, value);
                     }
-                    group.add(MultiParam.build((NamedParam.NamedMulti) namedParam, (Collection<?>) value));
+                    group.add(MultiParam.build((NamedParam.NamedRow) namedParam, (Collection<?>) value));
+                } else if (sqlParam == SQLs.BATCH_NO_PARAM) {
+                    group.add(SingleParam.build(sqlParam.typeMeta(), batchIndex + 1));
                 } else {
                     namedParam = ((NamedParam) sqlParam);
                     value = accessor.get(paramObject, namedParam.name());

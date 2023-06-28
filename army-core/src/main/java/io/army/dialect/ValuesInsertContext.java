@@ -306,7 +306,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
 
     @Override
-    Object currentRowNamedValue(final String name) {
+    Object readCurrentRowNamedValue(final String name) {
         final ValuesRowWrapper wrapper = this.rowWrapper;
         final TableMeta<?> domainTable = wrapper.domainTable;
         final FieldMeta<?> field;
