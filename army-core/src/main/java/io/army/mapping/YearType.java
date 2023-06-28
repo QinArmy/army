@@ -117,9 +117,9 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
         } else if (nonNull instanceof LocalDateTime) {
             value = Year.from((LocalDateTime) nonNull);
         } else if (nonNull instanceof OffsetDateTime) {
-            value = Year.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.databaseZoneOffset()));
+            value = Year.from(((OffsetDateTime) nonNull).atZoneSameInstant(env.zoneOffset()));
         } else if (nonNull instanceof ZonedDateTime) {
-            value = Year.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.databaseZoneOffset()));
+            value = Year.from(((ZonedDateTime) nonNull).withZoneSameInstant(env.zoneOffset()));
         } else if (nonNull instanceof YearMonth) {
             value = Year.from((YearMonth) nonNull);
         } else if (!(nonNull instanceof String)) {

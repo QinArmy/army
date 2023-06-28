@@ -44,7 +44,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     private List<Map<FieldMeta<?>, Object>> tempGeneratedValuesList;
 
-    private int currentBatchIndex;
+    private int currentBatchIndex = -1;
 
     /**
      * <p>
@@ -271,6 +271,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         rowWrapper.rowValuesMap = null; //finally must clear
         rowWrapper.generatedMap = null;//finally must clear
+        this.currentBatchIndex = -1;
 
         return outputValueSize;
 
@@ -328,7 +329,11 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     @Override
     int readCurrentBatchIndex() {
-        return this.currentBatchIndex;
+        final int batchIndex = this.currentBatchIndex;
+        if (batchIndex < 0) {
+            throw valuesClauseEndNoBatchNo();
+        }
+        return batchIndex;
     }
 
     private CriteriaException oneStmtModePostChildNoIdExpression() {

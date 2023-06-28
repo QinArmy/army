@@ -4,8 +4,7 @@ import io.army.codec.JsonCodec;
 import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.Clock;
 import java.time.ZoneOffset;
 
 final class MappingEnvImpl implements MappingEnv {
@@ -41,10 +40,12 @@ final class MappingEnvImpl implements MappingEnv {
     }
 
     @Override
-    public ZoneOffset databaseZoneOffset() {
+    public ZoneOffset zoneOffset() {
         ZoneOffset zoneId = this.zoneId;
         if (zoneId == null) {
-            zoneId = ZoneId.systemDefault().getRules().getOffset(Instant.now());
+            final Clock clock;
+            clock = Clock.systemDefaultZone();
+            zoneId = clock.getZone().getRules().getOffset(clock.instant());
         }
         return zoneId;
     }

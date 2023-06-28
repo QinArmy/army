@@ -15,7 +15,7 @@ public interface MappingEnv {
      */
     ServerMeta serverMeta();
 
-    ZoneOffset databaseZoneOffset();
+    ZoneOffset zoneOffset();
 
     JsonCodec jsonCodec();
 

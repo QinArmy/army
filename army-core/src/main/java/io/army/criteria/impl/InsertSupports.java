@@ -503,6 +503,17 @@ abstract class InsertSupports {
             return this.context;
         }
 
+        @Override
+        public final void prepared() {
+            //no bug,never here
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public final boolean isPrepared() {
+            //no bug,never here
+            throw new UnsupportedOperationException();
+        }
 
         @Override
         public final R parens(Consumer<InsertStatement._StaticColumnSpaceClause<T>> consumer) {

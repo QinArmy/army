@@ -6,6 +6,9 @@ import io.army.meta.TypeMeta;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalUnit;
 import java.util.Locale;
 
 import static java.time.temporal.ChronoField.*;
@@ -228,6 +231,86 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
 
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T extends Temporal> T truncatedTo(final FieldMeta<?> field, final T temporal) {
+        final TemporalUnit unit;
+        switch (field.scale()) {
+            case -1:
+            case 6:
+                unit = null;
+                break;
+            case 0: {
+                if (temporal.get(MICRO_OF_SECOND) == 0) {
+                    unit = null;
+                } else {
+                    unit = ChronoUnit.SECONDS;
+                }
+            }
+            break;
+            case 1: {
+                if (temporal.get(MICRO_OF_SECOND) < 100_000) {
+                    unit = null;
+                } else {
+                    unit = TruncatedUnit.MILLIS_100;
+                }
+            }
+            break;
+            case 2: {
+                if (temporal.get(MICRO_OF_SECOND) % 10_000 == 0) {
+                    unit = null;
+                } else {
+                    unit = TruncatedUnit.MILLIS_10;
+                }
+            }
+            break;
+            case 3: {
+                if (temporal.get(MICRO_OF_SECOND) % 1000 == 0) {
+                    unit = null;
+                } else {
+                    unit = ChronoUnit.MILLIS;
+                }
+            }
+            break;
+            case 4: {
+                if (temporal.get(MICRO_OF_SECOND) % 100 == 0) {
+                    unit = null;
+                } else {
+                    unit = TruncatedUnit.MICROS_100;
+                }
+            }
+            break;
+            case 5: {
+                if (temporal.get(MICRO_OF_SECOND) % 10 == 0) {
+                    unit = null;
+                } else {
+                    unit = TruncatedUnit.MICROS_10;
+                }
+            }
+            break;
+            default:
+                throw _Exceptions.timeFieldScaleError(field);
+        }
+
+        final Temporal value;
+        if (unit == null) {
+            value = temporal;
+        } else if (temporal instanceof LocalDateTime) {
+            value = ((LocalDateTime) temporal).truncatedTo(unit);
+        } else if (temporal instanceof OffsetDateTime) {
+            value = ((OffsetDateTime) temporal).truncatedTo(unit);
+        } else if (temporal instanceof ZonedDateTime) {
+            value = ((ZonedDateTime) temporal).truncatedTo(unit);
+        } else if (temporal instanceof LocalTime) {
+            value = ((LocalTime) temporal).truncatedTo(unit);
+        } else if (temporal instanceof OffsetTime) {
+            value = ((OffsetTime) temporal).truncatedTo(unit);
+        } else {
+            // unknown
+            value = temporal;
+        }
+        return (T) value;
+    }
+
 
     private static abstract class DateTimeFormatterHolder {
 
@@ -368,7 +451,6 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
     }//TimeFormatterHolder
 
 
-
     private static abstract class OffsetTimeFormatterExtensionHolder {
 
         private OffsetTimeFormatterExtensionHolder() {
@@ -403,6 +485,74 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
 
 
     }//OffsetTimeFormatterExtensionHolder
+
+
+    /**
+     * This TemporalUnit is designed for following :
+     * <ul>
+     *     <li>{@link LocalDateTime#truncatedTo(TemporalUnit)}</li>
+     *     <li>{@link OffsetDateTime#truncatedTo(TemporalUnit)}</li>
+     *     <li>{@link ZonedDateTime#truncatedTo(TemporalUnit)}</li>
+     *     <li>{@link LocalTime#truncatedTo(TemporalUnit)}</li>
+     *     <li>{@link OffsetTime#truncatedTo(TemporalUnit)}</li>
+     * </ul>
+     *
+     * @since 1.0
+     */
+    private enum TruncatedUnit implements TemporalUnit {
+
+        /**
+         * @see ChronoUnit#MICROS
+         */
+        MICROS_10(Duration.ofNanos(10_000)),
+        MICROS_100(Duration.ofNanos(100_000)),
+
+        /**
+         * @see ChronoUnit#MILLIS
+         */
+        MILLIS_10(Duration.ofMillis(10)),
+        MILLIS_100(Duration.ofMillis(100));
+
+
+        private final Duration duration;
+
+        TruncatedUnit(Duration duration) {
+            this.duration = duration;
+        }
+
+        @Override
+        public final Duration getDuration() {
+            return this.duration;
+        }
+
+        @Override
+        public final boolean isDurationEstimated() {
+            return false;
+        }
+
+        @Override
+        public final boolean isDateBased() {
+            return false;
+        }
+
+        @Override
+        public final boolean isTimeBased() {
+            return true;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final <R extends Temporal> R addTo(R temporal, long amount) {
+            return (R) temporal.plus(amount, this);
+        }
+
+        @Override
+        public final long between(Temporal temporal1Inclusive, Temporal temporal2Exclusive) {
+            return temporal1Inclusive.until(temporal2Exclusive, this);
+        }
+
+
+    }
 
 
 }

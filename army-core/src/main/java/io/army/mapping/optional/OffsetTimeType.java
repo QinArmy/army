@@ -86,7 +86,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
         final Temporal value;
         switch (type.database()) {
             case MySQL:
-                value = time.withOffsetSameInstant(env.databaseZoneOffset())
+                value = time.withOffsetSameInstant(env.zoneOffset())
                         .toLocalTime();
                 break;
             case PostgreSQL:
@@ -107,10 +107,10 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
         } else if (nonNull instanceof ZonedDateTime) {
             value = ((ZonedDateTime) nonNull).toOffsetDateTime().toOffsetTime();
         } else if (nonNull instanceof LocalDateTime) {
-            value = OffsetDateTime.of((LocalDateTime) nonNull, env.databaseZoneOffset())
+            value = OffsetDateTime.of((LocalDateTime) nonNull, env.zoneOffset())
                     .toOffsetTime();
         } else if (nonNull instanceof LocalTime) {
-            value = OffsetTime.of((LocalTime) nonNull, env.databaseZoneOffset());
+            value = OffsetTime.of((LocalTime) nonNull, env.zoneOffset());
         } else if (nonNull instanceof String) {
             try {
                 value = parseAfterGet(type, env, nonNull);
@@ -183,7 +183,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
         final OffsetTime value;
         switch (sqlType.database()) {
             case MySQL:
-                value = OffsetTime.of(LocalTime.parse((String) nonNull), env.databaseZoneOffset());
+                value = OffsetTime.of(LocalTime.parse((String) nonNull), env.zoneOffset());
                 break;
             case PostgreSQL:
             default: {
@@ -191,7 +191,7 @@ public final class OffsetTimeType extends _ArmyNoInjectionMapping implements Map
                 try {
                     v = OffsetTime.parse((String) nonNull, _TimeUtils.OFFSET_TIME_FORMATTER_6);
                 } catch (DateTimeParseException e) {
-                    v = OffsetTime.of(LocalTime.parse((String) nonNull), env.databaseZoneOffset());
+                    v = OffsetTime.of(LocalTime.parse((String) nonNull), env.zoneOffset());
                 }
                 value = v;
             }

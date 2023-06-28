@@ -74,7 +74,7 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
 
     @Override
     public ZoneId zoneId() {
-        return this.mappingEnv.databaseZoneOffset();
+        return this.mappingEnv.zoneOffset();
     }
 
 

@@ -108,6 +108,10 @@ abstract class ArmyParser implements DialectParser {
 
     final NameMode funcNameMode;
 
+    final boolean truncatedCreateTime;
+
+    final boolean truncatedUpdateTime;
+
     private final String qualifiedSchemaName;
     private final NameMode tableNameMode;
 
@@ -163,6 +167,8 @@ abstract class ArmyParser implements DialectParser {
         this.columnNameMode = env.getOrDefault(ArmyKey.COLUMN_NAME_MODE);
 
         this.funcNameMode = env.getOrDefault(ArmyKey.FUNC_NAME_MODE);
+        this.truncatedCreateTime = env.getOrDefault(ArmyKey.TRUNCATED_CREATE_TIME);
+        this.truncatedUpdateTime = env.getOrDefault(ArmyKey.TRUNCATED_UPDATE_TIME);
         this.qualifiedSchemaName = this.getQualifiedSchemaName(env, this.serverMeta);
     }
 
@@ -1947,9 +1953,9 @@ abstract class ArmyParser implements DialectParser {
         if (javaType == LocalDateTime.class) {
             updateTimeValue = LocalDateTime.now();
         } else if (javaType == OffsetDateTime.class) {
-            updateTimeValue = OffsetDateTime.now(this.mappingEnv.databaseZoneOffset());
+            updateTimeValue = OffsetDateTime.now(this.mappingEnv.zoneOffset());
         } else if (javaType == ZonedDateTime.class) {
-            updateTimeValue = ZonedDateTime.now(this.mappingEnv.databaseZoneOffset());
+            updateTimeValue = ZonedDateTime.now(this.mappingEnv.zoneOffset());
         } else {
             // FieldMeta no bug,never here
             throw _Exceptions.dontSupportJavaType(field, javaType);

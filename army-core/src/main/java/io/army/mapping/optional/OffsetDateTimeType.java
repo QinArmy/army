@@ -75,7 +75,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
         final Temporal value;
         switch (type.database()) {
             case MySQL:
-                value = dateTime.withOffsetSameInstant(env.databaseZoneOffset())
+                value = dateTime.withOffsetSameInstant(env.zoneOffset())
                         .toLocalDateTime();
                 break;
             case PostgreSQL:
@@ -94,7 +94,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
         } else if (nonNull instanceof ZonedDateTime) {
             value = ((ZonedDateTime) nonNull).toOffsetDateTime();
         } else if (nonNull instanceof LocalDateTime) {
-            value = OffsetDateTime.of((LocalDateTime) nonNull, env.databaseZoneOffset());
+            value = OffsetDateTime.of((LocalDateTime) nonNull, env.zoneOffset());
         } else if (nonNull instanceof String) {
             try {
                 value = parseAfterGet(type, env, nonNull);
@@ -180,7 +180,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
         switch (sqlType.database()) {
             case MySQL:
                 value = OffsetDateTime.of(LocalDateTime.parse((String) nonNull, _TimeUtils.DATETIME_FORMATTER_6),
-                        env.databaseZoneOffset());
+                        env.zoneOffset());
                 break;
             case PostgreSQL:
             default: {
@@ -189,7 +189,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
                     v = OffsetDateTime.parse((String) nonNull, _TimeUtils.OFFSET_DATETIME_FORMATTER_6);
                 } catch (DateTimeParseException e) {
                     v = OffsetDateTime.of(LocalDateTime.parse((String) nonNull, _TimeUtils.DATETIME_FORMATTER_6),
-                            env.databaseZoneOffset());
+                            env.zoneOffset());
                 }
                 value = v;
             }

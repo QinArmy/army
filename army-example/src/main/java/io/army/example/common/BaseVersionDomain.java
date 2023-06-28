@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @SuppressWarnings("unchecked")
 public abstract class BaseVersionDomain<T extends BaseVersionDomain<T>> extends VersionDomain {
 
-    @Column
+    @Column(scale = 1)
     private LocalDateTime createTime;
 
     @Column

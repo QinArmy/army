@@ -17,6 +17,7 @@ import io.army.stmt.SingleParam;
 import io.army.stmt.Stmts;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
+import io.army.util._TimeUtils;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -656,15 +657,28 @@ abstract class InsertContext extends StatementContext
         final FieldMeta<?> field;
         field = table.getField(_MetaBridge.CREATE_TIME);
 
+
         final Class<?> javaType;
         javaType = field.javaType();
         final Temporal now;
         if (javaType == LocalDateTime.class) {
-            now = LocalDateTime.now();
+            if (this.parser.truncatedCreateTime) {
+                now = _TimeUtils.truncatedTo(field, LocalDateTime.now());
+            } else {
+                now = LocalDateTime.now();
+            }
         } else if (javaType == OffsetDateTime.class) {
-            now = OffsetDateTime.now(this.parser.mappingEnv.databaseZoneOffset());
+            if (this.parser.truncatedCreateTime) {
+                now = _TimeUtils.truncatedTo(field, OffsetDateTime.now(this.parser.mappingEnv.zoneOffset()));
+            } else {
+                now = OffsetDateTime.now(this.parser.mappingEnv.zoneOffset());
+            }
         } else if (javaType == ZonedDateTime.class) {
-            now = ZonedDateTime.now(this.parser.mappingEnv.databaseZoneOffset());
+            if (this.parser.truncatedCreateTime) {
+                now = _TimeUtils.truncatedTo(field, ZonedDateTime.now(this.parser.mappingEnv.zoneOffset()));
+            } else {
+                now = ZonedDateTime.now(this.parser.mappingEnv.zoneOffset());
+            }
         } else {
             // FieldMeta no bug,never here
             throw _Exceptions.dontSupportJavaType(field, javaType);
@@ -722,6 +736,12 @@ abstract class InsertContext extends StatementContext
                 throw _Exceptions.unexpectedEnum(mode);
         }
 
+    }
+
+    /*-------------------below static method -------------------*/
+
+    static CriteriaException valuesClauseEndNoBatchNo() {
+        return new CriteriaException("VALUES clause have ended,couldn't reference batch no");
     }
 
 
@@ -844,23 +864,24 @@ abstract class InsertContext extends StatementContext
 
             final FieldMeta<?> visibleField;
             visibleField = this.domainTable.tryGetComplexFiled(_MetaBridge.VISIBLE);
-            if (!(statement instanceof _Insert._ValuesSyntaxInsert)) {
-                if (statement instanceof _Insert._ChildAssignmentInsert) {
+
+            if (statement instanceof _Insert._ValuesSyntaxInsert) {
+                if (statement instanceof _Insert._ChildValuesInsert) {
                     this.manageVisible = visibleField != null
-                            && !((_Insert._ChildAssignmentInsert) statement).assignmentMap().containsKey(visibleField);
-                } else if (statement instanceof _Insert._AssignmentInsert) {
-                    this.manageVisible = visibleField != null
-                            && !((_Insert._AssignmentInsert) statement).assignmentMap().containsKey(visibleField);
+                            && !((_Insert._ChildValuesInsert) statement).defaultValueMap().containsKey(visibleField);
                 } else {
-                    //no bug,never here
-                    throw _Exceptions.unexpectedStatement(statement);
+                    this.manageVisible = visibleField != null
+                            && !((_Insert._ValuesSyntaxInsert) statement).defaultValueMap().containsKey(visibleField);
                 }
-            } else if (statement instanceof _Insert._ChildValuesInsert) {
+            } else if (statement instanceof _Insert._ChildAssignmentInsert) {
                 this.manageVisible = visibleField != null
-                        && !((_Insert._ChildValuesInsert) statement).defaultValueMap().containsKey(visibleField);
+                        && !((_Insert._ChildAssignmentInsert) statement).assignmentMap().containsKey(visibleField);
+            } else if (statement instanceof _Insert._AssignmentInsert) {
+                this.manageVisible = visibleField != null
+                        && !((_Insert._AssignmentInsert) statement).assignmentMap().containsKey(visibleField);
             } else {
-                this.manageVisible = visibleField != null
-                        && !((_Insert._ValuesSyntaxInsert) statement).defaultValueMap().containsKey(visibleField);
+                //no bug,never here
+                throw _Exceptions.unexpectedStatement(statement);
             }
 
             if (this.domainTable instanceof ChildTableMeta) {

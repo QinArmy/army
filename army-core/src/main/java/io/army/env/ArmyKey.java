@@ -29,7 +29,7 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<String> DATASOURCE_CLOSE_METHOD = new ArmyKey<>("datasource.close.method", String.class, null);
 
-    public static final ArmyKey<ZoneOffset> ZONE_OFFSET = new ArmyKey<>("zone.offset", ZoneOffset.class, null);
+    public static final ArmyKey<ZoneOffset> ZONE_OFFSET = new ArmyKey<>("zone_offset", ZoneOffset.class, null);
 
     public static final ArmyKey<Boolean> QUALIFIED_TABLE_NAME_ENABLE = new ArmyKey<>("qualified.table.name.enable", Boolean.class, Boolean.FALSE);
 
@@ -40,13 +40,19 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<AllowMode> VISIBLE_MODE = new ArmyKey<>("visible.mode", AllowMode.class, AllowMode.NEVER);
 
-    public static final ArmyKey<Boolean> DATABASE_SESSION_HOLDER_ENABLE = new ArmyKey<>("database.session.holder.enable", Boolean.class, Boolean.FALSE);
+    public static final ArmyKey<Boolean> DATABASE_SESSION_HOLDER_ENABLE = new ArmyKey<>("database.session_holder.enable", Boolean.class, Boolean.FALSE);
 
-    public static final ArmyKey<String> VISIBLE_SESSION_WHITE_LIST = new ArmyKey<>("visible.session.white.list", String.class, null);
+    public static final ArmyKey<String> VISIBLE_SESSION_WHITE_LIST = new ArmyKey<>("visible.session_white_list", String.class, null);
 
     public static final ArmyKey<AllowMode> QUERY_INSERT_MODE = new ArmyKey<>("query.insert.mode", AllowMode.class, AllowMode.WHITE_LIST);
 
-    public static final ArmyKey<String> QUERY_INSERT_SESSION_WHITE_LIST = new ArmyKey<>("query.insert.session.white.list", String.class, null);
+    public static final ArmyKey<String> QUERY_INSERT_SESSION_WHITE_LIST = new ArmyKey<>("query.insert.session_white_list", String.class, null);
+
+    public static final ArmyKey<Boolean> TRUNCATED_CREATE_TIME = new ArmyKey<>("truncated.create_time", Boolean.class, Boolean.TRUE);
+
+    public static final ArmyKey<Boolean> TRUNCATED_UPDATE_TIME = new ArmyKey<>("truncated.update_time", Boolean.class, Boolean.TRUE);
+
+    public static final ArmyKey<Boolean> TRUNCATED_TIME_TYPE = new ArmyKey<>("truncated.time_type", Boolean.class, Boolean.TRUE);
 
     public static final ArmyKey<NameMode> FUNC_NAME_MODE = new ArmyKey<>("func.name.mode", NameMode.class, NameMode.DEFAULT);
     public static final ArmyKey<Boolean> SQL_LOG_DYNAMIC = new ArmyKey<>("sql.log.dynamic", Boolean.class, Boolean.FALSE);

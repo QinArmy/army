@@ -922,6 +922,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         throw new MetaException(m);
     }
 
+    public static MetaException timeFieldScaleError(FieldMeta<?> field) {
+        String m = String.format("%s scale[%s] isn't default and not in [0,6]", field, field.scale());
+        throw new MetaException(m);
+    }
+
 
     public static CriteriaException identifierError(final String identifier, final Dialect dialect) {
         String m = String.format("identifier[%s] syntax error for %s", identifier, dialect);

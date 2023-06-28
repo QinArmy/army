@@ -54,14 +54,14 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     private final List<?> domainList;
 
-    private int currentBatchIndex;
+    private int currentBatchIndex = -1;
 
 
     /**
      * create for {@link  SingleTableMeta}
      */
-    private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._DomainInsert domainStmt
-            , ArmyParser dialect, Visible visible) {
+    private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._DomainInsert domainStmt,
+                                ArmyParser dialect, Visible visible) {
         super(outerContext, domainStmt, dialect, visible);
 
         this.domainList = domainStmt.domainList();
@@ -72,8 +72,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
     /**
      * create for {@link  ChildTableMeta}
      */
-    private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._ChildDomainInsert stmt
-            , DomainInsertContext parentContext) {
+    private DomainInsertContext(@Nullable StatementContext outerContext, _Insert._ChildDomainInsert stmt,
+                                DomainInsertContext parentContext) {
         super(outerContext, stmt, parentContext);
 
         this.domainList = stmt.domainList();
@@ -215,6 +215,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         }//outer for
 
         wrapper.domain = null; //finally must clear
+        this.currentBatchIndex = -1;
         return outputValueSize;
     }
 
@@ -263,7 +264,11 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     @Override
     int readCurrentBatchIndex() {
-        return this.currentBatchIndex;
+        final int batchIndex = this.currentBatchIndex;
+        if (batchIndex < 0) {
+            throw valuesClauseEndNoBatchNo();
+        }
+        return batchIndex;
     }
 
 
