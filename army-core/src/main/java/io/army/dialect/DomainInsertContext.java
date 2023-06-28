@@ -95,36 +95,39 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
 
         final ArmyParser dialect = this.parser;
-        final Map<FieldMeta<?>, _Expression> defaultValueMap;
-
         final LiteralMode literalMode = this.literalMode;
         final boolean migration = this.migration;
         final boolean mockEnv = dialect.mockEnv;
+
         final NullMode nullMode = this.nullMode;
-
-
+        final boolean twoStmtMode = this.twoStmtMode;
         final DomainWrapper wrapper = this.wrapper;
         final ObjectAccessor accessor = wrapper.accessor;
+
         final TableMeta<?> insertTable = this.insertTable, domainTable = wrapper.domainTable;
         final boolean postParentId = insertTable.nonChildId().generatorType() == GeneratorType.POST;
-
-        final boolean manageVisible;
         final FieldMeta<?> discriminator = domainTable.discriminator();
+
+
         final String spaceDiscriminator;
-        final boolean twoStmtMode;
         if (domainTable instanceof ChildTableMeta) {
-            twoStmtMode = this.parentContext != null;
             spaceDiscriminator = _Constant.SPACE + Integer.toString(domainTable.discriminatorValue().code());
         } else {
-            twoStmtMode = false;
             spaceDiscriminator = _Constant.SPACE_ZERO;
         }
+
         final FieldValueGenerator generator;
+        final boolean manageVisible;
+        final Map<FieldMeta<?>, _Expression> defaultValueMap;
         if (insertTable instanceof ChildTableMeta) {
             assert insertTable == domainTable;
             generator = null;
             manageVisible = false;
-            defaultValueMap = wrapper.nonChildDefaultMap;
+            if (twoStmtMode) {
+                defaultValueMap = wrapper.childDefaultMap;
+            } else {
+                defaultValueMap = wrapper.nonChildDefaultMap;
+            }
         } else {
             generator = dialect.generator;
             final FieldMeta<?> visibleField;
@@ -183,7 +186,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                         delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, currentDomain, accessor);
                         this.appendParam(delayIdParam);
                     } else if ((expression = defaultValueMap.get(field)) == null) {
-                        throw oneStmtPostChildNoIdExpression();
+                        throw oneStmtModePostChildNoIdExpression();
                     } else {
                         expression.appendSql(sqlBuilder, this);
                     }
@@ -270,7 +273,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
     }
 
 
-    private CriteriaException oneStmtPostChildNoIdExpression() {
+    private CriteriaException oneStmtModePostChildNoIdExpression() {
         String m = String.format("error,you use %s one statement mode domain insert %s,but no child id default expression",
                 this.parser.database.name(), this.insertTable);
         return new CriteriaException(m);

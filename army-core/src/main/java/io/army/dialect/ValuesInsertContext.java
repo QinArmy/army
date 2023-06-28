@@ -1,10 +1,7 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.LiteralMode;
-import io.army.criteria.NullMode;
-import io.army.criteria.SqlValueParam;
-import io.army.criteria.Visible;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
@@ -48,6 +45,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     private List<Map<FieldMeta<?>, Object>> tempGeneratedValuesList;
 
+    private int currentBatchIndex;
+
     /**
      * <p>
      * For {@link  io.army.meta.SingleTableMeta}
@@ -88,8 +87,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
      *
      * @see #forChild(_SqlContext, _Insert._ChildValuesInsert, ValuesInsertContext)
      */
-    private ValuesInsertContext(@Nullable StatementContext outerContext, _Insert._ChildValuesInsert stmt
-            , ValuesInsertContext parentContext) {
+    private ValuesInsertContext(@Nullable StatementContext outerContext, _Insert._ChildValuesInsert stmt,
+                                ValuesInsertContext parentContext) {
         super(outerContext, stmt, parentContext);
 
         this.rowList = stmt.rowPairList();
@@ -113,17 +112,17 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         final int fieldSize = fieldList.size();
 
         final ArmyParser parser = this.parser;
-        final Map<FieldMeta<?>, _Expression> defaultValueMap;
-
         final boolean migration = this.migration;
         final NullMode nullHandleMode = this.nullMode;
         final LiteralMode literalMode = this.literalMode;
-        final boolean mockEnv = parser.mockEnv;
 
-        final FieldValueGenerator generator;
+        final boolean mockEnv = parser.mockEnv;
+        final boolean twoStmtMode = this.twoStmtMode;
         final ValuesRowWrapper rowWrapper = this.rowWrapper;
         final TableMeta<?> insertTable = this.insertTable, domainTable = rowWrapper.domainTable;
 
+
+        final FieldValueGenerator generator;
         final List<Map<FieldMeta<?>, Object>> generatedValuesList;
 
 
@@ -137,7 +136,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         final List<Object> postIdList = rowWrapper.postIdList;
         final boolean manageVisible;
         final int generatedFieldSize;
-
+        final Map<FieldMeta<?>, _Expression> defaultValueMap;
         if (insertTable instanceof ChildTableMeta) {
             generator = null;
             generatedValuesList = this.generatedValuesList;
@@ -145,7 +144,11 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             assert !(generatedValuesList == null && !migration);
 
             generatedFieldSize = 0;
-            defaultValueMap = rowWrapper.childDefaultMap;
+            if (twoStmtMode) {
+                defaultValueMap = rowWrapper.childDefaultMap;
+            } else {
+                defaultValueMap = rowWrapper.nonChildDefaultMap;
+            }
         } else {
             final FieldMeta<?> visibleField = insertTable.tryGetField(_MetaBridge.VISIBLE);
             manageVisible = visibleField != null && !rowWrapper.nonChildDefaultMap.containsKey(visibleField);
@@ -180,6 +183,8 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         sqlBuilder = this.sqlBuilder.append(_Constant.SPACE_VALUES);
 
         for (int rowIndex = 0; rowIndex < rowSize; rowIndex++) {
+            this.currentBatchIndex = rowIndex;
+
             rowValuesMap = rowValuesList.get(rowIndex);
             rowWrapper.rowValuesMap = rowValuesMap;
 
@@ -222,9 +227,15 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                     assert insertTable instanceof ParentTableMeta;
                     sqlBuilder.append(spaceDiscriminator);
                 } else if (postParentId && field instanceof PrimaryFieldMeta && insertTable instanceof ChildTableMeta) {
-                    assert delayIdParam == null && postIdList != null;
-                    delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, rowIndex, postIdList::get);
-                    this.appendParam(delayIdParam);
+                    if (twoStmtMode) {
+                        assert delayIdParam == null && postIdList != null;
+                        delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, rowIndex, postIdList::get);
+                        this.appendParam(delayIdParam);
+                    } else if ((expression = defaultValueMap.get(field)) == null) {
+                        throw this.oneStmtModePostChildNoIdExpression();
+                    } else {
+                        expression.appendSql(sqlBuilder, this);
+                    }
                 } else if ((value = generatedMap.get(field)) != null) { // read the value that is generated by army
                     this.appendInsertValue(literalMode, field, value);
                 } else if (field instanceof PrimaryFieldMeta) { //child id must be managed by army
@@ -320,6 +331,16 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
     }
 
+    @Override
+    int readCurrentBatchIndex() {
+        return this.currentBatchIndex;
+    }
+
+    private CriteriaException oneStmtModePostChildNoIdExpression() {
+        String m = String.format("error,you use %s one statement mode values insert %s,but no child id default expression",
+                this.parser.database.name(), this.insertTable);
+        return new CriteriaException(m);
+    }
 
     private static final class ValuesRowWrapper extends _DialectUtils.ExpRowWrapper {
 

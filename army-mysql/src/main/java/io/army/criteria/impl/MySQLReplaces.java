@@ -282,7 +282,7 @@ abstract class MySQLReplaces extends InsertSupports {
 
         private MySQLComplexValuesClause(PrimaryReplaceIntoClause options, SingleTableMeta<T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, table);
+            super(options, table, true);
             this.hintList = _Collections.safeList(options.hintList);
             this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;
@@ -290,7 +290,7 @@ abstract class MySQLReplaces extends InsertSupports {
 
         private MySQLComplexValuesClause(ChildReplaceIntoClause<?> options, ComplexTableMeta<?, T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, table);
+            super(options, table, true);
             this.hintList = _Collections.safeList(options.hintList);
             this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;
@@ -298,7 +298,7 @@ abstract class MySQLReplaces extends InsertSupports {
 
         private MySQLComplexValuesClause(PrimarySingleReplaceIntoClause<?> options, SingleTableMeta<T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, table);
+            super(options, table, true);
             this.hintList = _Collections.safeList(options.hintList);
             this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;

@@ -573,7 +573,7 @@ abstract class MySQLInserts extends InsertSupports {
 
         private MySQLComplexValuesClause(PrimaryInsertIntoClause options, SingleTableMeta<T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, table);
+            super(options, table, true);
             this.hintList = _Collections.safeList(options.hintList);
             this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;
@@ -581,7 +581,7 @@ abstract class MySQLInserts extends InsertSupports {
 
         private MySQLComplexValuesClause(ChildInsertIntoClause<?> options, ChildTableMeta<T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, table);
+            super(options, table, true);
             this.hintList = _Collections.safeList(options.hintList);
             this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;
@@ -589,7 +589,7 @@ abstract class MySQLInserts extends InsertSupports {
 
         private MySQLComplexValuesClause(PrimarySingleInsertIntoClause<?> options, SingleTableMeta<T> table,
                                          Function<MySQLComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, table);
+            super(options, table, true);
             this.hintList = _Collections.safeList(options.hintList);
             this.modifierList = _Collections.safeList(options.modifierList);
             this.dmlFunction = dmlFunction;

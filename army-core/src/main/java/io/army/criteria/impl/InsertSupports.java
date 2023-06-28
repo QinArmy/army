@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect._DialectUtils;
@@ -482,19 +483,18 @@ abstract class InsertSupports {
 
         final boolean migration;
 
+        final boolean twoStmtMode;
+
         final TableMeta<T> insertTable;
 
         private List<FieldMeta<?>> fieldList;
 
         private Map<FieldMeta<?>, Boolean> fieldMap;
 
-        private ColumnsClause(CriteriaContext context, boolean migration, @Nullable TableMeta<T> table) {
-            if (table == null) {
-                //validate for insertInto method
-                throw ContextStack.nullPointer(context);
-            }
+        private ColumnsClause(CriteriaContext context, boolean migration, TableMeta<T> table, boolean twoStmtMode) {
             this.context = context;
             this.migration = migration;
+            this.twoStmtMode = twoStmtMode && table instanceof ChildTableMeta;
             this.insertTable = table;
         }
 
@@ -623,15 +623,34 @@ abstract class InsertSupports {
 
         @Override
         public final void validateField(final FieldMeta<?> field, final @Nullable ArmyExpression value) {
-//            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
-//            if (fieldMap == null) {
-//                checkField(this.context, this.insertTable, this.migration, field);
-//            } else if (!fieldMap.containsKey(field)) {
-//                throw notContainField(this.context, field);
-//            }
-//            if (value != null && !field.nullable() && value.isNullValue()) {
-//                throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
-//            } // TODO 临时注释
+            final Map<FieldMeta<?>, Boolean> fieldMap = this.fieldMap;
+            final TableMeta<?> tableOfField = field.tableMeta();
+            if (fieldMap != null) {
+                if (!fieldMap.containsKey(field)) {
+                    throw notContainField(this.context, field);
+                }
+            } else if (tableOfField != this.insertTable) {
+                //don't contain parent field
+                throw ContextStack.criteriaError(this.context, _Exceptions::unknownColumn, field);
+            }
+
+            if (this.migration) {
+                if (field instanceof PrimaryFieldMeta && tableOfField instanceof ChildTableMeta) {
+                    throw childIdIsManaged(this.context, (ChildTableMeta<?>) tableOfField);
+                }
+            } else if (!field.insertable()) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::nonInsertableField, field);
+            } else if (isArmyManageField(this.insertTable, field)) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::armyManageField, field);
+            } else if (field instanceof PrimaryFieldMeta && tableOfField instanceof ChildTableMeta) {
+                if (this.twoStmtMode || tableOfField.nonChildId().generatorType() != GeneratorType.POST) {
+                    throw childIdIsManaged(this.context, (ChildTableMeta<?>) tableOfField);
+                }
+            }
+
+            if (value != null && !field.nullable() && value.isNullValue()) {
+                throw ContextStack.criteriaError(this.context, _Exceptions::nonNullField, field);
+            }
 
         }
 
@@ -741,7 +760,6 @@ abstract class InsertSupports {
             implements InsertStatement._FullColumnDefaultClause<T, DR>,
             _Insert._ValuesSyntaxInsert {
 
-
         final LiteralMode literalMode;
 
         final NullMode nullHandleMode;
@@ -750,8 +768,8 @@ abstract class InsertSupports {
 
         private Map<FieldMeta<?>, _Expression> commonExpMap;
 
-        private ColumnDefaultClause(InsertOptions options, TableMeta<T> table) {
-            super(options.getContext(), options.isMigration(), table);
+        private ColumnDefaultClause(InsertOptions options, TableMeta<T> table, boolean twoStmtMode) {
+            super(options.getContext(), options.isMigration(), table, twoStmtMode);
             if (options instanceof ValueSyntaxOptions) {
                 this.nullHandleMode = ((ValueSyntaxOptions) options).nullHandle();
                 this.ignoreReturnIds = ((ValueSyntaxOptions) options).isIgnoreReturnIds();
@@ -790,9 +808,7 @@ abstract class InsertSupports {
 
         @Override
         public final DR defaultValue(final FieldMeta<T> field, final @Nullable Expression value) {
-            if (!this.migration && !field.insertable()) {
-                throw _Exceptions.nonInsertableField(field);
-            } else if (!(value instanceof ArmyExpression)) {
+            if (!(value instanceof ArmyExpression)) {
                 throw ContextStack.nonArmyExp(this.context);
             }
             final ArmyExpression valueExp;
@@ -944,6 +960,7 @@ abstract class InsertSupports {
             _Insert._ValuesInsert,
             _Insert._QueryInsert {
 
+
         private InsertMode insertMode;
 
         private List<?> domainList;
@@ -952,8 +969,8 @@ abstract class InsertSupports {
 
         private SubQuery subQuery;
 
-        ComplexInsertValuesClause(InsertOptions options, TableMeta<T> table) {
-            super(options, table);
+        ComplexInsertValuesClause(InsertOptions options, TableMeta<T> table, boolean twoStmtMode) {
+            super(options, table, twoStmtMode);
         }
 
 
@@ -1303,15 +1320,13 @@ abstract class InsertSupports {
 
         private Map<FieldMeta<?>, _Expression> assignmentMap;
 
-        ComplexInsertValuesAssignmentClause(InsertOptions options, TableMeta<T> table) {
-            super(options, table);
+        ComplexInsertValuesAssignmentClause(InsertOptions options, TableMeta<T> table, boolean twoStmtMode) {
+            super(options, table, twoStmtMode);
         }
 
         @Override
         public final SR set(final FieldMeta<T> field, final @Nullable Expression value) {
-            if (!this.migration && !field.insertable()) {
-                throw _Exceptions.nonInsertableField(field);
-            }
+
             List<_Pair<FieldMeta<?>, _Expression>> pairList = this.assignmentPairList;
             Map<FieldMeta<?>, _Expression> assignmentMap = this.assignmentMap;
             if (pairList == null) {
@@ -1598,8 +1613,6 @@ abstract class InsertSupports {
                 throw ContextStack.criteriaError(this.context, "column value must be non-field.");
             } else if (!(value instanceof ArmyExpression)) {
                 throw ContextStack.nonArmyExp(this.context);
-            } else if (!this.migration && !field.insertable()) {
-                throw _Exceptions.nonInsertableField(field);
             }
             this.validator.accept(field, (ArmyExpression) value);
             Map<FieldMeta<?>, _Expression> currentRow = this.rowValuesMap;
@@ -2188,27 +2201,6 @@ abstract class InsertSupports {
 
 
     }//QueryInsertStatement
-
-
-    static void checkField(final CriteriaContext context, final TableMeta<?> table
-            , final boolean migration, final FieldMeta<?> field) {
-
-        if (field.tableMeta() != table) {
-            //don't contain parent field
-            throw ContextStack.criteriaError(context, _Exceptions::unknownColumn, field);
-        } else if (migration) {
-            if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
-                throw childIdIsManaged(context, (ChildTableMeta<?>) field.tableMeta());
-            }
-        } else if (!field.insertable()) {
-            throw ContextStack.criteriaError(context, _Exceptions::nonInsertableField, field);
-        } else if (isArmyManageField(table, field)) {
-            throw ContextStack.criteriaError(context, _Exceptions::armyManageField, field);
-        } else if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
-            throw childIdIsManaged(context, (ChildTableMeta<?>) field.tableMeta());
-        }
-
-    }
 
 
     static CriteriaException notContainField(CriteriaContext criteriaContext, FieldMeta<?> field) {

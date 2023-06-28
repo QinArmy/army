@@ -230,13 +230,13 @@ abstract class StandardInserts extends InsertSupports {
 
         private StandardComplexValuesClause(PrimaryInsertIntoClause<?, ?, ?> options, SingleTableMeta<T> table,
                                             Function<StandardComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, table);
+            super(options, table, true);
             this.dmlFunction = dmlFunction;
         }
 
         private StandardComplexValuesClause(ChildInsertIntoClause<?, ?> options, ChildTableMeta<T> table,
                                             Function<StandardComplexValuesClause<?, ?>, I> dmlFunction) {
-            super(options, table);
+            super(options, table, true);
             this.dmlFunction = dmlFunction;
         }
 

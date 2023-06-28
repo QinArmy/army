@@ -256,12 +256,12 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<T, Insert, ReturningInsert> insertInto(TableMeta<T> table) {
-            return new PostgreComplexValuesClause<>(this, table, PostgreInserts::insertEnd, PostgreInserts::returningInsertEnd);
+            return new PostgreComplexValuesClause<>(this, table, false, PostgreInserts::insertEnd, PostgreInserts::returningInsertEnd);
         }
 
         @Override
         public <P> PostgreInsert._TableAliasSpec<P, PostgreInsert._ParentInsert<P>, PostgreInsert._ParentReturnInsert<P>> insertInto(ParentTableMeta<P> table) {
-            return new PostgreComplexValuesClause<>(this, table, PostgreInserts::parentInsertEnd, PostgreInserts::parentReturningEnd);
+            return new PostgreComplexValuesClause<>(this, table, false, PostgreInserts::parentInsertEnd, PostgreInserts::parentReturningEnd);
         }
 
 
@@ -306,7 +306,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<T, Insert, ReturningInsert> insertInto(ComplexTableMeta<P, T> table) {
-            return new PostgreComplexValuesClause<>(this, table, this.dmlFunction, this.dqlFunction);
+            return new PostgreComplexValuesClause<>(this, table, true, this.dmlFunction, this.dqlFunction);
         }
 
         @Override
@@ -346,7 +346,8 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<T, I, I> insertInto(TableMeta<T> table) {
-            return new PostgreComplexValuesClause<>(this, table, this.function.compose(PostgreInserts::insertEnd),
+            //TODO fix two stmt mode for multi-statement
+            return new PostgreComplexValuesClause<>(this, table, true, this.function.compose(PostgreInserts::insertEnd),
                     this.function.compose(PostgreInserts::returningInsertEnd));
         }
 
@@ -389,7 +390,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<T, I, I> insertInto(TableMeta<T> table) {
-            return new PostgreComplexValuesClause<>(this, table, this.function.compose(PostgreInserts::subInsertEnd),
+            return new PostgreComplexValuesClause<>(this, table, false, this.function.compose(PostgreInserts::subInsertEnd),
                     this.function.compose(PostgreInserts::subReturningInsertEnd));
         }
 
@@ -418,7 +419,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public <T> PostgreInsert._TableAliasSpec<T, I, I> insertInto(TableMeta<T> table) {
-            return new PostgreComplexValuesClause<>(this, table, this.function.compose(PostgreInserts::subInsertEnd),
+            return new PostgreComplexValuesClause<>(this, table, false, this.function.compose(PostgreInserts::subInsertEnd),
                     this.function.compose(PostgreInserts::subReturningInsertEnd));
         }
 
@@ -914,10 +915,10 @@ abstract class PostgreInserts extends InsertSupports {
          * @see PrimaryInsertIntoClause#insertInto(ParentTableMeta)
          * @see ChildInsertIntoClause#insertInto(ComplexTableMeta)
          */
-        private PostgreComplexValuesClause(WithValueSyntaxOptions options, TableMeta<T> table,
+        private PostgreComplexValuesClause(WithValueSyntaxOptions options, TableMeta<T> table, boolean twoStmtMode,
                                            Function<PostgreComplexValuesClause<?, ?, ?>, I> dmlFunction,
                                            Function<PostgreComplexValuesClause<?, ?, ?>, Q> dqlFunction) {
-            super(options, table);
+            super(options, table, twoStmtMode);
             this.recursive = options.isRecursive();
             this.cteList = options.cteList();
             this.dmlFunction = dmlFunction;

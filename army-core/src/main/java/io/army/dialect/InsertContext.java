@@ -33,6 +33,8 @@ abstract class InsertContext extends StatementContext
 
     final InsertContext parentContext;
 
+    final boolean twoStmtMode;
+
     private final boolean twoStmtQuery;
 
     final TableMeta<?> insertTable;
@@ -88,20 +90,21 @@ abstract class InsertContext extends StatementContext
      * For {@link  io.army.meta.SingleTableMeta}
      * </p>
      */
-    InsertContext(@Nullable StatementContext outerContext, final _Insert domainStmt
-            , ArmyParser parser, Visible visible) {
+    InsertContext(@Nullable StatementContext outerContext, final _Insert domainStmt,
+                  ArmyParser parser, Visible visible) {
         super(outerContext, parser, visible);
         this.parentContext = null;
         final _Insert targetStmt;
         if (domainStmt instanceof _Insert._ChildInsert) {
             targetStmt = ((_Insert._ChildInsert) domainStmt).parentStmt();
+            this.twoStmtMode = true;
             this.twoStmtQuery = domainStmt instanceof _ReturningDml && targetStmt instanceof _ReturningDml;
         } else {
             targetStmt = domainStmt;
-            this.twoStmtQuery = false;
+            this.twoStmtQuery = this.twoStmtMode = false;
         }
         this.insertTable = targetStmt.table();
-        //  assert this.insertTable instanceof SingleTableMeta;
+        assert this.insertTable instanceof SingleTableMeta || parser.childUpdateMode == ArmyParser.ChildUpdateMode.CTE;
 
         if (targetStmt instanceof _Insert._InsertOption) {
             final _Insert._InsertOption option = (_Insert._InsertOption) targetStmt;
@@ -206,9 +209,13 @@ abstract class InsertContext extends StatementContext
     InsertContext(@Nullable StatementContext outerContext, final _Insert._ChildInsert stmt,
                   final InsertContext parentContext) {
         super(outerContext, parentContext.parser, parentContext.visible);
+
         this.parentContext = parentContext;
+        this.twoStmtMode = parentContext.twoStmtMode;
         this.twoStmtQuery = parentContext.twoStmtQuery;
         this.insertTable = stmt.table();
+
+
         if (stmt instanceof _Insert._InsertOption) {
             final _Insert._InsertOption option = (_Insert._InsertOption) stmt;
             this.literalMode = option.literalMode();
