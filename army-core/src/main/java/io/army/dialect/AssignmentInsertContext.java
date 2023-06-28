@@ -9,13 +9,12 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.modelgen._MetaBridge;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.ObjIntConsumer;
@@ -103,11 +102,8 @@ final class AssignmentInsertContext extends InsertContext
                 //use wrapper.domainTable not this.insertTable
                 generator.validate(wrapper.domainTable, wrapper);
             } else {
-                final boolean manageVisible;
-                manageVisible = insertTable.containField(_MetaBridge.VISIBLE)
-                        && !wrapper.nonChildPairMap.containsKey(insertTable.getField(_MetaBridge.VISIBLE));
                 //use wrapper.domainTable not this.insertTable
-                generator.generate(wrapper.domainTable, manageVisible, wrapper);
+                generator.generate(wrapper.domainTable, wrapper);
                 wrapper.tempGeneratedMap = null;  //clear
             }
         }
@@ -234,7 +230,7 @@ final class AssignmentInsertContext extends InsertContext
     }
 
 
-    private static final class AssignmentWrapper extends _DialectUtils.ExpRowWrapper {
+    private static final class AssignmentWrapper extends ExpRowWrapper {
 
         private final boolean mockEnv;
 
@@ -244,12 +240,13 @@ final class AssignmentInsertContext extends InsertContext
 
         private final Map<FieldMeta<?>, Object> generatedMap;
 
+
         private Map<FieldMeta<?>, Object> tempGeneratedMap;
 
         private DelayIdParam delayIdParam;
 
         private AssignmentWrapper(AssignmentInsertContext context, _Insert._AssignmentInsert domainStmt) {
-            super(domainStmt.table(), context.parser.mappingEnv);
+            super(context, domainStmt);
             this.mockEnv = context.parser.mockEnv;
             if (domainStmt instanceof _Insert._ChildAssignmentInsert) {
                 assert context.insertTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();
@@ -272,11 +269,10 @@ final class AssignmentInsertContext extends InsertContext
                 }
                 maxSize += domainTable.fieldChain().size();
 
-                final Map<FieldMeta<?>, Object> map = new HashMap<>((int) (maxSize / 0.75F));
-                this.generatedMap = Collections.unmodifiableMap(map);
+                final Map<FieldMeta<?>, Object> map = _Collections.hashMap((int) (maxSize / 0.75F));
+                this.generatedMap = _Collections.unmodifiableMap(map);
                 this.tempGeneratedMap = map;
             }
-
 
         }
 
@@ -299,6 +295,7 @@ final class AssignmentInsertContext extends InsertContext
                 }
             }
         }
+
 
         @Override
         Object getGeneratedValue(final FieldMeta<?> field) {

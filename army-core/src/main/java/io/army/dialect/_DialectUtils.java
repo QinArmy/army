@@ -1,8 +1,6 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.bean.ObjectAccessException;
-import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
@@ -408,98 +406,6 @@ public abstract class _DialectUtils {
 
 
     /*################################## blow private static innner class ##################################*/
-
-
-    static abstract class ExpRowWrapper implements RowWrapper {
-
-        final TableMeta<?> domainTable;
-
-        private final ReadWrapper readWrapper;
-
-        ExpRowWrapper(TableMeta<?> domainTable, MappingEnv mappingEnv) {
-            this.domainTable = domainTable;
-            this.readWrapper = new RowReadWrapper(this, mappingEnv);
-        }
-
-
-        @Override
-        public final boolean isNullValueParam(final FieldMeta<?> field) {
-            final _Expression expression;
-            expression = this.getExpression(field);
-            final boolean match;
-            if (expression == null) {
-                match = true;
-            } else if (expression instanceof SqlValueParam.SingleAnonymousValue) {
-                match = ((SqlValueParam.SingleAnonymousValue) expression).value() == null;
-            } else {
-                match = true; //the fields that is managed by field must be value param
-            }
-            return match;
-        }
-
-        @Override
-        public final ReadWrapper readonlyWrapper() {
-            return this.readWrapper;
-        }
-
-
-        @Nullable
-        abstract Object getGeneratedValue(FieldMeta<?> field);
-
-        /**
-         * <p>
-         * Must read row value not default value of column
-         * </p>
-         */
-        @Nullable
-        abstract _Expression getExpression(FieldMeta<?> field);
-
-
-    }//ExpRowWrapper
-
-
-    private static final class RowReadWrapper implements ReadWrapper {
-
-        private final ExpRowWrapper wrapper;
-
-        private final MappingEnv mappingEnv;
-
-        private RowReadWrapper(ExpRowWrapper wrapper, MappingEnv mappingEnv) {
-            this.wrapper = wrapper;
-            this.mappingEnv = mappingEnv;
-        }
-
-        @Override
-        public boolean isReadable(final String propertyName) {
-            return this.wrapper.domainTable.containComplexField(propertyName);
-        }
-
-        @Override
-        public Object get(final String propertyName) throws ObjectAccessException {
-            final ExpRowWrapper wrapper = this.wrapper;
-            final TableMeta<?> domainTable = wrapper.domainTable;
-            final FieldMeta<?> field;
-            field = domainTable.tryGetComplexFiled(propertyName);
-            if (field == null) {
-                throw _Exceptions.nonReadableProperty(domainTable, propertyName);
-            }
-            final Object value;
-            value = wrapper.getGeneratedValue(field);
-            if (value != null) {
-                return value;
-            }
-
-            final _Expression expression;
-            if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
-                expression = wrapper.getExpression(field.tableMeta().nonChildId());
-            } else {
-                expression = wrapper.getExpression(field);
-            }
-            return readParamValue(field, expression, this.mappingEnv);
-        }
-
-
-    }//RowReadWrapper
 
 
 }

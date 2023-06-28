@@ -14,7 +14,6 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
-import io.army.modelgen._MetaBridge;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
 import io.army.util._Exceptions;
@@ -117,12 +116,10 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         }
 
         final FieldValueGenerator generator;
-        final boolean manageVisible;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
         if (insertTable instanceof ChildTableMeta) {
             assert insertTable == domainTable;
             generator = null;
-            manageVisible = false;
             if (twoStmtMode) {
                 defaultValueMap = wrapper.childDefaultMap;
             } else {
@@ -130,9 +127,6 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
             }
         } else {
             generator = dialect.generator;
-            final FieldMeta<?> visibleField;
-            visibleField = insertTable.tryGetField(_MetaBridge.VISIBLE);
-            manageVisible = visibleField != null && !wrapper.nonChildDefaultMap.containsKey(visibleField);
             defaultValueMap = wrapper.nonChildDefaultMap;
         }
         FieldMeta<?> field;
@@ -156,7 +150,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                     generator.validate(domainTable, wrapper);
                 } else {
                     //use ths.domainTable,not this.insertTable
-                    generator.generate(domainTable, manageVisible, wrapper);
+                    generator.generate(domainTable, wrapper);
                 }
             }
 
@@ -325,9 +319,8 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
     }//BeanReadWrapper
 
 
-    private static final class DomainWrapper implements RowWrapper {
+    private static final class DomainWrapper extends InsertRowWrapper {
 
-        private final TableMeta<?> domainTable;
 
         private final Map<FieldMeta<?>, _Expression> nonChildDefaultMap;
 
@@ -337,10 +330,11 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         private final DomainReadWrapper readWrapper;
 
+
         private Object domain;
 
         private DomainWrapper(DomainInsertContext context, _Insert._DomainInsert domainStmt) {
-            this.domainTable = domainStmt.table();
+            super(context, domainStmt);
 
             if (domainStmt instanceof _Insert._ChildDomainInsert) {
                 assert ((ChildTableMeta<?>) this.domainTable).parentMeta() == context.insertTable;

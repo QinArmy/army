@@ -2,12 +2,13 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.SQLWords;
 import io.army.criteria.SortItem;
+import io.army.criteria.Statement;
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 
 import java.util.List;
 
-public interface _Statement {
+public interface _Statement extends Statement {
 
     void clear();
 

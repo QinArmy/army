@@ -152,9 +152,9 @@ abstract class ArmyParser implements DialectParser {
 
         this.keyWordSet = Collections.unmodifiableSet(this.createKeyWordSet());
         if (this.mockEnv) {
-            this.generator = FieldValuesGenerators.mock(this.mappingEnv::databaseZoneOffset);
+            this.generator = FieldValuesGenerators.mock();
         } else {
-            this.generator = FieldValuesGenerators.create(this.mappingEnv::databaseZoneOffset, dialectEnv.fieldGeneratorMap());
+            this.generator = FieldValuesGenerators.create(dialectEnv.fieldGeneratorMap());
         }
 
         final ArmyEnvironment env;

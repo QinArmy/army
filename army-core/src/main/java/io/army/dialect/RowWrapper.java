@@ -5,6 +5,15 @@ import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 
+import java.time.temporal.Temporal;
+
+/**
+ * <p>
+ * package interface
+ * </p>
+ *
+ * @since 1.0
+ */
 interface RowWrapper {
 
     /**
@@ -35,6 +44,13 @@ interface RowWrapper {
      * @see FieldValueGenerator#generate(TableMeta, boolean, RowWrapper)
      */
     ReadWrapper readonlyWrapper();
+
+    /**
+     * @return context create time for createTime field
+     */
+    Temporal getCreateTime();
+
+    boolean isManageVisible();
 
 
 }

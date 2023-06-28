@@ -2,9 +2,12 @@ package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
+import io.army.bean.ObjectAccessException;
+import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -15,6 +18,10 @@ import io.army.stmt.Stmts;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -645,6 +652,27 @@ abstract class InsertContext extends StatementContext
     }
 
 
+    final Temporal createCreateTime(final SingleTableMeta<?> table) {
+        final FieldMeta<?> field;
+        field = table.getField(_MetaBridge.CREATE_TIME);
+
+        final Class<?> javaType;
+        javaType = field.javaType();
+        final Temporal now;
+        if (javaType == LocalDateTime.class) {
+            now = LocalDateTime.now();
+        } else if (javaType == OffsetDateTime.class) {
+            now = OffsetDateTime.now(this.parser.mappingEnv.databaseZoneOffset());
+        } else if (javaType == ZonedDateTime.class) {
+            now = ZonedDateTime.now(this.parser.mappingEnv.databaseZoneOffset());
+        } else {
+            // FieldMeta no bug,never here
+            throw _Exceptions.dontSupportJavaType(field, javaType);
+        }
+        return now;
+    }
+
+
     /**
      * @return output values size
      */
@@ -697,8 +725,8 @@ abstract class InsertContext extends StatementContext
     }
 
 
-    private static List<FieldMeta<?>> createNonChildFieldList(final SingleTableMeta<?> insertTable
-            , final Predicate<FieldMeta<?>> predicate) {
+    private static List<FieldMeta<?>> createNonChildFieldList(final SingleTableMeta<?> insertTable,
+                                                              final Predicate<FieldMeta<?>> predicate) {
 
         final List<FieldMeta<?>> insertFieldChain;
         insertFieldChain = insertTable.fieldChain();
@@ -753,7 +781,7 @@ abstract class InsertContext extends StatementContext
         if (chainSize == 0) {
             fieldList = Collections.singletonList(insertTable.id());
         } else {
-            fieldList = new ArrayList<>(1 + chainSize);
+            fieldList = _Collections.arrayList(1 + chainSize);
             fieldList.add(insertTable.id());
 
             for (FieldMeta<?> field : fieldChain) {
@@ -801,5 +829,147 @@ abstract class InsertContext extends StatementContext
         }
         return idIndex;
     }
+
+    static abstract class InsertRowWrapper implements RowWrapper {
+
+        final TableMeta<?> domainTable;
+
+        private final Temporal createTime;
+
+        final boolean manageVisible;
+
+        InsertRowWrapper(final InsertContext context, final _Insert statement) {
+            this.domainTable = statement.table();
+            // assert this.domainTable == context.insertTable;
+
+            final FieldMeta<?> visibleField;
+            visibleField = this.domainTable.tryGetComplexFiled(_MetaBridge.VISIBLE);
+            if (!(statement instanceof _Insert._ValuesSyntaxInsert)) {
+                if (statement instanceof _Insert._ChildAssignmentInsert) {
+                    this.manageVisible = visibleField != null
+                            && !((_Insert._ChildAssignmentInsert) statement).assignmentMap().containsKey(visibleField);
+                } else if (statement instanceof _Insert._AssignmentInsert) {
+                    this.manageVisible = visibleField != null
+                            && !((_Insert._AssignmentInsert) statement).assignmentMap().containsKey(visibleField);
+                } else {
+                    //no bug,never here
+                    throw _Exceptions.unexpectedStatement(statement);
+                }
+            } else if (statement instanceof _Insert._ChildValuesInsert) {
+                this.manageVisible = visibleField != null
+                        && !((_Insert._ChildValuesInsert) statement).defaultValueMap().containsKey(visibleField);
+            } else {
+                this.manageVisible = visibleField != null
+                        && !((_Insert._ValuesSyntaxInsert) statement).defaultValueMap().containsKey(visibleField);
+            }
+
+            if (this.domainTable instanceof ChildTableMeta) {
+                this.createTime = context.createCreateTime(((ChildTableMeta<?>) this.domainTable).parentMeta());
+            } else {
+                this.createTime = context.createCreateTime((SingleTableMeta<?>) this.domainTable);
+            }
+        }
+
+        @Override
+        public final Temporal getCreateTime() {
+            return this.createTime;
+        }
+
+        @Override
+        public final boolean isManageVisible() {
+            return this.manageVisible;
+        }
+
+
+    }//InsertRowWrapper
+
+    static abstract class ExpRowWrapper extends InsertRowWrapper {
+
+        private final ReadWrapper readWrapper;
+
+        ExpRowWrapper(InsertContext context, _Insert statement) {
+            super(context, statement);
+            this.readWrapper = new RowReadWrapper(this, context.parser.mappingEnv);
+        }
+
+
+        @Override
+        public final boolean isNullValueParam(final FieldMeta<?> field) {
+            final _Expression expression;
+            expression = this.getExpression(field);
+            final boolean match;
+            if (expression == null) {
+                match = true;
+            } else if (expression instanceof SqlValueParam.SingleAnonymousValue) {
+                match = ((SqlValueParam.SingleAnonymousValue) expression).value() == null;
+            } else {
+                match = true; //the fields that is managed by field must be value param
+            }
+            return match;
+        }
+
+        @Override
+        public final ReadWrapper readonlyWrapper() {
+            return this.readWrapper;
+        }
+
+
+        @Nullable
+        abstract Object getGeneratedValue(FieldMeta<?> field);
+
+        /**
+         * <p>
+         * Must read row value not default value of column
+         * </p>
+         */
+        @Nullable
+        abstract _Expression getExpression(FieldMeta<?> field);
+
+
+    }//ExpRowWrapper
+
+    private static final class RowReadWrapper implements ReadWrapper {
+
+        private final ExpRowWrapper wrapper;
+
+        private final MappingEnv mappingEnv;
+
+        private RowReadWrapper(ExpRowWrapper wrapper, MappingEnv mappingEnv) {
+            this.wrapper = wrapper;
+            this.mappingEnv = mappingEnv;
+        }
+
+        @Override
+        public boolean isReadable(final String propertyName) {
+            return this.wrapper.domainTable.containComplexField(propertyName);
+        }
+
+        @Override
+        public Object get(final String propertyName) throws ObjectAccessException {
+            final ExpRowWrapper wrapper = this.wrapper;
+            final TableMeta<?> domainTable = wrapper.domainTable;
+            final FieldMeta<?> field;
+            field = domainTable.tryGetComplexFiled(propertyName);
+            if (field == null) {
+                throw _Exceptions.nonReadableProperty(domainTable, propertyName);
+            }
+            final Object value;
+            value = wrapper.getGeneratedValue(field);
+            if (value != null) {
+                return value;
+            }
+
+            final _Expression expression;
+            if (field instanceof PrimaryFieldMeta && field.tableMeta() instanceof ChildTableMeta) {
+                expression = wrapper.getExpression(field.tableMeta().nonChildId());
+            } else {
+                expression = wrapper.getExpression(field);
+            }
+            return _DialectUtils.readParamValue(field, expression, this.mappingEnv);
+        }
+
+
+    }//RowReadWrapper
+
 
 }

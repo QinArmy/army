@@ -12,37 +12,27 @@ import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 
 import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 abstract class FieldValuesGenerators implements FieldValueGenerator {
 
 
-    static FieldValuesGenerators create(Supplier<ZoneOffset> zoneIdSupplier
-            , Map<FieldMeta<?>, FieldGenerator> generatorMap) {
-        return new DefaultFieldValuesGenerator(zoneIdSupplier, generatorMap);
+    static FieldValuesGenerators create(Map<FieldMeta<?>, FieldGenerator> generatorMap) {
+        return new DefaultFieldValuesGenerator(generatorMap);
     }
 
-    static FieldValuesGenerators mock(Supplier<ZoneOffset> zoneIdSupplier) {
-        return new MockFieldValuesGenerator(zoneIdSupplier);
+    static FieldValuesGenerators mock() {
+        return new MockFieldValuesGenerator();
     }
 
 
-    private final Supplier<ZoneOffset> zoneIdSupplier;
-
-    private FieldValuesGenerators(Supplier<ZoneOffset> zoneIdSupplier) {
-        this.zoneIdSupplier = zoneIdSupplier;
+    private FieldValuesGenerators() {
     }
 
     @Override
-    public final void generate(final TableMeta<?> domainTable, final boolean manegeVisible
-            , final RowWrapper wrapper) {
+    public final void generate(final TableMeta<?> domainTable, final RowWrapper wrapper) {
 
         if (!(domainTable instanceof SimpleTableMeta)) {
             final FieldMeta<?> discriminator;
@@ -53,10 +43,10 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         if (domainTable instanceof ChildTableMeta) {
             final ParentTableMeta<?> parentTable = ((ChildTableMeta<?>) domainTable).parentMeta();
-            reservedFields(parentTable, manegeVisible, wrapper);
+            reservedFields(parentTable, wrapper);
             generatorChan(parentTable.fieldChain(), wrapper);
         } else {
-            reservedFields((SingleTableMeta<?>) domainTable, manegeVisible, wrapper);
+            reservedFields((SingleTableMeta<?>) domainTable, wrapper);
         }
 
         generatorChan(domainTable.fieldChain(), wrapper);
@@ -131,8 +121,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
     abstract void generatorChan(List<FieldMeta<?>> fieldChain, RowWrapper wrapper);
 
 
-    private void reservedFields(final SingleTableMeta<?> nonChild, final boolean manegeVisible
-            , final RowWrapper wrapper) {
+    private void reservedFields(final SingleTableMeta<?> nonChild, final RowWrapper wrapper) {
         FieldMeta<?> field;
 
         //1. check id
@@ -147,19 +136,8 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         //2. create time
         field = nonChild.getField(_MetaBridge.CREATE_TIME);
-        final Class<?> createTimeJavaType;
-        createTimeJavaType = field.javaType();
         final Temporal now;
-        if (createTimeJavaType == LocalDateTime.class) {
-            now = LocalDateTime.now();
-        } else if (createTimeJavaType == OffsetDateTime.class) {
-            now = OffsetDateTime.now(this.zoneIdSupplier.get());
-        } else if (createTimeJavaType == ZonedDateTime.class) {
-            now = ZonedDateTime.now(this.zoneIdSupplier.get());
-        } else {
-            // FieldMeta no bug,never here
-            throw _Exceptions.dontSupportJavaType(field, createTimeJavaType);
-        }
+        now = wrapper.getCreateTime();
         wrapper.set(field, now);
 
         //3. update time
@@ -184,7 +162,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
             }
         }
         //5. visible
-        if (manegeVisible
+        if (wrapper.isManageVisible()
                 && (field = nonChild.tryGetField(_MetaBridge.VISIBLE)) != null
                 && wrapper.isNullValueParam(field)) {
             wrapper.set(field, Boolean.TRUE);
@@ -203,9 +181,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
         private final Map<FieldMeta<?>, FieldGenerator> generatorMap;
 
-        private DefaultFieldValuesGenerator(Supplier<ZoneOffset> zoneIdSupplier
-                , Map<FieldMeta<?>, FieldGenerator> generatorMap) {
-            super(zoneIdSupplier);
+        private DefaultFieldValuesGenerator(Map<FieldMeta<?>, FieldGenerator> generatorMap) {
             this.generatorMap = generatorMap;
         }
 
@@ -233,8 +209,7 @@ abstract class FieldValuesGenerators implements FieldValueGenerator {
 
     private static final class MockFieldValuesGenerator extends FieldValuesGenerators {
 
-        private MockFieldValuesGenerator(Supplier<ZoneOffset> supplier) {
-            super(supplier);
+        private MockFieldValuesGenerator() {
         }
 
         @Override

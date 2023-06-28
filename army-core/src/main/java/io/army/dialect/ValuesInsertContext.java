@@ -6,7 +6,6 @@ import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
 import io.army.meta.*;
-import io.army.modelgen._MetaBridge;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
 import io.army.util._Collections;
@@ -134,13 +133,11 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             spaceDiscriminator = _Constant.SPACE_ZERO;
         }
         final List<Object> postIdList = rowWrapper.postIdList;
-        final boolean manageVisible;
         final int generatedFieldSize;
         final Map<FieldMeta<?>, _Expression> defaultValueMap;
         if (insertTable instanceof ChildTableMeta) {
             generator = null;
             generatedValuesList = this.generatedValuesList;
-            manageVisible = false;
             assert !(generatedValuesList == null && !migration);
 
             generatedFieldSize = 0;
@@ -150,8 +147,6 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 defaultValueMap = rowWrapper.nonChildDefaultMap;
             }
         } else {
-            final FieldMeta<?> visibleField = insertTable.tryGetField(_MetaBridge.VISIBLE);
-            manageVisible = visibleField != null && !rowWrapper.nonChildDefaultMap.containsKey(visibleField);
             generator = parser.generator;
             generatedValuesList = this.tempGeneratedValuesList;
             if (generatedValuesList == null) {
@@ -160,7 +155,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 assert generatedValuesList instanceof ArrayList;
                 this.tempGeneratedValuesList = null;
             }
-            generatedFieldSize = (int) (_DialectUtils.generatedFieldSize(domainTable, manageVisible) / 0.75F);
+            generatedFieldSize = (int) (_DialectUtils.generatedFieldSize(domainTable, rowWrapper.manageVisible) / 0.75F);
             defaultValueMap = rowWrapper.nonChildDefaultMap;
         }
 
@@ -199,7 +194,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                 generatedMap = new HashMap<>(generatedFieldSize);
                 rowWrapper.generatedMap = generatedMap; // update domain value
                 //use ths.domainTable,not this.insertTable
-                generator.generate(domainTable, manageVisible, rowWrapper); // create the values that is managed by army
+                generator.generate(domainTable, rowWrapper); // create the values that is managed by army
                 generatedValuesList.add(generatedMap);
             }
 
@@ -342,7 +337,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         return new CriteriaException(m);
     }
 
-    private static final class ValuesRowWrapper extends _DialectUtils.ExpRowWrapper {
+    private static final class ValuesRowWrapper extends ExpRowWrapper {
 
         private final List<Map<FieldMeta<?>, _Expression>> nonChildRowList;
 
@@ -352,12 +347,13 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
 
         private final List<Object> postIdList;
 
+
         private Map<FieldMeta<?>, Object> generatedMap;
 
         private Map<FieldMeta<?>, _Expression> rowValuesMap;
 
         private ValuesRowWrapper(ValuesInsertContext context, _Insert._ValuesInsert domainStmt) {
-            super(domainStmt.table(), context.parser.mappingEnv);
+            super(context, domainStmt);
             this.nonChildRowList = context.rowList;
             if (domainStmt instanceof _Insert._ChildValuesInsert) {
                 assert context.insertTable == ((ChildTableMeta<?>) this.domainTable).parentMeta();
@@ -397,6 +393,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
             }
 
         }
+
 
         @Override
         Object getGeneratedValue(FieldMeta<?> field) {
