@@ -26,8 +26,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static io.army.criteria.impl.SQLs.AS;
-import static io.army.criteria.impl.SQLs.PERIOD;
+import static io.army.criteria.impl.SQLs.*;
 
 @Test(dataProvider = "getSession")
 public class PostgreInsertSuiteTests extends PostgreSuiteTests {
@@ -1100,7 +1099,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 .space()
                 .select("c", PERIOD, ChinaRegion_.T)
                 .from(ChinaRegion_.T, AS, "c")
-                .where(ChinaRegion_.id.in(SQLs::rowParam, idList))
+                .where(ChinaRegion_.id::in, SPACE, SQLs::rowParam, idList)
                 .and(ChinaRegion_.regionType::equal, SQLs::literal, RegionType.PROVINCE)
                 .orderBy(ChinaRegion_.id)
                 .asQuery()
@@ -1145,6 +1144,35 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         } finally {
             releaseSyncSession(session);
         }
+
+    }
+
+
+    @Test
+    public void subDomainInsertChild(final LocalSession session) {
+        assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
+
+        final List<ChinaProvince> provinceList;
+        provinceList = this.createProvinceList();
+
+        final Insert stmt;
+
+        stmt = Postgres.singleInsert()
+                .with("ch").as(s -> s.insertInto(ChinaRegion_.T)
+                        .values(provinceList)
+                        .returning(ChinaRegion_.id)
+                        .asReturningInsert()
+                ).space()
+                .insertInto(ChinaRegion_.T)
+                .values(provinceList)
+                .asInsert();
+
+        Assert.assertFalse(stmt instanceof _ReturningDml);
+
+        final long rows;
+        rows = session.update(stmt);
+        LOG.debug("{} rows : {}", session.name(), rows);
+        Assert.assertEquals(rows, provinceList.size());
 
     }
 

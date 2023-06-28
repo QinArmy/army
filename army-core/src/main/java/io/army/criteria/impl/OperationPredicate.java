@@ -13,10 +13,7 @@ import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.*;
 
 /**
@@ -62,8 +59,21 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
     @Override
     public final <T> SimplePredicate or(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
-                                        BiFunction<SimpleExpression, T, Expression> operator, T value) {
+                                        BiFunction<SimpleExpression, T, Expression> operator, @Nullable T value) {
         return this.or(expOperator.apply(operator, value));
+    }
+
+    @Override
+    public final <T> SimplePredicate or(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
+                                        SQLs.SymbolSpace space, BiFunction<SimpleExpression, T, Expression> valueOperator,
+                                        Supplier<T> supplier) {
+        return this.or(expOperator.apply(valueOperator, supplier.get()));
+    }
+
+    @Override
+    public final SimplePredicate or(InOperator inOperator, SQLs.SymbolSpace space,
+                                    BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Collection<?> value) {
+        return this.or(inOperator.apply(funcRef, value));
     }
 
 
@@ -164,6 +174,34 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             predicate = this;
         } else {
             predicate = this.or(expOperator.apply(operator, value));
+        }
+        return predicate;
+    }
+
+    @Override
+    public final IPredicate ifOr(InOperator inOperator, SQLs.SymbolSpace space,
+                                 BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef,
+                                 Supplier<Collection<?>> suppler) {
+        final IPredicate predicate;
+        final Collection<?> collection;
+        if ((collection = suppler.get()) == null || collection.size() == 0) {
+            predicate = this;
+        } else {
+            predicate = this.or(inOperator.apply(funcRef, collection));
+        }
+        return predicate;
+    }
+
+    @Override
+    public final <K, V> IPredicate ifOr(InOperator inOperator, SQLs.SymbolSpace space,
+                                        BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef,
+                                        Function<K, V> function, K key) {
+        final IPredicate predicate;
+        final V value;
+        if ((value = function.apply(key)) instanceof Collection && ((Collection<?>) value).size() > 0) {
+            predicate = this.or(inOperator.apply(funcRef, (Collection<?>) value));
+        } else {
+            predicate = this;
         }
         return predicate;
     }
@@ -303,6 +341,19 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
+    public final <T> IPredicate and(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
+                                    SQLs.SymbolSpace space, BiFunction<SimpleExpression, T, Expression> valueOperator,
+                                    Supplier<T> supplier) {
+        return this.and(expOperator.apply(valueOperator, supplier.get()));
+    }
+
+    @Override
+    public final IPredicate and(InOperator inOperator, SQLs.SymbolSpace space,
+                                BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Collection<?> value) {
+        return this.and(inOperator.apply(funcRef, value));
+    }
+
+    @Override
     public final <K, V> IPredicate and(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
                                        BiFunction<SimpleExpression, V, Expression> operator,
                                        Function<K, V> function, K key) {
@@ -376,6 +427,20 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
+    public final IPredicate ifAnd(InOperator inOperator, SQLs.SymbolSpace space,
+                                  BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef,
+                                  Supplier<Collection<?>> suppler) {
+        final IPredicate predicate;
+        final Collection<?> collection;
+        if ((collection = suppler.get()) == null || collection.size() == 0) {
+            predicate = this;
+        } else {
+            predicate = this.and(inOperator.apply(funcRef, collection));
+        }
+        return predicate;
+    }
+
+    @Override
     public final <K, V> IPredicate ifAnd(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator
             , BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K keyName) {
         final IPredicate predicate;
@@ -384,6 +449,20 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
             predicate = this;
         } else {
             predicate = this.and(expOperator.apply(operator, operand));
+        }
+        return predicate;
+    }
+
+    @Override
+    public final <K, V> IPredicate ifAnd(InOperator inOperator, SQLs.SymbolSpace space,
+                                         BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef,
+                                         Function<K, V> function, K key) {
+        final IPredicate predicate;
+        final V value;
+        if ((value = function.apply(key)) instanceof Collection && ((Collection<?>) value).size() > 0) {
+            predicate = this.and(inOperator.apply(funcRef, (Collection<?>) value));
+        } else {
+            predicate = this;
         }
         return predicate;
     }

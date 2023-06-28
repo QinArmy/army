@@ -14,8 +14,23 @@ abstract class SqlWords {
 
         SPACE;
 
+        @Override
+        public final String toString() {
+            return SQLs.sqlKeyWordsToString(this);
+        }
 
     }//SymbolSpaceEnum
+
+
+    enum SymbolEqualEnum implements SQLs.SymbolEqual {
+
+        EQUAL;
+
+        @Override
+        public final String toString() {
+            return SQLs.sqlKeyWordsToString(this);
+        }
+    }
 
     enum KeyWordNotNull implements SQLs.NullOption, SQLs.ArmyKeyWord {
 

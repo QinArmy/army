@@ -829,6 +829,12 @@ abstract class InsertSupports {
         }
 
         @Override
+        public final <E> DR defaultValue(FieldMeta<T> field, SQLs.SymbolSpace space,
+                                         BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier) {
+            return this.defaultValue(field, operator.apply(field, supplier.get()));
+        }
+
+        @Override
         public final <K, V> DR defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
                                             Function<K, V> function, K key) {
             return this.defaultValue(field, operator.apply(field, function.apply(key)));
@@ -1192,25 +1198,35 @@ abstract class InsertSupports {
 
         @Override
         public final R set(FieldMeta<T> field, Supplier<Expression> supplier) {
-            return this.set(field, supplier.get());
+            this.consumer.accept(field, supplier.get());
+            return (R) this;
         }
 
         @Override
         public final R set(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function) {
-            return this.set(field, function.apply(field));
+            this.consumer.accept(field, function.apply(field));
+            return (R) this;
         }
 
         @Override
         public final <E> R set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator,
                                @Nullable E value) {
-            return this.set(field, valueOperator.apply(field, value));
+            this.consumer.accept(field, valueOperator.apply(field, value));
+            return (R) this;
         }
 
+        @Override
+        public final <E> R set(FieldMeta<T> field, SQLs.SymbolEqual equal,
+                               BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier) {
+            this.consumer.accept(field, valueOperator.apply(field, supplier.get()));
+            return (R) this;
+        }
 
         @Override
         public final <K, V> R set(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> valueOperator,
                                   Function<K, V> function, K key) {
-            return this.set(field, valueOperator.apply(field, function.apply(key)));
+            this.consumer.accept(field, valueOperator.apply(field, function.apply(key)));
+            return (R) this;
         }
 
         @Override
@@ -1218,7 +1234,7 @@ abstract class InsertSupports {
             final Expression expression;
             expression = supplier.get();
             if (expression != null) {
-                this.set(field, expression);
+                this.consumer.accept(field, expression);
             }
             return (R) this;
         }
@@ -1228,7 +1244,7 @@ abstract class InsertSupports {
             final Expression expression;
             expression = function.apply(field);
             if (expression != null) {
-                this.set(field, expression);
+                this.consumer.accept(field, expression);
             }
             return (R) this;
         }
@@ -1338,11 +1354,15 @@ abstract class InsertSupports {
         }
 
         @Override
-        public final <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator
-                , @Nullable E value) {
+        public final <E> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value) {
             return this.set(field, valueOperator.apply(field, value));
         }
 
+        @Override
+        public final <E> SR set(FieldMeta<T> field, SQLs.SymbolEqual equal,
+                                BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier) {
+            return this.set(field, valueOperator.apply(field, supplier.get()));
+        }
 
         @Override
         public final <K, V> SR set(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> valueOperator,
@@ -1535,6 +1555,13 @@ abstract class InsertSupports {
         }
 
         @Override
+        public final <E> InsertStatement._StaticColumnValueClause<T> space(FieldMeta<T> field, SQLs.SymbolSpace space,
+                                                                           BiFunction<FieldMeta<T>, E, Expression> funcRef,
+                                                                           Supplier<E> supplier) {
+            return this.comma(field, funcRef.apply(field, supplier.get()));
+        }
+
+        @Override
         public final <K, V> InsertStatement._StaticColumnValueClause<T> space(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key) {
             return this.comma(field, funcRef.apply(field, function.apply(key)));
@@ -1601,6 +1628,13 @@ abstract class InsertSupports {
         public final <E> InsertStatement._StaticColumnValueClause<T> comma(
                 FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, @Nullable E value) {
             return this.comma(field, funcRef.apply(field, value));
+        }
+
+        @Override
+        public final <E> InsertStatement._StaticColumnValueClause<T> comma(FieldMeta<T> field, SQLs.SymbolSpace space,
+                                                                           BiFunction<FieldMeta<T>, E, Expression> funcRef,
+                                                                           Supplier<E> supplier) {
+            return this.comma(field, funcRef.apply(field, supplier.get()));
         }
 
         @Override

@@ -611,7 +611,8 @@ final class PostgreNestedJoins<I extends Item> extends JoinableClause.NestedLeft
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             this.columnAliasList = columnAliasList;
-            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.tabularItem,
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList,
+                    ((_DerivedTable) this.tabularItem).refAllSelection(),
                     this.alias);
             return (R) this;
         }

@@ -594,7 +594,8 @@ final class MySQLNestedJoins<I extends Item> extends JoinableClause.NestedLeftPa
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             this.columnAliasList = columnAliasList;
-            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.tabularItem,
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList,
+                    ((_DerivedTable) this.tabularItem).refAllSelection(),
                     this.alias);
             return (R) this;
         }

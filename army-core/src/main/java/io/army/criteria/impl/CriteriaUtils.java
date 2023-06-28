@@ -4,7 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
-import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
@@ -17,7 +16,10 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -243,7 +245,7 @@ abstract class CriteriaUtils {
             final Selection selection = (Selection) selectItemList.get(0);
             selectionMap = Collections.singletonMap(selection.alias(), selection);
         } else {
-            final Map<String, Selection> map = new HashMap<>((int) (selectItemSize / 0.75F));
+            final Map<String, Selection> map = _Collections.hashMap((int) (selectItemSize / 0.75F));
             for (SelectItem item : selectItemList) {
 
                 if (item instanceof Selection) {
@@ -539,10 +541,9 @@ abstract class CriteriaUtils {
     }
 
     static _SelectionMap createAliasSelectionMap(final List<String> columnAliasList,
-                                                 final _DerivedTable table, final String cteOrDerivedAlias) {
+                                                 final List<? extends Selection> refSelectionList,
+                                                 final String cteOrDerivedAlias) {
 
-        final List<? extends Selection> refSelectionList;
-        refSelectionList = table.refAllSelection();
         final int selectionSize;
         selectionSize = refSelectionList.size();
         if (columnAliasList.size() != selectionSize) {
@@ -578,6 +579,56 @@ abstract class CriteriaUtils {
         );
 
 
+    }
+
+
+    static _SelectionMap createDerivedSelectionMap(final List<? extends _SelectItem> selectItemList) {
+        final int itemSize = selectItemList.size();
+        assert itemSize > 0;
+
+        _SelectItem selectItem;
+        Selection selection;
+
+        if (itemSize == 1 && (selectItem = selectItemList.get(0)) instanceof Selection) {
+            selection = (Selection) selectItem;
+            return new SelectionMap(
+                    _Collections.singletonList(selection),
+                    _Collections.singletonMap(selection.alias(), selection)
+            );
+        }
+
+
+        final List<Selection> selectionList = _Collections.arrayList(itemSize);
+        final Map<String, Selection> selectionMap = _Collections.hashMap((int) (itemSize / 0.75f));
+
+        List<? extends Selection> selectionGroup;
+
+
+        for (int i = 0, groupSize; i < itemSize; i++) {
+            selectItem = selectItemList.get(i);
+
+            if (selectItem instanceof Selection) {
+                selection = (Selection) selectItem;
+                selectionList.add(selection);
+                selectionMap.put(selection.alias(), selection); // override, if duplication
+                continue;
+            } else if (!(selectItem instanceof _SelectionGroup)) {
+                throw _Exceptions.unknownSelectItem(selectItem);
+            }
+
+            selectionGroup = ((_SelectionGroup) selectItem).selectionList();
+            groupSize = selectionGroup.size();
+            for (int j = 0; j < groupSize; j++) {
+                selection = selectionGroup.get(j);
+                selectionList.add(selection);
+                selectionMap.put(selection.alias(), selection); // override, if duplication
+            }
+
+        }
+        return new SelectionMap(
+                _Collections.unmodifiableList(selectionList),
+                _Collections.unmodifiableMap(selectionMap)
+        );
     }
 
     static List<ArmySQLExpression> asExpElementList(final String name,
@@ -651,17 +702,6 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
-    static CriteriaException unknownRowSet(CriteriaContext context, RowSet rowSet, @Nullable Database database) {
-        String m = String.format("%s isn't the %s that is supported by %s criteria api.",
-                _ClassUtils.safeClassName(rowSet), RowSet.class.getName(),
-                database == null ? "standard" : database.name());
-        return ContextStack.criteriaError(context, m);
-    }
-
-    static CriteriaException criteriaNotMatch(CriteriaContext criteriaContext) {
-        String m = "criteria not match.";
-        return ContextStack.criteriaError(criteriaContext, m);
-    }
 
     static CriteriaException noPrecision(CriteriaContext context, SqlType type) {
         String m = String.format("You don't specified precision for %s", type);
@@ -694,29 +734,15 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException operandError(final Object operator, final @Nullable Expression operand) {
-        String m = String.format("%s don't support %s .", operator, _ClassUtils.safeClassName(operand));
-        return ContextStack.clearStackAndCriteriaError(m);
-    }
-
     static CriteriaException notArmyOperator(final Object operator) {
         String m = String.format("%s is not army operator", operator);
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException dualOperandError(Operator.SqlDualOperator operator, MappingType left, MappingType right) {
-        String m = String.format("%s don't left operand[%s] and right operand[%s]", operator, left, right);
+
+    static CriteriaException cteHaveNoReturningClause(String name) {
+        String m = String.format("cte[%s] have no RETURNING clause,couldn't reference.", name);
         return ContextStack.clearStackAndCriteriaError(m);
-    }
-
-
-    static CriteriaException criteriaContextNotMatch(CriteriaContext criteriaContext) {
-        String m = "criteria context not match.";
-        return ContextStack.criteriaError(criteriaContext, m);
-    }
-
-    static CriteriaException cteListIsEmpty(CriteriaContext context) {
-        return ContextStack.criteriaError(context, "WITH clause couldn't be empty.");
     }
 
     static CriteriaException dontAddAnyItem() {
@@ -749,20 +775,7 @@ abstract class CriteriaUtils {
     }
 
 
-    private static CriteriaException noDefaultMappingType(CriteriaContext criteriaContext, final Object value) {
-        String m = String.format("Not found default %s for %s."
-                , MappingType.class.getName(), value.getClass().getName());
-        return ContextStack.criteriaError(criteriaContext, m);
-    }
 
-    static CriteriaException orderByIsEmpty(CriteriaContext criteriaContext) {
-        return ContextStack.criteriaError(criteriaContext, "you don't add any item");
-    }
-
-    static CriteriaException operandError(String operatorName, @Nullable Object errorOperand) {
-        String m = String.format("SQL operator %s don't support %s", operatorName, _ClassUtils.safeClassName(errorOperand));
-        return ContextStack.clearStackAndCriteriaError(m);
-    }
 
     static CriteriaException funcColumnDuplicate(CriteriaContext context, String funcName, String columnName) {
         String m = String.format("tabular function[%s] column[%s] duplication.", funcName, columnName);
@@ -794,10 +807,6 @@ abstract class CriteriaUtils {
         return ContextStack.clearStackAndCriteriaError(m);
     }
 
-    static CriteriaException nonCollectionValue(String keyName) {
-        String m = String.format("value of %s isn't %s type.", keyName, Collection.class.getName());
-        return ContextStack.clearStackAndCriteriaError(m);
-    }
 
     static CriteriaException errorCustomReturnType(String name, MappingType returnType) {
         String m = String.format("You specify error return type[%s] for function[%s]",
@@ -851,10 +860,6 @@ abstract class CriteriaUtils {
         return ContextStack.criteriaError(context, m);
     }
 
-    static CriteriaException funDontSupportMultiValue(String name) {
-        String m = String.format("function[%s] don't support multi-value", name);
-        return ContextStack.criteriaError(ContextStack.peek(), m);
-    }
 
     static CriteriaException illegalAssignmentItem(@Nullable CriteriaContext context, @Nullable AssignmentItem item) {
         String m = String.format("%s is illegal %s", _ClassUtils.safeClassName(item), AssignmentItem.class.getName());

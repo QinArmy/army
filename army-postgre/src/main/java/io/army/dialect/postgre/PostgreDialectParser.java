@@ -497,7 +497,7 @@ final class PostgreDialectParser extends PostgreParser {
         // 5. OVERRIDING { SYSTEM | USER } VALUE clause
         final SQLWords overridingModifier;
         if ((overridingModifier = stmt.overridingValueWords()) != null) {
-            context.sqlBuilder().append(overridingModifier.spaceRender());
+            sqlBuilder.append(overridingModifier.spaceRender());
         }
         // due to army manage createTime(updateTime) field,so army don't support DEFAULT VALUES
 
@@ -518,7 +518,7 @@ final class PostgreDialectParser extends PostgreParser {
         if (stmt instanceof _ReturningDml) {
             returningClause(context, (_ReturningDml) stmt);
         } else if (context instanceof _ValueSyntaxInsertContext) {
-            ((_ValueSyntaxInsertContext) context).appendReturnIdIfNeed();
+            ((_InsertContext._ReturningIdSpec) context).appendReturnIdIfNeed();
         }
 
     }

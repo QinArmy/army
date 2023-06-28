@@ -9,4 +9,5 @@ import java.util.function.BiFunction;
 public interface ExpressionOperator<T extends TypeInfer, U, R extends Expression>
         extends BiFunction<BiFunction<T, U, Expression>, U, R> {
 
+
 }

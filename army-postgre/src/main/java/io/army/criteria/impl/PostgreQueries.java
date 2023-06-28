@@ -1254,6 +1254,7 @@ abstract class PostgreQueries<I extends Item> extends SimpleQueries.WithCteDisti
         private final Function<Boolean, I> function;
 
         private StaticCteComma(CriteriaContext context, boolean recursive, Function<Boolean, I> function) {
+             context.onBeforeWithClause(recursive);
             this.context = context;
             this.recursive = recursive;
             this.function = function;

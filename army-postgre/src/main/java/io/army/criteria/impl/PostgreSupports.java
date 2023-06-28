@@ -7,6 +7,7 @@ import io.army.criteria.impl.inner.postgre._PostgreTableBlock;
 import io.army.criteria.postgre.*;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
+import io.army.dialect._DialectUtils;
 import io.army.dialect._SqlContext;
 import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
@@ -280,6 +281,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final _CycleClause cycleClause;
 
+
         PostgreCte(String name, @Nullable List<String> columnAliasList,
                    @Nullable Postgres.WordMaterialized modifier, SubStatement subStatement) {
             this(name, columnAliasList, modifier, subStatement, null, null);
@@ -296,13 +298,22 @@ abstract class PostgreSupports extends CriteriaSupports {
             this.searchClause = searchClause;
             this.cycleClause = cycleClause;
 
-            if (!(subStatement instanceof DerivedTable)) {
-                throw CriteriaUtils.subDmlNoReturningClause(name);
-            } else if (this.columnAliasList.size() == 0) {
-                this.selectionMap = (_SelectionMap) subStatement;
+            if (subStatement instanceof DerivedTable) {
+                if (this.columnAliasList.size() == 0) {
+                    this.selectionMap = (_SelectionMap) subStatement;
+                } else {
+                    this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList,
+                            ((_DerivedTable) subStatement).refAllSelection(), this.name);
+                }
+            } else if (subStatement instanceof _ReturningDml) {
+                if (this.columnAliasList.size() == 0) {
+                    this.selectionMap = CriteriaUtils.createDerivedSelectionMap(((_ReturningDml) subStatement).returningList());
+                } else {
+                    this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList,
+                            _DialectUtils.flatSelectItem(((_ReturningDml) subStatement).returningList()), this.name);
+                }
             } else {
-                this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnAliasList,
-                        (_DerivedTable) subStatement, this.name);
+                this.selectionMap = null;
             }
 
         }
@@ -315,12 +326,20 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         @Override
         public Selection refSelection(String derivedAlias) {
-            return this.selectionMap.refSelection(derivedAlias);
+            final _SelectionMap selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                throw CriteriaUtils.cteHaveNoReturningClause(this.name);
+            }
+            return selectionMap.refSelection(derivedAlias);
         }
 
         @Override
         public List<? extends Selection> refAllSelection() {
-            return this.selectionMap.refAllSelection();
+            final _SelectionMap selectionMap = this.selectionMap;
+            if (selectionMap == null) {
+                throw CriteriaUtils.cteHaveNoReturningClause(this.name);
+            }
+            return selectionMap.refAllSelection();
         }
 
         @Override

@@ -187,6 +187,9 @@ public interface InsertStatement extends DmlStatement {
 
         <E> _ColumnDefaultClause<T> defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, @Nullable E value);
 
+        <E> _ColumnDefaultClause<T> defaultValue(FieldMeta<T> field, SQLs.SymbolSpace space,
+                                                 BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier);
+
         <K, V> _ColumnDefaultClause<T> defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
                                                     Function<K, V> function, K key);
 
@@ -217,6 +220,10 @@ public interface InsertStatement extends DmlStatement {
 
         @Override
         <E> R defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> operator, @Nullable E value);
+
+
+        @Override
+        <E> R defaultValue(FieldMeta<T> field, SQLs.SymbolSpace space, BiFunction<FieldMeta<T>, E, Expression> operator, Supplier<E> supplier);
 
         @Override
         <K, V> R defaultValue(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> operator,
@@ -284,6 +291,31 @@ public interface InsertStatement extends DmlStatement {
     }
 
 
+    interface _StaticColumnValueClause<T> {
+
+        _StaticColumnValueClause<T> comma(FieldMeta<T> field, Expression value);
+
+        _StaticColumnValueClause<T> comma(FieldMeta<T> field, Supplier<Expression> supplier);
+
+        _StaticColumnValueClause<T> comma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+
+        <E> _StaticColumnValueClause<T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, @Nullable E value);
+
+        <E> _StaticColumnValueClause<T> comma(FieldMeta<T> field, SQLs.SymbolSpace space, BiFunction<FieldMeta<T>, E, Expression> funcRef, Supplier<E> supplier);
+
+        <K, V> _StaticColumnValueClause<T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
+
+        _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, Supplier<Expression> supplier);
+
+        _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
+
+        <E> _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, Supplier<E> supplier);
+
+
+        <K, V> _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
+
+    }
+
     interface _StaticValueSpaceClause<T> {
 
         _StaticColumnValueClause<T> space(FieldMeta<T> field, Expression value);
@@ -293,6 +325,8 @@ public interface InsertStatement extends DmlStatement {
         _StaticColumnValueClause<T> space(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
         <E> _StaticColumnValueClause<T> space(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, @Nullable E value);
+
+        <E> _StaticColumnValueClause<T> space(FieldMeta<T> field, SQLs.SymbolSpace space, BiFunction<FieldMeta<T>, E, Expression> funcRef, Supplier<E> supplier);
 
 
         <K, V> _StaticColumnValueClause<T> space(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
@@ -309,28 +343,6 @@ public interface InsertStatement extends DmlStatement {
 
     }
 
-    interface _StaticColumnValueClause<T> {
-
-        _StaticColumnValueClause<T> comma(FieldMeta<T> field, Expression value);
-
-        _StaticColumnValueClause<T> comma(FieldMeta<T> field, Supplier<Expression> supplier);
-
-        _StaticColumnValueClause<T> comma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
-
-        <E> _StaticColumnValueClause<T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, @Nullable E value);
-
-        <K, V> _StaticColumnValueClause<T> comma(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
-
-        _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, Supplier<Expression> supplier);
-
-        _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
-
-        <E> _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> funcRef, Supplier<E> supplier);
-
-
-        <K, V> _StaticColumnValueClause<T> ifComma(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> funcRef, Function<K, V> function, K key);
-
-    }
 
 
     interface _ValuesParensClause<T, R extends Item> extends Item {
@@ -372,6 +384,8 @@ public interface InsertStatement extends DmlStatement {
         R set(FieldMeta<T> field, Function<FieldMeta<T>, Expression> function);
 
         <E> R set(FieldMeta<T> field, BiFunction<FieldMeta<T>, E, Expression> valueOperator, @Nullable E value);
+
+        <E> R set(FieldMeta<T> field, SQLs.SymbolEqual equal, BiFunction<FieldMeta<T>, E, Expression> valueOperator, Supplier<E> supplier);
 
         <K, V> R set(FieldMeta<T> field, BiFunction<FieldMeta<T>, V, Expression> valueOperator, Function<K, V> function, K key);
 

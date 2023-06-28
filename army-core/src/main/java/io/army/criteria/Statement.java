@@ -11,6 +11,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.*;
 
@@ -813,7 +814,7 @@ public interface Statement extends Item {
 
     interface _MinWhereClause<WR, WA> {
 
-        WR where(Consumer<ItemConsumer<IPredicate>> consumer);
+        WR where(Consumer<Consumer<IPredicate>> consumer);
 
         WA where(IPredicate predicate);
 
@@ -859,6 +860,12 @@ public interface Statement extends Item {
         <T> WA where(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                      BiFunction<SimpleExpression, T, Expression> valueOperator, @Nullable T value);
 
+        <T> WA where(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator, SQLs.SymbolSpace space,
+                     BiFunction<SimpleExpression, T, Expression> valueOperator, Supplier<T> supplier);
+
+        WA where(InOperator inOperator, SQLs.SymbolSpace space,
+                 BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Collection<?> value);
+
         <K, V> WA where(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
                         BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
 
@@ -888,7 +895,11 @@ public interface Statement extends Item {
         <T> WA whereIf(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 
         <T> WA whereIf(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
-                       BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
+                       BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> suppler);
+
+        WA whereIf(InOperator inOperator, SQLs.SymbolSpace space,
+                   BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Supplier<Collection<?>> suppler);
+
 
         <T> WA whereIf(DialectBooleanOperator<T> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
                        BiFunction<SimpleExpression, T, Expression> func, Supplier<T> getter);
@@ -900,6 +911,9 @@ public interface Statement extends Item {
 
         <K, V> WA whereIf(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
                           BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
+
+        <K, V> WA whereIf(InOperator inOperator, SQLs.SymbolSpace space,
+                          BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Function<K, V> function, K key);
 
         <K, V> WA whereIf(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
                           BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
@@ -982,6 +996,12 @@ public interface Statement extends Item {
         <T> WA and(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                    BiFunction<SimpleExpression, T, Expression> valueOperator, @Nullable T value);
 
+        <T> WA and(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator, SQLs.SymbolSpace space,
+                   BiFunction<SimpleExpression, T, Expression> valueOperator, Supplier<T> supplier);
+
+        WA and(InOperator inOperator, SQLs.SymbolSpace space,
+               BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Collection<?> value);
+
         <K, V> WA and(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
                       BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
 
@@ -1014,8 +1034,15 @@ public interface Statement extends Item {
         <T> WA ifAnd(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                      BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
+        WA ifAnd(InOperator inOperator, SQLs.SymbolSpace space,
+                 BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Supplier<Collection<?>> suppler);
+
+
         <K, V> WA ifAnd(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
                         BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K key);
+
+        <K, V> WA ifAnd(InOperator inOperator, SQLs.SymbolSpace space,
+                        BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Function<K, V> function, K key);
 
         <T> WA ifAnd(DialectBooleanOperator<T> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
                      BiFunction<SimpleExpression, T, Expression> func, Supplier<T> getter);

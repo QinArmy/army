@@ -2,8 +2,10 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
 import io.army.function.*;
+import io.army.lang.Nullable;
 import io.army.mapping.BooleanType;
 
+import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -41,7 +43,13 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
     <E extends RightOperand> SimplePredicate or(Function<E, IPredicate> expOperator, Supplier<E> supplier);
 
     <T> SimplePredicate or(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
-                           BiFunction<SimpleExpression, T, Expression> operator, T value);
+                           BiFunction<SimpleExpression, T, Expression> operator, @Nullable T value);
+
+    <T> SimplePredicate or(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator, SQLs.SymbolSpace space,
+                           BiFunction<SimpleExpression, T, Expression> valueOperator, Supplier<T> supplier);
+
+    SimplePredicate or(InOperator inOperator, SQLs.SymbolSpace space,
+                       BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Collection<?> value);
 
     SimplePredicate or(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
                        TeNamedOperator<SQLField> namedOperator, int size);
@@ -65,8 +73,15 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
     <T> IPredicate ifOr(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
                         BiFunction<SimpleExpression, T, Expression> operator, Supplier<T> getter);
 
+    IPredicate ifOr(InOperator inOperator, SQLs.SymbolSpace space,
+                    BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Supplier<Collection<?>> suppler);
+
+    <K, V> IPredicate ifOr(InOperator inOperator, SQLs.SymbolSpace space,
+                           BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Function<K, V> function, K key);
+
     IPredicate ifOr(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
                     TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier);
+
 
     <K, V> IPredicate ifOr(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,
                            BiFunction<SimpleExpression, V, Expression> operator, Function<K, V> function, K keyName);

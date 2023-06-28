@@ -227,9 +227,8 @@ public interface PostgreInsert extends PostgreStatement {
 
     interface _PrimaryInsertIntoClause extends Item {
 
-        <T> _TableAliasSpec<T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table);
 
-        <T> _TableAliasSpec<T, Insert, ReturningInsert> insertInto(ChildTableMeta<T> table);
+        <T> _TableAliasSpec<T, Insert, ReturningInsert> insertInto(TableMeta<T> table);
 
         <P> _TableAliasSpec<P, _ParentInsert<P>, _ParentReturnInsert<P>> insertInto(ParentTableMeta<P> table);
 

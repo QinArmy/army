@@ -113,6 +113,8 @@ public abstract class SQLs extends SQLsSyntax {
 
     public static final SymbolSpace SPACE = SqlWords.SymbolSpaceEnum.SPACE;
 
+    public static final SymbolEqual EQUAL = SqlWords.SymbolEqualEnum.EQUAL;
+
     public static final WordBooleans TRUE = OperationPredicate.booleanWord(true);
 
     public static final WordBooleans FALSE = OperationPredicate.booleanWord(false);
@@ -391,6 +393,10 @@ public abstract class SQLs extends SQLsSyntax {
     }
 
     public interface SymbolSpace {
+
+    }
+
+    public interface SymbolEqual {
 
     }
 
@@ -739,7 +745,7 @@ public abstract class SQLs extends SQLsSyntax {
                 this.selectionMap = (_DerivedTable) subStatement;
             } else {
                 this.selectionMap = CriteriaUtils.createAliasSelectionMap(this.columnNameList,
-                        (_DerivedTable) subStatement, name);
+                        ((_DerivedTable) subStatement).refAllSelection(), name);
             }
 
         }

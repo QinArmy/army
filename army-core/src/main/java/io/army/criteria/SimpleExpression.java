@@ -639,9 +639,9 @@ public interface SimpleExpression extends Expression {
     @Support({PostgreSQL, H2})
     <T> CompoundPredicate isNot(SQLs.IsComparisonWord operator, BiFunction<SimpleExpression, T, Expression> funcRef, @Nullable T value);
 
-    <T extends Collection<?>> CompoundPredicate in(BiFunction<SimpleExpression, T, RowExpression> funcRef, T value);
+    CompoundPredicate in(BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Collection<?> value);
 
-    <T extends Collection<?>> CompoundPredicate notIn(BiFunction<SimpleExpression, T, RowExpression> funcRef, T value);
+    CompoundPredicate notIn(BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Collection<?> value);
 
     CompoundPredicate in(TeNamedOperator<SimpleExpression> funcRef, String paramName, int size);
 

@@ -255,7 +255,7 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
         @Override
-        public <T> PostgreInsert._TableAliasSpec<T, Insert, ReturningInsert> insertInto(SimpleTableMeta<T> table) {
+        public <T> PostgreInsert._TableAliasSpec<T, Insert, ReturningInsert> insertInto(TableMeta<T> table) {
             return new PostgreComplexValuesClause<>(this, table, PostgreInserts::insertEnd, PostgreInserts::returningInsertEnd);
         }
 
@@ -264,10 +264,6 @@ abstract class PostgreInserts extends InsertSupports {
             return new PostgreComplexValuesClause<>(this, table, PostgreInserts::parentInsertEnd, PostgreInserts::parentReturningEnd);
         }
 
-        @Override
-        public <T> PostgreInsert._TableAliasSpec<T, Insert, ReturningInsert> insertInto(ChildTableMeta<T> table) {
-            return new PostgreComplexValuesClause<>(this, table, PostgreInserts::insertEnd, PostgreInserts::returningInsertEnd);
-        }
 
         @Override
         PostgreCtes createCteBuilder(final boolean recursive) {
@@ -970,7 +966,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         @Override
         public PostgreInsert._PostgreValuesStaticParensClause<T, I, Q> values() {
-            return new StaticValuesLeftParenClause<>(this);
+            return new PostgreValuesParensClause<>(this);
         }
 
         @Override
@@ -1259,7 +1255,7 @@ abstract class PostgreInserts extends InsertSupports {
     }//PostgreComplexInsertValuesClause
 
 
-    private static final class StaticValuesLeftParenClause<T, I extends Item, Q extends Item>
+    private static final class PostgreValuesParensClause<T, I extends Item, Q extends Item>
             extends ValuesParensClauseImpl<
             T,
             PostgreInsert._PostgreValuesStaticParensCommaSpec<T, I, Q>>
@@ -1268,7 +1264,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final PostgreComplexValuesClause<T, I, Q> clause;
 
-        private StaticValuesLeftParenClause(PostgreComplexValuesClause<T, I, Q> clause) {
+        private PostgreValuesParensClause(PostgreComplexValuesClause<T, I, Q> clause) {
             super(clause.context, clause.migration, clause::validateField);
             this.clause = clause;
         }
@@ -1381,7 +1377,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final _ConflictActionClauseResult conflictAction;
 
-        private final List<? extends _SelectItem> returningList;
+        final List<? extends _SelectItem> returningList;
 
 
         private PostgreValueSyntaxInsertStatement(final PostgreComplexValuesClause<?, ?, ?> clause) {
@@ -1709,6 +1705,7 @@ abstract class PostgreInserts extends InsertSupports {
         public List<?> domainList() {
             return this.domainList;
         }
+
 
     }//SubDomainReturningInsertStatement
 

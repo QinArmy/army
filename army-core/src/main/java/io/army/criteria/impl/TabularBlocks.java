@@ -249,7 +249,8 @@ abstract class TabularBlocks {
                 throw ContextStack.clearStackAnd(_Exceptions::castCriteriaApi);
             }
             this.columnAliasList = columnAliasList;
-            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.table,
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList,
+                    ((_DerivedTable) this.table).refAllSelection(),
                     this.alias);
         }
 
@@ -515,7 +516,8 @@ abstract class TabularBlocks {
                 throw ContextStack.castCriteriaApi(this.getContext());
             }
             this.columnAliasList = columnAliasList;
-            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList, (_DerivedTable) this.table,
+            this.selectionMap = CriteriaUtils.createAliasSelectionMap(columnAliasList,
+                    ((_DerivedTable) this.table).refAllSelection(),
                     this.alias);
             return this;
         }
