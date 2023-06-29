@@ -662,20 +662,20 @@ abstract class InsertContext extends StatementContext
         javaType = field.javaType();
         final Temporal now;
         if (javaType == LocalDateTime.class) {
-            if (this.parser.truncatedCreateTime) {
-                now = _TimeUtils.truncatedTo(field, LocalDateTime.now());
+            if (this.parser.truncatedTypeTime) {
+                now = _TimeUtils.truncatedIfNeed(field.scale(), LocalDateTime.now());
             } else {
                 now = LocalDateTime.now();
             }
         } else if (javaType == OffsetDateTime.class) {
-            if (this.parser.truncatedCreateTime) {
-                now = _TimeUtils.truncatedTo(field, OffsetDateTime.now(this.parser.mappingEnv.zoneOffset()));
+            if (this.parser.truncatedTypeTime) {
+                now = _TimeUtils.truncatedIfNeed(field.scale(), OffsetDateTime.now(this.parser.mappingEnv.zoneOffset()));
             } else {
                 now = OffsetDateTime.now(this.parser.mappingEnv.zoneOffset());
             }
         } else if (javaType == ZonedDateTime.class) {
-            if (this.parser.truncatedCreateTime) {
-                now = _TimeUtils.truncatedTo(field, ZonedDateTime.now(this.parser.mappingEnv.zoneOffset()));
+            if (this.parser.truncatedTypeTime) {
+                now = _TimeUtils.truncatedIfNeed(field.scale(), ZonedDateTime.now(this.parser.mappingEnv.zoneOffset()));
             } else {
                 now = ZonedDateTime.now(this.parser.mappingEnv.zoneOffset());
             }

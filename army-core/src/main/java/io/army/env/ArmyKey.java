@@ -1,8 +1,10 @@
 package io.army.env;
 
+import io.army.annotation.Column;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.lang.Nullable;
+import io.army.meta.FieldMeta;
 import io.army.session.AllowMode;
 import io.army.session.DdlMode;
 import io.army.util._ClassUtils;
@@ -48,10 +50,10 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<String> QUERY_INSERT_SESSION_WHITE_LIST = new ArmyKey<>("query.insert.session_white_list", String.class, null);
 
-    public static final ArmyKey<Boolean> TRUNCATED_CREATE_TIME = new ArmyKey<>("truncated.create_time", Boolean.class, Boolean.TRUE);
-
-    public static final ArmyKey<Boolean> TRUNCATED_UPDATE_TIME = new ArmyKey<>("truncated.update_time", Boolean.class, Boolean.TRUE);
-
+    /**
+     * @see Column#scale()
+     * @see FieldMeta#scale()
+     */
     public static final ArmyKey<Boolean> TRUNCATED_TIME_TYPE = new ArmyKey<>("truncated.time_type", Boolean.class, Boolean.TRUE);
 
     public static final ArmyKey<NameMode> FUNC_NAME_MODE = new ArmyKey<>("func.name.mode", NameMode.class, NameMode.DEFAULT);

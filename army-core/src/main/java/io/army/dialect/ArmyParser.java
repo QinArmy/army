@@ -108,9 +108,7 @@ abstract class ArmyParser implements DialectParser {
 
     final NameMode funcNameMode;
 
-    final boolean truncatedCreateTime;
-
-    final boolean truncatedUpdateTime;
+    final boolean truncatedTypeTime;
 
     private final String qualifiedSchemaName;
     private final NameMode tableNameMode;
@@ -167,8 +165,7 @@ abstract class ArmyParser implements DialectParser {
         this.columnNameMode = env.getOrDefault(ArmyKey.COLUMN_NAME_MODE);
 
         this.funcNameMode = env.getOrDefault(ArmyKey.FUNC_NAME_MODE);
-        this.truncatedCreateTime = env.getOrDefault(ArmyKey.TRUNCATED_CREATE_TIME);
-        this.truncatedUpdateTime = env.getOrDefault(ArmyKey.TRUNCATED_UPDATE_TIME);
+        this.truncatedTypeTime = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
         this.qualifiedSchemaName = this.getQualifiedSchemaName(env, this.serverMeta);
     }
 

@@ -232,13 +232,9 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Temporal> T truncatedTo(final FieldMeta<?> field, final T temporal) {
+    public static <T extends Temporal> T truncatedIfNeed(final int scale, final T temporal) {
         final TemporalUnit unit;
-        switch (field.scale()) {
-            case -1:
-            case 6:
-                unit = null;
-                break;
+        switch (scale) {
             case 0: {
                 if (temporal.get(MICRO_OF_SECOND) == 0) {
                     unit = null;
@@ -248,7 +244,7 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
             }
             break;
             case 1: {
-                if (temporal.get(MICRO_OF_SECOND) < 100_000) {
+                if (temporal.get(MICRO_OF_SECOND) % 100_000 == 0) {
                     unit = null;
                 } else {
                     unit = TruncatedUnit.MILLIS_100;
@@ -288,7 +284,7 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
             }
             break;
             default:
-                throw _Exceptions.timeFieldScaleError(field);
+                unit = null;
         }
 
         final Temporal value;
