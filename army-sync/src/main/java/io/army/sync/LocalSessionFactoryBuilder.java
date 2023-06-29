@@ -268,9 +268,9 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     private static void initializingSchema(final SyncLocalSessionFactory sessionFactory, final DdlMode ddlMode) {
 
         final String msgPrefix;
-        msgPrefix = String.format("Initializing schema of %s[%s],%s[%s]"
-                , LocalSessionFactory.class.getName(), sessionFactory.name()
-                , DdlMode.class.getName(), ddlMode);
+        msgPrefix = String.format("Initializing database of %s[%s],%s[%s]",
+                LocalSessionFactory.class.getName(), sessionFactory.name(),
+                DdlMode.class.getName(), ddlMode);
         LOG.info(msgPrefix);
         final long startTime;
         startTime = System.currentTimeMillis();

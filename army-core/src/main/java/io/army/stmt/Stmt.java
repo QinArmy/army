@@ -1,6 +1,7 @@
 package io.army.stmt;
 
-import java.util.function.UnaryOperator;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * @see SimpleStmt
@@ -11,7 +12,8 @@ public interface Stmt {
 
     boolean hasOptimistic();
 
-    String printSql(UnaryOperator<String> function);
+
+    void printSql(BiConsumer<String, Consumer<String>> beautifyFunc, Consumer<String> appender);
 
     @Override
     String toString();

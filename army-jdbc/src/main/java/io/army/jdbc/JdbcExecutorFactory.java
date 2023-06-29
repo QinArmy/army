@@ -40,6 +40,11 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
 
     final boolean databaseSessionHolder;
 
+    /**
+     * @see ArmyKey#TRUNCATED_TIME_TYPE
+     */
+    final boolean truncatedTimeType;
+
     private final String dataSourceCloseMethod;
 
     private boolean closed;
@@ -64,6 +69,7 @@ abstract class JdbcExecutorFactory implements ExecutorFactory {
 
         this.databaseSessionHolder = this.env.getOrDefault(ArmyKey.DATABASE_SESSION_HOLDER_ENABLE);
         this.dataSourceCloseMethod = this.env.get(ArmyKey.DATASOURCE_CLOSE_METHOD);
+        this.truncatedTimeType = this.env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
 
     }
 

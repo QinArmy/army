@@ -21,6 +21,7 @@ import io.army.type.ImmutableSpec;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
+import io.army.util._TimeUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.*;
+import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Stream;
@@ -847,6 +849,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
         final ServerMeta serverMeta = this.factory.serverMeta;
         final MappingEnv mappingEnv = this.factory.mappingEnv;
+        final boolean truncatedTimeType = this.factory.truncatedTimeType;
 
         SQLParam sqlParam;
         Object value;
@@ -871,14 +874,15 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 value = ((SingleParam) sqlParam).value();
                 if (value == null) {
                     // bind null
-                    statement.setNull(paramIndex, Types.NULL);
-                    paramIndex++;
+                    statement.setNull(paramIndex++, Types.NULL);
                     continue;
                 }
                 value = mappingType.beforeBind(sqlType, mappingEnv, value);
+                if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
+                    value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
+                }
                 //TODO field codec
-                attr = bind(statement, paramIndex, attr, mappingType, sqlType, value);
-                paramIndex++;
+                attr = bind(statement, paramIndex++, attr, mappingType, sqlType, value);
                 continue;
             }
 
@@ -889,14 +893,17 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             for (final Object element : ((MultiParam) sqlParam).valueList()) {
                 if (element == null) {
                     // bind null
-                    statement.setNull(paramIndex, Types.NULL);
-                    paramIndex++;
+                    statement.setNull(paramIndex++, Types.NULL);
                     continue;
                 }
                 value = mappingType.beforeBind(sqlType, mappingEnv, element);
+
+                if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
+                    value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
+                }
                 //TODO field codec
-                attr = bind(statement, paramIndex, attr, mappingType, sqlType, value);
-                paramIndex++;
+                attr = bind(statement, paramIndex++, attr, mappingType, sqlType, value);
+
             }// inner for
 
 
@@ -1585,7 +1592,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         }
 
     }
-
 
 
     static ArmyException wrapError(final Throwable error) {

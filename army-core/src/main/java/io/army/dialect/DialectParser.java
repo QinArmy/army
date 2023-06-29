@@ -9,6 +9,7 @@ import io.army.stmt.Stmt;
 import io.army.tx.Isolation;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * A common interface to all dialect of dialect.
@@ -86,6 +87,8 @@ public interface DialectParser {
 
 
     String printStmt(Stmt stmt, boolean beautify);
+
+    void printStmt(Stmt stmt, boolean beautify, Consumer<String> appender);
 
     String sqlElement(SQLElement element);
 

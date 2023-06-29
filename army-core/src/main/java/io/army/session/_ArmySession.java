@@ -90,23 +90,37 @@ public abstract class _ArmySession implements Session {
         } else {
             mode = factory.sqlLogMode;
         }
+        final boolean debug, beautify;
         switch (mode) {
             case OFF:
-                break;
+                return;
             case SIMPLE:
-                this.getLogger().info("session[name : {}] \n{}", this.name, factory.dialectParser().printStmt(stmt, false));
+                beautify = debug = false;
                 break;
             case DEBUG:
-                this.getLogger().debug("session[name : {}] \n{}", this.name, factory.dialectParser().printStmt(stmt, false));
+                debug = true;
+                beautify = false;
                 break;
             case FORMAT:
-                this.getLogger().info("session[name : {}] \n{}", this.name, factory.dialectParser().printStmt(stmt, true));
+                debug = false;
+                beautify = true;
                 break;
             case FORMAT_DEBUG:
-                this.getLogger().debug("session[name : {}] \n{}", this.name, factory.dialectParser().printStmt(stmt, true));
+                beautify = debug = true;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(mode);
+        }
+
+        final StringBuilder builder = new StringBuilder(128);
+        builder.append("session[name : ")
+                .append(this.name)
+                .append("]\n");
+        factory.dialectParser().printStmt(stmt, beautify, builder::append);
+        if (debug) {
+            this.getLogger().debug(builder.toString());
+        } else {
+            this.getLogger().info(builder.toString());
         }
 
     }

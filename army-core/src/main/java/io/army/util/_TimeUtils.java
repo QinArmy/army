@@ -283,6 +283,14 @@ public abstract class _TimeUtils extends io.qinarmy.util.TimeUtils {
                 }
             }
             break;
+            case 6: {
+                if (temporal.get(NANO_OF_SECOND) % 100 == 0) {
+                    unit = null;
+                } else {
+                    unit = ChronoUnit.MICROS;
+                }
+            }
+            break;
             default:
                 unit = null;
         }

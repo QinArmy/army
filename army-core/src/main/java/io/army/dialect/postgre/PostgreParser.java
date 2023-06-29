@@ -771,10 +771,6 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
 
-    @Override
-    protected final String beautifySql(String sql) {
-        return sql;
-    }
 
     @Override
     protected final void parseAssignmentInsert(_AssignmentInsertContext context, _Insert._AssignmentInsert insert) {

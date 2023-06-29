@@ -12,10 +12,14 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class _DialectUtils {
+
+    public static final BiConsumer<String, Consumer<String>> NON_BEAUTIFY_SQL_FUNC = _DialectUtils::nonBeautifySql;
 
     protected _DialectUtils() {
         throw new UnsupportedOperationException();
@@ -39,7 +43,6 @@ public abstract class _DialectUtils {
         }
         return builder.toString();
     }
-
 
 
     /**
@@ -405,7 +408,12 @@ public abstract class _DialectUtils {
 
 
 
+
     /*################################## blow private static innner class ##################################*/
+
+    private static void nonBeautifySql(String sql, Consumer<String> appender) {
+        appender.accept(sql);
+    }
 
 
 }

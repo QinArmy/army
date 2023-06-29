@@ -33,7 +33,7 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<ZoneOffset> ZONE_OFFSET = new ArmyKey<>("zone_offset", ZoneOffset.class, null);
 
-    public static final ArmyKey<Boolean> QUALIFIED_TABLE_NAME_ENABLE = new ArmyKey<>("qualified.table.name.enable", Boolean.class, Boolean.FALSE);
+    public static final ArmyKey<Boolean> QUALIFIED_TABLE_NAME_ENABLE = new ArmyKey<>("qualified_table_name.enable", Boolean.class, Boolean.FALSE);
 
     public static final ArmyKey<NameMode> DATABASE_NAME_MODE = new ArmyKey<>("database.name.mode", NameMode.class, NameMode.DEFAULT);
 

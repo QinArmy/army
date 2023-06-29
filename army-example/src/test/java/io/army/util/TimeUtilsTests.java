@@ -37,30 +37,39 @@ public class TimeUtilsTests {
                     .append(" : ")
                     .append(text);
 
+
             switch (i) {
                 case 0:
                     Assert.assertEquals(text, "2023-06-29 01:42:03");
+                    builder.append("       ");
                     break;
                 case 1:
                     Assert.assertEquals(text, "2023-06-29 01:42:03.9");
+                    builder.append("     ");
                     break;
                 case 2:
                     Assert.assertEquals(text, "2023-06-29 01:42:03.99");
+                    builder.append("    ");
                     break;
                 case 3:
                     Assert.assertEquals(text, "2023-06-29 01:42:03.999");
+                    builder.append("   ");
                     break;
                 case 4:
                     Assert.assertEquals(text, "2023-06-29 01:42:03.9999");
+                    builder.append("  ");
                     break;
                 case 5:
                     Assert.assertEquals(text, "2023-06-29 01:42:03.99999");
+                    builder.append(" ");
                     break;
                 case 6:
                     Assert.assertEquals(text, "2023-06-29 01:42:03.999999");
                     break;
                 default://no-op
             }
+            builder.append(" ; truncated : ")
+                    .append(truncated);
 
         }
 

@@ -4,16 +4,17 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadAccessor;
 import io.army.criteria.*;
 import io.army.criteria.impl.SQLs;
+import io.army.dialect._DialectUtils;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
-import io.army.util._StringUtils;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.ObjIntConsumer;
-import java.util.function.UnaryOperator;
 
 public abstract class Stmts {
 
@@ -147,21 +148,38 @@ public abstract class Stmts {
         return item;
     }
 
-
-    private static final class MinSimpleStmt implements io.army.stmt.SimpleStmt {
+    private static abstract class SingleSqlStmt implements GenericSimpleStmt {
 
         private final String sql;
+
+        private SingleSqlStmt(String sql) {
+            this.sql = sql;
+        }
+
+        @Override
+        public final String sqlText() {
+            return this.sql;
+        }
+
+        @Override
+        public final void printSql(BiConsumer<String, Consumer<String>> beautifyFunc, Consumer<String> appender) {
+            beautifyFunc.accept(this.sql, appender);
+        }
+
+        @Override
+        public final String toString() {
+            return this.sql;
+        }
+
+    }//SingleSqlStmt
+
+    private static final class MinSimpleStmt extends SingleSqlStmt implements SimpleStmt {
 
         private final List<SQLParam> paramGroup;
 
         private MinSimpleStmt(StmtParams params) {
-            this.sql = params.sql();
+            super(params.sql());
             this.paramGroup = params.paramList();
-        }
-
-        @Override
-        public String sqlText() {
-            return this.sql;
         }
 
         @Override
@@ -179,15 +197,6 @@ public abstract class Stmts {
             return Collections.emptyList();
         }
 
-        @Override
-        public String printSql(UnaryOperator<String> function) {
-            return function.apply(this.sql);
-        }
-
-        @Override
-        public String toString() {
-            return this.sql;
-        }
 
     }// MinSimpleStmt
 
@@ -219,18 +228,20 @@ public abstract class Stmts {
         }
 
         @Override
-        public String printSql(final UnaryOperator<String> function) {
-            return _StringUtils.builder()
-                    .append(function.apply(this.first.sqlText()))
-                    .append('\n')
-                    .append(function.apply(this.second.sqlText()))
-                    .toString();
+        public void printSql(BiConsumer<String, Consumer<String>> beautifyFunc, Consumer<String> appender) {
+            appender.accept("pair first:\n");
+            beautifyFunc.accept(this.first.sqlText(), appender);
+            appender.accept("\npair second:\n");
+            beautifyFunc.accept(this.second.sqlText(), appender);
         }
 
         @Override
         public String toString() {
-            return String.format("first sql:\n%s\n%s", this.first.sqlText(), this.second.sqlText());
+            final StringBuilder builder = new StringBuilder(128);
+            this.printSql(_DialectUtils.NON_BEAUTIFY_SQL_FUNC, builder::append);
+            return builder.toString();
         }
+
     }
 
 
@@ -261,32 +272,26 @@ public abstract class Stmts {
         }
 
         @Override
-        public String printSql(UnaryOperator<String> function) {
-            return _StringUtils.builder()
-                    .append("batch pair first:\n")
-                    .append(function.apply(this.first.sqlText()))
-                    .append("\nbatch pair second:\n")
-                    .append(function.apply(this.second.sqlText()))
-                    .toString();
+        public void printSql(BiConsumer<String, Consumer<String>> beautifyFunc, Consumer<String> appender) {
+            appender.accept("batch pair first:\n");
+            beautifyFunc.accept(this.first.sqlText(), appender);
+            appender.accept("\nbatch pair second:\n");
+            beautifyFunc.accept(this.second.sqlText(), appender);
         }
 
         @Override
         public String toString() {
-            return _StringUtils.builder()
-                    .append("batch pair first:\n")
-                    .append(this.first.sqlText())
-                    .append("\nbatch pair second:\n")
-                    .append(this.second.sqlText())
-                    .toString();
+            final StringBuilder builder = new StringBuilder(128);
+            this.printSql(_DialectUtils.NON_BEAUTIFY_SQL_FUNC, builder::append);
+            return builder.toString();
         }
 
 
     }//PairBatchStmtImpl
 
 
-    private static final class SimpleDmlStmt implements SimpleStmt {
+    private static final class SimpleDmlStmt extends SingleSqlStmt implements SimpleStmt {
 
-        private final String sql;
 
         private final List<SQLParam> paramGroup;
 
@@ -295,16 +300,12 @@ public abstract class Stmts {
         private final boolean hasOptimistic;
 
         private SimpleDmlStmt(StmtParams params) {
-            this.sql = params.sql();
+            super(params.sql());
             this.paramGroup = params.paramList();
             this.selectionList = params.selectionList();
             this.hasOptimistic = params.hasOptimistic();
         }
 
-        @Override
-        public String sqlText() {
-            return this.sql;
-        }
 
         @Override
         public boolean hasOptimistic() {
@@ -321,27 +322,18 @@ public abstract class Stmts {
             return this.selectionList;
         }
 
-        @Override
-        public String printSql(UnaryOperator<String> function) {
-            return function.apply(this.sql);
-        }
 
-        @Override
-        public String toString() {
-            return this.sql;
-        }
     }//MinDml
 
-    private static class MinBatchDmlStmt implements BatchStmt {
+    private static class MinBatchDmlStmt extends SingleSqlStmt implements BatchStmt {
 
-        private final String sql;
 
         private final List<List<SQLParam>> paramGroupList;
 
         private final boolean hasOptimistic;
 
         private MinBatchDmlStmt(StmtParams params, List<List<SQLParam>> paramGroupList) {
-            this.sql = params.sql();
+            super(params.sql());
             this.paramGroupList = Collections.unmodifiableList(paramGroupList);
             this.hasOptimistic = params.hasOptimistic();
         }
@@ -357,30 +349,17 @@ public abstract class Stmts {
         }
 
 
-        public final String sqlText() {
-            return this.sql;
-        }
-
         @Override
         public final boolean hasOptimistic() {
             return this.hasOptimistic;
         }
 
-        @Override
-        public final String printSql(UnaryOperator<String> function) {
-            return function.apply(this.sql);
-        }
 
-        @Override
-        public final String toString() {
-            return this.sql;
-        }
 
     }//MinBatchDmlStmt
 
-    private static final class MultiStmtBatchStmtImpl implements MultiStmtBatchStmt {
+    private static final class MultiStmtBatchStmtImpl extends SingleSqlStmt implements MultiStmtBatchStmt {
 
-        private final String sql;
 
         private final List<? extends Selection> selectionList;
 
@@ -389,16 +368,12 @@ public abstract class Stmts {
         private final boolean optimistic;
 
         private MultiStmtBatchStmtImpl(StmtParams params, List<List<SQLParam>> paramGroupList) {
-            this.sql = params.sql();
+            super(params.sql());
             this.selectionList = params.selectionList();
             this.paramGroupList = _Collections.unmodifiableList(paramGroupList);
             this.optimistic = params.hasOptimistic();
         }
 
-        @Override
-        public String sqlText() {
-            return this.sql;
-        }
 
         @Override
         public List<? extends Selection> selectionList() {
@@ -415,22 +390,11 @@ public abstract class Stmts {
             return this.optimistic;
         }
 
-        @Override
-        public String printSql(UnaryOperator<String> function) {
-            return function.apply(this.sql);
-        }
-
-        @Override
-        public String toString() {
-            return this.sql;
-        }
 
     }//MultiStmtBatchStm
 
 
-    private static class QueryStmt implements SimpleStmt {
-
-        private final String sql;
+    private static class QueryStmt extends SingleSqlStmt implements SimpleStmt {
 
         private final List<SQLParam> paramGroup;
 
@@ -439,16 +403,12 @@ public abstract class Stmts {
         private final boolean optimistic;
 
         private QueryStmt(StmtParams params) {
-            this.sql = params.sql();
+            super(params.sql());
             this.paramGroup = params.paramList();
             this.selectionList = params.selectionList();
             this.optimistic = params.hasOptimistic();
         }
 
-        @Override
-        public final String sqlText() {
-            return this.sql;
-        }
 
         @Override
         public final boolean hasOptimistic() {
@@ -465,15 +425,6 @@ public abstract class Stmts {
             return this.selectionList;
         }
 
-        @Override
-        public final String printSql(UnaryOperator<String> function) {
-            return function.apply(this.sql);
-        }
-
-        @Override
-        public final String toString() {
-            return this.sql;
-        }
 
 
     }//QueryStmt
@@ -496,9 +447,8 @@ public abstract class Stmts {
 
     }//TwoStmtModeQueryStmtIml
 
-    private static class PostStmt implements GeneratedKeyStmt {
+    private static class PostStmt extends SingleSqlStmt implements GeneratedKeyStmt {
 
-        private final String sql;
 
         private final List<SQLParam> paramList;
 
@@ -513,7 +463,7 @@ public abstract class Stmts {
         private final ObjIntConsumer<Object> consumer;
 
         private PostStmt(InsertStmtParams params) {
-            this.sql = params.sql();
+            super(params.sql());
             this.paramList = params.paramList();
             this.selectionList = params.selectionList();
             this.rowSize = params.rowSize();
@@ -544,10 +494,6 @@ public abstract class Stmts {
             return this.idSelectionIndex;
         }
 
-        @Override
-        public final String sqlText() {
-            return this.sql;
-        }
 
         @Override
         public final boolean hasOptimistic() {
@@ -562,16 +508,6 @@ public abstract class Stmts {
         @Override
         public final List<? extends Selection> selectionList() {
             return this.selectionList;
-        }
-
-        @Override
-        public final String printSql(UnaryOperator<String> function) {
-            return function.apply(this.sql);
-        }
-
-        @Override
-        public final String toString() {
-            return this.sql;
         }
 
 
@@ -615,10 +551,6 @@ public abstract class Stmts {
     }//QueryStmtItem
 
 
-    private static IllegalStateException duplicateId(PrimaryFieldMeta<?> field) {
-        String m = String.format("%s value duplication.", field);
-        throw new IllegalStateException(m);
-    }
 
 
 }

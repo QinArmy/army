@@ -1160,9 +1160,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         stmt = Postgres.singleInsert()
                 .literalMode(LiteralMode.LITERAL)
-                .with("parent").as(s -> s
-                        .literalMode(LiteralMode.LITERAL)
-                        .insertInto(ChinaRegion_.T)
+                .with("parent").as(s -> s.insertInto(ChinaRegion_.T)
                         .values(provinceList)
                         .returning(ChinaRegion_.id)
                         .asReturningInsert()

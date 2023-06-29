@@ -26,16 +26,14 @@ import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
-import io.army.util.ArrayUtils;
-import io.army.util._Collections;
-import io.army.util._Exceptions;
-import io.army.util._StringUtils;
+import io.army.util.*;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -108,7 +106,10 @@ abstract class ArmyParser implements DialectParser {
 
     final NameMode funcNameMode;
 
-    final boolean truncatedTypeTime;
+    /**
+     * @see ArmyKey#TRUNCATED_TIME_TYPE
+     */
+    final boolean truncatedTimeType;
 
     private final String qualifiedSchemaName;
     private final NameMode tableNameMode;
@@ -118,6 +119,8 @@ abstract class ArmyParser implements DialectParser {
     private final boolean validateUnionType;
 
     private final boolean useObjectNameModeMethod;
+
+    private final BiConsumer<String, Consumer<String>> beautifySqlFunc = this::beautifySql;
 
     ArmyParser(final DialectEnv dialectEnv, final Dialect dialect) {
         this.dialect = dialect; // first
@@ -165,7 +168,7 @@ abstract class ArmyParser implements DialectParser {
         this.columnNameMode = env.getOrDefault(ArmyKey.COLUMN_NAME_MODE);
 
         this.funcNameMode = env.getOrDefault(ArmyKey.FUNC_NAME_MODE);
-        this.truncatedTypeTime = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
+        this.truncatedTimeType = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
         this.qualifiedSchemaName = this.getQualifiedSchemaName(env, this.serverMeta);
     }
 
@@ -343,7 +346,19 @@ abstract class ArmyParser implements DialectParser {
 
     @Override
     public final String printStmt(final Stmt stmt, final boolean beautify) {
-        return beautify ? stmt.printSql(this::beautifySql) : stmt.printSql(ArmyParser::nonBeautifySql);
+        final StringBuilder builder = new StringBuilder(128);
+        this.printStmt(stmt, beautify, builder::append);
+        return builder.toString();
+    }
+
+
+    @Override
+    public final void printStmt(Stmt stmt, boolean beautify, Consumer<String> appender) {
+        if (beautify) {
+            stmt.printSql(this.beautifySqlFunc, appender);
+        } else {
+            stmt.printSql(_DialectUtils.NON_BEAUTIFY_SQL_FUNC, appender);
+        }
     }
 
     @Override
@@ -715,11 +730,14 @@ abstract class ArmyParser implements DialectParser {
             this.bindLiteralNull(sqlType, type, sqlBuilder);
             return;
         }
-        final Object convertedValue;
+        Object convertedValue;
         if (this.isNeedConvert(sqlType, value)) {
             convertedValue = type.beforeBind(sqlType, this.mappingEnv, value);
         } else {
             convertedValue = value;
+        }
+        if (convertedValue instanceof Temporal && typeMeta instanceof FieldMeta && this.truncatedTimeType) {
+            convertedValue = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) convertedValue);
         }
         //TODO validate non-field codec
         this.bindLiteral(typeMeta, sqlType, convertedValue, sqlBuilder);
@@ -763,8 +781,10 @@ abstract class ArmyParser implements DialectParser {
         throw standardParserDontSupportDialect(this.dialect);
     }
 
-    protected String beautifySql(String sql) {
-        return sql;
+
+    protected void beautifySql(String sql, Consumer<String> appender) {
+        //currently, dont' support beatify sql
+        appender.accept(sql);
     }
 
     protected void assertDelete(DeleteStatement delete) {
@@ -966,7 +986,7 @@ abstract class ArmyParser implements DialectParser {
         } else if (insert instanceof _Insert._QueryInsert) {
             context = handleQueryInsert(outerContext, (_Insert._QueryInsert) insert, visible);
         } else {
-            throw _Exceptions.unknownStatement((Statement) insert, this.dialect); // possibly sub statement
+            throw _Exceptions.unknownStatement(insert, this.dialect); // possibly sub statement
         }
         return context;
     }
@@ -3078,12 +3098,6 @@ abstract class ArmyParser implements DialectParser {
 
     protected static CriteriaException standardParserDontSupportDialect(Dialect dialect) {
         return new CriteriaException(String.format("standard parser[%s] don't support dialect api", dialect));
-    }
-
-
-    private static String nonBeautifySql(String sql) {
-        //no-op
-        return sql;
     }
 
 
