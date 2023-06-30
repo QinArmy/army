@@ -274,7 +274,7 @@ abstract class PostgreSupports extends CriteriaSupports {
 
         private final Postgres.WordMaterialized modifier;
 
-        private final SubStatement subStatement;
+         final SubStatement subStatement;
 
         private final _SelectionMap selectionMap;
         private final _SearchClause searchClause;

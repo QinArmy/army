@@ -979,17 +979,17 @@ abstract class Expressions {
 
 
 
-    private static final class ScalarExpression extends OperationExpression.OperationSimpleExpression {
+     static final class ScalarExpression extends OperationExpression.OperationSimpleExpression {
 
-        private final SubQuery subQuery;
+         private final SubQuery subQuery;
 
-        private final TypeMeta type;
+         private final TypeMeta type;
 
 
-        private ScalarExpression(TypeMeta expType, SubQuery subQuery) {
-            this.subQuery = subQuery;
-            this.type = expType;
-        }
+         private ScalarExpression(TypeMeta expType, SubQuery subQuery) {
+             this.subQuery = subQuery;
+             this.type = expType;
+         }
 
         @Override
         public TypeMeta typeMeta() {
@@ -1002,18 +1002,27 @@ abstract class Expressions {
         }
 
 
-        @Override
-        public String toString() {
-            return _StringUtils.builder()
-                    .append(_Constant.SPACE_LEFT_PAREN)
-                    .append(" scalar sub query: ")
-                    .append(this.subQuery.getClass().getName())
-                    .append(_Constant.SPACE_RIGHT_PAREN)
-                    .toString();
-        }
+         @Override
+         public String toString() {
+             return _StringUtils.builder()
+                     .append(_Constant.SPACE_LEFT_PAREN)
+                     .append(" scalar sub query: ")
+                     .append(this.subQuery.getClass().getName())
+                     .append(_Constant.SPACE_RIGHT_PAREN)
+                     .toString();
+         }
+
+         @Nullable
+         String validateIdDefaultExpression() {
+             final SubQuery subQuery = this.subQuery;
+             if (!(subQuery instanceof SimpleQueries)) {
+                 return null;
+             }
+             return ((JoinableClause.SimpleQuery) subQuery).validateIdDefaultExpression();
+         }
 
 
-    }//ScalarExpression
+     }//ScalarExpression
 
     /*-------------------below predicate class-------------------*/
 

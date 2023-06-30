@@ -927,6 +927,18 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
     }//NestedLeftParenClause
 
 
+    /**
+     * This interface is designed only for validating postgre child insert with sub-insert it's parent.
+     * This interface is implemented by {@link SimpleQueries}
+     */
+    interface SimpleQuery {
+
+        @Nullable
+        String validateIdDefaultExpression();
+
+    }
+
+
     @SuppressWarnings("unchecked")
     static abstract class JoinableBlock<FT, FS, FC, FF, JT, JS, JC, JF, OR>
             extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, Object, Object, Object, Object, Object, Object, Object>
@@ -938,7 +950,7 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
 
         final TabularItem tabularItem;
 
-         final String alias;
+        final String alias;
 
         private List<_Predicate> onPredicateList;
 

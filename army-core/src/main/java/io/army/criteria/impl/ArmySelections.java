@@ -82,25 +82,25 @@ abstract class ArmySelections implements _Selection {
         return this.alias;
     }
 
-    private static final class ExpressionSelection extends ArmySelections {
+     static final class ExpressionSelection extends ArmySelections {
 
-        private final ArmyExpression expression;
+         final ArmyExpression expression;
 
-        private ExpressionSelection(ArmyExpression expression, String alias) {
-            super(alias);
-            this.expression = expression;
-        }
+         private ExpressionSelection(ArmyExpression expression, String alias) {
+             super(alias);
+             this.expression = expression;
+         }
 
-        @Override
-        public TypeMeta typeMeta() {
-            TypeMeta paramMeta = this.expression.typeMeta();
-            if (paramMeta instanceof TableField) {
-                // ExpressionSelection couldn't return io.army.criteria.TableField ,avoid to statement executor
-                // decode selection .
-                paramMeta = paramMeta.mappingType();
-            }
-            return paramMeta;
-        }
+         @Override
+         public MappingType typeMeta() {
+             TypeMeta paramMeta = this.expression.typeMeta();
+             if (!(paramMeta instanceof MappingType)) {
+                 // ExpressionSelection couldn't return io.army.criteria.TableField ,avoid to statement executor
+                 // decode selection .
+                 paramMeta = paramMeta.mappingType();
+             }
+             return (MappingType) paramMeta;
+         }
 
         @Override
         public void appendSelectItem(final StringBuilder sqlBuilder, final _SqlContext context) {

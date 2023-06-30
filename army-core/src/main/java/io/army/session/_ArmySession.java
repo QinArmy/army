@@ -101,26 +101,31 @@ public abstract class _ArmySession implements Session {
                 debug = true;
                 beautify = false;
                 break;
-            case FORMAT:
+            case BEAUTIFY:
                 debug = false;
                 beautify = true;
                 break;
-            case FORMAT_DEBUG:
+            case BEAUTIFY_DEBUG:
                 beautify = debug = true;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
 
+        final Logger logger;
+        logger = this.getLogger();
+        if ((debug && !logger.isDebugEnabled()) || (!debug && !logger.isInfoEnabled())) {
+            return;
+        }
         final StringBuilder builder = new StringBuilder(128);
         builder.append("session[name : ")
                 .append(this.name)
                 .append("]\n");
         factory.dialectParser().printStmt(stmt, beautify, builder::append);
         if (debug) {
-            this.getLogger().debug(builder.toString());
+            logger.debug(builder.toString());
         } else {
-            this.getLogger().info(builder.toString());
+            logger.info(builder.toString());
         }
 
     }

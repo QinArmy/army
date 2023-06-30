@@ -1,7 +1,10 @@
 package io.army.dialect;
 
 import io.army.annotation.GeneratorType;
-import io.army.criteria.*;
+import io.army.criteria.LiteralMode;
+import io.army.criteria.NullMode;
+import io.army.criteria.SqlValueParam;
+import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
 import io.army.lang.Nullable;
@@ -227,7 +230,7 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
                         delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, rowIndex, postIdList::get);
                         this.appendParam(delayIdParam);
                     } else if ((expression = defaultValueMap.get(field)) == null) {
-                        throw this.oneStmtModePostChildNoIdExpression();
+                        throw _Exceptions.oneStmtModePostChildNoIdExpression(this.parser.database, (ChildTableMeta<?>) insertTable);
                     } else {
                         expression.appendSql(sqlBuilder, this);
                     }
@@ -336,11 +339,6 @@ final class ValuesInsertContext extends ValuesSyntaxInsertContext implements Ins
         return batchIndex;
     }
 
-    private CriteriaException oneStmtModePostChildNoIdExpression() {
-        String m = String.format("error,you use %s one statement mode values insert %s,but no child id default expression",
-                this.parser.database.name(), this.insertTable);
-        return new CriteriaException(m);
-    }
 
     private static final class ValuesRowWrapper extends ExpRowWrapper {
 

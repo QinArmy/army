@@ -74,6 +74,11 @@ abstract class InsertSupports {
         ASSIGNMENT
     }
 
+    interface ArmyInsert extends _Insert, InsertOptions {
+
+        InsertMode getInsertMode();
+    }
+
 
     interface ColumnListClause extends CriteriaContextSpec {
 
@@ -946,17 +951,46 @@ abstract class InsertSupports {
             return this.ignoreReturnIds;
         }
 
-        final void endColumnDefaultClause() {
-            final Map<FieldMeta<?>, _Expression> map = this.commonExpMap;
+        final void endColumnDefaultClause(final InsertMode mode) {
+            Map<FieldMeta<?>, _Expression> map = this.commonExpMap;
             if (map == null) {
-                this.commonExpMap = Collections.emptyMap();
+                map = _Collections.emptyMap();
             } else if (map instanceof HashMap) {
-                this.commonExpMap = Collections.unmodifiableMap(map);
+                map = _Collections.unmodifiableMap(map);
             } else {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-
+            this.commonExpMap = map;
             this.context.insertColumnList(this.fieldList());
+
+            switch (mode) {
+                case DOMAIN:
+                case VALUES: {
+                    if (this.migration
+                            || this.twoStmtMode
+                            || this.insertTable instanceof SingleTableMeta
+                            || this.insertTable.nonChildId().generatorType() != GeneratorType.POST) { //TODO consider oracle multi-table insert
+                        break;
+                    }
+                    final _Expression idExp;
+                    idExp = map.get(this.insertTable.id());
+                    if (!(idExp instanceof Expressions.ScalarExpression)) {
+                        throw _Exceptions.oneStmtModePostChildNoIdExpression(this.context.dialect().database(),
+                                (ChildTableMeta<?>) this.insertTable);
+                    }
+                }
+                break;
+                case ASSIGNMENT:
+                case QUERY: {
+                    if (map.size() > 0) {
+                        throw ContextStack.castCriteriaApi(this.context);
+                    }
+                }
+                break;
+                default://no-op
+            }
+
+
         }
 
 
@@ -968,13 +1002,14 @@ abstract class InsertSupports {
             extends ColumnDefaultClause<T, CR, DR>
             implements InsertStatement._DomainValueClause<T, VR>,
             InsertStatement._DynamicValuesClause<T, VR>,
+            ArmyInsert,
             _Insert._ValuesInsert,
             _Insert._QueryInsert {
 
 
         private InsertMode insertMode;
 
-        private List<?> domainList;
+        private List<?> originalDomainList;
 
         private List<Map<FieldMeta<?>, _Expression>> rowPairList;
 
@@ -992,10 +1027,10 @@ abstract class InsertSupports {
             } else if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.endColumnDefaultClause();
-            this.domainList = Collections.singletonList(domain);
-            assert this.insertMode == null;
             this.insertMode = InsertMode.DOMAIN;
+            this.endColumnDefaultClause(InsertMode.DOMAIN);
+            this.originalDomainList = Collections.singletonList(domain);
+            assert this.insertMode == InsertMode.DOMAIN;
             return (VR) this;
         }
 
@@ -1006,7 +1041,7 @@ abstract class InsertSupports {
 
 
         /**
-         * @see #domainListForSingle()
+         * @see #domainListForSimple()
          */
         @Override
         public final <TS extends T> VR values(final @Nullable List<TS> domainList) {
@@ -1015,10 +1050,10 @@ abstract class InsertSupports {
             } else if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.endColumnDefaultClause();
-            this.domainList = domainList;//just store
-            assert this.insertMode == null;
             this.insertMode = InsertMode.DOMAIN;
+            this.endColumnDefaultClause(InsertMode.DOMAIN);
+            this.originalDomainList = domainList;//just store
+            assert this.insertMode == InsertMode.DOMAIN;
             return (VR) this;
         }
 
@@ -1033,7 +1068,9 @@ abstract class InsertSupports {
             if (this.insertMode != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.endColumnDefaultClause();
+
+            this.insertMode = InsertMode.VALUES;
+            this.endColumnDefaultClause(InsertMode.VALUES);
 
             final ValuesConstructorImpl<T> clause;
             clause = new ValuesConstructorImpl<>(this.context, this.migration, this::validateField);
@@ -1041,8 +1078,7 @@ abstract class InsertSupports {
             consumer.accept(clause);
 
             this.rowPairList = clause.endValuesClause();
-            assert this.insertMode == null;
-            this.insertMode = InsertMode.VALUES;
+            assert this.insertMode == InsertMode.VALUES;
             return (VR) this;
         }
 
@@ -1079,20 +1115,19 @@ abstract class InsertSupports {
          * @param rowPairList a unmodified list,empty is allowed.
          */
         final VR staticValuesClauseEnd(final List<Map<FieldMeta<?>, _Expression>> rowPairList) {
-            if (this.insertMode != null) {
+            if (this.insertMode != null || this.rowPairList != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            this.endColumnDefaultClause();
-
-            this.rowPairList = rowPairList;
-            assert this.insertMode == null;
             this.insertMode = InsertMode.VALUES;
+            this.endColumnDefaultClause(InsertMode.VALUES);
+            this.rowPairList = rowPairList;
+            assert this.insertMode == InsertMode.VALUES;
             return (VR) this;
         }
 
         final VR spaceQueryEnd(final SubQuery subQuery) {
             final CriteriaContext subContext;
-            if (this.insertMode != null) {
+            if (this.insertMode != null || this.subQuery != null) {
                 throw ContextStack.castCriteriaApi(this.context);
             } else if (!this.migration) {
                 throw this.queryInsetSupportOnlyMigration();
@@ -1102,18 +1137,19 @@ abstract class InsertSupports {
                 throw ContextStack.criteriaError(this.context, "sub query context and current context not match");
             }
 
+            this.insertMode = InsertMode.QUERY;
             this.context.validateDialect(subContext);
 
-            this.endColumnDefaultClause();
+            this.endColumnDefaultClause(InsertMode.QUERY);
 
             this.subQuery = subQuery;
-            assert this.insertMode == null;
-            this.insertMode = InsertMode.QUERY;
+            assert this.insertMode == InsertMode.QUERY;
             return (VR) this;
         }
 
 
-        final InsertMode getInsertMode() {
+        @Override
+        public final InsertMode getInsertMode() {
             final InsertMode mode = this.insertMode;
             if (mode == null) {
                 throw ContextStack.castCriteriaApi(this.context);
@@ -1124,9 +1160,9 @@ abstract class InsertSupports {
         /**
          * @return a unmodified list,new instance each time.
          */
-        final List<?> domainListForSingle() {
-            //  assert this.insertTable instanceof SingleTableMeta;
-            final List<?> domainList = this.domainList;
+        final List<?> domainListForSimple() {
+            assert this.insertTable instanceof SimpleTableMeta;
+            final List<?> domainList = this.originalDomainList;
             if (this.insertMode != InsertMode.DOMAIN) {
                 throw insertModeNotMatch();
             } else if (domainList == null) {
@@ -1139,7 +1175,8 @@ abstract class InsertSupports {
          * @return a original list
          */
         final List<?> originalDomainList() {
-            final List<?> domainList = this.domainList;
+            assert !(this.insertTable instanceof SimpleTableMeta);
+            final List<?> domainList = this.originalDomainList;
             if (this.insertMode != InsertMode.DOMAIN) {
                 throw insertModeNotMatch();
             } else if (domainList == null) {
@@ -1148,11 +1185,13 @@ abstract class InsertSupports {
             return domainList;
         }
 
-
+        /**
+         * validate originalList for child insert statement
+         */
         final void domainListForChild(final List<?> originalList) {
             assert this.insertTable instanceof ChildTableMeta;
 
-            final List<?> domainList = this.domainList;
+            final List<?> domainList = this.originalDomainList;
             if (this.insertMode != InsertMode.DOMAIN) {
                 throw insertModeNotMatch();
             } else if (domainList == null) {
@@ -1162,8 +1201,8 @@ abstract class InsertSupports {
                     && !(domainList.size() == originalList.size()
                     && domainList.size() == 1
                     && domainList.get(0) == originalList.get(0))) {
-                String m = String.format("%s and %s domain list not match.", this.insertTable
-                        , ((ChildTableMeta<T>) this.insertTable).parentMeta());
+                String m = String.format("%s and %s domain list not match.", this.insertTable,
+                        ((ChildTableMeta<T>) this.insertTable).parentMeta());
                 throw ContextStack.criteriaError(this.context, m);
             }
         }
@@ -1323,9 +1362,9 @@ abstract class InsertSupports {
     @SuppressWarnings("unchecked")
     static abstract class ComplexInsertValuesAssignmentClause<T, CR, DR extends InsertStatement._ColumnDefaultClause<T>, VR, SR>
             extends ComplexInsertValuesClause<T, CR, DR, VR>
-            implements InsertStatement._StaticAssignmentSetClause<T, SR>
-            , InsertStatement._DynamicAssignmentSetClause<T, VR>
-            , _Insert._AssignmentInsert {
+            implements InsertStatement._StaticAssignmentSetClause<T, SR>,
+            InsertStatement._DynamicAssignmentSetClause<T, VR>,
+            _Insert._AssignmentInsert {
 
         private List<_Pair<FieldMeta<?>, _Expression>> assignmentPairList;
 
@@ -1877,7 +1916,7 @@ abstract class InsertSupports {
 
     private static abstract class ArmyInsertStatement<I extends Statement, Q extends Statement>
             extends CriteriaSupports.StatementMockSupport
-            implements _Insert,
+            implements ArmyInsert,
             Statement.StatementMockSpec,
             Statement,
             CriteriaContextSpec,
@@ -1933,6 +1972,23 @@ abstract class InsertSupports {
             return rowCount;
         }
 
+        @Override
+        public final InsertMode getInsertMode() {
+            final InsertMode mode;
+            if (this instanceof _Insert._DomainInsert) {
+                mode = InsertMode.DOMAIN;
+            } else if (this instanceof _Insert._ValuesInsert) {
+                mode = InsertMode.VALUES;
+            } else if (this instanceof _Insert._AssignmentInsert) {
+                mode = InsertMode.ASSIGNMENT;
+            } else if (this instanceof _Insert._QueryInsert) {
+                mode = InsertMode.QUERY;
+            } else {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            return mode;
+        }
 
         @Override
         public final void prepared() {

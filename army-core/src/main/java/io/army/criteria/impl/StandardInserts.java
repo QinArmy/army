@@ -315,7 +315,7 @@ abstract class StandardInserts extends InsertSupports {
         private PrimarySingleDomainInsertStatement(StandardComplexValuesClause<?, ?> clause) {
             super(clause);
             assert clause.insertTable instanceof SingleTableMeta; //standard don't support cte insert and returning clause
-            this.domainList = clause.domainListForSingle();
+            this.domainList = clause.domainListForSimple();
         }
 
         @Override

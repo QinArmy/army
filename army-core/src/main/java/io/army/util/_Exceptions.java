@@ -1158,4 +1158,9 @@ public abstract class _Exceptions extends ExceptionUtils {
     }
 
 
+    public static CriteriaException oneStmtModePostChildNoIdExpression(final Database database, final ChildTableMeta<?> child) {
+        String m = String.format("error,you use %s one statement mode values syntax insert %s,but no child id default expression",
+                database, child);
+        return new CriteriaException(m);
+    }
 }

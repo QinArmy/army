@@ -5,7 +5,6 @@ import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.bean.ReadWrapper;
-import io.army.criteria.CriteriaException;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.NullMode;
 import io.army.criteria.Visible;
@@ -180,7 +179,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                         delayIdParam = new DelayIdParamValue((PrimaryFieldMeta<?>) field, currentDomain, accessor);
                         this.appendParam(delayIdParam);
                     } else if ((expression = defaultValueMap.get(field)) == null) {
-                        throw oneStmtModePostChildNoIdExpression();
+                        throw _Exceptions.oneStmtModePostChildNoIdExpression(this.parser.database, (ChildTableMeta<?>) insertTable);
                     } else {
                         expression.appendSql(sqlBuilder, this);
                     }
@@ -271,12 +270,6 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         return batchIndex;
     }
 
-
-    private CriteriaException oneStmtModePostChildNoIdExpression() {
-        String m = String.format("error,you use %s one statement mode domain insert %s,but no child id default expression",
-                this.parser.database.name(), this.insertTable);
-        return new CriteriaException(m);
-    }
 
     private static final class DomainReadWrapper implements ReadWrapper {
 

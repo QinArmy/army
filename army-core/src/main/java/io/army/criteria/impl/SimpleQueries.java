@@ -12,6 +12,7 @@ import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
+import io.army.modelgen._MetaBridge;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._Collections;
@@ -50,6 +51,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         RowSet._StaticExceptClause<SP>,
         RowSet._StaticMinusClause<SP>,
         _SelectionMap,
+        JoinableClause.SimpleQuery,
         _Query {
 
     private boolean recursive;
@@ -964,6 +966,46 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
 
         this.clearWhereClause();
         this.onClear();
+    }
+
+    @Nullable
+    public final String validateIdDefaultExpression() {
+        final List<? extends Selection> selectionList = this.context.flatSelectItems();
+        if (selectionList.size() != 1) {
+            return null;
+        }
+        final Selection selection = selectionList.get(0);
+        final DerivedField derivedField;
+
+        if (selection instanceof DerivedField) {
+            derivedField = (DerivedField) selection;
+        } else if (selection instanceof ArmySelections.ExpressionSelection
+                && ((ArmySelections.ExpressionSelection) selection).expression instanceof DerivedField) {
+            derivedField = (DerivedField) ((ArmySelections.ExpressionSelection) selection).expression;
+        } else {
+            return null;
+        }
+        if (!_MetaBridge.ID.equals(derivedField.fieldName())) {
+            return null;
+        }
+        final List<_TabularBlock> blockList = this.tableBlockList;
+        assert blockList != null;
+        if (blockList.size() != 1) {
+            return null;
+        }
+        final _TabularBlock block = blockList.get(0);
+        final TabularItem item = block.tableItem();
+
+        if (!(item instanceof _Cte)) {
+            return null;
+        }
+
+        final List<_Predicate> whereClause = this.wherePredicateList();
+        if (whereClause.size() != 1) {
+            return null;
+        }
+
+        return ((_Cte) item).name();
     }
 
     abstract SP createQueryUnion(_UnionType unionType);

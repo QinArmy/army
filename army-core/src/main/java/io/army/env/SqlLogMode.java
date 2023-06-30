@@ -4,7 +4,7 @@ public enum SqlLogMode {
 
     OFF,
     SIMPLE,
-    FORMAT,
+    BEAUTIFY,
     DEBUG,
-    FORMAT_DEBUG
+    BEAUTIFY_DEBUG
 }

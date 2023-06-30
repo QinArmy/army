@@ -48,6 +48,12 @@ public interface _Insert extends _Statement {
     }
 
 
+    interface _OneStatementChildInsert {
+
+        void validParentDomain();
+    }
+
+
     interface _ConflictActionPredicateClauseSpec {
 
         List<_Predicate> updateSetPredicateList();

@@ -152,11 +152,11 @@ public abstract class _ArmyTransaction implements Transaction {
                 debugLevel = null;
                 break;
             case SIMPLE:
-            case FORMAT:
+            case BEAUTIFY:
                 debugLevel = Boolean.FALSE;
                 break;
             case DEBUG:
-            case FORMAT_DEBUG:
+            case BEAUTIFY_DEBUG:
                 debugLevel = Boolean.TRUE;
                 break;
             default:
