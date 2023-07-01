@@ -971,24 +971,25 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     public final List<String> validateIdDefaultExpression() {
         final String msgSuffix = "in id default scalar expression";
 
+        String m;
         final List<_Cte> cteList = this.cteList;
         if (cteList != null && cteList.size() > 0) {
-            String m = String.format("couldn't exists WITH clause %s", msgSuffix);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            m = String.format("couldn't exists WITH clause %s", msgSuffix);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
 
         final List<? extends Selection> selectionList = this.context.flatSelectItems();
         if (selectionList.size() != 1) {
             //io.army.criteria.impl.Expressions.scalarExpression(SubQuery) no bug,never here
-            throw ContextStack.clearStackAndCriteriaError("Expression isn't scalar sub query.");
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, "Expression isn't scalar sub query.");
         } else if (this.hasLimitClause()) {
-            String m = String.format("couldn't exists LIMIT/OFFSET clause %s.", msgSuffix);
+            m = String.format("couldn't exists LIMIT/OFFSET clause %s.", msgSuffix);
             throw ContextStack.clearStackAndCriteriaError(m);
         } else if (this.hasGroupByClause()) {
-            String m = String.format("couldn't exists GROUP BY clause %s.", msgSuffix);
+            m = String.format("couldn't exists GROUP BY clause %s.", msgSuffix);
             throw ContextStack.clearStackAndCriteriaError(m);
         } else if (this instanceof _Query._WindowClauseSpec && ((_WindowClauseSpec) this).windowList().size() > 0) {
-            String m = String.format("couldn't exists WINDOW clause %s.", msgSuffix);
+            m = String.format("couldn't exists WINDOW clause %s.", msgSuffix);
             throw ContextStack.clearStackAndCriteriaError(m);
         }
 
@@ -1002,22 +1003,21 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
                 && ((ArmySelections.ExpressionSelection) selection).expression instanceof DerivedField) {
             derivedIdField = (DerivedField) ((ArmySelections.ExpressionSelection) selection).expression;
         } else {
-            String m;
             m = String.format("%s %s isn't derived field %s.", Selection.class.getName(), selection.alias(), msgSuffix);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
 
         final List<_TabularBlock> blockList = this.tableBlockList;
         assert blockList != null;
         if (blockList.size() != 1) {
-            String m = String.format("Must just one from-item %s", msgSuffix);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            m = String.format("Must just one from-item %s", msgSuffix);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
         final _TabularBlock block = blockList.get(0);
         final TabularItem item = block.tableItem();
         if (!(item instanceof _Cte)) {
-            String m = String.format("From item must be CTE %s.", msgSuffix);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            m = String.format("From item must be CTE %s.", msgSuffix);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
 
         final List<_Predicate> whereClause = this.wherePredicateList();
@@ -1028,8 +1028,8 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
                 //no-op
                 break;
             default: {
-                String m = String.format("Can only exists one equal predicate %s.", msgSuffix);
-                throw ContextStack.clearStackAndCriteriaError(m);
+                m = String.format("Can only exists one equal predicate %s.", msgSuffix);
+                throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
             }
         }
 
@@ -1037,23 +1037,22 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         final Expressions.DualPredicate dual;
         if (!(predicate instanceof Expressions.DualPredicate)
                 || (dual = (Expressions.DualPredicate) predicate).operator != DualBooleanOperator.EQUAL) {
-            String m = String.format("Not found equal predicate %s.", msgSuffix);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            m = String.format("Not found equal predicate %s.", msgSuffix);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         } else if (dual.left == derivedIdField) {
-            String m = String.format("%s couldn't be %s %s", dual.left, derivedIdField, msgSuffix);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            m = String.format("%s couldn't be %s %s", dual.left, derivedIdField, msgSuffix);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         } else if (!(dual.left instanceof DerivedField)) {
-            String m;
             m = String.format("%s isn't %s %s.", dual.left, DerivedField.class.getName(), msgSuffix);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         } else if (dual.right != SQLs.BATCH_NO_PARAM && dual.right != SQLs.BATCH_NO_LITERAL) {
-            String m = String.format("The right item of %s should be %s.%s or %s.%s , but is %s %s",
+            m = String.format("The right item of %s should be %s.%s or %s.%s , but is %s %s",
                     dual.left,
                     SQLs.class.getName(), "BATCH_NO_PARAM",
                     SQLs.class.getName(), "BATCH_NO_LITERAL",
                     dual.right,
                     msgSuffix);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
         return ArrayUtils.of(((_Cte) item).name(), derivedIdField.fieldName(), ((DerivedField) dual.left).fieldName());
     }
@@ -1064,26 +1063,26 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
             // no bug,never here
             throw new IllegalArgumentException();
         }
+        String m;
         final List<_Cte> cteList = this.cteList;
         if (cteList != null && cteList.size() > 0) {
-            String m = String.format("couldn't exists WITH clause in CTE[%s]", thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            m = String.format("couldn't exists WITH clause in CTE[%s]", thisCteName);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         } else if (this.hasLimitClause()) {
-            String m = String.format("couldn't exists LIMIT/OFFSET clause in CTE[%s].", thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            m = String.format("couldn't exists LIMIT/OFFSET clause in CTE[%s].", thisCteName);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         } else if (this.hasGroupByClause()) {
-            String m = String.format("couldn't exists GROUP BY clause in CTE[%s].", thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            m = String.format("couldn't exists GROUP BY clause in CTE[%s].", thisCteName);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         } else if (this instanceof _Query._WindowClauseSpec && ((_WindowClauseSpec) this).windowList().size() > 0) {
-            String m = String.format("couldn't exists WINDOW clause in CTE[%s].", thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            m = String.format("couldn't exists WINDOW clause in CTE[%s].", thisCteName);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
 
         final List<? extends _SelectItem> selectItemList = this.selectItemList();
-        String m;
         if (selectItemList.size() != 2) {
             m = String.format("parent sub-insert row number CTE[%s] must two select item.", thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
         final String idAlias = names.get(1), rowNumberAlias = names.get(2);
 
@@ -1092,21 +1091,21 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         Expression expression;
         if (!(selectItem instanceof ArmySelections.ExpressionSelection)) {
             m = String.format("first select item isn't window function rowNumber() expression in CTE[%s]", thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
         if (!((Selection) selectItem).alias().equals(rowNumberAlias)) {
             m = String.format("first selection isn't selection[%s] in CTE[%s]", rowNumberAlias, thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         } else if (!((expression = ((ArmySelections.ExpressionSelection) selectItem).expression) instanceof WindowFunctionUtils.WindowFunction)
                 || ((WindowFunctionUtils.WindowFunction<?>) expression).isNotGlobalRowNumber()) {
             m = String.format("selection[%s] isn't global window function rowNumber() expression in CTE[%s]",
                     rowNumberAlias, thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
 
         if (this.refSelection(idAlias) == null) {
             m = String.format("parent sub-insert id selection[%s] in CTE[%s]", idAlias, thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
 
 
@@ -1114,13 +1113,13 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         assert blockList != null;
         if (blockList.size() != 1) {
             m = String.format("Must just one from-item in CTE[%s]", thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
         final _TabularBlock block = blockList.get(0);
         final TabularItem item = block.tableItem();
         if (!(item instanceof _Cte)) {
             m = String.format("from-item isn't CTE in CTE[%s]", thisCteName);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
         return ((_Cte) item).name();
     }

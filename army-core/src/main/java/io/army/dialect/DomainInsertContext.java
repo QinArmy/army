@@ -15,9 +15,9 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.ObjIntConsumer;
@@ -327,8 +327,6 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
         private final ObjectAccessor accessor;
 
         private final DomainReadWrapper readWrapper;
-
-
         private Object domain;
 
         private DomainWrapper(DomainInsertContext context, _Insert._DomainInsert domainStmt) {
@@ -340,9 +338,9 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                 this.nonChildDefaultMap = parentStmt.defaultValueMap();
                 this.childDefaultMap = domainStmt.defaultValueMap();
             } else {
-                assert this.domainTable == context.insertTable;
+                assert this.domainTable == context.insertTable || domainStmt instanceof _Insert._OneStmtParentSubInsert;
                 this.nonChildDefaultMap = domainStmt.defaultValueMap();
-                this.childDefaultMap = Collections.emptyMap();
+                this.childDefaultMap = _Collections.emptyMap();
             }
             this.accessor = ObjectAccessorFactory.forBean(this.domainTable.javaType());
             this.readWrapper = new DomainReadWrapper(this, context.parser.mappingEnv);

@@ -103,6 +103,7 @@ abstract class PostgreInserts extends InsertSupports {
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
+        handleParentUnknownDomain(clause.cteList);
         return spec.asInsert();
     }
 
@@ -123,10 +124,11 @@ abstract class PostgreInserts extends InsertSupports {
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
+        handleParentUnknownDomain(clause.cteList);
         return spec.asReturningInsert();
     }
 
-    private static Insert insertEnd(PostgreComplexValuesClause<?, ?, ?> clause) {
+    private static Insert insertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
         final Statement._DmlInsertClause<? extends Insert> spec;
         final InsertMode mode;
         mode = clause.getInsertMode();
@@ -153,6 +155,7 @@ abstract class PostgreInserts extends InsertSupports {
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
+        handleParentUnknownDomain(clause.cteList);
         return spec.asInsert();
     }
 
@@ -179,6 +182,7 @@ abstract class PostgreInserts extends InsertSupports {
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
+        handleParentUnknownDomain(clause.cteList);
         return spec.asReturningInsert();
     }
 
@@ -204,6 +208,7 @@ abstract class PostgreInserts extends InsertSupports {
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
+        handleParentUnknownDomain(clause.cteList);
         return spec.asInsert();
     }
 
@@ -233,6 +238,7 @@ abstract class PostgreInserts extends InsertSupports {
             default:
                 throw _Exceptions.unexpectedEnum(mode);
         }
+        handleParentUnknownDomain(clause.cteList);
         return spec.asReturningInsert();
     }
 

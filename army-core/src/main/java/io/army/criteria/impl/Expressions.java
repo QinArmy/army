@@ -1020,7 +1020,7 @@ abstract class Expressions {
             final SubQuery subQuery = this.subQuery;
             if (!(subQuery instanceof SimpleQueries)) {
                 String m = "scalar sub expression must be simple sub query in child id default expression.";
-                throw ContextStack.clearStackAndCriteriaError(m);
+                throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
             }
             return ((JoinableClause.SimpleQuery) subQuery).validateIdDefaultExpression();
         }

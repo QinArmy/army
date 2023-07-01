@@ -36,6 +36,23 @@ abstract class InsertSupports {
     }
 
 
+    @SuppressWarnings("all")
+    static void handleParentUnknownDomain(final List<_Cte> cteList) {
+        final int cteSize = cteList.size();
+        SubStatement subStatement;
+        for (int i = 0; i < cteSize; i++) {
+            subStatement = cteList.get(i).subStatement();
+            if (!(subStatement instanceof _Insert)) {
+                continue;
+            } else if (!(((_Insert) subStatement).table() instanceof ParentTableMeta)) {
+                continue;
+            }
+            ((ParentSubInsert) subStatement).parentAsDomainIfUnknown();
+        }
+
+    }
+
+
     /**
      * <p>
      * Find parent insert sub-statement for childStmt in cteList.
@@ -66,7 +83,7 @@ abstract class InsertSupports {
             needParentRowNumberQuery = rowCount > 1;
             if (needParentRowNumberQuery && nameList.size() < 3) {
                 String m = String.format("%s insert multi row but not exists rowNumber cte.", child);
-                throw ContextStack.clearStackAndCriteriaError(m);
+                throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
             }
         }
 
@@ -90,23 +107,26 @@ abstract class InsertSupports {
             }
             if (parentCteName != null && !parentInsertCteName.equals(currentCteName)) { // post id
                 m = String.format("CTE[%s] between CTE[%s] and child insert", currentCteName, parentInsertCteName);
-                throw ContextStack.clearStackAndCriteriaError(m);
+                throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
             }
 
             subStatement = cte.subStatement();
             m = parentCteName == null ? "" : msgSuffix;
             if (!(subStatement instanceof _Insert)) {
                 m = String.format("CET[%s] isn't sub-insert %s", currentCteName, m);
-                throw ContextStack.clearStackAndCriteriaError(m);
+                throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
+            } else if (!(subStatement instanceof _ReturningDml)) {
+                m = String.format("CET[%s] isn't sub-insert with RETURNING clause %s", currentCteName, m);
+                throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
             } else if (((_Insert) subStatement).table() != parent) {
                 m = String.format("CET[%s] sub-insert insert table isn't %s %s", currentCteName, parent, m);
-                throw ContextStack.clearStackAndCriteriaError(m);
+                throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
             } else if (((ArmyInsert) subStatement).isMigration() != childMigration) {
                 m = String.format("CET[%s] sub-insert migration mode and child not match %s", currentCteName, m);
-                throw ContextStack.clearStackAndCriteriaError(m);
+                throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
             } else if (((ArmyInsert) subStatement).getInsertMode() != childMode) {
                 m = String.format("CET[%s] sub-insert insert-syntax and child not match %s", currentCteName, m);
-                throw ContextStack.clearStackAndCriteriaError(m);
+                throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
             }
 
             if (!(subStatement instanceof ParentSubInsert)) {
@@ -125,10 +145,10 @@ abstract class InsertSupports {
         }
         if (needParentRowNumberQuery && !parentRowNumberQuery) {
             m = String.format("Not found parent row number CTE for %s", child);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         } else if (parentSubInsert == null) {
             m = String.format("Not found parent sub-insert CTE for %s", child);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
         return parentSubInsert;
     }
@@ -165,30 +185,30 @@ abstract class InsertSupports {
     /**
      * @param nameList empty or name list ;  see {@link JoinableClause.SimpleQuery#validateIdDefaultExpression()}
      * @return parent sub-insert CTE name.
-     * @see #parentSubInsert(ArmyInsert, List)
+     * @see #parentSubInsert(ArmyInsert, int, List)
      */
     private static String validateParentRowNumberCte(final ChildTableMeta<?> child, final _Cte cte,
                                                      final List<String> nameList) {
         final SubStatement subStatement = cte.subStatement();
         if (!(subStatement instanceof SimpleQueries)) {
             String m = String.format("parent rowNumber CTE[%s] of %s isn't simple query", cte.name(), child);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         } else if (cte.columnAliasList().size() > 0) {
             String m = String.format("parent rowNumber CTE[%s] of %s couldn't exists column alias clause.",
                     cte.name(), child);
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
         return ((JoinableClause.SimpleQuery) subStatement).validateParentSubInsertRowNumberQuery(cte.name(), nameList);
     }
 
     /**
-     * @see #parentSubInsert(ArmyInsert, List)
+     * @see #parentSubInsert(ArmyInsert, int, List)
      */
     private static void validatePostParentSubInsert(final _Cte cte, final ChildTableMeta<?> child, final String idAlias) {
         Selection idSelection = cte.refSelection(idAlias);
         if (idSelection == null) {
             String m = String.format("Not found %s[%s] in CTE[%s]", Selection.class.getName(), idAlias, cte.name());
-            throw ContextStack.clearStackAndCriteriaError(m);
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
         if (idSelection instanceof ArmySelections.RenameSelection) {
             idSelection = ((ArmySelections.RenameSelection) idSelection).selection;
@@ -221,9 +241,10 @@ abstract class InsertSupports {
     /**
      * @see #validatePostParentSubInsert(_Cte, ChildTableMeta, String)
      */
-    private static CriteriaException idSelectionIsNotParentId(String cteName, ChildTableMeta<?> child, String idAlias) {
+    private static IllegalOneStmtModeException idSelectionIsNotParentId(String cteName, ChildTableMeta<?> child,
+                                                                        String idAlias) {
         String m = String.format("selection[%s] isn't parent id selection of %s in CTE[%s]", idAlias, child, cteName);
-        return ContextStack.clearStackAndCriteriaError(m);
+        throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
     }
 
     interface ParentSubInsert {
