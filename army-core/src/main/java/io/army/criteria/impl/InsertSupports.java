@@ -41,7 +41,7 @@ abstract class InsertSupports {
      * Find parent insert sub-statement for childStmt in cteList.
      * </p>
      */
-    static ParentSubInsert parentSubInsert(final ArmyInsert childStmt, final List<_Cte> cteList) {
+    static ParentSubInsert parentSubInsert(final ArmyInsert childStmt, final int rowCount, final List<_Cte> cteList) {
 
         final int cteSize = cteList.size();
 
@@ -63,7 +63,7 @@ abstract class InsertSupports {
         } else {
             nameList = getIdScalarExpressionNames(childStmt, childMode, child);
             parentCteName = nameList.get(0);
-            needParentRowNumberQuery = childStmt.insertRowCount() > 1;
+            needParentRowNumberQuery = rowCount > 1;
             if (needParentRowNumberQuery && nameList.size() < 3) {
                 String m = String.format("%s insert multi row but not exists rowNumber cte.", child);
                 throw ContextStack.clearStackAndCriteriaError(m);
@@ -116,7 +116,10 @@ abstract class InsertSupports {
                 // no bug,never here
                 throw new IllegalStateException();
             }
-            validateParentSubInsert(cte, childStmt, nameList);
+
+            if (parentCteName != null) {
+                validatePostParentSubInsert(cte, child, nameList.get(1));
+            }
             parentSubInsert = (ParentSubInsert) subStatement;
             break;
         }
@@ -133,7 +136,7 @@ abstract class InsertSupports {
 
     /**
      * @return see {@link JoinableClause.SimpleQuery#validateIdDefaultExpression()}
-     * @see #parentSubInsert(ArmyInsert, List)
+     * @see #parentSubInsert(ArmyInsert, int, List)
      */
     private static List<String> getIdScalarExpressionNames(final ArmyInsert childStmt, final InsertMode childMode,
                                                            final ChildTableMeta<?> child) {
@@ -164,36 +167,77 @@ abstract class InsertSupports {
      * @return parent sub-insert CTE name.
      * @see #parentSubInsert(ArmyInsert, List)
      */
-    private static String validateParentRowNumberCte(final ChildTableMeta<?> child, final _Cte cte, final List<String> nameList) {
-        return null;
+    private static String validateParentRowNumberCte(final ChildTableMeta<?> child, final _Cte cte,
+                                                     final List<String> nameList) {
+        final SubStatement subStatement = cte.subStatement();
+        if (!(subStatement instanceof SimpleQueries)) {
+            String m = String.format("parent rowNumber CTE[%s] of %s isn't simple query", cte.name(), child);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (cte.columnAliasList().size() > 0) {
+            String m = String.format("parent rowNumber CTE[%s] of %s couldn't exists column alias clause.",
+                    cte.name(), child);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        return ((JoinableClause.SimpleQuery) subStatement).validateParentSubInsertRowNumberQuery(cte.name(), nameList);
     }
 
     /**
-     * @param nameList empty or name list ;  see {@link JoinableClause.SimpleQuery#validateIdDefaultExpression()}
      * @see #parentSubInsert(ArmyInsert, List)
      */
-    private static void validateParentSubInsert(final _Cte cte, final ArmyInsert childStmt, final List<String> nameList) {
-
-        final SubStatement subStatement = cte.subStatement();
-        if (!(subStatement instanceof SimpleQueries)) {
-            String m = String.format("parent insert rowNumber CTE[%s] isn't simple query.", cte.name());
+    private static void validatePostParentSubInsert(final _Cte cte, final ChildTableMeta<?> child, final String idAlias) {
+        Selection idSelection = cte.refSelection(idAlias);
+        if (idSelection == null) {
+            String m = String.format("Not found %s[%s] in CTE[%s]", Selection.class.getName(), idAlias, cte.name());
             throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        if (idSelection instanceof ArmySelections.RenameSelection) {
+            idSelection = ((ArmySelections.RenameSelection) idSelection).selection;
+        }
+
+        if (idSelection instanceof ArmySelections.FieldSelectionImpl) {
+            final FieldSelection fs;
+            fs = ((ArmySelections.FieldSelectionImpl) idSelection).selection;
+            if (!(fs instanceof TableField)) {
+                throw idSelectionIsNotParentId(cte.name(), child, idAlias);
+            }
+            idSelection = fs;
+        }
+
+        final FieldMeta<?> field;
+        if (idSelection instanceof PrimaryFieldMeta) {
+            field = (FieldMeta<?>) idSelection;
+        } else if (idSelection instanceof QualifiedField) {
+            field = ((QualifiedField<?>) idSelection).fieldMeta();
+        } else {
+            throw idSelectionIsNotParentId(cte.name(), child, idAlias);
+        }
+
+        if (field != child.nonChildId()) {
+            throw idSelectionIsNotParentId(cte.name(), child, idAlias);
         }
 
     }
 
-    interface ParentSubInsert {
+    /**
+     * @see #validatePostParentSubInsert(_Cte, ChildTableMeta, String)
+     */
+    private static CriteriaException idSelectionIsNotParentId(String cteName, ChildTableMeta<?> child, String idAlias) {
+        String m = String.format("selection[%s] isn't parent id selection of %s in CTE[%s]", idAlias, child, cteName);
+        return ContextStack.clearStackAndCriteriaError(m);
+    }
 
+    interface ParentSubInsert {
 
         void validateChild(ChildTableMeta<?> child);
 
-        void parentAsDomain();
+        void parentAsDomainIfUnknown();
+
 
     }
 
     interface ParentDomainSubInsert extends ParentSubInsert {
 
-        List<?> validateDomainList(ChildTableMeta<?> child, List<?> originalList);
+        void validateChild(ChildTableMeta<?> child, List<?> originalDomainList);
 
         List<?> domainList();
     }
@@ -1361,14 +1405,7 @@ abstract class InsertSupports {
             } else if (domainList == null) {
                 throw ContextStack.castCriteriaApi(this.context);
             }
-            if (domainList != originalList
-                    && !(domainList.size() == originalList.size()
-                    && domainList.size() == 1
-                    && domainList.get(0) == originalList.get(0))) {
-                String m = String.format("%s and %s domain list not match.", this.insertTable,
-                        ((ChildTableMeta<T>) this.insertTable).parentMeta());
-                throw ContextStack.criteriaError(this.context, m);
-            }
+            validateDomainList(domainList, originalList, (ChildTableMeta<?>) this.insertTable);
         }
 
 
@@ -1386,6 +1423,17 @@ abstract class InsertSupports {
                 e = ContextStack.castCriteriaApi(this.context);
             }
             return e;
+        }
+
+        static void validateDomainList(final List<?> parentList, final List<?> childList,
+                                       final ChildTableMeta<?> child) {
+            if (parentList != childList
+                    && !(parentList.size() == childList.size()
+                    && parentList.size() == 1
+                    && parentList.get(0) == childList.get(0))) {
+                String m = String.format("%s and %s domain list not match.", child, child.parentMeta());
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
         }
 
         private CriteriaException columnCountAndSelectionCountNotMatch(final SubQuery subQuery) {

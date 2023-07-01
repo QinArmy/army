@@ -185,4 +185,10 @@
 41. 为什么要删除原有的 batch update api,而选择在 simple update 结尾加上 nameParam 子句?
     * 因为原有的 api 需要定义两套 接口
     * 新增 批量查询 api 如果也定义两套 api 那将是一场灾难
+42. 为什么 one-statement child insert default id expression 是开发者自己写?
+    * 这个情况 army parser 比较难实现
+    * SQL 整体的可读性更好.
+    * parent sub-insert rowNumber CTE 同理
+
+
 

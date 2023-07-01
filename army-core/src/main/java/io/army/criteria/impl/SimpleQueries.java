@@ -1059,9 +1059,72 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     }
 
     @Override
-    public final List<String> validateParentSubInsertRowNumberQuery(List<String> names) {
-        return null;
+    public final String validateParentSubInsertRowNumberQuery(final String thisCteName, final List<String> names) {
+        if (names.size() < 3) {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        final List<_Cte> cteList = this.cteList;
+        if (cteList != null && cteList.size() > 0) {
+            String m = String.format("couldn't exists WITH clause in CTE[%s]", thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (this.hasLimitClause()) {
+            String m = String.format("couldn't exists LIMIT/OFFSET clause in CTE[%s].", thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (this.hasGroupByClause()) {
+            String m = String.format("couldn't exists GROUP BY clause in CTE[%s].", thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (this instanceof _Query._WindowClauseSpec && ((_WindowClauseSpec) this).windowList().size() > 0) {
+            String m = String.format("couldn't exists WINDOW clause in CTE[%s].", thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+
+        final List<? extends _SelectItem> selectItemList = this.selectItemList();
+        String m;
+        if (selectItemList.size() != 2) {
+            m = String.format("parent sub-insert row number CTE[%s] must two select item.", thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        final String idAlias = names.get(1), rowNumberAlias = names.get(2);
+
+        final _SelectItem selectItem;
+        selectItem = selectItemList.get(0);
+        Expression expression;
+        if (!(selectItem instanceof ArmySelections.ExpressionSelection)) {
+            m = String.format("first select item isn't window function rowNumber() expression in CTE[%s]", thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        if (!((Selection) selectItem).alias().equals(rowNumberAlias)) {
+            m = String.format("first selection isn't selection[%s] in CTE[%s]", rowNumberAlias, thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (!((expression = ((ArmySelections.ExpressionSelection) selectItem).expression) instanceof WindowFunctionUtils.WindowFunction)
+                || ((WindowFunctionUtils.WindowFunction<?>) expression).isNotGlobalRowNumber()) {
+            m = String.format("selection[%s] isn't global window function rowNumber() expression in CTE[%s]",
+                    rowNumberAlias, thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+
+        if (this.refSelection(idAlias) == null) {
+            m = String.format("parent sub-insert id selection[%s] in CTE[%s]", idAlias, thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+
+
+        final List<_TabularBlock> blockList = this.tableBlockList;
+        assert blockList != null;
+        if (blockList.size() != 1) {
+            m = String.format("Must just one from-item in CTE[%s]", thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        final _TabularBlock block = blockList.get(0);
+        final TabularItem item = block.tableItem();
+        if (!(item instanceof _Cte)) {
+            m = String.format("from-item isn't CTE in CTE[%s]", thisCteName);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        return ((_Cte) item).name();
     }
+
 
     abstract SP createQueryUnion(_UnionType unionType);
 

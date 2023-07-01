@@ -66,6 +66,7 @@ interface CriteriaContext {
      */
     List<Selection> flatSelectItems();
 
+    @Nullable
     Selection selection(String alias);
 
     void contextEndEvent();

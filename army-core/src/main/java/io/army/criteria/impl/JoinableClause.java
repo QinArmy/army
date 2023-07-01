@@ -943,13 +943,10 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         List<String> validateIdDefaultExpression();
 
         /**
-         * @param names <ol>
-         *              <li>rowNumber CTE name</li>
-         *              <li>parent id alias</li>
-         *              <li>rowNumber alias</li>
-         *              </ol>
+         * @param names see {@link #validateIdDefaultExpression()}
+         * @return parent sub-insert CTE name
          */
-        List<String> validateParentSubInsertRowNumberQuery(List<String> names);
+        String validateParentSubInsertRowNumberQuery(String thisCteName, List<String> names);
 
     }
 

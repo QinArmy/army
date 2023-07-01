@@ -997,6 +997,16 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
+    public static CriteriaException parentSubInsertDomainError(TableMeta<?> actual, ChildTableMeta<?> child) {
+        String m = String.format("excepted domain is %s but %s", actual, child);
+        return new CriteriaException(m);
+    }
+
+    public static CriteriaException parentSubInsertDomainUnknown(ParentTableMeta<?> parent) {
+        String m = String.format("%s domain is unknown", parent);
+        return new CriteriaException(m);
+    }
+
 
     public static CriteriaException notFoundMappingType(Object value) {
         String m = String.format("Not found default %s for %s.", MappingType.class.getName(),

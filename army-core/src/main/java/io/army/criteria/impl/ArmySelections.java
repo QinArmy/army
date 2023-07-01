@@ -131,16 +131,16 @@ abstract class ArmySelections implements _Selection {
     }//ExpressionSelection
 
 
-    private static final class FieldSelectionImpl extends ArmySelections implements FieldSelection, _SelfDescribed {
+     static final class FieldSelectionImpl extends ArmySelections implements FieldSelection, _SelfDescribed {
 
-        private final FieldSelection selection;
+         final FieldSelection selection;
 
-        private FieldSelectionImpl(FieldSelection selection, String alias) {
-            super(alias);
-            this.selection = selection;
-        }
+         private FieldSelectionImpl(FieldSelection selection, String alias) {
+             super(alias);
+             this.selection = selection;
+         }
 
-        final
+         final
 
         @Override
         public FieldMeta<?> fieldMeta() {
@@ -220,9 +220,9 @@ abstract class ArmySelections implements _Selection {
     }//FieldSelectionImpl
 
 
-    private static final class RenameSelection extends ArmySelections {
+    static final class RenameSelection extends ArmySelections {
 
-        private final Selection selection;
+        final Selection selection;
 
         private RenameSelection(Selection selection, String alias) {
             super(alias);

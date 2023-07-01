@@ -3,6 +3,7 @@ package io.army.criteria.impl.inner;
 import io.army.criteria.LiteralMode;
 import io.army.criteria.NullMode;
 import io.army.criteria.SubQuery;
+import io.army.criteria.SubStatement;
 import io.army.criteria.impl._Pair;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -47,8 +48,13 @@ public interface _Insert extends _Statement {
 
     }
 
+    interface _OneStmtParentSubInsert extends SubStatement {
 
-    interface _OneStatementChildInsert {
+        TableMeta<?> domainTable();
+    }
+
+
+    interface _OneStmtChildInsert {
 
         void validParentDomain();
     }

@@ -174,6 +174,11 @@ abstract class WindowFunctionUtils {
             throw new UnsupportedOperationException();
         }
 
+
+        final boolean isNotGlobalRowNumber() {
+            return this.anonymousWindow != GlobalWindow.INSTANCE || !this.name.equalsIgnoreCase("row_number");
+        }
+
         final CriteriaException dialectError(Dialect dialect) {
             String m = String.format("%s window function[%s]don't support %s.",
                     this.getClass().getName(), this.name, dialect);
