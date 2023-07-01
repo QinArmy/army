@@ -41,7 +41,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparison.html#FUNCTIONS-COMPARISON-FUNC-TABLE">Comparison Functions</a>
      */
     public static SimpleExpression numNonNulls(Expression first, Expression... rest) {
-        return FunctionUtils.multiArgFunc("num_nonnulls", IntegerType.INSTANCE, first, rest);
+        return FunctionUtils.multiArgFunc("num_nonnulls", IntegerType.INTEGER, first, rest);
     }
 
     /**
@@ -52,7 +52,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-comparison.html#FUNCTIONS-COMPARISON-FUNC-TABLE">Comparison Functions</a>
      */
     public static SimpleExpression numNulls(Expression first, Expression... rest) {
-        return FunctionUtils.multiArgFunc("num_nulls", IntegerType.INSTANCE, first, rest);
+        return FunctionUtils.multiArgFunc("num_nulls", IntegerType.INTEGER, first, rest);
     }
 
 
@@ -134,7 +134,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">min_scale ( numeric ) → integer</a>
      */
     public static SimpleExpression minScale(final Expression exp) {
-        return FunctionUtils.oneArgFunc("min_scale", exp, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("min_scale", exp, IntegerType.INTEGER);
     }
 
     /**
@@ -160,7 +160,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">scale ( numeric ) → integer</a>
      */
     public static SimpleExpression scale(final Expression x, final Expression y) {
-        return FunctionUtils.twoArgFunc("scale", x, y, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("scale", x, y, IntegerType.INTEGER);
     }
 
 
@@ -208,7 +208,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">width_bucket ( operand numeric, low numeric, high numeric, count integer ) → integer,width_bucket ( operand double precision, low double precision, high double precision, count integer ) → integer</a>
      */
     public static SimpleExpression widthBucket(final Expression operand, final Expression low, Expression high, Expression count) {
-        return FunctionUtils.fourArgFunc("width_bucket", operand, low, high, count, IntegerType.INSTANCE);
+        return FunctionUtils.fourArgFunc("width_bucket", operand, low, high, count, IntegerType.INTEGER);
     }
 
     /**
@@ -219,7 +219,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">width_bucket ( operand anycompatible, thresholds anycompatiblearray ) → integer</a>
      */
     public static SimpleExpression widthBucket(final Expression operand, final Expression thresholds) {
-        return FunctionUtils.twoArgFunc("width_bucket", operand, thresholds, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("width_bucket", operand, thresholds, IntegerType.INTEGER);
     }
 
 
@@ -653,7 +653,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static SimpleExpression family(Expression inet) {
-        return FunctionUtils.oneArgFunc("family", inet, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("family", inet, IntegerType.INTEGER);
     }
 
     /**
@@ -725,7 +725,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static SimpleExpression maskLen(Expression inet) {
-        return FunctionUtils.oneArgFunc("masklen", inet, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("masklen", inet, IntegerType.INTEGER);
     }
 
     /**
@@ -773,7 +773,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *                    <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                    <li>developer custom method</li>
      *                </ul>.
-     *                The first argument of funcRef always is {@link IntegerType#INSTANCE}.
+     *                The first argument of funcRef always is {@link IntegerType#INTEGER}.
      * @param value   non-null,it will be passed to funcRef as the second argument of funcRef.
      * @see #setMaskLen(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-net.html#CIDR-INET-FUNCTIONS-TABLE">set_masklen ( inet, integer ) → inet<br/>
@@ -782,7 +782,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static <T> SimpleExpression setMaskLen(Expression exp1, BiFunction<MappingType, T, Expression> funcRef, T value) {
-        return setMaskLen(exp1, funcRef.apply(IntegerType.INSTANCE, value));
+        return setMaskLen(exp1, funcRef.apply(IntegerType.INTEGER, value));
     }
 
     /**
@@ -890,19 +890,19 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_current_xact_id () → xid8<br/>
      * </a>
      */
     public static SimpleExpression pgCurrentXactId() {
-        return FunctionUtils.zeroArgFunc("pg_current_xact_id", LongType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("pg_current_xact_id", LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_current_xact_id_if_assigned () → xid8<br/>
@@ -910,7 +910,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      */
     public static SimpleExpression pgCurrentXactIdIfAssigned() {
         //TODO xid8 is binary ?
-        return FunctionUtils.zeroArgFunc("pg_current_xact_id_if_assigned", LongType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("pg_current_xact_id_if_assigned", LongType.BIGINT);
     }
 
     /**
@@ -941,8 +941,8 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: <ul>
-     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#INSTANCE}</li>
-     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#BIGINT}</li>
+     * <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -950,32 +950,32 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static _ColumnWithOrdinalityFunction pgSnapshotXip(Expression pgSnapshot) {
-        return DialectFunctionUtils.oneArgColumnFunction("pg_snapshot_xip", pgSnapshot, null, LongType.INSTANCE);
+        return DialectFunctionUtils.oneArgColumnFunction("pg_snapshot_xip", pgSnapshot, null, LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_snapshot_xmax ( pg_snapshot ) → xid8<br/>
      * </a>
      */
     public static SimpleExpression pgSnapshotXMax(Expression pgSnapshot) {
-        return FunctionUtils.oneArgFunc("pg_snapshot_xmax", pgSnapshot, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("pg_snapshot_xmax", pgSnapshot, LongType.BIGINT);
     }
 
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-PG-SNAPSHOT">pg_snapshot_xmin ( pg_snapshot ) → xid8<br/>
      * </a>
      */
     public static SimpleExpression pgSnapshotXMin(Expression pgSnapshot) {
-        return FunctionUtils.oneArgFunc("pg_snapshot_xmin", pgSnapshot, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("pg_snapshot_xmin", pgSnapshot, LongType.BIGINT);
     }
 
 
@@ -996,7 +996,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}
      * </p>
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
@@ -1007,12 +1007,12 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static SimpleExpression txidCurrent() {
-        return FunctionUtils.zeroArgFunc("txid_current", LongType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("txid_current", LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}
      * </p>
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
@@ -1023,7 +1023,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static SimpleExpression txidCurrentIfAssigned() {
-        return FunctionUtils.zeroArgFunc("txid_current_if_assigned", LongType.INSTANCE);
+        return FunctionUtils.zeroArgFunc("txid_current_if_assigned", LongType.BIGINT);
     }
 
 
@@ -1047,8 +1047,8 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     /**
      * <p>
      * The {@link MappingType} of function return type: <ul>
-     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#INSTANCE}</li>
-     * <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     * <li> "Anonymous field" ( you must use as clause definite filed name) : {@link LongType#BIGINT}</li>
+     * <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      * <p>
@@ -1060,13 +1060,13 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static _ColumnWithOrdinalityFunction txidSnapshotXip(Expression txidSnapshot) {
-        return DialectFunctionUtils.oneArgColumnFunction("txid_snapshot_xip", txidSnapshot, null, LongType.INSTANCE);
+        return DialectFunctionUtils.oneArgColumnFunction("txid_snapshot_xip", txidSnapshot, null, LongType.BIGINT);
     }
 
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}
      * </p>
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
@@ -1077,12 +1077,12 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static SimpleExpression txidSnapshotXMax(Expression txidSnapshot) {
-        return FunctionUtils.oneArgFunc("txid_snapshot_xmax", txidSnapshot, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("txid_snapshot_xmax", txidSnapshot, LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}
      * </p>
      * <p>
      * <strong>Deprecated</strong> as of postgre 13
@@ -1093,7 +1093,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * </a>
      */
     public static SimpleExpression txidSnapshotXMin(Expression txidSnapshot) {
-        return FunctionUtils.oneArgFunc("txid_snapshot_xmin", txidSnapshot, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("txid_snapshot_xmin", txidSnapshot, LongType.BIGINT);
     }
 
     /**
@@ -1150,8 +1150,8 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * The {@link MappingType} of function return type:
      * <ul>
      *     <li>timestamp : {@link OffsetDateTimeType#INSTANCE}</li>
-     *     <li>roident : {@link LongType#INSTANCE}</li>
-     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     *     <li>roident : {@link LongType#BIGINT}</li>
+     *     <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -1162,7 +1162,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
         final List<Selection> fieldList;
         fieldList = ArrayUtils.of(
                 ArmySelections.forName("timestamp", OffsetDateTimeType.INSTANCE),
-                ArmySelections.forName("roident", LongType.INSTANCE)
+                ArmySelections.forName("roident", LongType.BIGINT)
         );
         return DialectFunctionUtils.oneArgTabularFunc("pg_xact_commit_timestamp_origin", xid, fieldList);
     }
@@ -1171,10 +1171,10 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      * <ul>
-     *     <li>xid : {@link IntegerType#INSTANCE}</li>
+     *     <li>xid : {@link IntegerType#INTEGER}</li>
      *     <li>timestamp : {@link OffsetDateTimeType#INSTANCE}</li>
-     *     <li>roident : {@link LongType#INSTANCE}</li>
-     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     *     <li>roident : {@link LongType#BIGINT}</li>
+     *     <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -1184,9 +1184,9 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     public static _TabularWithOrdinalityFunction pgLastCommittedXact() {
         final List<Selection> fieldList;
         fieldList = ArrayUtils.of(
-                ArmySelections.forName("xid", IntegerType.INSTANCE),
+                ArmySelections.forName("xid", IntegerType.INTEGER),
                 ArmySelections.forName("timestamp", OffsetDateTimeType.INSTANCE),
-                ArmySelections.forName("roident", LongType.INSTANCE)
+                ArmySelections.forName("roident", LongType.BIGINT)
         );
         return DialectFunctionUtils.zeroArgTabularFunc("pg_last_committed_xact", fieldList);
     }
@@ -1202,27 +1202,27 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      *     <li>checkpoint_lsn : {@link PostgrePgLsnType#LONG}</li>
      *     <li>redo_lsn : {@link PostgrePgLsnType#LONG}</li>
      *     <li>redo_wal_file : {@link TextType#INSTANCE}</li>
-     *     <li>timeline_id : {@link IntegerType#INSTANCE}</li>
+     *     <li>timeline_id : {@link IntegerType#INTEGER}</li>
      *     <br/>
-     *     <li>prev_timeline_id : {@link IntegerType#INSTANCE}</li>
+     *     <li>prev_timeline_id : {@link IntegerType#INTEGER}</li>
      *     <li>full_page_writes : {@link BooleanType#INSTANCE}</li>
      *     <li>next_xid : {@link TextType#INSTANCE}</li>
-     *     <li>next_oid : {@link LongType#INSTANCE}</li>
+     *     <li>next_oid : {@link LongType#BIGINT}</li>
      *     <br/>
-     *     <li>next_multixact_id : {@link IntegerType#INSTANCE}</li>
-     *     <li>next_multi_offset : {@link IntegerType#INSTANCE}</li>
-     *     <li>oldest_xid : {@link IntegerType#INSTANCE}</li>
-     *     <li>oldest_xid_dbid : {@link LongType#INSTANCE}</li>
+     *     <li>next_multixact_id : {@link IntegerType#INTEGER}</li>
+     *     <li>next_multi_offset : {@link IntegerType#INTEGER}</li>
+     *     <li>oldest_xid : {@link IntegerType#INTEGER}</li>
+     *     <li>oldest_xid_dbid : {@link LongType#BIGINT}</li>
      *     <br/>
-     *     <li>oldest_active_xid : {@link IntegerType#INSTANCE}</li>
-     *     <li>oldest_multi_xid : {@link IntegerType#INSTANCE}</li>
-     *     <li>oldest_multi_dbid : {@link LongType#INSTANCE}</li>
-     *     <li>oldest_commit_ts_xid : {@link IntegerType#INSTANCE}</li>
+     *     <li>oldest_active_xid : {@link IntegerType#INTEGER}</li>
+     *     <li>oldest_multi_xid : {@link IntegerType#INTEGER}</li>
+     *     <li>oldest_multi_dbid : {@link LongType#BIGINT}</li>
+     *     <li>oldest_commit_ts_xid : {@link IntegerType#INTEGER}</li>
      *     <br/>
-     *     <li>newest_commit_ts_xid : {@link IntegerType#INSTANCE}</li>
+     *     <li>newest_commit_ts_xid : {@link IntegerType#INTEGER}</li>
      *     <li>checkpoint_time : {@link OffsetDateTimeType#INSTANCE}</li>
      *     <br/>
-     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     *     <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -1238,24 +1238,24 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
         fieldList.add(ArmySelections.forName("checkpoint_lsn", PostgrePgLsnType.LONG));
         fieldList.add(ArmySelections.forName("redo_lsn", PostgrePgLsnType.LONG));
         fieldList.add(ArmySelections.forName("redo_wal_file", TextType.INSTANCE));
-        fieldList.add(ArmySelections.forName("timeline_id", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("timeline_id", IntegerType.INTEGER));
 
-        fieldList.add(ArmySelections.forName("prev_timeline_id", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("prev_timeline_id", IntegerType.INTEGER));
         fieldList.add(ArmySelections.forName("full_page_writes", BooleanType.INSTANCE));
         fieldList.add(ArmySelections.forName("next_xid", TextType.INSTANCE));
-        fieldList.add(ArmySelections.forName("next_oid", LongType.INSTANCE));
+        fieldList.add(ArmySelections.forName("next_oid", LongType.BIGINT));
 
-        fieldList.add(ArmySelections.forName("next_multixact_id", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("next_multi_offset", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("oldest_xid", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("oldest_xid_dbid", LongType.INSTANCE));
+        fieldList.add(ArmySelections.forName("next_multixact_id", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("next_multi_offset", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("oldest_xid", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("oldest_xid_dbid", LongType.BIGINT));
 
-        fieldList.add(ArmySelections.forName("oldest_active_xid", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("oldest_multi_xid", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("oldest_multi_dbid", LongType.INSTANCE));
-        fieldList.add(ArmySelections.forName("oldest_commit_ts_xid", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("oldest_active_xid", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("oldest_multi_xid", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("oldest_multi_dbid", LongType.BIGINT));
+        fieldList.add(ArmySelections.forName("oldest_commit_ts_xid", IntegerType.INTEGER));
 
-        fieldList.add(ArmySelections.forName("newest_commit_ts_xid", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("newest_commit_ts_xid", IntegerType.INTEGER));
         fieldList.add(ArmySelections.forName("checkpoint_time", OffsetDateTimeType.INSTANCE));
 
         return DialectFunctionUtils.zeroArgTabularFunc("pg_control_checkpoint", fieldList);
@@ -1266,12 +1266,12 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      * <ul>
-     *     <li>pg_control_version : {@link IntegerType#INSTANCE}</li>
-     *     <li>catalog_version_no : {@link IntegerType#INSTANCE}</li>
-     *     <li>system_identifier : {@link LongType#INSTANCE}</li>
+     *     <li>pg_control_version : {@link IntegerType#INTEGER}</li>
+     *     <li>catalog_version_no : {@link IntegerType#INTEGER}</li>
+     *     <li>system_identifier : {@link LongType#BIGINT}</li>
      *     <li>pg_control_last_modified : {@link OffsetDateTimeType#INSTANCE}</li>
      *     <br/>
-     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     *     <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -1283,9 +1283,9 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     public static _TabularWithOrdinalityFunction pgControlSystem() {
         final List<Selection> fieldList;
         fieldList = ArrayUtils.of(
-                ArmySelections.forName("pg_control_version", IntegerType.INSTANCE),
-                ArmySelections.forName("catalog_version_no", IntegerType.INSTANCE),
-                ArmySelections.forName("system_identifier", LongType.INSTANCE),
+                ArmySelections.forName("pg_control_version", IntegerType.INTEGER),
+                ArmySelections.forName("catalog_version_no", IntegerType.INTEGER),
+                ArmySelections.forName("system_identifier", LongType.BIGINT),
                 ArmySelections.forName("pg_control_last_modified", OffsetDateTimeType.INSTANCE)
         );
 
@@ -1297,21 +1297,21 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      * <ul>
-     *     <li>max_data_alignment : {@link IntegerType#INSTANCE}</li>
-     *     <li>database_block_size : {@link IntegerType#INSTANCE}</li>
-     *     <li>blocks_per_segment : {@link IntegerType#INSTANCE}</li>
-     *     <li>wal_block_size : {@link IntegerType#INSTANCE}</li>
+     *     <li>max_data_alignment : {@link IntegerType#INTEGER}</li>
+     *     <li>database_block_size : {@link IntegerType#INTEGER}</li>
+     *     <li>blocks_per_segment : {@link IntegerType#INTEGER}</li>
+     *     <li>wal_block_size : {@link IntegerType#INTEGER}</li>
      *     <br/>
-     *     <li>bytes_per_wal_segment : {@link IntegerType#INSTANCE}</li>
-     *     <li>max_identifier_length : {@link IntegerType#INSTANCE}</li>
-     *     <li>max_index_columns : {@link IntegerType#INSTANCE}</li>
-     *     <li>max_toast_chunk_size : {@link IntegerType#INSTANCE}</li>
+     *     <li>bytes_per_wal_segment : {@link IntegerType#INTEGER}</li>
+     *     <li>max_identifier_length : {@link IntegerType#INTEGER}</li>
+     *     <li>max_index_columns : {@link IntegerType#INTEGER}</li>
+     *     <li>max_toast_chunk_size : {@link IntegerType#INTEGER}</li>
      *     <br/>
-     *     <li>large_object_chunk_size : {@link IntegerType#INSTANCE}</li>
+     *     <li>large_object_chunk_size : {@link IntegerType#INTEGER}</li>
      *     <li>float8_pass_by_value : {@link BooleanType#INSTANCE}</li>
-     *     <li>data_page_checksum_version : {@link IntegerType#INSTANCE}</li>
+     *     <li>data_page_checksum_version : {@link IntegerType#INTEGER}</li>
      *     <br/>
-     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     *     <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -1324,19 +1324,19 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
         final List<Selection> fieldList;
         fieldList = _Collections.arrayList(11);
 
-        fieldList.add(ArmySelections.forName("max_data_alignment", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("database_block_size", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("blocks_per_segment", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("wal_block_size", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("max_data_alignment", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("database_block_size", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("blocks_per_segment", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("wal_block_size", IntegerType.INTEGER));
 
-        fieldList.add(ArmySelections.forName("bytes_per_wal_segment", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("max_identifier_length", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("max_index_columns", IntegerType.INSTANCE));
-        fieldList.add(ArmySelections.forName("max_toast_chunk_size", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("bytes_per_wal_segment", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("max_identifier_length", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("max_index_columns", IntegerType.INTEGER));
+        fieldList.add(ArmySelections.forName("max_toast_chunk_size", IntegerType.INTEGER));
 
-        fieldList.add(ArmySelections.forName("large_object_chunk_size", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("large_object_chunk_size", IntegerType.INTEGER));
         fieldList.add(ArmySelections.forName("float8_pass_by_value", BooleanType.INSTANCE));
-        fieldList.add(ArmySelections.forName("data_page_checksum_version", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("data_page_checksum_version", IntegerType.INTEGER));
 
         return DialectFunctionUtils.zeroArgTabularFunc("pg_control_init", fieldList);
     }
@@ -1346,13 +1346,13 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * The {@link MappingType} of function return type:
      * <ul>
      *     <li>min_recovery_end_lsn : {@link PostgrePgLsnType#LONG}</li>
-     *     <li>min_recovery_end_timeline : {@link IntegerType#INSTANCE}</li>
+     *     <li>min_recovery_end_timeline : {@link IntegerType#INTEGER}</li>
      *     <li>backup_start_lsn : {@link PostgrePgLsnType#LONG}</li>
      *     <li>backup_end_lsn : {@link PostgrePgLsnType#LONG}</li>
      *     <br/>
      *     <li>end_of_backup_record_required : {@link BooleanType#INSTANCE}</li>
      *     <br/>
-     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     *     <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -1366,7 +1366,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
         fieldList = _Collections.arrayList(5);
 
         fieldList.add(ArmySelections.forName("min_recovery_end_lsn", PostgrePgLsnType.LONG));
-        fieldList.add(ArmySelections.forName("min_recovery_end_timeline", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("min_recovery_end_timeline", IntegerType.INTEGER));
         fieldList.add(ArmySelections.forName("backup_start_lsn", PostgrePgLsnType.LONG));
         fieldList.add(ArmySelections.forName("backup_end_lsn", PostgrePgLsnType.LONG));
 
@@ -1389,14 +1389,14 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
      * <p>
      * The {@link MappingType} of function return type:
      * <ul>
-     *     <li>index : {@link IntegerType#INSTANCE}</li>
+     *     <li>index : {@link IntegerType#INTEGER}</li>
      *     <li>values : {@link TextArrayType#LINEAR}</li>
      *     <li>nulls : {@link PrimitiveBooleanArrayType#LINEAR}</li>
      *     <li>frequency : {@link DoubleType#INSTANCE}</li>
      *     <br/>
      *     <li>base_frequency : {@link DoubleType#INSTANCE}</li>
      *     <br/>
-     *     <li>ordinality (optional) : {@link LongType#INSTANCE} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
+     *     <li>ordinality (optional) : {@link LongType#BIGINT} ,see {@link io.army.criteria.impl.Functions._WithOrdinalityClause}</li>
      * </ul>
      * </p>
      *
@@ -1406,7 +1406,7 @@ abstract class PostgreMiscellaneousFunctions extends PostgreGeometricFunctions {
     public static _TabularWithOrdinalityFunction pgMcvListItems(Expression pgMcvList) {
         final List<Selection> fieldList = _Collections.arrayList(5);
 
-        fieldList.add(ArmySelections.forName("index", IntegerType.INSTANCE));
+        fieldList.add(ArmySelections.forName("index", IntegerType.INTEGER));
         fieldList.add(ArmySelections.forName("values", TextArrayType.LINEAR));
         fieldList.add(ArmySelections.forName("nulls", PrimitiveBooleanArrayType.LINEAR));
         fieldList.add(ArmySelections.forName("frequency", DoubleType.INSTANCE));

@@ -415,7 +415,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-numinteriorrings">ST_NumInteriorRing(poly)</a>
      */
     public static SimpleExpression stNumInteriorRing(final Expression poly) {
-        return FunctionUtils.oneArgFunc("ST_NumInteriorRing", poly, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_NumInteriorRing", poly, IntegerType.INTEGER);
     }
 
     /**
@@ -428,7 +428,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-polygon-property-functions.html#function_st-numinteriorrings">ST_NumInteriorRings(poly)</a>
      */
     public static SimpleExpression stNumInteriorRings(final Expression poly) {
-        return FunctionUtils.oneArgFunc("ST_NumInteriorRings", poly, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_NumInteriorRings", poly, IntegerType.INTEGER);
     }
 
 
@@ -1074,7 +1074,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-linestring-property-functions.html#function_st-numpoints">ST_NumPoints(ls)</a>
      */
     public static SimpleExpression stNumPoints(final Expression ls) {
-        return FunctionUtils.oneArgFunc("ST_NumPoints", ls, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_NumPoints", ls, IntegerType.INTEGER);
     }
 
 
@@ -2067,7 +2067,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-geometrycollection-property-functions.html#function_st-numgeometries">ST_NumGeometries(gc)</a>
      */
     public static SimpleExpression stNumGeometries(final Expression gc) {
-        return FunctionUtils.oneArgFunc("ST_NumGeometries", gc, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_NumGeometries", gc, IntegerType.INTEGER);
     }
 
     /*-------------------below General Geometry Property Functions-------------------*/
@@ -2082,7 +2082,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-dimension">ST_Dimension(g)</a>
      */
     public static SimpleExpression stDimension(final Expression g) {
-        return FunctionUtils.oneArgFunc("ST_Dimension", g, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_Dimension", g, IntegerType.INTEGER);
     }
 
     /**
@@ -2149,7 +2149,7 @@ abstract class MySQLSpatialFunctions extends MySQLWindowFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/gis-general-property-functions.html#function_st-srid">ST_SRID(g [, srid])</a>
      */
     public static SimpleExpression stSRID(final Expression p) {
-        return FunctionUtils.oneArgFunc("ST_SRID", p, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ST_SRID", p, IntegerType.INTEGER);
     }
 
     /**

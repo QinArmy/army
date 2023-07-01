@@ -250,7 +250,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
 
          static final String ORDINALITY = "ordinality";
 
-         static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.INSTANCE);
+         static final Selection ORDINALITY_FIELD = ArmySelections.forName(ORDINALITY, LongType.BIGINT);
 
          private static final String SPACE_WITH_ORDINALITY = " WITH ORDINALITY";
 

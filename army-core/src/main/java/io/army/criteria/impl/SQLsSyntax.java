@@ -684,7 +684,7 @@ abstract class SQLsSyntax extends Functions {
      * </p>
      *
      * @param selectionOrdinal based 1 .
-     * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link io.army.mapping.IntegerType#INSTANCE}
+     * @return the {@link Expression#typeMeta()} of the {@link Expression} returned always return {@link io.army.mapping.IntegerType#INTEGER}
      * @throws CriteriaException throw when<ul>
      *                           <li>selectionOrdinal less than 1</li>
      *                           <li>the {@link Selection} not exists,here possibly is deferred,if you invoke this method before SELECT clause end. eg: postgre DISTINCT ON clause</li>

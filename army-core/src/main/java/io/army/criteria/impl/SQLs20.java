@@ -56,7 +56,7 @@ public abstract class SQLs20 {
      * </a>
      */
     public static _OverSpec rowNumber() {
-        return WindowFunctionUtils.zeroArgWindowFunc("row_number", LongType.INSTANCE);
+        return WindowFunctionUtils.zeroArgWindowFunc("row_number", LongType.BIGINT);
     }
 
 

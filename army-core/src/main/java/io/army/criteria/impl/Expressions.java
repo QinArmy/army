@@ -597,7 +597,7 @@ abstract class Expressions {
         } else if (!(left instanceof MappingType.SqlIntegerType || right instanceof MappingType.SqlIntegerType)) {
             returnType = StringType.INSTANCE;
         } else if (!(left instanceof MappingType.SqlIntegerType && right instanceof MappingType.SqlIntegerType)) {
-            returnType = LongType.INSTANCE;
+            returnType = LongType.BIGINT;
         } else if (((MappingType.SqlIntegerType) left).lengthType()
                 .compareWith(((MappingType.SqlIntegerType) right).lengthType()) >= 0) {
             returnType = left;
@@ -978,18 +978,19 @@ abstract class Expressions {
     }//StandardUnaryExpression
 
 
+    static final class ScalarExpression extends OperationExpression.OperationSimpleExpression {
 
-     static final class ScalarExpression extends OperationExpression.OperationSimpleExpression {
+        private final SubQuery subQuery;
 
-         private final SubQuery subQuery;
+        private final TypeMeta type;
 
-         private final TypeMeta type;
-
-
-         private ScalarExpression(TypeMeta expType, SubQuery subQuery) {
-             this.subQuery = subQuery;
-             this.type = expType;
-         }
+        /**
+         * @see #scalarExpression(SubQuery)
+         */
+        private ScalarExpression(TypeMeta expType, SubQuery subQuery) {
+            this.subQuery = subQuery;
+            this.type = expType;
+        }
 
         @Override
         public TypeMeta typeMeta() {
@@ -1002,27 +1003,30 @@ abstract class Expressions {
         }
 
 
-         @Override
-         public String toString() {
-             return _StringUtils.builder()
-                     .append(_Constant.SPACE_LEFT_PAREN)
-                     .append(" scalar sub query: ")
-                     .append(this.subQuery.getClass().getName())
-                     .append(_Constant.SPACE_RIGHT_PAREN)
-                     .toString();
-         }
+        @Override
+        public String toString() {
+            return _StringUtils.builder()
+                    .append(_Constant.SPACE_LEFT_PAREN)
+                    .append(" scalar sub query: ")
+                    .append(this.subQuery.getClass().getName())
+                    .append(_Constant.SPACE_RIGHT_PAREN)
+                    .toString();
+        }
 
-         @Nullable
-         String validateIdDefaultExpression() {
-             final SubQuery subQuery = this.subQuery;
-             if (!(subQuery instanceof SimpleQueries)) {
-                 return null;
-             }
-             return ((JoinableClause.SimpleQuery) subQuery).validateIdDefaultExpression();
-         }
+        /**
+         * @return see {@link JoinableClause.SimpleQuery#validateIdDefaultExpression()}
+         */
+        List<String> validateIdDefaultExpression() {
+            final SubQuery subQuery = this.subQuery;
+            if (!(subQuery instanceof SimpleQueries)) {
+                String m = "scalar sub expression must be simple sub query in child id default expression.";
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+            return ((JoinableClause.SimpleQuery) subQuery).validateIdDefaultExpression();
+        }
 
 
-     }//ScalarExpression
+    }//ScalarExpression
 
     /*-------------------below predicate class-------------------*/
 
@@ -2562,8 +2566,6 @@ abstract class Expressions {
 
 
     }//CollateExpression
-
-
 
 
     private static final class EmptyParensGroupByItem implements ArmyGroupByItem, GroupByItem.ExpressionGroup {

@@ -907,7 +907,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
     private static final class XmlTableOrdinalityColumn extends XmlTableColumn {
 
         private XmlTableOrdinalityColumn(String name) {
-            super(name, IntegerType.INSTANCE);
+            super(name, IntegerType.INTEGER);
         }
 
         @Override

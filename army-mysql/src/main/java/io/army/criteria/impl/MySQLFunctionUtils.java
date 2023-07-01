@@ -864,12 +864,12 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         @Override
         public MySQLFunction._JsonValueOptionOnEmptySpec returning(MySQLCastType type, int n) {
-            return this.returning(type, SQLs.literal(IntegerType.INSTANCE, n));
+            return this.returning(type, SQLs.literal(IntegerType.INTEGER, n));
         }
 
         @Override
         public MySQLFunction._JsonValueOptionOnEmptySpec returning(MySQLCastType type, int m, int d) {
-            return this.returning(type, SQLs.literal(IntegerType.INSTANCE, m), SQLs.literal(IntegerType.INSTANCE, d));
+            return this.returning(type, SQLs.literal(IntegerType.INTEGER, m), SQLs.literal(IntegerType.INTEGER, d));
         }
 
 
@@ -1034,7 +1034,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
 
         @Override
         public TypeMeta typeMeta() {
-            return LongType.INSTANCE;
+            return LongType.BIGINT;
         }
 
 
@@ -1620,7 +1620,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         @Override
         public final JsonTableColumnsClause<R> comma(String name, MySQLType type, int n
                 , SQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
-            return this.comma(name, type, SQLs.literal(IntegerType.INSTANCE, n), path, operator, stringPath);
+            return this.comma(name, type, SQLs.literal(IntegerType.INTEGER, n), path, operator, stringPath);
         }
 
         @Override
@@ -1635,7 +1635,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 , SQLElement charset, SQLIdentifier collate, SQLs.WordPath path
                 , Function<String, Expression> operator, String stringPath) {
             final Expression expOfn;
-            expOfn = SQLs.literal(IntegerType.INSTANCE, n);
+            expOfn = SQLs.literal(IntegerType.INTEGER, n);
             return this.comma(name, type, expOfn, charset, collate, path, operator, stringPath);
         }
 
@@ -1654,8 +1654,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         public final JsonTableColumnsClause<R> comma(String name, MySQLType type, int p, int m
                 , SQLs.WordPath path, Function<String, Expression> operator, String stringPath) {
             final Expression expOfp, expOfm;
-            expOfp = SQLs.literal(IntegerType.INSTANCE, p);
-            expOfm = SQLs.literal(IntegerType.INSTANCE, m);
+            expOfp = SQLs.literal(IntegerType.INTEGER, p);
+            expOfm = SQLs.literal(IntegerType.INTEGER, m);
             return this.comma(name, type, expOfp, expOfm, path, operator, stringPath);
         }
 
@@ -1697,7 +1697,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         @Override
         public final JsonTableColumnsClause<R> comma(String name, MySQLType type, int n
                 , MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
-            return this.comma(name, type, SQLs.literal(IntegerType.INSTANCE, n), path, operator, stringPath);
+            return this.comma(name, type, SQLs.literal(IntegerType.INTEGER, n), path, operator, stringPath);
         }
 
         @Override
@@ -1714,7 +1714,7 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
                 , SQLElement charset, SQLIdentifier collate, MySQLs.WordExistsPath path
                 , Function<String, Expression> operator, String stringPath) {
             final Expression expOfn;
-            expOfn = SQLs.literal(IntegerType.INSTANCE, n);
+            expOfn = SQLs.literal(IntegerType.INTEGER, n);
             return this.comma(name, type, expOfn, charset, collate, path, operator, stringPath);
         }
 
@@ -1733,8 +1733,8 @@ abstract class MySQLFunctionUtils extends FunctionUtils {
         public final JsonTableColumnsClause<R> comma(String name, MySQLType type, int p, int m
                 , MySQLs.WordExistsPath path, Function<String, Expression> operator, String stringPath) {
             final Expression expOfp, expOfm;
-            expOfp = SQLs.literal(IntegerType.INSTANCE, p);
-            expOfm = SQLs.literal(IntegerType.INSTANCE, m);
+            expOfp = SQLs.literal(IntegerType.INTEGER, p);
+            expOfm = SQLs.literal(IntegerType.INTEGER, m);
             return this.comma(name, type, expOfp, expOfm, path, operator, stringPath);
         }
 

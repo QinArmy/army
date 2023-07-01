@@ -60,7 +60,7 @@ public final class PrimitiveIntArrayType extends _ArmyNoInjectionMapping
 
     @Override
     public MappingType elementType() {
-        return IntegerType.INSTANCE;
+        return IntegerType.INTEGER;
     }
 
     @Override

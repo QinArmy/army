@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 
 import static io.army.criteria.impl.Postgres.*;
 import static io.army.criteria.impl.SQLs.row;
+import static io.army.criteria.impl.SQLs.space;
 import static io.army.criteria.impl.SQLs.*;
 
 public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
@@ -604,25 +605,25 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                         .comma("jsonb2", PERIOD, ASTERISK)
                 )
                 .from(jsonToRecord(SQLs.literal(JsonType.TEXT, json)))
-                .as("json1").parens(c -> c.space("a", IntegerType.INSTANCE)
+                .as("json1").parens(c -> c.space("a", IntegerType.INTEGER)
                         .comma("b", TextType.INSTANCE)
                         .comma("c", IntegerArrayType.LINEAR)
                         .comma("d", TextType.INSTANCE)
                         .comma("r", MySubRowType.INSTANCE)
                 ).crossJoin(jsonToRecord(SQLs::literal, json))
-                .as("json2").parens(c -> c.space("a", IntegerType.INSTANCE)
+                .as("json2").parens(c -> c.space("a", IntegerType.INTEGER)
                         .comma("b", TextType.INSTANCE)
                         .comma("c", IntegerArrayType.LINEAR)
                         .comma("d", TextType.INSTANCE)
                         .comma("r", MySubRowType.INSTANCE)
                 ).crossJoin(jsonbToRecord(SQLs.literal(JsonbType.TEXT, json)))
-                .as("jsonb1").parens(c -> c.space("a", IntegerType.INSTANCE)
+                .as("jsonb1").parens(c -> c.space("a", IntegerType.INTEGER)
                         .comma("b", TextType.INSTANCE)
                         .comma("c", IntegerArrayType.LINEAR)
                         .comma("d", TextType.INSTANCE)
                         .comma("r", MySubRowType.INSTANCE)
                 ).crossJoin(jsonbToRecord(SQLs::literal, json))
-                .as("jsonb2").parens(c -> c.space("a", IntegerType.INSTANCE)
+                .as("jsonb2").parens(c -> c.space("a", IntegerType.INTEGER)
                         .comma("b", TextType.INSTANCE)
                         .comma("c", IntegerArrayType.LINEAR)
                         .comma("d", TextType.INSTANCE)
@@ -652,16 +653,16 @@ public class PostgreJsonFuncUnitTests extends PostgreUnitTests {
                         .comma("jsonb2", PERIOD, ASTERISK)
                 )
                 .from(jsonToRecordSet(SQLs.literal(JsonType.TEXT, json)))
-                .as("json1").parens(c -> c.space("a", IntegerType.INSTANCE)
+                .as("json1").parens(c -> c.space("a", IntegerType.INTEGER)
                         .comma("b", TextType.INSTANCE)
                 ).crossJoin(jsonToRecordSet(SQLs::literal, json))
-                .as("json2").parens(c -> c.space("a", IntegerType.INSTANCE)
+                .as("json2").parens(c -> c.space("a", IntegerType.INTEGER)
                         .comma("b", TextType.INSTANCE)
                 ).crossJoin(jsonbToRecordSet(SQLs.literal(JsonbType.TEXT, json)))
-                .as("jsonb1").parens(c -> c.space("a", IntegerType.INSTANCE)
+                .as("jsonb1").parens(c -> c.space("a", IntegerType.INTEGER)
                         .comma("b", TextType.INSTANCE)
                 ).crossJoin(jsonbToRecordSet(SQLs::literal, json))
-                .as("jsonb2").parens(c -> c.space("a", IntegerType.INSTANCE)
+                .as("jsonb2").parens(c -> c.space("a", IntegerType.INTEGER)
                         .comma("b", TextType.INSTANCE)
                 )
                 .asQuery();

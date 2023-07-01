@@ -30,9 +30,9 @@ abstract class _NumericType extends _ArmyNoInjectionMapping {
         if (targetType == String.class) {
             type = StringType.INSTANCE;
         } else if (targetType == Integer.class) {
-            type = IntegerType.INSTANCE;
+            type = IntegerType.INTEGER;
         } else if (targetType == Long.class) {
-            type = LongType.INSTANCE;
+            type = LongType.BIGINT;
         } else if (targetType == BigDecimal.class) {
             type = BigDecimalType.INSTANCE;
         } else if (targetType == BigInteger.class) {

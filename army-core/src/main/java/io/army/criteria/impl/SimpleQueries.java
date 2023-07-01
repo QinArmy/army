@@ -12,7 +12,6 @@ import io.army.lang.Nullable;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
-import io.army.modelgen._MetaBridge;
 import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._Collections;
@@ -968,44 +967,100 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         this.onClear();
     }
 
-    @Nullable
-    public final String validateIdDefaultExpression() {
+    @Override
+    public final List<String> validateIdDefaultExpression() {
+        final String msgSuffix = "in id default scalar expression";
+
+        final List<_Cte> cteList = this.cteList;
+        if (cteList != null && cteList.size() > 0) {
+            String m = String.format("couldn't exists WITH clause %s", msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+
         final List<? extends Selection> selectionList = this.context.flatSelectItems();
         if (selectionList.size() != 1) {
-            return null;
+            //io.army.criteria.impl.Expressions.scalarExpression(SubQuery) no bug,never here
+            throw ContextStack.clearStackAndCriteriaError("Expression isn't scalar sub query.");
+        } else if (this.hasLimitClause()) {
+            String m = String.format("couldn't exists LIMIT/OFFSET clause %s.", msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (this.hasGroupByClause()) {
+            String m = String.format("couldn't exists GROUP BY clause %s.", msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (this instanceof _Query._WindowClauseSpec && ((_WindowClauseSpec) this).windowList().size() > 0) {
+            String m = String.format("couldn't exists WINDOW clause %s.", msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
+
         final Selection selection = selectionList.get(0);
-        final DerivedField derivedField;
+        final DerivedField derivedIdField;
+
 
         if (selection instanceof DerivedField) {
-            derivedField = (DerivedField) selection;
+            derivedIdField = (DerivedField) selection;
         } else if (selection instanceof ArmySelections.ExpressionSelection
                 && ((ArmySelections.ExpressionSelection) selection).expression instanceof DerivedField) {
-            derivedField = (DerivedField) ((ArmySelections.ExpressionSelection) selection).expression;
+            derivedIdField = (DerivedField) ((ArmySelections.ExpressionSelection) selection).expression;
         } else {
-            return null;
+            String m;
+            m = String.format("%s %s isn't derived field %s.", Selection.class.getName(), selection.alias(), msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
-        if (!_MetaBridge.ID.equals(derivedField.fieldName())) {
-            return null;
-        }
+
         final List<_TabularBlock> blockList = this.tableBlockList;
         assert blockList != null;
         if (blockList.size() != 1) {
-            return null;
+            String m = String.format("Must just one from-item %s", msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
         final _TabularBlock block = blockList.get(0);
         final TabularItem item = block.tableItem();
-
         if (!(item instanceof _Cte)) {
-            return null;
+            String m = String.format("From item must be CTE %s.", msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
         }
 
         final List<_Predicate> whereClause = this.wherePredicateList();
-        if (whereClause.size() != 1) {
-            return null;
+        switch (whereClause.size()) {
+            case 0:
+                return ArrayUtils.of(((_Cte) item).name(), derivedIdField.fieldName());
+            case 1:
+                //no-op
+                break;
+            default: {
+                String m = String.format("Can only exists one equal predicate %s.", msgSuffix);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
         }
 
-        return ((_Cte) item).name();
+        final OperationPredicate predicate = (OperationPredicate) whereClause.get(0);
+        final Expressions.DualPredicate dual;
+        if (!(predicate instanceof Expressions.DualPredicate)
+                || (dual = (Expressions.DualPredicate) predicate).operator != DualBooleanOperator.EQUAL) {
+            String m = String.format("Not found equal predicate %s.", msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (dual.left == derivedIdField) {
+            String m = String.format("%s couldn't be %s %s", dual.left, derivedIdField, msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (!(dual.left instanceof DerivedField)) {
+            String m;
+            m = String.format("%s isn't %s %s.", dual.left, DerivedField.class.getName(), msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (dual.right != SQLs.BATCH_NO_PARAM && dual.right != SQLs.BATCH_NO_LITERAL) {
+            String m = String.format("The right item of %s should be %s.%s or %s.%s , but is %s %s",
+                    dual.left,
+                    SQLs.class.getName(), "BATCH_NO_PARAM",
+                    SQLs.class.getName(), "BATCH_NO_LITERAL",
+                    dual.right,
+                    msgSuffix);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        return ArrayUtils.of(((_Cte) item).name(), derivedIdField.fieldName(), ((DerivedField) dual.left).fieldName());
+    }
+
+    @Override
+    public final List<String> validateParentSubInsertRowNumberQuery(List<String> names) {
+        return null;
     }
 
     abstract SP createQueryUnion(_UnionType unionType);

@@ -41,11 +41,11 @@ public abstract class PostgreRangeType extends _ArmyPostgreRangeType {
         switch (this.sqlType) {
             case INT4RANGE:
             case INT4MULTIRANGE:
-                type = IntegerType.INSTANCE;
+                type = IntegerType.INTEGER;
                 break;
             case INT8RANGE:
             case INT8MULTIRANGE:
-                type = LongType.INSTANCE;
+                type = LongType.BIGINT;
                 break;
             case NUMRANGE:
             case NUMMULTIRANGE:

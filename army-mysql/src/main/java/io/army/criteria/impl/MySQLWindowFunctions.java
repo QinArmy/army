@@ -126,7 +126,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static _AggregateWindowFunc count(Expression exp) {
-        return MySQLFunctionUtils.oneArgAggregate("COUNT", exp, LongType.INSTANCE);
+        return MySQLFunctionUtils.oneArgAggregate("COUNT", exp, LongType.BIGINT);
     }
 
 
@@ -154,7 +154,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
             }
             argList.add(expList.get(i));
         }
-        return FunctionUtils.complexArgFunc(name, argList, LongType.INSTANCE);
+        return FunctionUtils.complexArgFunc(name, argList, LongType.BIGINT);
     }
 
     /**
@@ -451,7 +451,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_dense-rank">DENSE_RANK() over_clause</a>
      */
     public static _OverSpec denseRank() {
-        return MySQLFunctionUtils.noArgWindowFunc("DENSE_RANK", LongType.INSTANCE);
+        return MySQLFunctionUtils.noArgWindowFunc("DENSE_RANK", LongType.BIGINT);
     }
 
 
@@ -622,7 +622,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_ntile">NTILE(N) over_clause</a>
      */
     public static _OverSpec ntile(Expression n) {
-        return MySQLFunctionUtils.oneArgWindowFunc("NTILE", n, LongType.INSTANCE);
+        return MySQLFunctionUtils.oneArgWindowFunc("NTILE", n, LongType.BIGINT);
     }
 
     /**
@@ -644,7 +644,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_percent-rank">RANK() over_clause</a>
      */
     public static _OverSpec rank() {
-        return MySQLFunctionUtils.noArgWindowFunc("RANK", LongType.INSTANCE);
+        return MySQLFunctionUtils.noArgWindowFunc("RANK", LongType.BIGINT);
     }
 
 
@@ -656,7 +656,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/window-function-descriptions.html#function_row-number">ROW_NUMBER() over_clause</a>
      */
     public static _OverSpec rowNumber() {
-        return MySQLFunctionUtils.noArgWindowFunc("ROW_NUMBER", LongType.INSTANCE);
+        return MySQLFunctionUtils.noArgWindowFunc("ROW_NUMBER", LongType.BIGINT);
     }
 
 
@@ -674,7 +674,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
 
         final TypeMeta paramMeta = expr.typeMeta();
        if (!(paramMeta.mappingType() instanceof StringType)) {
-           returnType = LongType.INSTANCE;
+           returnType = LongType.BIGINT;
        } else if (!(expr instanceof SqlValueParam.SingleAnonymousValue)) {
            returnType = StringType.INSTANCE; //ODO optimize unknown,compatibility
        } else {
@@ -683,7 +683,7 @@ abstract class MySQLWindowFunctions extends MySQLJsonFunctions {
            if (value instanceof String && _StringUtils.isBinary((String) value)) {
                returnType = StringType.INSTANCE;
            } else {
-               returnType = LongType.INSTANCE;
+               returnType = LongType.BIGINT;
             }
         }
         return returnType;

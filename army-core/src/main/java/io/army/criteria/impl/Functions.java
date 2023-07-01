@@ -257,7 +257,7 @@ abstract class Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_crc32">CRC32(expr)</a>
      */
     public static SimpleExpression crc32(final Expression expr) {
-        return FunctionUtils.oneArgFunc("CRC32", expr, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("CRC32", expr, IntegerType.INTEGER);
     }
 
     /**
@@ -296,7 +296,7 @@ abstract class Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/mathematical-functions.html#function_floor">FLOOR(x)</a>
      */
     public static SimpleExpression floor(final Expression expr) {
-        return FunctionUtils.oneArgFunc("FLOOR", expr, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("FLOOR", expr, LongType.BIGINT);
     }
 
     /**
@@ -487,7 +487,7 @@ abstract class Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-math.html#FUNCTIONS-MATH-FUNC-TABLE">sign ( numeric ) → numeric</a>
      */
     public static SimpleExpression sign(final Expression x) {
-        return FunctionUtils.oneArgFunc("SIGN", x, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("SIGN", x, IntegerType.INTEGER);
     }
 
     /**
@@ -565,7 +565,7 @@ abstract class Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">length ( text ) → integer</a>
      */
     public static SimpleExpression length(Expression exp) {
-        return FunctionUtils.oneArgFunc("LENGTH", exp, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("LENGTH", exp, IntegerType.INTEGER);
     }
 
     public static SimpleExpression countAsterisk() {
@@ -580,7 +580,7 @@ abstract class Functions {
      * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html#function_count">COUNT(expr) [over_clause]</a>
      */
     public static SimpleExpression count(Expression expr) {
-        return FunctionUtils.oneArgFunc("COUNT", expr, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("COUNT", expr, LongType.BIGINT);
     }
 
 
@@ -937,7 +937,7 @@ abstract class Functions {
             length = ((MappingType.SqlIntegerType) type).lengthType();
             switch (length) {
                 case DEFAULT:
-                    returnType = LongType.INSTANCE;
+                    returnType = LongType.BIGINT;
                     break;
                 case LONG:
                 case BIG_LONG:
@@ -948,7 +948,7 @@ abstract class Functions {
                     break;
                 case SMALL:
                 case MEDIUM:
-                    returnType = IntegerType.INSTANCE;
+                    returnType = IntegerType.INTEGER;
                     break;
                 default:
                     throw _Exceptions.unexpectedEnum(length);
@@ -992,7 +992,7 @@ abstract class Functions {
         private static final CountAsteriskFunction INSTANCE = new CountAsteriskFunction();
 
         private CountAsteriskFunction() {
-            super("count", true, LongType.INSTANCE);
+            super("count", true, LongType.BIGINT);
         }
 
 

@@ -3197,7 +3197,7 @@ abstract class CriteriaContexts {
         @Override
         public final MappingType typeMeta() {
             // always return IntegerType.INSTANCE not this.targetSelection type.
-            return IntegerType.INSTANCE;
+            return IntegerType.INTEGER;
         }
 
         @Override

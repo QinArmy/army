@@ -254,7 +254,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
                 ).comma(SQLs.literal(JsonbType.TEXT, leftObject)
                         .space(Postgres::minus, SQLs.literal(TextType.INSTANCE, "b"))::as, "minusObjectKey"
                 ).comma(SQLs.literal(JsonbType.TEXT, leftArray)
-                        .space(Postgres::minus, SQLs.literal(IntegerType.INSTANCE, 1))::as, "minusNumberElement"
+                        .space(Postgres::minus, SQLs.literal(IntegerType.INTEGER, 1))::as, "minusNumberElement"
                 )
                 .asQuery();
 
@@ -275,7 +275,7 @@ public class PostgreJsonOperatorUnitTests extends PostgreUnitTests {
         Assert.assertSame(expType, JsonbType.TEXT);
 
         expType = SQLs.literal(JsonbType.TEXT, leftArray)
-                .space(Postgres::minus, SQLs.literal(IntegerType.INSTANCE, 1))
+                .space(Postgres::minus, SQLs.literal(IntegerType.INTEGER, 1))
                 .typeMeta();
 
         Assert.assertSame(expType, JsonbType.TEXT);

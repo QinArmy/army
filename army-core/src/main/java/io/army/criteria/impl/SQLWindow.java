@@ -224,7 +224,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     @Override
     public final <T> FS rows(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier) {
-        return this.startExtent(FrameUnits.ROWS, funcRef.apply(IntegerType.INSTANCE, value), modifier);
+        return this.startExtent(FrameUnits.ROWS, funcRef.apply(IntegerType.INTEGER, value), modifier);
     }
 
     @Override
@@ -239,7 +239,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     @Override
     public final <T> FS range(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier) {
-        return this.startExtent(FrameUnits.RANGE, funcRef.apply(IntegerType.INSTANCE, value), modifier);
+        return this.startExtent(FrameUnits.RANGE, funcRef.apply(IntegerType.INTEGER, value), modifier);
     }
 
     @Override
@@ -254,7 +254,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     @Override
     public final <T> FS groups(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier) {
-        return this.startExtent(FrameUnits.GROUPS, funcRef.apply(IntegerType.INSTANCE, value), modifier);
+        return this.startExtent(FrameUnits.GROUPS, funcRef.apply(IntegerType.INTEGER, value), modifier);
     }
 
 
@@ -318,7 +318,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     @Override
     public final <T> FS space(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier modifier) {
-        return this.space(funcRef.apply(IntegerType.INSTANCE, value), modifier);
+        return this.space(funcRef.apply(IntegerType.INTEGER, value), modifier);
     }
 
     @Override
@@ -437,25 +437,25 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
     @Override
     public final <T> BR between(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier startModifier,
                                 SQLs.WordAnd and, RowModifier frameEnd) {
-        return this.between(funcRef.apply(IntegerType.INSTANCE, value), startModifier, and, frameEnd);
+        return this.between(funcRef.apply(IntegerType.INTEGER, value), startModifier, and, frameEnd);
     }
 
     @Override
     public final <T> BR between(RowModifier frameStart, SQLs.WordAnd and,
                                 BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier endModifier) {
-        return this.between(frameStart, and, funcRef.apply(IntegerType.INSTANCE, value), endModifier);
+        return this.between(frameStart, and, funcRef.apply(IntegerType.INTEGER, value), endModifier);
     }
 
     @Override
     public final <T> BR between(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier startModifier,
                                 SQLs.WordAnd and, Expression endExp, ExpModifier endModifier) {
-        return this.between(funcRef.apply(IntegerType.INSTANCE, value), startModifier, and, endExp, endModifier);
+        return this.between(funcRef.apply(IntegerType.INTEGER, value), startModifier, and, endExp, endModifier);
     }
 
     @Override
     public final <T> BR between(Expression startExp, ExpModifier startModifier, SQLs.WordAnd and,
                                 BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier endModifier) {
-        return this.between(startExp, startModifier, and, funcRef.apply(IntegerType.INSTANCE, value), endModifier);
+        return this.between(startExp, startModifier, and, funcRef.apply(IntegerType.INTEGER, value), endModifier);
     }
 
     @Override
@@ -463,8 +463,8 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
                                    ExpModifier startModifier, SQLs.WordAnd and,
                                    BiFunction<IntegerType, U, Expression> funcRefForEnd, U endValue,
                                    ExpModifier endModifier) {
-        return this.between(funcRefForStart.apply(IntegerType.INSTANCE, startValue), startModifier, and,
-                funcRefForEnd.apply(IntegerType.INSTANCE, endValue), endModifier);
+        return this.between(funcRefForStart.apply(IntegerType.INTEGER, startValue), startModifier, and,
+                funcRefForEnd.apply(IntegerType.INTEGER, endValue), endModifier);
     }
 
     @Override
@@ -486,7 +486,7 @@ abstract class SQLWindow<PR, OR, OD, FS, FB, BR, DC, R>
 
     @Override
     public final <T> BR and(BiFunction<IntegerType, T, Expression> funcRef, T value, ExpModifier endModifier) {
-        return this.and(funcRef.apply(IntegerType.INSTANCE, value), endModifier);
+        return this.and(funcRef.apply(IntegerType.INTEGER, value), endModifier);
     }
 
     @Override

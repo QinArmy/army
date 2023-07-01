@@ -121,7 +121,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}
+     * The {@link MappingType} of function return type: {@link  LongType#BIGINT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">row_number () → bigint<br/>
@@ -129,13 +129,13 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _OverSpec rowNumber() {
-        return PostgreFunctionUtils.zeroArgWindowFunc("row_number", LongType.INSTANCE);
+        return PostgreFunctionUtils.zeroArgWindowFunc("row_number", LongType.BIGINT);
     }
 
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}
+     * The {@link MappingType} of function return type: {@link  LongType#BIGINT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">rank () → bigint<br/>
@@ -143,12 +143,12 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _OverSpec rank() {
-        return PostgreFunctionUtils.zeroArgWindowFunc("rank", LongType.INSTANCE);
+        return PostgreFunctionUtils.zeroArgWindowFunc("rank", LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}
+     * The {@link MappingType} of function return type: {@link  LongType#BIGINT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">dense_rank () → bigint<br/>
@@ -156,7 +156,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _OverSpec denseRank() {
-        return PostgreFunctionUtils.zeroArgWindowFunc("dense_rank", LongType.INSTANCE);
+        return PostgreFunctionUtils.zeroArgWindowFunc("dense_rank", LongType.BIGINT);
     }
 
     /**
@@ -188,7 +188,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  IntegerType#INSTANCE}
+     * The {@link MappingType} of function return type: {@link  IntegerType#INTEGER}
      * </p>
      *
      * @param func  the reference of method,Note: it's the reference of method,not lambda. Valid method:
@@ -199,7 +199,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      *                  <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                  <li>developer custom method</li>
      *              </ul>.
-     *              The first argument of func always is {@link IntegerType#INSTANCE}.
+     *              The first argument of func always is {@link IntegerType#INTEGER}.
      * @param value non-null,it will be passed to func as the second argument of func
      * @see #ntile(Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">ntile ( num_buckets integer ) → integer<br/>
@@ -207,12 +207,12 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static <T> _OverSpec ntile(BiFunction<IntegerType, T, Expression> func, T value) {
-        return ntile(func.apply(IntegerType.INSTANCE, value));
+        return ntile(func.apply(IntegerType.INTEGER, value));
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  IntegerType#INSTANCE}
+     * The {@link MappingType} of function return type: {@link  IntegerType#INTEGER}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">ntile ( num_buckets integer ) → integer<br/>
@@ -220,7 +220,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _OverSpec ntile(Expression numBuckets) {
-        return PostgreFunctionUtils.oneArgWindowFunc("ntile", numBuckets, IntegerType.INSTANCE);
+        return PostgreFunctionUtils.oneArgWindowFunc("ntile", numBuckets, IntegerType.INTEGER);
     }
 
     /**
@@ -356,7 +356,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      *                 <li>{@link SQLs#namedLiteral(TypeInfer, String)} ,used only in INSERT( or batch update/delete in multi-statement) syntax</li>
      *                 <li>developer custom method</li>
      *             </ul>.
-     *             The first argument of func always is {@link IntegerType#INSTANCE}.
+     *             The first argument of func always is {@link IntegerType#INTEGER}.
      * @param n    non-null,it will be passed to func as the second argument of func
      * @see #nthValue(Expression, Expression)
      * @see <a href="https://www.postgresql.org/docs/current/functions-window.html#FUNCTIONS-WINDOW-TABLE">nth_value ( value anyelement, n integer ) → anyelement<br/>
@@ -364,7 +364,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static <T> _OverSpec nthValue(Expression value, BiFunction<IntegerType, T, Expression> func, T n) {
-        return nthValue(value, func.apply(IntegerType.INSTANCE, n));
+        return nthValue(value, func.apply(IntegerType.INTEGER, n));
     }
 
     /**
@@ -916,7 +916,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
+     * The {@link MappingType} of function return type: {@link  LongType#BIGINT}.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( * ) → bigint<br/>
@@ -925,12 +925,12 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * @see #countAsterisk()
      */
     public static _AggWindowFunc countAsterisk() {
-        return PostgreFunctionUtils.oneArgAggWindowFunc("count", SQLs._ASTERISK_EXP, LongType.INSTANCE);
+        return PostgreFunctionUtils.oneArgAggWindowFunc("count", SQLs._ASTERISK_EXP, LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
+     * The {@link MappingType} of function return type: {@link  LongType#BIGINT}.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
@@ -939,12 +939,12 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * @see #count(Expression)
      */
     public static _PgAggFunc count(@Nullable SQLs.ArgDistinct modifier, Expression any) {
-        return PostgreFunctionUtils.oneArgAggFunc("count", modifier, any, null, LongType.INSTANCE);
+        return PostgreFunctionUtils.oneArgAggFunc("count", modifier, any, null, LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
+     * The {@link MappingType} of function return type: {@link  LongType#BIGINT}.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
@@ -955,12 +955,12 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc count(Expression any, Consumer<Statement._SimpleOrderByClause> consumer) {
 
         ContextStack.assertNonNull(consumer);
-        return PostgreFunctionUtils.oneArgAggFunc("count", null, any, consumer, LongType.INSTANCE);
+        return PostgreFunctionUtils.oneArgAggFunc("count", null, any, consumer, LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
+     * The {@link MappingType} of function return type: {@link  LongType#BIGINT}.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
@@ -971,12 +971,12 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc count(@Nullable SQLs.ArgDistinct modifier, Expression any,
                                    Consumer<Statement._SimpleOrderByClause> consumer) {
         ContextStack.assertNonNull(consumer);
-        return PostgreFunctionUtils.oneArgAggFunc("count", modifier, any, consumer, LongType.INSTANCE);
+        return PostgreFunctionUtils.oneArgAggFunc("count", modifier, any, consumer, LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link  LongType#INSTANCE}.
+     * The {@link MappingType} of function return type: {@link  LongType#BIGINT}.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE">count ( "any" ) → bigint<br/>
@@ -985,7 +985,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * @see #count(Expression)
      */
     public static _AggWindowFunc count(Expression exp) {
-        return PostgreFunctionUtils.oneArgAggWindowFunc("count", exp, LongType.INSTANCE);
+        return PostgreFunctionUtils.oneArgAggWindowFunc("count", exp, LongType.BIGINT);
     }
 
     /**
@@ -2006,7 +2006,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
@@ -2014,12 +2014,12 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _PgAggFunc regrCount(@Nullable SQLs.ArgDistinct modifier, Expression y, Expression x) {
-        return PostgreFunctionUtils.twoArgAggFunc("regr_count", modifier, y, x, null, LongType.INSTANCE);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_count", modifier, y, x, null, LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
@@ -2029,12 +2029,12 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc regrCount(Expression y, Expression x, Consumer<Statement._SimpleOrderByClause> consumer) {
 
         ContextStack.assertNonNull(consumer);
-        return PostgreFunctionUtils.twoArgAggFunc("regr_count", null, y, x, consumer, LongType.INSTANCE);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_count", null, y, x, consumer, LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
@@ -2044,12 +2044,12 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
     public static _PgAggFunc regrCount(@Nullable SQLs.ArgDistinct modifier, Expression y, Expression x,
                                        Consumer<Statement._SimpleOrderByClause> consumer) {
         ContextStack.assertNonNull(consumer);
-        return PostgreFunctionUtils.twoArgAggFunc("regr_count", modifier, y, x, consumer, LongType.INSTANCE);
+        return PostgreFunctionUtils.twoArgAggFunc("regr_count", modifier, y, x, consumer, LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type:  {@link LongType#INSTANCE}.
+     * The {@link MappingType} of function return type:  {@link LongType#BIGINT}.
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE">regr_count ( Y double precision, X double precision ) → bigint<br/>
@@ -2057,7 +2057,7 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
      * </a>
      */
     public static _AggWindowFunc regrCount(Expression y, Expression x) {
-        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_count", y, x, LongType.INSTANCE);
+        return PostgreFunctionUtils.twoArgAggWindowFunc("regr_count", y, x, LongType.BIGINT);
     }
 
 
@@ -2814,26 +2814,26 @@ abstract class PostgreWindowFunctions extends PostgreDocumentFunctions {
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link LongType#INSTANCE}
+     * The {@link MappingType} of function return type: {@link LongType#BIGINT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">rank ( args ) WITHIN GROUP ( ORDER BY sorted_args ) → bigint<br/>
      * </a>
      */
     public static _AggWithGroupClause rank(Expression args) {
-        return PostgreFunctionUtils.oneArgWithGroupAggFunc("rank", args, LongType.INSTANCE);
+        return PostgreFunctionUtils.oneArgWithGroupAggFunc("rank", args, LongType.BIGINT);
     }
 
     /**
      * <p>
-     * The {@link MappingType} of function return type: {@link LongType#INSTANCE}
+     * The {@link MappingType} of function return type: {@link LongType#BIGINT}
      * </p>
      *
      * @see <a href="https://www.postgresql.org/docs/current/functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE">dense_rank ( args ) WITHIN GROUP ( ORDER BY sorted_args ) → bigint<br/>
      * </a>
      */
     public static _AggWithGroupClause denseRank(Expression args) {
-        return PostgreFunctionUtils.oneArgWithGroupAggFunc("dense_rank", args, LongType.INSTANCE);
+        return PostgreFunctionUtils.oneArgWithGroupAggFunc("dense_rank", args, LongType.BIGINT);
     }
 
     /**

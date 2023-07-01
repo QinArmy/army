@@ -29,7 +29,7 @@ public final class MySubRowType extends MappingType
     }
 
     private static final List<CompositeTypeField> FIELD_LIST = ArrayUtils.of(
-            CompositeTypeField.from("d", IntegerType.INSTANCE),
+            CompositeTypeField.from("d", IntegerType.INTEGER),
             CompositeTypeField.from("e", TextType.INSTANCE)
     );
 

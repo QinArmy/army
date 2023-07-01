@@ -34,14 +34,14 @@ import java.util.function.BiFunction;
 public final class IntegerType extends _NumericType._IntegerType {
 
 
-    public static final IntegerType INSTANCE = new IntegerType();
+    public static final IntegerType INTEGER = new IntegerType();
 
 
     public static IntegerType from(final Class<?> fieldType) {
         if (fieldType != Integer.class) {
             throw errorJavaType(IntegerType.class, fieldType);
         }
-        return INSTANCE;
+        return INTEGER;
     }
 
 

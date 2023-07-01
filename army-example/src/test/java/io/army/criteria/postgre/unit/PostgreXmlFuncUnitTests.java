@@ -142,13 +142,13 @@ public class PostgreXmlFuncUnitTests extends PostgreUnitTests {
                 .select(s -> s.space("x", PERIOD, ASTERISK))
                 .from(() -> xmlTable(xmlNamespaces(SQLs::literal, "http://example.com/myns", AS, "xz"),
                                 SQLs.literal(TextType.INSTANCE, "//ROWS/ROW"), PASSING, BY_VALUE, SQLs.literal(XmlType.TEXT, xmlDoc), BY_VALUE,
-                                c -> c.columns("id", IntegerType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "@id"))
-                                        .comma("ordinality", FOR_ORDINALITY)
-                                        .comma("COUNTRY_NAME", TextType.INSTANCE)
-                                        .comma("country_id", TextType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "COUNTRY_ID"))
-                                        .comma("size_sq_km", FloatType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "SIZE[@unit = \"sq_km\"]"))
-                                        .comma("size_other", TextType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "concat(SIZE[@unit!=\"sq_km\"], \" \", SIZE[@unit!=\"sq_km\"]/@unit)"))
-                                        .comma("premier_name", TextType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "PREMIER_NAME"), DEFAULT, SQLs.literal(TextType.INSTANCE, "not specified"))
+                        c -> c.columns("id", IntegerType.INTEGER, PATH, SQLs.literal(TextType.INSTANCE, "@id"))
+                                .comma("ordinality", FOR_ORDINALITY)
+                                .comma("COUNTRY_NAME", TextType.INSTANCE)
+                                .comma("country_id", TextType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "COUNTRY_ID"))
+                                .comma("size_sq_km", FloatType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "SIZE[@unit = \"sq_km\"]"))
+                                .comma("size_other", TextType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "concat(SIZE[@unit!=\"sq_km\"], \" \", SIZE[@unit!=\"sq_km\"]/@unit)"))
+                                .comma("premier_name", TextType.INSTANCE, PATH, SQLs.literal(TextType.INSTANCE, "PREMIER_NAME"), DEFAULT, SQLs.literal(TextType.INSTANCE, "not specified"))
                         )//xmlTable
                 ).as("x")
                 .asQuery();

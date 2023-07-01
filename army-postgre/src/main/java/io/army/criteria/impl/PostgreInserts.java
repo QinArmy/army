@@ -1,6 +1,5 @@
 package io.army.criteria.impl;
 
-import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.dialect.ReturningInsert;
 import io.army.criteria.dialect.Returnings;
@@ -227,76 +226,8 @@ abstract class PostgreInserts extends InsertSupports {
         return spec.asReturningInsert();
     }
 
-    /**
-     * <p>
-     * Find parent insert sub-statement for childStmt in cteList.
-     * </p>
-     *
-     * @see PrimarySimpleDomainInsertStatement#PrimarySimpleDomainInsertStatement(PostgreComplexValuesClause)
-     */
-    @Nullable
-    private static ParentSubInsert parentSubInsert(final ArmyInsert childStmt, final List<_Cte> cteList,
-                                                   final int childIndex) {
-
-        final int cteSize = cteList.size();
-        assert childIndex > -1 && childIndex <= cteSize;
-
-        final ChildTableMeta<?> child = (ChildTableMeta<?>) childStmt.table();
-        final ParentTableMeta<?> parent = child.parentMeta();
-        final InsertMode childMode = childStmt.getInsertMode();
-        final boolean childMigration = childStmt.isMigration();
-
-        final boolean needParentRowNumberQuery = !childMigration
-                && parent.id().generatorType() == GeneratorType.POST
-                && childStmt.insertRowCount() > 1;
-
-        PostgreSupports.PostgreCte cte;
-        SubStatement subStatement;
-        TableMeta<?> candidateParent;
-        boolean parentRowNumberQuery = false;
-
-        for (int i = childIndex - 1; i > -1; i--) {
-            cte = (PostgreSupports.PostgreCte) cteList.get(i);
-            subStatement = cte.subStatement;
-
-            if (needParentRowNumberQuery && subStatement instanceof SubQuery) {
-                continue;
-            }
-
-            if (!(subStatement instanceof _Insert
-                    && (candidateParent = ((_Insert) subStatement).table()) instanceof ParentTableMeta)) {
-                continue;
-            } else if (candidateParent != parent
-                    || ((ArmyInsert) subStatement).isMigration() != childMigration
-                    || ((ArmyInsert) subStatement).getInsertMode() != childMode) {
-                continue;
-            }
-
-            if (!parentRowNumberQuery) {
-                String m = String.format("Not found parent row number query of %s", child);
-                throw new CriteriaException(m);
-            }
-
-        }
-        return null;
-    }
 
 
-    private interface ParentSubInsert {
-
-
-        void validateChild(ChildTableMeta<?> child);
-
-        void parentAsDomain();
-
-    }
-
-    private interface ParentDomainSubInsert extends ParentSubInsert {
-
-        List<?> validateDomainList(ChildTableMeta<?> child, List<?> originalList);
-
-        List<?> domainList();
-    }
 
 
     /*-------------------below insert after values syntax class-------------------*/
@@ -1567,7 +1498,7 @@ abstract class PostgreInserts extends InsertSupports {
             super(clause);
             assert this.insertTable instanceof ChildTableMeta;
             final ParentSubInsert parent;
-            parent = parentSubInsert(this, this.cteList, this.cteList.size());
+            parent = parentSubInsert(this, this.cteList);
             this.parentStmt = (ParentDomainSubInsert) parent;
         }
 

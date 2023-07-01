@@ -134,7 +134,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">bit_length ( bytea ) → integer</a>
      */
     public static SimpleExpression bitLength(Expression exp) {
-        return FunctionUtils.oneArgFunc("BIT_LENGTH", exp, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("BIT_LENGTH", exp, IntegerType.INTEGER);
     }
 
     /**
@@ -145,7 +145,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-SQL">char_length ( text ) → integer</a>
      */
     public static SimpleExpression charLength(Expression exp) {
-        return FunctionUtils.oneArgFunc("CHAR_LENGTH", exp, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("CHAR_LENGTH", exp, IntegerType.INTEGER);
     }
 
     /**
@@ -205,7 +205,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-SQL">octet_length ( bytea ) → integer</a>
      */
     public static SimpleExpression octetLength(Expression exp) {
-        return FunctionUtils.oneArgFunc("OCTET_LENGTH", exp, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("OCTET_LENGTH", exp, IntegerType.INTEGER);
     }
 
     /**
@@ -261,7 +261,7 @@ abstract class PostgreStringFunctions extends Functions {
         } else if (in != SQLs.IN) {
             throw CriteriaUtils.funcArgError(name, in);
         } else {
-            func = FunctionUtils.complexArgFunc(name, IntegerType.INSTANCE,
+            func = FunctionUtils.complexArgFunc(name, IntegerType.INTEGER,
                     substring, in, string);
         }
         return func;
@@ -557,7 +557,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">ascii ( text ) → integer</a>
      */
     public static SimpleExpression ascii(Expression exp) {
-        return FunctionUtils.oneArgFunc("ASCII", exp, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("ASCII", exp, IntegerType.INTEGER);
     }
 
     /**
@@ -851,7 +851,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_count ( string text, pattern text [, start integer [, flags text ] ] ) → integer</a>
      */
     public static SimpleExpression regexpCount(Expression string, Expression pattern) {
-        return FunctionUtils.twoArgFunc("REGEXP_COUNT", string, pattern, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("REGEXP_COUNT", string, pattern, IntegerType.INTEGER);
     }
 
 
@@ -865,7 +865,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_count ( string text, pattern text [, start integer [, flags text ] ] ) → integer</a>
      */
     public static SimpleExpression regexpCount(Expression string, Expression pattern, Expression start) {
-        return FunctionUtils.threeArgFunc("REGEXP_COUNT", string, pattern, start, IntegerType.INSTANCE);
+        return FunctionUtils.threeArgFunc("REGEXP_COUNT", string, pattern, start, IntegerType.INTEGER);
     }
 
     /**
@@ -878,7 +878,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">regexp_count ( string text, pattern text [, start integer [, flags text ] ] ) → integer</a>
      */
     public static SimpleExpression regexpCount(Expression string, Expression pattern, Expression start, Expression flags) {
-        return FunctionUtils.fourArgFunc("REGEXP_COUNT", string, pattern, start, flags, IntegerType.INSTANCE);
+        return FunctionUtils.fourArgFunc("REGEXP_COUNT", string, pattern, start, flags, IntegerType.INTEGER);
     }
 
     /**
@@ -1328,7 +1328,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-string.html#FUNCTIONS-STRING-OTHER">strpos ( string text, substring text ) → integer</a>
      */
     public static SimpleExpression strPos(Expression string, Expression substring) {
-        return FunctionUtils.twoArgFunc("STRPOS", string, substring, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("STRPOS", string, substring, IntegerType.INTEGER);
     }
 
     /**
@@ -1432,7 +1432,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">bit_count ( bytes bytea ) → bigint</a>
      */
     public static SimpleExpression bitCount(Expression bit) {
-        return FunctionUtils.oneArgFunc("BIT_COUNT", bit, LongType.INSTANCE);
+        return FunctionUtils.oneArgFunc("BIT_COUNT", bit, LongType.BIGINT);
     }
 
     /**
@@ -1444,7 +1444,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">get_bit ( bytes bytea, n bigint ) → integer</a>
      */
     public static SimpleExpression getBit(Expression bits, Expression n) {
-        return FunctionUtils.twoArgFunc("GET_BIT", bits, n, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("GET_BIT", bits, n, IntegerType.INTEGER);
     }
 
     /**
@@ -1469,7 +1469,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">get_bit ( bytes bytea, n bigint ) → integer</a>
      */
     public static SimpleExpression getByte(Expression bits, Expression n) {
-        return FunctionUtils.twoArgFunc("GET_BIT", bits, n, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("GET_BIT", bits, n, IntegerType.INTEGER);
     }
 
     /**
@@ -1480,7 +1480,7 @@ abstract class PostgreStringFunctions extends Functions {
      * @see <a href="https://www.postgresql.org/docs/current/functions-binarystring.html#FUNCTIONS-BINARYSTRING-OTHER">length ( bytes bytea, encoding name ) → integer</a>
      */
     public static SimpleExpression length(Expression bytes, Expression encoding) {
-        return FunctionUtils.twoArgFunc("LENGTH", bytes, encoding, IntegerType.INSTANCE);
+        return FunctionUtils.twoArgFunc("LENGTH", bytes, encoding, IntegerType.INTEGER);
     }
 
     /**

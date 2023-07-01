@@ -75,7 +75,7 @@ abstract class PostgreExpressions {
         if (operandType instanceof PostgreGeometricType || operandType instanceof MappingType.SqlGeometryType) {
             returnType = DoubleType.INSTANCE;
         } else {
-            returnType = IntegerType.INSTANCE;
+            returnType = IntegerType.INTEGER;
         }
         return returnType;
     }
@@ -145,7 +145,7 @@ abstract class PostgreExpressions {
         final MappingType returnType;
         if (left instanceof MappingType.SqlLocalDateType) {
             if (right instanceof MappingType.SqlLocalDateType) { // date - date → integer
-                returnType = IntegerType.INSTANCE;
+                returnType = IntegerType.INTEGER;
             } else if (right instanceof MappingType.SqlIntegerType) { // date - integer → date
                 returnType = left;
             } else if (right instanceof MappingType.SqlIntervalType) { // date - interval → timestamp
@@ -176,7 +176,7 @@ abstract class PostgreExpressions {
         } else if (left instanceof MappingType.SqlGeometryType && right instanceof MappingType.SqlPointType) { // geometric_type - point → geometric_type
             returnType = left;
         } else if (left instanceof PostgreInetType && right instanceof PostgreInetType) {
-            returnType = LongType.INSTANCE;
+            returnType = LongType.BIGINT;
         } else if (left.getClass() == right.getClass()) { // numeric_type - numeric_type → numeric_type ;  date - date → integer ; time - time → interval
             returnType = left;
         } else if (!(left instanceof MappingType.SqlNumberOrStringType) && right instanceof MappingType.SqlNumberType) { // date - integer → date
@@ -386,7 +386,7 @@ abstract class PostgreExpressions {
     static MappingType unaryPoundType(final MappingType operandType) {
         final MappingType returnType;
         if (operandType instanceof MappingType.SqlGeometryType) {
-            returnType = IntegerType.INSTANCE;
+            returnType = IntegerType.INTEGER;
         } else { // error or unknown
             returnType = StringType.INSTANCE;
         }

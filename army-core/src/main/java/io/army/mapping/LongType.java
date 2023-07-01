@@ -32,14 +32,14 @@ import java.util.function.BiFunction;
  */
 public final class LongType extends _NumericType._IntegerType {
 
-    public static final LongType INSTANCE = new LongType();
+    public static final LongType BIGINT = new LongType();
 
 
     public static LongType from(final Class<?> fieldType) {
         if (fieldType != Long.class) {
             throw errorJavaType(LongType.class, fieldType);
         }
-        return INSTANCE;
+        return BIGINT;
     }
 
     private LongType() {

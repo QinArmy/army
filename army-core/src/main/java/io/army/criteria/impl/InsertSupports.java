@@ -3,6 +3,7 @@ package io.army.criteria.impl;
 import io.army.annotation.GeneratorType;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
+import io.army.dialect.Database;
 import io.army.dialect._DialectUtils;
 import io.army.lang.Nullable;
 import io.army.mapping.CodeEnumType;
@@ -32,6 +33,169 @@ abstract class InsertSupports {
 
     InsertSupports() {
         throw new UnsupportedOperationException();
+    }
+
+
+    /**
+     * <p>
+     * Find parent insert sub-statement for childStmt in cteList.
+     * </p>
+     */
+    static ParentSubInsert parentSubInsert(final ArmyInsert childStmt, final List<_Cte> cteList) {
+
+        final int cteSize = cteList.size();
+
+        final ChildTableMeta<?> child = (ChildTableMeta<?>) childStmt.table();
+        final ParentTableMeta<?> parent = child.parentMeta();
+        final InsertMode childMode = childStmt.getInsertMode();
+        final boolean childMigration = childStmt.isMigration();
+
+        final boolean postId = parent.id().generatorType() == GeneratorType.POST;
+
+
+        final boolean needParentRowNumberQuery;
+        final String parentCteName;
+        final List<String> nameList;
+        if (childMigration || !postId || childMode == InsertMode.QUERY) {
+            parentCteName = null;
+            needParentRowNumberQuery = false;
+            nameList = _Collections.emptyList();
+        } else {
+            nameList = getIdScalarExpressionNames(childStmt, childMode, child);
+            parentCteName = nameList.get(0);
+            needParentRowNumberQuery = childStmt.insertRowCount() > 1;
+            if (needParentRowNumberQuery && nameList.size() < 3) {
+                String m = String.format("%s insert multi row but not exists rowNumber cte.", child);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+        }
+
+        final String msgSuffix = ",couldn't be referenced by child id default expression.";
+        _Cte cte;
+        SubStatement subStatement;
+        boolean parentRowNumberQuery = false;
+        String parentInsertCteName = parentCteName, currentCteName, m;
+
+        ParentSubInsert parentSubInsert = null;
+        for (int i = cteSize - 1; i > -1; i--) {
+            cte = cteList.get(i);
+            currentCteName = cte.name();
+
+            if (needParentRowNumberQuery && !parentRowNumberQuery) {//here, parentCteName representing parent row number cte name
+                if (parentCteName.equals(currentCteName)) {
+                    parentInsertCteName = validateParentRowNumberCte(child, cte, nameList);
+                    parentRowNumberQuery = true;
+                }
+                continue;
+            }
+            if (parentCteName != null && !parentInsertCteName.equals(currentCteName)) { // post id
+                m = String.format("CTE[%s] between CTE[%s] and child insert", currentCteName, parentInsertCteName);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+
+            subStatement = cte.subStatement();
+            m = parentCteName == null ? "" : msgSuffix;
+            if (!(subStatement instanceof _Insert)) {
+                m = String.format("CET[%s] isn't sub-insert %s", currentCteName, m);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            } else if (((_Insert) subStatement).table() != parent) {
+                m = String.format("CET[%s] sub-insert insert table isn't %s %s", currentCteName, parent, m);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            } else if (((ArmyInsert) subStatement).isMigration() != childMigration) {
+                m = String.format("CET[%s] sub-insert migration mode and child not match %s", currentCteName, m);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            } else if (((ArmyInsert) subStatement).getInsertMode() != childMode) {
+                m = String.format("CET[%s] sub-insert insert-syntax and child not match %s", currentCteName, m);
+                throw ContextStack.clearStackAndCriteriaError(m);
+            }
+
+            if (!(subStatement instanceof ParentSubInsert)) {
+                // no bug,never here
+                throw new IllegalStateException();
+            } else if (childMode == InsertMode.DOMAIN && !(subStatement instanceof ParentDomainSubInsert)) {
+                // no bug,never here
+                throw new IllegalStateException();
+            }
+            validateParentSubInsert(cte, childStmt, nameList);
+            parentSubInsert = (ParentSubInsert) subStatement;
+            break;
+        }
+        if (needParentRowNumberQuery && !parentRowNumberQuery) {
+            m = String.format("Not found parent row number CTE for %s", child);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        } else if (parentSubInsert == null) {
+            m = String.format("Not found parent sub-insert CTE for %s", child);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        return parentSubInsert;
+    }
+
+
+    /**
+     * @return see {@link JoinableClause.SimpleQuery#validateIdDefaultExpression()}
+     * @see #parentSubInsert(ArmyInsert, List)
+     */
+    private static List<String> getIdScalarExpressionNames(final ArmyInsert childStmt, final InsertMode childMode,
+                                                           final ChildTableMeta<?> child) {
+
+        final Expression idScalarExp;
+        switch (childMode) {
+            case DOMAIN:
+            case VALUES:
+                idScalarExp = ((_Insert._ValuesSyntaxInsert) childStmt).defaultValueMap().get(child.id());
+                break;
+            case ASSIGNMENT:
+                idScalarExp = ((_Insert._AssignmentInsert) childStmt).assignmentMap().get(child.id());
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(childMode);
+        }
+
+        if (!(idScalarExp instanceof Expressions.ScalarExpression)) {
+            final Database database;
+            database = childStmt.getContext().dialect().database();
+            throw _Exceptions.oneStmtModePostChildNoIdExpression(database, child);
+        }
+        return ((Expressions.ScalarExpression) idScalarExp).validateIdDefaultExpression();
+    }
+
+    /**
+     * @param nameList empty or name list ;  see {@link JoinableClause.SimpleQuery#validateIdDefaultExpression()}
+     * @return parent sub-insert CTE name.
+     * @see #parentSubInsert(ArmyInsert, List)
+     */
+    private static String validateParentRowNumberCte(final ChildTableMeta<?> child, final _Cte cte, final List<String> nameList) {
+        return null;
+    }
+
+    /**
+     * @param nameList empty or name list ;  see {@link JoinableClause.SimpleQuery#validateIdDefaultExpression()}
+     * @see #parentSubInsert(ArmyInsert, List)
+     */
+    private static void validateParentSubInsert(final _Cte cte, final ArmyInsert childStmt, final List<String> nameList) {
+
+        final SubStatement subStatement = cte.subStatement();
+        if (!(subStatement instanceof SimpleQueries)) {
+            String m = String.format("parent insert rowNumber CTE[%s] isn't simple query.", cte.name());
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+
+    }
+
+    interface ParentSubInsert {
+
+
+        void validateChild(ChildTableMeta<?> child);
+
+        void parentAsDomain();
+
+    }
+
+    interface ParentDomainSubInsert extends ParentSubInsert {
+
+        List<?> validateDomainList(ChildTableMeta<?> child, List<?> originalList);
+
+        List<?> domainList();
     }
 
 

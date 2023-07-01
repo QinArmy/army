@@ -933,8 +933,23 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
      */
     interface SimpleQuery {
 
-        @Nullable
-        String validateIdDefaultExpression();
+        /**
+         * @return <ol>
+         * <li>CTE name</li>
+         * <li>parent id alias</li>
+         * <li>rowNumber alias (optional)</li>
+         * </ol>
+         */
+        List<String> validateIdDefaultExpression();
+
+        /**
+         * @param names <ol>
+         *              <li>rowNumber CTE name</li>
+         *              <li>parent id alias</li>
+         *              <li>rowNumber alias</li>
+         *              </ol>
+         */
+        List<String> validateParentSubInsertRowNumberQuery(List<String> names);
 
     }
 

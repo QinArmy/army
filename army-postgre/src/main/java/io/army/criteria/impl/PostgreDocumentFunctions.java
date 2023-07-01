@@ -3062,7 +3062,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimpleExpression jsonArrayLength(Expression json) {
-        return FunctionUtils.oneArgFunc("JSON_ARRAY_LENGTH", json, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("JSON_ARRAY_LENGTH", json, IntegerType.INTEGER);
     }
 
     /**
@@ -3075,7 +3075,7 @@ abstract class PostgreDocumentFunctions extends PostgreMiscellaneous2Functions {
      * </a>
      */
     public static SimpleExpression jsonbArrayLength(Expression jsonb) {
-        return FunctionUtils.oneArgFunc("JSONB_ARRAY_LENGTH", jsonb, IntegerType.INSTANCE);
+        return FunctionUtils.oneArgFunc("JSONB_ARRAY_LENGTH", jsonb, IntegerType.INTEGER);
     }
 
 
