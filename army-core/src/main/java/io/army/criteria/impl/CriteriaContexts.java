@@ -442,6 +442,8 @@ abstract class CriteriaContexts {
 
         private List<_Cte> cteList;
 
+        private List<_Cte> readOnlyCteList;
+
         private Map<String, _Cte> cteMap;
 
         private RecursiveCte recursiveCte;
@@ -632,6 +634,25 @@ abstract class CriteriaContexts {
         }
 
         @Override
+        public final List<_Cte> accessCteList() {
+            final WithCteContext withContext = this.withCteContext;
+            assert withContext != null;
+            List<_Cte> readOnlyCteList = withContext.readOnlyCteList;
+            if (readOnlyCteList != null) {
+                return readOnlyCteList;
+            }
+            final List<_Cte> cteList = withContext.cteList;
+            if (cteList == null) {
+                readOnlyCteList = _Collections.emptyList();
+            } else if (cteList instanceof ArrayList) {
+                withContext.readOnlyCteList = readOnlyCteList = _Collections.unmodifiableList(cteList);
+            } else {
+                withContext.readOnlyCteList = readOnlyCteList = cteList;
+            }
+            return readOnlyCteList;
+        }
+
+        @Override
         public final boolean isWithRecursive() {
             final WithCteContext withContext = this.withCteContext;
             assert withContext != null;
@@ -671,6 +692,7 @@ abstract class CriteriaContexts {
                 throw ContextStack.castCriteriaApi(this);
             }
             withContext.cteList = cteList;
+            withContext.readOnlyCteList = cteList;
             return cteList;
         }
 

@@ -52,6 +52,22 @@ abstract class InsertSupports {
 
     }
 
+    /**
+     * <p>
+     * Try find parent insert sub-statement for childStmt in cteList.
+     * This method is designed for child sub-insert.
+     * </p>
+     */
+    static ParentSubInsert parentSubInsertOfChildSubInsert(final ArmyInsert childStmt, final int rowCount,
+                                                           final List<_Cte> cteList) {
+        final ParentSubInsert parentSubInsert;
+        parentSubInsert = tryParentSubInsert0(childStmt, rowCount, cteList, false);
+        if (parentSubInsert != null) {
+            return parentSubInsert;
+        }
+        return parentSubInsert(childStmt, rowCount, childStmt.getContext().accessCteList());
+    }
+
 
     /**
      * <p>
@@ -59,7 +75,19 @@ abstract class InsertSupports {
      * </p>
      */
     static ParentSubInsert parentSubInsert(final ArmyInsert childStmt, final int rowCount, final List<_Cte> cteList) {
+        final ParentSubInsert parentSubInsert;
+        parentSubInsert = tryParentSubInsert0(childStmt, rowCount, cteList, true);
+        if (parentSubInsert == null) {
+            String m = String.format("Not found parent sub-insert CTE for %s", childStmt.table());
+            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
+        }
+        return parentSubInsert;
+    }
 
+
+    @Nullable
+    private static ParentSubInsert tryParentSubInsert0(final ArmyInsert childStmt, final int rowCount,
+                                                       final List<_Cte> cteList, final boolean required) {
         final int cteSize = cteList.size();
 
         final ChildTableMeta<?> child = (ChildTableMeta<?>) childStmt.table();
@@ -141,13 +169,13 @@ abstract class InsertSupports {
                 validatePostParentSubInsert(cte, child, nameList.get(1));
             }
             parentSubInsert = (ParentSubInsert) subStatement;
+            if (childMode != InsertMode.DOMAIN) {
+                parentSubInsert.validateChild(child);
+            }
             break;
         }
-        if (needParentRowNumberQuery && !parentRowNumberQuery) {
+        if (required && needParentRowNumberQuery && !parentRowNumberQuery) {
             m = String.format("Not found parent row number CTE for %s", child);
-            throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
-        } else if (parentSubInsert == null) {
-            m = String.format("Not found parent sub-insert CTE for %s", child);
             throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
         return parentSubInsert;
@@ -247,7 +275,7 @@ abstract class InsertSupports {
         throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
     }
 
-    interface ParentSubInsert {
+    interface ParentSubInsert extends _Insert._ParentSubInsert {
 
         void validateChild(ChildTableMeta<?> child);
 
@@ -1270,7 +1298,7 @@ abstract class InsertSupports {
 
 
         /**
-         * @see #domainListForSimple()
+         * @see #domainListForSingle()
          */
         @Override
         public final <TS extends T> VR values(final @Nullable List<TS> domainList) {
@@ -1336,8 +1364,29 @@ abstract class InsertSupports {
 
         @Override
         public final int insertRowCount() {
-            //no bug,never here
-            throw new UnsupportedOperationException();
+            final InsertMode mode = this.insertMode;
+            if (mode == null) {
+                //no bug,never here
+                throw new IllegalStateException();
+            }
+            final int rowCount;
+            switch (mode) {
+                case DOMAIN:
+                    rowCount = this.originalDomainList.size();
+                    break;
+                case VALUES:
+                    rowCount = this.rowPairList.size();
+                    break;
+                case ASSIGNMENT:
+                    rowCount = 1;
+                    break;
+                case QUERY:
+                    rowCount = -1;
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(mode);
+            }
+            return rowCount;
         }
 
         /**
@@ -1389,8 +1438,8 @@ abstract class InsertSupports {
         /**
          * @return a unmodified list,new instance each time.
          */
-        final List<?> domainListForSimple() {
-            assert this.insertTable instanceof SimpleTableMeta;
+        final List<?> domainListForSingle() {
+            assert this.insertTable instanceof SingleTableMeta;
             final List<?> domainList = this.originalDomainList;
             if (this.insertMode != InsertMode.DOMAIN) {
                 throw insertModeNotMatch();
@@ -1448,9 +1497,10 @@ abstract class InsertSupports {
 
         static void validateDomainList(final List<?> parentList, final List<?> childList,
                                        final ChildTableMeta<?> child) {
+            final int parentSize;
             if (parentList != childList
-                    && !(parentList.size() == childList.size()
-                    && parentList.size() == 1
+                    && !((parentSize = parentList.size()) == childList.size()
+                    && parentSize == 1
                     && parentList.get(0) == childList.get(0))) {
                 String m = String.format("%s and %s domain list not match.", child, child.parentMeta());
                 throw ContextStack.clearStackAndCriteriaError(m);

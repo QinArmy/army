@@ -48,7 +48,7 @@ public interface _Insert extends _Statement {
 
     }
 
-    interface _OneStmtParentSubInsert extends SubStatement {
+    interface _ParentSubInsert extends SubStatement {
 
         TableMeta<?> domainTable();
     }

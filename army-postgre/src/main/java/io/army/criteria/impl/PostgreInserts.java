@@ -132,23 +132,29 @@ abstract class PostgreInserts extends InsertSupports {
         final Statement._DmlInsertClause<? extends Insert> spec;
         final InsertMode mode;
         mode = clause.getInsertMode();
+
         switch (mode) {
             case DOMAIN: {
                 if (clause.insertTable instanceof ChildTableMeta) {
                     spec = new PrimaryChildDomainInsertOneStmt(clause);
                 } else {
-                    spec = new PrimarySimpleDomainInsertStatement(clause);
+                    spec = new PrimarySingleDomainInsertStatement(clause);
                 }
             }
             break;
-            case VALUES:
-                spec = new PrimaryValueInsertStatement(clause);
-                break;
-            case QUERY: {
-                if (clause.insertTable instanceof ParentTableMeta) {
-                    spec = new PrimaryParentQueryInsertStatement<>(clause);
+            case VALUES: {
+                if (clause.insertTable instanceof ChildTableMeta) {
+                    spec = new PrimaryChildValueInsertOneStatement(clause);
                 } else {
-                    spec = new PrimaryQueryInsertStatement(clause);
+                    spec = new PrimarySingleValueInsertStatement(clause);
+                }
+            }
+            break;
+            case QUERY: {
+                if (clause.insertTable instanceof ChildTableMeta) {
+                    spec = new PrimaryChildQueryInsertOneStatement(clause);
+                } else {
+                    spec = new PrimarySingleQueryInsertStatement(clause);
                 }
             }
             break;
@@ -160,22 +166,32 @@ abstract class PostgreInserts extends InsertSupports {
     }
 
 
-    private static ReturningInsert returningInsertEnd(PostgreComplexValuesClause<?, ?, ?> clause) {
+    private static ReturningInsert returningInsertEnd(final PostgreComplexValuesClause<?, ?, ?> clause) {
         final Statement._DqlInsertClause<? extends ReturningInsert> spec;
         final InsertMode mode;
         mode = clause.getInsertMode();
         switch (mode) {
-            case DOMAIN:
-                spec = new PrimaryDomainReturningInsertStatement(clause);
-                break;
-            case VALUES:
-                spec = new PrimaryValueReturningInsertStatement(clause);
-                break;
-            case QUERY: {
-                if (clause.insertTable instanceof ParentTableMeta) {
-                    spec = new PrimaryParentQueryReturningInsertStatement<>(clause);
+            case DOMAIN: {
+                if (clause.insertTable instanceof ChildTableMeta) {
+                    spec = new PrimaryChildDomainReturningInsertOneStatement(clause);
                 } else {
-                    spec = new PrimaryQueryReturningInsertStatement(clause);
+                    spec = new PrimarySingleDomainReturningInsertStatement(clause);
+                }
+            }
+            break;
+            case VALUES: {
+                if (clause.insertTable instanceof ChildTableMeta) {
+                    spec = new PrimaryChildValueReturningInsertOneStatement(clause);
+                } else {
+                    spec = new PrimarySingleValueReturningInsertStatement(clause);
+                }
+            }
+            break;
+            case QUERY: {
+                if (clause.insertTable instanceof ChildTableMeta) {
+                    spec = new PrimaryChildQueryReturningInsertOneStatement(clause);
+                } else {
+                    spec = new PrimarySingleQueryReturningInsertStatement(clause);
                 }
             }
             break;
@@ -217,10 +233,12 @@ abstract class PostgreInserts extends InsertSupports {
         final InsertMode mode = clause.getInsertMode();
         switch (mode) {
             case DOMAIN: {
-                if (clause.insertTable instanceof ParentTableMeta) {
-                    spec = new ParentSubDomainReturningInsertStatement(clause);
+                if (clause.insertTable instanceof ChildTableMeta) {
+                    spec = new SubChildDomainReturningInsertStatement(clause);
+                } else if (clause.insertTable instanceof ParentTableMeta) {
+                    spec = new SubParentDomainReturningInsertStatement(clause);
                 } else {
-                    spec = new SubDomainReturningInsertStatement(clause);
+                    spec = new SubSimpleDomainReturningInsertStatement(clause);
                 }
             }
             break;
@@ -1487,15 +1505,18 @@ abstract class PostgreInserts extends InsertSupports {
     }//DomainInsertStatement
 
 
-    private static final class PrimarySimpleDomainInsertStatement extends DomainInsertStatement<Insert, ReturningInsert>
+    private static final class PrimarySingleDomainInsertStatement extends DomainInsertStatement<Insert, ReturningInsert>
             implements Insert {
 
         private final List<?> domainList;
 
-        private PrimarySimpleDomainInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        /**
+         * @see PostgreInserts#insertEnd(PostgreComplexValuesClause)
+         */
+        private PrimarySingleDomainInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
-            assert this.insertTable instanceof SimpleTableMeta;
-            this.domainList = clause.domainListForSimple();
+            assert this.insertTable instanceof SingleTableMeta;
+            this.domainList = clause.domainListForSingle();
         }
 
         @Override
@@ -1503,7 +1524,8 @@ abstract class PostgreInserts extends InsertSupports {
             return this.domainList;
         }
 
-    }//PrimarySimpleDomainInsertStatement
+    }//PrimarySingleDomainInsertStatement
+
 
     private static final class PrimaryChildDomainInsertOneStmt extends DomainInsertStatement<Insert, ReturningInsert>
             implements Insert, _Insert._OneStmtChildInsert {
@@ -1515,12 +1537,11 @@ abstract class PostgreInserts extends InsertSupports {
          */
         private PrimaryChildDomainInsertOneStmt(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
-            assert this.insertTable instanceof ChildTableMeta;
-            final List<?> originalDomainList = clause.originalDomainList();
 
             final ParentDomainSubInsert parentSubInsert;
-            parentSubInsert = (ParentDomainSubInsert) parentSubInsert(this, originalDomainList.size(), this.cteList);
-            parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable, originalDomainList);
+            parentSubInsert = (ParentDomainSubInsert) parentSubInsert(this, clause.insertRowCount(), clause.cteList);
+            ;
+            parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable, clause.originalDomainList());
             this.parentStmt = parentSubInsert;
         }
 
@@ -1609,15 +1630,18 @@ abstract class PostgreInserts extends InsertSupports {
 
     }//PrimaryParentDomainInsertStatement
 
-    private static final class PrimaryDomainReturningInsertStatement
+    private static final class PrimarySingleDomainReturningInsertStatement
             extends DomainInsertStatement<Insert, ReturningInsert>
             implements ReturningInsert, _ReturningDml {
 
         private final List<?> domainList;
 
-        private PrimaryDomainReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        /**
+         * @see PostgreInserts#returningInsertEnd(PostgreComplexValuesClause)
+         */
+        private PrimarySingleDomainReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
-            this.domainList = clause.domainListForSimple();
+            this.domainList = clause.domainListForSingle();
         }
 
         @Override
@@ -1626,7 +1650,38 @@ abstract class PostgreInserts extends InsertSupports {
         }
 
 
-    }//PrimaryDomainReturningInsertStatement
+    }//PrimarySingleDomainReturningInsertStatement
+
+
+    private static final class PrimaryChildDomainReturningInsertOneStatement
+            extends DomainInsertStatement<Insert, ReturningInsert>
+            implements ReturningInsert, _ReturningDml, _Insert._OneStmtChildInsert {
+
+        private final ParentDomainSubInsert parentSubInsert;
+
+        /**
+         * @see PostgreInserts#returningInsertEnd(PostgreComplexValuesClause)
+         */
+        private PrimaryChildDomainReturningInsertOneStatement(final PostgreComplexValuesClause<?, ?, ?> clause) {
+            super(clause);
+            final List<?> originalList = clause.originalDomainList();
+            final ParentDomainSubInsert parentSubInsert;
+            parentSubInsert = (ParentDomainSubInsert) parentSubInsert(this, originalList.size(), clause.cteList);
+            parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable, originalList);
+            this.parentSubInsert = parentSubInsert;
+        }
+
+        @Override
+        public List<?> domainList() {
+            return this.parentSubInsert.domainList();
+        }
+
+        @Override
+        public void validParentDomain() {
+            this.parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable);
+        }
+
+    }//PrimaryChildDomainReturningInsertOneStatement
 
 
     private static final class PrimaryChildDomainReturningInsertStatement
@@ -1714,7 +1769,7 @@ abstract class PostgreInserts extends InsertSupports {
             if (clause.insertTable instanceof ParentTableMeta) {
                 this.domainList = _Collections.asUnmodifiableList(clause.originalDomainList());
             } else {
-                this.domainList = clause.domainListForSimple();
+                this.domainList = clause.domainListForSingle();
             }
         }
 
@@ -1725,19 +1780,18 @@ abstract class PostgreInserts extends InsertSupports {
 
     }//SubDomainInsertStatement
 
-    private static final class SubDomainReturningInsertStatement
+    private static final class SubSimpleDomainReturningInsertStatement
             extends DomainInsertStatement<SubStatement, SubStatement>
             implements SubStatement, _ReturningDml {
 
         private final List<?> domainList;
 
-        private SubDomainReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        /**
+         * @see PostgreInserts#subReturningInsertEnd(PostgreComplexValuesClause)
+         */
+        private SubSimpleDomainReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
-            if (clause.insertTable instanceof ParentTableMeta) {
-                this.domainList = _Collections.asUnmodifiableList(clause.originalDomainList());
-            } else {
-                this.domainList = clause.domainListForSimple();
-            }
+            this.domainList = clause.domainListForSingle();
         }
 
         @Override
@@ -1748,9 +1802,39 @@ abstract class PostgreInserts extends InsertSupports {
 
     }//SubDomainReturningInsertStatement
 
-    private static final class ParentSubDomainReturningInsertStatement
+    private static final class SubChildDomainReturningInsertStatement
             extends DomainInsertStatement<SubStatement, SubStatement>
-            implements _ReturningDml, ParentDomainSubInsert, _Insert._OneStmtParentSubInsert {
+            implements SubStatement, _ReturningDml, _Insert._OneStmtChildInsert {
+
+        private final ParentDomainSubInsert parentSubInsert;
+
+        /**
+         * @see PostgreInserts#subReturningInsertEnd(PostgreComplexValuesClause)
+         */
+        private SubChildDomainReturningInsertStatement(final PostgreComplexValuesClause<?, ?, ?> clause) {
+            super(clause);
+            final List<?> originalList = clause.originalDomainList();
+            final ParentDomainSubInsert parentSubInsert;
+            parentSubInsert = (ParentDomainSubInsert) parentSubInsertOfChildSubInsert(this, originalList.size(), clause.cteList);
+            parentSubInsert.validateChild((ChildTableMeta<?>) clause.insertTable, originalList);
+            this.parentSubInsert = parentSubInsert;
+        }
+
+        @Override
+        public List<?> domainList() {
+            return this.parentSubInsert.domainList();
+        }
+
+        @Override
+        public void validParentDomain() {
+            this.parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable);
+        }
+
+    }//SubChildDomainReturningInsertStatement
+
+    private static final class SubParentDomainReturningInsertStatement
+            extends DomainInsertStatement<SubStatement, SubStatement>
+            implements _ReturningDml, ParentDomainSubInsert {
 
         private final List<?> originalDomainList;
 
@@ -1761,7 +1845,7 @@ abstract class PostgreInserts extends InsertSupports {
         /**
          * @see PostgreInserts#subReturningInsertEnd(PostgreComplexValuesClause)
          */
-        private ParentSubDomainReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        private SubParentDomainReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
             assert this.insertTable instanceof ParentTableMeta;
             this.originalDomainList = clause.originalDomainList();
@@ -1839,15 +1923,43 @@ abstract class PostgreInserts extends InsertSupports {
     }//ValueInsertStatement
 
 
-    private static final class PrimaryValueInsertStatement
+    private static final class PrimarySingleValueInsertStatement
             extends ValueInsertStatement<Insert, ReturningInsert>
             implements Insert {
 
-        private PrimaryValueInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        /**
+         * @see PostgreInserts#insertEnd(PostgreComplexValuesClause)
+         */
+        private PrimarySingleValueInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
+            assert clause.insertTable instanceof SingleTableMeta;
         }
 
-    }//PrimaryValueInsertStatement
+    }//PrimarySingleValueInsertStatement
+
+    private static final class PrimaryChildValueInsertOneStatement
+            extends ValueInsertStatement<Insert, ReturningInsert>
+            implements Insert, _Insert._OneStmtChildInsert {
+
+        private final ParentSubInsert parentSubInsert;
+
+        /**
+         * @see PostgreInserts#insertEnd(PostgreComplexValuesClause)
+         */
+        private PrimaryChildValueInsertOneStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+            super(clause);
+            final ParentSubInsert parentSubInsert;
+            parentSubInsert = parentSubInsert(this, clause.insertRowCount(), clause.cteList);
+            parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable);
+            this.parentSubInsert = parentSubInsert;
+        }
+
+        @Override
+        public void validParentDomain() {
+            this.parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable);
+        }
+
+    }//PrimarySingleValueInsertStatement
 
 
     private static final class PrimaryChildValueInsertStatement
@@ -1908,16 +2020,42 @@ abstract class PostgreInserts extends InsertSupports {
 
     }//PrimaryParentValueInsertStatement
 
-    private static final class PrimaryValueReturningInsertStatement
+    private static final class PrimarySingleValueReturningInsertStatement
             extends ValueInsertStatement<InsertStatement, ReturningInsert>
             implements ReturningInsert, _ReturningDml {
 
-        private PrimaryValueReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        private PrimarySingleValueReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
+            assert clause.insertTable instanceof SingleTableMeta;
         }
 
 
-    }//PrimaryValueReturningInsertStatement
+    }//PrimarySingleValueReturningInsertStatement
+
+    private static final class PrimaryChildValueReturningInsertOneStatement
+            extends ValueInsertStatement<InsertStatement, ReturningInsert>
+            implements ReturningInsert, _ReturningDml, _Insert._OneStmtChildInsert {
+
+        private final ParentSubInsert parentSubInsert;
+
+        /**
+         * @see PostgreInserts#returningInsertEnd(PostgreComplexValuesClause)
+         */
+        private PrimaryChildValueReturningInsertOneStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+            super(clause);
+            assert clause.insertTable instanceof ChildTableMeta;
+            final ParentSubInsert parentSubInsert;
+            parentSubInsert = parentSubInsert(this, this.rowPairList.size(), clause.cteList);
+            parentSubInsert.validateChild((ChildTableMeta<?>) clause.insertTable);
+            this.parentSubInsert = parentSubInsert;
+        }
+
+        @Override
+        public void validParentDomain() {
+            this.parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable);
+        }
+
+    }//PrimaryChildValueReturningInsertOneStatement
 
     private static final class PrimaryChildValueReturningInsertStatement
             extends ValueInsertStatement<InsertStatement, ReturningInsert>
@@ -2008,7 +2146,7 @@ abstract class PostgreInserts extends InsertSupports {
 
         private final boolean recursive;
 
-        private final List<_Cte> cteList;
+        final List<_Cte> cteList;
 
         private final String tableAlias;
 
@@ -2122,17 +2260,45 @@ abstract class PostgreInserts extends InsertSupports {
     }//ParentQueryInsertStatement
 
 
-    private static final class PrimaryQueryInsertStatement
+    private static final class PrimarySingleQueryInsertStatement
             extends PostgreQueryInsertStatement<Insert, ReturningInsert>
             implements Insert {
 
-        private PrimaryQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        /**
+         * @see PostgreInserts#insertEnd(PostgreComplexValuesClause)
+         */
+        private PrimarySingleQueryInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
-            assert !(clause.insertTable instanceof ParentTableMeta);
+            assert this.insertTable instanceof SingleTableMeta;
         }
 
 
-    }//PrimaryNonParentQueryInsertStatement
+    }//PrimarySingleQueryInsertStatement
+
+    private static final class PrimaryChildQueryInsertOneStatement
+            extends PostgreQueryInsertStatement<Insert, ReturningInsert>
+            implements Insert, _Insert._OneStmtChildInsert {
+
+        private final ParentSubInsert parentSubInsert;
+
+        /**
+         * @see PostgreInserts#insertEnd(PostgreComplexValuesClause)
+         */
+        private PrimaryChildQueryInsertOneStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+            super(clause);
+            assert clause.insertTable instanceof ChildTableMeta;
+            final ParentSubInsert parentSubInsert;
+            parentSubInsert = parentSubInsert(this, -1, clause.cteList);
+            parentSubInsert.validateChild((ChildTableMeta<?>) clause.insertTable);
+            this.parentSubInsert = parentSubInsert;
+        }
+
+        @Override
+        public void validParentDomain() {
+            this.parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable);
+        }
+
+    }//PrimaryChildQueryInsertOneStatement
 
     private static final class PrimaryChildQueryInsertStatement extends PostgreQueryInsertStatement<Insert, ReturningInsert>
             implements _PostgreInsert._PostgreChildQueryInsert {
@@ -2186,17 +2352,42 @@ abstract class PostgreInserts extends InsertSupports {
 
     }//PrimaryParentQueryInsertStatement
 
-    private static final class PrimaryQueryReturningInsertStatement
+    private static final class PrimarySingleQueryReturningInsertStatement
             extends PostgreQueryInsertStatement<Insert, ReturningInsert>
             implements ReturningInsert, _ReturningDml {
 
-        private PrimaryQueryReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
+        /**
+         * @see PostgreInserts#returningInsertEnd(PostgreComplexValuesClause)
+         */
+        private PrimarySingleQueryReturningInsertStatement(PostgreComplexValuesClause<?, ?, ?> clause) {
             super(clause);
-            assert !(clause.insertTable instanceof ParentTableMeta);
+            assert clause.insertTable instanceof SingleTableMeta;
         }
 
 
-    }//PrimaryNonParentQueryReturningInsertStatement
+    }//PrimarySingleQueryReturningInsertStatement
+
+    private static final class PrimaryChildQueryReturningInsertOneStatement
+            extends PostgreQueryInsertStatement<Insert, ReturningInsert>
+            implements ReturningInsert, _ReturningDml, _Insert._OneStmtChildInsert {
+
+        private final ParentSubInsert parentSubInsert;
+
+        /**
+         * @see PostgreInserts#returningInsertEnd(PostgreComplexValuesClause)
+         */
+        private PrimaryChildQueryReturningInsertOneStatement(final PostgreComplexValuesClause<?, ?, ?> clause) {
+            super(clause);
+            assert clause.insertTable instanceof ChildTableMeta;
+            this.parentSubInsert = parentSubInsert(this, -1, clause.cteList);
+        }
+
+        @Override
+        public void validParentDomain() {
+            this.parentSubInsert.validateChild((ChildTableMeta<?>) this.insertTable);
+        }
+
+    }//PrimaryChildQueryReturningInsertOneStatement
 
     private static final class PrimaryChildQueryReturningInsertStatement
             extends PostgreQueryInsertStatement<Insert, ReturningInsert>

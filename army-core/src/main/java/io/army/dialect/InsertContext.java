@@ -860,7 +860,7 @@ abstract class InsertContext extends StatementContext
 
         InsertRowWrapper(final InsertContext context, final _Insert statement) {
             if (statement instanceof SubStatement) {
-                this.domainTable = ((_Insert._OneStmtParentSubInsert) statement).domainTable();
+                this.domainTable = ((_Insert._ParentSubInsert) statement).domainTable();
             } else {
                 this.domainTable = statement.table();
             }

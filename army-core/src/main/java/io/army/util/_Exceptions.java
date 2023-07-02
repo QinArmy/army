@@ -997,9 +997,9 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException parentSubInsertDomainError(TableMeta<?> actual, ChildTableMeta<?> child) {
+    public static IllegalOneStmtModeException parentSubInsertDomainError(TableMeta<?> actual, ChildTableMeta<?> child) {
         String m = String.format("excepted domain is %s but %s", actual, child);
-        return new CriteriaException(m);
+        return new IllegalOneStmtModeException(m);
     }
 
     public static CriteriaException parentSubInsertDomainUnknown(ParentTableMeta<?> parent) {

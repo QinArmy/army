@@ -180,9 +180,8 @@ public abstract class ArmyTestDataSupport {
         final Random random = ThreadLocalRandom.current();
         final List<ChinaProvince> list = _Collections.arrayList();
         ChinaProvince c;
-        final int rowSize = 3;
+        final int rowSize = 5;
         final LocalDateTime now = LocalDateTime.now();
-        String suffix;
         for (int i = 0; i < rowSize; i++) {
             c = new ChinaProvince()
                     .setCreateTime(now)

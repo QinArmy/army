@@ -523,6 +523,11 @@ final class PostgreDialectParser extends PostgreParser {
      * @see <a href="https://www.postgresql.org/docs/current/sql-insert.html">Postgre INSERT syntax</a>
      */
     private void parsePostgreInsert(final _InsertContext context, final _PostgreInsert stmt) {
+        final TableMeta<?> insertTable;
+        insertTable = context.insertTable();
+        if (stmt instanceof _Insert._OneStmtChildInsert) {
+            ((_Insert._OneStmtChildInsert) stmt).validParentDomain();
+        }
 
         this.parseWithClause(stmt, context);
 
@@ -535,10 +540,7 @@ final class PostgreDialectParser extends PostgreParser {
                 .append(_Constant.SPACE_INTO_SPACE);
 
         // 2. table name
-        final TableMeta<?> insertTable;
-        insertTable = context.insertTable();
         assert insertTable == stmt.table();
-
         this.safeObjectName(insertTable, sqlBuilder);
 
         // 3. row alias

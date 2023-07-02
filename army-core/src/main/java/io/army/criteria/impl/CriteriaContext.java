@@ -42,6 +42,15 @@ interface CriteriaContext {
 
     List<_Cte> getCteList();
 
+    /**
+     * <p>
+     * This method is invoked by sub-dml,now WITH clause have not ended.
+     * </p>
+     *
+     * @return unmodified list
+     */
+    List<_Cte> accessCteList();
+
     boolean isWithRecursive();
 
     /**

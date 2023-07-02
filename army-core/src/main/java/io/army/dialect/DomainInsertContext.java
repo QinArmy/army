@@ -338,7 +338,7 @@ final class DomainInsertContext extends ValuesSyntaxInsertContext implements Ins
                 this.nonChildDefaultMap = parentStmt.defaultValueMap();
                 this.childDefaultMap = domainStmt.defaultValueMap();
             } else {
-                assert this.domainTable == context.insertTable || domainStmt instanceof _Insert._OneStmtParentSubInsert;
+                assert this.domainTable == context.insertTable || domainStmt instanceof _Insert._ParentSubInsert;
                 this.nonChildDefaultMap = domainStmt.defaultValueMap();
                 this.childDefaultMap = _Collections.emptyMap();
             }

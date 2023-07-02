@@ -799,7 +799,7 @@ abstract class MySQLInserts extends InsertSupports {
         private PrimarySingleDomainInsertStatement(MySQLComplexValuesClause<?, ?> clause) {
             super(clause);
             assert clause.insertTable instanceof SingleTableMeta;
-            this.domainList = clause.domainListForSimple();
+            this.domainList = clause.domainListForSingle();
         }
 
         @Override

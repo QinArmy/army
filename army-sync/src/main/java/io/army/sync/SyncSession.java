@@ -36,6 +36,7 @@ public interface SyncSession extends Session {
     @Nullable
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass);
 
+
     /**
      * @param <R> representing select result Java Type.
      * @throws VisibleModeException throw when satisfy all the following conditions :
