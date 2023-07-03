@@ -1,9 +1,6 @@
 package io.army.criteria.impl.inner;
 
-import io.army.criteria.LiteralMode;
-import io.army.criteria.NullMode;
-import io.army.criteria.SubQuery;
-import io.army.criteria.SubStatement;
+import io.army.criteria.*;
 import io.army.criteria.impl._Pair;
 import io.army.lang.Nullable;
 import io.army.meta.FieldMeta;
@@ -89,7 +86,7 @@ public interface _Insert extends _Statement {
     interface _ColumnListInsert extends _Insert {
 
         /**
-         * @return a unmodifiable list , maybe empty.
+         * @return a unmodifiable list ,non-empty.
          */
         List<FieldMeta<?>> fieldList();
 
@@ -167,12 +164,16 @@ public interface _Insert extends _Statement {
     interface _QueryInsert extends _ColumnListInsert {
 
 
-
         SubQuery subQuery();
 
     }
 
-    interface _ParentQueryInsert extends _QueryInsert {
+    /**
+     * Primary parent query insert
+     *
+     * @see _ParentSubInsert
+     */
+    interface _ParentQueryInsert extends _QueryInsert, PrimaryStatement {
 
         @Deprecated
         CodeEnum discriminatorEnum();
