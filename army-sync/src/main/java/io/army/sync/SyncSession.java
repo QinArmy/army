@@ -7,7 +7,6 @@ import io.army.session.Session;
 import io.army.session.VisibleModeException;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -50,8 +49,9 @@ public interface SyncSession extends Session {
     @Nullable
     <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, Visible visible);
 
+
     @Nullable
-    Map<String, Object> queryOneMap(SimpleDqlStatement statement);
+    <R> R queryOne(SimpleDqlStatement statement, Supplier<R> constructor);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -63,22 +63,7 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
     @Nullable
-    Map<String, Object> queryOneMap(SimpleDqlStatement statement, Visible visible);
-
-    @Nullable
-    Map<String, Object> queryOneMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor);
-
-    /**
-     * @throws VisibleModeException throw when satisfy all the following conditions :
-     *                              <ul>
-     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
-     *                                  <li>{@link Session#visible()} is don't support visible value</li>
-     *                              </ul>
-     * @see io.army.env.ArmyKey#VISIBLE_MODE
-     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
-     */
-    @Nullable
-    Map<String, Object> queryOneMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
+    <R> R queryOne(SimpleDqlStatement statement, Supplier<R> constructor, Visible visible);
 
     /**
      * @param <R> representing select result Java Type.
@@ -111,7 +96,6 @@ public interface SyncSession extends Session {
      *                         <li>simple java type,eg: {@code java.lang.String} , {@code java.lange.Long}</li>
      *                         <li>java bean</li>
      *                         <li>{@link io.army.bean.FieldAccessBean}</li>
-     *                         <li>{@link io.army.bean.PairBean}</li>
      *                    </ul>
      * @param <R>         representing select result Java Type.
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -124,29 +108,22 @@ public interface SyncSession extends Session {
      */
     <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, Visible visible);
 
-
-    List<Map<String, Object>> queryMap(SimpleDqlStatement statement);
-
     /**
-     * @throws VisibleModeException throw when satisfy all the following conditions :
-     *                              <ul>
-     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
-     *                                  <li>{@link Session#visible()} is don't support visible value</li>
-     *                              </ul>
-     * @see io.army.env.ArmyKey#VISIBLE_MODE
-     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     * <p>
+     * <strong>NOTE</strong> : If constructor return {@link java.util.concurrent.ConcurrentMap}
+     * and column value is null ,army remove element not put element.
+     * </p>
      */
-    List<Map<String, Object>> queryMap(SimpleDqlStatement statement, Visible visible);
+    <R> List<R> query(SimpleDqlStatement statement, Supplier<R> constructor);
 
 
     /**
      * <p>
-     * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
+     * <strong>NOTE</strong> : If constructor return {@link java.util.concurrent.ConcurrentMap}
      * and column value is null ,army remove element not put element.
      * </p>
      */
-    List<Map<String, Object>> queryMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                       Supplier<List<Map<String, Object>>> listConstructor);
+    <R> List<R> query(SimpleDqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor);
 
     /**
      * <p>
@@ -162,8 +139,7 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    List<Map<String, Object>> queryMap(SimpleDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                       Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
+    <R> List<R> query(SimpleDqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, Visible visible);
 
 
 
@@ -189,8 +165,7 @@ public interface SyncSession extends Session {
      * and column value is null ,army remove element not put element.
      * </p>
      */
-    Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
-                                               Supplier<Map<String, Object>> mapConstructor, StreamOptions options);
+    <R> Stream<R> queryStream(SimpleDqlStatement statement, Supplier<R> constructor, StreamOptions options);
 
     /**
      * <p>
@@ -206,9 +181,8 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    Stream<Map<String, Object>> queryMapStream(SimpleDqlStatement statement,
-                                               Supplier<Map<String, Object>> mapConstructor, StreamOptions options,
-                                               Visible visible);
+    <R> Stream<R> queryStream(SimpleDqlStatement statement, Supplier<R> constructor, StreamOptions options,
+                              Visible visible);
 
 
     long update(SimpleDmlStatement statement);
@@ -327,24 +301,19 @@ public interface SyncSession extends Session {
                            Supplier<List<R>> listConstructor, boolean useMultiStmt, Visible visible);
 
 
-    List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                              Map<String, Object> terminator);
+    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator);
 
-    List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                              Map<String, Object> terminator,
-                                              Supplier<List<Map<String, Object>>> listConstructor);
+    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                           Supplier<List<R>> listConstructor);
 
-    List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                              Map<String, Object> terminator,
-                                              Supplier<List<Map<String, Object>>> listConstructor, boolean useMultiStmt);
+    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                           Supplier<List<R>> listConstructor, boolean useMultiStmt);
 
 
-    List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                              Map<String, Object> terminator, Visible visible);
+    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator, Visible visible);
 
-    List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                              Map<String, Object> terminator,
-                                              Supplier<List<Map<String, Object>>> listConstructor, Visible visible);
+    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                           Supplier<List<R>> listConstructor, Visible visible);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -356,10 +325,8 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
 
-    List<Map<String, Object>> batchQueryAsMap(BatchDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                              Map<String, Object> terminator,
-                                              Supplier<List<Map<String, Object>>> listConstructor, boolean useMultiStmt,
-                                              Visible visible);
+    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                           Supplier<List<R>> listConstructor, boolean useMultiStmt, Visible visible);
 
 
     <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass, R terminator,
@@ -393,12 +360,12 @@ public interface SyncSession extends Session {
                                    StreamOptions options, boolean useMultiStmt, Visible visible);
 
 
-    Stream<Map<String, Object>> batchQueryMapStream(BatchDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                                    Map<String, Object> terminator, StreamOptions options);
+    <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                                   StreamOptions options);
 
 
-    Stream<Map<String, Object>> batchQueryMapStream(BatchDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                                    Map<String, Object> terminator, StreamOptions options, boolean useMultiStmt);
+    <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                                   StreamOptions options, boolean useMultiStmt);
 
 
     /**
@@ -410,8 +377,8 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    Stream<Map<String, Object>> batchQueryMapStream(BatchDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                                    Map<String, Object> terminator, StreamOptions options, Visible visible);
+    <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                                   StreamOptions options, Visible visible);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -422,9 +389,9 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    Stream<Map<String, Object>> batchQueryMapStream(BatchDqlStatement statement, Supplier<Map<String, Object>> mapConstructor,
-                                                    Map<String, Object> terminator, StreamOptions options, boolean useMultiStmt,
-                                                    Visible visible);
+    <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                                   StreamOptions options, boolean useMultiStmt,
+                                   Visible visible);
 
     MultiResult multiStmt(MultiResultStatement statement);
 

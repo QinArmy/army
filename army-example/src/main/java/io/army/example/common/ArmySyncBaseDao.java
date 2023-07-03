@@ -61,7 +61,7 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
         session = this.sessionContext.currentSession();
         final Select stmt;
         stmt = createFindByIdStmt(session, domainClass, SQLs::param, id).asQuery();
-        return session.queryOneMap(stmt);
+        return session.queryOne(stmt);
     }
 
     @Override

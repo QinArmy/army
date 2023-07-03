@@ -121,10 +121,9 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public List<Map<String, Object>> queryMap(final SimpleDqlStatement statement,
-                                              final Supplier<Map<String, Object>> mapConstructor,
-                                              final Supplier<List<Map<String, Object>>> listConstructor,
-                                              final Visible visible) {
+    public <R> List<R> query(final SimpleDqlStatement statement, final Supplier<R> mapConstructor,
+                             final Supplier<List<R>> listConstructor,
+                             final Visible visible) {
         //1.assert session status
         assertSession(statement, visible);
 
@@ -133,7 +132,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final Stmt stmt;
             stmt = this.parseDqlStatement(statement, false, visible);
 
-            final List<Map<String, Object>> resultList;
+            final List<R> resultList;
             final int timeout = this.getTxTimeout();
             if (stmt instanceof SimpleStmt) {
                 resultList = this.stmtExecutor.queryMap((SimpleStmt) stmt, timeout, mapConstructor, listConstructor);
@@ -289,11 +288,10 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     }
 
     @Override
-    public List<Map<String, Object>> batchQueryAsMap(final BatchDqlStatement statement,
-                                                     final Supplier<Map<String, Object>> mapConstructor,
-                                                     final @Nullable Map<String, Object> terminator,
-                                                     final Supplier<List<Map<String, Object>>> listConstructor,
-                                                     final boolean useMultiStmt, final Visible visible) {
+    public <R> List<R> batchQuery(final BatchDqlStatement statement, final Supplier<R> mapConstructor,
+                                  final @Nullable R terminator,
+                                  final Supplier<List<R>> listConstructor,
+                                  final boolean useMultiStmt, final Visible visible) {
         if (terminator == null) {
             throw _Exceptions.terminatorIsNull();
         }
@@ -302,7 +300,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         try {
             final Stmt stmt;
             stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
-            final List<Map<String, Object>> resultList;
+            final List<R> resultList;
             if (useMultiStmt) {
                 resultList = this.stmtExecutor.multiStmtBatchQueryAsMap((BatchStmt) stmt, this.getTxTimeout(),
                         mapConstructor, terminator, listConstructor);
@@ -361,11 +359,11 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     }
 
     @Override
-    public Stream<Map<String, Object>> batchQueryMapStream(final BatchDqlStatement statement,
-                                                           final Supplier<Map<String, Object>> mapConstructor,
-                                                           final @Nullable Map<String, Object> terminator,
-                                                           final StreamOptions options, final boolean useMultiStmt,
-                                                           final Visible visible) {
+    public <R> Stream<R> batchQueryMapStream(final BatchDqlStatement statement,
+                                             final Supplier<R> mapConstructor,
+                                             final @Nullable R terminator,
+                                             final StreamOptions options, final boolean useMultiStmt,
+                                             final Visible visible) {
         if (terminator == null) {
             throw _Exceptions.terminatorIsNull();
         }
@@ -374,7 +372,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         try {
             final Stmt stmt;
             stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
-            final Stream<Map<String, Object>> stream;
+            final Stream<R> stream;
             if (useMultiStmt) {
                 stream = this.stmtExecutor.multiStmtBatchQueryMapStream((BatchStmt) stmt, this.getTxTimeout(),
                         mapConstructor, terminator, options);
@@ -421,9 +419,9 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public Stream<Map<String, Object>> queryMapStream(final SimpleDqlStatement statement,
-                                                      final Supplier<Map<String, Object>> mapConstructor,
-                                                      final StreamOptions options, final Visible visible) {
+    public <R> Stream<R> queryStream(final SimpleDqlStatement statement,
+                                     final Supplier<R> mapConstructor,
+                                     final StreamOptions options, final Visible visible) {
         //1. assert session status
         assertSession(statement, visible);
         try {
@@ -671,7 +669,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     }
 
     /**
-     * @see #queryMap(SimpleDqlStatement, Supplier, Supplier, Visible)
+     * @see #query(SimpleDqlStatement, Supplier, Supplier, Visible)
      * @see #returningInsertPairStmt(InsertStatement, Class, Supplier, PairStmt, int)
      */
     private List<Map<String, Object>> returningInsertMapPairStmt(final InsertStatement statement,
@@ -817,9 +815,9 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     /**
      * @see #query(SimpleDqlStatement, Class, Supplier, Visible)
-     * @see #queryMap(SimpleDqlStatement, Supplier, Supplier, Visible)
+     * @see #query(SimpleDqlStatement, Supplier, Supplier, Visible)
      * @see #queryStream(SimpleDqlStatement, Class, StreamOptions, Visible)
-     * @see #queryMapStream(SimpleDqlStatement, Supplier, StreamOptions, Visible)
+     * @see #queryStream(SimpleDqlStatement, Supplier, StreamOptions, Visible)
      */
     private Stmt parseDqlStatement(final DqlStatement statement, final boolean useMultiStmt,
                                    final Visible visible) {
