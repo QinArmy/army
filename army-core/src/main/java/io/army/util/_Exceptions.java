@@ -1084,8 +1084,8 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new NullPointerException("terminator is null");
     }
 
-    public static NullPointerException mapConstructorError() {
-        return new NullPointerException("mapConstructor return null");
+    public static NullPointerException objectConstructorError() {
+        return new NullPointerException("object constructor return null");
     }
 
     public static DataAccessException noMoreResult() {

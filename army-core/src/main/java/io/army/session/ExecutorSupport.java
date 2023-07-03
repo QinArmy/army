@@ -3,6 +3,7 @@ package io.army.session;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.TypeInfer;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.TypeMeta;
@@ -36,7 +37,7 @@ public abstract class ExecutorSupport {
     }
 
 
-    protected static MappingType compatibleTypeFrom(final TypeInfer infer, final Class<?> resultClass,
+    protected static MappingType compatibleTypeFrom(final TypeInfer infer, final @Nullable Class<?> resultClass,
                                                     final ObjectAccessor accessor, final String fieldName)
             throws NoMatchMappingException {
         final MappingType type;
@@ -49,6 +50,7 @@ public abstract class ExecutorSupport {
         }
         MappingType compatibleType;
         if (accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR) {
+            assert resultClass != null;
             if (resultClass.isAssignableFrom(type.javaType())) {
                 compatibleType = type;
             } else {

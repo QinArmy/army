@@ -74,6 +74,16 @@ public abstract class ObjectAccessorFactory {
         return accessor;
     }
 
+    public static ObjectAccessor fromInstance(final Object instance) {
+        final ObjectAccessor accessor;
+        if (instance instanceof Map) {
+            accessor = MapWriterAccessor.INSTANCE;
+        } else {
+            accessor = forBean(instance.getClass());
+        }
+        return accessor;
+    }
+
     public static <T> T createBean(final Constructor<T> constructor) {
         try {
             return constructor.newInstance();

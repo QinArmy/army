@@ -79,8 +79,7 @@ public interface StmtExecutor {
     <T> List<T> query(SimpleStmt stmt, int timeout, Class<T> resultClass, Supplier<List<T>> listConstructor)
             throws DataAccessException;
 
-    List<Map<String, Object>> queryMap(SimpleStmt stmt, int timeout, Supplier<Map<String, Object>> mapConstructor,
-                                       Supplier<List<Map<String, Object>>> listConstructor)
+    <R> List<R> queryMap(SimpleStmt stmt, int timeout, Supplier<R> mapConstructor, Supplier<List<R>> listConstructor)
             throws DataAccessException;
 
     <R> int secondQuery(TwoStmtQueryStmt stmt, int timeout, Class<R> resultClass, List<R> resultList);

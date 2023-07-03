@@ -18,7 +18,6 @@ import io.army.stmt.*;
 import io.army.sync.*;
 import io.army.sync.executor.StmtExecutor;
 import io.army.type.ImmutableSpec;
-import io.army.util._ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
@@ -259,9 +258,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
 
     @Override
-    public final List<Map<String, Object>> queryMap(SimpleStmt stmt, int timeout,
-                                                    Supplier<Map<String, Object>> mapConstructor,
-                                                    Supplier<List<Map<String, Object>>> listConstructor) {
+    public final <R> List<R> queryMap(SimpleStmt stmt, int timeout, Supplier<R> mapConstructor,
+                                      Supplier<List<R>> listConstructor) {
         return this.doQuery(stmt, timeout, listConstructor, this.mapReaderFunc(stmt, mapConstructor));
     }
 
@@ -826,12 +824,12 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
      * @see #queryMap(SimpleStmt, int, Supplier, Supplier)
      * @see #queryMapStream(SimpleStmt, int, Supplier, StreamOptions)
      */
-    private Function<ResultSetMetaData, RowReader<Map<String, Object>>> mapReaderFunc(
-            final GenericSimpleStmt stmt, final Supplier<Map<String, Object>> mapConstructor) {
+    private <R> Function<ResultSetMetaData, RowReader<R>> mapReaderFunc(
+            final GenericSimpleStmt stmt, final Supplier<R> constructor) {
         return metaData -> {
             try {
-                return new MapReader(this, stmt.selectionList(), stmt instanceof TwoStmtModeQuerySpec,
-                        this.createSqlTypArray(metaData), mapConstructor
+                return new ObjectReader<>(this, stmt.selectionList(), stmt instanceof TwoStmtModeQuerySpec,
+                        this.createSqlTypArray(metaData), constructor
                 );
             } catch (SQLException e) {
                 throw wrapError(e);
@@ -1414,7 +1412,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
             }
             if (list instanceof ImmutableSpec
-                    && !(stmt instanceof TwoStmtModeQuerySpec && rowReader instanceof MapReader)) {
+                    && !(stmt instanceof TwoStmtModeQuerySpec && rowReader instanceof ObjectReader)) {
                 list = _Collections.unmodifiableListForDeveloper(list);
             }
             return list;
@@ -1583,7 +1581,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 throw _Exceptions.optimisticLock(0);
             }
             if (list instanceof ImmutableSpec
-                    && !(stmt instanceof TwoStmtModeQuerySpec && rowReader instanceof MapReader)) {
+                    && !(stmt instanceof TwoStmtModeQuerySpec && rowReader instanceof ObjectReader)) {
                 list = _Collections.unmodifiableListForDeveloper(list);
             }
             return list;
@@ -1690,18 +1688,17 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
         final List<? extends Selection> selectionList;
 
-
         private final SqlType[] sqlTypeArray;
-
-        final ObjectAccessor accessor;
-
-        private MappingType[] compatibleTypeArray;
 
         private final Class<R> resultClass;
 
+        private MappingType[] compatibleTypeArray;
+
+        private ObjectAccessor accessor;
+
 
         private RowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                          SqlType[] sqlTypeArray, Class<R> resultClass, ObjectAccessor accessor) {
+                          SqlType[] sqlTypeArray, @Nullable Class<R> resultClass, @Nullable ObjectAccessor accessor) {
             if (selectionList.size() != sqlTypeArray.length) {
                 throw _Exceptions.columnCountAndSelectionCountNotMatch(sqlTypeArray.length, selectionList.size());
             }
@@ -1718,7 +1715,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             final JdbcExecutor executor = this.executor;
             final MappingEnv env = executor.factory.mappingEnv;
             final SqlType[] sqlTypeArray = this.sqlTypeArray;
-            final ObjectAccessor accessor = this.accessor;
+            ObjectAccessor accessor = this.accessor;
             final List<? extends Selection> selectionList = this.selectionList;
 
             MappingType[] compatibleTypeArray = this.compatibleTypeArray;
@@ -1729,8 +1726,10 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 row = null;
             } else {
                 row = this.createRow();
+                if (accessor == null) {
+                    this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
+                }
             }
-            TypeMeta typeMeta;
             MappingType type;
             Selection selection;
             Object columnValue;
@@ -1768,17 +1767,17 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 }
             }
 
-            if (row instanceof Map && row instanceof ImmutableSpec && this instanceof MapReader) {
-                row = this.unmodifiedMap(row);
+            if (row instanceof Map
+                    && row instanceof ImmutableSpec
+                    && this instanceof ObjectReader
+                    && !((ObjectReader<R>) this).twoStmtMode) {
+                row = (R) _Collections.unmodifiableMapForDeveloper((Map<String, Object>) row);
             }
             return row;
         }
 
         abstract R createRow();
 
-        R unmodifiedMap(R map) {
-            throw new UnsupportedOperationException();
-        }
 
 
     }//RowReader
@@ -1821,39 +1820,31 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }//SingleColumnRowReader
 
 
-    private static final class MapReader extends RowReader<Map<String, Object>> {
+    private static final class ObjectReader<R> extends RowReader<R> {
 
-        private final Supplier<Map<String, Object>> mapConstructor;
+        private final Supplier<R> constructor;
 
         private final boolean twoStmtMode;
 
-        private MapReader(JdbcExecutor executor, List<? extends Selection> selectionList, boolean twoStmtMode,
-                          SqlType[] sqlTypeArray,
-                          Supplier<Map<String, Object>> mapConstructor) {
-            super(executor, selectionList, sqlTypeArray, _ClassUtils.mapJavaClass(),
-                    ObjectAccessorFactory.forMap());
-            this.mapConstructor = mapConstructor;
+        private ObjectReader(JdbcExecutor executor, List<? extends Selection> selectionList, boolean twoStmtMode,
+                             SqlType[] sqlTypeArray,
+                             Supplier<R> constructor) {
+            super(executor, selectionList, sqlTypeArray, null, null);
+            this.constructor = constructor;
             this.twoStmtMode = twoStmtMode;
         }
 
         @Override
-        Map<String, Object> createRow() {
-            final Map<String, Object> map;
-            map = this.mapConstructor.get();
-            if (map == null) {
-                throw _Exceptions.mapConstructorError();
+        R createRow() {
+            final R row;
+            row = this.constructor.get();
+            if (row == null) {
+                throw _Exceptions.objectConstructorError();
             }
-            return map;
+            return row;
         }
 
 
-        @Override
-        Map<String, Object> unmodifiedMap(final Map<String, Object> map) {
-            if (this.twoStmtMode) {
-                return map;
-            }
-            return _Collections.unmodifiableMapForDeveloper(map);
-        }
 
 
     }//MapReader
@@ -2508,7 +2499,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                              final TeFunction<ResultSet, RowReader<Map<String, Object>>, Boolean, R> function) {
             final BiFunction<List<? extends Selection>, SqlType[], RowReader<Map<String, Object>>> readerFunc;
             readerFunc = (selectionList, sqlTypeArray) ->
-                    new MapReader(this.executor, selectionList, false, sqlTypeArray, mapConstructor); //TODO two stmt mode
+                    new ObjectReader(this.executor, selectionList, false, sqlTypeArray, mapConstructor); //TODO two stmt mode
             return this.doNextQuery(readerFunc, function);
         }
 

@@ -121,9 +121,8 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public <R> List<R> query(final SimpleDqlStatement statement, final Supplier<R> mapConstructor,
-                             final Supplier<List<R>> listConstructor,
-                             final Visible visible) {
+    public <R> List<R> query(final SimpleDqlStatement statement, final Supplier<R> constructor,
+                             final Supplier<List<R>> listConstructor, final Visible visible) {
         //1.assert session status
         assertSession(statement, visible);
 
@@ -135,12 +134,12 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final List<R> resultList;
             final int timeout = this.getTxTimeout();
             if (stmt instanceof SimpleStmt) {
-                resultList = this.stmtExecutor.queryMap((SimpleStmt) stmt, timeout, mapConstructor, listConstructor);
+                resultList = this.stmtExecutor.queryMap((SimpleStmt) stmt, timeout, constructor, listConstructor);
             } else if (!(stmt instanceof PairStmt)) {
                 // no bug,never here
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (statement instanceof InsertStatement) {
-                resultList = this.returningInsertMapPairStmt((InsertStatement) statement, mapConstructor,
+                resultList = this.returningInsertMapPairStmt((InsertStatement) statement, constructor,
                         listConstructor, (PairStmt) stmt, timeout);
             } else {
                 //TODO add DmlStatement code for firebird
