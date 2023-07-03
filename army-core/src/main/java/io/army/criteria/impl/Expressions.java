@@ -1709,13 +1709,13 @@ abstract class Expressions {
     }//IsComparisonPredicates
 
 
-    private static final class InOperationPredicate extends OperationPredicate.OperationCompoundPredicate {
+    static final class InOperationPredicate extends OperationPredicate.OperationCompoundPredicate {
 
-        private final ArmySQLExpression left;
+        final ArmySQLExpression left;
 
-        private final boolean not;
+        final boolean not;
 
-        private final SQLColumnSet right;
+        final SQLColumnSet right;
 
 
         /**

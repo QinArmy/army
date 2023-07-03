@@ -26,10 +26,6 @@ enum DualBooleanOperator implements Operator.SqlDualBooleanOperator {
     GREATER(" >"),
 
 
-    IN(" IN"),
-    NOT_IN(" NOT IN"),
-
-
     LIKE(" LIKE"),
     NOT_LIKE(" NOT LIKE"),
     SIMILAR_TO(" SIMILAR TO"), // currently,postgre only

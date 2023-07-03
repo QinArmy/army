@@ -27,11 +27,11 @@ import java.util.Objects;
  *
  * @see ArmyParamExpression
  * @see ArmyLiteralExpression
- * @see LiteralRowExpression
+ * @see ArmyRowLiteralExpression
  * @since 1.0
  */
-abstract class ParamRowExpression extends OperationRowExpression
-        implements SqlValueParam.MultiValue, SQLParam {
+abstract class ArmyRowParamExpression extends OperationRowExpression
+        implements RowParamExpression, ArmySimpleSQLExpression {
 
     /**
      * @throws CriteriaException throw when <ul>
@@ -40,7 +40,7 @@ abstract class ParamRowExpression extends OperationRowExpression
      *                           </ul>
      * @see SQLs#rowParam(TypeInfer, Collection)
      */
-    static ParamRowExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    static ArmyRowParamExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -62,7 +62,7 @@ abstract class ParamRowExpression extends OperationRowExpression
      *                           </ul>
      * @see SQLs#namedRowParam(TypeInfer, String, int)
      */
-    static ParamRowExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
+    static ArmyRowParamExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -83,7 +83,7 @@ abstract class ParamRowExpression extends OperationRowExpression
      *                           </ul>
      * @see SQLs#encodingRowParam(TypeInfer, Collection)
      */
-    static ParamRowExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    static ArmyRowParamExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (values == null) {
@@ -104,7 +104,7 @@ abstract class ParamRowExpression extends OperationRowExpression
      *                           </ul>
      * @see SQLs#encodingNamedRowParam(TypeInfer, String, int)
      */
-    static ParamRowExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
+    static ArmyRowParamExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -133,7 +133,7 @@ abstract class ParamRowExpression extends OperationRowExpression
     /**
      * private constructor
      */
-    private ParamRowExpression() {
+    private ArmyRowParamExpression() {
     }
 
     @Override
@@ -141,7 +141,7 @@ abstract class ParamRowExpression extends OperationRowExpression
         context.appendParam(this);
     }
 
-    private static final class AnonymousMultiParam extends ParamRowExpression implements MultiParam {
+    private static final class AnonymousMultiParam extends ArmyRowParamExpression implements MultiParam {
 
         private final TypeMeta type;
 
@@ -214,7 +214,7 @@ abstract class ParamRowExpression extends OperationRowExpression
     }//AnonymousMultiParam
 
 
-    private static final class NamedMultiParam extends ParamRowExpression implements NamedParam.NamedRow {
+    private static final class NamedMultiParam extends ArmyRowParamExpression implements NamedParam.NamedRow {
 
         private final String name;
 

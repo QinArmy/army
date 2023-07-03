@@ -22,23 +22,17 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
 
     @Override
     public Map<String, Object> getRegisterUserInfo(final String requestNo) {
-
         final Select stmt;
         stmt = SQLs.query()
-                .selects(s -> {
-                    // due to SQLs.field("u", BankUser_.userNo) need criteria context,so couldn't create selection list
-                    // before SQLs.query().
-                    s.selection(SQLs.field("u", BankUser_.userNo))
-                            .selection(SQLs.field("u", BankUser_.userType))
-                            .selection(BankAccount_.accountNo)
-                            .selection(BankAccount_.accountType)
-
-                            .selection(SQLs.field("pu", BankUser_.userNo))
-                            .selection(RegisterRecord_.createTime)
-                            .selection(RegisterRecord_.handleTime)
-                            .selection(RegisterRecord_.completionTime);
-
-                })
+                .select(s -> s.space(SQLs.field("u", BankUser_.userNo))
+                        .comma(SQLs.field("u", BankUser_.userType))
+                        .comma(BankAccount_.accountNo)
+                        .comma(BankAccount_.accountType)
+                        .comma(SQLs.field("pu", BankUser_.userNo))
+                        .comma(RegisterRecord_.createTime)
+                        .comma(RegisterRecord_.handleTime)
+                        .comma(RegisterRecord_.completionTime)
+                )
                 .from(RegisterRecord_.T, AS, "r")
                 .join(BankUser_.T, AS, "pu").on(RegisterRecord_.partnerId.equal(SQLs.field("pu", BankUser_.id)))
                 .join(BankUser_.T, AS, "u").on(RegisterRecord_.userId.equal(SQLs.field("u", BankUser_.id)))

@@ -6,10 +6,10 @@ import io.army.session.DataAccessException;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.util._ClassUtils;
+import io.army.util._Collections;
 
 import java.math.BigInteger;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -19,11 +19,13 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @see Enum
  * @see io.army.struct.CodeEnum
+ * @see TextEnumType
+ * @see NameEnumType
  * @since 1.0
  */
 public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
-    private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<?>, CodeEnumType> INSTANCE_MAP = _Collections.concurrentHashMap();
 
 
     public static CodeEnumType from(final Class<?> javaType) {
@@ -45,7 +47,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
     private CodeEnumType(Class<?> enumClass) {
         this.enumClass = enumClass;
-        this.codeMap = instanceMap(enumClass);
+        this.codeMap = getInstanceMap(enumClass);
     }
 
     @Override
@@ -61,7 +63,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
     @Override
     public <Z> MappingType compatibleFor(Class<Z> targetType) throws NoMatchMappingException {
-        return null;
+        throw noMatchCompatibleMapping(this, targetType);
     }
 
     @Override
@@ -120,8 +122,8 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
 
     @SuppressWarnings("unchecked")
-    public static <T extends Enum<T> & CodeEnum> Map<Integer, T> instanceMap(Class<?> enumClass) {
-        return CodeEnum.instanceMap((Class<T>) enumClass);
+    public static <T extends Enum<T> & CodeEnum> Map<Integer, T> getInstanceMap(Class<?> enumClass) {
+        return CodeEnum.getInstanceMap((Class<T>) enumClass);
     }
 
 

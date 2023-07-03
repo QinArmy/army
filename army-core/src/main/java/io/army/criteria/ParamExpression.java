@@ -6,8 +6,9 @@ package io.army.criteria;
  * This interface representing SQL parameter expression.
  * </p>
  *
+ * @see LiteralExpression
  * @since 1.0
  */
-public interface ParamExpression extends ValueExpression, SqlValueParam.SingleValue, SQLParam {
+public interface ParamExpression extends ValueExpression, SQLParam {
 
 }

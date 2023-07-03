@@ -429,11 +429,10 @@ abstract class SQLsSyntax extends Functions {
      *                           <li>values is empty</li>
      *                           <li>infer return codec {@link TableField}</li>
      *                           </ul>
-     * @see #rowParam(TypeInfer, Collection)
      * @see #rowLiteral(TypeInfer, Collection)
      */
-    public static RowExpression rowParam(final TypeInfer type, final Collection<?> values) {
-        return ParamRowExpression.multi(type, values);
+    public static RowParamExpression rowParam(final TypeInfer type, final Collection<?> values) {
+        return ArmyRowParamExpression.multi(type, values);
     }
 
     /**
@@ -447,8 +446,8 @@ abstract class SQLsSyntax extends Functions {
      * @param values non-null and non-empty
      * @see #rowParam(TypeInfer, Collection)
      */
-    public static RowExpression rowLiteral(final TypeInfer type, final Collection<?> values) {
-        return LiteralRowExpression.multi(type, values);
+    public static RowLiteralExpression rowLiteral(final TypeInfer type, final Collection<?> values) {
+        return ArmyRowLiteralExpression.multi(type, values);
     }
 
     /**
@@ -472,8 +471,8 @@ abstract class SQLsSyntax extends Functions {
      *                           </ul>
      * @see #namedRowLiteral(TypeInfer, String, int)
      */
-    public static RowExpression namedRowParam(final TypeInfer type, final String name, final int size) {
-        return ParamRowExpression.named(type, name, size);
+    public static RowParamExpression namedRowParam(final TypeInfer type, final String name, final int size) {
+        return ArmyRowParamExpression.named(type, name, size);
     }
 
     /**
@@ -492,8 +491,8 @@ abstract class SQLsSyntax extends Functions {
      * @return named non-null multi literal expression
      * @see #namedRowParam(TypeInfer, String, int)
      */
-    public static RowExpression namedRowLiteral(final TypeInfer type, final String name, final int size) {
-        return LiteralRowExpression.named(type, name, size);
+    public static RowLiteralExpression namedRowLiteral(final TypeInfer type, final String name, final int size) {
+        return ArmyRowLiteralExpression.named(type, name, size);
     }
 
     /**
@@ -511,8 +510,8 @@ abstract class SQLsSyntax extends Functions {
      *                           </ul>
      * @see #encodingRowLiteral(TypeInfer, Collection)
      */
-    public static RowExpression encodingRowParam(final TypeInfer type, final Collection<?> values) {
-        return ParamRowExpression.encodingMulti(type, values);
+    public static RowParamExpression encodingRowParam(final TypeInfer type, final Collection<?> values) {
+        return ArmyRowParamExpression.encodingMulti(type, values);
     }
 
     /**
@@ -530,8 +529,8 @@ abstract class SQLsSyntax extends Functions {
      *                           </ul>
      * @see #encodingRowParam(TypeInfer, Collection)
      */
-    public static RowExpression encodingRowLiteral(final TypeInfer type, final Collection<?> values) {
-        return LiteralRowExpression.encodingMulti(type, values);
+    public static RowLiteralExpression encodingRowLiteral(final TypeInfer type, final Collection<?> values) {
+        return ArmyRowLiteralExpression.encodingMulti(type, values);
     }
 
     /**
@@ -555,8 +554,8 @@ abstract class SQLsSyntax extends Functions {
      *                           </ul>
      * @see #encodingNamedRowLiteral(TypeInfer, String, int)
      */
-    public static RowExpression encodingNamedRowParam(final TypeInfer type, final String name, final int size) {
-        return ParamRowExpression.encodingNamed(type, name, size);
+    public static RowParamExpression encodingNamedRowParam(final TypeInfer type, final String name, final int size) {
+        return ArmyRowParamExpression.encodingNamed(type, name, size);
     }
 
 
@@ -581,8 +580,8 @@ abstract class SQLsSyntax extends Functions {
      *                           </ul>
      * @see #encodingNamedRowParam(TypeInfer, String, int)
      */
-    public static RowExpression encodingNamedRowLiteral(final TypeInfer type, final String name, final int size) {
-        return LiteralRowExpression.encodingNamed(type, name, size);
+    public static RowLiteralExpression encodingNamedRowLiteral(final TypeInfer type, final String name, final int size) {
+        return ArmyRowLiteralExpression.encodingNamed(type, name, size);
     }
 
     public static RowExpression row(SubQuery subQuery) {

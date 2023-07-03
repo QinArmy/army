@@ -9,6 +9,8 @@ import java.util.Map;
  * This interface is base interface of the enum that mapping to {@code io.army.mapping.CodeEnumType}.
  * <p>
  * Army will persist {@link #code()} to database table column not {@link Enum#ordinal()}.
+ * If you want to persist {@link Enum#name()},then you should use {@code io.army.mapping.NameEnumType},
+ * but never persist {@link Enum#ordinal()}.
  * </p>
  *
  * @see TextEnum
@@ -16,15 +18,17 @@ import java.util.Map;
  */
 public interface CodeEnum {
 
-    /**
-     * @return code that can representing this enum instance
-     */
-    int code();
 
     /**
      * @see Enum#name()
      */
     String name();
+
+    /**
+     * @return code that can representing this enum instance
+     */
+    int code();
+
 
     /**
      * @return enum alias
@@ -50,12 +54,12 @@ public interface CodeEnum {
 
     /**
      * <p>
-     * see {@code io.army.mapping.CodeEnumType#getCodeMap(java.lang.Class)}
+     * see {@code io.army.mapping.CodeEnumType#getInstanceMap(java.lang.Class)}
      * </p>
      *
      * @return instance map ; unmodified map
      */
-    static <T extends Enum<T> & CodeEnum> Map<Integer, T> instanceMap(Class<T> clazz) throws IllegalArgumentException {
+    static <T extends Enum<T> & CodeEnum> Map<Integer, T> getInstanceMap(Class<T> clazz) throws IllegalArgumentException {
         return EnumHelper.getCodeMap(clazz);
     }
 

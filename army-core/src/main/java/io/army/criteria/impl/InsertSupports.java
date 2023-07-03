@@ -2374,14 +2374,15 @@ abstract class InsertSupports {
 
     static void validateParentQueryDiscriminator(final TableMeta<?> domainTable, final List<?> fieldList,
                                                  final SubQuery query) {
-        final FieldMeta<?> discField = domainTable.discriminator();
-        assert discField != null;
-        CodeEnum codeEnum;
-        codeEnum = findParentQueryDiscriminator(discField, fieldList, query);
-        if (codeEnum != domainTable.discriminatorValue()) {
-            String m = String.format("discriminator value[%s] and %s not match.", codeEnum, domainTable);
-            throw ContextStack.clearStackAndCriteriaError(m);
-        }
+//        final FieldMeta<?> discField = domainTable.discriminator();
+//        assert discField != null;
+//        CodeEnum codeEnum;
+//        codeEnum = findParentQueryDiscriminator(discField, fieldList, query);
+//        if (codeEnum != domainTable.discriminatorValue()) {
+//            String m = String.format("discriminator value[%s] and %s not match.", codeEnum, domainTable);
+//            throw ContextStack.clearStackAndCriteriaError(m);
+//        }
+        //TODO
     }
 
 
@@ -2597,29 +2598,7 @@ abstract class InsertSupports {
         return match;
     }
 
-    private static void validateMigrationColumnList(final CriteriaContext context, final TableMeta<?> insertTable
-            , final Map<FieldMeta<?>, ?> fieldMap) {
-        if (insertTable instanceof SingleTableMeta) {
-            FieldMeta<?> field;
-            for (String fieldName : _MetaBridge.RESERVED_FIELDS) {
-                field = insertTable.tryGetField(fieldName);
-                if (field != null && fieldMap.get(field) == null) {
-                    throw ContextStack.criteriaError(context, _Exceptions::migrationManageGeneratorField, field);
-                }
-            }
-            field = insertTable.discriminator();
-            if (field != null && fieldMap.get(field) == null) {
-                throw ContextStack.criteriaError(context, _Exceptions::migrationManageGeneratorField, field);
-            }
-        }
 
-        for (FieldMeta<?> field : insertTable.fieldChain()) {
-            if (!field.nullable() && fieldMap.get(field) == null) {
-                throw ContextStack.criteriaError(context, _Exceptions::migrationModeGeneratorField, field);
-            }
-        }
-
-    }
 
 
     /**
@@ -2707,23 +2686,23 @@ abstract class InsertSupports {
      */
     private static CodeEnum findDiscriminatorFromSimpleQuery(final FieldMeta<?> discField, final int discIndex,
                                                              final _Query query) {
-        final Selection selection;
-        selection = ((_SelectionMap) query).refAllSelection().get(discIndex);
-
-        if (selection instanceof FieldMeta) {
-
-        } else if (selection instanceof QualifiedField) {
-
-        } else if (selection instanceof DerivedField) {
-
-        } else if (selection instanceof FieldSelection) {
-
-        } else if (selection instanceof ValueExpression) {
-
-        } else {
-
-        }
-        return null;
+//        final Selection selection;
+//        selection = ((_SelectionMap) query).refAllSelection().get(discIndex);
+//
+//        if (selection instanceof FieldMeta) {
+//
+//        } else if (selection instanceof QualifiedField) {
+//
+//        } else if (selection instanceof DerivedField) {
+//
+//        } else if (selection instanceof FieldSelection) {
+//
+//        } else if (selection instanceof ValueExpression) {
+//
+//        } else {
+//
+//        }
+        throw new UnsupportedOperationException();
     }
 
     /**

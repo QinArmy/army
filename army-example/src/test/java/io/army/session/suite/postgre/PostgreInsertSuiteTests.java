@@ -1068,7 +1068,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
     }
 
-    @Test(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
+    @Test//(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
     public void returningQueryInsertChildWithTwoStmtQueryMode(final LocalSession session) {
         //TODO consider child table query insert two stmt mode reasonable ？for example firebird
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;

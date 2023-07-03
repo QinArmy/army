@@ -7,7 +7,6 @@ package io.army.criteria.impl;
  * This interface is base interface of below:
  *     <ul>
  *         <li>{@link SingleFunctionArg}</li>
- *         <li>{@link NonOperationExpression.MultiValueExpression}</li>
  *     </ul>
  * </p>
  *

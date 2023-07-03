@@ -113,7 +113,7 @@ public enum ErrorCode implements CodeEnum {
 
     private final ErrorCode family;
 
-    private static final Map<Integer, ErrorCode> CODE_MAP = CodeEnum.instanceMap(ErrorCode.class);
+    private static final Map<Integer, ErrorCode> CODE_MAP = CodeEnum.getInstanceMap(ErrorCode.class);
 
 
     public static ErrorCode resolve(int code) {

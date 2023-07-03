@@ -614,28 +614,19 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
     @Override
     public final _Predicate getIdPredicate() {
-        OperationPredicate predicate = this;
-        while (predicate instanceof AndPredicate) {
-            predicate = ((AndPredicate) predicate).left;
-        }
-
-        final Expressions.DualPredicate dualPredicate;
-        final boolean match;
-        if (!(predicate instanceof Expressions.DualPredicate)) {
-            match = false;
-        } else if (!((dualPredicate = (Expressions.DualPredicate) predicate).left instanceof PrimaryFieldMeta)) {
-            match = false;
-        } else if (dualPredicate.operator == DualBooleanOperator.EQUAL) {
-            match = dualPredicate.right instanceof SqlValueParam.SingleValue
-                    && (dualPredicate.right instanceof ArmyParamExpression
-                    || dualPredicate.right instanceof ArmyLiteralExpression);
-        } else if (dualPredicate.operator == DualBooleanOperator.IN) {
-            match = dualPredicate.right instanceof NonOperationExpression.MultiValueExpression;
+        final _Predicate predicate;
+        if (this instanceof Expressions.DualPredicate) {
+            predicate = getIdPredicateFromDual((Expressions.DualPredicate) this);
+        } else if (this instanceof Expressions.InOperationPredicate) {
+            predicate = getIdPredicateFromInPredicate((Expressions.InOperationPredicate) this);
+        } else if (this instanceof AndPredicate) {
+            predicate = getIdPredicateFromAndPredicate((AndPredicate) this);
         } else {
-            match = false;
+            predicate = null;
         }
-        return match ? predicate : null;
+        return predicate;
     }
+
 
 
     @Override
@@ -715,6 +706,59 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
      */
     static SQLs.WordBooleans booleanWord(final boolean value) {
         return value ? BooleanWord.TRUE : BooleanWord.FALSE;
+    }
+
+
+    @Nullable
+    private static _Predicate getIdPredicateFromAndPredicate(final AndPredicate andPredicate) {
+        _Predicate predicate = null;
+        if (andPredicate.left instanceof Expressions.DualPredicate) {
+            predicate = getIdPredicateFromDual((Expressions.DualPredicate) andPredicate.left);
+        } else if (andPredicate.left instanceof Expressions.InOperationPredicate) {
+            predicate = getIdPredicateFromInPredicate((Expressions.InOperationPredicate) andPredicate.left);
+        } else if (andPredicate.left instanceof AndPredicate) {
+            predicate = getIdPredicateFromAndPredicate((AndPredicate) andPredicate.left);
+        }
+        if (predicate != null) {
+            return predicate;
+        }
+
+        if (andPredicate.right instanceof Expressions.DualPredicate) {
+            predicate = getIdPredicateFromDual((Expressions.DualPredicate) andPredicate.right);
+        } else if (andPredicate.right instanceof Expressions.InOperationPredicate) {
+            predicate = getIdPredicateFromInPredicate((Expressions.InOperationPredicate) andPredicate.right);
+        } else if (andPredicate.right instanceof AndPredicate) {
+            predicate = getIdPredicateFromAndPredicate((AndPredicate) andPredicate.right);
+        }
+        return predicate;
+    }
+
+    @Nullable
+    private static _Predicate getIdPredicateFromInPredicate(final Expressions.InOperationPredicate predicate) {
+        final _Predicate result;
+        if (!(predicate.left instanceof PrimaryFieldMeta)) {
+            result = null;
+        } else if (predicate.not) {
+            result = null;
+        } else if (predicate.right instanceof RowValueExpression) {
+            result = predicate;
+        } else {
+            result = null;
+        }
+        return result;
+    }
+
+    @Nullable
+    private static _Predicate getIdPredicateFromDual(final Expressions.DualPredicate predicate) {
+        final _Predicate result;
+        if (!(predicate.left instanceof PrimaryFieldMeta)) {
+            result = null;
+        } else if (predicate.operator == DualBooleanOperator.EQUAL && predicate.right instanceof ValueExpression) {
+            result = predicate;
+        } else {
+            result = null;
+        }
+        return result;
     }
 
     /**

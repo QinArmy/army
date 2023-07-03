@@ -25,12 +25,12 @@ import java.util.Objects;
  *
  * @see ArmyParamExpression
  * @see ArmyLiteralExpression
- * @see ParamRowExpression
+ * @see ArmyRowParamExpression
  * @since 1.0
  */
 
-abstract class LiteralRowExpression extends OperationRowExpression implements
-        SqlValueParam.MultiValue {
+abstract class ArmyRowLiteralExpression extends OperationRowExpression implements
+        RowLiteralExpression, ArmySimpleSQLExpression {
 
     /**
      * @throws CriteriaException throw when <ul>
@@ -39,7 +39,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
      *                           </ul>
      * @see SQLs#rowLiteral(TypeInfer, Collection)
      */
-    static LiteralRowExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    static ArmyRowLiteralExpression multi(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -55,7 +55,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
 
 
     @Deprecated
-    static LiteralRowExpression unsafeMulti(final @Nullable TypeInfer infer, final @Nullable List<?> values) {
+    static ArmyRowLiteralExpression unsafeMulti(final @Nullable TypeInfer infer, final @Nullable List<?> values) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -78,7 +78,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
      * @see SQLs#namedRowLiteral(TypeInfer, String, int)
      */
 
-    static LiteralRowExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
+    static ArmyRowLiteralExpression named(final @Nullable TypeInfer infer, final @Nullable String name, final int size) {
         final TypeMeta type;
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
@@ -99,7 +99,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
      *                           </ul>
      * @see SQLs#encodingRowLiteral(TypeInfer, Collection)
      */
-    static LiteralRowExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
+    static ArmyRowLiteralExpression encodingMulti(final @Nullable TypeInfer infer, final @Nullable Collection<?> values) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (values == null) {
@@ -120,7 +120,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
      *                           </ul>
      * @see SQLs#encodingNamedRowLiteral(TypeInfer, String, int)
      */
-    static LiteralRowExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
+    static ArmyRowLiteralExpression encodingNamed(@Nullable TypeInfer infer, @Nullable String name, final int size) {
         if (infer == null) {
             throw ContextStack.clearStackAndNullPointer();
         } else if (!_StringUtils.hasText(name)) {
@@ -150,11 +150,11 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
     /**
      * private constructor
      */
-    private LiteralRowExpression() {
+    private ArmyRowLiteralExpression() {
     }
 
 
-    static final class AnonymousMultiLiteral extends LiteralRowExpression {
+    static final class AnonymousMultiLiteral extends ArmyRowLiteralExpression {
 
         private final TypeMeta type;
 
@@ -260,7 +260,7 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
     }//AnonymousMultiLiteral
 
 
-    private static final class NamedMultiLiteral extends LiteralRowExpression implements NamedLiteral,
+    private static final class NamedMultiLiteral extends ArmyRowLiteralExpression implements NamedLiteral,
             SqlValueParam.NamedMultiValue {
 
         private final String name;
@@ -353,9 +353,6 @@ abstract class LiteralRowExpression extends OperationRowExpression implements
 
 
     }//NamedMultiLiteral
-
-
-
 
 
 }

@@ -1,7 +1,6 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.criteria.standard.SQLFunction;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
 import io.army.lang.Nullable;
@@ -413,13 +412,7 @@ abstract class NonOperationExpression implements ArmyExpression {
 
 
     static CriteriaException unsupportedOperation(NonOperationExpression expression) {
-        String m;
-        if (expression instanceof MultiValueExpression) {
-            m = String.format("%s support only IN(NOT IN) operator.", expression.getClass().getName());
-        } else {
-            m = expression.operationErrorMessage();
-        }
-        return ContextStack.clearStackAndCriteriaError(m);
+        return ContextStack.clearStackAndCriteriaError(expression.operationErrorMessage());
     }
 
     static RuntimeException nonOperationExpression(final @Nullable Expression expression) {
@@ -436,37 +429,6 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
 
-    /**
-     * <p>
-     * This class is base class only of below:
-     *     <ul>
-     *         <li>{@link ParamRowExpression}</li>
-     *         <li>{@link LiteralRowExpression}</li>
-     *     </ul>
-     * </p>
-     *
-     * @since 1.0
-     */
-    static abstract class MultiValueExpression extends NonOperationExpression
-            implements SqlValueParam.MultiValue, FunctionArg {
-
-
-    }//MultiValueExpression
-
-    static abstract class NonOperationFunction extends NonOperationExpression implements SQLFunction {
-
-        final String name;
-
-        NonOperationFunction(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public final String name() {
-            return this.name;
-        }
-
-    }//NonOperationFunction
 
 
 }

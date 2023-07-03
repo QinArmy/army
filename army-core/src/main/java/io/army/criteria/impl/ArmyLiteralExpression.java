@@ -23,8 +23,8 @@ import java.util.Objects;
  * </p>
  *
  * @see ArmyParamExpression
- * @see LiteralRowExpression
- * @see ParamRowExpression
+ * @see ArmyRowLiteralExpression
+ * @see ArmyRowParamExpression
  * @since 1.0
  */
 abstract class ArmyLiteralExpression extends OperationExpression.OperationSimpleExpression
