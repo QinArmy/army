@@ -122,7 +122,7 @@ public enum CompareResult implements Compare.Comparer, CodeEnum {
 
     @NonNull
     @Override
-    public String display() {
+    public String alias() {
         return display;
     }
 

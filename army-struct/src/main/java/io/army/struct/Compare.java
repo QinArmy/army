@@ -6,6 +6,7 @@ import io.army.lang.NonNull;
 /**
  * @since 1.0
  */
+@Deprecated
 public interface Compare<T> {
 
 

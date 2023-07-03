@@ -36,8 +36,6 @@ abstract class InsertSupports {
     }
 
 
-
-
     interface ParentSubInsert extends _Insert._ParentSubInsert {
 
         void validateChild(ChildTableMeta<?> child);
@@ -2374,9 +2372,16 @@ abstract class InsertSupports {
         return parentSubInsert;
     }
 
-    static void validateParentQueryDiscriminator(final TableMeta<?> domainTable, List<?> fieldList,
+    static void validateParentQueryDiscriminator(final TableMeta<?> domainTable, final List<?> fieldList,
                                                  final SubQuery query) {
-        //TODO
+        final FieldMeta<?> discField = domainTable.discriminator();
+        assert discField != null;
+        CodeEnum codeEnum;
+        codeEnum = findParentQueryDiscriminator(discField, fieldList, query);
+        if (codeEnum != domainTable.discriminatorValue()) {
+            String m = String.format("discriminator value[%s] and %s not match.", codeEnum, domainTable);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
     }
 
 
@@ -2653,6 +2658,153 @@ abstract class InsertSupports {
     private static void validateSupportWithClauseInsert(final _Insert._SupportWithClauseInsert statement) {
 
         //TODO
+    }
+
+    /**
+     * @see #validateParentQueryDiscriminator(TableMeta, List, SubQuery)
+     */
+    private static CodeEnum findParentQueryDiscriminator(final FieldMeta<?> discField, final List<?> fieldList,
+                                                         final SubQuery query) {
+        final int fieldSize = fieldList.size();
+
+        int discIndex = -1;
+        for (int i = 0; i < fieldSize; i++) {
+            if (fieldList.get(i) == discField) {
+                discIndex = i;
+                break;
+            }
+        }
+        if (discIndex < 0) {
+            throw ContextStack.clearStackAndCriteriaError("Not found discriminator field");
+        }
+
+        return findDiscriminatorFromQuery(discField, discIndex, query);
+    }
+
+    /**
+     * @see #findParentQueryDiscriminator(FieldMeta, List, SubQuery)
+     */
+    private static CodeEnum findDiscriminatorFromQuery(final FieldMeta<?> discField, final int discIndex,
+                                                       final SubQuery query) {
+
+        final CodeEnum codeEnum;
+        if (query instanceof _Query) {
+            codeEnum = findDiscriminatorFromSimpleQuery(discField, discIndex, (_Query) query);
+        } else if (query instanceof _UnionRowSet) {
+            codeEnum = findDiscriminatorFromUnionRowSet(discField, discIndex, (_UnionRowSet) query);
+        } else if (query instanceof _ParensRowSet) {
+            codeEnum = findDiscriminatorFromParensRowSet(discField, discIndex, (_ParensRowSet) query);
+        } else {
+            //no bug,never here
+            throw ContextStack.clearStackAnd(_Exceptions::unexpectedStatement, query);
+        }
+        return codeEnum;
+    }
+
+
+    /**
+     * @see #findDiscriminatorFromQuery(FieldMeta, int, SubQuery)
+     */
+    private static CodeEnum findDiscriminatorFromSimpleQuery(final FieldMeta<?> discField, final int discIndex,
+                                                             final _Query query) {
+        final Selection selection;
+        selection = ((_SelectionMap) query).refAllSelection().get(discIndex);
+
+        if (selection instanceof FieldMeta) {
+
+        } else if (selection instanceof QualifiedField) {
+
+        } else if (selection instanceof DerivedField) {
+
+        } else if (selection instanceof FieldSelection) {
+
+        } else if (selection instanceof ValueExpression) {
+
+        } else {
+
+        }
+        return null;
+    }
+
+    /**
+     * @see #findDiscriminatorFromQuery(FieldMeta, int, SubQuery)
+     */
+    private static CodeEnum findDiscriminatorFromUnionRowSet(final FieldMeta<?> discField, final int discIndex,
+                                                             final _UnionRowSet query) {
+        final RowSet left, right;
+        left = query.leftRowSet();
+
+
+        final CodeEnum leftEnum, rightEnum;
+        if (left instanceof SubQuery) {
+            leftEnum = findDiscriminatorFromQuery(discField, discIndex, (SubQuery) left);
+        } else if (left instanceof SubValues) {
+            leftEnum = findDiscriminatorFromValues(discField, discIndex, (SubValues) left);
+        } else {
+            throw ContextStack.clearStackAnd(_Exceptions::unexpectedStatement, query);
+        }
+
+        right = query.rightRowSet();
+        if (right instanceof SubQuery) {
+            rightEnum = findDiscriminatorFromQuery(discField, discIndex, (SubQuery) right);
+        } else if (right instanceof SubValues) {
+            rightEnum = findDiscriminatorFromValues(discField, discIndex, (SubValues) right);
+        } else {
+            throw ContextStack.clearStackAnd(_Exceptions::unexpectedStatement, query);
+        }
+
+        if (leftEnum != rightEnum) {
+            String m;
+            m = String.format("left discriminator[%s] and right discriminator[%s] not match.", leftEnum, rightEnum);
+            throw ContextStack.clearStackAndCriteriaError(m);
+        }
+        return leftEnum;
+    }
+
+    /**
+     * @see #findDiscriminatorFromQuery(FieldMeta, int, SubQuery)
+     */
+    private static CodeEnum findDiscriminatorFromParensRowSet(final FieldMeta<?> discField, final int discIndex,
+                                                              final _ParensRowSet query) {
+        final CodeEnum codeEnum;
+        final _RowSet innerRowSet;
+        innerRowSet = query.innerRowSet();
+        if (innerRowSet instanceof SubQuery) {
+            codeEnum = findDiscriminatorFromQuery(discField, discIndex, (SubQuery) query);
+        } else if (innerRowSet instanceof SubValues) {
+            codeEnum = findDiscriminatorFromValues(discField, discIndex, (SubValues) query);
+        } else {
+            throw ContextStack.clearStackAnd(_Exceptions::unexpectedStatement, query);
+        }
+        return codeEnum;
+    }
+
+    /**
+     * @see #findDiscriminatorFromParensRowSet(FieldMeta, int, _ParensRowSet)
+     * @see #findDiscriminatorFromUnionRowSet(FieldMeta, int, _UnionRowSet)
+     */
+    private static CodeEnum findDiscriminatorFromValues(final FieldMeta<?> discField, final int discIndex,
+                                                        final SubValues values) {
+        final CodeEnum codeEnum;
+        if (values instanceof _ValuesQuery) {
+            codeEnum = findDiscriminatorFromSimpleValues(discField, discIndex, (_ValuesQuery) values);
+        } else if (values instanceof _UnionRowSet) {
+            codeEnum = findDiscriminatorFromUnionRowSet(discField, discIndex, (_UnionRowSet) values);
+        } else if (values instanceof _ParensRowSet) {
+            codeEnum = findDiscriminatorFromParensRowSet(discField, discIndex, (_ParensRowSet) values);
+        } else {
+            //no bug,never here
+            throw ContextStack.clearStackAnd(_Exceptions::unexpectedStatement, values);
+        }
+        return codeEnum;
+    }
+
+    /**
+     * @see #findDiscriminatorFromValues(FieldMeta, int, SubValues)
+     */
+    private static CodeEnum findDiscriminatorFromSimpleValues(final FieldMeta<?> discField, final int discIndex,
+                                                              final _ValuesQuery values) {
+        return null;
     }
 
 

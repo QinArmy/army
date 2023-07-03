@@ -1,5 +1,6 @@
 package io.army.criteria.impl;
 
+import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
@@ -166,7 +167,7 @@ abstract class ContextStack {
         return supplier.get();
     }
 
-    static <T, E extends CriteriaException> E clearStackAnd(Function<T, E> function, @Nullable T input) {
+    static <T, E extends ArmyException> E clearStackAnd(Function<T, E> function, @Nullable T input) {
         final Stack stack = HOLDER.get();
         if (stack != null) {
             HOLDER.remove();

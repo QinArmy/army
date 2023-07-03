@@ -45,7 +45,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
     private CodeEnumType(Class<?> enumClass) {
         this.enumClass = enumClass;
-        this.codeMap = getCodeMap(enumClass);
+        this.codeMap = instanceMap(enumClass);
     }
 
     @Override
@@ -120,8 +120,8 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
 
     @SuppressWarnings("unchecked")
-    public static <T extends Enum<T> & CodeEnum> Map<Integer, T> getCodeMap(Class<?> enumClass) {
-        return CodeEnum.getInstanceMap((Class<T>) enumClass);
+    public static <T extends Enum<T> & CodeEnum> Map<Integer, T> instanceMap(Class<?> enumClass) {
+        return CodeEnum.instanceMap((Class<T>) enumClass);
     }
 
 

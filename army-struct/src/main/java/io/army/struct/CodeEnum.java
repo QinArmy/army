@@ -6,30 +6,30 @@ import io.army.lang.Nullable;
 import java.util.Map;
 
 /**
- * 所有要持久化的枚举的基接口.
- * 这个设计是要避免 将 枚举的 {@link Enum#ordinal()} 持久化到数据库,以造成代码的改动不变
+ * This interface is base interface of the enum that mapping to {@code io.army.mapping.CodeEnumType}.
  * <p>
- * army 不支持原生枚举,只支持实现 {@link CodeEnum} 的枚举
+ * Army will persist {@link #code()} to database table column not {@link Enum#ordinal()}.
  * </p>
  *
+ * @see TextEnum
  * @since 1.0
  */
 public interface CodeEnum {
 
     /**
-     * @return 用于持久化到数据库中的 code
+     * @return code that can representing this enum instance
      */
     int code();
 
     /**
-     * 枚举的 name
+     * @see Enum#name()
      */
     String name();
 
     /**
-     * @return 用于展示到前端的名称
+     * @return enum alias
      */
-    default String display() {
+    default String alias() {
         return name();
     }
 
@@ -41,25 +41,22 @@ public interface CodeEnum {
     /*################# static method ############################*/
 
 
-    @SuppressWarnings("unchecked")
     @Nullable
     static <T extends Enum<T> & CodeEnum> T resolve(final Class<?> enumClass, final int code) {
-        if (!(Enum.class.isAssignableFrom(enumClass) && CodeEnum.class.isAssignableFrom(enumClass))) {
-            String m = String.format("%s isn't %s type", enumClass, CodeEnum.class.getName());
-            throw new IllegalArgumentException(m);
-        }
-        final Class<T> actualClass;
-        if (enumClass.isAnonymousClass()) {
-            actualClass = (Class<T>) enumClass.getSuperclass();
-        } else {
-            actualClass = (Class<T>) enumClass;
-        }
-        return CodeEnumHelper.getMap(actualClass).get(code);
+        final Map<Integer, T> map;
+        map = EnumHelper.getCodeMap(enumClass);
+        return map.get(code);
     }
 
-
-    static <T extends Enum<T> & CodeEnum> Map<Integer, T> getInstanceMap(Class<T> clazz) throws IllegalArgumentException {
-        return CodeEnumHelper.getMap(clazz);
+    /**
+     * <p>
+     * see {@code io.army.mapping.CodeEnumType#getCodeMap(java.lang.Class)}
+     * </p>
+     *
+     * @return instance map ; unmodified map
+     */
+    static <T extends Enum<T> & CodeEnum> Map<Integer, T> instanceMap(Class<T> clazz) throws IllegalArgumentException {
+        return EnumHelper.getCodeMap(clazz);
     }
 
 

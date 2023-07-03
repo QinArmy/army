@@ -12,7 +12,7 @@ public class ArmyRuntimeException extends RuntimeException implements IArmyExpre
 
     @Deprecated
     public ArmyRuntimeException(ErrorCode errorCode) {
-        super(errorCode.display());
+        super(errorCode.alias());
         this.errorCode = errorCode;
     }
 

@@ -82,10 +82,6 @@ abstract class CriteriaSupports {
         return new SimpleFieldItemPairs<>(context, updateTable, consumer);
     }
 
-    static <I> ItemConsumer<I> itemConsumer(Consumer<I> consumer) {
-        return new ItemConsumerImpl<>(consumer);
-    }
-
 
     /**
      * This interface is base interface of All implementation of {@link CteBuilderSpec}
@@ -1091,49 +1087,7 @@ abstract class CriteriaSupports {
     }//DynamicObjectConsumer
 
 
-    private static abstract class DeferContextSpecImpl implements Statement._DeferContextSpec {
 
-        final CriteriaContext context;
-
-        private DeferContextSpecImpl(CriteriaContext context) {
-            this.context = context;
-        }
-
-
-//        @Override
-//        public final DerivedField refThis(String derivedAlias, String selectionAlias) {
-//            return this.context.refThis(derivedAlias,selectionAlias,false);
-//        }
-//
-//        @Override
-//        public final  DerivedField refOuter(String derivedAlias, String selectionAlias) {
-//            return this.context.refOuter(derivedAlias,selectionAlias);
-//        }
-//
-//        @Override
-//        public final  <T> QualifiedField<T> field(String tableAlias, FieldMeta<T> field) {
-//            return this.context.field(tableAlias, field);
-//        }
-
-
-    }//DeferContextSpecImpl
-
-
-    private static final class ItemConsumerImpl<I> implements ItemConsumer<I> {
-
-        private final Consumer<I> consumer;
-
-        private ItemConsumerImpl(Consumer<I> consumer) {
-            this.consumer = consumer;
-        }
-
-        @Override
-        public ItemConsumer<I> accept(I item) {
-            this.consumer.accept(item);
-            return this;
-        }
-
-    }//ItemConsumerImpl
 
 
 }
