@@ -272,8 +272,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <R> int secondQuery(final TwoStmtQueryStmt stmt, final int timeout, final Class<R> resultClass,
-                                     final List<R> resultList) {
+    public final <R> int secondQuery(final TwoStmtQueryStmt stmt, final int timeout, final List<R> resultList) {
 
 
         final List<? extends Selection> selectionList = stmt.selectionList();
@@ -303,7 +302,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             try (ResultSet resultSet = rs) {
 
                 final ObjectAccessor accessor;
-                if (resultClass == Map.class) {
+                final Class<R> resultClass = (Class<R>) resultList.get(0).getClass();
+                if (Map.class.isAssignableFrom(resultClass)) {
                     accessor = ObjectAccessorFactory.forMap();
                 } else if (selectionSize > 1) {
                     accessor = ObjectAccessorFactory.forBean(resultClass);
@@ -838,13 +838,13 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
      * @see #queryStream(SimpleStmt, int, Class, StreamOptions)
      */
     private <R> Function<ResultSetMetaData, RowReader<R>> beanReaderFunc(
-            final List<? extends Selection> selectionList, @Nullable final Class<R> resultClass) {
+            final GenericSimpleStmt stmt, @Nullable final Class<R> resultClass) {
         if (resultClass == null) {
             throw new NullPointerException();
         }
         return metaData -> {
             try {
-                return this.createBeanRowReader(metaData, resultClass, selectionList);
+                return this.createBeanRowReader(metaData, resultClass, stmt);
             } catch (SQLException e) {
                 throw wrapError(e);
             }
@@ -1589,11 +1589,12 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
      * @see #batchQuery(BatchStmt, int, Class, Object, Supplier, boolean)
      */
     private <T> RowReader<T> createBeanRowReader(final ResultSetMetaData metaData, final Class<T> resultClass,
-                                                 final List<? extends Selection> selectionList) throws SQLException {
+                                                 final GenericSimpleStmt stmt) throws SQLException {
         final SqlType[] sqlTypeArray;
         sqlTypeArray = this.createSqlTypArray(metaData);
+        final List<? extends Selection> selectionList = stmt.selectionList();
         final RowReader<T> rowReader;
-        if (selectionList.size() == 1) {
+        if (stmt instanceof TwoStmtQueryStmt && selectionList.size() == 1) {
             rowReader = new SingleColumnRowReader<>(this, selectionList, sqlTypeArray, resultClass);
         } else {
             rowReader = new BeanRowReader<>(this, selectionList, resultClass, sqlTypeArray);
@@ -1660,7 +1661,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }
 
     /**
-     * @see #secondQuery(TwoStmtQueryStmt, int, Class, List)
+     * @see #secondQuery(TwoStmtQueryStmt, int, List)
      */
     private static <R> Map<Object, Integer> createFirstStmtRowMap(final List<R> resultList, final ObjectAccessor accessor,
                                                                   final String idFieldName) {
@@ -2027,7 +2028,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         private R currentRow;
 
         /**
-         * @see #secondQuery(TwoStmtQueryStmt, int, Class, List)
+         * @see #secondQuery(TwoStmtQueryStmt, int, List)
          */
         private SecondRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
                                 SqlType[] sqlTypeArray, Class<R> resultClass, ObjectAccessor accessor) {

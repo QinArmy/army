@@ -14,4 +14,9 @@ public interface DmlStmtParams extends StmtParams {
     int idSelectionIndex();
 
 
+    default int maxColumnSize() {
+        throw new UnsupportedOperationException();
+    }
+
+
 }

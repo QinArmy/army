@@ -22,4 +22,7 @@ public interface InsertStmtParams extends DmlStmtParams {
     boolean isTwoStmtQuery();
 
 
+    @Override
+    int maxColumnSize();
+
 }

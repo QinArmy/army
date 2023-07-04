@@ -84,6 +84,11 @@ abstract class InsertContext extends StatementContext
 
     private final boolean appendReturningClause;
 
+    /**
+     * @see #twoStmtQuery
+     */
+    private final int maxColumnSize;
+
     private boolean columnListClauseEnd;
 
     private boolean valuesClauseEnd;
@@ -199,12 +204,18 @@ abstract class InsertContext extends StatementContext
             this.returnId = idField;
         } else {
             this.returningList = _Collections.emptyList();
-            this.returnSelectionList = Collections.emptyList();
+            this.returnSelectionList = _Collections.emptyList();
             this.returnId = null;
             this.idSelectionIndex = -1;
             this.appendReturningClause = false;
         }
 
+        if (this.twoStmtQuery) {
+            this.maxColumnSize = Math.max(this.returnSelectionList.size(),
+                    _DialectUtils.flatSelectItem(((_ReturningDml) domainStmt).returningList()).size());
+        } else {
+            this.maxColumnSize = this.returnSelectionList.size();
+        }
 
     }
 
@@ -286,6 +297,7 @@ abstract class InsertContext extends StatementContext
         }
         this.returnId = null;
         this.appendReturningClause = false;
+        this.maxColumnSize = parentContext.maxColumnSize;
     }
 
     @Override
@@ -296,6 +308,11 @@ abstract class InsertContext extends StatementContext
     @Override
     public final boolean isTwoStmtQuery() {
         return this.twoStmtQuery;
+    }
+
+    @Override
+    public final int maxColumnSize() {
+        return this.maxColumnSize;
     }
 
     @Override

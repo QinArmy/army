@@ -5,4 +5,6 @@ public interface TwoStmtQueryStmt extends SimpleStmt,
 
      int idSelectionIndex();
 
+     int maxColumnSize();
+
 }

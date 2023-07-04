@@ -86,7 +86,7 @@ public interface StmtExecutor {
     <R> List<R> queryRecord(SimpleStmt stmt, int timeout, Function<CurrentRecord, R> function,
                             Supplier<List<R>> listConstructor) throws DataAccessException;
 
-    <R> int secondQuery(TwoStmtQueryStmt stmt, int timeout, Class<R> resultClass, List<R> resultList);
+    <R> int secondQuery(TwoStmtQueryStmt stmt, int timeout, List<R> resultList);
 
     <R> List<R> batchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
                            Supplier<List<R>> listConstructor, boolean useMultiStmt) throws DataAccessException;

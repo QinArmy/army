@@ -53,7 +53,7 @@ public abstract class Stmts {
         final int idSelectionIndex;
         if (params instanceof DmlStmtParams
                 && (idSelectionIndex = ((DmlStmtParams) params).idSelectionIndex()) > -1) {
-            stmt = new TwoStmtModeQueryStmtIml(params, idSelectionIndex);
+            stmt = new TwoStmtModeQueryStmtIml(params, idSelectionIndex, ((DmlStmtParams) params).maxColumnSize());
         } else {
             stmt = new QueryStmt(params);
         }
@@ -355,7 +355,6 @@ public abstract class Stmts {
         }
 
 
-
     }//MinBatchDmlStmt
 
     private static final class MultiStmtBatchStmtImpl extends SingleSqlStmt implements MultiStmtBatchStmt {
@@ -426,17 +425,21 @@ public abstract class Stmts {
         }
 
 
-
     }//QueryStmt
 
     private static final class TwoStmtModeQueryStmtIml extends QueryStmt implements TwoStmtQueryStmt {
 
         private final int idSelectionIndex;
 
-        private TwoStmtModeQueryStmtIml(StmtParams params, int idSelectionIndex) {
+        private final int maxColumnSize;
+
+        private TwoStmtModeQueryStmtIml(StmtParams params, int idSelectionIndex, int maxColumnSize) {
             super(params);
-            assert idSelectionIndex > -1 && idSelectionIndex < this.selectionList.size();
+            final int selectionSize = this.selectionList.size();
+            assert idSelectionIndex > -1 && idSelectionIndex < selectionSize;
+            assert maxColumnSize >= selectionSize;
             this.idSelectionIndex = idSelectionIndex;
+            this.maxColumnSize = maxColumnSize;
         }
 
         @Override
@@ -444,6 +447,10 @@ public abstract class Stmts {
             return this.idSelectionIndex;
         }
 
+        @Override
+        public int maxColumnSize() {
+            return this.maxColumnSize;
+        }
 
     }//TwoStmtModeQueryStmtIml
 
@@ -452,7 +459,7 @@ public abstract class Stmts {
 
         private final List<SQLParam> paramList;
 
-        private final List<? extends Selection> selectionList;
+        final List<? extends Selection> selectionList;
 
         private final int rowSize;
 
@@ -516,9 +523,19 @@ public abstract class Stmts {
 
     private static final class TwoStmtQueryPostStmt extends PostStmt implements TwoStmtQueryStmt {
 
+        private final int maxColumnSize;
+
         private TwoStmtQueryPostStmt(InsertStmtParams params) {
             super(params);
+            this.maxColumnSize = params.maxColumnSize();
+            assert this.maxColumnSize >= this.selectionList.size();
         }
+
+        @Override
+        public int maxColumnSize() {
+            return this.maxColumnSize;
+        }
+
 
     }//TwoStmtQueryPostStmt
 
@@ -549,8 +566,6 @@ public abstract class Stmts {
 
 
     }//QueryStmtItem
-
-
 
 
 }

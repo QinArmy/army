@@ -13,14 +13,12 @@ import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
 import io.army.tx.*;
 import io.army.type.ImmutableSpec;
-import io.army.util._ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -140,7 +138,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 // no bug,never here
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (statement instanceof InsertStatement) {
-                resultList = this.returningInsertMapPairStmt((InsertStatement) statement, constructor,
+                resultList = this.returningInsertObjectPairStmt((InsertStatement) statement, constructor,
                         listConstructor, (PairStmt) stmt, timeout);
             } else {
                 //TODO add DmlStatement code for firebird
@@ -635,7 +633,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     /**
      * @see #query(SimpleDqlStatement, Class, Supplier, Visible)
-     * @see #returningInsertMapPairStmt(InsertStatement, Supplier, Supplier, PairStmt, int)
+     * @see #returningInsertObjectPairStmt(InsertStatement, Supplier, Supplier, PairStmt, int)
      */
     private <R> List<R> returningInsertPairStmt(final InsertStatement statement, final Class<R> resultClass,
                                                 final Supplier<List<R>> listConstructor, final PairStmt stmt,
@@ -643,9 +641,6 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
         final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
         final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
-
-        final ChildTableMeta<?> childTable;
-        childTable = (ChildTableMeta<?>) childInsert.table();
 
 
         final long startTime;
@@ -659,13 +654,20 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             rows = this.stmtExecutor.insert(stmt.firstStmt(), timeout);
         }
 
+        if (resultList == null && rows == 0) {
+            // exists conflict clause
+            return _Collections.emptyList();
+        }
+
+        final ChildTableMeta<?> childTable;
+        childTable = (ChildTableMeta<?>) childInsert.table();
+
         final int restTimeout;
         restTimeout = restSeconds(childTable, startTime, timeout);
 
         try {
             if (firstStmtIsQuery) {
-                rows = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), restTimeout, resultClass,
-                        resultList);
+                rows = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), restTimeout, resultList);
             } else {
                 resultList = this.stmtExecutor.query(stmt.secondStmt(), restTimeout, resultClass, listConstructor);
             }
@@ -690,11 +692,11 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
      * @see #queryObject(SimpleDqlStatement, Supplier, Supplier, Visible)
      * @see #returningInsertPairStmt(InsertStatement, Class, Supplier, PairStmt, int)
      */
-    private List<Map<String, Object>> returningInsertMapPairStmt(final InsertStatement statement,
-                                                                 final Supplier<Map<String, Object>> mapConstructor,
-                                                                 final Supplier<List<Map<String, Object>>> listConstructor,
-                                                                 final PairStmt stmt,
-                                                                 final int timeout) {
+    private <R> List<R> returningInsertObjectPairStmt(final InsertStatement statement,
+                                                      final Supplier<R> constructor,
+                                                      final Supplier<List<R>> listConstructor,
+                                                      final PairStmt stmt,
+                                                      final int timeout) {
 
         final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
         final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
@@ -707,11 +709,16 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         startTime = System.currentTimeMillis();
 
         long rows = 0;
-        List<Map<String, Object>> resultList = null;
+        List<R> resultList = null;
         if (firstStmtIsQuery) {
-            resultList = this.stmtExecutor.queryObject(stmt.firstStmt(), timeout, mapConstructor, listConstructor);
+            resultList = this.stmtExecutor.queryObject(stmt.firstStmt(), timeout, constructor, listConstructor);
         } else {
             rows = this.stmtExecutor.insert(stmt.firstStmt(), timeout);
+        }
+
+        if (resultList == null && rows == 0) {
+            // exists conflict clause
+            return _Collections.emptyList();
         }
 
         final int restTimeout;
@@ -719,13 +726,12 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
         try {
             if (firstStmtIsQuery) {
-                rows = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), restTimeout,
-                        _ClassUtils.mapJavaClass(), resultList);
+                rows = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), restTimeout, resultList);
                 if (resultList instanceof ImmutableSpec) {
                     resultList = _Collections.unmodifiableListForDeveloper(resultList);
                 }
             } else {
-                resultList = this.stmtExecutor.queryObject(stmt.secondStmt(), restTimeout, mapConstructor, listConstructor);
+                resultList = this.stmtExecutor.queryObject(stmt.secondStmt(), restTimeout, constructor, listConstructor);
             }
 
             if (rows == resultList.size()) {
