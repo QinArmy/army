@@ -1,9 +1,10 @@
 package io.army.sync;
 
 import io.army.ArmyException;
+import io.army.session.CurrentRecord;
 
 import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface MultiResult extends MultiResultSpec {
@@ -13,14 +14,12 @@ public interface MultiResult extends MultiResultSpec {
 
     <R> List<R> query(Class<R> resultClass, Supplier<List<R>> listConstructor) throws ArmyException;
 
-    List<Map<String, Object>> queryMap() throws ArmyException;
+    <R> List<R> queryObject(Supplier<R> constructor) throws ArmyException;
 
-    List<Map<String, Object>> queryMap(Supplier<Map<String, Object>> mapConstructor)
-            throws ArmyException;
+    <R> List<R> queryObject(Supplier<R> constructor, Supplier<List<R>> listConstructor) throws ArmyException;
 
-    List<Map<String, Object>> queryMap(Supplier<Map<String, Object>> mapConstructor,
-                                       Supplier<List<Map<String, Object>>> listConstructor)
-            throws ArmyException;
+    <R> List<R> queryRecord(Function<CurrentRecord, R> function) throws ArmyException;
 
+    <R> List<R> queryRecord(Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor) throws ArmyException;
 
 }

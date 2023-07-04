@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -121,8 +122,8 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public <R> List<R> query(final SimpleDqlStatement statement, final Supplier<R> constructor,
-                             final Supplier<List<R>> listConstructor, final Visible visible) {
+    public <R> List<R> queryObject(final SimpleDqlStatement statement, final Supplier<R> constructor,
+                                   final Supplier<List<R>> listConstructor, final Visible visible) {
         //1.assert session status
         assertSession(statement, visible);
 
@@ -165,6 +166,17 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         }
     }
 
+    @Override
+    public <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function,
+                                   Supplier<List<R>> listConstructor, Visible visible) {
+        return null;
+    }
+
+    @Override
+    public <R> Stream<R> queryRecardStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function,
+                                           StreamOptions options, Visible visible) {
+        return null;
+    }
 
     @Override
     public long update(final SimpleDmlStatement statement, final Visible visible) {
@@ -358,11 +370,11 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     }
 
     @Override
-    public <R> Stream<R> batchQueryMapStream(final BatchDqlStatement statement,
-                                             final Supplier<R> mapConstructor,
-                                             final @Nullable R terminator,
-                                             final StreamOptions options, final boolean useMultiStmt,
-                                             final Visible visible) {
+    public <R> Stream<R> batchQueryObjectStream(final BatchDqlStatement statement,
+                                                final Supplier<R> mapConstructor,
+                                                final @Nullable R terminator,
+                                                final StreamOptions options, final boolean useMultiStmt,
+                                                final Visible visible) {
         if (terminator == null) {
             throw _Exceptions.terminatorIsNull();
         }
@@ -395,6 +407,13 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     }
 
     @Override
+    public <R> Stream<R> batchQueryRecordStream(BatchDqlStatement statement, Function<CurrentRecord, R> function,
+                                                R terminator, StreamOptions options, boolean useMultiStmt,
+                                                Visible visible) {
+        return null;
+    }
+
+    @Override
     public <R> Stream<R> queryStream(final SimpleDqlStatement statement, final Class<R> resultClass,
                                      final StreamOptions options, final Visible visible) {
         //1. assert session status
@@ -418,9 +437,9 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public <R> Stream<R> queryStream(final SimpleDqlStatement statement,
-                                     final Supplier<R> mapConstructor,
-                                     final StreamOptions options, final Visible visible) {
+    public <R> Stream<R> queryObjectStream(final SimpleDqlStatement statement,
+                                           final Supplier<R> mapConstructor,
+                                           final StreamOptions options, final Visible visible) {
         //1. assert session status
         assertSession(statement, visible);
         try {
@@ -668,7 +687,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     }
 
     /**
-     * @see #query(SimpleDqlStatement, Supplier, Supplier, Visible)
+     * @see #queryObject(SimpleDqlStatement, Supplier, Supplier, Visible)
      * @see #returningInsertPairStmt(InsertStatement, Class, Supplier, PairStmt, int)
      */
     private List<Map<String, Object>> returningInsertMapPairStmt(final InsertStatement statement,
@@ -814,9 +833,9 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     /**
      * @see #query(SimpleDqlStatement, Class, Supplier, Visible)
-     * @see #query(SimpleDqlStatement, Supplier, Supplier, Visible)
+     * @see #queryObject(SimpleDqlStatement, Supplier, Supplier, Visible)
      * @see #queryStream(SimpleDqlStatement, Class, StreamOptions, Visible)
-     * @see #queryStream(SimpleDqlStatement, Supplier, StreamOptions, Visible)
+     * @see #queryObjectStream(SimpleDqlStatement, Supplier, StreamOptions, Visible)
      */
     private Stmt parseDqlStatement(final DqlStatement statement, final boolean useMultiStmt,
                                    final Visible visible) {

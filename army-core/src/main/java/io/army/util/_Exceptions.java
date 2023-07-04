@@ -1097,6 +1097,11 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new IllegalArgumentException(m);
     }
 
+    public static IllegalArgumentException recordFuncReturnNull(Function<CurrentRecord, ?> function) {
+        String m = String.format("record function %s couldn't return null", function);
+        return new IllegalArgumentException(m);
+    }
+
     public static DataAccessException noMoreResult() {
         return new DataAccessException("No more result.");
     }
