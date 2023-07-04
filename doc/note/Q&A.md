@@ -189,6 +189,9 @@
     * 这个情况 army parser 比较难实现
     * SQL 整体的可读性更好.
     * parent sub-insert rowNumber CTE 同理
+43. 为什么 firebird 和 h2 的子表一更新不支持 IN 操作符指定 id?
+    * 因为由于过滤条件的原因实际更新行数可能小于 IN 操作符的右操作数
+
 
 
 

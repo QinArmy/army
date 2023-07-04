@@ -2,12 +2,17 @@ package io.army.session;
 
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
+import io.army.criteria.Selection;
 import io.army.criteria.TypeInfer;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.TypeMeta;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
+
+import java.util.List;
+import java.util.Map;
 
 public abstract class ExecutorSupport {
 
@@ -62,6 +67,19 @@ public abstract class ExecutorSupport {
             compatibleType = type.compatibleFor(accessor.getJavaType(fieldName));
         }
         return compatibleType;
+    }
+
+
+    /**
+     * @return a unmodified map
+     */
+    protected static Map<String, Integer> createAliasToIndexMap(final List<? extends Selection> selectionList) {
+        final int selectionSize = selectionList.size();
+        Map<String, Integer> map = _Collections.hashMap((int) (selectionSize / 0.75f));
+        for (int i = 0; i < selectionSize; i++) {
+            map.put(selectionList.get(i).alias(), i); // If alias duplication,then override.
+        }
+        return _Collections.unmodifiableMap(map);
     }
 
 

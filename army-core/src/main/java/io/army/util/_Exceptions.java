@@ -1088,6 +1088,15 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new NullPointerException("object constructor return null");
     }
 
+    public static IllegalArgumentException unknownSelectionAlias(String selectionAlias) {
+        return new IllegalArgumentException(String.format("unknown selection alias[%s]", selectionAlias));
+    }
+
+    public static IllegalArgumentException recordFuncError(Function<CurrentRecord, ?> function, CurrentRecord record) {
+        String m = String.format("record function %s couldn't return %s", function, record);
+        return new IllegalArgumentException(m);
+    }
+
     public static DataAccessException noMoreResult() {
         return new DataAccessException("No more result.");
     }

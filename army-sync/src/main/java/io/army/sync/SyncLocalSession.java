@@ -134,7 +134,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final List<R> resultList;
             final int timeout = this.getTxTimeout();
             if (stmt instanceof SimpleStmt) {
-                resultList = this.stmtExecutor.queryMap((SimpleStmt) stmt, timeout, constructor, listConstructor);
+                resultList = this.stmtExecutor.queryObject((SimpleStmt) stmt, timeout, constructor, listConstructor);
             } else if (!(stmt instanceof PairStmt)) {
                 // no bug,never here
                 throw _Exceptions.unexpectedStmt(stmt);
@@ -304,7 +304,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 resultList = this.stmtExecutor.multiStmtBatchQueryAsMap((BatchStmt) stmt, this.getTxTimeout(),
                         mapConstructor, terminator, listConstructor);
             } else if (stmt instanceof BatchStmt) {
-                resultList = this.stmtExecutor.batchQueryAsMap((BatchStmt) stmt, this.getTxTimeout(), mapConstructor,
+                resultList = this.stmtExecutor.batchQueryObject((BatchStmt) stmt, this.getTxTimeout(), mapConstructor,
                         terminator, listConstructor);
             } else {//TODO firebird
                 throw _Exceptions.unexpectedStatement(statement);
@@ -376,7 +376,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 stream = this.stmtExecutor.multiStmtBatchQueryMapStream((BatchStmt) stmt, this.getTxTimeout(),
                         mapConstructor, terminator, options);
             } else if (stmt instanceof BatchStmt) {
-                stream = this.stmtExecutor.batchQueryMapStream((BatchStmt) stmt, this.getTxTimeout(), mapConstructor,
+                stream = this.stmtExecutor.batchQueryObjectStream((BatchStmt) stmt, this.getTxTimeout(), mapConstructor,
                         terminator, options);
             } else {
                 throw _Exceptions.unexpectedStatement(statement);
@@ -429,7 +429,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             if (!(stmt instanceof SimpleStmt)) {
                 throw streamApiDontSupportTowStatement();
             }
-            return this.stmtExecutor.queryMapStream((SimpleStmt) stmt, this.getTxTimeout(), mapConstructor, options);
+            return this.stmtExecutor.queryObjectStream((SimpleStmt) stmt, this.getTxTimeout(), mapConstructor, options);
         } catch (ArmyException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -690,7 +690,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         long rows = 0;
         List<Map<String, Object>> resultList = null;
         if (firstStmtIsQuery) {
-            resultList = this.stmtExecutor.queryMap(stmt.firstStmt(), timeout, mapConstructor, listConstructor);
+            resultList = this.stmtExecutor.queryObject(stmt.firstStmt(), timeout, mapConstructor, listConstructor);
         } else {
             rows = this.stmtExecutor.insert(stmt.firstStmt(), timeout);
         }
@@ -706,7 +706,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                     resultList = _Collections.unmodifiableListForDeveloper(resultList);
                 }
             } else {
-                resultList = this.stmtExecutor.queryMap(stmt.secondStmt(), restTimeout, mapConstructor, listConstructor);
+                resultList = this.stmtExecutor.queryObject(stmt.secondStmt(), restTimeout, mapConstructor, listConstructor);
             }
 
             if (rows == resultList.size()) {

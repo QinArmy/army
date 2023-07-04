@@ -3,6 +3,7 @@ package io.army.sync.executor;
 
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
+import io.army.session.CurrentRecord;
 import io.army.session.DataAccessException;
 import io.army.session.OptimisticLockException;
 import io.army.stmt.BatchStmt;
@@ -14,7 +15,7 @@ import io.army.sync.MultiStream;
 import io.army.sync.StreamOptions;
 
 import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -79,51 +80,42 @@ public interface StmtExecutor {
     <T> List<T> query(SimpleStmt stmt, int timeout, Class<T> resultClass, Supplier<List<T>> listConstructor)
             throws DataAccessException;
 
-    <R> List<R> queryMap(SimpleStmt stmt, int timeout, Supplier<R> mapConstructor, Supplier<List<R>> listConstructor)
+    <R> List<R> queryObject(SimpleStmt stmt, int timeout, Supplier<R> constructor, Supplier<List<R>> listConstructor)
             throws DataAccessException;
+
+    <R> List<R> queryRecord(SimpleStmt stmt, int timeout, Function<CurrentRecord, R> function,
+                            Supplier<List<R>> listConstructor) throws DataAccessException;
 
     <R> int secondQuery(TwoStmtQueryStmt stmt, int timeout, Class<R> resultClass, List<R> resultList);
 
     <R> List<R> batchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
-                           Supplier<List<R>> listConstructor) throws DataAccessException;
+                           Supplier<List<R>> listConstructor, boolean useMultiStmt) throws DataAccessException;
 
-    List<Map<String, Object>> batchQueryAsMap(BatchStmt stmt, int timeout, Supplier<Map<String, Object>> mapConstructor,
-                                              Map<String, Object> terminator,
-                                              Supplier<List<Map<String, Object>>> listConstructor)
-            throws DataAccessException;
+    <R> List<R> batchQueryObject(BatchStmt stmt, int timeout, Supplier<R> Constructor, R terminator,
+                                 Supplier<List<R>> listConstructor, boolean useMultiStmt) throws DataAccessException;
 
-    <R> List<R> multiStmtBatchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
-                                    Supplier<List<R>> listConstructor) throws DataAccessException;
-
-    List<Map<String, Object>> multiStmtBatchQueryAsMap(BatchStmt stmt, int timeout,
-                                                       Supplier<Map<String, Object>> mapConstructor,
-                                                       Map<String, Object> terminator,
-                                                       Supplier<List<Map<String, Object>>> listConstructor)
-            throws DataAccessException;
+    <R> List<R> batchQueryRecord(BatchStmt stmt, int timeout, Function<CurrentRecord, R> function, R terminator,
+                                 Supplier<List<R>> listConstructor, boolean useMultiStmt) throws DataAccessException;
 
 
     <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass, StreamOptions options)
             throws DataAccessException;
 
-    Stream<Map<String, Object>> queryMapStream(SimpleStmt stmt, int timeout,
-                                               Supplier<Map<String, Object>> mapConstructor, StreamOptions options)
+    <R> Stream<R> queryObjectStream(SimpleStmt stmt, int timeout, Supplier<R> constructor, StreamOptions options)
             throws DataAccessException;
+
+    <R> Stream<R> queryRecordStream(SimpleStmt stmt, int timeout, Function<CurrentRecord, R> function,
+                                    StreamOptions options) throws DataAccessException;
 
     <R> Stream<R> batchQueryStream(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
-                                   StreamOptions options) throws DataAccessException;
+                                   StreamOptions options, boolean useMultiStmt) throws DataAccessException;
 
-    Stream<Map<String, Object>> batchQueryMapStream(BatchStmt stmt, int timeout,
-                                                    Supplier<Map<String, Object>> mapConstructor,
-                                                    Map<String, Object> terminator, StreamOptions options)
-            throws DataAccessException;
+    <R> Stream<R> batchQueryObjectStream(BatchStmt stmt, int timeout, Supplier<R> constructor, R terminator,
+                                         StreamOptions options, boolean useMultiStmt) throws DataAccessException;
 
-    <R> Stream<R> multiStmtBatchQueryStream(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
-                                            StreamOptions options) throws DataAccessException;
+    <R> Stream<R> batchQueryRecordStream(BatchStmt stmt, int timeout, Function<CurrentRecord, R> function, R terminator,
+                                         StreamOptions options, boolean useMultiStmt) throws DataAccessException;
 
-    Stream<Map<String, Object>> multiStmtBatchQueryMapStream(BatchStmt stmt, int timeout,
-                                                             Supplier<Map<String, Object>> mapConstructor,
-                                                             Map<String, Object> terminator, StreamOptions options)
-            throws DataAccessException;
 
     MultiResult multiStmt(MultiStmt stmt, int timeout, StreamOptions options);
 

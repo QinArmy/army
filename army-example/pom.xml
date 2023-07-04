@@ -54,6 +54,12 @@
             <artifactId>postgresql</artifactId>
             <version>${postgresql.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>alibabacloud-polardb20170801</artifactId>
+            <version>1.0.5</version>
+        </dependency>
+
 
         <dependency>
             <groupId>io.jdbd</groupId>
