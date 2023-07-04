@@ -18,7 +18,9 @@ import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -73,107 +75,175 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public <R> List<R> query(final SimpleDqlStatement statement, final Class<R> resultClass,
+    public <R> List<R> query(final SimpleDqlStatement statement, final @Nullable Class<R> resultClass,
                              final Supplier<List<R>> listConstructor, final Visible visible) {
-
-        //1.assert session status
-        assertSession(statement, visible);
-
-        try {
-
-            final Stmt stmt;
-            stmt = this.parseDqlStatement(statement, false, visible);
-
-            final List<R> resultList;
-            final int timeout = this.getTxTimeout();
-            if (stmt instanceof SimpleStmt) {
-                resultList = this.stmtExecutor.query((SimpleStmt) stmt, timeout, resultClass, listConstructor);
-            } else if (!(stmt instanceof PairStmt)) {
-                // no bug,never here
-                throw _Exceptions.unexpectedStmt(stmt);
-            } else if (statement instanceof InsertStatement) {
-                resultList = this.returningInsertPairStmt((InsertStatement) statement, resultClass, listConstructor,
-                        (PairStmt) stmt, timeout);
-            } else {
-                //TODO add DmlStatement code for firebird
-                // no bug,never here
-                throw _Exceptions.unexpectedStatement(statement);
-            }
-            if (!this.factory.buildInExecutor) {
-                Objects.requireNonNull(resultList);
-            }
-            return resultList;
-        } catch (ChildUpdateException e) {
-            final LocalTransaction tx = this.transaction;
-            if (tx != null) {
-                tx.markRollbackOnly();
-            }
-            throw e;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw _Exceptions.unknownSessionError(this, e);
-        } finally {
-            ((_Statement) statement).clear();
+        if (resultClass == null) {
+            throw new NullPointerException();
         }
+
+        final QueryFunction<List<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.query(stmt, timeout, resultClass, listConstructor);
+        return this.queryList(statement, queryFunc, visible);
     }
 
 
     @Override
-    public <R> List<R> queryObject(final SimpleDqlStatement statement, final Supplier<R> constructor,
+    public <R> List<R> queryObject(final SimpleDqlStatement statement, final @Nullable Supplier<R> constructor,
                                    final Supplier<List<R>> listConstructor, final Visible visible) {
-        //1.assert session status
-        assertSession(statement, visible);
-
-        try {
-
-            final Stmt stmt;
-            stmt = this.parseDqlStatement(statement, false, visible);
-
-            final List<R> resultList;
-            final int timeout = this.getTxTimeout();
-            if (stmt instanceof SimpleStmt) {
-                resultList = this.stmtExecutor.queryObject((SimpleStmt) stmt, timeout, constructor, listConstructor);
-            } else if (!(stmt instanceof PairStmt)) {
-                // no bug,never here
-                throw _Exceptions.unexpectedStmt(stmt);
-            } else if (statement instanceof InsertStatement) {
-                resultList = this.returningInsertObjectPairStmt((InsertStatement) statement, constructor,
-                        listConstructor, (PairStmt) stmt, timeout);
-            } else {
-                //TODO add DmlStatement code for firebird
-                // no bug,never here
-                throw _Exceptions.unexpectedStatement(statement);
-            }
-            if (!this.factory.buildInExecutor) {
-                Objects.requireNonNull(resultList);
-            }
-            return resultList;
-        } catch (ChildUpdateException e) {
-            final LocalTransaction tx = this.transaction;
-            if (tx != null) {
-                tx.markRollbackOnly();
-            }
-            throw e;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (Throwable e) {
-            throw _Exceptions.unknownSessionError(this, e);
-        } finally {
-            ((_Statement) statement).clear();
+        if (constructor == null) {
+            throw new NullPointerException();
         }
+        final QueryFunction<List<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.queryObject(stmt, timeout, constructor, listConstructor);
+        return this.queryList(statement, queryFunc, visible);
     }
 
     @Override
-    public <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function,
-                                   Supplier<List<R>> listConstructor, Visible visible) {
-        return null;
+    public <R> List<R> queryRecord(final SimpleDqlStatement statement, final @Nullable Function<CurrentRecord, R> function,
+                                   final Supplier<List<R>> listConstructor, final Visible visible) {
+        if (function == null) {
+            throw new NullPointerException();
+        }
+        final QueryFunction<List<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.queryRecord(stmt, timeout, function, listConstructor);
+        return this.queryList(statement, queryFunc, visible);
+    }
+
+
+    @Override
+    public <R> Stream<R> queryStream(final SimpleDqlStatement statement, final @Nullable Class<R> resultClass,
+                                     final StreamOptions options, final Visible visible) {
+        if (resultClass == null) {
+            throw new NullPointerException();
+        }
+        final QueryFunction<Stream<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.queryStream(stmt, timeout, resultClass, options);
+        return this.queryAsStream(statement, queryFunc, visible);
+    }
+
+
+    @Override
+    public <R> Stream<R> queryObjectStream(final SimpleDqlStatement statement, final @Nullable Supplier<R> constructor,
+                                           final StreamOptions options, final Visible visible) {
+        if (constructor == null) {
+            throw new NullPointerException();
+        }
+        final QueryFunction<Stream<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.queryObjectStream(stmt, timeout, constructor, options);
+        return this.queryAsStream(statement, queryFunc, visible);
+    }
+
+
+    @Override
+    public <R> Stream<R> queryRecardStream(SimpleDqlStatement statement,
+                                           final @Nullable Function<CurrentRecord, R> function,
+                                           final StreamOptions options, final Visible visible) {
+        if (function == null) {
+            throw new NullPointerException();
+        }
+        final QueryFunction<Stream<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.queryRecordStream(stmt, timeout, function, options);
+        return this.queryAsStream(statement, queryFunc, visible);
+    }
+
+
+    @Override
+    public <R> List<R> batchQuery(final BatchDqlStatement statement, final Class<R> resultClass,
+                                  final @Nullable R terminator, final Supplier<List<R>> listConstructor,
+                                  final boolean useMultiStmt, final Visible visible) {
+        if (terminator == null) {
+            throw _Exceptions.terminatorIsNull();
+        } else if (terminator == Collections.EMPTY_MAP) {
+            throw new IllegalArgumentException();
+        }
+        final BatchQueryFunction<List<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.batchQuery(stmt, timeout, resultClass, terminator,
+                listConstructor, useMultiStmt
+        );
+        return batchQueryList(statement, queryFunc, useMultiStmt, visible);
+    }
+
+
+    @Override
+    public <R> List<R> batchQueryObject(final BatchDqlStatement statement, final Supplier<R> constructor,
+                                        final @Nullable R terminator, final Supplier<List<R>> listConstructor,
+                                        final boolean useMultiStmt, final Visible visible) {
+        if (terminator == null) {
+            throw _Exceptions.terminatorIsNull();
+        } else if (terminator == Collections.EMPTY_MAP) {
+            throw new IllegalArgumentException();
+        }
+        final BatchQueryFunction<List<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.batchQueryObject(stmt, timeout, constructor, terminator,
+                listConstructor, useMultiStmt
+        );
+        return batchQueryList(statement, queryFunc, useMultiStmt, visible);
+    }
+
+
+    @Override
+    public <R> List<R> batchQueryRecord(final BatchDqlStatement statement, final Function<CurrentRecord, R> function,
+                                        final @Nullable R terminator, final Supplier<List<R>> listConstructor,
+                                        final boolean useMultiStmt, final Visible visible) {
+        if (terminator == null) {
+            throw _Exceptions.terminatorIsNull();
+        } else if (terminator == Collections.EMPTY_MAP) {
+            throw new IllegalArgumentException();
+        }
+        final BatchQueryFunction<List<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.batchQueryRecord(stmt, timeout, function, terminator,
+                listConstructor, useMultiStmt
+        );
+        return batchQueryList(statement, queryFunc, useMultiStmt, visible);
     }
 
     @Override
-    public <R> Stream<R> queryRecardStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function,
-                                           StreamOptions options, Visible visible) {
-        return null;
+    public <R> Stream<R> batchQueryStream(final BatchDqlStatement statement, final Class<R> resultClass,
+                                          final @Nullable R terminator, final StreamOptions options,
+                                          final boolean useMultiStmt, final Visible visible) {
+        if (terminator == null) {
+            throw _Exceptions.terminatorIsNull();
+        } else if (terminator == Collections.EMPTY_MAP) {
+            throw new IllegalArgumentException();
+        }
+        final BatchQueryFunction<Stream<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.batchQueryStream(stmt, timeout, resultClass, terminator,
+                options, useMultiStmt
+        );
+        return batchQueryAsStream(statement, queryFunc, useMultiStmt, visible);
+    }
+
+    @Override
+    public <R> Stream<R> batchQueryObjectStream(final BatchDqlStatement statement, final Supplier<R> constructor,
+                                                final @Nullable R terminator, final StreamOptions options,
+                                                final boolean useMultiStmt, final Visible visible) {
+        if (terminator == null) {
+            throw _Exceptions.terminatorIsNull();
+        } else if (terminator == Collections.EMPTY_MAP) {
+            throw new IllegalArgumentException();
+        }
+        final BatchQueryFunction<Stream<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.batchQueryObjectStream(stmt, timeout, constructor, terminator,
+                options, useMultiStmt
+        );
+        return batchQueryAsStream(statement, queryFunc, useMultiStmt, visible);
+    }
+
+    @Override
+    public <R> Stream<R> batchQueryRecordStream(final BatchDqlStatement statement,
+                                                final Function<CurrentRecord, R> function,
+                                                final @Nullable R terminator, final StreamOptions options,
+                                                final boolean useMultiStmt, final Visible visible) {
+        if (terminator == null) {
+            throw _Exceptions.terminatorIsNull();
+        } else if (terminator == Collections.EMPTY_MAP) {
+            throw new IllegalArgumentException();
+        }
+        final BatchQueryFunction<Stream<R>> queryFunc;
+        queryFunc = (stmt, timeout) -> this.stmtExecutor.batchQueryRecordStream(stmt, timeout, function, terminator,
+                options, useMultiStmt
+        );
+        return batchQueryAsStream(statement, queryFunc, useMultiStmt, visible);
     }
 
     @Override
@@ -204,14 +274,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         try {
             //2. parse statement to stmt
             final Stmt stmt;
-            if (statement instanceof UpdateStatement) {
-                stmt = this.factory.dialectParser.update((UpdateStatement) statement, useMultiStmt, visible);
-            } else if (statement instanceof DeleteStatement) {
-                stmt = this.factory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, visible);
-            } else {
-                throw _Exceptions.unexpectedStatement(statement);
-            }
-            this.printSqlIfNeed(stmt);
+            stmt = this.parseDmlStatement(statement, useMultiStmt, visible);
 
             //3. execute stmt
             final int timeout;
@@ -219,12 +282,12 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             final TableMeta<?> domainTable;
             domainTable = getBatchUpdateDomainTable(statement);
             final List<Long> resultList;
-            if (useMultiStmt) {
-                resultList = this.stmtExecutor.multiStmtBatchUpdate((BatchStmt) stmt, timeout, listConstructor,
-                        domainTable
+            if (stmt instanceof BatchStmt) {
+                resultList = this.stmtExecutor.batchUpdate((BatchStmt) stmt, timeout, listConstructor, useMultiStmt,
+                        domainTable, null
                 );
             } else if (!(stmt instanceof PairBatchStmt)) {
-                resultList = this.stmtExecutor.batchUpdate((BatchStmt) stmt, timeout, listConstructor, domainTable, null);
+                throw _Exceptions.unexpectedStmt(stmt);
             } else if (!this.hasTransaction()) {
                 throw updateChildNoTransaction();
             } else {
@@ -232,14 +295,14 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 startTime = System.currentTimeMillis();
                 // firstStmt update child, because army update child and update parent
                 resultList = this.stmtExecutor.batchUpdate(((PairBatchStmt) stmt).firstStmt(), timeout,
-                        listConstructor, domainTable, null
+                        listConstructor, useMultiStmt, domainTable, null
                 );
                 assert domainTable instanceof ChildTableMeta; // fail, bug.
 
                 // secondStmt update parent, because army update child and update parent
                 this.stmtExecutor.batchUpdate(((PairBatchStmt) stmt).secondStmt(),
-                        restSeconds((ChildTableMeta<?>) domainTable, startTime, timeout), listConstructor, domainTable,
-                        resultList
+                        restSeconds((ChildTableMeta<?>) domainTable, startTime, timeout), listConstructor,
+                        useMultiStmt, domainTable, resultList
                 );
             }
 
@@ -262,210 +325,13 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public <R> List<R> batchQuery(final BatchDqlStatement statement, final Class<R> resultClass,
-                                  final @Nullable R terminator, final Supplier<List<R>> listConstructor,
-                                  final boolean useMultiStmt, final Visible visible) {
-        if (terminator == null) {
-            throw _Exceptions.terminatorIsNull();
-        }
-        //1. assert session status
-        assertSession(statement, visible);
-        try {
-            final Stmt stmt;
-            stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
-            final List<R> resultList;
-            if (useMultiStmt) {
-                resultList = this.stmtExecutor.multiStmtBatchQuery((BatchStmt) stmt, this.getTxTimeout(), resultClass,
-                        terminator, listConstructor);
-            } else if (stmt instanceof BatchStmt) {
-                resultList = this.stmtExecutor.batchQuery((BatchStmt) stmt, this.getTxTimeout(), resultClass,
-                        terminator, listConstructor);
-            } else {//TODO firebird
-                throw _Exceptions.unexpectedStatement(statement);
-            }
-            if (!this.factory.buildInExecutor) {
-                Objects.requireNonNull(resultList);
-            }
-            return resultList;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw _Exceptions.unknownError(e.getMessage(), e);
-        } finally {
-            ((_Statement) statement).clear();
-        }
-    }
-
-    @Override
-    public <R> List<R> batchQuery(final BatchDqlStatement statement, final Supplier<R> mapConstructor,
-                                  final @Nullable R terminator,
-                                  final Supplier<List<R>> listConstructor,
-                                  final boolean useMultiStmt, final Visible visible) {
-        if (terminator == null) {
-            throw _Exceptions.terminatorIsNull();
-        }
-        //1. assert session status
-        assertSession(statement, visible);
-        try {
-            final Stmt stmt;
-            stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
-            final List<R> resultList;
-            if (useMultiStmt) {
-                resultList = this.stmtExecutor.multiStmtBatchQueryAsMap((BatchStmt) stmt, this.getTxTimeout(),
-                        mapConstructor, terminator, listConstructor);
-            } else if (stmt instanceof BatchStmt) {
-                resultList = this.stmtExecutor.batchQueryObject((BatchStmt) stmt, this.getTxTimeout(), mapConstructor,
-                        terminator, listConstructor);
-            } else {//TODO firebird
-                throw _Exceptions.unexpectedStatement(statement);
-            }
-            if (!this.factory.buildInExecutor) {
-                Objects.requireNonNull(resultList);
-            }
-            return resultList;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw _Exceptions.unknownError(e.getMessage(), e);
-        } finally {
-            ((_Statement) statement).clear();
-        }
-    }
-
-    @Override
-    public <R> Stream<R> batchQueryStream(final BatchDqlStatement statement, final Class<R> resultClass,
-                                          final @Nullable R terminator, final StreamOptions options,
-                                          final boolean useMultiStmt, final Visible visible) {
-        if (terminator == null) {
-            throw _Exceptions.terminatorIsNull();
-        }
-        //1. assert session status
-        assertSession(statement, visible);
-        try {
-            final Stmt stmt;
-            stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
-            final Stream<R> stream;
-            if (useMultiStmt) {
-                stream = this.stmtExecutor.multiStmtBatchQueryStream((BatchStmt) stmt, this.getTxTimeout(), resultClass,
-                        terminator, options);
-            } else if (stmt instanceof BatchStmt) {
-                stream = this.stmtExecutor.batchQueryStream((BatchStmt) stmt, this.getTxTimeout(), resultClass,
-                        terminator, options);
-            } else {
-                throw _Exceptions.unexpectedStatement(statement);
-            }
-            if (!this.factory.buildInExecutor) {
-                Objects.requireNonNull(stream);
-            }
-            return stream;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw _Exceptions.unknownError(e.getMessage(), e);
-        } finally {
-            ((_Statement) statement).clear();
-        }
-    }
-
-    @Override
-    public <R> Stream<R> batchQueryObjectStream(final BatchDqlStatement statement,
-                                                final Supplier<R> mapConstructor,
-                                                final @Nullable R terminator,
-                                                final StreamOptions options, final boolean useMultiStmt,
-                                                final Visible visible) {
-        if (terminator == null) {
-            throw _Exceptions.terminatorIsNull();
-        }
-        //1. assert session status
-        assertSession(statement, visible);
-        try {
-            final Stmt stmt;
-            stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
-            final Stream<R> stream;
-            if (useMultiStmt) {
-                stream = this.stmtExecutor.multiStmtBatchQueryMapStream((BatchStmt) stmt, this.getTxTimeout(),
-                        mapConstructor, terminator, options);
-            } else if (stmt instanceof BatchStmt) {
-                stream = this.stmtExecutor.batchQueryObjectStream((BatchStmt) stmt, this.getTxTimeout(), mapConstructor,
-                        terminator, options);
-            } else {
-                throw _Exceptions.unexpectedStatement(statement);
-            }
-            if (!this.factory.buildInExecutor) {
-                Objects.requireNonNull(stream);
-            }
-            return stream;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw _Exceptions.unknownError(e.getMessage(), e);
-        } finally {
-            ((_Statement) statement).clear();
-        }
-    }
-
-    @Override
-    public <R> Stream<R> batchQueryRecordStream(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                                R terminator, StreamOptions options, boolean useMultiStmt,
-                                                Visible visible) {
-        return null;
-    }
-
-    @Override
-    public <R> Stream<R> queryStream(final SimpleDqlStatement statement, final Class<R> resultClass,
-                                     final StreamOptions options, final Visible visible) {
-        //1. assert session status
-        assertSession(statement, visible);
-        try {
-            final Stmt stmt;
-            stmt = this.parseDqlStatement(statement, false, visible);
-            if (!(stmt instanceof SimpleStmt)) {
-                throw streamApiDontSupportTowStatement();
-            }
-            return this.stmtExecutor.queryStream((SimpleStmt) stmt, this.getTxTimeout(), resultClass, options);
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            String m = String.format("Army execute %s occur error.", SimpleDqlStatement.class.getName());
-            throw _Exceptions.unknownError(m, e);
-        } finally {
-            ((_Statement) statement).clear();
-        }
-    }
-
-
-    @Override
-    public <R> Stream<R> queryObjectStream(final SimpleDqlStatement statement,
-                                           final Supplier<R> mapConstructor,
-                                           final StreamOptions options, final Visible visible) {
-        //1. assert session status
-        assertSession(statement, visible);
-        try {
-            final Stmt stmt;
-            stmt = this.parseDqlStatement(statement, false, visible);
-            if (!(stmt instanceof SimpleStmt)) {
-                throw streamApiDontSupportTowStatement();
-            }
-            return this.stmtExecutor.queryObjectStream((SimpleStmt) stmt, this.getTxTimeout(), mapConstructor, options);
-        } catch (ArmyException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            String m = String.format("Army execute %s occur error.", SimpleDqlStatement.class.getName());
-            throw _Exceptions.unknownError(m, e);
-        } finally {
-            ((_Statement) statement).clear();
-        }
-
-    }
-
-    @Override
-    public MultiResult multiStmt(final MultiResultStatement statement, final @Nullable StreamOptions options,
+    public MultiResult multiStmt(final MultiResultStatement statement, final StreamOptions options,
                                  final Visible visible) {
         return null;
     }
 
     @Override
-    public MultiStream multiStmtStream(final MultiResultStatement statement, final @Nullable StreamOptions options,
+    public MultiStream multiStmtStream(final MultiResultStatement statement, final StreamOptions options,
                                        final Visible visible) {
         return null;
     }
@@ -630,18 +496,64 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
     }
 
+    /**
+     * @see #query(SimpleDqlStatement, Class, Supplier, Visible)
+     * @see #queryObject(SimpleDqlStatement, Supplier, Supplier, Visible)
+     * @see #queryRecord(SimpleDqlStatement, Function, Supplier, Visible)
+     */
+    private <R> List<R> queryList(final SimpleDqlStatement statement, final QueryFunction<List<R>> queryFunc,
+                                  final Visible visible) {
+        //1.assert session status
+        assertSession(statement, visible);
+
+        try {
+
+            final Stmt stmt;
+            stmt = this.parseDqlStatement(statement, false, visible);
+
+            final List<R> resultList;
+            final int timeout = this.getTxTimeout();
+            if (stmt instanceof SimpleStmt) {
+                resultList = queryFunc.query((SimpleStmt) stmt, timeout);
+            } else if (!(stmt instanceof PairStmt)) {
+                // no bug,never here
+                throw _Exceptions.unexpectedStmt(stmt);
+            } else if (statement instanceof InsertStatement) {
+                resultList = this.returningInsertPairStmt((InsertStatement) statement, queryFunc, (PairStmt) stmt,
+                        timeout);
+            } else {
+                //TODO add DmlStatement code for firebird
+                // no bug,never here
+                throw _Exceptions.unexpectedStatement(statement);
+            }
+            if (!this.factory.buildInExecutor) {
+                Objects.requireNonNull(resultList);
+            }
+            return resultList;
+        } catch (ChildUpdateException e) {
+            final LocalTransaction tx = this.transaction;
+            if (tx != null) {
+                tx.markRollbackOnly();
+            }
+            throw e;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw _Exceptions.unknownSessionError(this, e);
+        } finally {
+            ((_Statement) statement).clear();
+        }
+    }
+
 
     /**
      * @see #query(SimpleDqlStatement, Class, Supplier, Visible)
-     * @see #returningInsertObjectPairStmt(InsertStatement, Supplier, Supplier, PairStmt, int)
      */
-    private <R> List<R> returningInsertPairStmt(final InsertStatement statement, final Class<R> resultClass,
-                                                final Supplier<List<R>> listConstructor, final PairStmt stmt,
-                                                final int timeout) {
+    private <R> List<R> returningInsertPairStmt(final InsertStatement statement, final QueryFunction<List<R>> queryFunc,
+                                                final PairStmt stmt, final int timeout) {
 
         final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
         final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
-
 
         final long startTime;
         startTime = System.currentTimeMillis();
@@ -649,7 +561,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         long rows = 0;
         List<R> resultList = null;
         if (firstStmtIsQuery) {
-            resultList = this.stmtExecutor.query(stmt.firstStmt(), timeout, resultClass, listConstructor);
+            resultList = queryFunc.query(stmt.firstStmt(), timeout);
         } else {
             rows = this.stmtExecutor.insert(stmt.firstStmt(), timeout);
         }
@@ -668,8 +580,11 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         try {
             if (firstStmtIsQuery) {
                 rows = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), restTimeout, resultList);
+                if (resultList instanceof ImmutableSpec && resultList.get(0) instanceof Map) {
+                    resultList = _Collections.unmodifiableListForDeveloper(resultList);
+                }
             } else {
-                resultList = this.stmtExecutor.query(stmt.secondStmt(), restTimeout, resultClass, listConstructor);
+                resultList = queryFunc.query(stmt.firstStmt(), timeout);
             }
 
             if (rows == resultList.size()) {
@@ -688,65 +603,90 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         }
     }
 
+
     /**
-     * @see #queryObject(SimpleDqlStatement, Supplier, Supplier, Visible)
-     * @see #returningInsertPairStmt(InsertStatement, Class, Supplier, PairStmt, int)
+     * @see #queryStream(SimpleDqlStatement, Class, StreamOptions, Visible)
+     * @see #queryObjectStream(SimpleDqlStatement, Supplier, StreamOptions, Visible)
+     * @see #queryRecardStream(SimpleDqlStatement, Function, StreamOptions, Visible)
      */
-    private <R> List<R> returningInsertObjectPairStmt(final InsertStatement statement,
-                                                      final Supplier<R> constructor,
-                                                      final Supplier<List<R>> listConstructor,
-                                                      final PairStmt stmt,
-                                                      final int timeout) {
-
-        final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
-        final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
-
-        final ChildTableMeta<?> childTable;
-        childTable = (ChildTableMeta<?>) childInsert.table();
-
-
-        final long startTime;
-        startTime = System.currentTimeMillis();
-
-        long rows = 0;
-        List<R> resultList = null;
-        if (firstStmtIsQuery) {
-            resultList = this.stmtExecutor.queryObject(stmt.firstStmt(), timeout, constructor, listConstructor);
-        } else {
-            rows = this.stmtExecutor.insert(stmt.firstStmt(), timeout);
+    private <R> Stream<R> queryAsStream(final SimpleDqlStatement statement, final QueryFunction<Stream<R>> queryFunc,
+                                        final Visible visible) {
+        if (statement instanceof _Statement._ChildStatement) {
+            throw _Exceptions.streamApiDontSupportTwoStmtMode();
         }
-
-        if (resultList == null && rows == 0) {
-            // exists conflict clause
-            return _Collections.emptyList();
-        }
-
-        final int restTimeout;
-        restTimeout = restSeconds(childTable, startTime, timeout);
+        //1.assert session status
+        assertSession(statement, visible);
 
         try {
-            if (firstStmtIsQuery) {
-                rows = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), restTimeout, resultList);
-                if (resultList instanceof ImmutableSpec) {
-                    resultList = _Collections.unmodifiableListForDeveloper(resultList);
-                }
-            } else {
-                resultList = this.stmtExecutor.queryObject(stmt.secondStmt(), restTimeout, constructor, listConstructor);
-            }
-
-            if (rows == resultList.size()) {
-                return resultList;
-            }
-
-            if (firstStmtIsQuery) {
-                throw _Exceptions.parentChildRowsNotMatch(this, childTable, resultList.size(), rows);
-            } else {
-                throw _Exceptions.parentChildRowsNotMatch(this, childTable, rows, resultList.size());
-            }
-        } catch (ChildUpdateException e) {
+            final SimpleStmt stmt;
+            stmt = (SimpleStmt) this.parseDqlStatement(statement, false, visible);
+            return queryFunc.query(stmt, this.getTxTimeout());
+        } catch (ArmyException e) {
             throw e;
-        } catch (Throwable e) {
-            throw _Exceptions.childInsertError(this, childTable, e);
+        } catch (RuntimeException e) {
+            throw _Exceptions.unknownSessionError(this, e);
+        } finally {
+            ((_Statement) statement).clear();
+        }
+    }
+
+    /**
+     * @see #batchQuery(BatchDqlStatement, Class, Object, Supplier, boolean, Visible)
+     * @see #batchQueryObject(BatchDqlStatement, Supplier, Object, Supplier, boolean, Visible)
+     * @see #batchQueryRecord(BatchDqlStatement, Function, Object, Supplier, boolean, Visible)
+     */
+    private <R> List<R> batchQueryList(final BatchDqlStatement statement, final BatchQueryFunction<List<R>> queryFunc,
+                                       final boolean useMultiStmt, final Visible visible) {
+        //1. assert session status
+        assertSession(statement, visible);
+        try {
+            final Stmt stmt;
+            stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
+            final List<R> resultList;
+            if (stmt instanceof BatchStmt) {
+                resultList = queryFunc.query((BatchStmt) stmt, this.getTxTimeout());
+            } else {//TODO firebird
+                throw _Exceptions.unexpectedStatement(statement);
+            }
+            if (!this.factory.buildInExecutor) {
+                Objects.requireNonNull(resultList);
+            }
+            return resultList;
+        } catch (ChildUpdateException e) {
+            final LocalTransaction tx = this.transaction;
+            if (tx != null) {
+                tx.markRollbackOnly();
+            }
+            throw e;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw _Exceptions.unknownError(e.getMessage(), e);
+        } finally {
+            ((_Statement) statement).clear();
+        }
+    }
+
+    /**
+     * @see #batchQueryStream(BatchDqlStatement, Class, Object, StreamOptions, boolean, Visible)
+     * @see #batchQueryObjectStream(BatchDqlStatement, Supplier, Object, StreamOptions, boolean, Visible)
+     * @see #batchQueryRecordStream(BatchDqlStatement, Function, Object, StreamOptions, boolean, Visible)
+     */
+    private <R> Stream<R> batchQueryAsStream(final BatchDqlStatement statement,
+                                             final BatchQueryFunction<Stream<R>> queryFunc, final boolean useMultiStmt,
+                                             final Visible visible) {
+        //1. assert session status
+        assertSession(statement, visible);
+        try {
+            final BatchStmt stmt;
+            stmt = (BatchStmt) this.parseDqlStatement(statement, useMultiStmt, visible);
+            return queryFunc.query(stmt, this.getTxTimeout());
+        } catch (ArmyException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw _Exceptions.unknownError(e.getMessage(), e);
+        } finally {
+            ((_Statement) statement).clear();
         }
     }
 
@@ -766,15 +706,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
             //2. parse statement to stmt
             final Stmt stmt;
-            if (statement instanceof Update) {
-                stmt = this.factory.dialectParser.update((Update) statement, false, visible);
-            } else if (statement instanceof Delete) {
-                stmt = this.factory.dialectParser.delete((Delete) statement, false, visible);
-            } else {
-                stmt = this.factory.dialectParser.dialectDml(statement, visible);
-            }
-
-            this.printSqlIfNeed(stmt);
+            stmt = this.parseDmlStatement(statement, false, visible);
             //3. execute stmt
             final int timeout = tx == null ? 0 : tx.nextTimeout();
             final long affectedRows;
@@ -843,8 +775,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
      * @see #queryStream(SimpleDqlStatement, Class, StreamOptions, Visible)
      * @see #queryObjectStream(SimpleDqlStatement, Supplier, StreamOptions, Visible)
      */
-    private Stmt parseDqlStatement(final DqlStatement statement, final boolean useMultiStmt,
-                                   final Visible visible) {
+    private Stmt parseDqlStatement(final DqlStatement statement, final boolean useMultiStmt, final Visible visible) {
         final Stmt stmt;
         if (statement instanceof SelectStatement) {
             stmt = this.factory.dialectParser.select((SelectStatement) statement, useMultiStmt, visible);
@@ -860,6 +791,23 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
             stmt = this.factory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, visible);
         } else {
             stmt = this.factory.dialectParser.dialectDml((DmlStatement) statement, visible);
+        }
+        this.printSqlIfNeed(stmt);
+        return stmt;
+    }
+
+    /**
+     * @see #simpleUpdate(SimpleDmlStatement, Visible)
+     * @see #batchUpdate(BatchDmlStatement, IntFunction, boolean, Visible)
+     */
+    private Stmt parseDmlStatement(final DmlStatement statement, final boolean useMultiStmt, final Visible visible) {
+        final Stmt stmt;
+        if (statement instanceof UpdateStatement) {
+            stmt = this.factory.dialectParser.update((UpdateStatement) statement, useMultiStmt, visible);
+        } else if (statement instanceof DeleteStatement) {
+            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, visible);
+        } else {
+            stmt = this.factory.dialectParser.dialectDml(statement, visible);
         }
         this.printSqlIfNeed(stmt);
         return stmt;
@@ -974,6 +922,19 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         }
 
     }//LocalTransactionBuilder
+
+
+    private interface QueryFunction<R> {
+
+        R query(SimpleStmt stmt, int timeout);
+
+    }
+
+    private interface BatchQueryFunction<R> {
+
+        R query(BatchStmt stmt, int timeout);
+
+    }
 
 
 }

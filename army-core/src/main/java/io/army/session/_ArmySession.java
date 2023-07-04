@@ -61,6 +61,16 @@ public abstract class _ArmySession implements Session {
         return this.allowQueryInsert;
     }
 
+    @Override
+    public final int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public final boolean equals(Object obj) {
+        return obj == this;
+    }
+
 
     @Override
     public final String toString() {

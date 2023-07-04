@@ -1,10 +1,6 @@
 package io.army.stmt;
 
-public interface TwoStmtQueryStmt extends SimpleStmt,
-        GenericSimpleStmt.IdSelectionIndexSpec, TwoStmtModeQuerySpec {
+public interface TwoStmtQueryStmt extends SimpleStmt, TwoStmtModeQuerySpec {
 
-     int idSelectionIndex();
-
-     int maxColumnSize();
 
 }

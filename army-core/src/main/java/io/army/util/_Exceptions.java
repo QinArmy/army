@@ -891,6 +891,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new CriteriaException("table alias must non-empty.");
     }
 
+    public static IllegalArgumentException streamApiDontSupportTwoStmtMode() {
+        return new IllegalArgumentException("stream api don't support two statement mode.");
+    }
+
     public static ObjectAccessException nonWritableProperty(Object target, String propertyName) {
         String m = String.format("%s property[%s] isn't writable.", target, propertyName);
         return new ObjectAccessException(m);

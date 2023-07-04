@@ -6,10 +6,7 @@ import io.army.meta.TableMeta;
 import io.army.session.CurrentRecord;
 import io.army.session.DataAccessException;
 import io.army.session.OptimisticLockException;
-import io.army.stmt.BatchStmt;
-import io.army.stmt.MultiStmt;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.TwoStmtQueryStmt;
+import io.army.stmt.*;
 import io.army.sync.MultiResult;
 import io.army.sync.MultiStream;
 import io.army.sync.StreamOptions;
@@ -64,18 +61,9 @@ public interface StmtExecutor {
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
-    List<Long> batchUpdate(BatchStmt stmt, int timeout, IntFunction<List<Long>> listConstructor,
+    List<Long> batchUpdate(BatchStmt stmt, int timeout, IntFunction<List<Long>> listConstructor, boolean useMultiStmt,
                            @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
 
-    /**
-     * @param domainTable <ul>
-     *                    <li>null : multi-table batch update or the batch update which WITH clause support sub dml</li>
-     *                    <li>{@link io.army.meta.ChildTableMeta} child batch update,now {@link MultiStmt#stmtItemList()} size must be even.</li>
-     *                    <li>{@link io.army.meta.SingleTableMeta} single table batch update</li>
-     *                    </ul>
-     */
-    List<Long> multiStmtBatchUpdate(BatchStmt stmt, int timeout, IntFunction<List<Long>> listConstructor,
-                                    @Nullable TableMeta<?> domainTable);
 
     <T> List<T> query(SimpleStmt stmt, int timeout, Class<T> resultClass, Supplier<List<T>> listConstructor)
             throws DataAccessException;
@@ -87,6 +75,8 @@ public interface StmtExecutor {
                             Supplier<List<R>> listConstructor) throws DataAccessException;
 
     <R> int secondQuery(TwoStmtQueryStmt stmt, int timeout, List<R> resultList);
+
+    <R> int secondBatchQuery(TwoStmtBatchQueryStmt stmt, int timeout, List<R> resultList);
 
     <R> List<R> batchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
                            Supplier<List<R>> listConstructor, boolean useMultiStmt) throws DataAccessException;

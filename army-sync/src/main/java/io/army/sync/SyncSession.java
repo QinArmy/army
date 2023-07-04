@@ -380,19 +380,19 @@ public interface SyncSession extends Session {
                            Supplier<List<R>> listConstructor, boolean useMultiStmt, Visible visible);
 
 
-    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator);
+    <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator);
 
-    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
-                           Supplier<List<R>> listConstructor);
+    <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                                 Supplier<List<R>> listConstructor);
 
-    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
-                           Supplier<List<R>> listConstructor, boolean useMultiStmt);
+    <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                                 Supplier<List<R>> listConstructor, boolean useMultiStmt);
 
 
-    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator, Visible visible);
+    <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator, Visible visible);
 
-    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
-                           Supplier<List<R>> listConstructor, Visible visible);
+    <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                                 Supplier<List<R>> listConstructor, Visible visible);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -404,8 +404,37 @@ public interface SyncSession extends Session {
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
 
-    <R> List<R> batchQuery(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
-                           Supplier<List<R>> listConstructor, boolean useMultiStmt, Visible visible);
+    <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
+                                 Supplier<List<R>> listConstructor, boolean useMultiStmt, Visible visible);
+
+
+    <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, R terminator);
+
+    <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, R terminator,
+                                 Supplier<List<R>> listConstructor);
+
+    <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, R terminator,
+                                 Supplier<List<R>> listConstructor, boolean useMultiStmt);
+
+
+    <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, R terminator,
+                                 Visible visible);
+
+    <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, R terminator,
+                                 Supplier<List<R>> listConstructor, Visible visible);
+
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+
+    <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, R terminator,
+                                 Supplier<List<R>> listConstructor, boolean useMultiStmt, Visible visible);
 
 
     <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass, R terminator,

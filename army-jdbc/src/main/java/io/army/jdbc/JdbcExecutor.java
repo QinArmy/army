@@ -165,95 +165,23 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
     @Override
     public final List<Long> batchUpdate(final BatchStmt stmt, final int timeout,
-                                        final IntFunction<List<Long>> listConstructor,
-                                        final @Nullable TableMeta<?> domainTable,
-                                        final @Nullable List<Long> rowsList) {
-        if (timeout < 0 || !(rowsList == null || domainTable instanceof ChildTableMeta)) {
-            throw new IllegalArgumentException();
+                                        final IntFunction<List<Long>> listConstructor, boolean useMultiStmt,
+                                        final @Nullable TableMeta<?> domainTable, final @Nullable List<Long> rowsList) {
+        final List<Long> resultList;
+        if (useMultiStmt) {
+            resultList = this.batchUpdateAsList(stmt, timeout, listConstructor, domainTable, rowsList);
+        } else {
+            resultList = this.multiStmtBatchUpdate(stmt, timeout, listConstructor, domainTable);
         }
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
-            final List<List<SQLParam>> paramGroupList = stmt.groupList();
-
-            for (List<SQLParam> group : paramGroupList) {
-                bindParameter(statement, group);
-                statement.addBatch();
-            }
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
-            }
-
-            final List<Long> resultList;
-            if (this.factory.useLargeUpdate) {
-                final long[] affectedRows;
-                affectedRows = statement.executeLargeBatch();
-                resultList = this.handleBatchResult(stmt.hasOptimistic(), affectedRows.length,
-                        index -> affectedRows[index], listConstructor, domainTable, rowsList
-                );
-            } else {
-                final int[] affectedRows;
-                affectedRows = statement.executeBatch();
-                resultList = this.handleBatchResult(stmt.hasOptimistic(), affectedRows.length,
-                        index -> affectedRows[index], listConstructor, domainTable, rowsList
-                );
-            }
-
-            return resultList;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (Exception e) {
-            throw wrapError(e);
-        }
+        return resultList;
     }
 
-    @Override
-    public final List<Long> multiStmtBatchUpdate(final BatchStmt stmt, final int timeout,
-                                                 final IntFunction<List<Long>> listConstructor,
-                                                 final @Nullable TableMeta<?> domainTable) {
-
-        final int stmtSize;
-        stmtSize = stmt.groupList().size();
-        List<Long> list = listConstructor.apply(stmtSize);
-        if (list == null) {
-            throw _Exceptions.listConstructorError();
-        }
-        try (Statement statement = this.conn.createStatement()) {
-
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
-            }
-
-            if (statement.execute(stmt.sqlText())) {
-                // sql error
-                throw new DataAccessException("error,multi-statement batch update the first result is ResultSet");
-            }
-            if (domainTable instanceof ChildTableMeta) {
-                handleChildMultiStmtBatchUpdate(statement, stmt, (ChildTableMeta<?>) domainTable, list);
-            } else {
-                // SingleTableMeta batch update or multi-table batch update.
-                handleSimpleMultiStmtBatchUpdate(statement, stmt, domainTable, list);
-            }
-
-            if (stmtSize != list.size()) {
-                throw _Exceptions.batchCountNotMatch(stmtSize, list.size());
-            }
-
-            if (list instanceof ImmutableSpec) {
-                list = _Collections.unmodifiableListForDeveloper(list);
-            }
-            return list;
-        } catch (ArmyException e) {
-            throw e;
-        } catch (Exception e) {
-            throw wrapError(e);
-        }
-
-    }
 
 
     @Override
     public final <R> List<R> query(final SimpleStmt stmt, final int timeout, final Class<R> resultClass,
                                    final Supplier<List<R>> listConstructor) {
-        return this.doQuery(stmt, timeout, listConstructor, this.beanReaderFunc(stmt.selectionList(), resultClass));
+        return this.doQuery(stmt, timeout, listConstructor, this.beanReaderFunc(stmt, resultClass));
 
     }
 
@@ -305,7 +233,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 final Class<R> resultClass = (Class<R>) resultList.get(0).getClass();
                 if (Map.class.isAssignableFrom(resultClass)) {
                     accessor = ObjectAccessorFactory.forMap();
-                } else if (selectionSize > 1) {
+                } else if (selectionSize > 1 || stmt.maxColumnSize() > 1) {
                     accessor = ObjectAccessorFactory.forBean(resultClass);
                 } else {
                     accessor = ObjectAccessorFactory.PSEUDO_ACCESSOR;
@@ -398,13 +326,18 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         }
     }
 
+    @Override
+    public final <R> int secondBatchQuery(TwoStmtBatchQueryStmt stmt, int timeout, List<R> resultList) {
+        //TODO for firebird
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public final <R> List<R> batchQuery(final BatchStmt stmt, final int timeout, final Class<R> resultClass,
                                         final @Nullable R terminator, final Supplier<List<R>> listConstructor,
                                         final boolean useMultiStmt) throws DataAccessException {
         final Function<ResultSetMetaData, RowReader<R>> readerFunc;
-        readerFunc = this.beanReaderFunc(stmt.selectionList(), resultClass);
+        readerFunc = this.beanReaderFunc(stmt, resultClass);
 
         final List<R> resultList;
         if (useMultiStmt) {
@@ -452,7 +385,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     public final <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass,
                                            final StreamOptions options) {
         final Function<ResultSetMetaData, RowReader<R>> readerFunc;
-        readerFunc = this.beanReaderFunc(stmt.selectionList(), resultClass);
+        readerFunc = this.beanReaderFunc(stmt, resultClass);
         return this.queryAsStream(stmt, timeout, options, readerFunc);
     }
 
@@ -479,7 +412,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                                                 final boolean useMultiStmt) throws DataAccessException {
 
         final Function<ResultSetMetaData, RowReader<R>> readerFunc;
-        readerFunc = this.beanReaderFunc(stmt.selectionList(), resultClass);
+        readerFunc = this.beanReaderFunc(stmt, resultClass);
 
         final Stream<R> resultStream;
         if (useMultiStmt) {
@@ -688,6 +621,96 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
     }
 
     /*################################## blow private method ##################################*/
+
+
+    /**
+     * @see #batchUpdate(BatchStmt, int, IntFunction, boolean, TableMeta, List)
+     */
+    private List<Long> batchUpdateAsList(final BatchStmt stmt, final int timeout,
+                                         final IntFunction<List<Long>> listConstructor,
+                                         final @Nullable TableMeta<?> domainTable, final @Nullable List<Long> rowsList) {
+        if (timeout < 0 || !(rowsList == null || domainTable instanceof ChildTableMeta)) {
+            throw new IllegalArgumentException();
+        }
+        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
+            final List<List<SQLParam>> paramGroupList = stmt.groupList();
+
+            for (List<SQLParam> group : paramGroupList) {
+                bindParameter(statement, group);
+                statement.addBatch();
+            }
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+
+            final List<Long> resultList;
+            if (this.factory.useLargeUpdate) {
+                final long[] affectedRows;
+                affectedRows = statement.executeLargeBatch();
+                resultList = this.handleBatchResult(stmt.hasOptimistic(), affectedRows.length,
+                        index -> affectedRows[index], listConstructor, domainTable, rowsList
+                );
+            } else {
+                final int[] affectedRows;
+                affectedRows = statement.executeBatch();
+                resultList = this.handleBatchResult(stmt.hasOptimistic(), affectedRows.length,
+                        index -> affectedRows[index], listConstructor, domainTable, rowsList
+                );
+            }
+
+            return resultList;
+        } catch (DataAccessException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw wrapError(e);
+        }
+    }
+
+    /**
+     * @see #batchUpdate(BatchStmt, int, IntFunction, boolean, TableMeta, List)
+     */
+    private List<Long> multiStmtBatchUpdate(final BatchStmt stmt, final int timeout,
+                                            final IntFunction<List<Long>> listConstructor,
+                                            final @Nullable TableMeta<?> domainTable) {
+
+        final int stmtSize;
+        stmtSize = stmt.groupList().size();
+        List<Long> list = listConstructor.apply(stmtSize);
+        if (list == null) {
+            throw _Exceptions.listConstructorError();
+        }
+        try (Statement statement = this.conn.createStatement()) {
+
+            if (timeout > 0) {
+                statement.setQueryTimeout(timeout);
+            }
+
+            if (statement.execute(stmt.sqlText())) {
+                // sql error
+                throw new DataAccessException("error,multi-statement batch update the first result is ResultSet");
+            }
+            if (domainTable instanceof ChildTableMeta) {
+                handleChildMultiStmtBatchUpdate(statement, stmt, (ChildTableMeta<?>) domainTable, list);
+            } else {
+                // SingleTableMeta batch update or multi-table batch update.
+                handleSimpleMultiStmtBatchUpdate(statement, stmt, domainTable, list);
+            }
+
+            if (stmtSize != list.size()) {
+                throw _Exceptions.batchCountNotMatch(stmtSize, list.size());
+            }
+
+            if (list instanceof ImmutableSpec) {
+                list = _Collections.unmodifiableListForDeveloper(list);
+            }
+            return list;
+        } catch (ArmyException e) {
+            throw e;
+        } catch (Exception e) {
+            throw wrapError(e);
+        }
+
+    }
 
 
     private SqlType[] createSqlTypArray(final ResultSetMetaData metaData) throws SQLException {
@@ -1594,7 +1617,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         sqlTypeArray = this.createSqlTypArray(metaData);
         final List<? extends Selection> selectionList = stmt.selectionList();
         final RowReader<T> rowReader;
-        if (stmt instanceof TwoStmtQueryStmt && selectionList.size() == 1) {
+        if ((stmt instanceof TwoStmtQueryStmt && ((TwoStmtQueryStmt) stmt).maxColumnSize() == 1)
+                || selectionList.size() == 1) {
             rowReader = new SingleColumnRowReader<>(this, selectionList, sqlTypeArray, resultClass);
         } else {
             rowReader = new BeanRowReader<>(this, selectionList, resultClass, sqlTypeArray);
