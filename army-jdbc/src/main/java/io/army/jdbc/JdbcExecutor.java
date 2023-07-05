@@ -1831,7 +1831,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 fieldName = selection.alias();
 
                 if (columnValue == null) {
-                    if (row != null) {
+                    if (columnValueArray != null) {
+                        columnValueArray[i] = null;
+                    } else if (row != null) {
                         accessor.set(row, fieldName, null);
                     }
                     continue;
