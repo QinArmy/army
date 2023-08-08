@@ -12,6 +12,7 @@ import io.army.meta.TableMeta;
 import io.army.sync.SessionContext;
 import io.army.sync.SyncSession;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -61,7 +62,7 @@ public abstract class ArmySyncBaseDao implements SyncBaseDao {
         session = this.sessionContext.currentSession();
         final Select stmt;
         stmt = createFindByIdStmt(session, domainClass, SQLs::param, id).asQuery();
-        return session.queryOne(stmt);
+        return session.queryOneObject(stmt, HashMap::new);
     }
 
     @Override
