@@ -11,6 +11,7 @@ import io.army.example.common.BeanUtils;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -32,7 +33,7 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
                 .join(ChinaRegion_.T, AS, "province")
                 .on(SQLs.field("p_of_city", ChinaRegion_.parentId).equal(SQLs.field("province", ChinaRegion_.id)))
                 .asQuery();
-        return this.sessionContext.currentSession().queryMap(stmt);
+        return this.sessionContext.currentSession().queryObject(stmt, HashMap::new);
     }
 
 

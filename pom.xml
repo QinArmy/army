@@ -5,7 +5,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.army</groupId>
+    <groupId>io.qinarmy.army</groupId>
     <artifactId>army</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version><!--Army version find and replace-->
@@ -49,7 +49,6 @@
         <reactor.version>3.3.5.RELEASE</reactor.version>
         <r2dbc-postgresql.version>0.8.4.RELEASE</r2dbc-postgresql.version>
         <qinarmy.common.version>1.0-SNAPSHOT</qinarmy.common.version>
-        <jdbd.version>1.0-SNAPSHOT</jdbd.version>
     </properties>
 
     <dependencyManagement>
@@ -57,62 +56,62 @@
         <dependencies>
             <!-- 模块 start  -->
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-core</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-struct</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-annotation</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-jdbc</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-jdbd</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-example</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-postgre</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-sync</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-reactive</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-spring</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-mysql</artifactId>
                 <version>${army.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.army</groupId>
+                <groupId>io.qinarmy.army</groupId>
                 <artifactId>army-example-domain</artifactId>
                 <version>${army.version}</version>
             </dependency>
@@ -155,18 +154,18 @@
             <dependency>
                 <groupId>io.jdbd</groupId>
                 <artifactId>jdbd-spi</artifactId>
-                <version>${jdbd.version}</version>
+                <version>0.8.0-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>io.jdbd</groupId>
+                <groupId>io.jdbd.mysql</groupId>
                 <artifactId>jdbd-mysql</artifactId>
-                <version>${jdbd.version}</version>
+                <version>0.8.0</version>
             </dependency>
-            <dependency>
-                <groupId>io.jdbd</groupId>
-                <artifactId>jdbd-postgre</artifactId>
-                <version>${jdbd.version}</version>
-            </dependency>
+            <!--            <dependency>-->
+            <!--                <groupId>io.jdbd</groupId>-->
+            <!--                <artifactId>jdbd-postgre</artifactId>-->
+            <!--                <version>${jdbd.version}</version>-->
+            <!--            </dependency>-->
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid</artifactId>

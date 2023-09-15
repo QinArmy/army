@@ -10,6 +10,7 @@ import io.army.example.common.BeanUtils;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static io.army.criteria.impl.SQLs.AS;
@@ -41,7 +42,7 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
                 .and(RegisterRecord_.id.equal(SQLs.field("u", BankUser_.registerRecordId)))
                 .and(RegisterRecord_.id.equal(BankAccount_.registerRecordId))
                 .asQuery();
-        return this.sessionContext.currentSession().queryOne(stmt);
+        return this.sessionContext.currentSession().queryOneObject(stmt, HashMap::new);
     }
 
 
@@ -64,7 +65,7 @@ public class StandardAccountDao extends BankSyncBaseDao implements BankAccountDa
                 .and(BankUser_.registerRecordId::equal, RegisterRecord_.id)
                 .and(BankAccount_.registerRecordId::equal, RegisterRecord_.id)
                 .asQuery();
-        return this.sessionContext.currentSession().queryOne(stmt);
+        return this.sessionContext.currentSession().queryOneObject(stmt, HashMap::new);
     }
 
 

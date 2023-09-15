@@ -373,7 +373,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<Map<String, Object>> resultList;
-            resultList = session.queryMap(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+            resultList = session.queryObject(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), provinceList.size());
 
@@ -437,7 +437,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<Map<String, Object>> resultList;
-            resultList = session.queryMap(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+            resultList = session.queryObject(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), provinceList.size());
 
@@ -896,7 +896,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             tx.start();
 
             final List<Map<String, Object>> resultList;
-            resultList = session.queryMap(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+            resultList = session.queryObject(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), 2);
 
@@ -973,7 +973,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<Map<String, Object>> resultList;
-            resultList = session.queryMap(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+            resultList = session.queryObject(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), 2);
 
