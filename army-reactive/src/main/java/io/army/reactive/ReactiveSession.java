@@ -1,145 +1,177 @@
 package io.army.reactive;
 
-import io.army.criteria.*;
-import io.army.meta.TableMeta;
-import io.army.meta.UniqueFieldMeta;
+import io.army.criteria.BatchDmlStatement;
+import io.army.criteria.MultiResultStatement;
+import io.army.criteria.SimpleDmlStatement;
+import io.army.criteria.SimpleDqlStatement;
+import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.session.Session;
-import io.army.session.SessionException;
+import io.army.session.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public interface ReactiveSession extends Session {
+public interface ReactiveSession extends Session, Closeable {
 
     @Override
-    SessionFactory sessionFactory();
+    ReactiveSessionFactory sessionFactory();
 
+    /**
+     * <p>
+     * Session identifier(non-unique, for example : database server cluster),probably is following :
+     *     <ul>
+     *         <li>server process id</li>
+     *         <li>server thread id</li>
+     *         <li>other identifier</li>
+     *     </ul>
+     *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
+     * </p>
+     *
+     * @throws SessionException throw when session have closed.
+     */
+    long sessionIdentifier() throws SessionException;
+
+    /**
+     * <p>
+     * <strong>NOTE</strong> : driver don't send message to database server before subscribing.
+     * </p>
+     *
+     * @throws SessionException emit(not throw) when database driver emit error.
+     */
+    Mono<TransactionStatus> transactionStatus();
+
+    /*-------------------below queryOne methods-------------------*/
+
+    /**
+     * @param <R> result row Java Type.
+     */
+    <R> Mono<R> queryOne(SimpleDqlStatement statement, Class<R> resultClass);
+
+
+    <R> Mono<R> queryOne(SimpleDqlStatement statement, Class<R> resultClass, StatementOption option);
+
+
+
+    /*-------------------below queryOneOptional methods-------------------*/
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Mono<R> get(TableMeta<R> table, Object id);
+    <R> Mono<Optional<R>> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass);
+
+    <R> Mono<R> queryOneOptional(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer);
+
+
+    /*-------------------below queryOneObject methods-------------------*/
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Mono<R> get(TableMeta<R> table, Object id, Visible visible);
+    <R> Mono<R> queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor);
+
+    <R> Mono<R> queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer);
+
+
+    /*-------------------below queryOneRecord methods-------------------*/
+
+    <R> Mono<R> queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
+
+    <R> Mono<R> queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
+
+
+
+    /*-------------------below query methods-------------------*/
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Mono<R> getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value);
+    <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass);
 
-    <R> Mono<R> getByUnique(TableMeta<R> table, UniqueFieldMeta<R> field, Object value, Visible visible);
 
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> Mono<R> queryOne(DqlStatement statement, Class<R> resultClass);
+    <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer);
 
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> Mono<R> queryOne(DqlStatement statement, Class<R> resultClass, Visible visible);
+
+    /*-------------------below queryOptional methods-------------------*/
+
+
+    <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Mono<Optional<R>> queryOneNullable(DqlStatement statement, Class<R> resultClass);
+    <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer);
 
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> Mono<Optional<R>> queryOneNullable(DqlStatement statement, Class<R> resultClass, Visible visible);
+    /*-------------------below queryObject methods-------------------*/
 
-    Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement);
+    <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor);
 
-    Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement, Visible visible);
-
-    Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor);
-
-    Mono<Map<String, Object>> queryOneAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
-
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> Flux<R> query(DqlStatement statement, Class<R> resultClass);
+    <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer);
 
 
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> Flux<R> query(DqlStatement statement, Class<R> resultClass, Visible visible);
+    /*-------------------below queryRecord methods-------------------*/
 
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass);
+    <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
 
-    /**
-     * @param <R> representing select result Java Type.
-     */
-    <R> Flux<Optional<R>> queryNullable(DqlStatement statement, Class<R> resultClass, Visible visible);
+    <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
 
-    Flux<Map<String, Object>> queryAsMap(DqlStatement statement);
+    /*-------------------below save methods-------------------*/
 
-    Flux<Map<String, Object>> queryAsMap(DqlStatement statement, Visible visible);
+    Mono<ResultStates> save(Object domain);
 
-    Flux<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor);
+    /*-------------------below update methods-------------------*/
 
-    Flux<Map<String, Object>> queryAsMap(DqlStatement statement, Supplier<Map<String, Object>> mapConstructor, Visible visible);
-
-    <T> Mono<Void> save(T domain);
-
-    <T> Mono<Void> save(T domain, NullMode mode);
-
-    <T> Mono<Void> save(T domain, NullMode mode, Visible visible);
-
-    Mono<Long> update(DmlStatement dml);
-
-    Mono<Long> update(DmlStatement dml, Visible visible);
-
-    <R> Flux<R> returningUpdate(DmlStatement dml, Class<R> resultClass);
-
-    <R> Flux<R> returningUpdate(DmlStatement dml, Class<R> resultClass, Visible visible);
-
-    Flux<Map<String, Object>> returningUpdateAsMap(DmlStatement dml);
-
-    Flux<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Visible visible);
-
-    Flux<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Supplier<Map<String, Object>> mapConstructor);
-
-    Flux<Map<String, Object>> returningUpdateAsMap(DmlStatement dml, Supplier<Map<String, Object>> mapConstructor
-            , Visible visible);
-
-    <R> Flux<Optional<R>> returningNullableUpdate(DmlStatement dml, Class<R> resultClass);
-
-    <R> Flux<Optional<R>> returningNullableUpdate(DmlStatement dml, Class<R> resultClass, Visible visible);
+    Mono<ResultStates> update(SimpleDmlStatement dml);
 
 
-    <T> Mono<Void> batchSave(List<T> domainList);
+    /*-------------------below batchSave methods-------------------*/
 
-    <T> Mono<Void> batchSave(List<T> domainList, NullMode mode);
-
-    <T> Mono<Void> batchSave(List<T> domainList, NullMode mode, Visible visible);
-
-    Flux<Long> batchUpdate(NarrowDmlStatement dml);
-
-    Flux<Long> batchUpdate(NarrowDmlStatement dml, Visible visible);
-
-    MultiResult multiStmt(List<Statement> statementList);
-
-    MultiResult multiStmt(List<Statement> statementList, Visible visible);
-
-    MultiResult call(CallableStatement callable);
+    <T> Flux<ResultStates> batchSave(List<T> domainList);
 
 
-    Mono<Void> flush() throws SessionException;
+    /*-------------------below batchUpdate methods-------------------*/
+
+    Flux<ResultStates> batchUpdate(BatchDmlStatement statement);
+
+    Flux<ResultStates> batchUpdate(BatchDmlStatement statement, boolean useMultiStmt);
+
+
+    /*-------------------below batchQuery methods-------------------*/
+
+    QueryResults batchQueryResults(BatchDqlStatement statement);
+
+    QueryResults batchQueryResults(BatchDqlStatement statement, boolean useMultiStmt);
+
+    /*-------------------below batchQueryAsFlux methods-------------------*/
+
+    <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass);
+
+    <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, boolean useMultiStmt);
+
+
+    /*-------------------below batchQueryObject methods-------------------*/
+
+    <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor);
+
+    <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, boolean useMultiStmt);
+
+
+    /*-------------------below batchQueryObject methods-------------------*/
+
+    <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function);
+
+    <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, boolean useMultiStmt);
+
+
+
+    /*-------------------below multiStmt methods-------------------*/
+
+    MultiResult multiStmt(MultiResultStatement statement);
 
 
 }

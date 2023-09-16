@@ -7,10 +7,10 @@ import reactor.core.publisher.Mono;
 final class LocalTransaction extends _ArmyTransaction implements Transaction {
 
 
-    private final LocalSession session;
+    private final ArmyReactiveLocalSession session;
 
 
-    LocalTransaction(LocalSession.LocalTransactionBuilder builder) {
+    LocalTransaction(ArmyReactiveLocalSession.LocalTransactionBuilder builder) {
         super(builder);
         this.session = builder.session;
     }

@@ -72,7 +72,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     @Override
     protected final boolean isExistingTransaction(final Object transaction) throws TransactionException {
         final LocalSession session = ((ArmyTransactionObject) transaction).session;
-        return session != null && session.hasTransaction();
+        return session != null && session.inTransaction();
     }
 
     @Override
@@ -329,7 +329,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
         public boolean isRollbackOnly() {
             final LocalSession session = this.session;
             return session != null
-                    && session.hasTransaction()
+                    && session.inTransaction()
                     && session.currentTransaction().rollbackOnly();
         }
 

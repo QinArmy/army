@@ -11,7 +11,10 @@ import io.army.proxy._SessionCache;
 import io.army.session.*;
 import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
-import io.army.tx.*;
+import io.army.tx.CannotCreateTransactionException;
+import io.army.tx.Isolation;
+import io.army.tx.NoSessionTransactionException;
+import io.army.tx.TransactionOptions;
 import io.army.type.ImmutableSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -288,7 +291,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
                 );
             } else if (!(stmt instanceof PairBatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
-            } else if (!this.hasTransaction()) {
+            } else if (!this.inTransaction()) {
                 throw updateChildNoTransaction();
             } else {
                 final long startTime;
@@ -380,7 +383,7 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
     }
 
     @Override
-    public boolean hasTransaction() {
+    public boolean inTransaction() {
         return this.transaction != null;
     }
 

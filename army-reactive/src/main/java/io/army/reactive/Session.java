@@ -4,15 +4,13 @@ import io.army.lang.Nullable;
 import io.army.session.SessionException;
 import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;
-import reactor.core.publisher.Mono;
 
 /**
- * @see SessionFactory
+ * @see ReactiveSessionFactory
  */
 public interface Session extends ReactiveSession {
 
 
-    Mono<Void> close() throws SessionException;
 
     /**
      * @throws CannotCreateTransactionException throw when session already have {@link Transaction}

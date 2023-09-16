@@ -7,15 +7,14 @@ import io.army.meta.TableMeta;
 /**
  *
  */
-public interface Session {
+public interface Session extends CloseableSpec {
 
     boolean isReadOnlyStatus();
 
     boolean isReadonlySession();
 
-    boolean isClosed();
 
-    boolean hasTransaction();
+    boolean inTransaction();
 
     String name();
 

@@ -7,7 +7,7 @@ public interface FactoryBuilder {
 
     FactoryBuilder dataSource(Object dataSource);
 
-    SessionFactory build() throws SessionFactoryException;
+    ReactiveSessionFactory build() throws SessionFactoryException;
 
     static FactoryBuilder builder() {
         return new LocalSessionFactoryBuilder();

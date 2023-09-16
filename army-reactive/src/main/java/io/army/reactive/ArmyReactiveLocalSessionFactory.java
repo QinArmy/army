@@ -2,7 +2,6 @@ package io.army.reactive;
 
 import io.army.dialect.DialectParser;
 import io.army.meta.ServerMeta;
-import io.army.session.SessionException;
 import io.army.session._ArmySessionFactory;
 import reactor.core.publisher.Mono;
 
@@ -10,14 +9,14 @@ import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * This class is a implementation of {@link SessionFactory}
+ * This class is a implementation of {@link ReactiveSessionFactory}
  */
-final class ReactiveLocalSessionFactory extends _ArmySessionFactory implements SessionFactory {
+final class ArmyReactiveLocalSessionFactory extends _ArmySessionFactory implements ReactiveSessionFactory {
 
 
     private final AtomicBoolean factoryClosed = new AtomicBoolean(false);
 
-    ReactiveLocalSessionFactory(LocalSessionFactoryBuilder builder) {
+    ArmyReactiveLocalSessionFactory(LocalSessionFactoryBuilder builder) {
         super(builder);
     }
 
@@ -52,7 +51,7 @@ final class ReactiveLocalSessionFactory extends _ArmySessionFactory implements S
     }
 
     @Override
-    public SessionFactory.SessionBuilder builder() {
+    public ReactiveSessionFactory.SessionBuilder builder() {
         return new LocalSessionBuilder(this);
     }
 
@@ -68,27 +67,24 @@ final class ReactiveLocalSessionFactory extends _ArmySessionFactory implements S
 
     /*################################## blow private static inner class ##################################*/
 
-    static final class LocalSessionBuilder implements SessionFactory.SessionBuilder {
+    static final class LocalSessionBuilder extends ArmySessionBuilder<SessionBuilder, ReactiveSession> implements SessionBuilder {
 
-        private final ReactiveLocalSessionFactory sessionFactory;
+        private final ArmyReactiveLocalSessionFactory sessionFactory;
 
 
         boolean readOnly;
 
-        private LocalSessionBuilder(ReactiveLocalSessionFactory sessionFactory) {
+        private LocalSessionBuilder(ArmyReactiveLocalSessionFactory sessionFactory) {
+            super(sessionFactory);
             this.sessionFactory = sessionFactory;
         }
 
-        @Override
-        public SessionFactory.SessionBuilder readonly(boolean readonly) {
-            this.readOnly = readonly;
-            return this;
-        }
 
         @Override
-        public Mono<Session> build() throws SessionException {
-            return Mono.empty();
+        protected ReactiveSession createSession() {
+            return null;
         }
+
 
     }//SessionBuilder
 

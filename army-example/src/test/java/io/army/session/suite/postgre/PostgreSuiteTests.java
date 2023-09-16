@@ -39,7 +39,7 @@ public abstract class PostgreSuiteTests extends ArmyTestDataSupport {
     }
 
     public void releaseSyncSession(LocalSession session) {
-        if (session.hasTransaction()) {
+        if (session.inTransaction()) {
             throw new IllegalArgumentException();
         }
         session.close();
