@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 public interface Transaction extends io.army.tx.Transaction {
 
     @Override
-    Session session();
+    ReactiveLocalSession session();
 
     /**
      * @throws TransactionException emit(not throw)

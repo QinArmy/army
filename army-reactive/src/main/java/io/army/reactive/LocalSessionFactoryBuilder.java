@@ -23,7 +23,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
     @Override
-    public ReactiveSessionFactory build() throws SessionFactoryException {
+    public ReactiveLocalSessionFactory build() throws SessionFactoryException {
         return null;
     }
 }

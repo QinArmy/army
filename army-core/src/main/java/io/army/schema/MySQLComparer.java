@@ -23,7 +23,7 @@ final class MySQLComparer extends ArmySchemaComparer {
     }
 
     @Override
-    boolean compareSchema(_SchemaInfo schemaInfo, SchemaMeta schemaMeta) {
+    boolean compareSchema(SchemaInfo schemaInfo, SchemaMeta schemaMeta) {
         String database, catalog, schema;
         database = schemaInfo.catalog();
         if (database == null) {

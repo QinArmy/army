@@ -1,4 +1,4 @@
-package io.army.sync.executor;
+package io.army.executor;
 
 import io.army.codec.FieldCodec;
 import io.army.env.ArmyEnvironment;

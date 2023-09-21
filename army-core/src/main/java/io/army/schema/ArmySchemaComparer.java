@@ -21,7 +21,7 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
     }
 
     @Override
-    public final _SchemaResult compare(_SchemaInfo schemaInfo, SchemaMeta schemaMeta
+    public final _SchemaResult compare(SchemaInfo schemaInfo, SchemaMeta schemaMeta
             , Collection<TableMeta<?>> tableMetas) {
         if (compareSchema(schemaInfo, schemaMeta)) {
             String m = String.format("_SchemaInfo[%s,%s] and %s not match,serverMeta[%s]."
@@ -58,7 +58,7 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
     /**
      * @return true : schema isn't match.
      */
-    abstract boolean compareSchema(_SchemaInfo schemaInfo, SchemaMeta schemaMeta);
+    abstract boolean compareSchema(SchemaInfo schemaInfo, SchemaMeta schemaMeta);
 
     /**
      * @return true : sql type definition is different.

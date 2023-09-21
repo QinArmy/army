@@ -4,7 +4,7 @@ import io.army.lang.Nullable;
 
 import java.util.Map;
 
-public interface _SchemaInfo {
+public interface SchemaInfo {
 
     @Nullable
     String catalog();
@@ -14,7 +14,7 @@ public interface _SchemaInfo {
 
     Map<String, _TableInfo> tableMap();
 
-    static _SchemaInfo create(@Nullable String catalog, @Nullable String schema, Map<String
+    static SchemaInfo create(@Nullable String catalog, @Nullable String schema, Map<String
             , _TableInfo.Builder> builderMap) {
         return _SchemaInfoImpl.create(catalog, schema, builderMap);
     }

@@ -2,7 +2,6 @@ package io.army.reactive;
 
 import io.army.criteria.*;
 import io.army.criteria.dialect.BatchDqlStatement;
-import io.army.session.Session;
 import io.army.session.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,6 +12,16 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * <p>This interface representing a reactive database session.
+ * <p>This interface is base interface of following :
+ * <ul>
+ *     <li>{@link ReactiveLocalSession}</li>
+ *     <li>{@link ReactiveRmSession}</li>
+ * </ul>
+ *
+ * @since 1.0
+ */
 public interface ReactiveSession extends Session, Closeable {
 
     @Override
@@ -42,13 +51,19 @@ public interface ReactiveSession extends Session, Closeable {
      */
     Mono<TransactionStatus> transactionStatus();
 
-    Flux<? extends ReactiveSession> setTransactionCharacteristics(TransactionOption option);
+    Mono<? extends ReactiveSession> setTransactionCharacteristics(TransactionOption option);
 
-    Flux<Object> setSavePoint();
+    Mono<Object> setSavePoint();
 
-    Flux<? extends ReactiveSession> releaseSavePoint(Object savepoint);
+    Mono<Object> setSavePoint(Function<Option<?>, ?> optionFunc);
 
-    Flux<? extends ReactiveSession> rollbackToSavePoint(Object savepoint);
+    Mono<? extends ReactiveSession> releaseSavePoint(Object savepoint);
+
+    Mono<? extends ReactiveSession> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
+
+    Mono<? extends ReactiveSession> rollbackToSavePoint(Object savepoint);
+
+    Mono<? extends ReactiveSession> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
     /*-------------------below query methods-------------------*/
 
@@ -169,6 +184,10 @@ public interface ReactiveSession extends Session, Closeable {
 
     MultiResult multiStmt(MultiResultStatement statement);
 
-    Flux<ResultRow> execute(PrimaryStatement statement);
+    Flux<ResultItem> execute(PrimaryStatement statement);
+
+
+//    Mono<ReactiveCursor> declareCursor(DeclareCursor statement);
+
 
 }

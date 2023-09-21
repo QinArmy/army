@@ -11,6 +11,7 @@ import io.army.dialect.DialectEnv;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SyncKey;
+import io.army.executor.ExecutorEnv;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
@@ -23,7 +24,10 @@ import io.army.session.DataAccessException;
 import io.army.session.DdlMode;
 import io.army.session.FactoryBuilderSupport;
 import io.army.session.SessionFactoryException;
-import io.army.sync.executor.*;
+import io.army.sync.executor.ExecutorFactory;
+import io.army.sync.executor.ExecutorProvider;
+import io.army.sync.executor.LocalExecutorFactory;
+import io.army.sync.executor.MetaExecutor;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -280,7 +284,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
         try (MetaExecutor metaExecutor = executorFactory.createMetaExecutor()) {
 
             //1.extract schema info.
-            final _SchemaInfo schemaInfo;
+            final SchemaInfo schemaInfo;
             schemaInfo = metaExecutor.extractInfo();
 
             //2.compare schema meta and schema info.

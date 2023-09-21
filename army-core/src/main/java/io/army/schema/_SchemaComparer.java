@@ -9,7 +9,7 @@ import java.util.Collection;
 
 public interface _SchemaComparer {
 
-    _SchemaResult compare(_SchemaInfo schemaInfo, SchemaMeta schemaMeta, Collection<TableMeta<?>> tableMetas);
+    _SchemaResult compare(SchemaInfo schemaInfo, SchemaMeta schemaMeta, Collection<TableMeta<?>> tableMetas);
 
     static _SchemaComparer create(final ServerMeta serverMeta) {
         final _SchemaComparer comparer;

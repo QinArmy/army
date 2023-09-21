@@ -29,7 +29,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
 
 
     @Override
-    public _SchemaInfo extractInfo() throws DataAccessException {
+    public SchemaInfo extractInfo() throws DataAccessException {
         final Connection conn = this.conn;
 
         try {
@@ -48,7 +48,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
                 appendIndex(catalog, schema, metaData, true, tableBuilder, indexBuilder);
                 appendIndex(catalog, schema, metaData, false, tableBuilder, indexBuilder);
             }
-            return _SchemaInfo.create(catalog, schema, tableBuilderMap);
+            return SchemaInfo.create(catalog, schema, tableBuilderMap);
         } catch (SQLException e) {
             throw JdbcExecutor.wrapError(e);
         }

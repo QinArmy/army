@@ -16,7 +16,7 @@ final class LocalTransaction extends _ArmyTransaction implements Transaction {
     }
 
     @Override
-    public Session session() {
+    public ReactiveLocalSession session() {
         return this.session;
     }
 

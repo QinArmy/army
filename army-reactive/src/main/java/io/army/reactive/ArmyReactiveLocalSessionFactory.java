@@ -9,9 +9,9 @@ import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * This class is a implementation of {@link ReactiveSessionFactory}
+ * This class is a implementation of {@link ReactiveLocalSessionFactory}
  */
-final class ArmyReactiveLocalSessionFactory extends _ArmySessionFactory implements ReactiveSessionFactory {
+final class ArmyReactiveLocalSessionFactory extends _ArmySessionFactory implements ReactiveLocalSessionFactory {
 
 
     private final AtomicBoolean factoryClosed = new AtomicBoolean(false);
@@ -51,7 +51,7 @@ final class ArmyReactiveLocalSessionFactory extends _ArmySessionFactory implemen
     }
 
     @Override
-    public ReactiveSessionFactory.SessionBuilder builder() {
+    public ReactiveLocalSessionFactory.SessionBuilder builder() {
         return new LocalSessionBuilder(this);
     }
 

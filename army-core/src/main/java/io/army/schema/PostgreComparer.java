@@ -25,7 +25,7 @@ final class PostgreComparer extends ArmySchemaComparer {
 
 
     @Override
-    boolean compareSchema(_SchemaInfo schemaInfo, SchemaMeta schemaMeta) {
+    boolean compareSchema(SchemaInfo schemaInfo, SchemaMeta schemaMeta) {
         final String serverDatabase, serverSchema, catalog, schema;
         serverDatabase = schemaInfo.catalog();
         serverSchema = schemaInfo.schema();

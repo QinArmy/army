@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-final class _SchemaInfoImpl implements _SchemaInfo {
+final class _SchemaInfoImpl implements SchemaInfo {
 
     static _SchemaInfoImpl create(@Nullable String catalog, @Nullable String schema
             , Map<String, _TableInfo.Builder> builderMap) {

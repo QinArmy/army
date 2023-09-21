@@ -2,11 +2,11 @@ package io.army.jdbc;
 
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.UnsupportedDataSourceTypeException;
-import io.army.sync.executor.ExecutorEnv;
 import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.RmExecutorFactory;
