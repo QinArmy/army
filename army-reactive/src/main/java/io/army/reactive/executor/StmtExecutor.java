@@ -39,7 +39,7 @@ public interface StmtExecutor extends Closeable, OptionSpec {
 
     Mono<? extends StmtExecutor> setTransactionCharacteristics(TransactionOption option);
 
-    Mono<Object> setSavePoint(Function<Option<?>, ?> optionFunc);
+    Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc);
 
     Mono<? extends StmtExecutor> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 

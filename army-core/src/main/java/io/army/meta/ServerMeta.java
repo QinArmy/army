@@ -63,6 +63,8 @@ public interface ServerMeta {
 
         Builder minor(int minor);
 
+        Builder subMinor(int subMinor);
+
         Builder usedDialect(Dialect dialect);
 
         Builder supportSavePoint(boolean support);

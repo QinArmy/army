@@ -25,7 +25,6 @@ import io.army.stmt.Stmt;
 import io.army.tx.ReadOnlyTransactionException;
 import io.army.tx.TransactionTimeOutException;
 import io.qinarmy.util.ExceptionUtils;
-import io.qinarmy.util.UnexpectedEnumException;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,7 +37,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static UnexpectedEnumException unexpectedEnum(Enum<?> e) {
+    public static ArmyException unexpectedEnum(Enum<?> e) {
         return ExceptionUtils.createUnexpectedEnumException(e);
     }
 
@@ -1060,6 +1059,10 @@ public abstract class _Exceptions extends ExceptionUtils {
                 batchNo));
     }
 
+    public static DataAccessException unsupportedDatabaseFamily(String productFamily) {
+        return new DataAccessException(String.format("currently,unsupported database product family %s .", productFamily));
+    }
+
     /**
      * @param batchNum based 1
      */
@@ -1096,6 +1099,10 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new IllegalArgumentException(String.format("unknown selection alias[%s]", selectionAlias));
     }
 
+    public static IllegalArgumentException unknownSavePoint(Object savePoint) {
+        return new IllegalArgumentException(String.format("unknown save point instance %s", savePoint));
+    }
+
     public static IllegalArgumentException recordFuncError(Function<CurrentRecord, ?> function, CurrentRecord record) {
         String m = String.format("record function %s couldn't return %s", function, record);
         return new IllegalArgumentException(m);
@@ -1105,6 +1112,7 @@ public abstract class _Exceptions extends ExceptionUtils {
         String m = String.format("record function %s couldn't return null", function);
         return new IllegalArgumentException(m);
     }
+
 
     public static DataAccessException noMoreResult() {
         return new DataAccessException("No more result.");

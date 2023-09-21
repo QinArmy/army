@@ -146,7 +146,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
             //5. create ExecutorEnv
             final String factoryName = Objects.requireNonNull(this.name);
             final ExecutorEnv executorEnv;
-            executorEnv = createExecutorEnv(factoryName, env, mappingEnv);
+            executorEnv = createExecutorEnv(factoryName, serverMeta, env, mappingEnv);
             //6. create LocalExecutorFactory
             final LocalExecutorFactory executorFactory;
             executorFactory = executorProvider.createLocalFactory(executorEnv);
@@ -199,10 +199,11 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
 
-    private ExecutorEnv createExecutorEnv(String factoryName, ArmyEnvironment env, MappingEnv mappingEnv) {
+    private ExecutorEnv createExecutorEnv(String factoryName, ServerMeta serverMeta, ArmyEnvironment env,
+                                          MappingEnv mappingEnv) {
         final Map<FieldMeta<?>, FieldCodec> codecMap;
         codecMap = createCodecMap();
-        return new LocalExecutorEnvironment(factoryName, codecMap, env, mappingEnv);
+        return new LocalExecutorEnvironment(factoryName, serverMeta, codecMap, env, mappingEnv);
     }
 
 
@@ -458,16 +459,20 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
 
         private final String factoryName;
 
+
+        private final ServerMeta serverMeta;
+
         private final Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
 
         private final ArmyEnvironment environment;
 
         private final MappingEnv mappingEnv;
 
-        private LocalExecutorEnvironment(String factoryName, Map<FieldMeta<?>, FieldCodec> fieldCodecMap
-                , ArmyEnvironment environment, MappingEnv mappingEnv) {
+        private LocalExecutorEnvironment(String factoryName, ServerMeta serverMeta, Map<FieldMeta<?>, FieldCodec> fieldCodecMap,
+                                         ArmyEnvironment environment, MappingEnv mappingEnv) {
 
             this.factoryName = factoryName;
+            this.serverMeta = serverMeta;
             final Map<FieldMeta<?>, FieldCodec> emptyMap = Collections.emptyMap();
             if (fieldCodecMap == emptyMap) {
                 this.fieldCodecMap = emptyMap;
@@ -481,6 +486,11 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
         @Override
         public String factoryName() {
             return this.factoryName;
+        }
+
+        @Override
+        public ServerMeta serverMeta() {
+            return this.serverMeta;
         }
 
         @Override

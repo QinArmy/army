@@ -30,6 +30,8 @@ final class ServerMetaImpl implements ServerMeta {
 
     private final int minor;
 
+    private final int subMinor;
+
     private final Dialect usedDialect;
 
     private final boolean supportSavePoint;
@@ -44,6 +46,8 @@ final class ServerMetaImpl implements ServerMeta {
         this.version = builder.version;
         this.major = builder.major;
         this.minor = builder.minor;
+        this.subMinor = builder.subMinor;
+
         this.usedDialect = builder.usedDialect;
 
         this.supportSavePoint = builder.supportSavePoint;
@@ -53,6 +57,7 @@ final class ServerMetaImpl implements ServerMeta {
                 || _StringUtils.isEmpty(this.version)
                 || this.major < 0
                 || this.minor < 0
+                || this.subMinor < 0
                 || this.usedDialect == null) {
             throw new IllegalArgumentException(String.format("server meta %s error.", this));
         } else if (!this.database.isCompatible(this.usedDialect)) {
@@ -120,8 +125,9 @@ final class ServerMetaImpl implements ServerMeta {
     @Override
     public int hashCode() {
         return Objects.hash(this.name, this.database, this.catalogName, this.schemaName,
-                this.version, this.major, this.minor, this.usedDialect,
-                this.supportSavePoint);
+                this.version, this.major, this.minor, this.subMinor,
+                this.usedDialect, this.supportSavePoint
+        );
     }
 
     @Override
@@ -129,17 +135,18 @@ final class ServerMetaImpl implements ServerMeta {
         final boolean match;
         if (obj == this) {
             match = true;
-        } else if (obj instanceof ServerMeta) {
-            final ServerMeta o = (ServerMeta) obj;
-            match = this.name.equals(o.name())
-                    && this.database == o.dialectDatabase()
-                    && Objects.equals(this.catalogName, o.catalog())
-                    && Objects.equals(this.schemaName, o.schema())
-                    && this.version.equals(o.version())
-                    && this.major == o.major()
-                    && this.minor == o.minor()
-                    && this.usedDialect == o.usedDialect()
-                    && this.supportSavePoint == o.isSupportSavePoints();
+        } else if (obj instanceof ServerMetaImpl) {
+            final ServerMetaImpl o = (ServerMetaImpl) obj;
+            match = this.name.equals(o.name)
+                    && this.database == o.database
+                    && Objects.equals(this.catalogName, o.catalogName)
+                    && Objects.equals(this.schemaName, o.schemaName)
+                    && this.version.equals(o.version)
+                    && this.major == o.major
+                    && this.minor == o.minor
+                    && this.subMinor == o.subMinor
+                    && this.usedDialect == o.usedDialect
+                    && this.supportSavePoint == o.supportSavePoint;
         } else {
             match = false;
         }
@@ -165,6 +172,8 @@ final class ServerMetaImpl implements ServerMeta {
                 .append(this.major)
                 .append(",minor:")
                 .append(this.minor)
+                .append(",subMinor:")
+                .append(this.subMinor)
                 .append(",usedDialect:")
                 .append(this.usedDialect.name())
                 .append(",supportSavePoint:")
@@ -191,6 +200,8 @@ final class ServerMetaImpl implements ServerMeta {
         private int major;
 
         private int minor;
+
+        private int subMinor;
 
         private Dialect usedDialect;
 
@@ -235,6 +246,12 @@ final class ServerMetaImpl implements ServerMeta {
         @Override
         public Builder minor(int minor) {
             this.minor = minor;
+            return this;
+        }
+
+        @Override
+        public Builder subMinor(int subMinor) {
+            this.subMinor = subMinor;
             return this;
         }
 

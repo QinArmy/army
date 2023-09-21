@@ -11,6 +11,7 @@ import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.RmExecutorFactory;
 import io.army.util._ClassUtils;
+import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,6 +165,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
                 .version(metaData.getDatabaseProductVersion())
                 .major(metaData.getDatabaseMajorVersion())
                 .minor(metaData.getDatabaseMinorVersion())
+                .subMinor(0) // TODO parse version
                 .usedDialect(usedDialect)
                 .supportSavePoint(metaData.supportsSavepoints())
                 .build();
@@ -178,7 +180,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
         } else if (productName.equals("PostgreSQL")) {
             database = Database.PostgreSQL;
         } else {
-            throw new DataAccessException(String.format("Database[%s] currently unsupported.", productName));
+            throw _Exceptions.unsupportedDatabaseFamily(productName);
         }
         return database;
     }

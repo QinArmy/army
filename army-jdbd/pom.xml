@@ -22,7 +22,11 @@
             <artifactId>army-reactive</artifactId>
         </dependency>
 
-
+        <dependency>
+            <groupId>io.jdbd</groupId>
+            <artifactId>jdbd-spi</artifactId>
+            <version>0.8.2-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>io.jdbd.mysql</groupId>
             <artifactId>jdbd-mysql</artifactId>
