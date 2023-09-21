@@ -1,12 +1,12 @@
 package io.army.jdbc;
 
+import io.army.ArmyException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.session.UnsupportedDataSourceTypeException;
 import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.RmExecutorFactory;
@@ -225,14 +225,15 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
     }
 
 
-    private static UnsupportedDataSourceTypeException unsupportedDataSource(Object dataSource) {
+    private static ArmyException unsupportedDataSource(Object dataSource) {
         final String m;
-        m = String.format("%s support only %s or %s,but dataSource is %s."
-                , JdbcExecutorProvider.class.getName()
-                , DataSource.class.getName()
-                , XADataSource.class.getName()
-                , _ClassUtils.safeClassName(dataSource));
-        throw new UnsupportedDataSourceTypeException(m);
+        m = String.format("%s support only %s or %s,but dataSource is %s.",
+                JdbcExecutorProvider.class.getName(),
+                DataSource.class.getName(),
+                XADataSource.class.getName(),
+                _ClassUtils.safeClassName(dataSource)
+        );
+        throw new ArmyException(m);
     }
 
 
