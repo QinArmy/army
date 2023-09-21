@@ -22,6 +22,7 @@ import io.army.util._TimeUtils;
 import io.jdbd.JdbdException;
 import io.jdbd.meta.DataType;
 import io.jdbd.result.CurrentRow;
+import io.jdbd.result.DataRow;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.SavePoint;
 import io.jdbd.statement.BindStatement;
@@ -133,7 +134,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
             extractIdFunc = row -> {
                 Object idValue;
-                idValue = type.afterGet(sqlType, this.factory.mappingEnv, row.getNonNull(0));
+                idValue = type.afterGet(sqlType, this.factory.mappingEnv, get(row, 0, type, sqlType));
                 keyStmt.setGeneratedIdValue(rowIndexHolder[0]++, idValue);
                 if (row.rowNumber() != rowIndexHolder[0]) {
                     String m = String.format("jdbd row index error,expected %s but %s", rowIndexHolder[0], row.rowNumber());
@@ -146,7 +147,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
                 if (rowSize != rowIndexHolder[0]) {
                     return Mono.error(_Exceptions.insertedRowsAndGenerateIdNotMatch(rowSize, rowIndexHolder[0]));
                 }
-                return Mono.just(mapToArmyResultStates(jdbdStatesHolder.get()));
+                return Mono.just(mapToArmyInsertStates(jdbdStatesHolder.get()));
             };
         } else {
             extractIdFunc = null;
@@ -295,6 +296,8 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     abstract DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType);
 
+    abstract Object get(DataRow row, int index, MappingType type, SqlType sqlType);
+
     /*-------------------below private instance methods-------------------*/
 
     /**
@@ -311,6 +314,13 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
     }
 
     private ResultStates mapToArmyResultStates(io.jdbd.result.ResultStates jdbdStates) {
+        return null;
+    }
+
+    /**
+     * just for return id insert
+     */
+    private ResultStates mapToArmyInsertStates(io.jdbd.result.ResultStates jdbdStates) {
         return null;
     }
 
