@@ -134,8 +134,13 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
             extractIdFunc = row -> {
                 Object idValue;
-                idValue = type.afterGet(sqlType, this.factory.mappingEnv, get(row, 0, type, sqlType));
-                keyStmt.setGeneratedIdValue(rowIndexHolder[0]++, idValue);
+                idValue = get(row, 0, type, sqlType);
+                final int rowIndex = rowIndexHolder[0]++;
+                if (idValue == null) {
+                    throw _Exceptions.idValueIsNull(rowIndex, keyStmt.idField());
+                }
+                idValue = type.afterGet(sqlType, this.factory.mappingEnv, idValue);
+                keyStmt.setGeneratedIdValue(rowIndex, idValue);
                 if (row.rowNumber() != rowIndexHolder[0]) {
                     String m = String.format("jdbd row index error,expected %s but %s", rowIndexHolder[0], row.rowNumber());
                     throw new DataAccessException(m);
@@ -296,6 +301,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     abstract DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType);
 
+    @Nullable
     abstract Object get(DataRow row, int index, MappingType type, SqlType sqlType);
 
     /*-------------------below private instance methods-------------------*/
