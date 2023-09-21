@@ -1506,8 +1506,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
             final PrimaryFieldMeta<?> idField = stmt.idField();
             final MappingType type = idField.mappingType();
-            final SqlType sqlType;
-            sqlType = getSqlType(resultSet.getMetaData(), 1);
+            final SqlType sqlType = type.map(this.factory.serverMeta);
+
             final MappingEnv env = this.factory.mappingEnv;
 
             final int rowSize = stmt.rowSize();

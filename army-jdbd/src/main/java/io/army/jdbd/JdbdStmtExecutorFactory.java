@@ -1,6 +1,8 @@
 package io.army.jdbd;
 
 import io.army.ArmyException;
+import io.army.env.ArmyEnvironment;
+import io.army.env.ArmyKey;
 import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
@@ -28,6 +30,7 @@ final class JdbdStmtExecutorFactory implements StmtExecutorFactory {
 
     final ServerMeta serverMeta;
 
+    final boolean truncatedTimeType;
     private final DatabaseSessionFactory sessionFactory;
 
     private final AtomicBoolean factoryClosed = new AtomicBoolean(false);
@@ -38,6 +41,9 @@ final class JdbdStmtExecutorFactory implements StmtExecutorFactory {
         this.mappingEnv = executorEnv.mappingEnv();
         this.serverMeta = executorEnv.serverMeta();
 
+        final ArmyEnvironment env = executorEnv.environment();
+
+        this.truncatedTimeType = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
 
     }
 

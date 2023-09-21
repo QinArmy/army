@@ -1140,6 +1140,12 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new DataAccessException(m);
     }
 
+    public static DataAccessException insertedRowsAndGenerateIdNotMatch(int insertedRows, long actualCount) {
+        String m = String.format("insertedRows[%s] and generateKeys count[%s] not match.", insertedRows,
+                actualCount);
+        return new DataAccessException(m);
+    }
+
     public static DataAccessException exceptedError(int indexBasedOne, MultiStmt.StmtItem excepted,
                                                     String actual) {
         String m = String.format("No %s item excepted is %s but actual %s", indexBasedOne, excepted, actual);

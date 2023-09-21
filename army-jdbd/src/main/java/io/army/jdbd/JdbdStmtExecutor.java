@@ -1,24 +1,43 @@
 package io.army.jdbd;
 
 import io.army.ArmyException;
+import io.army.criteria.SQLParam;
+import io.army.criteria.Selection;
+import io.army.lang.Nullable;
+import io.army.mapping.MappingEnv;
+import io.army.mapping.MappingType;
+import io.army.meta.FieldMeta;
+import io.army.meta.PrimaryFieldMeta;
+import io.army.meta.ServerMeta;
+import io.army.meta.TypeMeta;
 import io.army.reactive.MultiResult;
 import io.army.reactive.QueryResults;
 import io.army.reactive.StatementOption;
 import io.army.reactive.executor.StmtExecutor;
 import io.army.session.*;
+import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.util._Exceptions;
+import io.army.util._TimeUtils;
 import io.jdbd.JdbdException;
+import io.jdbd.meta.DataType;
+import io.jdbd.result.CurrentRow;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.SavePoint;
+import io.jdbd.statement.BindStatement;
+import io.jdbd.statement.ParametrizedStatement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigInteger;
+import java.time.temporal.Temporal;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSession> extends ExecutorSupport implements StmtExecutor {
+abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSession> extends ExecutorSupport
+        implements StmtExecutor {
 
     final JdbdStmtExecutorFactory factory;
 
@@ -93,9 +112,96 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
     }
 
     @Override
-    public final Mono<ResultStates> insert(SimpleStmt stmt, StatementOption option) {
-        return null;
+    public final Mono<ResultStates> insert(final SimpleStmt stmt, final StatementOption option) {
+        final List<? extends Selection> selectionList = stmt.selectionList();
+        final boolean returningId;
+        returningId = selectionList.size() == 1 && selectionList.get(0) instanceof PrimaryFieldMeta;
+
+        final AtomicReference<io.jdbd.result.ResultStates> jdbdStatesHolder;
+        final Function<CurrentRow, Boolean> extractIdFunc;
+        final Supplier<Mono<ResultStates>> monoSupplier;
+
+
+        if (returningId) {
+            final GeneratedKeyStmt keyStmt = (GeneratedKeyStmt) stmt;
+            final MappingType type = keyStmt.idField().mappingType();
+            final SqlType sqlType = type.map(this.factory.serverMeta);
+            jdbdStatesHolder = new AtomicReference<>(null);
+
+            final int rowSize = keyStmt.rowSize();
+            final int[] rowIndexHolder = new int[]{0};
+
+            extractIdFunc = row -> {
+                Object idValue;
+                idValue = type.afterGet(sqlType, this.factory.mappingEnv, row.getNonNull(0));
+                keyStmt.setGeneratedIdValue(rowIndexHolder[0]++, idValue);
+                if (row.rowNumber() != rowIndexHolder[0]) {
+                    String m = String.format("jdbd row index error,expected %s but %s", rowIndexHolder[0], row.rowNumber());
+                    throw new DataAccessException(m);
+                }
+                return Boolean.TRUE;
+            };
+
+            monoSupplier = () -> {
+                if (rowSize != rowIndexHolder[0]) {
+                    return Mono.error(_Exceptions.insertedRowsAndGenerateIdNotMatch(rowSize, rowIndexHolder[0]));
+                }
+                return Mono.just(mapToArmyResultStates(jdbdStatesHolder.get()));
+            };
+        } else {
+            extractIdFunc = null;
+            jdbdStatesHolder = null;
+            monoSupplier = null;
+        }
+
+
+        final boolean supportTimeout;
+        supportTimeout = option.isSupportTimeout();
+
+        final List<SQLParam> paramGroup = stmt.paramGroup();
+
+        final Mono<ResultStates> mono;
+
+        if (paramGroup.size() == 0 && !supportTimeout) {
+            if (returningId) {
+                mono = Flux.from(this.session.executeQuery(stmt.sqlText(), extractIdFunc, jdbdStatesHolder::set))
+                        .then(Mono.defer(monoSupplier));
+            } else if (stmt instanceof GeneratedKeyStmt) {
+                mono = Mono.from(this.session.executeUpdate(stmt.sqlText()))
+                        .map(states -> handleInsertStates(states, (GeneratedKeyStmt) stmt));
+            } else {
+                mono = Mono.from(this.session.executeUpdate(stmt.sqlText()))
+                        .map(this::mapToArmyResultStates);
+            }
+
+        } else {
+            final BindStatement statement;
+            statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
+            if (supportTimeout) {
+                try {
+                    statement.setTimeout(option.restMillSeconds());
+                } catch (TimeoutException e) {
+                    return Mono.error(e);
+                }
+            }
+            final Throwable error;
+            if ((error = bindParameter(statement, paramGroup)) != null) {
+                mono = Mono.error(error);
+            } else if (returningId) {
+                mono = Flux.from(statement.executeQuery(extractIdFunc, jdbdStatesHolder::set))
+                        .then(Mono.defer(monoSupplier));
+            } else if (stmt instanceof GeneratedKeyStmt) {
+                mono = Mono.from(statement.executeUpdate())
+                        .map(states -> handleInsertStates(states, (GeneratedKeyStmt) stmt));
+            } else {
+                mono = Mono.from(statement.executeUpdate())
+                        .map(this::mapToArmyResultStates);
+            }
+        }
+        return mono.onErrorMap(JdbdStmtExecutor::wrapError);
+
     }
+
 
     @Override
     public final Mono<ResultStates> update(SimpleStmt stmt, StatementOption option) {
@@ -179,13 +285,15 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     abstract Function<Option<?>, ?> readJdbdTransactionOptions(io.jdbd.session.TransactionOption jdbdOption);
 
-    abstract Function<Option<?>, ?> readArmyTransactionOptions(TransactionOption jdbdOption);
+    abstract Function<io.jdbd.session.Option<?>, ?> readArmyTransactionOptions(TransactionOption jdbdOption);
 
     abstract Function<io.jdbd.session.Option<?>, ?> readArmySetSavePointOptions(Function<Option<?>, ?> optionFunc);
 
     abstract Function<io.jdbd.session.Option<?>, ?> readArmyReleaseSavePointOptions(Function<Option<?>, ?> optionFunc);
 
     abstract Function<io.jdbd.session.Option<?>, ?> readArmyRollbackSavePointOptions(Function<Option<?>, ?> optionFunc);
+
+    abstract DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType);
 
     /*-------------------below private instance methods-------------------*/
 
@@ -202,6 +310,126 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         return null;
     }
 
+    private ResultStates mapToArmyResultStates(io.jdbd.result.ResultStates jdbdStates) {
+        return null;
+    }
+
+
+    /**
+     * @see #insert(SimpleStmt, StatementOption)
+     */
+    private ResultStates handleInsertStates(final io.jdbd.result.ResultStates jdbdStates, final GeneratedKeyStmt stmt) {
+        final int rowSize = stmt.rowSize();
+
+        if (jdbdStates.affectedRows() != rowSize) {
+            throw _Exceptions.insertedRowsAndGenerateIdNotMatch(rowSize, jdbdStates.affectedRows());
+        } else if (!jdbdStates.isSupportInsertId()) {
+            String m = String.format("error ,%s don't support lastInsertId() method", jdbdStates.getClass().getName());
+            throw new DataAccessException(m);
+        }
+
+        final PrimaryFieldMeta<?> idField = stmt.idField();
+        final MappingType type = idField.mappingType();
+        final SqlType sqlType = type.map(this.factory.serverMeta);
+        final MappingEnv env = this.factory.mappingEnv;
+
+        final int lastRowIndex = rowSize - 1;
+
+        long lastInsertedId = jdbdStates.lastInsertedId();
+        BigInteger bigId = null;
+        if (lastInsertedId < 0 || (lastInsertedId + rowSize) < 0) {
+            bigId = new BigInteger(Long.toUnsignedString(lastInsertedId));
+        }
+
+        Object idValue;
+        for (int i = 0; i < rowSize; i++) {
+            if (bigId == null) {
+                idValue = lastInsertedId++;
+            } else {
+                idValue = bigId;
+                if (i < lastRowIndex) {
+                    bigId = bigId.add(BigInteger.ONE);
+                }
+            }
+
+            idValue = type.afterGet(sqlType, env, idValue);
+            stmt.setGeneratedIdValue(i, idValue);
+        }
+
+        return mapToArmyResultStates(jdbdStates);
+    }
+
+
+    @Nullable
+    private Throwable bindParameter(final ParametrizedStatement statement, final List<SQLParam> paramList) {
+        Throwable error = null;
+        try {
+
+            final ServerMeta serverMeta = this.factory.serverMeta;
+            final MappingEnv mappingEnv = this.factory.mappingEnv;
+            final boolean truncatedTimeType = this.factory.truncatedTimeType;
+
+            final int paramSize = paramList.size();
+
+            SQLParam sqlParam;
+            Object value;
+            MappingType mappingType;
+            TypeMeta typeMeta;
+            SqlType sqlType;
+            DataType dataType;
+            for (int i = 0, paramIndex = 0; i < paramSize; i++) {
+                sqlParam = paramList.get(i);
+                typeMeta = sqlParam.typeMeta();
+
+                if (typeMeta instanceof MappingType) {
+                    mappingType = (MappingType) typeMeta;
+                } else {
+                    mappingType = typeMeta.mappingType();
+                }
+
+                sqlType = mappingType.map(serverMeta);
+                dataType = mapToJdbdDataType(mappingType, sqlType);
+
+                if (sqlParam instanceof SingleParam) {
+                    value = ((SingleParam) sqlParam).value();
+                    if (value != null) {
+                        //TODO field codec
+                        value = mappingType.beforeBind(sqlType, mappingEnv, value);
+                    }
+                    if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
+                        value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
+                    }
+                    statement.bind(paramIndex++, dataType, value);
+                    continue;
+                }
+
+                if (!(sqlParam instanceof MultiParam)) {
+                    throw _Exceptions.unexpectedSqlParam(sqlParam);
+                }
+
+                for (final Object element : ((MultiParam) sqlParam).valueList()) {
+                    value = element;
+                    if (value != null) {
+                        //TODO field codec
+                        value = mappingType.beforeBind(sqlType, mappingEnv, element);
+                    }
+
+                    if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
+                        value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
+                    }
+
+                    statement.bind(paramIndex++, dataType, value);
+
+                }// inner for loop
+
+
+            }// for loop
+        } catch (Throwable e) {
+            error = e;
+        }
+        return error;
+    }
+
 
     /*-------------------below package static methods -------------------*/
 
@@ -216,6 +444,9 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         }
         return e;
     }
+
+
+    /*-------------------below private static methods -------------------*/
 
 
 }
