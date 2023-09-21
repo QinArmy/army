@@ -30,15 +30,6 @@
             <version>1.12.12</version>
         </dependency>
         <dependency>
-            <groupId>io.qinarmy.common</groupId>
-            <artifactId>common-env</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.qinarmy.common</groupId>
-            <artifactId>common-util</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <optional>true</optional>

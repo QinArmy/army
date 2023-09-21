@@ -2,9 +2,8 @@ package io.army.session;
 
 import io.army.lang.Nullable;
 
-public interface ResultStates extends OptionSpec {
+public interface ResultStates extends ResultItem, OptionSpec {
 
-    int getResultNo();
 
     boolean inTransaction();
 
