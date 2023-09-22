@@ -114,6 +114,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     @Override
     public final Mono<ResultStates> insert(final SimpleStmt stmt, final StatementOption option) {
+
         final List<? extends Selection> selectionList = stmt.selectionList();
         final boolean returningId;
         returningId = selectionList.size() == 1 && selectionList.get(0) instanceof PrimaryFieldMeta;
@@ -161,48 +162,33 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         }
 
 
-        final boolean supportTimeout;
-        supportTimeout = option.isSupportTimeout();
+        final BindStatement statement;
+        statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
+
+        Throwable error = null;
+        if (option.isSupportTimeout()) {
+            try {
+                statement.setTimeout(option.restMillSeconds());
+            } catch (Throwable e) {
+                error = e;
+            }
+        }
 
         final List<SQLParam> paramGroup = stmt.paramGroup();
-
         final Mono<ResultStates> mono;
-
-        if (paramGroup.size() == 0 && !supportTimeout) {
-            if (returningId) {
-                mono = Flux.from(this.session.executeQuery(stmt.sqlText(), extractIdFunc, jdbdStatesHolder::set))
-                        .then(Mono.defer(monoSupplier));
-            } else if (stmt instanceof GeneratedKeyStmt) {
-                mono = Mono.from(this.session.executeUpdate(stmt.sqlText()))
-                        .map(states -> handleInsertStates(states, (GeneratedKeyStmt) stmt));
-            } else {
-                mono = Mono.from(this.session.executeUpdate(stmt.sqlText()))
-                        .map(this::mapToArmyResultStates);
-            }
-
+        if (error != null) {
+            mono = Mono.error(error);
+        } else if (paramGroup.size() > 0 && (error = bindParameter(statement, paramGroup)) != null) {
+            mono = Mono.error(error);
+        } else if (returningId) {
+            mono = Flux.from(statement.executeQuery(extractIdFunc, jdbdStatesHolder::set))
+                    .then(Mono.defer(monoSupplier));
+        } else if (stmt instanceof GeneratedKeyStmt) {
+            mono = Mono.from(statement.executeUpdate())
+                    .map(states -> handleInsertStates(states, (GeneratedKeyStmt) stmt));
         } else {
-            final BindStatement statement;
-            statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
-            if (supportTimeout) {
-                try {
-                    statement.setTimeout(option.restMillSeconds());
-                } catch (TimeoutException e) {
-                    return Mono.error(e);
-                }
-            }
-            final Throwable error;
-            if ((error = bindParameter(statement, paramGroup)) != null) {
-                mono = Mono.error(error);
-            } else if (returningId) {
-                mono = Flux.from(statement.executeQuery(extractIdFunc, jdbdStatesHolder::set))
-                        .then(Mono.defer(monoSupplier));
-            } else if (stmt instanceof GeneratedKeyStmt) {
-                mono = Mono.from(statement.executeUpdate())
-                        .map(states -> handleInsertStates(states, (GeneratedKeyStmt) stmt));
-            } else {
-                mono = Mono.from(statement.executeUpdate())
-                        .map(this::mapToArmyResultStates);
-            }
+            mono = Mono.from(statement.executeUpdate())
+                    .map(this::mapToArmyResultStates);
         }
         return mono.onErrorMap(JdbdStmtExecutor::wrapError);
 
@@ -210,8 +196,31 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
 
     @Override
-    public final Mono<ResultStates> update(SimpleStmt stmt, StatementOption option) {
-        return null;
+    public final Mono<ResultStates> update(final SimpleStmt stmt, final StatementOption option) {
+
+        final BindStatement statement;
+        statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
+
+        Throwable error = null;
+        if (option.isSupportTimeout()) {
+            try {
+                statement.setTimeout(option.restMillSeconds());
+            } catch (Throwable e) {
+                error = e;
+            }
+        }
+
+        final List<SQLParam> paramGroup = stmt.paramGroup();
+        final Mono<io.jdbd.result.ResultStates> mono;
+        if (error != null) {
+            mono = Mono.error(error);
+        } else if (paramGroup.size() > 0 && (error = bindParameter(statement, paramGroup)) != null) {
+            mono = Mono.error(error);
+        } else {
+            mono = Mono.from(statement.executeUpdate());
+        }
+        return mono.map(this::mapToArmyResultStates)
+                .onErrorMap(JdbdStmtExecutor::wrapError);
     }
 
     @Override
