@@ -75,9 +75,9 @@ public interface ReactiveSession extends Session, Closeable {
 
     <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer);
 
-    <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass, StatementOption option);
+    <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass, ReactiveOption option);
 
-    <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer, StatementOption option);
+    <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer, ReactiveOption option);
 
 
     /*-------------------below queryOptional methods-------------------*/
@@ -91,12 +91,12 @@ public interface ReactiveSession extends Session, Closeable {
     <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer);
 
 
-    <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, StatementOption option);
+    <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, ReactiveOption option);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer, StatementOption option);
+    <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer, ReactiveOption option);
 
     /*-------------------below queryObject methods-------------------*/
 
@@ -104,9 +104,9 @@ public interface ReactiveSession extends Session, Closeable {
 
     <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer);
 
-    <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, StatementOption option);
+    <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, ReactiveOption option);
 
-    <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer, StatementOption option);
+    <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer, ReactiveOption option);
 
 
     /*-------------------below queryRecord methods-------------------*/
@@ -115,9 +115,9 @@ public interface ReactiveSession extends Session, Closeable {
 
     <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
-    <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, StatementOption option);
+    <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, ReactiveOption option);
 
-    <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer, StatementOption option);
+    <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer, ReactiveOption option);
 
 
     /*-------------------below save methods-------------------*/
@@ -126,7 +126,7 @@ public interface ReactiveSession extends Session, Closeable {
 
     /*-------------------below update methods-------------------*/
 
-    Mono<ResultStates> update(SimpleDmlStatement dml, StatementOption option);
+    Mono<ResultStates> update(SimpleDmlStatement dml, ReactiveOption option);
 
 
     /*-------------------below batchSave methods-------------------*/
@@ -138,14 +138,14 @@ public interface ReactiveSession extends Session, Closeable {
 
     Flux<ResultStates> batchUpdate(BatchDmlStatement statement);
 
-    Flux<ResultStates> batchUpdate(BatchDmlStatement statement, StatementOption option);
+    Flux<ResultStates> batchUpdate(BatchDmlStatement statement, ReactiveOption option);
 
 
     /*-------------------below batchQuery methods-------------------*/
 
     QueryResults batchQueryResults(BatchDqlStatement statement);
 
-    QueryResults batchQueryResults(BatchDqlStatement statement, StatementOption option);
+    QueryResults batchQueryResults(BatchDqlStatement statement, ReactiveOption option);
 
     /*-------------------below batchQueryAsFlux methods-------------------*/
 
@@ -153,9 +153,9 @@ public interface ReactiveSession extends Session, Closeable {
 
     <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer);
 
-    <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, StatementOption option);
+    <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, ReactiveOption option);
 
-    <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer, StatementOption option);
+    <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer, ReactiveOption option);
 
 
     /*-------------------below batchQueryObject methods-------------------*/
@@ -164,9 +164,9 @@ public interface ReactiveSession extends Session, Closeable {
 
     <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer);
 
-    <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, StatementOption option);
+    <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, ReactiveOption option);
 
-    <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer, StatementOption option);
+    <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer, ReactiveOption option);
 
 
     /*-------------------below batchQueryObject methods-------------------*/
@@ -176,9 +176,9 @@ public interface ReactiveSession extends Session, Closeable {
     <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
 
-    <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, StatementOption option);
+    <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, ReactiveOption option);
 
-    <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer, StatementOption option);
+    <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer, ReactiveOption option);
 
     /*-------------------below multiStmt methods-------------------*/
 

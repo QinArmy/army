@@ -4,7 +4,7 @@ package io.army.reactive.executor;
 import io.army.reactive.Closeable;
 import io.army.reactive.MultiResult;
 import io.army.reactive.QueryResults;
-import io.army.reactive.StatementOption;
+import io.army.reactive.ReactiveOption;
 import io.army.session.*;
 import io.army.stmt.*;
 import reactor.core.publisher.Flux;
@@ -45,31 +45,31 @@ public interface StmtExecutor extends Closeable, OptionSpec {
 
     Mono<? extends StmtExecutor> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
-    Mono<ResultStates> insert(SimpleStmt stmt, StatementOption option);
+    Mono<ResultStates> insert(SimpleStmt stmt, ReactiveOption option);
 
-    Mono<ResultStates> update(SimpleStmt stmt, StatementOption option);
+    Mono<ResultStates> update(SimpleStmt stmt, ReactiveOption option);
 
-    Flux<ResultStates> batchUpdate(BatchStmt stmt, StatementOption option);
+    Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveOption option);
 
-    <R> Flux<R> query(SimpleStmt stmt, Class<R> resultClass, StatementOption option);
+    <R> Flux<R> query(SimpleStmt stmt, Class<R> resultClass, ReactiveOption option);
 
-    <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, StatementOption option);
+    <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, ReactiveOption option);
 
-    <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, StatementOption option);
+    <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option);
 
-    <R> Mono<Integer> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, StatementOption option);
+    <R> Mono<Integer> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, ReactiveOption option);
 
-    <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, StatementOption option);
+    <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, ReactiveOption option);
 
-    <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, StatementOption option);
+    <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, ReactiveOption option);
 
-    <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, StatementOption option);
+    <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option);
 
-    <R> Mono<Integer> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, StatementOption option);
+    <R> Mono<Integer> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveOption option);
 
-    QueryResults batchQuery(BatchStmt stmt, StatementOption option);
+    QueryResults batchQuery(BatchStmt stmt, ReactiveOption option);
 
-    MultiResult multiStmt(MultiStmt stmt, StatementOption option);
+    MultiResult multiStmt(MultiStmt stmt, ReactiveOption option);
 
 
 }

@@ -12,7 +12,7 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.reactive.MultiResult;
 import io.army.reactive.QueryResults;
-import io.army.reactive.StatementOption;
+import io.army.reactive.ReactiveOption;
 import io.army.reactive.executor.StmtExecutor;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
@@ -27,6 +27,7 @@ import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.SavePoint;
 import io.jdbd.statement.BindStatement;
 import io.jdbd.statement.ParametrizedStatement;
+import io.jdbd.statement.Statement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -34,6 +35,7 @@ import java.math.BigInteger;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -113,7 +115,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
     }
 
     @Override
-    public final Mono<ResultStates> insert(final SimpleStmt stmt, final StatementOption option) {
+    public final Mono<ResultStates> insert(final SimpleStmt stmt, final ReactiveOption option) {
 
         final List<? extends Selection> selectionList = stmt.selectionList();
         final boolean returningId;
@@ -196,7 +198,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
 
     @Override
-    public final Mono<ResultStates> update(final SimpleStmt stmt, final StatementOption option) {
+    public final Mono<ResultStates> update(final SimpleStmt stmt, final ReactiveOption option) {
 
         final BindStatement statement;
         statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
@@ -224,57 +226,79 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
     }
 
     @Override
-    public Flux<ResultStates> batchUpdate(BatchStmt stmt, StatementOption option) {
+    public final Flux<ResultStates> batchUpdate(final BatchStmt stmt, final ReactiveOption option) {
+        final BindStatement statement;
+        statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
+
+        Throwable error = null;
+        if (option.isSupportTimeout()) {
+            try {
+                statement.setTimeout(option.restMillSeconds());
+            } catch (Throwable e) {
+                error = e;
+            }
+        }
+
+        final Flux<io.jdbd.result.ResultStates> flux;
+        if (error != null) {
+            flux = Flux.error(error);
+        } else if ((error = bindParameterGroup(statement, stmt.groupList())) != null) {
+            flux = Flux.error(error);
+        } else {
+            flux = Flux.from(statement.executeBatchUpdate());
+        }
+        return flux.map(this::mapToArmyResultStates)
+                .onErrorMap(JdbdStmtExecutor::wrapError);
+    }
+
+    @Override
+    public final <R> Flux<R> query(final SimpleStmt stmt, final Class<R> resultClass, final ReactiveOption option) {
+        return executeQuery(stmt, classFunction(stmt, resultClass), option);
+    }
+
+
+    @Override
+    public <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Flux<R> query(SimpleStmt stmt, Class<R> resultClass, StatementOption option) {
+    public <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, StatementOption option) {
+    public <R> Mono<Integer> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, StatementOption option) {
+    public <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Mono<Integer> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, StatementOption option) {
+    public <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, StatementOption option) {
+    public <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, StatementOption option) {
+    public <R> Mono<Integer> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, StatementOption option) {
+    public QueryResults batchQuery(BatchStmt stmt, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Mono<Integer> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, StatementOption option) {
-        return null;
-    }
-
-    @Override
-    public QueryResults batchQuery(BatchStmt stmt, StatementOption option) {
-        return null;
-    }
-
-    @Override
-    public MultiResult multiStmt(MultiStmt stmt, StatementOption option) {
+    public MultiResult multiStmt(MultiStmt stmt, ReactiveOption option) {
         return null;
     }
 
@@ -339,9 +363,67 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         return null;
     }
 
+    /**
+     * @see #query(SimpleStmt, Class, ReactiveOption)
+     * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
+     * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
+     */
+    private <R> Flux<R> executeQuery(final SimpleStmt stmt, final Function<CurrentRow, R> func,
+                                     final ReactiveOption option) {
+        final BindStatement statement;
+        statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
+
+        final List<SQLParam> paramGroup = stmt.paramGroup();
+        Throwable error;
+        final Flux<R> flux;
+        if ((error = setStmtOption(statement, option)) != null) {
+            flux = Flux.error(error);
+        } else if (paramGroup.size() > 0 && (error = bindParameter(statement, paramGroup)) != null) {
+            flux = Flux.error(error);
+        } else {
+            flux = Flux.from(statement.executeQuery(func, createStatesConsumer(option)));
+        }
+        return flux.onErrorMap(JdbdStmtExecutor::wrapError);
+    }
+
 
     /**
-     * @see #insert(SimpleStmt, StatementOption)
+     * @see #query(SimpleStmt, Class, ReactiveOption)
+     * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
+     * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
+     */
+    private <R> Function<CurrentRow, R> classFunction(final SimpleStmt stmt, final Class<R> resultClass) {
+        if (stmt instanceof GeneratedKeyStmt) {
+
+        } else {
+
+        }
+        return row -> {
+            return null;
+        };
+    }
+
+    /**
+     * @see #query(SimpleStmt, Class, ReactiveOption)
+     * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
+     * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
+     */
+    private Consumer<io.jdbd.result.ResultStates> createStatesConsumer(final ReactiveOption option) {
+        final Consumer<ResultStates> armyConsumer;
+        armyConsumer = option.stateConsumer();
+
+        final Consumer<io.jdbd.result.ResultStates> jdbdConsumer;
+        if (armyConsumer == ResultStates.IGNORE_STATES) {
+            jdbdConsumer = io.jdbd.result.ResultStates.IGNORE_STATES;
+        } else {
+            jdbdConsumer = states -> armyConsumer.accept(mapToArmyResultStates(states));
+        }
+        return jdbdConsumer;
+    }
+
+
+    /**
+     * @see #insert(SimpleStmt, ReactiveOption)
      */
     private ResultStates handleInsertStates(final io.jdbd.result.ResultStates jdbdStates, final GeneratedKeyStmt stmt) {
         final int rowSize = stmt.rowSize();
@@ -384,6 +466,32 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         return mapToArmyResultStates(jdbdStates);
     }
 
+
+    @Nullable
+    private Throwable setStmtOption(final Statement statement, final ReactiveOption option) {
+        Throwable error = null;
+        if (option.isSupportTimeout()) {
+            try {
+                statement.setTimeout(option.restMillSeconds());
+            } catch (Throwable e) {
+                error = e;
+            }
+        }
+        return error;
+    }
+
+    @Nullable
+    private Throwable bindParameterGroup(final ParametrizedStatement statement, final List<List<SQLParam>> groupList) {
+        final int groupSize = groupList.size();
+        Throwable error = null;
+        for (int i = 0; i < groupSize; i++) {
+            error = bindParameter(statement, groupList.get(i));
+            if (error != null) {
+                break;
+            }
+        }
+        return error;
+    }
 
     @Nullable
     private Throwable bindParameter(final ParametrizedStatement statement, final List<SQLParam> paramList) {

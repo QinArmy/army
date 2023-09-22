@@ -2,7 +2,12 @@ package io.army.session;
 
 import io.army.lang.Nullable;
 
+import java.util.function.Consumer;
+
 public interface ResultStates extends ResultItem, OptionSpec {
+
+    Consumer<ResultStates> IGNORE_STATES = states -> {
+    };
 
 
     boolean inTransaction();
