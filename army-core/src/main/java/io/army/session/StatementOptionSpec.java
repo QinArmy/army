@@ -15,5 +15,7 @@ public interface StatementOptionSpec {
      */
     int restMillSeconds() throws TimeoutException;
 
+    int fetchSize();
+
 
 }

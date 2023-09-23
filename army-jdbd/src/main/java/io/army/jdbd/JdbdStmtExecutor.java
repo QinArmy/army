@@ -19,6 +19,8 @@ import io.army.reactive.executor.StmtExecutor;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
+import io.army.type.ImmutableSpec;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
 import io.jdbd.JdbdException;
@@ -29,7 +31,6 @@ import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.SavePoint;
 import io.jdbd.statement.BindStatement;
 import io.jdbd.statement.ParametrizedStatement;
-import io.jdbd.statement.Statement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -169,24 +170,14 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
 
         final BindStatement statement;
-        statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
-
-        Throwable error = null;
-        if (option.isSupportTimeout()) {
-            try {
-                statement.setTimeout(option.restMillSeconds());
-            } catch (Throwable e) {
-                error = e;
-            }
+        try {
+            statement = bindStatement(stmt, option);
+        } catch (Throwable e) {
+            return Mono.error(wrapError(e));
         }
 
-        final List<SQLParam> paramGroup = stmt.paramGroup();
         final Mono<ResultStates> mono;
-        if (error != null) {
-            mono = Mono.error(error);
-        } else if (paramGroup.size() > 0 && (error = bindParameter(statement, paramGroup)) != null) {
-            mono = Mono.error(error);
-        } else if (returningId) {
+        if (returningId) {
             mono = Flux.from(statement.executeQuery(extractIdFunc, jdbdStatesHolder::set))
                     .then(Mono.defer(monoSupplier));
         } else if (stmt instanceof GeneratedKeyStmt) {
@@ -203,56 +194,34 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     @Override
     public final Mono<ResultStates> update(final SimpleStmt stmt, final ReactiveOption option) {
+        Mono<ResultStates> mono;
+        try {
+            final BindStatement statement;
+            statement = bindStatement(stmt, option);
 
-        final BindStatement statement;
-        statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
-
-        Throwable error = null;
-        if (option.isSupportTimeout()) {
-            try {
-                statement.setTimeout(option.restMillSeconds());
-            } catch (Throwable e) {
-                error = e;
-            }
+            mono = Mono.from(statement.executeUpdate())
+                    .map(this::mapToArmyResultStates)
+                    .onErrorMap(JdbdStmtExecutor::wrapError);
+        } catch (Throwable e) {
+            mono = Mono.error(wrapError(e));
         }
-
-        final List<SQLParam> paramGroup = stmt.paramGroup();
-        final Mono<io.jdbd.result.ResultStates> mono;
-        if (error != null) {
-            mono = Mono.error(error);
-        } else if (paramGroup.size() > 0 && (error = bindParameter(statement, paramGroup)) != null) {
-            mono = Mono.error(error);
-        } else {
-            mono = Mono.from(statement.executeUpdate());
-        }
-        return mono.map(this::mapToArmyResultStates)
-                .onErrorMap(JdbdStmtExecutor::wrapError);
+        return mono;
     }
 
     @Override
     public final Flux<ResultStates> batchUpdate(final BatchStmt stmt, final ReactiveOption option) {
-        final BindStatement statement;
-        statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
+        Flux<ResultStates> flux;
+        try {
+            final BindStatement statement;
+            statement = bindStatement(stmt, option);
 
-        Throwable error = null;
-        if (option.isSupportTimeout()) {
-            try {
-                statement.setTimeout(option.restMillSeconds());
-            } catch (Throwable e) {
-                error = e;
-            }
+            flux = Flux.from(statement.executeBatchUpdate())
+                    .map(this::mapToArmyResultStates)
+                    .onErrorMap(JdbdStmtExecutor::wrapError);
+        } catch (Throwable e) {
+            flux = Flux.error(wrapError(e));
         }
-
-        final Flux<io.jdbd.result.ResultStates> flux;
-        if (error != null) {
-            flux = Flux.error(error);
-        } else if ((error = bindParameterGroup(statement, stmt.groupList())) != null) {
-            flux = Flux.error(error);
-        } else {
-            flux = Flux.from(statement.executeBatchUpdate());
-        }
-        return flux.map(this::mapToArmyResultStates)
-                .onErrorMap(JdbdStmtExecutor::wrapError);
+        return flux;
     }
 
     @Override
@@ -376,20 +345,15 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
      */
     private <R> Flux<R> executeQuery(final SimpleStmt stmt, final Function<CurrentRow, R> func,
                                      final ReactiveOption option) {
-        final BindStatement statement;
-        statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
-
-        final List<SQLParam> paramGroup = stmt.paramGroup();
-        Throwable error;
-        final Flux<R> flux;
-        if ((error = setStmtOption(statement, option)) != null) {
-            flux = Flux.error(error);
-        } else if (paramGroup.size() > 0 && (error = bindParameter(statement, paramGroup)) != null) {
-            flux = Flux.error(error);
-        } else {
+        Flux<R> flux;
+        try {
+            final BindStatement statement;
+            statement = bindStatement(stmt, option);
             flux = Flux.from(statement.executeQuery(func, createStatesConsumer(option)));
+        } catch (Throwable e) {
+            flux = Flux.error(wrapError(e));
         }
-        return flux.onErrorMap(JdbdStmtExecutor::wrapError);
+        return flux;
     }
 
 
@@ -473,100 +437,96 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
     }
 
 
-    @Nullable
-    private Throwable setStmtOption(final Statement statement, final ReactiveOption option) {
-        Throwable error = null;
+    private BindStatement bindStatement(final GenericSimpleStmt stmt, final ReactiveOption option)
+            throws TimeoutException, JdbdException {
+        final BindStatement statement;
+        statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
         if (option.isSupportTimeout()) {
-            try {
-                statement.setTimeout(option.restMillSeconds());
-            } catch (Throwable e) {
-                error = e;
-            }
+            statement.setTimeout(option.restMillSeconds());
         }
-        return error;
+
+        final int fetchSize = option.fetchSize();
+        if (fetchSize > 0) {
+            statement.setFetchSize(fetchSize);
+        }
+
+        if (stmt instanceof BatchStmt) {
+            final List<List<SQLParam>> groupList = ((BatchStmt) stmt).groupList();
+            final int groupSize = groupList.size();
+            for (int i = 0; i < groupSize; i++) {
+                bindParameter(statement, groupList.get(i));
+            }
+        } else if (stmt instanceof SimpleStmt) {
+            bindParameter(statement, ((SimpleStmt) stmt).paramGroup());
+        } else {
+            throw _Exceptions.unexpectedStmt(stmt);
+        }
+        return statement;
     }
 
+
     @Nullable
-    private Throwable bindParameterGroup(final ParametrizedStatement statement, final List<List<SQLParam>> groupList) {
-        final int groupSize = groupList.size();
-        Throwable error = null;
-        for (int i = 0; i < groupSize; i++) {
-            error = bindParameter(statement, groupList.get(i));
-            if (error != null) {
-                break;
+    private void bindParameter(final ParametrizedStatement statement, final List<SQLParam> paramList) {
+
+        final ServerMeta serverMeta = this.factory.serverMeta;
+        final MappingEnv mappingEnv = this.factory.mappingEnv;
+        final boolean truncatedTimeType = this.factory.truncatedTimeType;
+
+        final int paramSize = paramList.size();
+
+        SQLParam sqlParam;
+        Object value;
+        MappingType mappingType;
+        TypeMeta typeMeta;
+        SqlType sqlType;
+        DataType dataType;
+        for (int i = 0, paramIndex = 0; i < paramSize; i++) {
+            sqlParam = paramList.get(i);
+            typeMeta = sqlParam.typeMeta();
+
+            if (typeMeta instanceof MappingType) {
+                mappingType = (MappingType) typeMeta;
+            } else {
+                mappingType = typeMeta.mappingType();
             }
-        }
-        return error;
-    }
 
-    @Nullable
-    private Throwable bindParameter(final ParametrizedStatement statement, final List<SQLParam> paramList) {
-        Throwable error = null;
-        try {
+            sqlType = mappingType.map(serverMeta);
+            dataType = mapToJdbdDataType(mappingType, sqlType);
 
-            final ServerMeta serverMeta = this.factory.serverMeta;
-            final MappingEnv mappingEnv = this.factory.mappingEnv;
-            final boolean truncatedTimeType = this.factory.truncatedTimeType;
+            if (sqlParam instanceof SingleParam) {
+                value = ((SingleParam) sqlParam).value();
+                if (value != null) {
+                    //TODO field codec
+                    value = mappingType.beforeBind(sqlType, mappingEnv, value);
+                }
+                if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
+                    value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
+                }
+                statement.bind(paramIndex++, dataType, value);
+                continue;
+            }
 
-            final int paramSize = paramList.size();
+            if (!(sqlParam instanceof MultiParam)) {
+                throw _Exceptions.unexpectedSqlParam(sqlParam);
+            }
 
-            SQLParam sqlParam;
-            Object value;
-            MappingType mappingType;
-            TypeMeta typeMeta;
-            SqlType sqlType;
-            DataType dataType;
-            for (int i = 0, paramIndex = 0; i < paramSize; i++) {
-                sqlParam = paramList.get(i);
-                typeMeta = sqlParam.typeMeta();
-
-                if (typeMeta instanceof MappingType) {
-                    mappingType = (MappingType) typeMeta;
-                } else {
-                    mappingType = typeMeta.mappingType();
+            for (final Object element : ((MultiParam) sqlParam).valueList()) {
+                value = element;
+                if (value != null) {
+                    //TODO field codec
+                    value = mappingType.beforeBind(sqlType, mappingEnv, element);
                 }
 
-                sqlType = mappingType.map(serverMeta);
-                dataType = mapToJdbdDataType(mappingType, sqlType);
-
-                if (sqlParam instanceof SingleParam) {
-                    value = ((SingleParam) sqlParam).value();
-                    if (value != null) {
-                        //TODO field codec
-                        value = mappingType.beforeBind(sqlType, mappingEnv, value);
-                    }
-                    if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
-                        value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
-                    }
-                    statement.bind(paramIndex++, dataType, value);
-                    continue;
+                if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
+                    value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
                 }
 
-                if (!(sqlParam instanceof MultiParam)) {
-                    throw _Exceptions.unexpectedSqlParam(sqlParam);
-                }
+                statement.bind(paramIndex++, dataType, value);
 
-                for (final Object element : ((MultiParam) sqlParam).valueList()) {
-                    value = element;
-                    if (value != null) {
-                        //TODO field codec
-                        value = mappingType.beforeBind(sqlType, mappingEnv, element);
-                    }
-
-                    if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
-                        value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
-                    }
-
-                    statement.bind(paramIndex++, dataType, value);
-
-                }// inner for loop
+            }// inner for loop
 
 
-            }// for loop
-        } catch (Throwable e) {
-            error = e;
-        }
-        return error;
+        }// for loop
     }
 
 
@@ -786,15 +746,56 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
             this.accessor.set(this.row, fieldName, value);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         R endOneRow() {
-            final R row = this.row;
+            R row = this.row;
+
+            if (!this.twoStmtMode && row instanceof Map && row instanceof ImmutableSpec) {
+                row = (R) _Collections.unmodifiableMapForDeveloper((Map<?, ?>) row);
+            }
             this.row = null;
             return row;
         }
 
 
     }// ObjectReader
+
+    private static final class SecondRowReader<R> extends RowReader<R> {
+
+        private final List<R> rowList;
+
+        private final int rowSize;
+
+        private int rowIndex = 0;
+
+        private SecondRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+                                List<R> rowList) {
+            super(executor, selectionList, null);
+            this.rowList = rowList;
+            this.rowSize = rowList.size();
+        }
+
+        @Override
+        ObjectAccessor createRow() {
+            final int rowIndex = this.rowIndex++;
+            if (rowIndex >= this.rowSize) {
+
+            }
+            return null;
+        }
+
+        @Override
+        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
+
+        }
+
+        @Override
+        R endOneRow() {
+            return null;
+        }
+
+    }// SecondRowReader
 
     private static final class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
 
@@ -896,7 +897,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         @Override
         public <T> T get(int indexBasedZero, Class<T> columnClass) {
             //TODO
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
