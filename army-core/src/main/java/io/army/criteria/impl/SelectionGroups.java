@@ -331,7 +331,7 @@ abstract class SelectionGroups {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
                 selection = selectionList.get(i);
-                safeFieldAlias = parser.identifier(selection.alias());
+                safeFieldAlias = parser.identifier(selection.label());
                 sqlBuilder.append(_Constant.SPACE)
                         .append(safeAlias)
                         .append(_Constant.PERIOD)
@@ -390,7 +390,7 @@ abstract class SelectionGroups {
                 if (i > 0) {
                     sqlBuilder.append(_Constant.SPACE_COMMA);
                 }
-                selectionAlias = selectionList.get(i).alias();
+                selectionAlias = selectionList.get(i).label();
 
                 context.appendLiteral(NoCastTextType.INSTANCE, selectionAlias);
                 sqlBuilder.append(_Constant.SPACE_COMMA_SPACE)
@@ -421,7 +421,7 @@ abstract class SelectionGroups {
                 if (i > 0) {
                     builder.append(_Constant.SPACE_COMMA);
                 }
-                selectionAlias = selectionList.get(i).alias();
+                selectionAlias = selectionList.get(i).label();
 
                 builder.append(_Constant.SPACE)
                         .append(_Constant.QUOTE)
@@ -462,7 +462,7 @@ abstract class SelectionGroups {
                         .append(safeDerivedAlias)
                         .append(_Constant.PERIOD);
 
-                dialect.identifier(selectionList.get(i).alias(), sqlBuilder);
+                dialect.identifier(selectionList.get(i).label(), sqlBuilder);
 
             }
         }

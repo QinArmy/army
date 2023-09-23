@@ -998,11 +998,11 @@ abstract class FunctionUtils {
                                                          final List<? extends Selection> selectionList) {
         final Map<String, Selection> map = _Collections.hashMap((int) (selectionList.size() / 0.75F));
         for (Selection s : selectionList) {
-            if (map.putIfAbsent(s.alias(), s) == null) {
+            if (map.putIfAbsent(s.label(), s) == null) {
                 continue;
             }
             String m = String.format("Tabular %s %s name[%s] duplication.", SQLFunction.class.getName(),
-                    Selection.class.getName(), s.alias());
+                    Selection.class.getName(), s.label());
             final CriteriaException e;
             if (context == null) {
                 e = ContextStack.clearStackAndCriteriaError(m);
@@ -1783,7 +1783,7 @@ abstract class FunctionUtils {
 
 
         @Override
-        public String alias() {
+        public String label() {
             return this.expAlias;
         }
 

@@ -439,9 +439,9 @@ abstract class DialectFunctionUtils extends FunctionUtils {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             } else if (name == null) {
                 throw ContextStack.nullPointer(this.outerContext);
-            } else if (name.equals(field.alias())) {
+            } else if (name.equals(field.label())) {
                 selection = field;
-            } else if (fieldList.size() > 1 && (field = fieldList.get(1)).alias().equals(name)) {
+            } else if (fieldList.size() > 1 && (field = fieldList.get(1)).label().equals(name)) {
                 selection = field;
             } else {
                 selection = null;
@@ -1040,7 +1040,7 @@ abstract class DialectFunctionUtils extends FunctionUtils {
         }
 
         @Override
-        public String alias() {
+        public String label() {
             return this.name;
         }
 

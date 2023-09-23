@@ -2626,13 +2626,13 @@ abstract class CriteriaContexts {
                 case 1: {
                     final Selection selection;
                     selection = selectionList.get(0);
-                    selectionMap = _Collections.singletonMap(selection.alias(), selection);
+                    selectionMap = _Collections.singletonMap(selection.label(), selection);
                 }
                 break;
                 default: {
                     selectionMap = _Collections.hashMap((int) (selectionSize / 0.75f));
                     for (Selection selection : selectionList) {
-                        selectionMap.put(selection.alias(), selection);// override,if duplication
+                        selectionMap.put(selection.label(), selection);// override,if duplication
                     }
                     selectionMap = Collections.unmodifiableMap(selectionMap);
                 }
@@ -3077,7 +3077,7 @@ abstract class CriteriaContexts {
 
         @Override
         public final String fieldName() {
-            return this.selection.alias();
+            return this.selection.label();
         }
 
         @Override
@@ -3086,8 +3086,8 @@ abstract class CriteriaContexts {
         }
 
         @Override
-        public final String alias() {
-            return this.selection.alias();
+        public final String label() {
+            return this.selection.label();
         }
 
 
@@ -3096,7 +3096,7 @@ abstract class CriteriaContexts {
             final DialectParser parser = context.parser();
 
             final String safeFieldName;
-            safeFieldName = parser.identifier(this.selection.alias());
+            safeFieldName = parser.identifier(this.selection.label());
 
             sqlBuilder.append(_Constant.SPACE);
 
@@ -3115,7 +3115,7 @@ abstract class CriteriaContexts {
 
             dialect.identifier(this.tableName, sqlBuilder)
                     .append(_Constant.PERIOD);
-            dialect.identifier(this.selection.alias(), sqlBuilder);
+            dialect.identifier(this.selection.label(), sqlBuilder);
 
         }
 
@@ -3126,7 +3126,7 @@ abstract class CriteriaContexts {
                     .append(_Constant.SPACE)
                     .append(this.tableName)
                     .append(_Constant.PERIOD)
-                    .append(this.selection.alias())
+                    .append(this.selection.label())
                     .toString();
         }
 
@@ -3184,14 +3184,14 @@ abstract class CriteriaContexts {
         public final void appendSql(final StringBuilder sqlBuilder, final _SqlContext context) {
             sqlBuilder.append(_Constant.SPACE);
 
-            context.parser().identifier(this.selection.alias(), sqlBuilder);
+            context.parser().identifier(this.selection.label(), sqlBuilder);
         }
 
         @Override
         public final String toString() {
             return _StringUtils.builder()
                     .append(_Constant.SPACE)
-                    .append(this.selection.alias())
+                    .append(this.selection.label())
                     .toString();
         }
 

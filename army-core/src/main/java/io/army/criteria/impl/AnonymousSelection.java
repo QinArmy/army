@@ -13,7 +13,7 @@ interface AnonymousSelection extends Selection {
      * @throws UnsupportedOperationException always
      */
     @Override
-    String alias();
+    String label();
 
 
 }

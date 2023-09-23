@@ -274,11 +274,11 @@ abstract class SimpleValues<I extends Item, RR, OR, OD, LR, LO, LF, SP> extends 
             if (selectionSize == 1) {
                 final Selection selection;
                 selection = list.get(0);
-                selectionMap = Collections.singletonMap(selection.alias(), selection);
+                selectionMap = Collections.singletonMap(selection.label(), selection);
             } else {
                 selectionMap = new HashMap<>((int) (selectionSize / 0.75F));
                 for (Selection selection : list) {
-                    selectionMap.put(selection.alias(), selection);
+                    selectionMap.put(selection.label(), selection);
                 }
                 selectionMap = Collections.unmodifiableMap(selectionMap);
                 assert selectionMap.size() == selectionSize;

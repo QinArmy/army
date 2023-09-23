@@ -251,7 +251,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
 
                 final Selection idSelection = selectionList.get(idSelectionIndex);
                 final SqlType idSqlType = sqlTypeArray[idSelectionIndex];
-                final String idFieldName = idSelection.alias();
+                final String idFieldName = idSelection.label();
 
                 final MappingType compatibleType;
                 compatibleType = compatibleTypeFrom(idSelection, resultClass, accessor, idFieldName);
@@ -1828,7 +1828,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 columnValue = executor.get(resultSet, i + 1, sqlType);
 
                 selection = selectionList.get(i);
-                fieldName = selection.alias();
+                fieldName = selection.label();
 
                 if (columnValue == null) {
                     if (columnValueArray != null) {
@@ -2027,7 +2027,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 final List<? extends Selection> selectionList = this.selectionList;
 
                 for (int i = valueArray.length - 1; i > -1; i--) {  // If alias duplication,then override.
-                    if (selectionList.get(i).alias().equals(selectionAlias)) {
+                    if (selectionList.get(i).label().equals(selectionAlias)) {
                         index = i;
                         break;
                     }

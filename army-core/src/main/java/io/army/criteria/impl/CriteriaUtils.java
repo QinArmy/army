@@ -243,16 +243,16 @@ abstract class CriteriaUtils {
 
         if (selectItemSize == 1 && selectItemList.get(0) instanceof Selection) {
             final Selection selection = (Selection) selectItemList.get(0);
-            selectionMap = Collections.singletonMap(selection.alias(), selection);
+            selectionMap = Collections.singletonMap(selection.label(), selection);
         } else {
             final Map<String, Selection> map = _Collections.hashMap((int) (selectItemSize / 0.75F));
             for (SelectItem item : selectItemList) {
 
                 if (item instanceof Selection) {
-                    map.put(((Selection) item).alias(), (Selection) item); // if alias duplication then override. Be consistent with  statement executor.
+                    map.put(((Selection) item).label(), (Selection) item); // if alias duplication then override. Be consistent with  statement executor.
                 } else if (item instanceof _SelectionGroup) {
                     for (Selection selection : ((_SelectionGroup) item).selectionList()) {
-                        map.put(selection.alias(), selection); // if alias duplication then override.Be consistent with  statement executor.
+                        map.put(selection.label(), selection); // if alias duplication then override.Be consistent with  statement executor.
                     }
                 }
             }
@@ -554,7 +554,7 @@ abstract class CriteriaUtils {
             selection = ArmySelections.renameSelection(refSelectionList.get(0), columnAliasList.get(0));
             return new SelectionMap(
                     _Collections.singletonList(selection),
-                    _Collections.singletonMap(selection.alias(), selection)
+                    _Collections.singletonMap(selection.label(), selection)
             );
         }
         final List<Selection> selectionList = _Collections.arrayList(selectionSize);
@@ -593,7 +593,7 @@ abstract class CriteriaUtils {
             selection = (Selection) selectItem;
             return new SelectionMap(
                     _Collections.singletonList(selection),
-                    _Collections.singletonMap(selection.alias(), selection)
+                    _Collections.singletonMap(selection.label(), selection)
             );
         }
 
@@ -610,7 +610,7 @@ abstract class CriteriaUtils {
             if (selectItem instanceof Selection) {
                 selection = (Selection) selectItem;
                 selectionList.add(selection);
-                selectionMap.put(selection.alias(), selection); // override, if duplication
+                selectionMap.put(selection.label(), selection); // override, if duplication
                 continue;
             } else if (!(selectItem instanceof _SelectionGroup)) {
                 throw _Exceptions.unknownSelectItem(selectItem);
@@ -621,7 +621,7 @@ abstract class CriteriaUtils {
             for (int j = 0; j < groupSize; j++) {
                 selection = selectionGroup.get(j);
                 selectionList.add(selection);
-                selectionMap.put(selection.alias(), selection); // override, if duplication
+                selectionMap.put(selection.label(), selection); // override, if duplication
             }
 
         }

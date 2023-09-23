@@ -16,7 +16,7 @@ abstract class ArmySelections implements _Selection {
     static _Selection forExp(final Expression exp, final String alias) {
         final _Selection selection;
         if (exp instanceof FieldSelection) {
-            if (((FieldSelection) exp).alias().equals(alias)) {
+            if (((FieldSelection) exp).label().equals(alias)) {
                 selection = (_Selection) exp;
             } else {
                 selection = new FieldSelectionImpl((FieldSelection) exp, alias);
@@ -32,12 +32,12 @@ abstract class ArmySelections implements _Selection {
     static Selection renameSelection(final Selection selection, final String alias) {
         final Selection s;
         if (selection instanceof FieldSelection) {
-            if (selection.alias().equals(alias)) {
+            if (selection.label().equals(alias)) {
                 s = selection;
             } else {
                 s = new FieldSelectionImpl((FieldSelection) selection, alias);
             }
-        } else if (selection instanceof AnonymousSelection || !selection.alias().equals(alias)) {
+        } else if (selection instanceof AnonymousSelection || !selection.label().equals(alias)) {
             s = new RenameSelection(selection, alias);
         } else {
             s = selection;
@@ -78,7 +78,7 @@ abstract class ArmySelections implements _Selection {
 
 
     @Override
-    public final String alias() {
+    public final String label() {
         return this.alias;
     }
 
@@ -391,7 +391,7 @@ abstract class ArmySelections implements _Selection {
         }
 
         @Override
-        public String alias() {
+        public String label() {
             // no bug,never here
             throw new UnsupportedOperationException();
         }

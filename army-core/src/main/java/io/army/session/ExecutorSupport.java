@@ -77,7 +77,7 @@ public abstract class ExecutorSupport {
         final int selectionSize = selectionList.size();
         Map<String, Integer> map = _Collections.hashMap((int) (selectionSize / 0.75f));
         for (int i = 0; i < selectionSize; i++) {
-            map.put(selectionList.get(i).alias(), i); // If alias duplication,then override.
+            map.put(selectionList.get(i).label(), i); // If alias duplication,then override.
         }
         return _Collections.unmodifiableMap(map);
     }

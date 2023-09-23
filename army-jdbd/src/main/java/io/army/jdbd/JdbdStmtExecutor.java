@@ -1,6 +1,7 @@
 package io.army.jdbd;
 
 import io.army.ArmyException;
+import io.army.bean.ObjectAccessor;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.lang.Nullable;
@@ -253,7 +254,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     @Override
     public final <R> Flux<R> query(final SimpleStmt stmt, final Class<R> resultClass, final ReactiveOption option) {
-        return executeQuery(stmt, classFunction(stmt, resultClass), option);
+        return executeQuery(stmt, mapBeanFunc(stmt, resultClass), option);
     }
 
 
@@ -392,7 +393,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
      * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
      * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
      */
-    private <R> Function<CurrentRow, R> classFunction(final SimpleStmt stmt, final Class<R> resultClass) {
+    private <R> Function<CurrentRow, R> mapBeanFunc(final SimpleStmt stmt, final Class<R> resultClass) {
         if (stmt instanceof GeneratedKeyStmt) {
 
         } else {
@@ -580,6 +581,61 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
 
     /*-------------------below private static methods -------------------*/
+
+    /*-------------------below static class -------------------*/
+
+    private static abstract class RowReader<R> {
+
+        private final JdbdStmtExecutor<?, ?> executor;
+
+        private final List<? extends Selection> selectionList;
+
+        private final SqlType[] sqlTypeArray;
+
+        private MappingType[] compatibleTypeArray;
+
+        private ObjectAccessor accessor;
+
+        private RowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+                          SqlType[] sqlTypeArray) {
+            if (selectionList.size() != sqlTypeArray.length) {
+                throw _Exceptions.columnCountAndSelectionCountNotMatch(sqlTypeArray.length, selectionList.size());
+            }
+            this.executor = executor;
+            this.selectionList = selectionList;
+            this.sqlTypeArray = sqlTypeArray;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Nullable
+        final R raedOneRow(final CurrentRow row) {
+
+            final JdbdStmtExecutor<?, ?> executor = this.executor;
+            final MappingEnv env = executor.factory.mappingEnv;
+            final SqlType[] sqlTypeArray = this.sqlTypeArray;
+            final List<? extends Selection> selectionList = this.selectionList;
+
+
+            ObjectAccessor accessor = this.accessor;
+
+            MappingType[] compatibleTypeArray = this.compatibleTypeArray;
+            final Object[] columnValueArray;
+
+            Selection selection;
+            Object columnValue;
+            SqlType sqlType;
+            String fieldName;
+            final int columnCount = sqlTypeArray.length;
+            for (int i = 0; i < columnCount; i++) {
+                sqlType = sqlTypeArray[i];
+
+                columnValue = executor.get(row, i, sqlType);
+            }
+            return null;
+        }
+
+
+    }//RowReader
 
 
 }

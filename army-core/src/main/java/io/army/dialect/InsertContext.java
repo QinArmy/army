@@ -626,7 +626,7 @@ abstract class InsertContext extends StatementContext
         dialect.safeObjectName(returnId, sqlBuilder)
                 .append(_Constant.SPACE_AS_SPACE);
 
-        dialect.identifier(returnId.alias(), sqlBuilder);
+        dialect.identifier(returnId.label(), sqlBuilder);
     }
 
 

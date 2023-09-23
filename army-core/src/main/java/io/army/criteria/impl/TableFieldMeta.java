@@ -235,7 +235,7 @@ abstract class TableFieldMeta<T> extends OperationDataField implements FieldMeta
 
 
     @Override
-    public final String alias() {
+    public final String label() {
         return this.fieldName;
     }
 

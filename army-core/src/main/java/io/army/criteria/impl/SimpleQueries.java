@@ -1003,7 +1003,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
                 && ((ArmySelections.ExpressionSelection) selection).expression instanceof DerivedField) {
             derivedIdField = (DerivedField) ((ArmySelections.ExpressionSelection) selection).expression;
         } else {
-            m = String.format("%s %s isn't derived field %s.", Selection.class.getName(), selection.alias(), msgSuffix);
+            m = String.format("%s %s isn't derived field %s.", Selection.class.getName(), selection.label(), msgSuffix);
             throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
 
@@ -1093,7 +1093,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
             m = String.format("first select item isn't window function rowNumber() expression in CTE[%s]", thisCteName);
             throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         }
-        if (!((Selection) selectItem).alias().equals(rowNumberAlias)) {
+        if (!((Selection) selectItem).label().equals(rowNumberAlias)) {
             m = String.format("first selection isn't selection[%s] in CTE[%s]", rowNumberAlias, thisCteName);
             throw ContextStack.clearStackAnd(IllegalOneStmtModeException::new, m);
         } else if (!((expression = ((ArmySelections.ExpressionSelection) selectItem).expression) instanceof WindowFunctionUtils.WindowFunction)

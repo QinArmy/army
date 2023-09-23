@@ -828,7 +828,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
         }
 
         @Override
-        public final String alias() {
+        public final String label() {
             return this.name;
         }
 
@@ -1971,7 +1971,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
                         fieldList.add(field);
 
-                        if (notDuplicate && fieldMap.putIfAbsent(field.alias(), field) != null) {
+                        if (notDuplicate && fieldMap.putIfAbsent(field.label(), field) != null) {
                             notDuplicate = false;
                             this.existsAnonymousField = true;
                         }
