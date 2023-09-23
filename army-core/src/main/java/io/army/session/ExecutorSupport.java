@@ -13,6 +13,7 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public abstract class ExecutorSupport {
 
@@ -83,4 +84,18 @@ public abstract class ExecutorSupport {
     }
 
 
+    protected static NullPointerException currentRecordColumnIsNull(int indexBasedZero, Selection selection) {
+        String m = String.format("value is null of current record index[%s] selection label[%s] ",
+                indexBasedZero, selection.label());
+        return new NullPointerException(m);
+    }
+
+    protected static NullPointerException currentRecordDefaultValueNonNull() {
+        return new NullPointerException("current record default must non-null");
+    }
+
+    protected static NullPointerException currentRecordSupplierReturnNull(Supplier<?> supplier) {
+        String m = String.format("current record %s %s return null", Supplier.class.getName(), supplier);
+        return new NullPointerException(m);
+    }
 }

@@ -2,6 +2,7 @@ package io.army.jdbd;
 
 import io.army.ArmyException;
 import io.army.bean.ObjectAccessor;
+import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.lang.Nullable;
@@ -32,9 +33,11 @@ import io.jdbd.statement.Statement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.time.temporal.Temporal;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -138,7 +141,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
             extractIdFunc = row -> {
                 Object idValue;
-                idValue = get(row, 0, type, sqlType);
+                idValue = get(row, 0, sqlType);
                 final int rowIndex = rowIndexHolder[0]++;
                 if (idValue == null) {
                     throw _Exceptions.idValueIsNull(rowIndex, keyStmt.idField());
@@ -335,8 +338,10 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     abstract DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType);
 
+    abstract SqlType getColumnMeta(DataRow row, int indexBasedZero);
+
     @Nullable
-    abstract Object get(DataRow row, int index, MappingType type, SqlType sqlType);
+    abstract Object get(DataRow row, int index, SqlType sqlType);
 
     /*-------------------below private instance methods-------------------*/
 
@@ -588,54 +593,424 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         private final JdbdStmtExecutor<?, ?> executor;
 
-        private final List<? extends Selection> selectionList;
+        final List<? extends Selection> selectionList;
 
         private final SqlType[] sqlTypeArray;
 
-        private MappingType[] compatibleTypeArray;
+        private final MappingType[] compatibleTypeArray;
 
-        private ObjectAccessor accessor;
+        private final Class<R> resultClass;
 
         private RowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
-                          SqlType[] sqlTypeArray) {
-            if (selectionList.size() != sqlTypeArray.length) {
-                throw _Exceptions.columnCountAndSelectionCountNotMatch(sqlTypeArray.length, selectionList.size());
-            }
+                          @Nullable Class<R> resultClass) {
             this.executor = executor;
             this.selectionList = selectionList;
-            this.sqlTypeArray = sqlTypeArray;
+            this.sqlTypeArray = new SqlType[selectionList.size()];
+            this.compatibleTypeArray = new MappingType[this.sqlTypeArray.length];
+
+            this.resultClass = resultClass;
         }
 
-        @SuppressWarnings("unchecked")
+
         @Nullable
-        final R raedOneRow(final CurrentRow row) {
+        final R raedOneRow(final DataRow dataRow) {
 
             final JdbdStmtExecutor<?, ?> executor = this.executor;
             final MappingEnv env = executor.factory.mappingEnv;
             final SqlType[] sqlTypeArray = this.sqlTypeArray;
             final List<? extends Selection> selectionList = this.selectionList;
 
+            final MappingType[] compatibleTypeArray = this.compatibleTypeArray;
 
-            ObjectAccessor accessor = this.accessor;
+            final int columnCount;
+            if (sqlTypeArray[0] == null) {
+                columnCount = dataRow.getColumnCount();
+                if (columnCount != sqlTypeArray.length) {
+                    throw _Exceptions.columnCountAndSelectionCountNotMatch(columnCount, sqlTypeArray.length);
+                }
+                for (int i = 0; i < columnCount; i++) {
+                    sqlTypeArray[i] = executor.getColumnMeta(dataRow, i);
+                }
+            } else {
+                columnCount = sqlTypeArray.length;
+            }
 
-            MappingType[] compatibleTypeArray = this.compatibleTypeArray;
-            final Object[] columnValueArray;
+            final ObjectAccessor accessor;
+            accessor = createRow();
 
+            MappingType type;
             Selection selection;
             Object columnValue;
             SqlType sqlType;
             String fieldName;
-            final int columnCount = sqlTypeArray.length;
+
             for (int i = 0; i < columnCount; i++) {
                 sqlType = sqlTypeArray[i];
+                columnValue = executor.get(dataRow, i, sqlType);
 
-                columnValue = executor.get(row, i, sqlType);
-            }
-            return null;
+                selection = selectionList.get(i);
+                fieldName = selection.label();
+
+                if (columnValue == null) {
+                    acceptColumn(i, fieldName, null);
+                    continue;
+                }
+
+                if ((type = compatibleTypeArray[i]) == null) {
+                    type = compatibleTypeFrom(selection, this.resultClass, accessor, fieldName);
+                    compatibleTypeArray[i] = type;
+                }
+
+                columnValue = type.afterGet(sqlType, env, columnValue);
+                //TODO field codec
+                acceptColumn(i, fieldName, columnValue);
+
+            } // for loop
+
+            return endOneRow();
         }
 
 
-    }//RowReader
+        abstract ObjectAccessor createRow();
+
+        abstract void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value);
+
+        @Nullable
+        abstract R endOneRow();
+
+
+    }// RowReader
+
+    private static final class SingleColumnRowReader<R> extends RowReader<R> {
+
+        private R row;
+
+        private SingleColumnRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+                                      Class<R> resultClass) {
+            super(executor, selectionList, resultClass);
+        }
+
+        @Override
+        ObjectAccessor createRow() {
+            this.row = null;
+            return ObjectAccessorFactory.PSEUDO_ACCESSOR;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
+            assert indexBasedZero == 0;
+            this.row = (R) value;
+        }
+
+        @Override
+        R endOneRow() {
+            final R row = this.row;
+            this.row = null;
+            return row;
+        }
+
+    }// SingleColumnRowReader
+
+    private static final class BeanReader<R> extends RowReader<R> {
+
+        private final ObjectAccessor accessor;
+        private final Constructor<R> constructor;
+
+
+        private R row;
+
+        private BeanReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+                           Class<R> resultClass) {
+            super(executor, selectionList, resultClass);
+            this.accessor = ObjectAccessorFactory.forBean(resultClass);
+            this.constructor = ObjectAccessorFactory.getConstructor(resultClass);
+        }
+
+        @Override
+        ObjectAccessor createRow() {
+            this.row = ObjectAccessorFactory.createBean(this.constructor);
+            return this.accessor;
+        }
+
+        @Override
+        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
+            this.accessor.set(this.row, fieldName, value);
+        }
+
+        @Override
+        R endOneRow() {
+            final R row = this.row;
+            this.row = null;
+            return row;
+        }
+
+    }// BeanReader
+
+
+    private static final class ObjectReader<R> extends RowReader<R> {
+
+        private final Supplier<R> constructor;
+
+        private final boolean twoStmtMode;
+
+        private R row;
+
+        private ObjectAccessor accessor;
+
+        private ObjectReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+                             Supplier<R> constructor, boolean twoStmtMode) {
+            super(executor, selectionList, null);
+            this.constructor = constructor;
+            this.twoStmtMode = twoStmtMode;
+        }
+
+        @Override
+        ObjectAccessor createRow() {
+            final R row;
+            row = this.constructor.get();
+            if (row == null) {
+                throw _Exceptions.objectConstructorError();
+            }
+
+            final ObjectAccessor accessor;
+            accessor = ObjectAccessorFactory.fromInstance(row);
+
+            this.row = row;
+            this.accessor = accessor;
+            return accessor;
+        }
+
+        @Override
+        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
+            this.accessor.set(this.row, fieldName, value);
+        }
+
+        @Override
+        R endOneRow() {
+            final R row = this.row;
+            this.row = null;
+            return row;
+        }
+
+
+    }// ObjectReader
+
+    private static final class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
+
+        private final Function<CurrentRecord, R> function;
+
+        private final Object[] valueArray;
+
+        private final Map<String, Integer> aliasToIndexMap;
+        private int currentIndex;
+
+
+        private RecordRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+                                Function<CurrentRecord, R> function) {
+            super(executor, selectionList, null);
+            this.function = function;
+            this.valueArray = new Object[selectionList.size()];
+
+            if (this.valueArray.length < 6) {
+                this.aliasToIndexMap = null;
+            } else {
+                this.aliasToIndexMap = createAliasToIndexMap(selectionList);
+            }
+        }
+
+        @Override
+        public int getColumnCount() {
+            return this.valueArray.length;
+        }
+
+        @Override
+        public String getColumnLabel(int indexBasedZero) throws IllegalArgumentException {
+            return this.selectionList.get(indexBasedZero).label();
+        }
+
+        @Override
+        public int getColumnIndex(final @Nullable String columnLabel) throws IllegalArgumentException {
+            if (columnLabel == null) {
+                throw new NullPointerException("columnLabel is null");
+            }
+            int index = -1;
+            final Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
+            if (aliasToIndexMap == null) {
+                final List<? extends Selection> selectionList = this.selectionList;
+                for (int i = valueArray.length - 1; i > -1; i--) {  // If alias duplication,then override.
+                    if (columnLabel.equals(selectionList.get(i).label())) {
+                        index = i;
+                        break;
+                    }
+                }
+            } else {
+                index = aliasToIndexMap.getOrDefault(columnLabel, -1);
+            }
+            if (index < 0) {
+                throw _Exceptions.unknownSelectionAlias(columnLabel);
+            }
+            return index;
+        }
+
+        @Override
+        public Object get(int indexBasedZero) {
+            return this.valueArray[checkIndex(indexBasedZero)];
+        }
+
+        @Override
+        public Object getNonNull(final int indexBasedZero) {
+            final Object value;
+            value = this.valueArray[checkIndex(indexBasedZero)];
+            if (value == null) {
+                throw ExecutorSupport.currentRecordColumnIsNull(indexBasedZero, this.selectionList.get(indexBasedZero));
+            }
+            return value;
+        }
+
+        @Override
+        public Object getOrDefault(final int indexBasedZero, @Nullable Object defaultValue) {
+            if (defaultValue == null) {
+                throw currentRecordDefaultValueNonNull();
+            }
+            Object value;
+            value = this.valueArray[checkIndex(indexBasedZero)];
+            if (value == null) {
+                value = defaultValue;
+            }
+            return value;
+        }
+
+        @Override
+        public Object getOrSupplier(final int indexBasedZero, Supplier<?> supplier) {
+            Object value;
+            value = this.valueArray[checkIndex(indexBasedZero)];
+            if (value == null) {
+                if ((value = supplier.get()) == null) {
+                    throw currentRecordSupplierReturnNull(supplier);
+                }
+            }
+            return value;
+        }
+
+        @Override
+        public <T> T get(int indexBasedZero, Class<T> columnClass) {
+            //TODO
+            return null;
+        }
+
+        @Override
+        public <T> T getNonNull(final int indexBasedZero, Class<T> columnClass) {
+            final T value;
+            value = get(indexBasedZero, columnClass);
+            if (value == null) {
+                throw currentRecordColumnIsNull(indexBasedZero, this.selectionList.get(indexBasedZero));
+            }
+            return value;
+        }
+
+        @Override
+        public <T> T getOrDefault(final int indexBasedZero, Class<T> columnClass, @Nullable T defaultValue) {
+            if (defaultValue == null) {
+                throw currentRecordDefaultValueNonNull();
+            }
+            T value;
+            value = get(indexBasedZero, columnClass);
+            if (value == null) {
+                value = defaultValue;
+            }
+            return value;
+        }
+
+        @Override
+        public <T> T getOrSupplier(final int indexBasedZero, Class<T> columnClass, Supplier<T> supplier) {
+            T value;
+            value = get(indexBasedZero, columnClass);
+            if (value == null) {
+                if ((value = supplier.get()) == null) {
+                    throw currentRecordSupplierReturnNull(supplier);
+                }
+            }
+            return value;
+        }
+
+        @Override
+        public Object get(String selectionLabel) {
+            return get(getColumnIndex(selectionLabel));
+        }
+
+        @Override
+        public Object getNonNull(String selectionLabel) {
+            return getNonNull(getColumnIndex(selectionLabel));
+        }
+
+        @Override
+        public Object getOrDefault(String selectionLabel, Object defaultValue) {
+            return getOrDefault(getColumnIndex(selectionLabel), defaultValue);
+        }
+
+        @Override
+        public Object getOrSupplier(String selectionLabel, Supplier<?> supplier) {
+            return getOrSupplier(getColumnIndex(selectionLabel), supplier);
+        }
+
+        @Override
+        public <T> T get(String selectionLabel, Class<T> columnClass) {
+            return get(getColumnIndex(selectionLabel), columnClass);
+        }
+
+        @Override
+        public <T> T getNonNull(String selectionLabel, Class<T> columnClass) {
+            return getNonNull(getColumnIndex(selectionLabel), columnClass);
+        }
+
+        @Override
+        public <T> T getOrDefault(String selectionLabel, Class<T> columnClass, T defaultValue) {
+            return getOrDefault(getColumnIndex(selectionLabel), columnClass, defaultValue);
+        }
+
+        @Override
+        public <T> T getOrSupplier(String selectionLabel, Class<T> columnClass, Supplier<T> supplier) {
+            return getOrSupplier(getColumnIndex(selectionLabel), columnClass, supplier);
+        }
+
+        /*-------------------below RowReader methods -------------------*/
+
+        @Override
+        ObjectAccessor createRow() {
+            this.currentIndex = 0;
+            return ObjectAccessorFactory.PSEUDO_ACCESSOR;
+        }
+
+        @Override
+        void acceptColumn(final int indexBasedZero, String fieldName, @Nullable Object value) {
+            final int currentIndex = this.currentIndex++;
+            assert indexBasedZero == currentIndex;
+            this.valueArray[indexBasedZero] = value;
+        }
+
+        @Override
+        R endOneRow() {
+            assert this.currentIndex == this.valueArray.length;
+            final R row;
+            row = this.function.apply(this);
+            if (row instanceof CurrentRecord) {
+                throw _Exceptions.recordMapFuncReturnError(this.function);
+            }
+            return row;
+        }
+
+
+        private int checkIndex(final int indexBasedZero) {
+            if (indexBasedZero < 0 || indexBasedZero >= this.valueArray.length) {
+                String m = String.format("index[%s] not in [0,)", this.valueArray.length);
+                throw new IllegalArgumentException(m);
+            }
+            return indexBasedZero;
+        }
+
+
+    }//RecordRowReader
 
 
 }

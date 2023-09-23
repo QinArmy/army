@@ -1146,6 +1146,13 @@ public abstract class _Exceptions extends ExceptionUtils {
         return new DataAccessException(m);
     }
 
+    public static ArmyException recordMapFuncReturnError(Function<CurrentRecord, ?> function) {
+        final String className = CurrentRecord.class.getName();
+        String m = String.format("%s map function %s return %s", className, function, className);
+        return new ArmyException(m);
+    }
+
+
     public static DataAccessException exceptedError(int indexBasedOne, MultiStmt.StmtItem excepted,
                                                     String actual) {
         String m = String.format("No %s item excepted is %s but actual %s", indexBasedOne, excepted, actual);

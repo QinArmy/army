@@ -1960,6 +1960,20 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
             this.valueArray = new Object[sqlTypeArray.length];
         }
 
+        @Override
+        public int getColumnCount() {
+            return 0;
+        }
+
+        @Override
+        public String getColumnLabel(int indexBasedZero) throws IllegalArgumentException {
+            return null;
+        }
+
+        @Override
+        public int getColumnIndex(String columnLabel) throws IllegalArgumentException {
+            return 0;
+        }
 
         @Override
         public Object get(int indexBasedZero) {
@@ -1974,6 +1988,26 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
                 throw new NullPointerException();
             }
             return value;
+        }
+
+        @Override
+        public Object getOrDefault(int indexBasedZero, Object defaultValue) {
+            return null;
+        }
+
+        @Override
+        public Object getOrSupplier(int indexBasedZero, Supplier<?> supplier) {
+            return null;
+        }
+
+        @Override
+        public <T> T getOrDefault(int indexBasedZero, Class<T> columnClass, T defaultValue) {
+            return null;
+        }
+
+        @Override
+        public <T> T getOrSupplier(int indexBasedZero, Class<T> columnClass, Supplier<T> supplier) {
+            return null;
         }
 
         @SuppressWarnings("unchecked")
@@ -2011,6 +2045,26 @@ abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
         @Override
         public <T> T getNonNull(String selectionAlias, Class<T> columnClass) {
             return this.getNonNull(mapToIndex(selectionAlias), columnClass);
+        }
+
+        @Override
+        public Object getOrDefault(String selectionLabel, Object defaultValue) {
+            return null;
+        }
+
+        @Override
+        public Object getOrSupplier(String selectionLabel, Supplier<?> supplier) {
+            return null;
+        }
+
+        @Override
+        public <T> T getOrDefault(String selectionLabel, Class<T> columnClass, T defaultValue) {
+            return null;
+        }
+
+        @Override
+        public <T> T getOrSupplier(String selectionLabel, Class<T> columnClass, Supplier<T> supplier) {
+            return null;
         }
 
         @Override
