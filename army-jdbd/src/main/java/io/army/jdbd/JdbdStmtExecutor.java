@@ -39,6 +39,7 @@ import java.math.BigInteger;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -226,52 +227,80 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     @Override
     public final <R> Flux<R> query(final SimpleStmt stmt, final Class<R> resultClass, final ReactiveOption option) {
-        return executeQuery(stmt, mapBeanFunc(stmt, resultClass), option);
+        Flux<R> flux;
+        try {
+            flux = executeQuery(stmt, mapBeanFunc(stmt, resultClass), option);
+        } catch (Throwable e) {
+            flux = Flux.error(wrapError(e));
+        }
+        return flux;
     }
 
 
     @Override
-    public <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, ReactiveOption option) {
+    public final <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, ReactiveOption option) {
+        Flux<R> flux;
+        try {
+            flux = executeQuery(stmt, mapObjectFunc(stmt, constructor), option);
+        } catch (Throwable e) {
+            flux = Flux.error(wrapError(e));
+        }
+        return flux;
+    }
+
+    @Override
+    public final <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option) {
+        Flux<R> flux;
+        try {
+            flux = executeQuery(stmt, mapRecordFunc(stmt, function), option);
+        } catch (Throwable e) {
+            flux = Flux.error(wrapError(e));
+        }
+        return flux;
+    }
+
+    @Override
+    public final <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, ReactiveOption option) {
+        Flux<R> flux;
+        try {
+            final SecondRowReader<R> rowReader;
+            rowReader = new SecondRowReader<>(this, stmt, resultList);
+
+            flux = executeQuery(stmt, rowReader::readOneRow, option);
+        } catch (Throwable e) {
+            flux = Flux.error(wrapError(e));
+        }
+        return flux;
+    }
+
+    @Override
+    public final <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option) {
+    public final <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Mono<Integer> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, ReactiveOption option) {
+    public final <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, ReactiveOption option) {
+    public final <R> Flux<R> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveOption option) {
+        // TODO for firebird
+        return Flux.error(new UnsupportedOperationException("batchQueryRecord"));
+    }
+
+    @Override
+    public final QueryResults batchQueryResults(BatchStmt stmt, ReactiveOption option) {
         return null;
     }
 
     @Override
-    public <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public <R> Mono<Integer> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public QueryResults batchQuery(BatchStmt stmt, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public MultiResult multiStmt(MultiStmt stmt, ReactiveOption option) {
+    public final MultiResult multiStmt(MultiStmt stmt, ReactiveOption option) {
         return null;
     }
 
@@ -310,7 +339,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
     abstract SqlType getColumnMeta(DataRow row, int indexBasedZero);
 
     @Nullable
-    abstract Object get(DataRow row, int index, SqlType sqlType);
+    abstract Object get(DataRow row, int indexBasedZero, SqlType sqlType);
 
     /*-------------------below private instance methods-------------------*/
 
@@ -344,16 +373,10 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
      * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
      */
     private <R> Flux<R> executeQuery(final SimpleStmt stmt, final Function<CurrentRow, R> func,
-                                     final ReactiveOption option) {
-        Flux<R> flux;
-        try {
-            final BindStatement statement;
-            statement = bindStatement(stmt, option);
-            flux = Flux.from(statement.executeQuery(func, createStatesConsumer(option)));
-        } catch (Throwable e) {
-            flux = Flux.error(wrapError(e));
-        }
-        return flux;
+                                     final ReactiveOption option) throws JdbdException, TimeoutException {
+        final BindStatement statement;
+        statement = bindStatement(stmt, option);
+        return Flux.from(statement.executeQuery(func, createStatesConsumer(option)));
     }
 
 
@@ -363,15 +386,64 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
      * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
      */
     private <R> Function<CurrentRow, R> mapBeanFunc(final SimpleStmt stmt, final Class<R> resultClass) {
-        if (stmt instanceof GeneratedKeyStmt) {
+        final List<? extends Selection> selectionList;
+        selectionList = stmt.selectionList();
 
+        final RowReader<R> rowReader;
+        if (selectionList.size() > 1
+                || !(stmt instanceof TwoStmtModeQuerySpec)
+                || ((TwoStmtModeQuerySpec) stmt).maxColumnSize() > 1) {
+            rowReader = new BeanReader<>(this, selectionList, resultClass);
         } else {
-
+            rowReader = new SingleColumnRowReader<>(this, selectionList, resultClass);
         }
-        return row -> {
-            return null;
-        };
+
+        final Function<CurrentRow, R> function;
+        if (stmt instanceof GeneratedKeyStmt) {
+            function = returnIdQueryRowFunc((GeneratedKeyStmt) stmt, rowReader);
+        } else {
+            function = rowReader::readOneRow;
+        }
+        return function;
     }
+
+    /**
+     * @see #query(SimpleStmt, Class, ReactiveOption)
+     * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
+     * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
+     */
+    private <R> Function<CurrentRow, R> mapObjectFunc(final SimpleStmt stmt, final Supplier<R> constructor) {
+
+        final RowReader<R> rowReader;
+        rowReader = new ObjectRowReader<>(this, stmt.selectionList(), constructor, stmt instanceof TwoStmtModeQuerySpec);
+
+        final Function<CurrentRow, R> function;
+        if (stmt instanceof GeneratedKeyStmt) {
+            function = returnIdQueryRowFunc((GeneratedKeyStmt) stmt, rowReader);
+        } else {
+            function = rowReader::readOneRow;
+        }
+        return function;
+    }
+
+    /**
+     * @see #query(SimpleStmt, Class, ReactiveOption)
+     * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
+     * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
+     */
+    private <R> Function<CurrentRow, R> mapRecordFunc(final SimpleStmt stmt, final Function<CurrentRecord, R> recordFunc) {
+        final RowReader<R> rowReader;
+        rowReader = new RecordRowReader<>(this, stmt.selectionList(), recordFunc);
+
+        final Function<CurrentRow, R> function;
+        if (stmt instanceof GeneratedKeyStmt) {
+            function = returnIdQueryRowFunc((GeneratedKeyStmt) stmt, rowReader);
+        } else {
+            function = rowReader::readOneRow;
+        }
+        return function;
+    }
+
 
     /**
      * @see #query(SimpleStmt, Class, ReactiveOption)
@@ -381,21 +453,58 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
     private Consumer<io.jdbd.result.ResultStates> createStatesConsumer(final ReactiveOption option) {
         final Consumer<ResultStates> armyConsumer;
         armyConsumer = option.stateConsumer();
-
-        final Consumer<io.jdbd.result.ResultStates> jdbdConsumer;
         if (armyConsumer == ResultStates.IGNORE_STATES) {
-            jdbdConsumer = io.jdbd.result.ResultStates.IGNORE_STATES;
-        } else {
-            jdbdConsumer = states -> armyConsumer.accept(mapToArmyResultStates(states));
+            return io.jdbd.result.ResultStates.IGNORE_STATES;
         }
-        return jdbdConsumer;
+        return states -> {
+            final ResultStates armyStates;
+            armyStates = mapToArmyResultStates(states);
+            try {
+                armyConsumer.accept(armyStates);
+            } catch (Exception e) {
+                String m = String.format("%s %s throw error, %s", ResultStates.class.getName(),
+                        armyConsumer, e.getMessage());
+                throw new ArmyException(m);
+            }
+        };
+    }
+
+    /**
+     * @see #mapBeanFunc(SimpleStmt, Class)
+     */
+    private <R> Function<CurrentRow, R> returnIdQueryRowFunc(final GeneratedKeyStmt keyStmt,
+                                                             final RowReader<R> rowReader) {
+
+
+        final int indexBasedZero = keyStmt.idSelectionIndex();
+        final MappingType type = keyStmt.idField().mappingType();
+        final SqlType sqlType = type.map(this.factory.serverMeta);
+
+        final int[] rowIndexHolder = new int[]{0};
+        return dataRow -> {
+            final int rowIndex = rowIndexHolder[0]++;
+            if (dataRow.rowNumber() != rowIndexHolder[0]) {
+                throw jdbdRowNumberNotMatch(rowIndex, dataRow.rowNumber());
+            }
+            Object idValue;
+            idValue = get(dataRow, indexBasedZero, sqlType);
+
+            if (idValue == null) {
+                throw _Exceptions.idValueIsNull(rowIndex, keyStmt.idField());
+            }
+            idValue = type.afterGet(sqlType, this.factory.mappingEnv, idValue);
+            keyStmt.setGeneratedIdValue(rowIndex, idValue);
+
+            return rowReader.readOneRow(dataRow);
+        };
     }
 
 
     /**
      * @see #insert(SimpleStmt, ReactiveOption)
      */
-    private ResultStates handleInsertStates(final io.jdbd.result.ResultStates jdbdStates, final GeneratedKeyStmt stmt) {
+    private ResultStates handleInsertStates(final io.jdbd.result.ResultStates jdbdStates,
+                                            final GeneratedKeyStmt stmt) {
         final int rowSize = stmt.rowSize();
 
         if (jdbdStates.affectedRows() != rowSize) {
@@ -547,6 +656,11 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     /*-------------------below private static methods -------------------*/
 
+    private static DataAccessException jdbdRowNumberNotMatch(int rowIndex, long jdbdRowNumber) {
+        String m = String.format("jdbd row index error,expected %s but %s", rowIndex, jdbdRowNumber);
+        return new DataAccessException(m);
+    }
+
     /*-------------------below static class -------------------*/
 
     private static abstract class RowReader<R> {
@@ -573,7 +687,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
 
         @Nullable
-        final R raedOneRow(final DataRow dataRow) {
+        final R readOneRow(final DataRow dataRow) {
 
             final JdbdStmtExecutor<?, ?> executor = this.executor;
             final MappingEnv env = executor.factory.mappingEnv;
@@ -708,7 +822,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
     }// BeanReader
 
 
-    private static final class ObjectReader<R> extends RowReader<R> {
+    private static final class ObjectRowReader<R> extends RowReader<R> {
 
         private final Supplier<R> constructor;
 
@@ -718,8 +832,8 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         private ObjectAccessor accessor;
 
-        private ObjectReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
-                             Supplier<R> constructor, boolean twoStmtMode) {
+        private ObjectRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+                                Supplier<R> constructor, boolean twoStmtMode) {
             super(executor, selectionList, null);
             this.constructor = constructor;
             this.twoStmtMode = twoStmtMode;
@@ -767,32 +881,69 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         private final int rowSize;
 
-        private int rowIndex = 0;
+        private final boolean singleColumn;
 
-        private SecondRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
-                                List<R> rowList) {
-            super(executor, selectionList, null);
+        private ObjectAccessor accessor;
+
+        private R row;
+
+        /**
+         * from -1 not 0
+         */
+        private int rowIndex = -1;
+
+
+        private SecondRowReader(JdbdStmtExecutor<?, ?> executor, TwoStmtQueryStmt stmt, List<R> rowList) {
+            super(executor, stmt.selectionList(), rowResultClass(rowList.get(0)));
             this.rowList = rowList;
             this.rowSize = rowList.size();
+            this.singleColumn = stmt.maxColumnSize() == 1;
         }
 
         @Override
         ObjectAccessor createRow() {
-            final int rowIndex = this.rowIndex++;
+            final int rowIndex = ++this.rowIndex;
             if (rowIndex >= this.rowSize) {
-
+                throw secondQueryRowCountNotMatch(this.rowSize, rowIndex + 1);
             }
-            return null;
+
+            final R row;
+            this.row = row = this.rowList.get(rowIndex);
+
+            final ObjectAccessor accessor;
+            if (this.singleColumn) {
+                accessor = ObjectAccessorFactory.PSEUDO_ACCESSOR;
+            } else {
+                accessor = ObjectAccessorFactory.fromInstance(row);
+            }
+            this.accessor = accessor;
+            return accessor;
         }
 
         @Override
-        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
+        void acceptColumn(final int indexBasedZero, String fieldName, @Nullable Object value) {
+            if (!this.singleColumn) {
+                this.accessor.set(this.row, fieldName, value);
+            } else if (Objects.equals(value, this.row)) {
+                assert indexBasedZero == 0;
+            } else {
+                String m = String.format("error , single column row[rowIndexBasedZero : %s ,indexBasedZero : %s , selection label : %s] and first query not match.",
+                        this.rowIndex, indexBasedZero, fieldName);
+                throw new DataAccessException(m);
+            }
 
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         R endOneRow() {
-            return null;
+            R row = this.row;
+            if (row instanceof Map && row instanceof ImmutableSpec) {
+                row = (R) _Collections.unmodifiableMapForDeveloper((Map<?, ?>) row);
+            }
+
+            this.row = null;
+            return row;
         }
 
     }// SecondRowReader

@@ -57,7 +57,7 @@ public interface StmtExecutor extends Closeable, OptionSpec {
 
     <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option);
 
-    <R> Mono<Integer> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, ReactiveOption option);
+    <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, ReactiveOption option);
 
     <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, ReactiveOption option);
 
@@ -65,9 +65,9 @@ public interface StmtExecutor extends Closeable, OptionSpec {
 
     <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option);
 
-    <R> Mono<Integer> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveOption option);
+    <R> Flux<R> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveOption option);
 
-    QueryResults batchQuery(BatchStmt stmt, ReactiveOption option);
+    QueryResults batchQueryResults(BatchStmt stmt, ReactiveOption option);
 
     MultiResult multiStmt(MultiStmt stmt, ReactiveOption option);
 

@@ -70,6 +70,17 @@ public abstract class ExecutorSupport {
         return compatibleType;
     }
 
+    @SuppressWarnings("unchecked")
+    protected static <R> Class<R> rowResultClass(R row) {
+        final Class<?> resultClass;
+        if (row instanceof Map) {
+            resultClass = Map.class;
+        } else {
+            resultClass = row.getClass();
+        }
+        return (Class<R>) resultClass;
+    }
+
 
     /**
      * @return a unmodified map
@@ -98,4 +109,12 @@ public abstract class ExecutorSupport {
         String m = String.format("current record %s %s return null", Supplier.class.getName(), supplier);
         return new NullPointerException(m);
     }
+
+
+    protected static DataAccessException secondQueryRowCountNotMatch(final int firstRowCount, final int secondRowCount) {
+        String m = String.format("second query row count[%s] and first query row[%s] not match.",
+                secondRowCount, firstRowCount);
+        return new DataAccessException(m);
+    }
+
 }
