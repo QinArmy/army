@@ -288,6 +288,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
             } else {
                 rowReader = new SingleColumnRowReader<>(this, selectionList, resultClass);
             }
+            // NOTE : batchQuery method can use same RowReader instance
             flux = executeBatchQuery(stmt, rowReader::readOneRow, option);
         } catch (Throwable e) {
             flux = Flux.error(wrapError(e));
@@ -313,7 +314,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         Flux<R> flux;
         try {
             final RowReader<R> rowReader;
-            rowReader = new RecordRowReader<>(this, stmt.selectionList(), function);
+            rowReader = new CurrentRecordRowReader<>(this, stmt.selectionList(), function);
             flux = executeBatchQuery(stmt, rowReader::readOneRow, option);
         } catch (Throwable e) {
             flux = Flux.error(wrapError(e));
@@ -480,7 +481,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
      */
     private <R> Function<CurrentRow, R> mapRecordFunc(final SimpleStmt stmt, final Function<CurrentRecord, R> recordFunc) {
         final RowReader<R> rowReader;
-        rowReader = new RecordRowReader<>(this, stmt.selectionList(), recordFunc);
+        rowReader = new CurrentRecordRowReader<>(this, stmt.selectionList(), recordFunc);
 
         final Function<CurrentRow, R> function;
         if (stmt instanceof GeneratedKeyStmt) {
@@ -753,8 +754,8 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
                 for (int i = 0; i < columnCount; i++) {
                     sqlTypeArray[i] = executor.getColumnMeta(dataRow, i);
                 }
-                if (this instanceof RecordRowReader) {
-                    ((RecordRowReader<R>) this).acceptRowMeta(dataRow.getRowMeta(), this::getSqlType);
+                if (this instanceof JdbdStmtExecutor.CurrentRecordRowReader) {
+                    ((CurrentRecordRowReader<R>) this).acceptRowMeta(dataRow.getRowMeta(), this::getSqlType);
                 }
             } else {
                 columnCount = sqlTypeArray.length;
@@ -1004,26 +1005,19 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     }// SecondRowReader
 
-    private static final class RecordRowReader<R> extends RowReader<R> {
+    private static final class CurrentRecordRowReader<R> extends RowReader<R> {
 
         private final Function<CurrentRecord, R> function;
 
-        private final Object[] valueArray;
-
         private JdbdCurrentRecord currentRecord;
-
 
         private int currentIndex;
 
-        private RecordRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
-                                Function<CurrentRecord, R> function) {
+        private CurrentRecordRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+                                       Function<CurrentRecord, R> function) {
             super(executor, selectionList, null);
             this.function = function;
-            this.valueArray = new Object[selectionList.size()];
         }
-
-
-        /*-------------------below RowReader methods -------------------*/
 
         @Override
         ObjectAccessor createRow() {
@@ -1038,14 +1032,16 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         void acceptColumn(final int indexBasedZero, String fieldName, @Nullable Object value) {
             final int currentIndex = this.currentIndex++;
             assert indexBasedZero == currentIndex;
-            this.valueArray[indexBasedZero] = value;
+            final JdbdCurrentRecord record = this.currentRecord;
+            assert record != null;
+            record.valueArray[indexBasedZero] = value;
         }
 
         @Override
         R endOneRow() {
-            assert this.currentIndex == this.valueArray.length;
             final JdbdCurrentRecord record = this.currentRecord;
             assert record != null;
+            assert this.currentIndex == record.valueArray.length;
 
             final R row;
             row = this.function.apply(record);
@@ -1057,31 +1053,46 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         private void acceptRowMeta(ResultRowMeta rowMeta, IntFunction<SqlType> sqlTypeFunc) {
             assert this.currentRecord == null;
-
             final IntBiFunction<Option<?>, ?> optionFunc;
             optionFunc = this.executor.readJdbdRowMetaOptions(rowMeta);
 
             final ArmyResultRecordMeta recordMeta;
             recordMeta = new ArmyResultRecordMeta(rowMeta.getResultNo(), this.selectionList, sqlTypeFunc, optionFunc);
 
-            this.currentRecord = new JdbdCurrentRecord(recordMeta, this.valueArray);
+            this.currentRecord = new JdbdCurrentRecord(recordMeta);
         }
 
 
-    }//RecordRowReader
+    }//CurrentRecordRowReader
 
     private static final class JdbdCurrentRecord extends ArmyCurrentRecord {
 
+        private final Object[] valueArray;
+
         private long rowCount = 0;
 
-        private JdbdCurrentRecord(ArmyResultRecordMeta meta, Object[] valueArray) {
-            super(meta, valueArray);
+        private JdbdCurrentRecord(ArmyResultRecordMeta meta) {
+            super(meta);
+            this.valueArray = new Object[meta.getColumnCount()];
+        }
+
+        @Override
+        public Object get(int indexBasedZero) {
+            return this.valueArray[this.meta.checkIndex(indexBasedZero)];
         }
 
         @Override
         public long rowNumber() {
             return this.rowCount;
         }
+
+        @Override
+        protected Object[] copyValueArray() {
+            final Object[] copy = new Object[this.valueArray.length];
+            System.arraycopy(this.valueArray, 0, copy, 0, copy.length);
+            return copy;
+        }
+
 
     }// JdbdCurrentRecord
 

@@ -254,7 +254,7 @@ public abstract class ExecutorSupport {
             return value;
         }
 
-        private int checkIndex(final int indexBasedZero) {
+        public int checkIndex(final int indexBasedZero) {
             if (indexBasedZero < 0 || indexBasedZero >= this.columnSize) {
                 String m = String.format("index[%s] not in [0,)", this.columnSize);
                 throw new IllegalArgumentException(m);
@@ -269,19 +269,12 @@ public abstract class ExecutorSupport {
 
         protected final ArmyResultRecordMeta meta;
 
-        protected final Object[] valueArray;
-
-        private ArmyDataRecord(ArmyResultRecordMeta meta, Object[] valueArray) {
-            assert meta.columnSize == valueArray.length;
+        private ArmyDataRecord(ArmyResultRecordMeta meta) {
             this.meta = meta;
-            this.valueArray = valueArray;
         }
 
         private ArmyDataRecord(ArmyCurrentRecord currentRecord) {
             this.meta = currentRecord.meta;
-            final Object[] valueArray = new Object[currentRecord.valueArray.length];
-            System.arraycopy(currentRecord.valueArray, 0, valueArray, 0, valueArray.length);
-            this.valueArray = valueArray;
         }
 
         @Override
@@ -309,15 +302,11 @@ public abstract class ExecutorSupport {
             return this.meta.getColumnIndex(columnLabel);
         }
 
-        @Override
-        public final Object get(int indexBasedZero) {
-            return this.valueArray[this.meta.checkIndex(indexBasedZero)];
-        }
 
         @Override
         public final Object getNonNull(int indexBasedZero) {
             final Object value;
-            value = this.valueArray[this.meta.checkIndex(indexBasedZero)];
+            value = get(indexBasedZero);
             if (value == null) {
                 throw currentRecordColumnIsNull(indexBasedZero, this.meta.selectionList.get(indexBasedZero));
             }
@@ -330,7 +319,7 @@ public abstract class ExecutorSupport {
                 throw currentRecordDefaultValueNonNull();
             }
             Object value;
-            value = this.valueArray[this.meta.checkIndex(indexBasedZero)];
+            value = get(indexBasedZero);
             if (value == null) {
                 value = defaultValue;
             }
@@ -340,7 +329,7 @@ public abstract class ExecutorSupport {
         @Override
         public final Object getOrSupplier(int indexBasedZero, Supplier<?> supplier) {
             Object value;
-            value = this.valueArray[this.meta.checkIndex(indexBasedZero)];
+            value = get(indexBasedZero);
             if (value == null) {
                 if ((value = supplier.get()) == null) {
                     throw currentRecordSupplierReturnNull(supplier);
@@ -353,7 +342,7 @@ public abstract class ExecutorSupport {
         @Override
         public final <T> T get(int indexBasedZero, Class<T> columnClass) {
             final Object value;
-            value = this.valueArray[this.meta.checkIndex(indexBasedZero)];
+            value = get(indexBasedZero);
             if (value == null || columnClass.isInstance(value)) {
                 return (T) value;
             }
@@ -443,8 +432,8 @@ public abstract class ExecutorSupport {
     protected static abstract class ArmyCurrentRecord extends ArmyDataRecord implements CurrentRecord {
 
 
-        public ArmyCurrentRecord(ArmyResultRecordMeta meta, Object[] valueArray) {
-            super(meta, valueArray);
+        public ArmyCurrentRecord(ArmyResultRecordMeta meta) {
+            super(meta);
         }
 
 
@@ -453,16 +442,27 @@ public abstract class ExecutorSupport {
             return new ArmyResultRecord(this);
         }
 
+        protected abstract Object[] copyValueArray();
+
 
     }// ArmyCurrentRecord
 
 
     private static final class ArmyResultRecord extends ArmyDataRecord implements ResultRecord {
 
+        private final Object[] valueArray;
+
         public ArmyResultRecord(ArmyCurrentRecord currentRecord) {
             super(currentRecord);
+            this.valueArray = currentRecord.copyValueArray();
+            assert this.valueArray.length == currentRecord.meta.columnSize;
         }
 
+
+        @Override
+        public Object get(int indexBasedZero) {
+            return this.valueArray[this.meta.checkIndex(indexBasedZero)];
+        }
 
     }// ArmyResultRecord
 
