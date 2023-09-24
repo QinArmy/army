@@ -5,6 +5,7 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
+import io.army.function.IntBiFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -27,6 +28,7 @@ import io.jdbd.JdbdException;
 import io.jdbd.meta.DataType;
 import io.jdbd.result.CurrentRow;
 import io.jdbd.result.DataRow;
+import io.jdbd.result.ResultRowMeta;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.SavePoint;
 import io.jdbd.statement.BindStatement;
@@ -43,6 +45,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSession> extends ExecutorSupport
@@ -363,6 +366,8 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
     abstract Function<io.jdbd.session.Option<?>, ?> readArmyReleaseSavePointOptions(Function<Option<?>, ?> optionFunc);
 
     abstract Function<io.jdbd.session.Option<?>, ?> readArmyRollbackSavePointOptions(Function<Option<?>, ?> optionFunc);
+
+    abstract IntBiFunction<Option<?>, ?> readJdbdRowMetaOptions(ResultRowMeta rowMeta);
 
     abstract DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType);
 
@@ -708,7 +713,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     private static abstract class RowReader<R> {
 
-        private final JdbdStmtExecutor<?, ?> executor;
+        final JdbdStmtExecutor<?, ?> executor;
 
         final List<? extends Selection> selectionList;
 
@@ -748,6 +753,9 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
                 for (int i = 0; i < columnCount; i++) {
                     sqlTypeArray[i] = executor.getColumnMeta(dataRow, i);
                 }
+                if (this instanceof RecordRowReader) {
+                    ((RecordRowReader<R>) this).acceptRowMeta(dataRow.getRowMeta(), this::getSqlType);
+                }
             } else {
                 columnCount = sqlTypeArray.length;
             }
@@ -784,13 +792,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
             } // for loop
 
-            final long rowNumber;
-            if (dataRow instanceof CurrentRow) {
-                rowNumber = ((CurrentRow) dataRow).rowNumber();
-            } else {
-                rowNumber = -1;
-            }
-            return endOneRow(dataRow.getResultNo(), rowNumber);
+            return endOneRow();
         }
 
 
@@ -799,7 +801,12 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         abstract void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value);
 
         @Nullable
-        abstract R endOneRow(int resultNo, long rowNumber);
+        abstract R endOneRow();
+
+
+        private SqlType getSqlType(int index) {
+            return this.sqlTypeArray[index];
+        }
 
 
     }// RowReader
@@ -827,7 +834,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         }
 
         @Override
-        R endOneRow(int resultNo, long rowNumber) {
+        R endOneRow() {
             final R row = this.row;
             this.row = null;
             return row;
@@ -862,7 +869,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         }
 
         @Override
-        R endOneRow(int resultNo, long rowNumber) {
+        R endOneRow() {
             final R row = this.row;
             this.row = null;
             return row;
@@ -911,7 +918,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         @SuppressWarnings("unchecked")
         @Override
-        R endOneRow(int resultNo, long rowNumber) {
+        R endOneRow() {
             R row = this.row;
 
             if (!this.twoStmtMode && row instanceof Map && row instanceof ImmutableSpec) {
@@ -985,7 +992,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         @SuppressWarnings("unchecked")
         @Override
-        R endOneRow(int resultNo, long rowNumber) {
+        R endOneRow() {
             R row = this.row;
             if (row instanceof Map && row instanceof ImmutableSpec) {
                 row = (R) _Collections.unmodifiableMapForDeveloper((Map<?, ?>) row);
@@ -997,193 +1004,33 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     }// SecondRowReader
 
-    private static final class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
+    private static final class RecordRowReader<R> extends RowReader<R> {
 
         private final Function<CurrentRecord, R> function;
 
         private final Object[] valueArray;
 
-        private final Map<String, Integer> aliasToIndexMap;
+        private JdbdCurrentRecord currentRecord;
+
+
         private int currentIndex;
-
-        private int resultNo;
-
-        private long rowNumber;
 
         private RecordRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
                                 Function<CurrentRecord, R> function) {
             super(executor, selectionList, null);
             this.function = function;
             this.valueArray = new Object[selectionList.size()];
-
-            if (this.valueArray.length < 6) {
-                this.aliasToIndexMap = null;
-            } else {
-                this.aliasToIndexMap = createAliasToIndexMap(selectionList);
-            }
         }
 
-        @Override
-        public ResultRecordMeta getRecordMeta() {
-            return null;
-        }
-
-        @Override
-        public int getResultNo() {
-            return this.resultNo;
-        }
-
-        @Override
-        public long rowNumber() {
-            return this.rowNumber;
-        }
-
-        @Override
-        public ResultRecord asResultRecord() {
-            return null;
-        }
-
-        @Override
-        public int getColumnCount() {
-            return this.valueArray.length;
-        }
-
-        @Override
-        public String getColumnLabel(int indexBasedZero) throws IllegalArgumentException {
-            return this.selectionList.get(indexBasedZero).label();
-        }
-
-        @Override
-        public int getColumnIndex(final @Nullable String columnLabel) throws IllegalArgumentException {
-            return 0;
-        }
-
-        @Override
-        public Object get(int indexBasedZero) {
-            return this.valueArray[checkIndex(indexBasedZero)];
-        }
-
-        @Override
-        public Object getNonNull(final int indexBasedZero) {
-            final Object value;
-            value = this.valueArray[checkIndex(indexBasedZero)];
-            if (value == null) {
-                throw ExecutorSupport.currentRecordColumnIsNull(indexBasedZero, this.selectionList.get(indexBasedZero));
-            }
-            return value;
-        }
-
-        @Override
-        public Object getOrDefault(final int indexBasedZero, @Nullable Object defaultValue) {
-            if (defaultValue == null) {
-                throw currentRecordDefaultValueNonNull();
-            }
-            Object value;
-            value = this.valueArray[checkIndex(indexBasedZero)];
-            if (value == null) {
-                value = defaultValue;
-            }
-            return value;
-        }
-
-        @Override
-        public Object getOrSupplier(final int indexBasedZero, Supplier<?> supplier) {
-            Object value;
-            value = this.valueArray[checkIndex(indexBasedZero)];
-            if (value == null) {
-                if ((value = supplier.get()) == null) {
-                    throw currentRecordSupplierReturnNull(supplier);
-                }
-            }
-            return value;
-        }
-
-        @Override
-        public <T> T get(int indexBasedZero, Class<T> columnClass) {
-            //TODO
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> T getNonNull(final int indexBasedZero, Class<T> columnClass) {
-            final T value;
-            value = get(indexBasedZero, columnClass);
-            if (value == null) {
-                throw currentRecordColumnIsNull(indexBasedZero, this.selectionList.get(indexBasedZero));
-            }
-            return value;
-        }
-
-        @Override
-        public <T> T getOrDefault(final int indexBasedZero, Class<T> columnClass, @Nullable T defaultValue) {
-            if (defaultValue == null) {
-                throw currentRecordDefaultValueNonNull();
-            }
-            T value;
-            value = get(indexBasedZero, columnClass);
-            if (value == null) {
-                value = defaultValue;
-            }
-            return value;
-        }
-
-        @Override
-        public <T> T getOrSupplier(final int indexBasedZero, Class<T> columnClass, Supplier<T> supplier) {
-            T value;
-            value = get(indexBasedZero, columnClass);
-            if (value == null) {
-                if ((value = supplier.get()) == null) {
-                    throw currentRecordSupplierReturnNull(supplier);
-                }
-            }
-            return value;
-        }
-
-        @Override
-        public Object get(String selectionLabel) {
-            return get(getColumnIndex(selectionLabel));
-        }
-
-        @Override
-        public Object getNonNull(String selectionLabel) {
-            return getNonNull(getColumnIndex(selectionLabel));
-        }
-
-        @Override
-        public Object getOrDefault(String selectionLabel, Object defaultValue) {
-            return getOrDefault(getColumnIndex(selectionLabel), defaultValue);
-        }
-
-        @Override
-        public Object getOrSupplier(String selectionLabel, Supplier<?> supplier) {
-            return getOrSupplier(getColumnIndex(selectionLabel), supplier);
-        }
-
-        @Override
-        public <T> T get(String selectionLabel, Class<T> columnClass) {
-            return get(getColumnIndex(selectionLabel), columnClass);
-        }
-
-        @Override
-        public <T> T getNonNull(String selectionLabel, Class<T> columnClass) {
-            return getNonNull(getColumnIndex(selectionLabel), columnClass);
-        }
-
-        @Override
-        public <T> T getOrDefault(String selectionLabel, Class<T> columnClass, T defaultValue) {
-            return getOrDefault(getColumnIndex(selectionLabel), columnClass, defaultValue);
-        }
-
-        @Override
-        public <T> T getOrSupplier(String selectionLabel, Class<T> columnClass, Supplier<T> supplier) {
-            return getOrSupplier(getColumnIndex(selectionLabel), columnClass, supplier);
-        }
 
         /*-------------------below RowReader methods -------------------*/
 
         @Override
         ObjectAccessor createRow() {
             this.currentIndex = 0;
+            final JdbdCurrentRecord record = this.currentRecord;
+            assert record != null;
+            record.rowCount++;
             return ObjectAccessorFactory.PSEUDO_ACCESSOR;
         }
 
@@ -1195,30 +1042,48 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         }
 
         @Override
-        R endOneRow(final int resultNo, final long rowNumber) {
+        R endOneRow() {
             assert this.currentIndex == this.valueArray.length;
-            this.resultNo = resultNo;
-            this.rowNumber = rowNumber;
+            final JdbdCurrentRecord record = this.currentRecord;
+            assert record != null;
 
             final R row;
-            row = this.function.apply(this);
+            row = this.function.apply(record);
             if (row instanceof CurrentRecord) {
                 throw _Exceptions.recordMapFuncReturnError(this.function);
             }
             return row;
         }
 
+        private void acceptRowMeta(ResultRowMeta rowMeta, IntFunction<SqlType> sqlTypeFunc) {
+            assert this.currentRecord == null;
 
-        private int checkIndex(final int indexBasedZero) {
-            if (indexBasedZero < 0 || indexBasedZero >= this.valueArray.length) {
-                String m = String.format("index[%s] not in [0,)", this.valueArray.length);
-                throw new IllegalArgumentException(m);
-            }
-            return indexBasedZero;
+            final IntBiFunction<Option<?>, ?> optionFunc;
+            optionFunc = this.executor.readJdbdRowMetaOptions(rowMeta);
+
+            final ArmyResultRecordMeta recordMeta;
+            recordMeta = new ArmyResultRecordMeta(rowMeta.getResultNo(), this.selectionList, sqlTypeFunc, optionFunc);
+
+            this.currentRecord = new JdbdCurrentRecord(recordMeta, this.valueArray);
         }
 
 
     }//RecordRowReader
+
+    private static final class JdbdCurrentRecord extends ArmyCurrentRecord {
+
+        private long rowCount = 0;
+
+        private JdbdCurrentRecord(ArmyResultRecordMeta meta, Object[] valueArray) {
+            super(meta, valueArray);
+        }
+
+        @Override
+        public long rowNumber() {
+            return this.rowCount;
+        }
+
+    }// JdbdCurrentRecord
 
 
 }

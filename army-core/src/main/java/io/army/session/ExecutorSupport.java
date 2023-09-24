@@ -4,6 +4,7 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.Selection;
 import io.army.criteria.TypeInfer;
+import io.army.function.IntBiFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
@@ -14,7 +15,7 @@ import io.army.util._Exceptions;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 public abstract class ExecutorSupport {
@@ -132,22 +133,25 @@ public abstract class ExecutorSupport {
 
         private final List<? extends Selection> selectionList;
 
-        private final SqlType[] sqlTypeArray;
+        private final IntFunction<SqlType> sqlTypeFunc;
 
-        private final BiFunction<Integer, Option<?>, ?> optionFunc;
+        private final IntBiFunction<Option<?>, ?> optionFunc;
+
+        private final int columnSize;
 
         private final Map<String, Integer> aliasToIndexMap;
 
         private List<String> columnLabelList;
 
-        public ArmyResultRecordMeta(int resultNo, List<? extends Selection> selectionList, SqlType[] sqlTypeArray,
-                                    BiFunction<Integer, Option<?>, ?> optionFunc) {
+        public ArmyResultRecordMeta(int resultNo, List<? extends Selection> selectionList,
+                                    IntFunction<SqlType> sqlTypeFunc, IntBiFunction<Option<?>, ?> optionFunc) {
             this.resultNo = resultNo;
             this.selectionList = selectionList;
-            this.sqlTypeArray = sqlTypeArray;
+            this.sqlTypeFunc = sqlTypeFunc;
             this.optionFunc = optionFunc;
 
-            if (this.sqlTypeArray.length < 6) {
+            this.columnSize = selectionList.size();
+            if (this.columnSize < 6) {
                 this.aliasToIndexMap = null;
             } else {
                 this.aliasToIndexMap = createAliasToIndexMap(selectionList);
@@ -162,7 +166,7 @@ public abstract class ExecutorSupport {
 
         @Override
         public int getColumnCount() {
-            return this.sqlTypeArray.length;
+            return this.columnSize;
         }
 
         @Override
@@ -179,7 +183,7 @@ public abstract class ExecutorSupport {
             final Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
             if (aliasToIndexMap == null) {
                 final List<? extends Selection> selectionList = this.selectionList;
-                for (int i = sqlTypeArray.length - 1; i > -1; i--) {  // If alias duplication,then override.
+                for (int i = this.columnSize - 1; i > -1; i--) {  // If alias duplication,then override.
                     if (columnLabel.equals(selectionList.get(i).label())) {
                         index = i;
                         break;
@@ -222,7 +226,7 @@ public abstract class ExecutorSupport {
 
         @Override
         public SqlType getSqlType(int indexBasedZero) {
-            return this.sqlTypeArray[checkIndex(indexBasedZero)];
+            return this.sqlTypeFunc.apply(checkIndex(indexBasedZero));
         }
 
         @SuppressWarnings("unchecked")
@@ -251,8 +255,8 @@ public abstract class ExecutorSupport {
         }
 
         private int checkIndex(final int indexBasedZero) {
-            if (indexBasedZero < 0 || indexBasedZero >= this.sqlTypeArray.length) {
-                String m = String.format("index[%s] not in [0,)", this.sqlTypeArray.length);
+            if (indexBasedZero < 0 || indexBasedZero >= this.columnSize) {
+                String m = String.format("index[%s] not in [0,)", this.columnSize);
                 throw new IllegalArgumentException(m);
             }
             return indexBasedZero;
@@ -267,9 +271,10 @@ public abstract class ExecutorSupport {
 
         protected final Object[] valueArray;
 
-        private ArmyDataRecord(ArmyResultRecordMeta meta) {
+        private ArmyDataRecord(ArmyResultRecordMeta meta, Object[] valueArray) {
+            assert meta.columnSize == valueArray.length;
             this.meta = meta;
-            this.valueArray = new Object[meta.sqlTypeArray.length];
+            this.valueArray = valueArray;
         }
 
         private ArmyDataRecord(ArmyCurrentRecord currentRecord) {
@@ -291,7 +296,7 @@ public abstract class ExecutorSupport {
 
         @Override
         public final int getColumnCount() {
-            return this.meta.sqlTypeArray.length;
+            return this.meta.columnSize;
         }
 
         @Override
@@ -438,8 +443,8 @@ public abstract class ExecutorSupport {
     protected static abstract class ArmyCurrentRecord extends ArmyDataRecord implements CurrentRecord {
 
 
-        public ArmyCurrentRecord(ArmyResultRecordMeta meta) {
-            super(meta);
+        public ArmyCurrentRecord(ArmyResultRecordMeta meta, Object[] valueArray) {
+            super(meta, valueArray);
         }
 
 
