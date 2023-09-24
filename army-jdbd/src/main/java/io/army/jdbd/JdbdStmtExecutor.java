@@ -275,17 +275,47 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     @Override
     public final <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, ReactiveOption option) {
-        return null;
+        Flux<R> flux;
+        try {
+            final List<? extends Selection> selectionList = stmt.selectionList();
+            final RowReader<R> rowReader;
+            if (selectionList.size() > 1) {
+                // TODO fix me for firebird
+                rowReader = new BeanReader<>(this, selectionList, resultClass);
+            } else {
+                rowReader = new SingleColumnRowReader<>(this, selectionList, resultClass);
+            }
+            flux = executeBatchQuery(stmt, rowReader::readOneRow, option);
+        } catch (Throwable e) {
+            flux = Flux.error(wrapError(e));
+        }
+        return flux;
     }
 
     @Override
     public final <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, ReactiveOption option) {
-        return null;
+        Flux<R> flux;
+        try {
+            final RowReader<R> rowReader;
+            rowReader = new ObjectRowReader<>(this, stmt.selectionList(), constructor, stmt instanceof TwoStmtModeQuerySpec);
+            flux = executeBatchQuery(stmt, rowReader::readOneRow, option);
+        } catch (Throwable e) {
+            flux = Flux.error(wrapError(e));
+        }
+        return flux;
     }
 
     @Override
     public final <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option) {
-        return null;
+        Flux<R> flux;
+        try {
+            final RowReader<R> rowReader;
+            rowReader = new RecordRowReader<>(this, stmt.selectionList(), function);
+            flux = executeBatchQuery(stmt, rowReader::readOneRow, option);
+        } catch (Throwable e) {
+            flux = Flux.error(wrapError(e));
+        }
+        return flux;
     }
 
     @Override
@@ -374,9 +404,21 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
      */
     private <R> Flux<R> executeQuery(final SimpleStmt stmt, final Function<CurrentRow, R> func,
                                      final ReactiveOption option) throws JdbdException, TimeoutException {
-        final BindStatement statement;
-        statement = bindStatement(stmt, option);
-        return Flux.from(statement.executeQuery(func, createStatesConsumer(option)));
+        return Flux.from(bindStatement(stmt, option).executeQuery(func, createStatesConsumer(option)))
+                .onErrorMap(JdbdStmtExecutor::wrapError);
+    }
+
+    /**
+     * @see #batchQuery(BatchStmt, Class, ReactiveOption)
+     * @see #batchQueryObject(BatchStmt, Supplier, ReactiveOption)
+     * @see #batchQueryRecord(BatchStmt, Function, ReactiveOption)
+     */
+    private <R> Flux<R> executeBatchQuery(final BatchStmt stmt, final Function<io.jdbd.result.ResultRow, R> func,
+                                          final ReactiveOption option) throws JdbdException, TimeoutException {
+        return Flux.from(bindStatement(stmt, option).executeBatchAsFlux())
+                .filter(io.jdbd.result.ResultItem::isRowItem)
+                .map(item -> func.apply((io.jdbd.result.ResultRow) item))
+                .onErrorMap(JdbdStmtExecutor::wrapError);
     }
 
 
@@ -564,6 +606,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
             final int groupSize = groupList.size();
             for (int i = 0; i < groupSize; i++) {
                 bindParameter(statement, groupList.get(i));
+                statement.addBatch();
             }
         } else if (stmt instanceof SimpleStmt) {
             bindParameter(statement, ((SimpleStmt) stmt).paramGroup());
@@ -741,7 +784,13 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
             } // for loop
 
-            return endOneRow();
+            final long rowNumber;
+            if (dataRow instanceof CurrentRow) {
+                rowNumber = ((CurrentRow) dataRow).rowNumber();
+            } else {
+                rowNumber = -1;
+            }
+            return endOneRow(dataRow.getResultNo(), rowNumber);
         }
 
 
@@ -750,7 +799,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         abstract void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value);
 
         @Nullable
-        abstract R endOneRow();
+        abstract R endOneRow(int resultNo, long rowNumber);
 
 
     }// RowReader
@@ -778,7 +827,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         }
 
         @Override
-        R endOneRow() {
+        R endOneRow(int resultNo, long rowNumber) {
             final R row = this.row;
             this.row = null;
             return row;
@@ -813,7 +862,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         }
 
         @Override
-        R endOneRow() {
+        R endOneRow(int resultNo, long rowNumber) {
             final R row = this.row;
             this.row = null;
             return row;
@@ -862,7 +911,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         @SuppressWarnings("unchecked")
         @Override
-        R endOneRow() {
+        R endOneRow(int resultNo, long rowNumber) {
             R row = this.row;
 
             if (!this.twoStmtMode && row instanceof Map && row instanceof ImmutableSpec) {
@@ -936,7 +985,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         @SuppressWarnings("unchecked")
         @Override
-        R endOneRow() {
+        R endOneRow(int resultNo, long rowNumber) {
             R row = this.row;
             if (row instanceof Map && row instanceof ImmutableSpec) {
                 row = (R) _Collections.unmodifiableMapForDeveloper((Map<?, ?>) row);
@@ -957,6 +1006,9 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         private final Map<String, Integer> aliasToIndexMap;
         private int currentIndex;
 
+        private int resultNo;
+
+        private long rowNumber;
 
         private RecordRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
                                 Function<CurrentRecord, R> function) {
@@ -969,6 +1021,21 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
             } else {
                 this.aliasToIndexMap = createAliasToIndexMap(selectionList);
             }
+        }
+
+        @Override
+        public int getResultNo() {
+            return this.resultNo;
+        }
+
+        @Override
+        public long rowNumber() {
+            return this.rowNumber;
+        }
+
+        @Override
+        public ResultRecord asResultRecord() {
+            return null;
         }
 
         @Override
@@ -1142,8 +1209,11 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         }
 
         @Override
-        R endOneRow() {
+        R endOneRow(final int resultNo, final long rowNumber) {
             assert this.currentIndex == this.valueArray.length;
+            this.resultNo = resultNo;
+            this.rowNumber = rowNumber;
+
             final R row;
             row = this.function.apply(this);
             if (row instanceof CurrentRecord) {

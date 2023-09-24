@@ -71,5 +71,8 @@ public interface StmtExecutor extends Closeable, OptionSpec {
 
     MultiResult multiStmt(MultiStmt stmt, ReactiveOption option);
 
+    Flux<ResultItem> executeStaticMultiStmt(MultiStmt stmt, ReactiveOption option);
+
+    Flux<ResultItem> executeMultiStmt(List<GenericSimpleStmt> stmtList, ReactiveOption option);
 
 }

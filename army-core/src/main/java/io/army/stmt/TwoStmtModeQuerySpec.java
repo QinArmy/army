@@ -4,4 +4,5 @@ public interface TwoStmtModeQuerySpec extends GenericSimpleStmt.IdSelectionIndex
 
     int maxColumnSize();
 
+
 }
