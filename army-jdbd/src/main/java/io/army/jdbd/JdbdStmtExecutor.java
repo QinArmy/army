@@ -1024,6 +1024,11 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         }
 
         @Override
+        public ResultRecordMeta getRecordMeta() {
+            return null;
+        }
+
+        @Override
         public int getResultNo() {
             return this.resultNo;
         }
@@ -1050,26 +1055,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         @Override
         public int getColumnIndex(final @Nullable String columnLabel) throws IllegalArgumentException {
-            if (columnLabel == null) {
-                throw new NullPointerException("columnLabel is null");
-            }
-            int index = -1;
-            final Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
-            if (aliasToIndexMap == null) {
-                final List<? extends Selection> selectionList = this.selectionList;
-                for (int i = valueArray.length - 1; i > -1; i--) {  // If alias duplication,then override.
-                    if (columnLabel.equals(selectionList.get(i).label())) {
-                        index = i;
-                        break;
-                    }
-                }
-            } else {
-                index = aliasToIndexMap.getOrDefault(columnLabel, -1);
-            }
-            if (index < 0) {
-                throw _Exceptions.unknownSelectionAlias(columnLabel);
-            }
-            return index;
+            return 0;
         }
 
         @Override
