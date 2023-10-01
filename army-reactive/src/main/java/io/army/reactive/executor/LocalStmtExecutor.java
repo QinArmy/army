@@ -8,12 +8,12 @@ import java.util.function.Function;
 
 public interface LocalStmtExecutor extends StmtExecutor {
 
-    Mono<LocalStmtExecutor> startTransaction(TransactionOption option);
+    Mono<Void> startTransaction(TransactionOption option);
 
-    Mono<LocalStmtExecutor> commit(Function<Option<?>, ?> optionFunc);
+    Mono<Void> commit(Function<Option<?>, ?> optionFunc);
 
 
-    Mono<LocalStmtExecutor> rollback(Function<Option<?>, ?> optionFunc);
+    Mono<Void> rollback(Function<Option<?>, ?> optionFunc);
 
 
 }

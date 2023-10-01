@@ -1,6 +1,8 @@
 package io.army.reactive;
 
-import io.army.criteria.*;
+import io.army.criteria.BatchDmlStatement;
+import io.army.criteria.SimpleDmlStatement;
+import io.army.criteria.SimpleDqlStatement;
 import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.session.*;
 import reactor.core.publisher.Flux;
@@ -143,9 +145,9 @@ public interface ReactiveSession extends Session, Closeable {
 
     /*-------------------below batchQuery methods-------------------*/
 
-    QueryResults batchQueryResults(BatchDqlStatement statement);
-
-    QueryResults batchQueryResults(BatchDqlStatement statement, ReactiveOption option);
+//    QueryResults batchQueryResults(BatchDqlStatement statement);
+//
+//    QueryResults batchQueryResults(BatchDqlStatement statement, ReactiveOption option);
 
     /*-------------------below batchQueryAsFlux methods-------------------*/
 
@@ -182,9 +184,9 @@ public interface ReactiveSession extends Session, Closeable {
 
     /*-------------------below multiStmt methods-------------------*/
 
-    MultiResult multiStmt(MultiResultStatement statement);
+//    MultiResult multiStmt(MultiResultStatement statement);
 
-    Flux<ResultItem> execute(PrimaryStatement statement);
+//    Flux<ResultItem> execute(DqlStatement statement);
 
 
 //    Mono<ReactiveCursor> declareCursor(DeclareCursor statement);

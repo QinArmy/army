@@ -13,9 +13,9 @@ import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
-import io.army.reactive.MultiResult;
 import io.army.reactive.QueryResults;
 import io.army.reactive.ReactiveOption;
+import io.army.reactive.executor.ReactiveExecutorSupport;
 import io.army.reactive.executor.StmtExecutor;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
@@ -42,13 +42,14 @@ import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSession> extends ExecutorSupport
+abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecutorSupport
         implements StmtExecutor {
 
     final JdbdStmtExecutorFactory factory;
@@ -86,13 +87,11 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
                 .onErrorMap(JdbdStmtExecutor::wrapError);
     }
 
-
-    @SuppressWarnings("unchecked")
     @Override
-    public final Mono<E> setTransactionCharacteristics(TransactionOption option) {
+    public final Mono<Void> setTransactionCharacteristics(TransactionOption option) {
         return Mono.from(this.session.setTransactionCharacteristics(mapToJdbdTransactionOption(option)))
                 .onErrorMap(JdbdStmtExecutor::wrapError)
-                .thenReturn((E) this);
+                .then();
     }
 
     @Override
@@ -101,26 +100,25 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
                 .onErrorMap(JdbdStmtExecutor::wrapError);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public final Mono<E> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
+    public final Mono<Void> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
         if (!(savepoint instanceof SavePoint)) {
             return Mono.error(_Exceptions.unknownSavePoint(savepoint));
         }
         return Mono.from(this.session.releaseSavePoint((SavePoint) savepoint, readArmyReleaseSavePointOptions(optionFunc)))
                 .onErrorMap(JdbdStmtExecutor::wrapError)
-                .thenReturn((E) this);
+                .then();
     }
 
-    @SuppressWarnings("unchecked")
+
     @Override
-    public final Mono<? extends StmtExecutor> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
+    public final Mono<Void> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
         if (!(savepoint instanceof SavePoint)) {
             return Mono.error(_Exceptions.unknownSavePoint(savepoint));
         }
         return Mono.from(this.session.rollbackToSavePoint((SavePoint) savepoint, readArmyRollbackSavePointOptions(optionFunc)))
                 .onErrorMap(JdbdStmtExecutor::wrapError)
-                .thenReturn((E) this);
+                .then();
     }
 
     @Override
@@ -239,6 +237,31 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         return flux;
     }
 
+    @Override
+    public final <R> Flux<Optional<R>> queryOptional(SimpleStmt stmt, final Class<R> resultClass, ReactiveOption option) {
+        Flux<Optional<R>> flux;
+        try {
+            final List<? extends Selection> selectionList;
+            selectionList = stmt.selectionList();
+            if (selectionList.size() != 1) {
+                return Flux.error(new IllegalArgumentException("queryOptional method support only single selection"));
+            }
+
+            final OptionalSingleColumnRowReader<R> rowReader;
+            rowReader = new OptionalSingleColumnRowReader<>(this, selectionList, resultClass);
+
+            final Function<CurrentRow, Optional<R>> function;
+            if (stmt instanceof GeneratedKeyStmt) {
+                function = returnIdQueryRowFunc((GeneratedKeyStmt) stmt, rowReader);
+            } else {
+                function = rowReader::readOneRow;
+            }
+            flux = executeQuery(stmt, function, option);
+        } catch (Throwable e) {
+            flux = Flux.error(wrapError(e));
+        }
+        return flux;
+    }
 
     @Override
     public final <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, ReactiveOption option) {
@@ -325,19 +348,37 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
     @Override
     public final <R> Flux<R> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveOption option) {
         // TODO for firebird
-        return Flux.error(new UnsupportedOperationException("batchQueryRecord"));
+        return Flux.error(new DataAccessException("currently,don't support"));
     }
 
     @Override
     public final QueryResults batchQueryResults(BatchStmt stmt, ReactiveOption option) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public final MultiResult multiStmt(MultiStmt stmt, ReactiveOption option) {
-        return null;
+    public final Flux<ResultItem> execute(final GenericSimpleStmt stmt, final ReactiveOption option) {
+//        Flux<ResultItem> flux;
+//        try {
+//            final BindStatement statement;
+//            statement = bindStatement(stmt, option);
+//            if (stmt instanceof BatchStmt) {
+//                flux = Flux.from(statement.executeBatchAsFlux());
+//            } else {
+//                 flux = Flux.from(statement.executeAsFlux());
+//            }
+//        } catch (Throwable e) {
+//            flux = Flux.error(wrapError(e));
+//        }
+//        return flux;
+        throw new UnsupportedOperationException();
     }
 
+    @Override
+    public final Flux<ResultItem> executeMultiStmt(List<GenericSimpleStmt> stmtList, ReactiveOption option) {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public final boolean isClosed() {
@@ -419,11 +460,9 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
      * @see #batchQueryObject(BatchStmt, Supplier, ReactiveOption)
      * @see #batchQueryRecord(BatchStmt, Function, ReactiveOption)
      */
-    private <R> Flux<R> executeBatchQuery(final BatchStmt stmt, final Function<io.jdbd.result.ResultRow, R> func,
+    private <R> Flux<R> executeBatchQuery(final BatchStmt stmt, final Function<CurrentRow, R> func,
                                           final ReactiveOption option) throws JdbdException, TimeoutException {
-        return Flux.from(bindStatement(stmt, option).executeBatchAsFlux())
-                .filter(io.jdbd.result.ResultItem::isRowItem)
-                .map(item -> func.apply((io.jdbd.result.ResultRow) item))
+        return Flux.from(bindStatement(stmt, option).executeBatchQueryAsFlux(func, createStatesConsumer(option)))
                 .onErrorMap(JdbdStmtExecutor::wrapError);
     }
 
@@ -714,7 +753,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     private static abstract class RowReader<R> {
 
-        final JdbdStmtExecutor<?, ?> executor;
+        final JdbdStmtExecutor<?> executor;
 
         final List<? extends Selection> selectionList;
 
@@ -722,10 +761,10 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         private final MappingType[] compatibleTypeArray;
 
-        private final Class<R> resultClass;
+        private final Class<?> resultClass;
 
-        private RowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
-                          @Nullable Class<R> resultClass) {
+        private RowReader(JdbdStmtExecutor<?> executor, List<? extends Selection> selectionList,
+                          @Nullable Class<?> resultClass) {
             this.executor = executor;
             this.selectionList = selectionList;
             this.sqlTypeArray = new SqlType[selectionList.size()];
@@ -738,7 +777,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         @Nullable
         final R readOneRow(final DataRow dataRow) {
 
-            final JdbdStmtExecutor<?, ?> executor = this.executor;
+            final JdbdStmtExecutor<?> executor = this.executor;
             final MappingEnv env = executor.factory.mappingEnv;
             final SqlType[] sqlTypeArray = this.sqlTypeArray;
             final List<? extends Selection> selectionList = this.selectionList;
@@ -746,7 +785,9 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
             final MappingType[] compatibleTypeArray = this.compatibleTypeArray;
 
             final int columnCount;
-            if (sqlTypeArray[0] == null) {
+            if (sqlTypeArray[0] == null
+                    || (this instanceof CurrentRecordRowReader
+                    && ((CurrentRecordRowReader<?>) this).resultNo < dataRow.getResultNo())) {
                 columnCount = dataRow.getColumnCount();
                 if (columnCount != sqlTypeArray.length) {
                     throw _Exceptions.columnCountAndSelectionCountNotMatch(columnCount, sqlTypeArray.length);
@@ -754,8 +795,8 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
                 for (int i = 0; i < columnCount; i++) {
                     sqlTypeArray[i] = executor.getColumnMeta(dataRow, i);
                 }
-                if (this instanceof JdbdStmtExecutor.CurrentRecordRowReader) {
-                    ((CurrentRecordRowReader<R>) this).acceptRowMeta(dataRow.getRowMeta(), this::getSqlType);
+                if (this instanceof CurrentRecordRowReader) {
+                    ((CurrentRecordRowReader<?>) this).acceptRowMeta(dataRow.getRowMeta(), this::getSqlType);
                 }
             } else {
                 columnCount = sqlTypeArray.length;
@@ -816,7 +857,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         private R row;
 
-        private SingleColumnRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+        private SingleColumnRowReader(JdbdStmtExecutor<?> executor, List<? extends Selection> selectionList,
                                       Class<R> resultClass) {
             super(executor, selectionList, resultClass);
         }
@@ -843,6 +884,38 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
     }// SingleColumnRowReader
 
+    private static final class OptionalSingleColumnRowReader<R> extends RowReader<Optional<R>> {
+
+        private R row;
+
+        private OptionalSingleColumnRowReader(JdbdStmtExecutor<?> executor, List<? extends Selection> selectionList,
+                                              Class<R> resultClass) {
+            super(executor, selectionList, resultClass);
+        }
+
+        @Override
+        ObjectAccessor createRow() {
+            this.row = null;
+            return ObjectAccessorFactory.PSEUDO_ACCESSOR;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
+            assert indexBasedZero == 0;
+            this.row = (R) value;
+        }
+
+        @Override
+        Optional<R> endOneRow() {
+            final R row = this.row;
+            this.row = null;
+            return Optional.ofNullable(row);
+        }
+
+
+    }// OptionalSingleColumnRowReader
+
     private static final class BeanReader<R> extends RowReader<R> {
 
         private final ObjectAccessor accessor;
@@ -851,7 +924,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         private R row;
 
-        private BeanReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+        private BeanReader(JdbdStmtExecutor<?> executor, List<? extends Selection> selectionList,
                            Class<R> resultClass) {
             super(executor, selectionList, resultClass);
             this.accessor = ObjectAccessorFactory.forBean(resultClass);
@@ -889,7 +962,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         private ObjectAccessor accessor;
 
-        private ObjectRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+        private ObjectRowReader(JdbdStmtExecutor<?> executor, List<? extends Selection> selectionList,
                                 Supplier<R> constructor, boolean twoStmtMode) {
             super(executor, selectionList, null);
             this.constructor = constructor;
@@ -950,7 +1023,7 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
         private int rowIndex = -1;
 
 
-        private SecondRowReader(JdbdStmtExecutor<?, ?> executor, TwoStmtQueryStmt stmt, List<R> rowList) {
+        private SecondRowReader(JdbdStmtExecutor<?> executor, TwoStmtQueryStmt stmt, List<R> rowList) {
             super(executor, stmt.selectionList(), rowResultClass(rowList.get(0)));
             this.rowList = rowList;
             this.rowSize = rowList.size();
@@ -1013,7 +1086,9 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
         private int currentIndex;
 
-        private CurrentRecordRowReader(JdbdStmtExecutor<?, ?> executor, List<? extends Selection> selectionList,
+        private int resultNo = 0;
+
+        private CurrentRecordRowReader(JdbdStmtExecutor<?> executor, List<? extends Selection> selectionList,
                                        Function<CurrentRecord, R> function) {
             super(executor, selectionList, null);
             this.function = function;
@@ -1051,15 +1126,16 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
             return row;
         }
 
-        private void acceptRowMeta(ResultRowMeta rowMeta, IntFunction<SqlType> sqlTypeFunc) {
-            assert this.currentRecord == null;
+        private void acceptRowMeta(final ResultRowMeta rowMeta, final IntFunction<SqlType> sqlTypeFunc) {
             final IntBiFunction<Option<?>, ?> optionFunc;
             optionFunc = this.executor.readJdbdRowMetaOptions(rowMeta);
 
             final ArmyResultRecordMeta recordMeta;
             recordMeta = new ArmyResultRecordMeta(rowMeta.getResultNo(), this.selectionList, sqlTypeFunc, optionFunc);
 
+            this.resultNo = rowMeta.getResultNo();
             this.currentRecord = new JdbdCurrentRecord(recordMeta);
+
         }
 
 
@@ -1095,6 +1171,64 @@ abstract class JdbdStmtExecutor<E extends StmtExecutor, S extends DatabaseSessio
 
 
     }// JdbdCurrentRecord
+
+    private static abstract class JdbdBatchQueryResults extends ArmyReactiveMultiResultSpec {
+
+        private final JdbdStmtExecutor<?> executor;
+
+        private final List<? extends Selection> selectionList;
+
+        private final io.jdbd.result.QueryResults jdbdResults;
+
+
+        private JdbdBatchQueryResults(JdbdStmtExecutor<?> executor, List<? extends Selection> selectionList,
+                                      io.jdbd.result.QueryResults jdbdResults) {
+            this.executor = executor;
+            this.selectionList = selectionList;
+            this.jdbdResults = jdbdResults;
+        }
+
+        @Override
+        public final <R> Flux<R> nextQuery(Class<R> resultClass, Consumer<ResultStates> consumer) {
+            final RowReader<R> reader;
+            final List<? extends Selection> selectionList = this.selectionList;
+            if (selectionList.size() == 1) {
+                reader = new SingleColumnRowReader<>(this.executor, selectionList, resultClass);
+            } else {
+                reader = new BeanReader<>(this.executor, selectionList, resultClass);
+            }
+            return Flux.from(this.jdbdResults.nextQuery(reader::readOneRow, getJdbdStatesConsumer(consumer)));
+        }
+
+        @Override
+        public final <R> Flux<Optional<R>> nextQueryOptional(Class<R> resultClass, Consumer<ResultStates> consumer) {
+            return Flux.empty();
+        }
+
+        @Override
+        public final <R> Flux<R> nextQueryObject(Supplier<R> constructor, Consumer<ResultStates> consumer) {
+            final RowReader<R> reader;
+            reader = new ObjectRowReader<>(this.executor, this.selectionList, constructor, false);
+            return Flux.from(this.jdbdResults.nextQuery(reader::readOneRow, getJdbdStatesConsumer(consumer)));
+        }
+
+        @Override
+        public final <R> Flux<R> nextQueryRecord(Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
+            //TODO
+            return Flux.empty();
+        }
+
+        @Override
+        public final Flux<ResultItem> nextQueryAsFlux() {
+            return Flux.empty();
+        }
+
+        Consumer<io.jdbd.result.ResultStates> getJdbdStatesConsumer(Consumer<ResultStates> armyConsumer) {
+            throw new UnsupportedOperationException();
+        }
+
+
+    }// JdbdMultiResultSpec
 
 
 }

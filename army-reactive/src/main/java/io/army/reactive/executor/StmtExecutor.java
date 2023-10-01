@@ -2,7 +2,6 @@ package io.army.reactive.executor;
 
 
 import io.army.reactive.Closeable;
-import io.army.reactive.MultiResult;
 import io.army.reactive.QueryResults;
 import io.army.reactive.ReactiveOption;
 import io.army.session.*;
@@ -11,10 +10,21 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 
+/**
+ * <p>This interface representing reactive sql statement executor.
+ * <p>This interface is base interface of following:
+ * <ul>
+ *     <li>{@link LocalStmtExecutor}</li>
+ *     <li>{@link RmStmtExecutor}</li>
+ * </ul>
+ *
+ * @since 1.0
+ */
 public interface StmtExecutor extends Closeable, OptionSpec {
 
     /**
@@ -37,13 +47,13 @@ public interface StmtExecutor extends Closeable, OptionSpec {
 
     Mono<TransactionStatus> transactionStatus();
 
-    Mono<? extends StmtExecutor> setTransactionCharacteristics(TransactionOption option);
+    Mono<Void> setTransactionCharacteristics(TransactionOption option);
 
     Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc);
 
-    Mono<? extends StmtExecutor> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
+    Mono<Void> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
-    Mono<? extends StmtExecutor> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
+    Mono<Void> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
 
     Mono<ResultStates> insert(SimpleStmt stmt, ReactiveOption option);
 
@@ -52,6 +62,8 @@ public interface StmtExecutor extends Closeable, OptionSpec {
     Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveOption option);
 
     <R> Flux<R> query(SimpleStmt stmt, Class<R> resultClass, ReactiveOption option);
+
+    <R> Flux<Optional<R>> queryOptional(SimpleStmt stmt, Class<R> resultClass, ReactiveOption option);
 
     <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, ReactiveOption option);
 
@@ -69,9 +81,9 @@ public interface StmtExecutor extends Closeable, OptionSpec {
 
     QueryResults batchQueryResults(BatchStmt stmt, ReactiveOption option);
 
-    MultiResult multiStmt(MultiStmt stmt, ReactiveOption option);
 
-    Flux<ResultItem> executeStaticMultiStmt(MultiStmt stmt, ReactiveOption option);
+    Flux<ResultItem> execute(GenericSimpleStmt stmt, ReactiveOption option);
+
 
     Flux<ResultItem> executeMultiStmt(List<GenericSimpleStmt> stmtList, ReactiveOption option);
 

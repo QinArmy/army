@@ -27,7 +27,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
             txObject.reset(session);
         }
         return txObject;
-    }
+     }
 
     @Override
     protected Mono<Void> doBegin(TransactionSynchronizationManager synchronizationManager, final Object transaction

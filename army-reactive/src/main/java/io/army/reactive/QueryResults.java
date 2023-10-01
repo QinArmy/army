@@ -1,6 +1,6 @@
 package io.army.reactive;
 
-public interface QueryResults {
+public interface QueryResults extends ReactiveMultiResultSpec {
 
 
 }

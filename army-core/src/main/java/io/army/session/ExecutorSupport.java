@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 public abstract class ExecutorSupport {
 
     protected ExecutorSupport() {
+
     }
 
 
@@ -465,5 +466,6 @@ public abstract class ExecutorSupport {
         }
 
     }// ArmyResultRecord
+
 
 }
