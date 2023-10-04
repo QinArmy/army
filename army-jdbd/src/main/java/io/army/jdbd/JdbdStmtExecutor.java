@@ -49,6 +49,20 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
+
+/**
+ * <p>This class is a abstract implementation of {@link StmtExecutor} with jdbd spi.
+ * <p>This class is base class of following jdbd executor:
+ * <ul>
+ *     <li>{@link MySQLStmtExecutor}</li>
+ *     <li>{@link PostgreStmtExecutor}</li>
+ * </ul>
+ * <p>Following is chinese signature:<br/>
+ * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
+ *
+ * @param <S> the java type of {@link DatabaseSession}
+ * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
+ */
 abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecutorSupport
         implements StmtExecutor {
 
@@ -436,6 +450,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     private ResultStates mapToArmyResultStates(io.jdbd.result.ResultStates jdbdStates) {
         return null;
     }
+
 
     /**
      * just for return id insert
@@ -1229,6 +1244,131 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
 
 
     }// JdbdMultiResultSpec
+
+    private static final class ArmyResultStates implements ResultStates {
+
+        private final io.jdbd.result.ResultStates jdbdStates;
+
+        private final Function<Option<?>, io.jdbd.session.Option<?>> optionFunc;
+
+        private Warning warning;
+
+
+        private ArmyResultStates(io.jdbd.result.ResultStates jdbdStates,
+                                 Function<Option<?>, io.jdbd.session.Option<?>> optionFunc) {
+            this.jdbdStates = jdbdStates;
+            this.optionFunc = optionFunc;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T> T valueOf(Option<T> option) {
+            final io.jdbd.session.Option<?> jdbdOption;
+            jdbdOption = this.optionFunc.apply(option);
+            final Object value;
+            if (jdbdOption == null) {
+                value = null;
+            } else {
+                value = this.jdbdStates.valueOf(jdbdOption);
+            }
+            return (T) value;
+        }
+
+        @Override
+        public int getResultNo() {
+            return this.jdbdStates.getResultNo();
+        }
+
+        @Override
+        public boolean inTransaction() {
+            try {
+                return this.jdbdStates.inTransaction();
+            } catch (Throwable e) {
+                throw wrapError(e);
+            }
+        }
+
+        @Override
+        public String message() {
+            return this.jdbdStates.message();
+        }
+
+        @Override
+        public boolean hasMoreResult() {
+            return this.jdbdStates.hasMoreResult();
+        }
+
+        @Override
+        public boolean hasMoreFetch() {
+            return this.jdbdStates.hasMoreFetch();
+        }
+
+        @Override
+        public Warning warning() {
+            Warning w = this.warning;
+            if (w != null) {
+                return w;
+            }
+            final io.jdbd.result.Warning jdbdWarning;
+            jdbdWarning = this.jdbdStates.warning();
+            if (jdbdWarning != null) {
+                this.warning = w = new ArmyWarning(jdbdWarning, this.optionFunc);
+            }
+            return w;
+        }
+
+        @Override
+        public long affectedRows() {
+            return this.jdbdStates.affectedRows();
+        }
+
+        @Override
+        public boolean hasColumn() {
+            return this.jdbdStates.hasColumn();
+        }
+
+        @Override
+        public long rowCount() {
+            return this.jdbdStates.rowCount();
+        }
+
+
+    }// ArmyResultStates
+
+
+    private static final class ArmyWarning implements Warning {
+
+        private final io.jdbd.result.Warning jdbdWarning;
+
+
+        private final Function<Option<?>, io.jdbd.session.Option<?>> optionFunc;
+
+        private ArmyWarning(io.jdbd.result.Warning jdbdWarning,
+                            Function<Option<?>, io.jdbd.session.Option<?>> optionFunc) {
+            this.jdbdWarning = jdbdWarning;
+            this.optionFunc = optionFunc;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T> T valueOf(Option<T> option) {
+            final io.jdbd.session.Option<?> jdbdOption;
+            jdbdOption = this.optionFunc.apply(option);
+            final Object value;
+            if (jdbdOption == null) {
+                value = null;
+            } else {
+                value = this.jdbdWarning.valueOf(jdbdOption);
+            }
+            return (T) value;
+        }
+
+        @Override
+        public String message() {
+            return this.jdbdWarning.message();
+        }
+
+    }// ArmyWarning
 
 
 }

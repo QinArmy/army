@@ -1,6 +1,5 @@
 package io.army.jdbd;
 
-import io.army.reactive.executor.StmtExecutor;
 import io.army.session.Option;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.TransactionOption;
@@ -12,8 +11,8 @@ import java.util.function.Function;
  *
  * @since 1.0
  */
-abstract class MySQLStmtExecutor<E extends StmtExecutor, S extends DatabaseSession>
-        extends JdbdStmtExecutor<E, S> {
+abstract class MySQLStmtExecutor<S extends DatabaseSession>
+        extends JdbdStmtExecutor<S> {
 
 
     private MySQLStmtExecutor(JdbdStmtExecutorFactory factory, S session) {

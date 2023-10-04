@@ -24,21 +24,21 @@ import io.army.stmt.MultiStmt;
 import io.army.stmt.Stmt;
 import io.army.tx.ReadOnlyTransactionException;
 import io.army.tx.TransactionTimeOutException;
-import io.qinarmy.util.ExceptionUtils;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
 
-public abstract class _Exceptions extends ExceptionUtils {
+public abstract class _Exceptions {
 
-    protected _Exceptions() {
+    private _Exceptions() {
         throw new UnsupportedOperationException();
     }
 
     public static ArmyException unexpectedEnum(Enum<?> e) {
-        return ExceptionUtils.createUnexpectedEnumException(e);
+        String m = String.format("unexpected enum %s.%s", e.getClass().getName(), e.name());
+        return new ArmyException(m);
     }
 
     public static ArmyException unknownError(String message, Throwable e) {
