@@ -176,7 +176,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
                 if (rowSize != rowIndexHolder[0]) {
                     return Mono.error(_Exceptions.insertedRowsAndGenerateIdNotMatch(rowSize, rowIndexHolder[0]));
                 }
-                return Mono.just(mapToArmyInsertStates(jdbdStatesHolder.get()));
+                return Mono.just(mapToArmyResultStates(jdbdStatesHolder.get()));
             };
         } else {
             extractIdFunc = null;
@@ -413,10 +413,6 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
 
     /*-------------------below package instance methods-------------------*/
 
-    abstract Function<Option<?>, ?> readJdbdTransactionOptions(io.jdbd.session.TransactionOption jdbdOption);
-
-    abstract Function<io.jdbd.session.Option<?>, ?> readArmyTransactionOptions(TransactionOption jdbdOption);
-
     abstract Function<io.jdbd.session.Option<?>, ?> readArmySetSavePointOptions(Function<Option<?>, ?> optionFunc);
 
     abstract Function<io.jdbd.session.Option<?>, ?> readArmyReleaseSavePointOptions(Function<Option<?>, ?> optionFunc);
@@ -424,6 +420,23 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     abstract Function<io.jdbd.session.Option<?>, ?> readArmyRollbackSavePointOptions(Function<Option<?>, ?> optionFunc);
 
     abstract IntBiFunction<Option<?>, ?> readJdbdRowMetaOptions(ResultRowMeta rowMeta);
+
+    abstract Function<Option<?>, io.jdbd.session.Option<?>> mapToJdbdOptionFunc();
+
+    /**
+     * @see #transactionStatus()
+     */
+    abstract TransactionStatus mapToArmyTransactionStatus(io.jdbd.session.TransactionStatus jdbdStatus)
+
+
+    abstract io.jdbd.session.TransactionOption mapToJdbdTransactionOption(TransactionOption armyOption);
+
+    @Nullable
+    abstract io.jdbd.session.Option<?> mapToJdbdOption(Option<?> option);
+
+    @Nullable
+    abstract Option<?> mapToArmyOption(io.jdbd.session.Option<?> option);
+
 
     abstract DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType);
 
@@ -434,30 +447,12 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
 
     /*-------------------below private instance methods-------------------*/
 
-    /**
-     * @see #transactionStatus()
-     */
-    private TransactionStatus mapToArmyTransactionStatus(io.jdbd.session.TransactionStatus jdbdStatus) {
-        final Function<Option<?>, ?> map;
-        map = readJdbdTransactionOptions(jdbdStatus);
-        return null;
-    }
 
-    private io.jdbd.session.TransactionOption mapToJdbdTransactionOption(TransactionOption armyOption) {
-        return null;
-    }
 
     private ResultStates mapToArmyResultStates(io.jdbd.result.ResultStates jdbdStates) {
-        return null;
+        return new ArmyResultStates(jdbdStates, this::mapToJdbdOption);
     }
 
-
-    /**
-     * just for return id insert
-     */
-    private ResultStates mapToArmyInsertStates(io.jdbd.result.ResultStates jdbdStates) {
-        return null;
-    }
 
     /**
      * @see #query(SimpleStmt, Class, ReactiveOption)

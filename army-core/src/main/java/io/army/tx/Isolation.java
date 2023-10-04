@@ -1,14 +1,29 @@
 package io.army.tx;
 
-public enum Isolation {
+import io.army.util._Collections;
+import io.army.util._StringUtils;
 
-    /**
-     * Use the default isolation level of the underlying datastore.
-     * All other levels correspond to the JDBC isolation levels.
-     *
-     * @see java.sql.Connection
-     */
-    DEFAULT(0, ""),
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamException;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
+
+public final class Isolation {
+
+
+    public static Isolation from(String name) {
+        if (!_StringUtils.hasText(name)) {
+            throw new IllegalArgumentException("name must have text");
+        }
+        return INSTANCE_MAP.computeIfAbsent(name, CONSTRUCTOR);
+    }
+
+    private static final Function<String, Isolation> CONSTRUCTOR = Isolation::new;
+
+    private static final ConcurrentMap<String, Isolation> INSTANCE_MAP = _Collections.concurrentHashMap((int) (4 / 0.75f));
+
 
     /**
      * A constant indicating that dirty reads, non-repeatable reads and phantom reads
@@ -16,19 +31,15 @@ public enum Isolation {
      * another transaction before any changes in that row have been committed
      * (a "dirty read"). If any of the changes are rolled back, the second
      * transaction will have retrieved an invalid row.
-     *
-     * @see java.sql.Connection#TRANSACTION_READ_UNCOMMITTED
      */
-    READ_UNCOMMITTED(1, "READ UNCOMMITTED"),
+    public static final Isolation READ_UNCOMMITTED = from("READ UNCOMMITTED");
 
     /**
      * A constant indicating that dirty reads are prevented; non-repeatable reads
      * and phantom reads can occur. This level only prohibits a transaction
      * from reading a row with uncommitted changes in it.
-     *
-     * @see java.sql.Connection#TRANSACTION_READ_COMMITTED
      */
-    READ_COMMITTED(2, "READ COMMITTED"),
+    public static final Isolation READ_COMMITTED = from("READ COMMITTED");
 
     /**
      * A constant indicating that dirty reads and non-repeatable reads are
@@ -37,10 +48,8 @@ public enum Isolation {
      * the situation where one transaction reads a row, a second transaction
      * alters the row, and the first transaction rereads the row, getting
      * different values the second time (a "non-repeatable read").
-     *
-     * @see java.sql.Connection#TRANSACTION_REPEATABLE_READ
      */
-    REPEATABLE_READ(4, "REPEATABLE READ"),
+    public static final Isolation REPEATABLE_READ = from("REPEATABLE READ");
 
     /**
      * A constant indicating that dirty reads, non-repeatable reads and phantom
@@ -50,19 +59,57 @@ public enum Isolation {
      * condition, a second transaction inserts a row that satisfies that
      * {@code WHERE} condition, and the first transaction rereads for the
      * same condition, retrieving the additional "phantom" row in the second read.
-     *
-     * @see java.sql.Connection#TRANSACTION_SERIALIZABLE
      */
-    SERIALIZABLE(8, "SERIALIZABLE");
+    public static final Isolation SERIALIZABLE = from("SERIALIZABLE");
 
-    public final byte level;
 
-    public final String command;
+    private final String name;
 
-    Isolation(int level, String command) {
-        assert level <= Byte.MAX_VALUE;
-        this.level = (byte) level;
-        this.command = command;
+    private Isolation(String name) {
+        this.name = name;
     }
+
+
+    public String name() {
+        return this.name;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        final boolean match;
+        if (obj == this) {
+            match = true;
+        } else if (obj instanceof Isolation) {
+            match = ((Isolation) obj).name.equals(this.name);
+        } else {
+            match = false;
+        }
+        return match;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s[ name : %s , hash : %s]",
+                Isolation.class.getName(),
+                this.name,
+                System.identityHashCode(this)
+        );
+    }
+
+    /*-------------------below private method -------------------*/
+
+    private void readObject(ObjectInputStream in) throws IOException {
+        throw new InvalidObjectException("can't deserialize Isolation");
+    }
+
+    private void readObjectNoData() throws ObjectStreamException {
+        throw new InvalidObjectException("can't deserialize Isolation");
+    }
+
 
 }
