@@ -1,6 +1,6 @@
 package io.army.jdbd;
 
-import io.army.session.TransactionStatus;
+import io.army.tx.TransactionInfo;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.TransactionOption;
 
@@ -18,13 +18,13 @@ abstract class MySQLStmtExecutor<S extends DatabaseSession> extends JdbdStmtExec
 
 
     @Override
-    final TransactionStatus mapToArmyTransactionStatus(io.jdbd.session.TransactionStatus jdbdStatus) {
+    final TransactionInfo mapToArmyTransactionStatus(io.jdbd.session.TransactionStatus jdbdStatus) {
 
         return null;
     }
 
     @Override
-    final TransactionOption mapToJdbdTransactionOption(io.army.session.TransactionOption armyOption) {
+    final TransactionOption mapToJdbdTransactionOption(io.army.tx.TransactionOption armyOption) {
         return null;
     }
 

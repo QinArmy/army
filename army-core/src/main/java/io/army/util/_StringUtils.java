@@ -60,6 +60,10 @@ public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
         return new StringBuilder();
     }
 
+    public static StringBuilder builder(int capacity) {
+        return new StringBuilder(capacity);
+    }
+
     public static String enumToString(final Enum<?> words) {
         Class<?> clazz;
         clazz = words.getClass();

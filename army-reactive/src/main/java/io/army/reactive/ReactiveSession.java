@@ -5,6 +5,8 @@ import io.army.criteria.SimpleDmlStatement;
 import io.army.criteria.SimpleDqlStatement;
 import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.session.*;
+import io.army.tx.TransactionInfo;
+import io.army.tx.TransactionOption;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -51,7 +53,7 @@ public interface ReactiveSession extends Session, Closeable {
      *
      * @throws SessionException emit(not throw) when database driver emit error.
      */
-    Mono<TransactionStatus> transactionStatus();
+    Mono<TransactionInfo> transactionStatus();
 
     Mono<? extends ReactiveSession> setTransactionCharacteristics(TransactionOption option);
 

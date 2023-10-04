@@ -20,6 +20,8 @@ import io.army.reactive.executor.StmtExecutor;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
+import io.army.tx.TransactionInfo;
+import io.army.tx.TransactionOption;
 import io.army.type.ImmutableSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -95,7 +97,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final Mono<TransactionStatus> transactionStatus() {
+    public final Mono<TransactionInfo> transactionStatus() {
         return Mono.from(this.session.transactionStatus())
                 .map(this::mapToArmyTransactionStatus)
                 .onErrorMap(JdbdStmtExecutor::wrapError);
@@ -426,7 +428,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     /**
      * @see #transactionStatus()
      */
-    abstract TransactionStatus mapToArmyTransactionStatus(io.jdbd.session.TransactionStatus jdbdStatus)
+    abstract TransactionInfo mapToArmyTransactionStatus(io.jdbd.session.TransactionStatus jdbdStatus)
 
 
     abstract io.jdbd.session.TransactionOption mapToJdbdTransactionOption(TransactionOption armyOption);

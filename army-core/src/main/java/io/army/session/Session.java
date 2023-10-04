@@ -7,7 +7,7 @@ import io.army.meta.TableMeta;
 /**
  *
  */
-public interface Session extends CloseableSpec {
+public interface Session extends CloseableSpec, OptionSpec {
 
     boolean isReadOnlyStatus();
 

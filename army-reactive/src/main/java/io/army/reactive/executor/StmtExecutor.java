@@ -6,6 +6,8 @@ import io.army.reactive.QueryResults;
 import io.army.reactive.ReactiveOption;
 import io.army.session.*;
 import io.army.stmt.*;
+import io.army.tx.TransactionInfo;
+import io.army.tx.TransactionOption;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -45,7 +47,7 @@ public interface StmtExecutor extends Closeable, OptionSpec {
 
     boolean inTransaction() throws DataAccessException;
 
-    Mono<TransactionStatus> transactionStatus();
+    Mono<TransactionInfo> transactionStatus();
 
     Mono<Void> setTransactionCharacteristics(TransactionOption option);
 

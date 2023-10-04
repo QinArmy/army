@@ -1,9 +1,9 @@
 package io.army.reactive;
 
 import io.army.session.Option;
-import io.army.session.TransactionStatus;
 import io.army.session._ArmySession;
 import io.army.session._ArmySessionFactory;
+import io.army.tx.TransactionInfo;
 import reactor.core.publisher.Mono;
 
 import java.util.function.Function;
@@ -16,7 +16,7 @@ abstract class _ArmyReactiveSession<S extends ReactiveSession> extends _ArmySess
 
 
     @Override
-    public final Mono<TransactionStatus> transactionStatus() {
+    public final Mono<TransactionInfo> transactionStatus() {
         return null;
     }
 
