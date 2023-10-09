@@ -1,6 +1,7 @@
 package io.army.tx;
 
 import io.army.lang.Nullable;
+import io.army.session.Option;
 import io.army.session.OptionSpec;
 
 public interface TransactionOption extends OptionSpec {
@@ -31,7 +32,40 @@ public interface TransactionOption extends OptionSpec {
     String toString();
 
     static TransactionOption option(@Nullable Isolation isolation, boolean readOnly) {
-        return ArmyTransactionOption.option(isolation, readOnly);
+        return SimpleTransactionOption.option(isolation, readOnly);
     }
+
+
+    static Builder builder() {
+        return SimpleTransactionOption.builder();
+    }
+
+    interface Builder {
+
+        /**
+         * set transaction option.
+         *
+         * @param option transaction option key,for example :
+         *               <ul>
+         *                    <li>{@link Option#ISOLATION}</li>
+         *                    <li>{@link Option#READ_ONLY}</li>
+         *                    <li>{@link Option#NAME} ,transaction name</li>
+         *                    <li>{@code  Option#WITH_CONSISTENT_SNAPSHOT}</li>
+         *                    <li>{@code Option#DEFERRABLE}</li>
+         *                    <li>{@link Option#WAIT}</li>
+         *                    <li>{@link Option#LOCK_TIMEOUT}</li>
+         *               </ul>
+         */
+        <T> Builder option(Option<T> option, @Nullable T value);
+
+        /**
+         * @throws IllegalArgumentException throw when <ul>
+         *                                  <li>{@link Option#IN_TRANSACTION} exists</li>
+         *                                  </ul>
+         */
+        TransactionOption build() throws IllegalArgumentException;
+
+
+    }//Builder
 
 }

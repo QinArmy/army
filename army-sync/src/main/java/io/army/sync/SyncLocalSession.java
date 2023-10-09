@@ -11,7 +11,10 @@ import io.army.proxy._SessionCache;
 import io.army.session.*;
 import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
-import io.army.tx.*;
+import io.army.tx.CannotCreateTransactionException;
+import io.army.tx.Isolation;
+import io.army.tx.NoSessionTransactionException;
+import io.army.tx.TransactionOptions;
 import io.army.type.ImmutableSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -409,16 +412,16 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
         if (this.transaction != transaction) {
             throw new IllegalArgumentException("transaction not match.");
         }
-        final TransactionInfo status = transaction.status();
-        switch (status) {
-            case ROLLED_BACK:
-            case COMMITTED:
-            case FAILED_ROLLBACK:
-                this.transaction = null;
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("transaction status[%s] error.", status));
-        }
+//        final TransactionInfo status = transaction.status();
+//        switch (status) {
+//            case ROLLED_BACK:
+//            case COMMITTED:
+//            case FAILED_ROLLBACK:
+//                this.transaction = null;
+//                break;
+//            default:
+//                throw new IllegalArgumentException(String.format("transaction status[%s] error.", status));
+//        }
 
     }
 
