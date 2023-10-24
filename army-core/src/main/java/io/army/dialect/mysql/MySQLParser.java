@@ -55,11 +55,11 @@ abstract class MySQLParser extends _ArmyDialectParser {
             startStmt = "START TRANSACTION READ WRITE";
         }
         final List<String> stmtList;
-        if (isolation == Isolation.DEFAULT) {
+        if (isolation == null) {
             stmtList = Collections.singletonList(startStmt);
         } else {
             stmtList = ArrayUtils.of(
-                    "SET TRANSACTION ISOLATION LEVEL " + isolation.command,  // no key word 'SESSION' or 'GLOBAL',so Next transaction only
+                    "SET TRANSACTION ISOLATION LEVEL " + isolation.name(),  // no key word 'SESSION' or 'GLOBAL',so Next transaction only
                     startStmt);
         }
         return stmtList;
@@ -283,7 +283,7 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     /**
-     * @see #update(UpdateStatement, Visible)
+     * @see #update(UpdateStatement, boolean, Visible)
      */
     @Nullable
     @Override

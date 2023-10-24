@@ -55,19 +55,13 @@ final class SyncLocalSession extends _ArmySyncSession implements LocalSession {
 
 
     @Override
-    public LocalSessionFactory sessionFactory() {
-        return this.factory;
+    public <T> T valueOf(Option<T> option) {
+        return null;
     }
 
     @Override
-    public <T> TableMeta<T> tableMeta(Class<T> domainClass) {
-        final TableMeta<T> table;
-        table = this.factory.getTable(domainClass);
-        if (table == null) {
-            String m = String.format("Not found %s for %s.", TableMeta.class.getName(), domainClass.getName());
-            throw new IllegalArgumentException(m);
-        }
-        return table;
+    public LocalSessionFactory sessionFactory() {
+        return this.factory;
     }
 
     @Override

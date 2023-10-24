@@ -62,6 +62,17 @@ public abstract class _ArmySession implements Session {
     }
 
     @Override
+    public final <T> TableMeta<T> tableMeta(Class<T> domainClass) {
+        final TableMeta<T> table;
+        table = this.armyFactory.getTable(domainClass);
+        if (table == null) {
+            String m = String.format("Not found %s for %s.", TableMeta.class.getName(), domainClass.getName());
+            throw new IllegalArgumentException(m);
+        }
+        return table;
+    }
+
+    @Override
     public final int hashCode() {
         return super.hashCode();
     }
@@ -86,6 +97,7 @@ public abstract class _ArmySession implements Session {
         );
     }
 
+    @Deprecated
     @Nullable
     protected abstract String transactionName();
 

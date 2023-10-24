@@ -2,6 +2,7 @@ package io.army.reactive;
 
 import io.army.dialect.DialectParser;
 import io.army.meta.ServerMeta;
+import io.army.reactive.executor.LocalStmtExecutor;
 import io.army.session._ArmySessionFactory;
 import reactor.core.publisher.Mono;
 
@@ -69,9 +70,10 @@ final class ArmyReactiveLocalSessionFactory extends _ArmySessionFactory implemen
 
     static final class LocalSessionBuilder extends ArmySessionBuilder<SessionBuilder, ReactiveSession> implements SessionBuilder {
 
-        private final ArmyReactiveLocalSessionFactory sessionFactory;
+        final ArmyReactiveLocalSessionFactory sessionFactory;
 
 
+        LocalStmtExecutor stmtExecutor;
         boolean readOnly;
 
         private LocalSessionBuilder(ArmyReactiveLocalSessionFactory sessionFactory) {

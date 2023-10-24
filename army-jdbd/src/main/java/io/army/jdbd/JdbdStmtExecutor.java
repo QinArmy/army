@@ -20,6 +20,7 @@ import io.army.reactive.executor.StmtExecutor;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
+import io.army.tx.Isolation;
 import io.army.tx.TransactionInfo;
 import io.army.tx.TransactionOption;
 import io.army.type.ImmutableSpec;
@@ -97,17 +98,23 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final Mono<TransactionInfo> transactionStatus() {
-        return Mono.from(this.session.transactionStatus())
-                .map(this::mapToArmyTransactionStatus)
+    public final Mono<TransactionInfo> transactionInfo() {
+        return Mono.from(this.session.transactionInfo())
+                .map(this::mapToArmyTransactionInfo)
                 .onErrorMap(JdbdStmtExecutor::wrapError);
     }
 
     @Override
     public final Mono<Void> setTransactionCharacteristics(TransactionOption option) {
-        return Mono.from(this.session.setTransactionCharacteristics(mapToJdbdTransactionOption(option)))
-                .onErrorMap(JdbdStmtExecutor::wrapError)
-                .then();
+        Mono<Void> mono;
+        try {
+            mono = Mono.from(this.session.setTransactionCharacteristics(mapToJdbdTransactionOption(option)))
+                    .onErrorMap(JdbdStmtExecutor::wrapError)
+                    .then();
+        } catch (Throwable e) {
+            mono = Mono.error(wrapError(e));
+        }
+        return mono;
     }
 
     @Override
@@ -426,9 +433,9 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     abstract Function<Option<?>, io.jdbd.session.Option<?>> mapToJdbdOptionFunc();
 
     /**
-     * @see #transactionStatus()
+     * @see #transactionInfo()
      */
-    abstract TransactionInfo mapToArmyTransactionStatus(io.jdbd.session.TransactionStatus jdbdStatus)
+    abstract TransactionInfo mapToArmyTransactionInfo(io.jdbd.session.TransactionInfo jdbdInfo);
 
 
     abstract io.jdbd.session.TransactionOption mapToJdbdTransactionOption(TransactionOption armyOption);
@@ -448,7 +455,6 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     abstract Object get(DataRow row, int indexBasedZero, SqlType sqlType);
 
     /*-------------------below private instance methods-------------------*/
-
 
 
     private ResultStates mapToArmyResultStates(io.jdbd.result.ResultStates jdbdStates) {
@@ -751,6 +757,25 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
             e = _Exceptions.unknownError(error.getMessage(), error);
         }
         return e;
+    }
+
+    @Nullable
+    static io.jdbd.session.Isolation mapToStandardJdbdIsolation(final @Nullable Isolation isolation) {
+        io.jdbd.session.Isolation jdbdIsolation;
+        if (isolation == null) {
+            jdbdIsolation = null;
+        } else if (isolation == Isolation.READ_COMMITTED) {
+            jdbdIsolation = io.jdbd.session.Isolation.READ_COMMITTED;
+        } else if (isolation == Isolation.REPEATABLE_READ) {
+            jdbdIsolation = io.jdbd.session.Isolation.REPEATABLE_READ;
+        } else if (isolation == Isolation.SERIALIZABLE) {
+            jdbdIsolation = io.jdbd.session.Isolation.SERIALIZABLE;
+        } else if (isolation == Isolation.READ_UNCOMMITTED) {
+            jdbdIsolation = io.jdbd.session.Isolation.READ_UNCOMMITTED;
+        } else {
+            throw new IllegalArgumentException(String.format("%s non-standard isolation", isolation.name()));
+        }
+        return jdbdIsolation;
     }
 
 

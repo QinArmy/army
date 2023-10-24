@@ -47,7 +47,7 @@ public interface StmtExecutor extends Closeable, OptionSpec {
 
     boolean inTransaction() throws DataAccessException;
 
-    Mono<TransactionInfo> transactionStatus();
+    Mono<TransactionInfo> transactionInfo();
 
     Mono<Void> setTransactionCharacteristics(TransactionOption option);
 

@@ -53,7 +53,7 @@ public interface ReactiveSession extends Session, Closeable {
      *
      * @throws SessionException emit(not throw) when database driver emit error.
      */
-    Mono<TransactionInfo> transactionStatus();
+    Mono<TransactionInfo> transactionInfo();
 
     Mono<? extends ReactiveSession> setTransactionCharacteristics(TransactionOption option);
 
@@ -130,12 +130,14 @@ public interface ReactiveSession extends Session, Closeable {
 
     /*-------------------below update methods-------------------*/
 
+    Mono<ResultStates> update(SimpleDmlStatement dml);
+
     Mono<ResultStates> update(SimpleDmlStatement dml, ReactiveOption option);
 
 
     /*-------------------below batchSave methods-------------------*/
 
-    <T> Flux<ResultStates> batchSave(List<T> domainList);
+    <T> Mono<ResultStates> batchSave(List<T> domainList);
 
 
     /*-------------------below batchUpdate methods-------------------*/

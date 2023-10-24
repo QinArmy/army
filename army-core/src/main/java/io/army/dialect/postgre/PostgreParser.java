@@ -48,9 +48,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
             builder.append(" READ WRITE");
         }
 
-        if (isolation != Isolation.DEFAULT) {
+        if (isolation != null) {
             builder.append(" , ISOLATION LEVEL ")
-                    .append(isolation.command);
+                    .append(isolation.name());
         }
         return Collections.singletonList(builder.toString());
     }
