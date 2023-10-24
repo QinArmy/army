@@ -1,11 +1,11 @@
 package io.army.reactive;
 
 import io.army.session.ResultStates;
-import io.army.session.StatementOptionSpec;
+import io.army.session.StatementOption;
 
 import java.util.function.Consumer;
 
-public interface ReactiveOption extends StatementOptionSpec {
+public interface ReactiveStmtOption extends StatementOption {
 
     Consumer<ResultStates> stateConsumer();
 

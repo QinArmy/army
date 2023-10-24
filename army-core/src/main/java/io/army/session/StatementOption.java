@@ -1,6 +1,6 @@
 package io.army.session;
 
-public interface StatementOptionSpec {
+public interface StatementOption {
 
     boolean isPreferServerPrepare();
 

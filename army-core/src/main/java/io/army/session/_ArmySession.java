@@ -170,7 +170,7 @@ public abstract class _ArmySession implements Session {
         return restSeconds;
     }
 
-    protected final Stmt parseDqlStatement(final DqlStatement statement, final StatementOptionSpec option) {
+    protected final Stmt parseDqlStatement(final DqlStatement statement, final StatementOption option) {
         final boolean useMultiStmt;
         useMultiStmt = isUseStaticMultiStmt(option);
 
@@ -195,7 +195,7 @@ public abstract class _ArmySession implements Session {
     }
 
 
-    protected final Stmt parseDmlStatement(final DmlStatement statement, final StatementOptionSpec option) {
+    protected final Stmt parseDmlStatement(final DmlStatement statement, final StatementOption option) {
         final boolean useMultiStmt;
         useMultiStmt = isUseStaticMultiStmt(option);
 
@@ -229,7 +229,7 @@ public abstract class _ArmySession implements Session {
         return domainTable;
     }
 
-    static boolean isUseStaticMultiStmt(StatementOptionSpec option) {
+    static boolean isUseStaticMultiStmt(StatementOption option) {
         final boolean use;
         switch (option.multiStmtMode()) {
             case EXECUTOR:

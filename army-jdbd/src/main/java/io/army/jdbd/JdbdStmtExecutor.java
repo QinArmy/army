@@ -14,7 +14,7 @@ import io.army.meta.PrimaryFieldMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.reactive.QueryResults;
-import io.army.reactive.ReactiveOption;
+import io.army.reactive.ReactiveStmtOption;
 import io.army.reactive.executor.ReactiveExecutorSupport;
 import io.army.reactive.executor.StmtExecutor;
 import io.army.session.*;
@@ -145,7 +145,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final Mono<ResultStates> insert(final SimpleStmt stmt, final ReactiveOption option) {
+    public final Mono<ResultStates> insert(final SimpleStmt stmt, final ReactiveStmtOption option) {
 
         final List<? extends Selection> selectionList = stmt.selectionList();
         final boolean returningId;
@@ -218,7 +218,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
 
 
     @Override
-    public final Mono<ResultStates> update(final SimpleStmt stmt, final ReactiveOption option) {
+    public final Mono<ResultStates> update(final SimpleStmt stmt, final ReactiveStmtOption option) {
         Mono<ResultStates> mono;
         try {
             final BindStatement statement;
@@ -234,7 +234,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final Flux<ResultStates> batchUpdate(final BatchStmt stmt, final ReactiveOption option) {
+    public final Flux<ResultStates> batchUpdate(final BatchStmt stmt, final ReactiveStmtOption option) {
         Flux<ResultStates> flux;
         try {
             final BindStatement statement;
@@ -250,7 +250,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final <R> Flux<R> query(final SimpleStmt stmt, final Class<R> resultClass, final ReactiveOption option) {
+    public final <R> Flux<R> query(final SimpleStmt stmt, final Class<R> resultClass, final ReactiveStmtOption option) {
         Flux<R> flux;
         try {
             flux = executeQuery(stmt, mapBeanFunc(stmt, resultClass), option);
@@ -261,7 +261,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final <R> Flux<Optional<R>> queryOptional(SimpleStmt stmt, final Class<R> resultClass, ReactiveOption option) {
+    public final <R> Flux<Optional<R>> queryOptional(SimpleStmt stmt, final Class<R> resultClass, ReactiveStmtOption option) {
         Flux<Optional<R>> flux;
         try {
             final List<? extends Selection> selectionList;
@@ -287,7 +287,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, ReactiveOption option) {
+    public final <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, ReactiveStmtOption option) {
         Flux<R> flux;
         try {
             flux = executeQuery(stmt, mapObjectFunc(stmt, constructor), option);
@@ -298,7 +298,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option) {
+    public final <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
         Flux<R> flux;
         try {
             flux = executeQuery(stmt, mapRecordFunc(stmt, function), option);
@@ -309,7 +309,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, ReactiveOption option) {
+    public final <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, ReactiveStmtOption option) {
         Flux<R> flux;
         try {
             final SecondRowReader<R> rowReader;
@@ -323,7 +323,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, ReactiveOption option) {
+    public final <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option) {
         Flux<R> flux;
         try {
             final List<? extends Selection> selectionList = stmt.selectionList();
@@ -343,7 +343,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, ReactiveOption option) {
+    public final <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, ReactiveStmtOption option) {
         Flux<R> flux;
         try {
             final RowReader<R> rowReader;
@@ -356,7 +356,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, ReactiveOption option) {
+    public final <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
         Flux<R> flux;
         try {
             final RowReader<R> rowReader;
@@ -369,18 +369,18 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final <R> Flux<R> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveOption option) {
+    public final <R> Flux<R> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveStmtOption option) {
         // TODO for firebird
         return Flux.error(new DataAccessException("currently,don't support"));
     }
 
     @Override
-    public final QueryResults batchQueryResults(BatchStmt stmt, ReactiveOption option) {
+    public final QueryResults batchQueryResults(BatchStmt stmt, ReactiveStmtOption option) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public final Flux<ResultItem> execute(final GenericSimpleStmt stmt, final ReactiveOption option) {
+    public final Flux<ResultItem> execute(final GenericSimpleStmt stmt, final ReactiveStmtOption option) {
 //        Flux<ResultItem> flux;
 //        try {
 //            final BindStatement statement;
@@ -398,7 +398,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     @Override
-    public final Flux<ResultItem> executeMultiStmt(List<GenericSimpleStmt> stmtList, ReactiveOption option) {
+    public final Flux<ResultItem> executeMultiStmt(List<GenericSimpleStmt> stmtList, ReactiveStmtOption option) {
         // TODO
         throw new UnsupportedOperationException();
     }
@@ -463,32 +463,32 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
 
 
     /**
-     * @see #query(SimpleStmt, Class, ReactiveOption)
-     * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
-     * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
+     * @see #query(SimpleStmt, Class, ReactiveStmtOption)
+     * @see #queryObject(SimpleStmt, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(SimpleStmt, Function, ReactiveStmtOption)
      */
     private <R> Flux<R> executeQuery(final SimpleStmt stmt, final Function<CurrentRow, R> func,
-                                     final ReactiveOption option) throws JdbdException, TimeoutException {
+                                     final ReactiveStmtOption option) throws JdbdException, TimeoutException {
         return Flux.from(bindStatement(stmt, option).executeQuery(func, createStatesConsumer(option)))
                 .onErrorMap(JdbdStmtExecutor::wrapError);
     }
 
     /**
-     * @see #batchQuery(BatchStmt, Class, ReactiveOption)
-     * @see #batchQueryObject(BatchStmt, Supplier, ReactiveOption)
-     * @see #batchQueryRecord(BatchStmt, Function, ReactiveOption)
+     * @see #batchQuery(BatchStmt, Class, ReactiveStmtOption)
+     * @see #batchQueryObject(BatchStmt, Supplier, ReactiveStmtOption)
+     * @see #batchQueryRecord(BatchStmt, Function, ReactiveStmtOption)
      */
     private <R> Flux<R> executeBatchQuery(final BatchStmt stmt, final Function<CurrentRow, R> func,
-                                          final ReactiveOption option) throws JdbdException, TimeoutException {
+                                          final ReactiveStmtOption option) throws JdbdException, TimeoutException {
         return Flux.from(bindStatement(stmt, option).executeBatchQueryAsFlux(func, createStatesConsumer(option)))
                 .onErrorMap(JdbdStmtExecutor::wrapError);
     }
 
 
     /**
-     * @see #query(SimpleStmt, Class, ReactiveOption)
-     * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
-     * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
+     * @see #query(SimpleStmt, Class, ReactiveStmtOption)
+     * @see #queryObject(SimpleStmt, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(SimpleStmt, Function, ReactiveStmtOption)
      */
     private <R> Function<CurrentRow, R> mapBeanFunc(final SimpleStmt stmt, final Class<R> resultClass) {
         final List<? extends Selection> selectionList;
@@ -513,9 +513,9 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     /**
-     * @see #query(SimpleStmt, Class, ReactiveOption)
-     * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
-     * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
+     * @see #query(SimpleStmt, Class, ReactiveStmtOption)
+     * @see #queryObject(SimpleStmt, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(SimpleStmt, Function, ReactiveStmtOption)
      */
     private <R> Function<CurrentRow, R> mapObjectFunc(final SimpleStmt stmt, final Supplier<R> constructor) {
 
@@ -532,9 +532,9 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
     /**
-     * @see #query(SimpleStmt, Class, ReactiveOption)
-     * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
-     * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
+     * @see #query(SimpleStmt, Class, ReactiveStmtOption)
+     * @see #queryObject(SimpleStmt, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(SimpleStmt, Function, ReactiveStmtOption)
      */
     private <R> Function<CurrentRow, R> mapRecordFunc(final SimpleStmt stmt, final Function<CurrentRecord, R> recordFunc) {
         final RowReader<R> rowReader;
@@ -551,11 +551,11 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
 
 
     /**
-     * @see #query(SimpleStmt, Class, ReactiveOption)
-     * @see #queryObject(SimpleStmt, Supplier, ReactiveOption)
-     * @see #queryRecord(SimpleStmt, Function, ReactiveOption)
+     * @see #query(SimpleStmt, Class, ReactiveStmtOption)
+     * @see #queryObject(SimpleStmt, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(SimpleStmt, Function, ReactiveStmtOption)
      */
-    private Consumer<io.jdbd.result.ResultStates> createStatesConsumer(final ReactiveOption option) {
+    private Consumer<io.jdbd.result.ResultStates> createStatesConsumer(final ReactiveStmtOption option) {
         final Consumer<ResultStates> armyConsumer;
         armyConsumer = option.stateConsumer();
         if (armyConsumer == ResultStates.IGNORE_STATES) {
@@ -606,7 +606,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
 
 
     /**
-     * @see #insert(SimpleStmt, ReactiveOption)
+     * @see #insert(SimpleStmt, ReactiveStmtOption)
      */
     private ResultStates handleInsertStates(final io.jdbd.result.ResultStates jdbdStates,
                                             final GeneratedKeyStmt stmt) {
@@ -651,7 +651,7 @@ abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecu
     }
 
 
-    private BindStatement bindStatement(final GenericSimpleStmt stmt, final ReactiveOption option)
+    private BindStatement bindStatement(final GenericSimpleStmt stmt, final ReactiveStmtOption option)
             throws TimeoutException, JdbdException {
         final BindStatement statement;
         statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());

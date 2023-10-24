@@ -156,15 +156,11 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
                 .thenReturn(this);
     }
 
-    @Override
-    public <T> Mono<T> close() {
-        return Mono.defer(this::closeSession);
-    }
 
     /*-------------------below package methods -------------------*/
 
     @Override
-    ReactiveOption defaultOption() {
+    ReactiveStmtOption defaultOption() {
         return null;
     }
 
