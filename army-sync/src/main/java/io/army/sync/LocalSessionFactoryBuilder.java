@@ -52,7 +52,6 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
 
     SessionContext sessionContext;
 
-    DialectEnv dialectEnv;
 
     @Override
     public LocalFactoryBuilder name(String sessionFactoryName) {

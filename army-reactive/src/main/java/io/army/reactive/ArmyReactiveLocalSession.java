@@ -1,27 +1,17 @@
 package io.army.reactive;
 
-import io.army.criteria.BatchDmlStatement;
-import io.army.criteria.SimpleDmlStatement;
-import io.army.criteria.SimpleDqlStatement;
-import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.reactive.executor.LocalStmtExecutor;
-import io.army.session.CurrentRecord;
 import io.army.session.Option;
-import io.army.session.ResultStates;
 import io.army.session.SessionException;
 import io.army.tx.TransactionInfo;
 import io.army.tx.TransactionOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * This class is a implementation of {@link ReactiveLocalSession}.
@@ -90,51 +80,6 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     /*-------------------below statement methods -------------------*/
 
-
-    @Override
-    public <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public Mono<ResultStates> update(SimpleDmlStatement dml, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public Flux<ResultStates> batchUpdate(BatchDmlStatement statement, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer, ReactiveOption option) {
-        return null;
-    }
-
-    @Override
-    public <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer, ReactiveOption option) {
-        return null;
-    }
 
     /*-------------------below local transaction methods -------------------*/
 
@@ -234,6 +179,7 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
     }
 
     /*-------------------below private methods -------------------*/
+
 
     /**
      * @see #close()

@@ -5,6 +5,7 @@ import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
+import io.army.dialect.DialectEnv;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
@@ -35,6 +36,8 @@ public abstract class FactoryBuilderSupport {
     protected List<String> packagesToScan;
 
     protected DdlMode ddlMode;
+
+    protected DialectEnv dialectEnv;
 
 
     /*################################## blow non-setter fields ##################################*/

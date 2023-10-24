@@ -1,11 +1,8 @@
 package io.army.sync;
 
-import io.army.dialect.DialectEnv;
 import io.army.dialect.DialectParser;
-import io.army.dialect.DialectParserFactory;
 import io.army.env.SyncKey;
 import io.army.lang.Nullable;
-import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.proxy._SessionCacheFactory;
 import io.army.session.DataAccessException;
@@ -33,12 +30,7 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
 
     final boolean buildInExecutor;
 
-    final DialectParser dialectParser;
-
     final _SessionCacheFactory sessionCacheFactory;
-
-    final MappingEnv mappingEnv;
-
 
     private final SessionContext sessionContext;
 
@@ -54,10 +46,7 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
         assert this.executorFactory != null;
         this.buildInExecutor = isBuildInExecutor(this.executorFactory);
 
-        final DialectEnv dialectEnv = builder.dialectEnv;
-        assert dialectEnv != null;
-        this.dialectParser = DialectParserFactory.createDialect(dialectEnv);
-        this.mappingEnv = dialectEnv.mappingEnv();
+
         this.sessionContext = getSessionContext();
         //this.sessionCacheFactory = SessionCacheFactory.build(this);
         this.sessionCacheFactory = _SessionCacheFactory.create(this);

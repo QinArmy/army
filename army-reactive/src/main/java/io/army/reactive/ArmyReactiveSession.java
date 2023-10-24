@@ -1,17 +1,29 @@
 package io.army.reactive;
 
 import io.army.criteria.BatchDmlStatement;
+import io.army.criteria.InsertStatement;
 import io.army.criteria.SimpleDmlStatement;
 import io.army.criteria.SimpleDqlStatement;
 import io.army.criteria.dialect.BatchDqlStatement;
-import io.army.session.*;
+import io.army.criteria.impl.inner._Insert;
+import io.army.criteria.impl.inner._ReturningDml;
+import io.army.criteria.impl.inner._Statement;
+import io.army.reactive.executor.StmtExecutor;
+import io.army.session.CurrentRecord;
+import io.army.session.Option;
+import io.army.session.ResultStates;
+import io.army.session._ArmySession;
+import io.army.stmt.PairStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
+import io.army.stmt.TwoStmtQueryStmt;
 import io.army.util.ArmyCriteria;
+import io.army.util._Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -27,8 +39,15 @@ import java.util.function.Supplier;
  */
 abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSession {
 
-    protected ArmyReactiveSession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
+    final ArmyReactiveSessionFactory factory;
+
+    final StmtExecutor stmtExecutor;
+
+    protected ArmyReactiveSession(ArmyReactiveSessionFactory.ReactiveSessionBuilder<?, ?> builder) {
         super(builder);
+        this.factory = (ArmyReactiveSessionFactory) builder.armyFactory;
+        this.stmtExecutor = builder.stmtExecutor;
+        assert this.stmtExecutor != null;
     }
 
 
@@ -39,112 +58,59 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     @Override
     public final <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass) {
-        return this.query(statement, resultClass, ResultStates.IGNORE_STATES, defaultOption());
+        return this.query(statement, resultClass, defaultOption());
     }
 
     @Override
-    public final <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer) {
-        return this.query(statement, resultClass, consumer, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass, ReactiveOption option) {
-        return this.query(statement, resultClass, ResultStates.IGNORE_STATES, option);
+    public final <R> Flux<R> query(SimpleDqlStatement statement, final Class<R> resultClass, final ReactiveOption option) {
+        return this.executeQuery(statement, option, s -> this.stmtExecutor.query(s, resultClass, option));
     }
 
 
     @Override
     public final <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass) {
-        return this.queryOptional(statement, resultClass, ResultStates.IGNORE_STATES, defaultOption());
+        return this.queryOptional(statement, resultClass, defaultOption());
     }
 
     @Override
-    public final <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer) {
-        return this.queryOptional(statement, resultClass, consumer, defaultOption());
+    public <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, ReactiveOption option) {
+        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryOptional(s, resultClass, option));
     }
-
-    @Override
-    public final <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, ReactiveOption option) {
-        return this.queryOptional(statement, resultClass, ResultStates.IGNORE_STATES, option);
-    }
-
 
     @Override
     public final <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor) {
-        return this.queryObject(statement, constructor, ResultStates.IGNORE_STATES, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer) {
-        return this.queryObject(statement, constructor, consumer, defaultOption());
+        return this.queryObject(statement, constructor, defaultOption());
     }
 
     @Override
     public final <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, ReactiveOption option) {
-        return this.queryObject(statement, constructor, ResultStates.IGNORE_STATES, option);
+        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryObject(s, constructor, option));
     }
-
 
     @Override
     public final <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.queryRecord(statement, function, ResultStates.IGNORE_STATES, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
-        return this.queryRecord(statement, function, consumer, defaultOption());
+        return this.queryRecord(statement, function, defaultOption());
     }
 
     @Override
     public final <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, ReactiveOption option) {
-        return this.queryRecord(statement, function, ResultStates.IGNORE_STATES, option);
+        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryRecord(s, function, option));
     }
 
     @Override
     public final <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass) {
-        return this.batchQuery(statement, resultClass, ResultStates.IGNORE_STATES, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, Consumer<ResultStates> consumer) {
-        return this.batchQuery(statement, resultClass, consumer, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, ReactiveOption option) {
-        return this.batchQuery(statement, resultClass, ResultStates.IGNORE_STATES, option);
+        return this.batchQuery(statement, resultClass, defaultOption());
     }
 
     @Override
     public final <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor) {
-        return this.batchQueryObject(statement, constructor, ResultStates.IGNORE_STATES, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, Consumer<ResultStates> consumer) {
-        return this.batchQueryObject(statement, constructor, consumer, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, ReactiveOption option) {
-        return this.batchQueryObject(statement, constructor, ResultStates.IGNORE_STATES, option);
+        return this.batchQueryObject(statement, constructor, defaultOption());
     }
 
     @Override
     public final <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.batchQueryRecord(statement, function, ResultStates.IGNORE_STATES, defaultOption());
+        return this.batchQueryRecord(statement, function, defaultOption());
     }
-
-    @Override
-    public final <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer) {
-        return this.batchQueryRecord(statement, function, consumer, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, ReactiveOption option) {
-        return this.batchQueryRecord(statement, function, ResultStates.IGNORE_STATES, option);
-    }
-
 
     @Override
     public final Mono<ResultStates> save(Object domain) {
@@ -172,6 +138,71 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
     abstract ReactiveOption defaultOption();
+
+
+    /*-------------------below private methods -------------------*/
+
+    /**
+     * @see #query(SimpleDqlStatement, Class, ReactiveOption)
+     * @see #queryObject(SimpleDqlStatement, Supplier, ReactiveOption)
+     * @see #queryRecord(SimpleDqlStatement, Function, ReactiveOption)
+     */
+    private <R> Flux<R> executeQuery(final SimpleDqlStatement statement, final ReactiveOption option,
+                                     final Function<SimpleStmt, Flux<R>> exeFunc) {
+        Flux<R> flux;
+        try {
+            final Stmt stmt;
+            stmt = parseDqlStatement(statement, option);
+            if (stmt instanceof SimpleStmt) {
+                flux = exeFunc.apply((SimpleStmt) stmt);
+            } else if (!(stmt instanceof PairStmt)) {
+                // no bug,never here
+                throw _Exceptions.unexpectedStmt(stmt);
+            } else if (statement instanceof InsertStatement) {
+                flux = returningInsertPairStmt((InsertStatement) statement, (PairStmt) stmt, option, exeFunc);
+            } else {
+                //TODO add DmlStatement code for firebird
+                // no bug,never here
+                throw _Exceptions.unexpectedStatement(statement);
+            }
+        } catch (Exception e) {
+            flux = Flux.error(_Exceptions.unknownError(e));
+        } catch (Throwable e) {
+            flux = Flux.error(e);
+        } finally {
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).clear();
+            }
+        }
+        return flux;
+    }
+
+
+    /**
+     * @see #query(SimpleDqlStatement, Class, ReactiveOption)
+     */
+    private <R> Flux<R> returningInsertPairStmt(final InsertStatement statement, final PairStmt stmt,
+                                                final ReactiveOption option, final Function<SimpleStmt, Flux<R>> exeFunc) {
+
+        final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
+        final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
+
+        final Flux<R> flux;
+        if (firstStmtIsQuery) {
+            flux = exeFunc.apply(stmt.firstStmt())
+                    .collectList()
+                    .flatMapMany(resultList -> this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), resultList, option));
+        } else {
+            flux = this.stmtExecutor.insert(stmt.firstStmt(), option)
+                    .flatMapMany(states -> validateCount(exeFunc.apply(stmt.secondStmt()), states));
+        }
+        return flux;
+    }
+
+
+    private <R> Flux<R> validateCount(Flux<R> source, ResultStates states) {
+        return null;
+    }
 
 
 }

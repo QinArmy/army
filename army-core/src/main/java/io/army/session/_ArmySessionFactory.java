@@ -2,11 +2,14 @@ package io.army.session;
 
 import io.army.ArmyException;
 import io.army.criteria.Visible;
+import io.army.dialect.DialectEnv;
 import io.army.dialect.DialectParser;
+import io.army.dialect.DialectParserFactory;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingEnv;
 import io.army.meta.SchemaMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
@@ -40,6 +43,10 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     protected final boolean readonly;
 
+    protected final DialectParser dialectParser;
+
+    protected final MappingEnv mappingEnv;
+
     public final boolean uniqueCache;
 
     private final AllowMode queryInsertMode;
@@ -69,6 +76,11 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
         this.exceptionFunction = exceptionFunction(support.exceptionFunction);
         this.readonly = env.getOrDefault(ArmyKey.READ_ONLY);
+        final DialectEnv dialectEnv = support.dialectEnv;
+        assert dialectEnv != null;
+        this.dialectParser = DialectParserFactory.createDialect(dialectEnv);
+        this.mappingEnv = dialectEnv.mappingEnv();
+
         this.uniqueCache = Objects.requireNonNull(support.ddlMode) != DdlMode.NONE;
 
         this.queryInsertMode = env.getOrDefault(ArmyKey.QUERY_INSERT_MODE);
@@ -232,7 +244,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     public static abstract class ArmySessionBuilder<B, S extends Session>
             implements SessionFactory.SessionBuilderSpec<B, S> {
 
-        final _ArmySessionFactory armyFactory;
+        public final _ArmySessionFactory armyFactory;
 
         String name;
 

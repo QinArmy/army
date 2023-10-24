@@ -17,5 +17,7 @@ public interface StatementOptionSpec {
 
     int fetchSize();
 
+    MultiStmtMode multiStmtMode();
+
 
 }

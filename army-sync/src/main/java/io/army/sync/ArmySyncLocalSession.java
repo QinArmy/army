@@ -271,7 +271,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
         try {
             //2. parse statement to stmt
             final Stmt stmt;
-            stmt = this.parseDmlStatement(statement, useMultiStmt, visible);
+            stmt = this.parseDmlStatement(statement, null);
 
             //3. execute stmt
             final int timeout;
@@ -506,7 +506,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
         try {
 
             final Stmt stmt;
-            stmt = this.parseDqlStatement(statement, false, visible);
+            stmt = this.parseDqlStatement(statement, null);
 
             final List<R> resultList;
             final int timeout = this.getTxTimeout();
@@ -581,7 +581,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
                     resultList = _Collections.unmodifiableListForDeveloper(resultList);
                 }
             } else {
-                resultList = queryFunc.query(stmt.firstStmt(), timeout);
+                resultList = queryFunc.query(stmt.secondStmt(), timeout);
             }
 
             if (rows == resultList.size()) {
@@ -616,7 +616,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
 
         try {
             final SimpleStmt stmt;
-            stmt = (SimpleStmt) this.parseDqlStatement(statement, false, visible);
+            stmt = (SimpleStmt) this.parseDqlStatement(statement, null);
             return queryFunc.query(stmt, this.getTxTimeout());
         } catch (ArmyException e) {
             throw e;
@@ -638,7 +638,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
         assertSession(statement, visible);
         try {
             final Stmt stmt;
-            stmt = this.parseDqlStatement(statement, useMultiStmt, visible);
+            stmt = this.parseDqlStatement(statement, null);
             final List<R> resultList;
             if (stmt instanceof BatchStmt) {
                 resultList = queryFunc.query((BatchStmt) stmt, this.getTxTimeout());
@@ -676,7 +676,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
         assertSession(statement, visible);
         try {
             final BatchStmt stmt;
-            stmt = (BatchStmt) this.parseDqlStatement(statement, useMultiStmt, visible);
+            stmt = (BatchStmt) this.parseDqlStatement(statement, null);
             return queryFunc.query(stmt, this.getTxTimeout());
         } catch (ArmyException e) {
             throw e;
@@ -703,7 +703,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
 
             //2. parse statement to stmt
             final Stmt stmt;
-            stmt = this.parseDmlStatement(statement, false, visible);
+            stmt = this.parseDmlStatement(statement, null);
             //3. execute stmt
             final int timeout = tx == null ? 0 : tx.nextTimeout();
             final long affectedRows;
@@ -763,51 +763,6 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
             throw new ChildUpdateException(m, e);
         }
 
-    }
-
-
-    /**
-     * @see #query(SimpleDqlStatement, Class, Supplier, Visible)
-     * @see #queryObject(SimpleDqlStatement, Supplier, Supplier, Visible)
-     * @see #queryStream(SimpleDqlStatement, Class, StreamOptions, Visible)
-     * @see #queryObjectStream(SimpleDqlStatement, Supplier, StreamOptions, Visible)
-     */
-    private Stmt parseDqlStatement(final DqlStatement statement, final boolean useMultiStmt, final Visible visible) {
-        final Stmt stmt;
-        if (statement instanceof SelectStatement) {
-            stmt = this.factory.dialectParser.select((SelectStatement) statement, useMultiStmt, visible);
-        } else if (!(statement instanceof DmlStatement)) {
-            stmt = this.factory.dialectParser.dialectDql(statement, visible);
-        } else if (statement instanceof InsertStatement) {
-            stmt = this.factory.dialectParser.insert((InsertStatement) statement, visible);
-        } else if (statement instanceof _Statement._ChildStatement) {
-            throw new ArmyException("current api don't support child dml statement.");
-        } else if (statement instanceof UpdateStatement) {
-            stmt = this.factory.dialectParser.update((UpdateStatement) statement, useMultiStmt, visible);
-        } else if (statement instanceof DeleteStatement) {
-            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, visible);
-        } else {
-            stmt = this.factory.dialectParser.dialectDml((DmlStatement) statement, visible);
-        }
-        this.printSqlIfNeed(stmt);
-        return stmt;
-    }
-
-    /**
-     * @see #simpleUpdate(SimpleDmlStatement, Visible)
-     * @see #batchUpdate(BatchDmlStatement, IntFunction, boolean, Visible)
-     */
-    private Stmt parseDmlStatement(final DmlStatement statement, final boolean useMultiStmt, final Visible visible) {
-        final Stmt stmt;
-        if (statement instanceof UpdateStatement) {
-            stmt = this.factory.dialectParser.update((UpdateStatement) statement, useMultiStmt, visible);
-        } else if (statement instanceof DeleteStatement) {
-            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, visible);
-        } else {
-            stmt = this.factory.dialectParser.dialectDml(statement, visible);
-        }
-        this.printSqlIfNeed(stmt);
-        return stmt;
     }
 
 

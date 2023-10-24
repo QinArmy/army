@@ -1,7 +1,7 @@
 package io.army.session;
 
-import io.army.criteria.BatchDmlStatement;
-import io.army.criteria.Visible;
+import io.army.ArmyException;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._MultiDml;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
@@ -170,6 +170,47 @@ public abstract class _ArmySession implements Session {
         return restSeconds;
     }
 
+    protected final Stmt parseDqlStatement(final DqlStatement statement, final StatementOptionSpec option) {
+        final boolean useMultiStmt;
+        useMultiStmt = isUseStaticMultiStmt(option);
+
+        final Stmt stmt;
+        if (statement instanceof SelectStatement) {
+            stmt = this.armyFactory.dialectParser.select((SelectStatement) statement, useMultiStmt, this.visible);
+        } else if (!(statement instanceof DmlStatement)) {
+            stmt = this.armyFactory.dialectParser.dialectDql(statement, this.visible);
+        } else if (statement instanceof InsertStatement) {
+            stmt = this.armyFactory.dialectParser.insert((InsertStatement) statement, this.visible);
+        } else if (statement instanceof _Statement._ChildStatement) {
+            throw new ArmyException("current api don't support child dml statement.");
+        } else if (statement instanceof UpdateStatement) {
+            stmt = this.armyFactory.dialectParser.update((UpdateStatement) statement, useMultiStmt, this.visible);
+        } else if (statement instanceof DeleteStatement) {
+            stmt = this.armyFactory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, this.visible);
+        } else {
+            stmt = this.armyFactory.dialectParser.dialectDml((DmlStatement) statement, this.visible);
+        }
+        this.printSqlIfNeed(stmt);
+        return stmt;
+    }
+
+
+    protected final Stmt parseDmlStatement(final DmlStatement statement, final StatementOptionSpec option) {
+        final boolean useMultiStmt;
+        useMultiStmt = isUseStaticMultiStmt(option);
+
+        final Stmt stmt;
+        if (statement instanceof UpdateStatement) {
+            stmt = this.armyFactory.dialectParser.update((UpdateStatement) statement, useMultiStmt, this.visible);
+        } else if (statement instanceof DeleteStatement) {
+            stmt = this.armyFactory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, this.visible);
+        } else {
+            stmt = this.armyFactory.dialectParser.dialectDml(statement, this.visible);
+        }
+        this.printSqlIfNeed(stmt);
+        return stmt;
+    }
+
 
 
     /*-------------------below static method -------------------*/
@@ -186,6 +227,20 @@ public abstract class _ArmySession implements Session {
             domainTable = ((_SingleDml) statement).table();
         }
         return domainTable;
+    }
+
+    static boolean isUseStaticMultiStmt(StatementOptionSpec option) {
+        final boolean use;
+        switch (option.multiStmtMode()) {
+            case EXECUTOR:
+                use = false;
+                break;
+            case DEFAULT:
+            case ARMY:
+            default:
+                use = true;
+        }
+        return use;
     }
 
 

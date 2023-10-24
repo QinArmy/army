@@ -41,6 +41,10 @@ public abstract class _Exceptions {
         return new ArmyException(m);
     }
 
+    public static ArmyException unknownError(Throwable e) {
+        return new ArmyException("unknown error," + e.getMessage(), e);
+    }
+
     public static ArmyException unknownError(String message, Throwable e) {
         return new ArmyException(message, e);
     }
