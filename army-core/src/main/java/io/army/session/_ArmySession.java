@@ -97,7 +97,7 @@ public abstract class _ArmySession implements Session {
         );
     }
 
-    @Deprecated
+
     @Nullable
     protected abstract String transactionName();
 

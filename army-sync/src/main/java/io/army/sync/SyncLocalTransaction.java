@@ -11,18 +11,18 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
 
     private static final Logger LOG = LoggerFactory.getLogger(SyncLocalTransaction.class);
 
-    final SyncLocalSession session;
+    final ArmySyncLocalSession session;
 
     private TransactionStatus status;
 
-    SyncLocalTransaction(final SyncLocalSession.LocalTransactionBuilder builder) {
+    SyncLocalTransaction(final ArmySyncLocalSession.LocalTransactionBuilder builder) {
         super(builder);
         this.session = builder.session;
         this.status = TransactionStatus.NOT_ACTIVE;
     }
 
     @Override
-    public LocalSession session() {
+    public SyncLocalSession session() {
         return this.session;
     }
 
@@ -43,7 +43,7 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
             throw new IllegalTransactionStateException(m);
         }
         try {
-            final SyncLocalSession session = this.session;
+            final ArmySyncLocalSession session = this.session;
             final List<String> stmtList;
             stmtList = session.factory.dialectParser.startTransaction(this.isolation, this.readonly);
 
@@ -66,7 +66,7 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
         switch (oldStatus) {
             case ACTIVE: {
                 this.status = TransactionStatus.COMMITTING;
-                final SyncLocalSession session = this.session;
+                final ArmySyncLocalSession session = this.session;
                 try {
                     final String command = "COMMIT";
                     printStmtIfNeed(session.factory, LOG, command);
@@ -109,7 +109,7 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
             case FAILED_COMMIT:
             case MARKED_ROLLBACK: {
                 this.status = TransactionStatus.ROLLING_BACK;
-                final SyncLocalSession session = this.session;
+                final ArmySyncLocalSession session = this.session;
                 try {
                     session.clearChangedCache(this);
 

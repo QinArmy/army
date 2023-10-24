@@ -1,9 +1,9 @@
 package io.army.tx.sync;
 
 import io.army.session.SessionException;
-import io.army.sync.LocalSession;
 import io.army.sync.LocalSessionFactory;
 import io.army.sync.LocalTransaction;
+import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncSession;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -61,8 +61,8 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     @Override
     protected final Object doGetTransaction() throws TransactionException {
         final ArmyTransactionObject txObject = new ArmyTransactionObject();
-        final LocalSession session;
-        session = (LocalSession) TransactionSynchronizationManager.getResource(this.sessionFactory);
+        final SyncLocalSession session;
+        session = (SyncLocalSession) TransactionSynchronizationManager.getResource(this.sessionFactory);
         if (session != null) {
             txObject.setSession(session);
         }
@@ -71,7 +71,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
     @Override
     protected final boolean isExistingTransaction(final Object transaction) throws TransactionException {
-        final LocalSession session = ((ArmyTransactionObject) transaction).session;
+        final SyncLocalSession session = ((ArmyTransactionObject) transaction).session;
         return session != null && session.inTransaction();
     }
 
@@ -96,7 +96,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             txName = definition.getName();
 
             //2. create session
-            final LocalSession session;
+            final SyncLocalSession session;
             session = this.sessionFactory.builder()
                     .name(txName)
                     .build();
@@ -138,7 +138,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     protected final void doCommit(final DefaultTransactionStatus status) throws TransactionException {
         final ArmyTransactionObject txObject;
         txObject = (ArmyTransactionObject) status.getTransaction();
-        final LocalSession session = txObject.session;
+        final SyncLocalSession session = txObject.session;
         if (session == null) {
             throw transactionNoSession();
         }
@@ -164,7 +164,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     protected final void doRollback(final DefaultTransactionStatus status) throws TransactionException {
         final ArmyTransactionObject txObject;
         txObject = (ArmyTransactionObject) status.getTransaction();
-        final LocalSession session = txObject.session;
+        final SyncLocalSession session = txObject.session;
         if (session == null) {
             throw transactionNoSession();
         }
@@ -186,7 +186,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     protected final void doSetRollbackOnly(final DefaultTransactionStatus status) throws TransactionException {
         final ArmyTransactionObject txObject;
         txObject = (ArmyTransactionObject) status.getTransaction();
-        final LocalSession session = txObject.session;
+        final SyncLocalSession session = txObject.session;
         if (session == null) {
             throw transactionNoSession();
         }
@@ -217,14 +217,14 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             // -> can be safely removed, will be closed on transaction completion.
             TransactionSynchronizationManager.unbindResource(sessionFactory);
         }
-        final LocalSession session = (LocalSession) suspendedResources;
+        final SyncLocalSession session = (SyncLocalSession) suspendedResources;
         TransactionSynchronizationManager.bindResource(sessionFactory, session);
     }
 
     @Override
     protected final void doCleanupAfterCompletion(final Object transaction) {
         final ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
-        final LocalSession session = txObject.session;
+        final SyncLocalSession session = txObject.session;
         if (session == null) {
             throw transactionNoSession();
         }
@@ -260,21 +260,21 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
     private static final class ArmyTransactionObject implements SavepointManager, SmartTransactionObject {
 
-        private LocalSession session;
+        private SyncLocalSession session;
 
         private ArmyTransactionObject() {
         }
 
 
-        private void setSession(final LocalSession session) {
+        private void setSession(final SyncLocalSession session) {
             if (this.session != null) {
                 throw new IllegalStateException("session non-null.");
             }
             this.session = session;
         }
 
-        private LocalSession suspend() {
-            final LocalSession session = this.session;
+        private SyncLocalSession suspend() {
+            final SyncLocalSession session = this.session;
             if (session == null) {
                 throw new IllegalStateException("no session , couldn't suspend.");
             }
@@ -287,7 +287,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
         @Override
         public Object createSavepoint() throws TransactionException {
-            final LocalSession session = this.session;
+            final SyncLocalSession session = this.session;
             if (session == null) {
                 throw transactionNoSession();
             }
@@ -300,7 +300,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
         @Override
         public void rollbackToSavepoint(Object savepoint) throws TransactionException {
-            final LocalSession session = this.session;
+            final SyncLocalSession session = this.session;
             if (session == null) {
                 throw transactionNoSession();
             }
@@ -313,7 +313,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
         @Override
         public void releaseSavepoint(Object savepoint) throws TransactionException {
-            final LocalSession session = this.session;
+            final SyncLocalSession session = this.session;
             if (session == null) {
                 throw transactionNoSession();
             }
@@ -327,7 +327,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
         @Override
         public boolean isRollbackOnly() {
-            final LocalSession session = this.session;
+            final SyncLocalSession session = this.session;
             return session != null
                     && session.inTransaction()
                     && session.currentTransaction().rollbackOnly();

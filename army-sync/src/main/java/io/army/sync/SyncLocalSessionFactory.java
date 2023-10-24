@@ -213,7 +213,7 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
 
     /*################################## blow instance inner class  ##################################*/
 
-    static final class LocalSessionBuilder extends ArmySessionBuilder<LocalSessionFactory.SessionBuilder, LocalSession>
+    static final class LocalSessionBuilder extends ArmySessionBuilder<LocalSessionFactory.SessionBuilder, SyncLocalSession>
             implements LocalSessionFactory.SessionBuilder {
 
         final SyncLocalSessionFactory factory;
@@ -229,11 +229,11 @@ final class SyncLocalSessionFactory extends _ArmySessionFactory implements Local
 
 
         @Override
-        protected LocalSession createSession() {
+        protected SyncLocalSession createSession() {
             try {
                 this.stmtExecutor = this.factory.executorFactory.createLocalStmtExecutor();
 
-                return new SyncLocalSession(this);
+                return new ArmySyncLocalSession(this);
             } catch (DataAccessException e) {
                 throw createExecutorError(e);
             }

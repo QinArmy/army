@@ -33,7 +33,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
 
     @Override
-    public final Mono<Object> setSavePoint() {
+    public final Mono<?> setSavePoint() {
         return this.setSavePoint(Option.EMPTY_OPTION_FUNC);
     }
 

@@ -57,9 +57,9 @@ public interface ReactiveSession extends Session, Closeable {
 
     Mono<? extends ReactiveSession> setTransactionCharacteristics(TransactionOption option);
 
-    Mono<Object> setSavePoint();
+    Mono<?> setSavePoint();
 
-    Mono<Object> setSavePoint(Function<Option<?>, ?> optionFunc);
+    Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc);
 
     Mono<? extends ReactiveSession> releaseSavePoint(Object savepoint);
 

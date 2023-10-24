@@ -16,10 +16,10 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public abstract class _ArmySyncSession extends _ArmySession implements SyncSession {
+public abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
 
-    protected _ArmySyncSession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
+    protected ArmySyncSession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
         super(builder);
     }
 

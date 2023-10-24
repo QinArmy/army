@@ -2,9 +2,9 @@ package io.army.boot.sync;
 
 import io.army.ArmyException;
 import io.army.session.NoCurrentSessionException;
-import io.army.sync.LocalSession;
 import io.army.sync.LocalSessionFactory;
 import io.army.sync.SessionContext;
+import io.army.sync.SyncLocalSession;
 import io.army.sync.SyncSession;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -53,8 +53,8 @@ public final class SpringSessionContext implements SessionContext {
 
     @Override
     public void executeWithTempSession(final boolean readonly, final Consumer<SyncSession> consumer) {
-        LocalSession syncSession = null;
-        try (LocalSession session = this.sessionFactory.builder().name("temp").readonly(readonly).build()) {
+        SyncLocalSession syncSession = null;
+        try (SyncLocalSession session = this.sessionFactory.builder().name("temp").readonly(readonly).build()) {
             syncSession = session;
             consumer.accept(session);
         } catch (ArmyException e) {
@@ -72,8 +72,8 @@ public final class SpringSessionContext implements SessionContext {
 
     @Override
     public <T> T returnWithTempSession(boolean readonly, Function<SyncSession, T> function) {
-        LocalSession syncSession = null;
-        try (LocalSession session = this.sessionFactory.builder().name("temp").readonly(readonly).build()) {
+        SyncLocalSession syncSession = null;
+        try (SyncLocalSession session = this.sessionFactory.builder().name("temp").readonly(readonly).build()) {
             syncSession = session;
             return function.apply(session);
         } catch (ArmyException e) {

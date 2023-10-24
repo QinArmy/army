@@ -11,8 +11,8 @@ import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.example.bank.domain.user.*;
-import io.army.sync.LocalSession;
 import io.army.sync.LocalTransaction;
+import io.army.sync.SyncLocalSession;
 import io.army.tx.Isolation;
 import io.army.util.Groups;
 import io.army.util.ImmutableArrayList;
@@ -35,7 +35,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     private static final Logger LOG = LoggerFactory.getLogger(PostgreInsertSuiteTests.class);
 
     @Test(groups = Groups.DOMAIN_INSERT)
-    public void domainInsertParent(final LocalSession session) {
+    public void domainInsertParent(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> regionList;
@@ -62,7 +62,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.DOMAIN_INSERT)
-    public void returningDomainInsertParent(final LocalSession session) {
+    public void returningDomainInsertParent(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> regionList;
@@ -93,7 +93,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.DOMAIN_INSERT)
-    public void domainInsertParentWithDoNothing(final LocalSession session) {
+    public void domainInsertParentWithDoNothing(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> regionList;
@@ -123,7 +123,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.DOMAIN_INSERT)
-    public void domainInsertParentWithUpdateSet(final LocalSession session) {
+    public void domainInsertParentWithUpdateSet(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaRegion<?>> regionList;
@@ -174,7 +174,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.DOMAIN_INSERT)
-    public void domainInsertChildWithTowStmtUpdateMode(final LocalSession session) {
+    public void domainInsertChildWithTowStmtUpdateMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;
@@ -217,7 +217,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.DOMAIN_INSERT)
-    public void returningDomainInsertChildWithTowStmtQueryMode(final LocalSession session) {
+    public void returningDomainInsertChildWithTowStmtQueryMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;
@@ -279,7 +279,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.DOMAIN_INSERT)
-    public void returningDomainInsertDiffMode(final LocalSession session) {
+    public void returningDomainInsertDiffMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;
@@ -343,7 +343,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
 
     @Test(groups = Groups.DOMAIN_INSERT)
-    public void returningDomainInsertChildMapWithTowStmtQueryMode(final LocalSession session) {
+    public void returningDomainInsertChildMapWithTowStmtQueryMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;
@@ -408,7 +408,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
 
     @Test(groups = Groups.DOMAIN_INSERT)
-    public void returningDomainInsertChildMapDiffMode(final LocalSession session) {
+    public void returningDomainInsertChildMapDiffMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;
@@ -474,7 +474,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     /*-------------------below values syntax tests -------------------*/
 
     @Test(groups = Groups.VALUES_INSERT)
-    public void staticValuesInsertParent(final LocalSession session) {
+    public void staticValuesInsertParent(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
         final Insert stmt;
@@ -503,7 +503,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.VALUES_INSERT)
-    public void staticValuesReturningInsertParent(final LocalSession session) {
+    public void staticValuesReturningInsertParent(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
         final Random random = ThreadLocalRandom.current();
         final ReturningInsert stmt;
@@ -541,7 +541,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.VALUES_INSERT)
-    public void valuesInsertParentWithDoNothing(final LocalSession session) {
+    public void valuesInsertParentWithDoNothing(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final Random random = ThreadLocalRandom.current();
@@ -574,7 +574,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.VALUES_INSERT)
-    public void valuesInsertParentWithUpdateSet(final LocalSession session) {
+    public void valuesInsertParentWithUpdateSet(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final Random random = ThreadLocalRandom.current();
@@ -647,7 +647,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
 
     @Test(groups = Groups.VALUES_INSERT)
-    public void valuesInsertChildWithTowStmtUpdateMode(final LocalSession session) {
+    public void valuesInsertChildWithTowStmtUpdateMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final Random random = ThreadLocalRandom.current();
@@ -702,7 +702,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
 
     @Test(groups = Groups.VALUES_INSERT)
-    public void returningValuesInsertChildWithTowStmtQueryMode(final LocalSession session) {
+    public void returningValuesInsertChildWithTowStmtQueryMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final Random random = ThreadLocalRandom.current();
@@ -776,7 +776,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.VALUES_INSERT)
-    public void returningValuesInsertDiffMode(final LocalSession session) {
+    public void returningValuesInsertDiffMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final Random random = ThreadLocalRandom.current();
@@ -851,7 +851,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
 
     @Test(groups = Groups.VALUES_INSERT)
-    public void returningMapValuesInsertChildWithTowStmtQueryMode(final LocalSession session) {
+    public void returningMapValuesInsertChildWithTowStmtQueryMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final Random random = ThreadLocalRandom.current();
@@ -929,7 +929,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
 
     @Test(groups = Groups.VALUES_INSERT)
-    public void returningMapValuesInsertDiffMode(final LocalSession session) {
+    public void returningMapValuesInsertDiffMode(final SyncLocalSession session) {
         assert ChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final Random random = ThreadLocalRandom.current();
@@ -1008,7 +1008,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     /*-------------------below query insert syntax-------------------*/
 
     @Test(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
-    public void queryInsertParent(final LocalSession session) {
+    public void queryInsertParent(final SyncLocalSession session) {
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final Insert stmt;
@@ -1036,7 +1036,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
-    public void returningQueryInsertParent(final LocalSession session) {
+    public void returningQueryInsertParent(final SyncLocalSession session) {
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final ReturningInsert stmt;
@@ -1069,7 +1069,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
     }
 
     @Test//(groups = Groups.QUERY_INSERT, dependsOnGroups = {Groups.DOMAIN_INSERT, Groups.VALUES_INSERT})
-    public void returningQueryInsertChildWithTwoStmtQueryMode(final LocalSession session) {
+    public void returningQueryInsertChildWithTwoStmtQueryMode(final SyncLocalSession session) {
         //TODO consider child table query insert two stmt mode reasonable ？for example firebird
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
 
@@ -1150,7 +1150,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
 
     @Test
-    public void subDomainInsertChild(final LocalSession session) {
+    public void subDomainInsertChild(final SyncLocalSession session) {
         assert HistoryChinaRegion_.id.generatorType() == GeneratorType.POST;
 
         final List<ChinaProvince> provinceList;

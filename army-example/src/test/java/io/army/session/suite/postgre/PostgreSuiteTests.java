@@ -3,8 +3,8 @@ package io.army.session.suite.postgre;
 import io.army.ArmyTestDataSupport;
 import io.army.dialect.Database;
 import io.army.session.FactoryUtils;
-import io.army.sync.LocalSession;
 import io.army.sync.LocalSessionFactory;
+import io.army.sync.SyncLocalSession;
 import org.testng.ITestNGMethod;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -38,7 +38,7 @@ public abstract class PostgreSuiteTests extends ArmyTestDataSupport {
         }};
     }
 
-    public void releaseSyncSession(LocalSession session) {
+    public void releaseSyncSession(SyncLocalSession session) {
         if (session.inTransaction()) {
             throw new IllegalArgumentException();
         }

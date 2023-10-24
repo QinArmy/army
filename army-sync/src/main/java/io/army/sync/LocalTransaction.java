@@ -7,7 +7,7 @@ import io.army.tx.TransactionStatus;
 public interface LocalTransaction extends Transaction {
 
     @Override
-    LocalSession session();
+    SyncLocalSession session();
 
 
     LocalTransaction start() throws TransactionException;

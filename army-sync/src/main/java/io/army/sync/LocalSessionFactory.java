@@ -32,7 +32,7 @@ public interface LocalSessionFactory extends SyncSessionFactory, AutoCloseable {
     void close() throws SessionFactoryException;
 
 
-    interface SessionBuilder extends SessionBuilderSpec<SessionBuilder, LocalSession> {
+    interface SessionBuilder extends SessionBuilderSpec<SessionBuilder, SyncLocalSession> {
 
 
     }

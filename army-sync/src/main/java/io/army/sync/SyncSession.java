@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  * <p>
  * This interface is base interface of below interface:
  *     <ul>
- *         <li>{@link LocalSession}</li>
+ *         <li>{@link SyncLocalSession}</li>
  *     </ul>
  * </p>
  */
