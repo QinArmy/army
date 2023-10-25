@@ -16,12 +16,16 @@ import io.army.util._Exceptions;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -203,6 +207,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
         return flux;
     }
 
+
     @Override
     public final <T> T valueOf(Option<T> option) {
         return null;
@@ -307,11 +312,13 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                     .flatMapMany(resultList -> this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), resultList, option));
         } else {
             flux = this.stmtExecutor.insert(stmt.firstStmt(), option)
-                    .flatMapMany(states -> validateCount(exeFunc.apply(stmt.secondStmt()), states));
+                    .flatMapMany(states -> Flux.create(sink -> exeFunc.apply(stmt.secondStmt())
+                                    .subscribe(new ValidateItemCountSubscriber<>(sink, states))
+                            )
+                    );
         }
         return flux;
     }
-
 
     /**
      * @see #update(SimpleDmlStatement, ReactiveStmtOption)
@@ -391,15 +398,10 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
 
-    private <R> Flux<R> validateCount(Flux<R> source, ResultStates states) {
-        return null;
-    }
-
     private Flux<ResultStates> validateBatchStates(final Flux<ResultStates> source, Map<Integer, ResultStates> statesMap,
                                                    final ChildTableMeta<?> domainTable) {
-        return Flux.empty();
+        return Flux.create(sink -> source.subscribe(new ValidateBatchStatesSubscriber(sink, statesMap, domainTable)));
     }
-
 
     private <T> Mono<T> closeSession() {
         if (!this.sessionClosed.compareAndSet(false, true)) {
@@ -420,41 +422,150 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
 
-    private static final class ValidateItemCountSubscriber<T> implements Subscriber<T> {
+    @SuppressWarnings("all")
+    private static abstract class ValidateSubscriber<T> implements Subscriber<T> {
 
-        private final Flux<T> source;
+        static final AtomicIntegerFieldUpdater<ValidateSubscriber> DONE = AtomicIntegerFieldUpdater.newUpdater(ValidateSubscriber.class, "done");
 
-        private final ResultStates resultStates;
+        private volatile int done;
 
         private Subscription s;
 
-        private ValidateItemCountSubscriber(Flux<T> source, ResultStates resultStates) {
-            this.source = source;
+        @Override
+        public final void onSubscribe(Subscription s) {
+            this.s = s;
+        }
+
+        final void onRequest(long n) {
+            final Subscription s = this.s;
+            if (s != null) {
+                s.request(n);
+            }
+        }
+
+    }
+
+
+    private static final class ValidateItemCountSubscriber<T> extends ValidateSubscriber<T> {
+
+        private final FluxSink<T> sink;
+
+        private final ResultStates resultStates;
+
+        private final AtomicLong count = new AtomicLong(0);
+
+
+        private ValidateItemCountSubscriber(FluxSink<T> sink, ResultStates resultStates) {
+            this.sink = sink.onRequest(this::onRequest);
             this.resultStates = resultStates;
         }
 
-        @Override
-        public void onSubscribe(Subscription s) {
-            this.s = s;
-            this.source.subscribe(this);
-        }
 
         @Override
         public void onNext(T t) {
-
+            this.count.addAndGet(1);
+            this.sink.next(t);
         }
 
         @Override
         public void onError(Throwable t) {
-
+            if (!DONE.compareAndSet(this, 0, 1)) {
+                return;
+            }
+            this.sink.error(t);
         }
 
         @Override
         public void onComplete() {
-
+            if (!DONE.compareAndSet(this, 0, 1)) {
+                return;
+            }
+            if (this.count.get() == this.resultStates.affectedRows()) {
+                this.sink.complete();
+            } else {
+                String m = String.format("parent insert row[%s] and child insert row[%s] not match.",
+                        this.resultStates.affectedRows(), this.count.get());
+                this.sink.error(new ChildUpdateException(m));
+            }
         }
 
+
     } // ValidateItemCountSubscriber
+
+
+    private static final class ValidateBatchStatesSubscriber extends ValidateSubscriber<ResultStates> {
+
+
+        private static final AtomicReferenceFieldUpdater<ValidateBatchStatesSubscriber, Throwable> ERROR =
+                AtomicReferenceFieldUpdater.newUpdater(ValidateBatchStatesSubscriber.class, Throwable.class, "error");
+
+        private final FluxSink<ResultStates> sink;
+
+        private final Map<Integer, ResultStates> statesMap;
+
+        private final ChildTableMeta<?> domainTable;
+
+        private volatile Throwable error;
+
+
+        private ValidateBatchStatesSubscriber(FluxSink<ResultStates> sink, Map<Integer, ResultStates> statesMap,
+                                              ChildTableMeta<?> domainTable) {
+            this.sink = sink.onRequest(this::onRequest);
+            this.statesMap = _Collections.unmodifiableMap(statesMap);
+            this.domainTable = domainTable;
+        }
+
+
+        @Override
+        public void onNext(final ResultStates states) {
+            final ResultStates childStates;
+            childStates = this.statesMap.get(states.getResultNo());
+            if (childStates == null) {
+                String m = String.format("Not found %s for batch item[%s] , %s", ResultStates.class.getName(),
+                        states.getResultNo(), this.domainTable);
+                ERROR.compareAndSet(this, null, new ChildUpdateException(m));
+            } else if (childStates.affectedRows() == states.affectedRows()) {
+                this.sink.next(states);
+            } else {
+                final ChildUpdateException e;
+                e = _Exceptions.batchChildUpdateRowsError(this.domainTable, states.getResultNo(), childStates.affectedRows(),
+                        states.affectedRows());
+                ERROR.compareAndSet(this, null, e);
+            }
+        }
+
+        @Override
+        public void onError(final Throwable t) {
+            if (!DONE.compareAndSet(this, 0, 1)) {
+                return;
+            }
+            final Throwable error;
+            error = ERROR.get(this);
+            if (error == null) {
+                this.sink.error(t);
+            } else {
+                final String m = String.format("occur two error :\n1- %s\n\n2- %s ", error.getMessage(), t.getMessage());
+                this.sink.error(new ChildUpdateException(m, t));
+            }
+        }
+
+        @Override
+        public void onComplete() {
+            if (!DONE.compareAndSet(this, 0, 1)) {
+                return;
+            }
+
+            final Throwable error;
+            error = ERROR.get(this);
+            if (error == null) {
+                this.sink.complete();
+            } else {
+                this.sink.error(error);
+            }
+        }
+
+
+    }//ValidateBatchStatesSubscriber
 
 
 }

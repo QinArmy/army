@@ -12,7 +12,7 @@ abstract class ArmyReactiveSessionFactory extends _ArmySessionFactory implements
     }
 
 
-    static abstract class ReactiveSessionBuilder<B, S extends ReactiveSession> extends ArmySessionBuilder<B, S> {
+    static abstract class ReactiveSessionBuilder<B, R> extends ArmySessionBuilder<B, R> {
 
         StmtExecutor stmtExecutor;
 

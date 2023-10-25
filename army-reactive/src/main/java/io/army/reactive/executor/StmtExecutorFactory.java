@@ -1,10 +1,10 @@
 package io.army.reactive.executor;
 
-import io.army.reactive.Closeable;
+import io.army.reactive.ReactiveCloseable;
 import reactor.core.publisher.Mono;
 
 
-public interface StmtExecutorFactory extends Closeable {
+public interface StmtExecutorFactory extends ReactiveCloseable {
 
     Mono<MetaExecutor> metaExecutor();
 

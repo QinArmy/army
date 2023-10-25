@@ -3,7 +3,8 @@ package io.army.reactive;
 import io.army.dialect.DialectParser;
 import io.army.meta.ServerMeta;
 import io.army.reactive.executor.LocalStmtExecutor;
-import io.army.session._ArmySessionFactory;
+import io.army.reactive.executor.StmtExecutorFactory;
+import io.army.util._Exceptions;
 import reactor.core.publisher.Mono;
 
 import java.time.ZoneId;
@@ -12,8 +13,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * This class is a implementation of {@link ReactiveLocalSessionFactory}
  */
-final class ArmyReactiveLocalSessionFactory extends _ArmySessionFactory implements ReactiveLocalSessionFactory {
+final class ArmyReactiveLocalSessionFactory extends ArmyReactiveSessionFactory implements ReactiveLocalSessionFactory {
 
+
+    private StmtExecutorFactory stmtExecutorFactory;
 
     private final AtomicBoolean factoryClosed = new AtomicBoolean(false);
 
@@ -68,25 +71,30 @@ final class ArmyReactiveLocalSessionFactory extends _ArmySessionFactory implemen
 
     /*################################## blow private static inner class ##################################*/
 
-    static final class LocalSessionBuilder extends ArmySessionBuilder<SessionBuilder, ReactiveSession> implements SessionBuilder {
+    static final class LocalSessionBuilder extends ReactiveSessionBuilder<SessionBuilder, Mono<ReactiveLocalSession>>
+            implements SessionBuilder {
 
-        final ArmyReactiveLocalSessionFactory sessionFactory;
-
-
-        LocalStmtExecutor stmtExecutor;
-        boolean readOnly;
 
         private LocalSessionBuilder(ArmyReactiveLocalSessionFactory sessionFactory) {
             super(sessionFactory);
-            this.sessionFactory = sessionFactory;
         }
-
 
         @Override
-        protected ReactiveSession createSession() {
-            return null;
+        protected Mono<ReactiveLocalSession> createSession() {
+            return ((ArmyReactiveLocalSessionFactory) this.armyFactory).stmtExecutorFactory
+                    .localStmtExecutor()
+                    .map(this::createLocalSession);
         }
 
+        @Override
+        protected Mono<ReactiveLocalSession> handleError(Throwable cause) {
+            return Mono.error(_Exceptions.wrapIfNeed(cause));
+        }
+
+        private ReactiveLocalSession createLocalSession(final LocalStmtExecutor stmtExecutor) {
+            this.stmtExecutor = stmtExecutor;
+            return new ArmyReactiveLocalSession(this);
+        }
 
     }//SessionBuilder
 

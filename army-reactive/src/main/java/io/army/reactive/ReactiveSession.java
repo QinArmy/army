@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface ReactiveSession extends Session, Closeable {
+public interface ReactiveSession extends Session, ReactiveCloseable {
 
     @Override
     ReactiveSessionFactory sessionFactory();

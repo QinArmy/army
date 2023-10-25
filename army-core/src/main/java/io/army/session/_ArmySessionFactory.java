@@ -241,8 +241,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
 
     @SuppressWarnings("unchecked")
-    public static abstract class ArmySessionBuilder<B, S extends Session>
-            implements SessionFactory.SessionBuilderSpec<B, S> {
+    public static abstract class ArmySessionBuilder<B, R> implements SessionFactory.SessionBuilderSpec<B, R> {
 
         public final _ArmySessionFactory armyFactory;
 
@@ -283,7 +282,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         }
 
         @Override
-        public final S build() throws SessionException {
+        public final R build() throws SessionException {
             String sessionName = this.name;
             if (sessionName == null) {
                 this.name = sessionName = "unnamed";
@@ -294,23 +293,30 @@ public abstract class _ArmySessionFactory implements SessionFactory {
             }
 
             final _ArmySessionFactory factory = this.armyFactory;
-            if (!this.readonly && factory.readonly) {
-                String m = String.format("%s is read only.", factory);
-                throw new CreateSessionException(m);
-            } else if (visible != Visible.ONLY_VISIBLE && factory.isSessionDontSupportVisible(sessionName)) {
-                String m = String.format("%s don't allow to create the session[%s] that allow %s.",
-                        factory, sessionName, Visible.class.getName());
-                throw new CreateSessionException(m);
-            } else if (this.allowQueryInsert && factory.isSessionDontSupportQueryInsert(sessionName)) {
-                String m = String.format("%s don't allow to create the session[%s] that allow query insert statement.",
-                        factory, sessionName);
-                throw new CreateSessionException(m);
+
+            try {
+                if (!this.readonly && factory.readonly) {
+                    String m = String.format("%s is read only.", factory);
+                    throw new CreateSessionException(m);
+                } else if (visible != Visible.ONLY_VISIBLE && factory.isSessionDontSupportVisible(sessionName)) {
+                    String m = String.format("%s don't allow to create the session[%s] that allow %s.",
+                            factory, sessionName, Visible.class.getName());
+                    throw new CreateSessionException(m);
+                } else if (this.allowQueryInsert && factory.isSessionDontSupportQueryInsert(sessionName)) {
+                    String m = String.format("%s don't allow to create the session[%s] that allow query insert statement.",
+                            factory, sessionName);
+                    throw new CreateSessionException(m);
+                }
+            } catch (Throwable e) {
+                return handleError(e);
             }
 
             return this.createSession();
         }
 
-        protected abstract S createSession();
+        protected abstract R createSession();
+
+        protected abstract R handleError(Throwable cause);
 
 
         protected CreateSessionException createExecutorError(DataAccessException e) {

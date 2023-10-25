@@ -1,8 +1,8 @@
 package io.army.reactive.executor;
 
 
-import io.army.reactive.Closeable;
 import io.army.reactive.QueryResults;
+import io.army.reactive.ReactiveCloseable;
 import io.army.reactive.ReactiveStmtOption;
 import io.army.session.*;
 import io.army.stmt.*;
@@ -27,7 +27,7 @@ import java.util.function.Supplier;
  *
  * @since 1.0
  */
-public interface StmtExecutor extends Closeable, OptionSpec {
+public interface StmtExecutor extends ReactiveCloseable, OptionSpec {
 
     /**
      * <p>

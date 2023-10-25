@@ -12,7 +12,7 @@ import io.army.session.SessionFactory;
  *
  * @since 1.0
  */
-public interface ReactiveSessionFactory extends SessionFactory, Closeable {
+public interface ReactiveSessionFactory extends SessionFactory, ReactiveCloseable {
 
 
 }

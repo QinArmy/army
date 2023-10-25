@@ -1,6 +1,5 @@
 package io.army.reactive;
 
-import io.army.reactive.executor.LocalStmtExecutor;
 import io.army.session.Option;
 import io.army.session.SessionException;
 import io.army.tx.TransactionInfo;
@@ -9,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -21,20 +19,12 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
     private static final Logger LOG = LoggerFactory.getLogger(ArmyReactiveLocalSession.class);
 
 
-    private final ArmyReactiveLocalSessionFactory factory;
 
-    private final LocalStmtExecutor stmtExecutor;
-    private final AtomicBoolean sessionClosed = new AtomicBoolean(false);
-
-    private final boolean readonly;
 
     private final AtomicReference<TransactionOption> sessionTransaction = new AtomicReference<>(null);
 
     ArmyReactiveLocalSession(ArmyReactiveLocalSessionFactory.LocalSessionBuilder builder) {
         super(builder);
-        this.factory = builder.sessionFactory;
-        this.stmtExecutor = builder.stmtExecutor;
-        this.readonly = builder.readOnly;
     }
 
 
@@ -184,21 +174,12 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
         return LOG;
     }
 
-    /*-------------------below private methods -------------------*/
+    @Override
+    void markRollbackOnlyOnError(Throwable cause) {
 
-
-    /**
-     * @see #close()
-     */
-    private <T> Mono<T> closeSession() {
-        Mono<T> mono;
-        if (this.sessionClosed.compareAndSet(false, true)) {
-            mono = this.stmtExecutor.close();
-        } else {
-            mono = Mono.empty();
-        }
-        return mono;
     }
+
+    /*-------------------below private methods -------------------*/
 
 
 }

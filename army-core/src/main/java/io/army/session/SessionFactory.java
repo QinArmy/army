@@ -12,6 +12,15 @@ import java.time.ZoneId;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * <p>This interface is base interface of following:
+ * <ul>
+ *     <li>{@code  io.army.sync.SyncSessionFactory}</li>
+ *     <li>{@code io.army.reactive.ReactiveSessionFactory}</li>
+ * </ul>
+ *
+ * @since 1.0
+ */
 public interface SessionFactory {
 
     String name();
@@ -60,7 +69,7 @@ public interface SessionFactory {
     }
 
 
-    interface SessionBuilderSpec<B, S extends Session> {
+    interface SessionBuilderSpec<B, R> {
 
         B name(@Nullable String name);
 
@@ -73,9 +82,9 @@ public interface SessionFactory {
 
         B visibleMode(Visible visible);
 
-        S build() throws SessionException;
-
+        R build();
 
     }
+
 
 }

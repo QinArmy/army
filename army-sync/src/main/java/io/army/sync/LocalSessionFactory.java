@@ -1,6 +1,7 @@
 package io.army.sync;
 
 import io.army.session.Session;
+import io.army.session.SessionException;
 import io.army.session.SessionFactory;
 import io.army.session.SessionFactoryException;
 
@@ -33,6 +34,9 @@ public interface LocalSessionFactory extends SyncSessionFactory, AutoCloseable {
 
 
     interface SessionBuilder extends SessionBuilderSpec<SessionBuilder, SyncLocalSession> {
+
+        @Override
+        SyncLocalSession build() throws SessionException;
 
 
     }
