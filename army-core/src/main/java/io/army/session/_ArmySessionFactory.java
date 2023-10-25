@@ -2,6 +2,7 @@ package io.army.session;
 
 import io.army.ArmyException;
 import io.army.criteria.Visible;
+import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
 import io.army.dialect.DialectParser;
 import io.army.dialect.DialectParserFactory;
@@ -23,7 +24,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 /**
- * a abstract implementation of  {@link SessionFactory}.
+ * <p>A abstract implementation of  {@link SessionFactory}.
+ * <p>This class is base class of following :
+ * <ul>
+ *     <li>{@code  io.army.reactive.ArmyReactiveSessionFactory}</li>
+ *     <li>{@code io.army.sync.ArmySyncSessionFactory}</li>
+ * </ul>
  *
  * @since 1.0
  */
@@ -47,6 +53,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     protected final MappingEnv mappingEnv;
 
+    public final Database serverDatabase;
     public final boolean uniqueCache;
 
     private final AllowMode queryInsertMode;
@@ -80,6 +87,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         assert dialectEnv != null;
         this.dialectParser = DialectParserFactory.createDialect(dialectEnv);
         this.mappingEnv = dialectEnv.mappingEnv();
+        this.serverDatabase = this.mappingEnv.serverMeta().serverDatabase();
 
         this.uniqueCache = Objects.requireNonNull(support.ddlMode) != DdlMode.NONE;
 
@@ -243,7 +251,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     @SuppressWarnings("unchecked")
     public static abstract class ArmySessionBuilder<B, R> implements SessionFactory.SessionBuilderSpec<B, R> {
 
-        public final _ArmySessionFactory armyFactory;
+        public final _ArmySessionFactory factory;
 
         String name;
 
@@ -253,7 +261,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         Visible visible = Visible.ONLY_VISIBLE;
 
         public ArmySessionBuilder(_ArmySessionFactory factory) {
-            this.armyFactory = factory;
+            this.factory = factory;
             this.readonly = factory.readonly;
         }
 
@@ -292,7 +300,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
                 this.visible = visible = Visible.ONLY_VISIBLE;
             }
 
-            final _ArmySessionFactory factory = this.armyFactory;
+            final _ArmySessionFactory factory = this.factory;
 
             try {
                 if (!this.readonly && factory.readonly) {

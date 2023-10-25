@@ -10,7 +10,7 @@ import io.army.env.SqlLogMode;
 import io.army.env.StandardEnvironment;
 import io.army.example.common.SimpleFieldGeneratorFactory;
 import io.army.sync.LocalFactoryBuilder;
-import io.army.sync.LocalSessionFactory;
+import io.army.sync.SyncLocalSessionFactory;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -22,7 +22,7 @@ public abstract class FactoryUtils {
     private FactoryUtils() {
     }
 
-    public static LocalSessionFactory createArmyBankSyncFactory(final Database database) {
+    public static SyncLocalSessionFactory createArmyBankSyncFactory(final Database database) {
         final DruidDataSource dataSource;
         dataSource = new DruidDataSource();
         DataSourceUtils.druidDataSourceProps(dataSource, mapDatabaseToUrl(database));

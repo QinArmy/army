@@ -6,7 +6,7 @@ import io.army.env.SpringArmyEnvironment;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
 import io.army.sync.LocalFactoryBuilder;
-import io.army.sync.LocalSessionFactory;
+import io.army.sync.SyncLocalSessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -18,13 +18,13 @@ import javax.sql.DataSource;
 import java.util.List;
 
 /**
- * {@link FactoryBean} that creates Army {@link LocalSessionFactory}. This is the usual
+ * {@link FactoryBean} that creates Army {@link SyncLocalSessionFactory}. This is the usual
  * way to set up a shared Army SessionFactory in a Spring application context; the
  * SessionFactory can then be passed to data access objects via dependency injection.
  *
  * @since 1.0
  */
-public class LocalSessionFactoryBean implements FactoryBean<LocalSessionFactory>
+public class LocalSessionFactoryBean implements FactoryBean<SyncLocalSessionFactory>
         , InitializingBean, ApplicationContextAware, DisposableBean {
 
     private String catalog = "";
@@ -45,7 +45,7 @@ public class LocalSessionFactoryBean implements FactoryBean<LocalSessionFactory>
 
     private String fieldGeneratorFactoryBean;
 
-    private LocalSessionFactory sessionFactory;
+    private SyncLocalSessionFactory sessionFactory;
 
     private ApplicationContext applicationContext;
 
@@ -77,18 +77,18 @@ public class LocalSessionFactoryBean implements FactoryBean<LocalSessionFactory>
     }
 
     @Override
-    public LocalSessionFactory getObject() {
+    public SyncLocalSessionFactory getObject() {
         return this.sessionFactory;
     }
 
     @Override
     public Class<?> getObjectType() {
-        return LocalSessionFactory.class;
+        return SyncLocalSessionFactory.class;
     }
 
     @Override
     public void destroy() {
-        final LocalSessionFactory sessionFactory = this.sessionFactory;
+        final SyncLocalSessionFactory sessionFactory = this.sessionFactory;
         if (sessionFactory != null) {
             sessionFactory.close();
         }

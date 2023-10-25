@@ -124,7 +124,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
     @Override
-    public LocalSessionFactory build() throws SessionFactoryException {
+    public SyncLocalSessionFactory build() throws SessionFactoryException {
 
         try {
             final ArmyEnvironment env = Objects.requireNonNull(this.environment);
@@ -167,10 +167,10 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
             //9. create SessionFactoryImpl instance
             this.executorFactory = executorFactory;
             this.ddlMode = env.getOrDefault(ArmyKey.DDL_MODE);
-            final SyncLocalSessionFactory sessionFactory;
-            sessionFactory = new SyncLocalSessionFactory(this);
+            final ArmySyncLocalSessionFactory sessionFactory;
+            sessionFactory = new ArmySyncLocalSessionFactory(this);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Created {}[{}]", LocalSessionFactory.class.getName(), sessionFactory.name());
+                LOG.debug("Created {}[{}]", SyncLocalSessionFactory.class.getName(), sessionFactory.name());
             }
             assert factoryName.equals(sessionFactory.name());
             assert sessionFactory.executorFactory == executorFactory;
@@ -243,7 +243,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     /**
      * @see #build()
      */
-    private void initializingFactory(SyncLocalSessionFactory sessionFactory) throws SessionFactoryException {
+    private void initializingFactory(ArmySyncLocalSessionFactory sessionFactory) throws SessionFactoryException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initializing {}", sessionFactory);
         }
@@ -267,13 +267,13 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
     /**
-     * @see #initializingFactory(SyncLocalSessionFactory)
+     * @see #initializingFactory(ArmySyncLocalSessionFactory)
      */
-    private static void initializingSchema(final SyncLocalSessionFactory sessionFactory, final DdlMode ddlMode) {
+    private static void initializingSchema(final ArmySyncLocalSessionFactory sessionFactory, final DdlMode ddlMode) {
 
         final String msgPrefix;
         msgPrefix = String.format("Initializing database of %s[%s],%s[%s]",
-                LocalSessionFactory.class.getName(), sessionFactory.name(),
+                SyncLocalSessionFactory.class.getName(), sessionFactory.name(),
                 DdlMode.class.getName(), ddlMode);
         LOG.info(msgPrefix);
         final long startTime;
@@ -331,7 +331,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
             LOG.info("{},cost {} ms.", msgPrefix, System.currentTimeMillis() - startTime);
         } catch (DataAccessException e) {
             String m = String.format("%s[%s] schema initializing failure."
-                    , LocalSessionFactory.class.getName(), sessionFactory.name());
+                    , SyncLocalSessionFactory.class.getName(), sessionFactory.name());
             throw new SessionFactoryException(m, e);
         }
 
@@ -339,12 +339,12 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
     /**
-     * @see #initializingSchema(SyncLocalSessionFactory, DdlMode)
+     * @see #initializingSchema(ArmySyncLocalSessionFactory, DdlMode)
      */
-    private static void validateSchema(SyncLocalSessionFactory sessionFactory, _SchemaResult schemaResult) {
+    private static void validateSchema(ArmySyncLocalSessionFactory sessionFactory, _SchemaResult schemaResult) {
 
         final StringBuilder builder = new StringBuilder()
-                .append(LocalSessionFactory.class.getName())
+                .append(SyncLocalSessionFactory.class.getName())
                 .append('[')
                 .append(sessionFactory.name())
                 .append("] validate failure.\n");
@@ -510,7 +510,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
         @Override
         public String toString() {
             return String.format("%s hash:%s,factory:%s[%s]", ExecutorEnv.class.getName()
-                    , System.identityHashCode(this), LocalSessionFactory.class.getName(), this.factoryName);
+                    , System.identityHashCode(this), SyncLocalSessionFactory.class.getName(), this.factoryName);
         }
 
 

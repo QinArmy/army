@@ -1,27 +1,37 @@
 package io.army.reactive;
 
+import io.army.reactive.executor.LocalStmtExecutor;
+import io.army.session.DriverSpi;
 import io.army.session.Option;
-import io.army.session.SessionException;
 import io.army.tx.TransactionInfo;
 import io.army.tx.TransactionOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Function;
 
 /**
  * This class is a implementation of {@link ReactiveLocalSession}.
+ *
+ * @see ArmyReactiveLocalSessionFactory
  */
 final class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLocalSession {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmyReactiveLocalSession.class);
 
+    private static final AtomicIntegerFieldUpdater<ArmyReactiveLocalSession> ROLLBACK_ONLY =
+            AtomicIntegerFieldUpdater.newUpdater(ArmyReactiveLocalSession.class, "rollbackOnly");
+
+    private static final AtomicReferenceFieldUpdater<ArmyReactiveLocalSession, TransactionInfo> TRANSACTION =
+            AtomicReferenceFieldUpdater.newUpdater(ArmyReactiveLocalSession.class, TransactionInfo.class, "transaction");
 
 
+    private volatile TransactionInfo transaction;
 
-    private final AtomicReference<TransactionOption> sessionTransaction = new AtomicReference<>(null);
+    private volatile int rollbackOnly;
 
     ArmyReactiveLocalSession(ArmyReactiveLocalSessionFactory.LocalSessionBuilder builder) {
         super(builder);
@@ -30,31 +40,29 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     @Override
     public ReactiveLocalSessionFactory sessionFactory() {
-        return this.factory;
+        return (ReactiveLocalSessionFactory) this.factory;
     }
 
-
-    @Override
-    public long sessionIdentifier() throws SessionException {
-        return this.stmtExecutor.sessionIdentifier();
-    }
-
-
-    @Override
-    public boolean isClosed() {
-        // just test sessionClosed
-        return this.sessionClosed.get();
-    }
 
     @Override
     public boolean inTransaction() {
-        // currently, jdbd-mysql and jdbd-postgre support
-        return this.stmtExecutor.inTransaction();
+        final boolean in;
+        if (((ArmyReactiveLocalSessionFactory) this.factory).driverSpi != DriverSpi.JDBD) {
+            in = this.transaction != null;
+        } else switch (this.factory.serverDatabase) {
+            case MySQL:
+            case PostgreSQL:
+                in = this.stmtExecutor.inTransaction();
+                break;
+            default:
+                in = this.transaction != null;
+        }
+        return in;
     }
 
     @Override
     public boolean hasTransaction() {
-        return false;
+        return this.transaction != null;
     }
 
     @Override
@@ -78,10 +86,6 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     /*-------------------below local transaction methods -------------------*/
 
-    @Override
-    public Mono<TransactionInfo> transactionInfo() {
-        return this.stmtExecutor.transactionInfo();
-    }
 
     @Override
     public Mono<ReactiveLocalSession> setTransactionCharacteristics(TransactionOption option) {
@@ -97,14 +101,15 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     @Override
     public Mono<ReactiveLocalSession> startTransaction(final TransactionOption option) {
-        return this.stmtExecutor.startTransaction(option)
+        return ((LocalStmtExecutor) this.stmtExecutor).startTransaction(option)
                 .doOnSuccess(v -> this.sessionTransaction.set(option))
                 .thenReturn(this);
     }
 
     @Override
     public ReactiveLocalSession markRollbackOnly() {
-        return null;
+
+        return this;
     }
 
     @Override
@@ -114,7 +119,7 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     @Override
     public Mono<ReactiveLocalSession> commit(Function<Option<?>, ?> optionFunc) {
-        return this.stmtExecutor.commit(optionFunc)
+        return ((LocalStmtExecutor) this.stmtExecutor).commit(optionFunc)
                 .thenReturn(this);
     }
 
@@ -125,14 +130,10 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     @Override
     public Mono<ReactiveLocalSession> rollback(Function<Option<?>, ?> optionFunc) {
-        return this.stmtExecutor.rollback(optionFunc)
+        return ((LocalStmtExecutor) this.stmtExecutor).rollback(optionFunc)
                 .thenReturn(this);
     }
 
-    @Override
-    public Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc) {
-        return this.stmtExecutor.setSavePoint(optionFunc);
-    }
 
     @Override
     public Mono<ReactiveLocalSession> releaseSavePoint(Object savepoint) {

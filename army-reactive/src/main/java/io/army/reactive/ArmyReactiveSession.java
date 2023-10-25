@@ -10,6 +10,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.reactive.executor.StmtExecutor;
 import io.army.session.*;
 import io.army.stmt.*;
+import io.army.tx.TransactionInfo;
 import io.army.util.ArmyCriteria;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -41,24 +42,13 @@ import java.util.function.Supplier;
  */
 abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSession {
 
-    final ArmyReactiveSessionFactory factory;
-
     final StmtExecutor stmtExecutor;
-
-
     private final AtomicBoolean sessionClosed = new AtomicBoolean(false);
 
     protected ArmyReactiveSession(ArmyReactiveSessionFactory.ReactiveSessionBuilder<?, ?> builder) {
         super(builder);
-        this.factory = (ArmyReactiveSessionFactory) builder.armyFactory;
         this.stmtExecutor = builder.stmtExecutor;
         assert this.stmtExecutor != null;
-    }
-
-
-    @Override
-    public final Mono<?> setSavePoint() {
-        return this.setSavePoint(Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
@@ -207,6 +197,35 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
         return flux;
     }
 
+    @Override
+    public final long sessionIdentifier() throws SessionException {
+        if (this.sessionClosed.get()) {
+            throw _Exceptions.sessionClosed(this);
+        }
+        try {
+            return this.stmtExecutor.sessionIdentifier();
+        } catch (Exception e) {
+            throw new SessionException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public final Mono<TransactionInfo> transactionInfo() {
+        return this.stmtExecutor.transactionInfo()
+                .onErrorMap(_Exceptions::wrapIfNeed);
+    }
+
+    @Override
+    public final Mono<?> setSavePoint() {
+        return this.setSavePoint(Option.EMPTY_OPTION_FUNC);
+    }
+
+
+    @Override
+    public final Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc) {
+        return this.stmtExecutor.setSavePoint(optionFunc)
+                .onErrorMap(_Exceptions::wrapIfNeed);
+    }
 
     @Override
     public final <T> T valueOf(Option<T> option) {
@@ -214,9 +233,16 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
     @Override
+    public final boolean isClosed() {
+        return this.sessionClosed.get();
+    }
+
+    @Override
     public final <T> Mono<T> close() {
         return Mono.defer(this::closeSession);
     }
+
+
 
     /*-------------------below package methods -------------------*/
 

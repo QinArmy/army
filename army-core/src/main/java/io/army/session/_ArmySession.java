@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 
 public abstract class _ArmySession implements Session {
 
+    protected final _ArmySessionFactory factory;
 
     protected final String name;
 
@@ -26,7 +27,7 @@ public abstract class _ArmySession implements Session {
 
     private final Visible visible;
 
-    private final _ArmySessionFactory armyFactory;
+
 
     protected _ArmySession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
 
@@ -37,7 +38,7 @@ public abstract class _ArmySession implements Session {
 
         assert _StringUtils.hasText(this.name);
         assert this.visible != null;
-        this.armyFactory = builder.armyFactory;
+        this.factory = builder.factory;
     }
 
 
@@ -64,7 +65,7 @@ public abstract class _ArmySession implements Session {
     @Override
     public final <T> TableMeta<T> tableMeta(Class<T> domainClass) {
         final TableMeta<T> table;
-        table = this.armyFactory.getTable(domainClass);
+        table = this.factory.getTable(domainClass);
         if (table == null) {
             String m = String.format("Not found %s for %s.", TableMeta.class.getName(), domainClass.getName());
             throw new IllegalArgumentException(m);
@@ -106,7 +107,7 @@ public abstract class _ArmySession implements Session {
 
     protected final void printSqlIfNeed(final Stmt stmt) {
         final SqlLogMode mode;
-        final _ArmySessionFactory factory = this.armyFactory;
+        final _ArmySessionFactory factory = this.factory;
         if (factory.sqlLogDynamic) {
             mode = factory.env.getOrDefault(ArmyKey.SQL_LOG_MODE);
         } else {
@@ -176,19 +177,19 @@ public abstract class _ArmySession implements Session {
 
         final Stmt stmt;
         if (statement instanceof SelectStatement) {
-            stmt = this.armyFactory.dialectParser.select((SelectStatement) statement, useMultiStmt, this.visible);
+            stmt = this.factory.dialectParser.select((SelectStatement) statement, useMultiStmt, this.visible);
         } else if (!(statement instanceof DmlStatement)) {
-            stmt = this.armyFactory.dialectParser.dialectDql(statement, this.visible);
+            stmt = this.factory.dialectParser.dialectDql(statement, this.visible);
         } else if (statement instanceof InsertStatement) {
-            stmt = this.armyFactory.dialectParser.insert((InsertStatement) statement, this.visible);
+            stmt = this.factory.dialectParser.insert((InsertStatement) statement, this.visible);
         } else if (statement instanceof _Statement._ChildStatement) {
             throw new ArmyException("current api don't support child dml statement.");
         } else if (statement instanceof UpdateStatement) {
-            stmt = this.armyFactory.dialectParser.update((UpdateStatement) statement, useMultiStmt, this.visible);
+            stmt = this.factory.dialectParser.update((UpdateStatement) statement, useMultiStmt, this.visible);
         } else if (statement instanceof DeleteStatement) {
-            stmt = this.armyFactory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, this.visible);
+            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, this.visible);
         } else {
-            stmt = this.armyFactory.dialectParser.dialectDml((DmlStatement) statement, this.visible);
+            stmt = this.factory.dialectParser.dialectDml((DmlStatement) statement, this.visible);
         }
         this.printSqlIfNeed(stmt);
         return stmt;
@@ -197,7 +198,7 @@ public abstract class _ArmySession implements Session {
 
     protected final Stmt parseInsertStatement(final InsertStatement statement) {
         final Stmt stmt;
-        stmt = this.armyFactory.dialectParser.insert(statement, this.visible);
+        stmt = this.factory.dialectParser.insert(statement, this.visible);
         this.printSqlIfNeed(stmt);
         return stmt;
     }
@@ -208,11 +209,11 @@ public abstract class _ArmySession implements Session {
 
         final Stmt stmt;
         if (statement instanceof UpdateStatement) {
-            stmt = this.armyFactory.dialectParser.update((UpdateStatement) statement, useMultiStmt, this.visible);
+            stmt = this.factory.dialectParser.update((UpdateStatement) statement, useMultiStmt, this.visible);
         } else if (statement instanceof DeleteStatement) {
-            stmt = this.armyFactory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, this.visible);
+            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, this.visible);
         } else {
-            stmt = this.armyFactory.dialectParser.dialectDml(statement, this.visible);
+            stmt = this.factory.dialectParser.dialectDml(statement, this.visible);
         }
         this.printSqlIfNeed(stmt);
         return stmt;

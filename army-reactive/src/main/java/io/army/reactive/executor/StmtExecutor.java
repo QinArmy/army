@@ -25,6 +25,7 @@ import java.util.function.Supplier;
  *     <li>{@link RmStmtExecutor}</li>
  * </ul>
  *
+ * @see StmtExecutorFactory
  * @since 1.0
  */
 public interface StmtExecutor extends ReactiveCloseable, OptionSpec {

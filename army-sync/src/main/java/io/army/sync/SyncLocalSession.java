@@ -9,13 +9,13 @@ import io.army.tx.Isolation;
  * This interface representing blocking way local session.
  * </p>
  *
- * @see LocalSessionFactory
+ * @see SyncLocalSessionFactory
  * @since 1.0
  */
 public interface SyncLocalSession extends SyncSession, AutoCloseable {
 
     @Override
-    LocalSessionFactory sessionFactory();
+    SyncLocalSessionFactory sessionFactory();
 
 
     LocalTransaction currentTransaction() throws SessionException;

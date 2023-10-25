@@ -47,6 +47,12 @@ final class JdbdStmtExecutorFactory implements StmtExecutorFactory {
 
     }
 
+
+    @Override
+    public String driverSpiVendor() {
+        return "io.jdbd";
+    }
+
     @Override
     public Mono<MetaExecutor> metaExecutor() {
         return null;

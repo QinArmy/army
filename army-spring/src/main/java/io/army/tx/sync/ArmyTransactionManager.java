@@ -1,9 +1,9 @@
 package io.army.tx.sync;
 
 import io.army.session.SessionException;
-import io.army.sync.LocalSessionFactory;
 import io.army.sync.LocalTransaction;
 import io.army.sync.SyncLocalSession;
+import io.army.sync.SyncLocalSessionFactory;
 import io.army.sync.SyncSession;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -21,7 +21,7 @@ import org.springframework.util.Assert;
 public class ArmyTransactionManager extends AbstractPlatformTransactionManager implements InitializingBean
         , BeanNameAware {
 
-    private final LocalSessionFactory sessionFactory;
+    private final SyncLocalSessionFactory sessionFactory;
 
     private final boolean supportSavePoints;
 
@@ -30,7 +30,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     private boolean wrapSession = true;
 
 
-    public ArmyTransactionManager(LocalSessionFactory sessionFactory) {
+    public ArmyTransactionManager(SyncLocalSessionFactory sessionFactory) {
         Assert.notNull(sessionFactory, "sessionFactory required");
         this.sessionFactory = sessionFactory;
         this.supportSavePoints = sessionFactory.isSupportSavePoints();
@@ -211,7 +211,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
     protected final void doResume(final @Nullable Object transaction, final Object suspendedResources)
             throws TransactionException {
 
-        final LocalSessionFactory sessionFactory = this.sessionFactory;
+        final SyncLocalSessionFactory sessionFactory = this.sessionFactory;
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             // From non-transactional code running in active transaction synchronization
             // -> can be safely removed, will be closed on transaction completion.
@@ -229,7 +229,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             throw transactionNoSession();
         }
 
-        final LocalSessionFactory sessionFactory = this.sessionFactory;
+        final SyncLocalSessionFactory sessionFactory = this.sessionFactory;
         if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
             TransactionSynchronizationManager.unbindResource(sessionFactory);
         }

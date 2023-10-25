@@ -34,7 +34,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmySyncLocalSession.class);
 
-    final SyncLocalSessionFactory factory;
+    final ArmySyncLocalSessionFactory factory;
 
     final StmtExecutor stmtExecutor;
 
@@ -45,7 +45,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
 
     private boolean closed;
 
-    ArmySyncLocalSession(final SyncLocalSessionFactory.LocalSessionBuilder builder) {
+    ArmySyncLocalSession(final ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
         super(builder);
         this.factory = builder.factory;
         this.stmtExecutor = builder.stmtExecutor;
@@ -60,7 +60,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
     }
 
     @Override
-    public LocalSessionFactory sessionFactory() {
+    public SyncLocalSessionFactory sessionFactory() {
         return this.factory;
     }
 
@@ -431,7 +431,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
 
             //2. parse statement to stmt
 
-            final SyncLocalSessionFactory factory = this.factory;
+            final ArmySyncLocalSessionFactory factory = this.factory;
             final Stmt stmt;
             stmt = factory.dialectParser.insert(statement, visible);
 

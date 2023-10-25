@@ -98,7 +98,7 @@ public interface LocalFactoryBuilder {
      */
     LocalFactoryBuilder currentSessionContext(SessionContext context);
 
-    LocalSessionFactory build() throws SessionFactoryException;
+    SyncLocalSessionFactory build() throws SessionFactoryException;
 
     static LocalFactoryBuilder builder() {
         return new LocalSessionFactoryBuilder();

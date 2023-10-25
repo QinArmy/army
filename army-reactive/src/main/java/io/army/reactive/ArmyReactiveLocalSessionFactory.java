@@ -3,7 +3,6 @@ package io.army.reactive;
 import io.army.dialect.DialectParser;
 import io.army.meta.ServerMeta;
 import io.army.reactive.executor.LocalStmtExecutor;
-import io.army.reactive.executor.StmtExecutorFactory;
 import io.army.util._Exceptions;
 import reactor.core.publisher.Mono;
 
@@ -15,8 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 final class ArmyReactiveLocalSessionFactory extends ArmyReactiveSessionFactory implements ReactiveLocalSessionFactory {
 
-
-    private StmtExecutorFactory stmtExecutorFactory;
 
     private final AtomicBoolean factoryClosed = new AtomicBoolean(false);
 
@@ -81,7 +78,7 @@ final class ArmyReactiveLocalSessionFactory extends ArmyReactiveSessionFactory i
 
         @Override
         protected Mono<ReactiveLocalSession> createSession() {
-            return ((ArmyReactiveLocalSessionFactory) this.armyFactory).stmtExecutorFactory
+            return ((ArmyReactiveLocalSessionFactory) this.factory).stmtExecutorFactory
                     .localStmtExecutor()
                     .map(this::createLocalSession);
         }

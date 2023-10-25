@@ -2,9 +2,9 @@ package io.army.boot.sync;
 
 import io.army.ArmyException;
 import io.army.session.NoCurrentSessionException;
-import io.army.sync.LocalSessionFactory;
 import io.army.sync.SessionContext;
 import io.army.sync.SyncLocalSession;
+import io.army.sync.SyncLocalSessionFactory;
 import io.army.sync.SyncSession;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -15,18 +15,18 @@ import java.util.function.Function;
 public final class SpringSessionContext implements SessionContext {
 
 
-    public static SpringSessionContext create(LocalSessionFactory factory) {
+    public static SpringSessionContext create(SyncLocalSessionFactory factory) {
         return new SpringSessionContext(factory);
     }
 
-    private final LocalSessionFactory sessionFactory;
+    private final SyncLocalSessionFactory sessionFactory;
 
-    private SpringSessionContext(LocalSessionFactory sessionFactory) {
+    private SpringSessionContext(SyncLocalSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 
     @Override
-    public LocalSessionFactory sessionFactory() {
+    public SyncLocalSessionFactory sessionFactory() {
         return this.sessionFactory;
     }
 
