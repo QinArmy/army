@@ -2,6 +2,7 @@ package io.army.session;
 
 import io.army.ArmyException;
 import io.army.criteria.*;
+import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._MultiDml;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
@@ -21,10 +22,9 @@ public abstract class _ArmySession implements Session {
     protected final String name;
 
     protected final boolean readonly;
-
-    protected final Visible visible;
-
     protected final boolean allowQueryInsert;
+
+    private final Visible visible;
 
     private final _ArmySessionFactory armyFactory;
 
@@ -195,6 +195,13 @@ public abstract class _ArmySession implements Session {
     }
 
 
+    protected final Stmt parseInsertStatement(final InsertStatement statement) {
+        final Stmt stmt;
+        stmt = this.armyFactory.dialectParser.insert(statement, this.visible);
+        this.printSqlIfNeed(stmt);
+        return stmt;
+    }
+
     protected final Stmt parseDmlStatement(final DmlStatement statement, final StatementOption option) {
         final boolean useMultiStmt;
         useMultiStmt = isUseStaticMultiStmt(option);
@@ -212,6 +219,26 @@ public abstract class _ArmySession implements Session {
     }
 
 
+    protected final void assertSession(final Statement statement) {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
+
+        if (statement instanceof DmlStatement) {
+            if (this.readonly) {
+                throw _Exceptions.readOnlySession(this);
+            } else if (isReadOnlyStatus()) {
+                throw _Exceptions.readOnlyTransaction(this);
+            } else if (!hasTransaction() && statement instanceof _Statement._ChildStatement) {
+                final TableMeta<?> domainTable;
+                domainTable = ((_Statement._ChildStatement) statement).table();
+                throw _Exceptions.childDmlNoTransaction(this, (ChildTableMeta<?>) domainTable);
+            } else if (statement instanceof _Insert._QueryInsert && !this.allowQueryInsert) {
+                throw _Exceptions.dontSupportSubQueryInsert(this);
+            }
+        }
+
+    }
 
     /*-------------------below static method -------------------*/
 

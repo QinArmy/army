@@ -63,6 +63,11 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
     }
 
     @Override
+    public boolean hasTransaction() {
+        return false;
+    }
+
+    @Override
     public boolean isReadOnlyStatus() {
         final boolean readOnlyStatus;
         final TransactionOption option;
@@ -105,6 +110,11 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
         return this.stmtExecutor.startTransaction(option)
                 .doOnSuccess(v -> this.sessionTransaction.set(option))
                 .thenReturn(this);
+    }
+
+    @Override
+    public ReactiveLocalSession markRollbackOnly() {
+        return null;
     }
 
     @Override

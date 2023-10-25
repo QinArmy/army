@@ -1,6 +1,7 @@
 package io.army.reactive;
 
 import io.army.session.Option;
+import io.army.session.SessionException;
 import io.army.tx.TransactionOption;
 import reactor.core.publisher.Mono;
 
@@ -22,6 +23,9 @@ public interface ReactiveLocalSession extends ReactiveSession {
     Mono<ReactiveLocalSession> startTransaction(TransactionOption option);
 
 
+    ReactiveLocalSession markRollbackOnly() throws SessionException;
+
+
     Mono<ReactiveLocalSession> commit();
 
     Mono<ReactiveLocalSession> commit(Function<Option<?>, ?> optionFunc);
@@ -30,6 +34,7 @@ public interface ReactiveLocalSession extends ReactiveSession {
     Mono<ReactiveLocalSession> rollback();
 
     Mono<ReactiveLocalSession> rollback(Function<Option<?>, ?> optionFunc);
+
 
     @Override
     Mono<ReactiveLocalSession> setTransactionCharacteristics(TransactionOption option);

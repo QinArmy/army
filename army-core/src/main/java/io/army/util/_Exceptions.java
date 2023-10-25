@@ -41,6 +41,13 @@ public abstract class _Exceptions {
         return new ArmyException(m);
     }
 
+    public static Throwable wrapIfNeed(Throwable cause) {
+        if (cause instanceof Exception) {
+            return unknownError(cause);
+        }
+        return cause;
+    }
+
     public static ArmyException unknownError(Throwable e) {
         return new ArmyException("unknown error," + e.getMessage(), e);
     }

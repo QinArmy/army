@@ -16,6 +16,8 @@ public interface Session extends CloseableSpec, OptionSpec {
 
     boolean inTransaction();
 
+    boolean hasTransaction();
+
     String name();
 
     Visible visible();

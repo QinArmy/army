@@ -1,23 +1,25 @@
 package io.army.reactive;
 
-import io.army.criteria.*;
+import io.army.criteria.BatchDmlStatement;
+import io.army.criteria.InsertStatement;
+import io.army.criteria.SimpleDmlStatement;
+import io.army.criteria.SimpleDqlStatement;
 import io.army.criteria.dialect.BatchDqlStatement;
-import io.army.criteria.impl.inner._BatchStatement;
-import io.army.criteria.impl.inner._Insert;
-import io.army.criteria.impl.inner._ReturningDml;
-import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner.*;
+import io.army.meta.ChildTableMeta;
 import io.army.reactive.executor.StmtExecutor;
-import io.army.session.CurrentRecord;
-import io.army.session.Option;
-import io.army.session.ResultStates;
-import io.army.session._ArmySession;
+import io.army.session.*;
 import io.army.stmt.*;
 import io.army.util.ArmyCriteria;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -160,8 +162,45 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
     @Override
-    public Flux<ResultStates> batchUpdate(BatchDmlStatement statement, ReactiveStmtOption option) {
-        return null;
+    public Flux<ResultStates> batchUpdate(BatchDmlStatement statement, final ReactiveStmtOption option) {
+        Flux<ResultStates> flux;
+        try {
+            if (!(statement instanceof _BatchStatement)) {
+                throw _Exceptions.unexpectedStatement(statement);
+            }
+
+            assertSession(statement);
+            final Stmt stmt;
+            stmt = this.parseDmlStatement(statement, option);
+
+            if (stmt instanceof BatchStmt) {
+                flux = this.stmtExecutor.batchUpdate((BatchStmt) stmt, option)
+                        .onErrorMap(this::handleExecutionError);
+            } else if (!(stmt instanceof PairBatchStmt)) {
+                throw _Exceptions.unexpectedStmt(stmt);
+            } else if (inTransaction()) {
+                final PairBatchStmt pairStmt = (PairBatchStmt) stmt;
+                final ChildTableMeta<?> domainTable;
+                domainTable = (ChildTableMeta<?>) getBatchUpdateDomainTable(statement); // fail, bug.
+
+                assert domainTable != null; // fail, bug.
+
+                flux = this.stmtExecutor.batchUpdate(pairStmt.firstStmt(), option)
+                        .collectMap(ResultStates::getResultNo, states -> states, _Collections::hashMap)
+                        .flatMapMany(statesMap -> validateBatchStates(this.stmtExecutor.batchUpdate(pairStmt.secondStmt(), option), statesMap, domainTable))
+                        .onErrorMap(this::handlePairStmtError);
+            } else {
+                throw updateChildNoTransaction();
+            }
+        } catch (Throwable e) {
+            flux = Flux.error(_Exceptions.wrapIfNeed(e));
+        } finally {
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).clear();
+            }
+        }
+
+        return flux;
     }
 
     @Override
@@ -178,8 +217,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     abstract ReactiveStmtOption defaultOption();
 
-    abstract <T> Mono<T> closeSession();
-
+    abstract void markRollbackOnlyOnError(Throwable cause);
 
     /*-------------------below private methods -------------------*/
 
@@ -190,8 +228,11 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
      */
     private <R> Flux<R> executeQuery(final SimpleDqlStatement statement, final ReactiveStmtOption option,
                                      final Function<SimpleStmt, Flux<R>> exeFunc) {
+
         Flux<R> flux;
         try {
+            assertSession(statement);
+
             final Stmt stmt;
             stmt = parseDqlStatement(statement, option);
             if (stmt instanceof SimpleStmt) {
@@ -206,10 +247,8 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                 // no bug,never here
                 throw _Exceptions.unexpectedStatement(statement);
             }
-        } catch (Exception e) {
-            flux = Flux.error(_Exceptions.unknownError(e));
         } catch (Throwable e) {
-            flux = Flux.error(e);
+            flux = Flux.error(_Exceptions.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
                 ((_Statement) statement).clear();
@@ -227,6 +266,8 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                                           final Function<BatchStmt, Flux<R>> exeFunc) {
         Flux<R> flux;
         try {
+            assertSession(statement);
+
             final Stmt stmt;
             stmt = parseDqlStatement(statement, option);
             if (stmt instanceof BatchStmt) {
@@ -239,10 +280,8 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
                 // no bug,never here
                 throw _Exceptions.unexpectedStatement(statement);
             }
-        } catch (Exception e) {
-            flux = Flux.error(_Exceptions.unknownError(e));
         } catch (Throwable e) {
-            flux = Flux.error(e);
+            flux = Flux.error(_Exceptions.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
                 ((_Statement) statement).clear();
@@ -274,32 +313,148 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
 
-    private <R> Flux<R> validateCount(Flux<R> source, ResultStates states) {
-        return null;
-    }
-
     /**
      * @see #update(SimpleDmlStatement, ReactiveStmtOption)
      */
     private Mono<ResultStates> executeInsert(InsertStatement statement, ReactiveStmtOption option) {
-        return Mono.empty();
+        Mono<ResultStates> mono;
+        try {
+            assertSession(statement);
+
+            final Stmt stmt;
+            stmt = parseInsertStatement(statement);
+            if (stmt instanceof SimpleStmt) {
+                mono = this.stmtExecutor.insert((SimpleStmt) stmt, option)
+                        .onErrorMap(this::handleExecutionError);
+            } else if (stmt instanceof PairStmt) {
+                final PairStmt pairStmt = (PairStmt) stmt;
+                final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_Insert) statement).table();
+
+                mono = this.stmtExecutor.insert(pairStmt.firstStmt(), option)
+                        .flatMap(parentStates -> this.stmtExecutor.insert(pairStmt.secondStmt(), option)
+                                .doOnSuccess(childStates -> {
+                                    if (childStates.affectedRows() != parentStates.affectedRows()) {
+                                        throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), childStates.affectedRows());
+                                    }
+                                })
+                        ).onErrorMap(this::handlePairStmtError);
+            } else {
+                mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
+            }
+        } catch (Throwable e) {
+            mono = Mono.error(_Exceptions.wrapIfNeed(e));
+        } finally {
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).clear();
+            }
+        }
+        return mono;
     }
+
 
     /**
      * @see #update(SimpleDmlStatement, ReactiveStmtOption)
      */
     private Mono<ResultStates> executeUpdate(SimpleDmlStatement statement, ReactiveStmtOption option) {
-        return Mono.empty();
+        Mono<ResultStates> mono;
+        try {
+            assertSession(statement);
+
+            final Stmt stmt;
+            stmt = parseDmlStatement(statement, option);
+            if (stmt instanceof SimpleStmt) {
+                mono = this.stmtExecutor.update((SimpleStmt) stmt, option)
+                        .onErrorMap(this::handleExecutionError);
+            } else if (stmt instanceof PairStmt) {
+                final PairStmt pairStmt = (PairStmt) stmt;
+                final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
+
+                mono = this.stmtExecutor.update(pairStmt.firstStmt(), option)
+                        .flatMap(parentStates -> this.stmtExecutor.update(pairStmt.secondStmt(), option)
+                                .doOnSuccess(childStates -> {
+                                    if (childStates.affectedRows() != parentStates.affectedRows()) {
+                                        throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), childStates.affectedRows());
+                                    }
+                                })
+                        ).onErrorMap(this::handlePairStmtError);
+            } else {
+                mono = Mono.error(_Exceptions.unexpectedStmt(stmt));
+            }
+        } catch (Throwable e) {
+            mono = Mono.error(_Exceptions.wrapIfNeed(e));
+        } finally {
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).clear();
+            }
+        }
+        return mono;
     }
 
 
-    private boolean sessionStatusError(Statement statement, ReactiveStmtOption option) {
-        if (this.sessionClosed.get()) {
-            return true;
+    private <R> Flux<R> validateCount(Flux<R> source, ResultStates states) {
+        return null;
+    }
+
+    private Flux<ResultStates> validateBatchStates(final Flux<ResultStates> source, Map<Integer, ResultStates> statesMap,
+                                                   final ChildTableMeta<?> domainTable) {
+        return Flux.empty();
+    }
+
+
+    private <T> Mono<T> closeSession() {
+        if (!this.sessionClosed.compareAndSet(false, true)) {
+            return Mono.empty();
+        }
+        return this.stmtExecutor.close();
+    }
+
+    private Throwable handleExecutionError(final Throwable cause) {
+        return _Exceptions.wrapIfNeed(cause);
+    }
+
+    private Throwable handlePairStmtError(final Throwable cause) {
+        if (cause instanceof ChildUpdateException && hasTransaction()) {
+            markRollbackOnlyOnError(cause);
+        }
+        return handleExecutionError(cause);
+    }
+
+
+    private static final class ValidateItemCountSubscriber<T> implements Subscriber<T> {
+
+        private final Flux<T> source;
+
+        private final ResultStates resultStates;
+
+        private Subscription s;
+
+        private ValidateItemCountSubscriber(Flux<T> source, ResultStates resultStates) {
+            this.source = source;
+            this.resultStates = resultStates;
         }
 
+        @Override
+        public void onSubscribe(Subscription s) {
+            this.s = s;
+            this.source.subscribe(this);
+        }
 
-    }
+        @Override
+        public void onNext(T t) {
+
+        }
+
+        @Override
+        public void onError(Throwable t) {
+
+        }
+
+        @Override
+        public void onComplete() {
+
+        }
+
+    } // ValidateItemCountSubscriber
 
 
 }
