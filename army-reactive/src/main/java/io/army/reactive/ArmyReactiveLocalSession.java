@@ -54,7 +54,11 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
         } else switch (this.factory.serverDatabase) {
             case MySQL:
             case PostgreSQL:
-                in = this.stmtExecutor.inTransaction();
+                try {
+                    in = this.stmtExecutor.inTransaction();
+                } catch (Exception e) {
+                    throw wrapSessionError(e);
+                }
                 break;
             default:
                 in = this.transactionInfo != null;
@@ -225,7 +229,7 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     @Override
     void markRollbackOnlyOnError(Throwable cause) {
-
+        ROLLBACK_ONLY.compareAndSet(this, 0, 1);
     }
 
     /*-------------------below private methods -------------------*/

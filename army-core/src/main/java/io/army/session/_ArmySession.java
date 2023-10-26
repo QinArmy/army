@@ -280,6 +280,12 @@ public abstract class _ArmySession implements Session {
         return new SessionException("stream api don't support two statement.");
     }
 
+    protected static SessionException wrapSessionError(final Exception cause) {
+        if (cause instanceof SessionException) {
+            throw (SessionException) cause;
+        }
+        return new SessionException("unknown session error," + cause.getMessage(), cause);
+    }
 
     protected static Throwable wrapIfNeed(final Throwable cause) {
         return _Exceptions.wrapIfNeed(cause);

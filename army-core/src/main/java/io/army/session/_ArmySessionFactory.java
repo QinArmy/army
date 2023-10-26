@@ -12,12 +12,14 @@ import io.army.env.SqlLogMode;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.SchemaMeta;
+import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Assert;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
@@ -54,7 +56,6 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     protected final MappingEnv mappingEnv;
 
     public final Database serverDatabase;
-    public final boolean uniqueCache;
 
     private final AllowMode queryInsertMode;
 
@@ -64,9 +65,9 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     private final Map<String, Boolean> visibleWhiteMap;
 
-    public final boolean sqlLogDynamic;
+    final boolean sqlLogDynamic;
 
-    public final SqlLogMode sqlLogMode;
+    final SqlLogMode sqlLogMode;
 
 
     protected _ArmySessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
@@ -89,8 +90,6 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         this.mappingEnv = dialectEnv.mappingEnv();
         this.serverDatabase = this.mappingEnv.serverMeta().serverDatabase();
 
-        this.uniqueCache = Objects.requireNonNull(support.ddlMode) != DdlMode.NONE;
-
         this.queryInsertMode = env.getOrDefault(ArmyKey.QUERY_INSERT_MODE);
         this.queryInsertWhiteMap = createWhitMap(this.queryInsertMode, env, ArmyKey.QUERY_INSERT_SESSION_WHITE_LIST);
         this.visibleMode = env.getOrDefault(ArmyKey.VISIBLE_MODE);
@@ -101,15 +100,9 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     }
 
-
     @Override
     public final String name() {
         return this.name;
-    }
-
-    @Override
-    public final boolean uniqueCache() {
-        return this.uniqueCache;
     }
 
     @Override
@@ -121,6 +114,21 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     @Override
     public final SchemaMeta schemaMeta() {
         return this.schemaMeta;
+    }
+
+    @Override
+    public final ZoneOffset zoneOffset() {
+        return this.mappingEnv.zoneOffset();
+    }
+
+    @Override
+    public final ServerMeta serverMeta() {
+        return this.mappingEnv.serverMeta();
+    }
+
+    @Override
+    public final boolean isSupportSavePoints() {
+        return this.mappingEnv.serverMeta().isSupportSavePoints();
     }
 
     @Override
@@ -150,16 +158,6 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         return this.readonly;
     }
 
-    @Override
-    public final Function<ArmyException, RuntimeException> exceptionFunction() {
-        return this.exceptionFunction;
-    }
-
-
-    @Override
-    public boolean isClosed() {
-        return false;
-    }
 
     @Override
     public final int hashCode() {
@@ -170,8 +168,6 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     public final boolean equals(Object obj) {
         return obj == this;
     }
-
-    protected abstract DialectParser dialectParser();
 
 
     private boolean isSessionDontSupportQueryInsert(final String sessionName) {
@@ -245,6 +241,11 @@ public abstract class _ArmySessionFactory implements SessionFactory {
                 throw _Exceptions.unexpectedEnum(mode);
         }
         return whiteMap;
+    }
+
+
+    protected static Throwable wrapIfNeed(Throwable cause) {
+        return _Exceptions.wrapIfNeed(cause);
     }
 
 

@@ -1,6 +1,5 @@
 package io.army.session;
 
-import io.army.ArmyException;
 import io.army.criteria.Visible;
 import io.army.env.ArmyEnvironment;
 import io.army.lang.Nullable;
@@ -8,9 +7,8 @@ import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * <p>This interface is base interface of following:
@@ -27,7 +25,7 @@ public interface SessionFactory {
 
     ArmyEnvironment environment();
 
-    ZoneId zoneId();
+    ZoneOffset zoneOffset();
 
     SchemaMeta schemaMeta();
 
@@ -56,17 +54,6 @@ public interface SessionFactory {
 
 
     boolean isReactive();
-
-    @Deprecated
-    default boolean uniqueCache() {
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Deprecated
-    default Function<ArmyException, RuntimeException> exceptionFunction() {
-        throw new UnsupportedOperationException();
-    }
 
 
     interface SessionBuilderSpec<B, R> {

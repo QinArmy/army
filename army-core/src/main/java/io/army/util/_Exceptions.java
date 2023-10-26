@@ -754,6 +754,11 @@ public abstract class _Exceptions {
         return new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
     }
 
+    public static SessionFactoryException sessionFactoryClosed(SessionFactory factory) {
+        String m = String.format("%s have closed.", factory);
+        return new SessionFactoryException(m);
+    }
+
 
     public static SessionException readOnlySession(Session session) {
         String m;
@@ -796,6 +801,7 @@ public abstract class _Exceptions {
         m = String.format("%s of %s have closed.", session.sessionFactory(), session);
         return new SessionClosedException(m);
     }
+
 
     public static SessionException updateToRollbackOnlyError(Session session, TransactionStatus old) {
         String m = String.format("%s update to rollback only occur error,old status : %s", session, old);
