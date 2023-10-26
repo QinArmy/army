@@ -1,4 +1,4 @@
-package io.army.tx;
+package io.army.session;
 
 /**
  * Exception to be thrown when a transaction has timed out.

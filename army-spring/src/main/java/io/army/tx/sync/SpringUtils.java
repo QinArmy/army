@@ -1,6 +1,7 @@
 package io.army.tx.sync;
 
 import io.army.session.SessionException;
+import io.army.session.TransactionTimeOutException;
 import io.army.tx.Isolation;
 import org.springframework.transaction.*;
 
@@ -19,16 +20,16 @@ public abstract class SpringUtils {
 
 
     public static org.springframework.transaction.TransactionException wrapTransactionError(
-            final io.army.tx.TransactionException ex) {
+            final io.army.session.TransactionException ex) {
 
         final org.springframework.transaction.TransactionException e;
         if (ex instanceof io.army.tx.CannotCreateTransactionException) {
             e = new CannotCreateTransactionException(ex.getMessage(), ex);
-        } else if (ex instanceof io.army.tx.TransactionSystemException) {
+        } else if (ex instanceof io.army.session.TransactionSystemException) {
             e = new TransactionSystemException(ex.getMessage(), ex);
         } else if (ex instanceof io.army.tx.IllegalTransactionStateException) {
             e = new IllegalTransactionStateException(ex.getMessage(), ex);
-        } else if (ex instanceof io.army.tx.TransactionTimeOutException) {
+        } else if (ex instanceof TransactionTimeOutException) {
             e = new TransactionTimedOutException(ex.getMessage(), ex);
         } else {
             e = new TransactionException(ex.getMessage(), ex) {

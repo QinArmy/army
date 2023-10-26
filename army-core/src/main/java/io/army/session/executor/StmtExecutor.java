@@ -1,6 +1,6 @@
 package io.army.session.executor;
 
-import io.army.session.CloseableSpec;
+
 import io.army.session.DataAccessException;
 import io.army.session.OptionSpec;
 
@@ -11,11 +11,14 @@ import io.army.session.OptionSpec;
  *     <li>{@code io.army.sync.executor.SyncStmtExecutor}</li>
  *     <li>{@code io.army.reactive.executor.ReactiveStmtExecutor}</li>
  * </ul>
+ * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
+ * so all implementation of methods of this interface don't check whether closed or not,<br/>
+ * but {@link io.army.session.Session} need to do that.
  *
  * @see StmtExecutorFactorySpec
  * @since 1.0
  */
-public interface StmtExecutor extends CloseableSpec, OptionSpec {
+public interface StmtExecutor extends OptionSpec {
 
     String name();
 

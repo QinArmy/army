@@ -47,7 +47,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
 //        return txObject.session
 //                .flush()
 //                .then(Mono.defer(() -> txObject.session.sessionTransaction().commit()))
-//                .onErrorMap((e) -> SpringUtils.convertArmyAccessException((io.army.tx.TransactionException) e))
+//                .onErrorMap((e) -> SpringUtils.convertArmyAccessException((io.army.session.TransactionException) e))
 //                ;
         return Mono.empty();
     }
@@ -61,7 +61,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
 //        }
 //        return txObject.session.sessionTransaction()
 //                .rollback()
-//                .onErrorMap((e) -> SpringUtils.convertArmyAccessException((io.army.tx.TransactionException) e))
+//                .onErrorMap((e) -> SpringUtils.convertArmyAccessException((io.army.session.TransactionException) e))
 //                ;
         throw new UnsupportedOperationException();
     }

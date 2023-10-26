@@ -153,7 +153,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
 
             }
             tx.commit();
-        } catch (io.army.tx.TransactionException e) {
+        } catch (io.army.session.TransactionException e) {
             throw SpringUtils.wrapTransactionError(e);
         } catch (SessionException e) {
             throw SpringUtils.convertSessionException(e);
@@ -175,7 +175,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
                 logger.debug(String.format("Rolling Army transaction on %s", session));
             }
             tx.rollback();
-        } catch (io.army.tx.TransactionException e) {
+        } catch (io.army.session.TransactionException e) {
             throw SpringUtils.wrapTransactionError(e);
         } catch (SessionException e) {
             throw SpringUtils.convertSessionException(e);
@@ -200,7 +200,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             if (!tx.readOnly()) {
                 tx.markRollbackOnly();
             }
-        } catch (io.army.tx.TransactionException e) {
+        } catch (io.army.session.TransactionException e) {
             throw SpringUtils.wrapTransactionError(e);
         } catch (SessionException e) {
             throw SpringUtils.convertSessionException(e);
@@ -293,7 +293,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             }
             try {
                 return session.currentTransaction().createSavePoint();
-            } catch (io.army.tx.TransactionException e) {
+            } catch (io.army.session.TransactionException e) {
                 throw SpringUtils.wrapTransactionError(e);
             }
         }
@@ -306,7 +306,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             }
             try {
                 session.currentTransaction().rollbackToSavePoint(savepoint);
-            } catch (io.army.tx.TransactionException e) {
+            } catch (io.army.session.TransactionException e) {
                 throw SpringUtils.wrapTransactionError(e);
             }
         }
@@ -319,7 +319,7 @@ public class ArmyTransactionManager extends AbstractPlatformTransactionManager i
             }
             try {
                 session.currentTransaction().releaseSavePoint(savepoint);
-            } catch (io.army.tx.TransactionException e) {
+            } catch (io.army.session.TransactionException e) {
                 throw SpringUtils.wrapTransactionError(e);
             }
         }

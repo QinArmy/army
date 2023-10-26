@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 /**
  * <p>This class is a implementation of {@link ReactiveStmtExecutorFactory} with jdbd spi.
  *
+ * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
  * @since 1.0
  */
 final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
@@ -109,7 +110,7 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
         } else {
             mono = Mono.from(this.sessionFactory.localSession())
                     .map(session -> JdbdMetaExecutor.create(name, this, session))
-                    .onErrorMap(ExecutorSupport::wrapIfNeed);
+                    .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
         }
         return mono;
     }
@@ -125,7 +126,7 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
         } else {
             mono = Mono.from(this.sessionFactory.localSession())
                     .map(session -> this.localFunc.apply(this, session, name))
-                    .onErrorMap(ExecutorSupport::wrapIfNeed);
+                    .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
         }
         return mono;
     }
@@ -140,7 +141,7 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
         } else {
             mono = Mono.from(this.sessionFactory.rmSession())
                     .map(session -> this.rmFunc.apply(this, session, name))
-                    .onErrorMap(ExecutorSupport::wrapIfNeed);
+                    .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
         }
         return mono;
     }

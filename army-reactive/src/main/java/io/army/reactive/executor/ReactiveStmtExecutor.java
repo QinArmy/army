@@ -2,16 +2,10 @@ package io.army.reactive.executor;
 
 
 import io.army.reactive.QueryResults;
-import io.army.reactive.ReactiveCloseable;
 import io.army.reactive.ReactiveStmtOption;
-import io.army.session.CurrentRecord;
-import io.army.session.Option;
-import io.army.session.ResultItem;
-import io.army.session.ResultStates;
+import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.stmt.*;
-import io.army.tx.TransactionInfo;
-import io.army.tx.TransactionOption;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -28,11 +22,14 @@ import java.util.function.Supplier;
  *     <li>{@link ReactiveLocalStmtExecutor}</li>
  *     <li>{@link ReactiveRmStmtExecutor}</li>
  * </ul>
+ * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
+ * so all implementation of methods of this interface don't check whether closed or not,<br/>
+ * but {@link io.army.session.Session} need to do that.
  *
  * @see ReactiveStmtExecutorFactory
  * @since 1.0
  */
-public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
+public interface ReactiveStmtExecutor extends StmtExecutor {
 
 
     Mono<TransactionInfo> transactionInfo();
@@ -76,5 +73,41 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
 
     Flux<ResultItem> executeMultiStmt(List<GenericSimpleStmt> stmtList, ReactiveStmtOption option);
+
+
+    <T> Mono<T> close();
+
+
+    interface LocalTransactionSpec {
+
+        Mono<TransactionInfo> startTransaction(TransactionOption option);
+
+        Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc);
+
+        Mono<Optional<TransactionInfo>> rollback(Function<Option<?>, ?> optionFunc);
+
+    }
+
+
+    interface XaTransactionSpec extends Session.XaTransactionSupportSpec {
+
+        Mono<TransactionInfo> start(Xid xid, int flags, TransactionOption option);
+
+        Mono<Void> end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+
+        Mono<Integer> prepare(Xid xid, Function<Option<?>, ?> optionFunc);
+
+        Mono<Void> commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+
+        Mono<Void> rollback(Xid xid, Function<Option<?>, ?> optionFunc);
+
+
+        Mono<Void> forget(Xid xid, Function<Option<?>, ?> optionFunc);
+
+        Mono<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc);
+
+
+    }
+
 
 }

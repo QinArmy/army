@@ -1,43 +1,27 @@
 package io.army.sync;
 
-import io.army.lang.Nullable;
-import io.army.session.SessionException;
-import io.army.tx.Isolation;
+import io.army.session.Option;
+import io.army.session.TransactionInfo;
+import io.army.session.TransactionOption;
+
+import java.util.function.Function;
 
 /**
- * <p>
- * This interface representing blocking way local session.
- * </p>
+ * <p>This interface representing blocking local session.
  *
  * @see SyncLocalSessionFactory
  * @since 1.0
  */
-public interface SyncLocalSession extends SyncSession, AutoCloseable {
+public interface SyncLocalSession extends SyncSession {
 
     @Override
     SyncLocalSessionFactory sessionFactory();
 
+    TransactionInfo startTransaction(TransactionOption option);
 
-    LocalTransaction currentTransaction() throws SessionException;
+    SyncLocalSession commit(Function<Option<?>, ?> optionFunc);
 
+    SyncLocalSession rollback(Function<Option<?>, ?> optionFunc);
 
-    TransactionBuilder builder();
-
-    @Override
-    void close() throws SessionException;
-
-    interface TransactionBuilder {
-
-        TransactionBuilder name(@Nullable String txName);
-
-        TransactionBuilder isolation(Isolation isolation);
-
-        TransactionBuilder readonly(boolean readOnly);
-
-        TransactionBuilder timeout(int timeoutSeconds);
-
-        LocalTransaction build() throws SessionException;
-
-    }
 
 }

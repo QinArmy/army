@@ -1,8 +1,6 @@
-package io.army.tx;
+package io.army.session;
 
 import io.army.lang.Nullable;
-import io.army.session.Option;
-import io.army.session.OptionSpec;
 
 public interface TransactionOption extends OptionSpec {
 

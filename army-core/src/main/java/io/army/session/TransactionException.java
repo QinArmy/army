@@ -1,6 +1,4 @@
-package io.army.tx;
-
-import io.army.session.SessionException;
+package io.army.session;
 
 /**
  * Superclass for all transaction exceptions.

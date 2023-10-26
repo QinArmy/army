@@ -1,8 +1,7 @@
-package io.army.tx;
+package io.army.session;
 
 
 import io.army.lang.Nullable;
-import io.army.session.Session;
 
 public interface Transaction {
 

@@ -1,4 +1,4 @@
-package io.army.tx;
+package io.army.session;
 
 
 public class ReadOnlyTransactionException extends TransactionUsageException {

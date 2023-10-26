@@ -1,7 +1,6 @@
 package io.army.sync;
 
-import io.army.session.DataAccessException;
-import io.army.tx.*;
+import io.army.session.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

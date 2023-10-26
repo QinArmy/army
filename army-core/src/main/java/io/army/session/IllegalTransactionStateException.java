@@ -1,4 +1,4 @@
-package io.army.tx;
+package io.army.session;
 
 /**
  * Exception thrown when operate and transaction status not match, like commit,rollBack.

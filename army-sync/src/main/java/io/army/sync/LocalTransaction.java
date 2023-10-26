@@ -1,8 +1,8 @@
 package io.army.sync;
 
-import io.army.tx.Transaction;
-import io.army.tx.TransactionException;
-import io.army.tx.TransactionStatus;
+import io.army.session.Transaction;
+import io.army.session.TransactionException;
+import io.army.session.TransactionStatus;
 
 public interface LocalTransaction extends Transaction {
 

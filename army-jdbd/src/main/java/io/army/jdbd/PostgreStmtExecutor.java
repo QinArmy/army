@@ -37,7 +37,7 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
     }
 
     @Override
-    Function<io.jdbd.session.Option<?>, ?> readArmyTransactionOptions(io.army.tx.TransactionOption jdbdOption) {
+    Function<io.jdbd.session.Option<?>, ?> readArmyTransactionOptions(io.army.session.TransactionOption jdbdOption) {
         return null;
     }
 

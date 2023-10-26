@@ -10,7 +10,7 @@ import io.army.session.SessionFactoryException;
  * This interface is only base interface of :
  * <ul>
  *     <li>{@link SyncLocalSessionFactory}</li>
- *     <li>{@link RmSessionFactory}</li>
+ *     <li>{@link SyncRmSessionFactory}</li>
  * </ul>
  * </p>
  *

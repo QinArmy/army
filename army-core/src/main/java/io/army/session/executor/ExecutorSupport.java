@@ -135,9 +135,6 @@ public abstract class ExecutorSupport {
         return new ArmyException(m);
     }
 
-    public static Throwable wrapIfNeed(Throwable cause) {
-        return _Exceptions.wrapIfNeed(cause);
-    }
 
 
     protected static final class ArmyResultRecordMeta implements ResultRecordMeta {

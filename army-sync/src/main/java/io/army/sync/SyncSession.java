@@ -22,10 +22,11 @@ import java.util.stream.Stream;
  * This interface is base interface of below interface:
  *     <ul>
  *         <li>{@link SyncLocalSession}</li>
+ *         <li>{@link SyncRmSession}</li>
  *     </ul>
  * </p>
  */
-public interface SyncSession extends Session {
+public interface SyncSession extends Session, AutoCloseable {
 
     @Override
     SyncSessionFactory sessionFactory();

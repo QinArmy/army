@@ -3,9 +3,7 @@ package io.army.sync.executor;
 
 import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
-import io.army.session.CurrentRecord;
-import io.army.session.DataAccessException;
-import io.army.session.OptimisticLockException;
+import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.stmt.*;
 import io.army.sync.MultiResult;
@@ -19,13 +17,14 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
- * <p>
- * This interface representing sql statement executor with blocking way.
- * </p>
+ * <p>This interface representing sql statement executor with blocking way.
+ * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
+ * so all implementation of methods of this interface don't check whether closed or not,<br/>
+ * but {@link io.army.session.Session} need to do that.
  *
  * @since 1.0
  */
-public interface SyncStmtExecutor extends StmtExecutor {
+public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
 
     /**
@@ -122,6 +121,43 @@ public interface SyncStmtExecutor extends StmtExecutor {
 
     void execute(String stmt) throws DataAccessException;
 
+    @Override
     void close() throws DataAccessException;
+
+
+    interface LocalTransactionSpec {
+
+        TransactionInfo startTransaction(TransactionOption option);
+
+        @Nullable
+        TransactionInfo commit(Function<Option<?>, ?> optionFunc);
+
+        @Nullable
+        TransactionInfo rollback(Function<Option<?>, ?> optionFunc);
+
+    }
+
+
+    interface XaTransactionSpec extends Session.XaTransactionSupportSpec {
+
+        TransactionInfo start(Xid xid, int flags, TransactionOption option);
+
+        void end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+
+        int prepare(Xid xid, Function<Option<?>, ?> optionFunc);
+
+        void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+
+        void rollback(Xid xid, Function<Option<?>, ?> optionFunc);
+
+        void forget(Xid xid, Function<Option<?>, ?> optionFunc);
+
+        List<Xid> recover(int flags, Function<Option<?>, ?> optionFunc);
+
+        Stream<Xid> recoverStream(int flags, Function<Option<?>, ?> optionFunc);
+
+
+    }
+
 
 }

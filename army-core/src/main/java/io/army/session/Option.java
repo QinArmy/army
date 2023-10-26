@@ -1,8 +1,5 @@
 package io.army.session;
 
-import io.army.tx.Isolation;
-import io.army.tx.TransactionInfo;
-import io.army.tx.TransactionOption;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 

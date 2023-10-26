@@ -3,8 +3,8 @@ package io.army.jdbd;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.session.Option;
-import io.army.tx.TransactionInfo;
-import io.army.tx.TransactionOption;
+import io.army.session.TransactionInfo;
+import io.army.session.TransactionOption;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.Isolation;
 import io.jdbd.session.LocalDatabaseSession;
@@ -15,7 +15,7 @@ import io.jdbd.session.RmDatabaseSession;
  *
  * @since 1.0
  */
-abstract class MySQLStmtExecutor<S extends DatabaseSession> extends JdbdStmtExecutor<S> {
+abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
 
     static ReactiveLocalStmtExecutor localExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
         throw new UnsupportedOperationException();
@@ -27,7 +27,7 @@ abstract class MySQLStmtExecutor<S extends DatabaseSession> extends JdbdStmtExec
 
     private static final Option<Boolean> WITH_CONSISTENT_SNAPSHOT = Option.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
 
-    private MySQLStmtExecutor(JdbdStmtExecutorFactory factory, S session) {
+    private MySQLStmtExecutor(JdbdStmtExecutorFactory factory, DatabaseSession session) {
         super(factory, session);
     }
 

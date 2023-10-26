@@ -7,7 +7,7 @@ package io.army.sync;
  *
  * @since 1.0
  */
-interface RmSessionFactory extends SyncSessionFactory {
+interface SyncRmSessionFactory extends SyncSessionFactory {
 
 
 }

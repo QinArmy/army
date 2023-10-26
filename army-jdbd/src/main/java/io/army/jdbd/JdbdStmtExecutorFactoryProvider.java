@@ -21,6 +21,7 @@ import java.util.function.Function;
 /**
  * <p>This class is a implementation of {@link ReactiveStmtExecutorFactoryProvider} with jdbd spi.
  *
+ * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
  * @since 10
  */
 public final class JdbdStmtExecutorFactoryProvider implements ReactiveStmtExecutorFactoryProvider {
