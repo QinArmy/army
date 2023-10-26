@@ -13,7 +13,7 @@ import io.army.stmt.*;
 import io.army.sync.executor.StmtExecutor;
 import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;
-import io.army.tx.NoSessionTransactionException;
+import io.army.tx.NoTransactionException;
 import io.army.tx.TransactionOptions;
 import io.army.type.ImmutableSpec;
 import io.army.util._Collections;
@@ -360,10 +360,10 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
     }
 
     @Override
-    public LocalTransaction currentTransaction() throws NoSessionTransactionException {
+    public LocalTransaction currentTransaction() throws NoTransactionException {
         final LocalTransaction transaction = this.transaction;
         if (transaction == null) {
-            throw new NoSessionTransactionException("no session transaction.");
+            throw new NoTransactionException("no session transaction.");
         }
         return transaction;
     }

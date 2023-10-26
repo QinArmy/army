@@ -13,10 +13,10 @@ public interface Session extends CloseableSpec, OptionSpec {
 
     boolean isReadonlySession();
 
-
     boolean inTransaction();
 
     boolean hasTransaction();
+
 
     String name();
 

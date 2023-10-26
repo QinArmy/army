@@ -22,8 +22,7 @@ import io.army.session.*;
 import io.army.sqltype.SqlType;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.Stmt;
-import io.army.tx.ReadOnlyTransactionException;
-import io.army.tx.TransactionTimeOutException;
+import io.army.tx.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -763,16 +762,44 @@ public abstract class _Exceptions {
     }
 
 
-    public static SessionException readOnlyTransaction(Session session) {
+    public static TransactionException readOnlyTransaction(Session session) {
         String m;
         m = String.format("%s of %s in read only transaction,don't support DML.", session.sessionFactory(), session);
         return new ReadOnlyTransactionException(m);
     }
 
+    public static NoTransactionException noTransaction(Session session) {
+        String m = String.format("%s no transaction");
+        return new NoTransactionException(m);
+    }
+
+    public static TransactionException rollbackOnlyTransaction(Session session) {
+        String m = String.format("current transaction rollback only of %s", session);
+        return new TransactionUsageException(m);
+    }
+
+    public static TransactionException rejectCommit(Session session, TransactionStatus status) {
+        String m = String.format("%s[%s] %s[%s] not match,reject commit", session.getClass().getName(), session.name(),
+                TransactionStatus.class.getName(), status.name());
+        return new IllegalTransactionStateException(m);
+    }
+
+    public static TransactionException existsTransaction(Session session) {
+        String m = String.format("%s[%s] exists transaction,couldn't start new transaction.",
+                session.getClass().getName(), session.name());
+        return new ExistsTransactionException(m);
+    }
+
+
     public static SessionException sessionClosed(Session session) {
         String m;
         m = String.format("%s of %s have closed.", session.sessionFactory(), session);
         return new SessionClosedException(m);
+    }
+
+    public static SessionException updateToRollbackOnlyError(Session session, TransactionStatus old) {
+        String m = String.format("%s update to rollback only occur error,old status : %s", session, old);
+        return new SessionException(m);
     }
 
     public static SessionException childDmlNoTransaction(Session session, ChildTableMeta<?> table) {
@@ -1223,4 +1250,15 @@ public abstract class _Exceptions {
                 database, child);
         return new IllegalOneStmtModeException(m);
     }
+
+
+    private static final class ExistsTransactionException extends TransactionException {
+
+        private ExistsTransactionException(String message) {
+            super(message);
+        }
+
+    }//ExistsTransactionException
+
+
 }

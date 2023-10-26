@@ -6,24 +6,19 @@ package io.army.tx;
  * @see Transaction#status()
  * @since 1.0
  */
+@Deprecated
 public enum TransactionStatus {
 
     /**
      * The transaction has not yet been started.
      */
-    NOT_ACTIVE,
+    NONE,
+
     /**
      * The transaction has been started, but not yet completed.
      */
     ACTIVE,
-    /**
-     * The transaction has been completed successfully.
-     */
-    COMMITTED,
-    /**
-     * The transaction has been rolled back.
-     */
-    ROLLED_BACK,
+
     /**
      * The transaction has been marked for rollback only.
      */
@@ -32,10 +27,12 @@ public enum TransactionStatus {
      * The transaction attempted to commit, but failed.
      */
     FAILED_COMMIT,
+
     /**
      * The transaction attempted to rollback, but failed.
      */
     FAILED_ROLLBACK,
+
     /**
      * Status code indicating a transaction that has begun the second
      * phase of the two-phase commit protocol, but not yet completed

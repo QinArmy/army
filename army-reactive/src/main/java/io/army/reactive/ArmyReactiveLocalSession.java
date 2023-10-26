@@ -3,12 +3,15 @@ package io.army.reactive;
 import io.army.reactive.executor.LocalStmtExecutor;
 import io.army.session.DriverSpi;
 import io.army.session.Option;
+import io.army.session._ArmySession;
 import io.army.tx.TransactionInfo;
 import io.army.tx.TransactionOption;
+import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Function;
@@ -22,14 +25,13 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmyReactiveLocalSession.class);
 
+    private static final AtomicReferenceFieldUpdater<ArmyReactiveLocalSession, TransactionInfo> TRANSACTION_INFO =
+            AtomicReferenceFieldUpdater.newUpdater(ArmyReactiveLocalSession.class, TransactionInfo.class, "transactionInfo");
+
     private static final AtomicIntegerFieldUpdater<ArmyReactiveLocalSession> ROLLBACK_ONLY =
             AtomicIntegerFieldUpdater.newUpdater(ArmyReactiveLocalSession.class, "rollbackOnly");
 
-    private static final AtomicReferenceFieldUpdater<ArmyReactiveLocalSession, TransactionInfo> TRANSACTION =
-            AtomicReferenceFieldUpdater.newUpdater(ArmyReactiveLocalSession.class, TransactionInfo.class, "transaction");
-
-
-    private volatile TransactionInfo transaction;
+    private volatile TransactionInfo transactionInfo;
 
     private volatile int rollbackOnly;
 
@@ -48,33 +50,33 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
     public boolean inTransaction() {
         final boolean in;
         if (((ArmyReactiveLocalSessionFactory) this.factory).driverSpi != DriverSpi.JDBD) {
-            in = this.transaction != null;
+            in = this.transactionInfo != null;
         } else switch (this.factory.serverDatabase) {
             case MySQL:
             case PostgreSQL:
                 in = this.stmtExecutor.inTransaction();
                 break;
             default:
-                in = this.transaction != null;
+                in = this.transactionInfo != null;
         }
         return in;
     }
 
     @Override
     public boolean hasTransaction() {
-        return this.transaction != null;
+        return this.transactionInfo != null;
     }
 
     @Override
     public boolean isReadOnlyStatus() {
         final boolean readOnlyStatus;
-        final TransactionOption option;
+        final TransactionInfo info;
         if (this.readonly) {
             readOnlyStatus = true;
-        } else if ((option = this.sessionTransaction.get()) == null) {
+        } else if ((info = this.transactionInfo) == null) {
             readOnlyStatus = false;
         } else {
-            readOnlyStatus = option.isReadOnly();
+            readOnlyStatus = info.isReadOnly();
         }
         return readOnlyStatus;
     }
@@ -86,29 +88,49 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     /*-------------------below local transaction methods -------------------*/
 
-
     @Override
     public Mono<ReactiveLocalSession> setTransactionCharacteristics(TransactionOption option) {
+        if (isClosed()) {
+            return Mono.error(_Exceptions.sessionClosed(this));
+        }
         return this.stmtExecutor.setTransactionCharacteristics(option)
+                .onErrorMap(_ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
 
 
     @Override
-    public Mono<ReactiveLocalSession> startTransaction() {
+    public Mono<TransactionInfo> startTransaction() {
         return this.startTransaction(TransactionOption.option(null, false));
     }
 
     @Override
-    public Mono<ReactiveLocalSession> startTransaction(final TransactionOption option) {
-        return ((LocalStmtExecutor) this.stmtExecutor).startTransaction(option)
-                .doOnSuccess(v -> this.sessionTransaction.set(option))
-                .thenReturn(this);
+    public Mono<TransactionInfo> startTransaction(final TransactionOption option) {
+        final Mono<TransactionInfo> mono;
+        if (isClosed()) {
+            mono = Mono.error(_Exceptions.sessionClosed(this));
+        } else if (inTransaction()) {
+            mono = Mono.error(_Exceptions.existsTransaction(this));
+        } else {
+            mono = ((LocalStmtExecutor) this.stmtExecutor).startTransaction(option)
+                    .doOnSuccess(info -> TRANSACTION_INFO.set(this, info))
+                    .onErrorMap(error -> {
+                        TRANSACTION_INFO.set(this, null);
+                        return error;
+                    });
+        }
+        return mono;
     }
+
 
     @Override
     public ReactiveLocalSession markRollbackOnly() {
-
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        } else if (!hasTransaction()) {
+            throw _Exceptions.noTransaction(this);
+        }
+        ROLLBACK_ONLY.compareAndSet(this, 0, 1);
         return this;
     }
 
@@ -119,8 +141,18 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     @Override
     public Mono<ReactiveLocalSession> commit(Function<Option<?>, ?> optionFunc) {
-        return ((LocalStmtExecutor) this.stmtExecutor).commit(optionFunc)
-                .thenReturn(this);
+        final Mono<ReactiveLocalSession> mono;
+        if (isClosed()) {
+            mono = Mono.error(_Exceptions.sessionClosed(this));
+        } else if (ROLLBACK_ONLY.get(this) != 0) {
+            mono = Mono.error(_Exceptions.rollbackOnlyTransaction(this));
+        } else {
+            mono = ((LocalStmtExecutor) this.stmtExecutor).commit(optionFunc)
+                    .doOnSuccess(this::handleTransactionEndSuccess)
+                    .onErrorMap(_ArmySession::wrapIfNeed)
+                    .thenReturn(this);
+        }
+        return mono;
     }
 
     @Override
@@ -130,8 +162,16 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     @Override
     public Mono<ReactiveLocalSession> rollback(Function<Option<?>, ?> optionFunc) {
-        return ((LocalStmtExecutor) this.stmtExecutor).rollback(optionFunc)
-                .thenReturn(this);
+        final Mono<ReactiveLocalSession> mono;
+        if (isClosed()) {
+            mono = Mono.error(_Exceptions.sessionClosed(this));
+        } else {
+            mono = ((LocalStmtExecutor) this.stmtExecutor).rollback(optionFunc)
+                    .doOnSuccess(this::handleTransactionEndSuccess)
+                    .onErrorMap(_ArmySession::wrapIfNeed)
+                    .thenReturn(this);
+        }
+        return mono;
     }
 
 
@@ -142,7 +182,11 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     @Override
     public Mono<ReactiveLocalSession> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
+        if (isClosed()) {
+            return Mono.error(_Exceptions.sessionClosed(this));
+        }
         return this.stmtExecutor.releaseSavePoint(savepoint, optionFunc)
+                .onErrorMap(_ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
 
@@ -153,7 +197,11 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     @Override
     public Mono<ReactiveLocalSession> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
+        if (isClosed()) {
+            return Mono.error(_Exceptions.sessionClosed(this));
+        }
         return this.stmtExecutor.rollbackToSavePoint(savepoint, optionFunc)
+                .onErrorMap(_ArmySession::wrapIfNeed)
                 .thenReturn(this);
     }
 
@@ -181,6 +229,20 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
     }
 
     /*-------------------below private methods -------------------*/
+
+    /**
+     * @see #commit(Function)
+     * @see #rollback(Function)
+     */
+    @SuppressWarnings("all")
+    private void handleTransactionEndSuccess(Optional<TransactionInfo> optional) {
+        if (optional.isPresent()) {
+            TRANSACTION_INFO.set(this, optional.get());
+        } else {
+            TRANSACTION_INFO.set(this, null);
+        }
+        ROLLBACK_ONLY.set(this, 0);
+    }
 
 
 }

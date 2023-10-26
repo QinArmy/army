@@ -18,7 +18,7 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
     SyncLocalTransaction(final ArmySyncLocalSession.LocalTransactionBuilder builder) {
         super(builder);
         this.session = builder.session;
-        this.status = TransactionStatus.NOT_ACTIVE;
+        this.status = TransactionStatus.NONE;
     }
 
     @Override
@@ -38,8 +38,8 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
 
     @Override
     public LocalTransaction start() throws TransactionException {
-        if (this.status != TransactionStatus.NOT_ACTIVE) {
-            String m = String.format("%s status isn't %s,can't start transaction.", this, TransactionStatus.NOT_ACTIVE);
+        if (this.status != TransactionStatus.NONE) {
+            String m = String.format("%s status isn't %s,can't start transaction.", this, TransactionStatus.NONE);
             throw new IllegalTransactionStateException(m);
         }
         try {
@@ -86,7 +86,7 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
                 }
             }
             break;
-            case NOT_ACTIVE:
+            case NONE:
                 LOG.debug("transaction[name : {}]'s status is {},so no action.", this.name, oldStatus);
                 this.session.endTransaction(this);
                 break;
@@ -134,7 +134,7 @@ final class SyncLocalTransaction extends _ArmyTransaction implements LocalTransa
                 }
             }
             break;
-            case NOT_ACTIVE:
+            case NONE:
                 LOG.debug("transaction[name : {}]'s status is {},so no action", this.name, oldStatus);
                 this.session.endTransaction(this);
                 break;

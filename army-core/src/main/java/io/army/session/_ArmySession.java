@@ -281,4 +281,9 @@ public abstract class _ArmySession implements Session {
     }
 
 
+    protected static Throwable wrapIfNeed(final Throwable cause) {
+        return _Exceptions.wrapIfNeed(cause);
+    }
+
+
 }

@@ -2,6 +2,7 @@ package io.army.reactive;
 
 import io.army.session.Option;
 import io.army.session.SessionException;
+import io.army.tx.TransactionInfo;
 import io.army.tx.TransactionOption;
 import reactor.core.publisher.Mono;
 
@@ -18,10 +19,9 @@ public interface ReactiveLocalSession extends ReactiveSession {
     @Override
     ReactiveLocalSessionFactory sessionFactory();
 
-    Mono<ReactiveLocalSession> startTransaction();
+    Mono<TransactionInfo> startTransaction();
 
-    Mono<ReactiveLocalSession> startTransaction(TransactionOption option);
-
+    Mono<TransactionInfo> startTransaction(TransactionOption option);
 
     ReactiveLocalSession markRollbackOnly() throws SessionException;
 

@@ -21,10 +21,6 @@
             <artifactId>reactor-core</artifactId>
             <version>3.5.11</version>
         </dependency>
-        <dependency>
-            <groupId>io.jdbd</groupId>
-            <artifactId>jdbd-spi</artifactId>
-        </dependency>
     </dependencies>
 
 </project>
