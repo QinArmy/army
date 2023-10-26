@@ -8,14 +8,14 @@ import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.MetaExecutor;
+import io.army.sync.executor.SyncExecutorFactory;
 
 import javax.sql.CommonDataSource;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 
-abstract class JdbcExecutorFactory implements ExecutorFactory {
+abstract class JdbcExecutorFactory implements SyncExecutorFactory {
 
     static final byte SET_OBJECT_METHOD = 1;
     static final byte EXECUTE_LARGE_UPDATE_METHOD = 2;

@@ -1,19 +1,15 @@
 package io.army.sync;
 
-import io.army.ArmyException;
 import io.army.advice.FactoryAdvice;
 import io.army.advice.sync.DomainAdvice;
 import io.army.codec.FieldCodec;
 import io.army.codec.JsonCodec;
-import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.dialect.DialectEnv;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SyncKey;
 import io.army.executor.ExecutorEnv;
-import io.army.generator.FieldGeneratorFactory;
-import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
@@ -24,13 +20,12 @@ import io.army.session.DataAccessException;
 import io.army.session.DdlMode;
 import io.army.session.FactoryBuilderSupport;
 import io.army.session.SessionFactoryException;
-import io.army.sync.executor.ExecutorFactory;
-import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.MetaExecutor;
+import io.army.sync.executor.SyncExecutorFactory;
+import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
-import io.army.util._StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +33,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.function.Function;
 
 final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements LocalFactoryBuilder {
 
@@ -53,75 +47,6 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     SessionContext sessionContext;
 
 
-    @Override
-    public LocalFactoryBuilder name(String sessionFactoryName) {
-        if (!_StringUtils.hasText(sessionFactoryName)) {
-            throw new IllegalArgumentException("sessionFactoryName must have text.");
-        }
-        this.name = sessionFactoryName;
-        return this;
-    }
-
-    @Override
-    public LocalFactoryBuilder schema(String catalog, String schema) {
-        this.schemaMeta = _SchemaMetaFactory.getSchema(catalog, schema);
-        return this;
-    }
-
-    @Override
-    public LocalFactoryBuilder fieldCodecs(Collection<FieldCodec> fieldCodecs) {
-        this.fieldCodecs = fieldCodecs;
-        return this;
-    }
-
-    @Override
-    public LocalFactoryBuilder environment(ArmyEnvironment environment) {
-        this.environment = environment;
-        return this;
-    }
-
-
-    @Override
-    public LocalFactoryBuilder factoryAdvice(Collection<FactoryAdvice> factoryAdvices) {
-        this.factoryAdvices = factoryAdvices;
-        return this;
-    }
-
-    @Override
-    public LocalFactoryBuilder exceptionFunction(Function<ArmyException, RuntimeException> exceptionFunction) {
-        this.exceptionFunction = exceptionFunction;
-        return this;
-    }
-
-    @Override
-    public LocalFactoryBuilder domainAdvice(Map<TableMeta<?>, DomainAdvice> domainAdviceMap) {
-        this.domainAdviceMap = Objects.requireNonNull(domainAdviceMap);
-        return this;
-    }
-
-    @Override
-    public LocalFactoryBuilder fieldGeneratorFactory(@Nullable FieldGeneratorFactory factory) {
-        this.fieldGeneratorFactory = factory;
-        return this;
-    }
-
-    @Override
-    public LocalFactoryBuilder datasource(Object dataSource) {
-        this.dataSource = dataSource;
-        return this;
-    }
-
-    @Override
-    public LocalFactoryBuilder packagesToScan(List<String> packageList) {
-        this.packagesToScan = _Collections.asUnmodifiableList(packageList);
-        return this;
-    }
-
-    @Override
-    public LocalFactoryBuilder currentSessionContext(SessionContext context) {
-        this.sessionContext = context;
-        return this;
-    }
 
     @Override
     public SyncLocalSessionFactory build() throws SessionFactoryException {
@@ -132,7 +57,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
             this.scanSchema();
 
             //2. create ExecutorProvider
-            final ExecutorProvider executorProvider;
+            final SyncStmtExecutorFactoryProvider executorProvider;
             executorProvider = createExecutorProvider(env, Objects.requireNonNull(this.dataSource));
             //3. create ServerMeta
             final ServerMeta serverMeta;
@@ -148,7 +73,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
             executorEnv = createExecutorEnv(factoryName, serverMeta, env, mappingEnv);
             //6. create LocalExecutorFactory
             final LocalExecutorFactory executorFactory;
-            executorFactory = executorProvider.createLocalFactory(executorEnv);
+            executorFactory = executorProvider.createFactory(executorEnv);
 
             final FactoryAdvice factoryAdvice;
             factoryAdvice = createFactoryAdviceComposite(this.factoryAdvices);
@@ -278,7 +203,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
         LOG.info(msgPrefix);
         final long startTime;
         startTime = System.currentTimeMillis();
-        final ExecutorFactory executorFactory;
+        final SyncExecutorFactory executorFactory;
         executorFactory = sessionFactory.executorFactory;
 
         try (MetaExecutor metaExecutor = executorFactory.createMetaExecutor()) {
@@ -407,20 +332,20 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
     }
 
 
-    private static ExecutorProvider createExecutorProvider(final ArmyEnvironment env, final Object dataSource) {
+    private static SyncStmtExecutorFactoryProvider createExecutorProvider(final ArmyEnvironment env, final Object dataSource) {
 
         final Class<?> providerClass;
         final String className = env.getOrDefault(SyncKey.EXECUTOR_PROVIDER);
         try {
             providerClass = Class.forName(className);
         } catch (Exception e) {
-            String m = String.format("Load class %s %s occur error.", ExecutorProvider.class.getName(), className);
+            String m = String.format("Load class %s %s occur error.", SyncStmtExecutorFactoryProvider.class.getName(), className);
             throw new SessionFactoryException(m, e);
         }
 
-        if (!ExecutorProvider.class.isAssignableFrom(providerClass)) {
+        if (!SyncStmtExecutorFactoryProvider.class.isAssignableFrom(providerClass)) {
             String m = String.format("%s value[%s] isn' the implementation of %s ."
-                    , SyncKey.EXECUTOR_PROVIDER, className, ExecutorProvider.class.getName());
+                    , SyncKey.EXECUTOR_PROVIDER, className, SyncStmtExecutorFactoryProvider.class.getName());
             throw new SessionFactoryException(m);
         }
 
@@ -439,8 +364,8 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
                 throw new SessionFactoryException(m);
 
             }
-            final ExecutorProvider provider;
-            provider = (ExecutorProvider) method.invoke(null, dataSource);
+            final SyncStmtExecutorFactoryProvider provider;
+            provider = (SyncStmtExecutorFactoryProvider) method.invoke(null, dataSource);
             if (provider == null) {
                 String m = String.format("%s %s return null.", methodName, providerClass.getName());
                 throw new NullPointerException(m);

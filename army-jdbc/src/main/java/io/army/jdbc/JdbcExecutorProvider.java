@@ -7,9 +7,9 @@ import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sync.executor.ExecutorProvider;
 import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.RmExecutorFactory;
+import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ import java.sql.*;
 import java.util.Objects;
 
 @SuppressWarnings("unused")
-public final class JdbcExecutorProvider implements ExecutorProvider {
+public final class JdbcExecutorProvider implements SyncStmtExecutorFactoryProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcExecutorProvider.class);
 
@@ -84,7 +84,7 @@ public final class JdbcExecutorProvider implements ExecutorProvider {
     }
 
     @Override
-    public LocalExecutorFactory createLocalFactory(final ExecutorEnv env) {
+    public LocalExecutorFactory createFactory(final ExecutorEnv env) {
         final CommonDataSource dataSource = this.dataSource;
         if (!(dataSource instanceof DataSource)) {
             String m = String.format("unsupported creating %s", LocalExecutorFactory.class.getName());

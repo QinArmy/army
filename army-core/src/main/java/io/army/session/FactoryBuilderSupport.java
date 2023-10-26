@@ -7,21 +7,25 @@ import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.dialect.DialectEnv;
 import io.army.env.ArmyEnvironment;
+import io.army.env.ArmyKey;
+import io.army.executor.ExecutorEnv;
 import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
+import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.util._Collections;
 
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class FactoryBuilderSupport {
+public abstract class FactoryBuilderSupport<B, R> implements FactoryBuilderSpec<B, R> {
 
     protected String name;
 
     protected ArmyEnvironment environment;
 
+    protected Object dataSource;
     protected Collection<FieldCodec> fieldCodecs;
 
     protected SchemaMeta schemaMeta = _SchemaMetaFactory.getSchema("", "");
@@ -45,8 +49,129 @@ public abstract class FactoryBuilderSupport {
     Map<Class<?>, TableMeta<?>> tableMap;
 
 
+    @Override
+    public final B name(String sessionFactoryName) {
+        this.name = sessionFactoryName;
+        return (B) this;
+    }
+
+    @Override
+    public final B environment(ArmyEnvironment environment) {
+        this.environment = environment;
+        return (B) this;
+    }
+
+    @Override
+    public final B datasource(Object dataSource) {
+        this.dataSource = dataSource;
+        return (B) this;
+    }
+
+    @Override
+    public final B packagesToScan(List<String> packageList) {
+        this.packagesToScan = packageList;
+        return (B) this;
+    }
+
+    @Override
+    public final B schema(String catalog, String schema) {
+        this.schemaMeta = _SchemaMetaFactory.getSchema(catalog, schema);
+        return (B) this;
+    }
+
+    @Override
+    public final B factoryAdvice(Collection<FactoryAdvice> factoryAdvices) {
+        this.factoryAdvices = factoryAdvices;
+        return (B) this;
+    }
+
+    @Override
+    public final B exceptionFunction(Function<ArmyException, RuntimeException> exceptionFunction) {
+        this.exceptionFunction = exceptionFunction;
+        return (B) this;
+    }
+
+    @Override
+    public final B fieldGeneratorFactory(FieldGeneratorFactory factory) {
+        this.fieldGeneratorFactory = factory;
+        return (B) this;
+    }
+
+    @Override
+    public final R build() {
+
+        try {
+            final ArmyEnvironment env = Objects.requireNonNull(this.environment);
+            //1. scan table meta
+            this.scanSchema();
+
+            //2. create ExecutorProvider
+            final ExecutorProvider executorProvider;
+            executorProvider = createExecutorProvider(env, Objects.requireNonNull(this.dataSource));
+            //3. create ServerMeta
+            final ServerMeta serverMeta;
+            serverMeta = executorProvider.createServerMeta(env.getRequired(ArmyKey.DIALECT));
+
+            //4. create MappingEnv
+            final MappingEnv mappingEnv;
+            mappingEnv = MappingEnv.create(false, serverMeta, env.get(ArmyKey.ZONE_OFFSET), new MockJsonCodec());
+
+            //5. create ExecutorEnv
+            final String factoryName = Objects.requireNonNull(this.name);
+            final ExecutorEnv executorEnv;
+            executorEnv = createExecutorEnv(factoryName, serverMeta, env, mappingEnv);
+            //6. create LocalExecutorFactory
+            final LocalExecutorFactory executorFactory;
+            executorFactory = executorProvider.createLocalFactory(executorEnv);
+
+            final FactoryAdvice factoryAdvice;
+            factoryAdvice = createFactoryAdviceComposite(this.factoryAdvices);
+            //7. invoke beforeInstance
+            if (factoryAdvice != null) {
+                factoryAdvice.beforeInstance(serverMeta, env);
+            }
+            //8. create DialectEnv
+            this.dialectEnv = DialectEnv.builder()
+                    .factoryName(factoryName)
+                    .environment(env)
+                    .fieldGeneratorMap(Collections.emptyMap())//TODO
+                    .mappingEnv(mappingEnv)
+                    .build();
+
+            //9. create SessionFactoryImpl instance
+            this.executorFactory = executorFactory;
+            this.ddlMode = env.getOrDefault(ArmyKey.DDL_MODE);
+            final ArmySyncLocalSessionFactory sessionFactory;
+            sessionFactory = new ArmySyncLocalSessionFactory(this);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Created {}[{}]", SyncLocalSessionFactory.class.getName(), sessionFactory.name());
+            }
+            assert factoryName.equals(sessionFactory.name());
+            assert sessionFactory.executorFactory == executorFactory;
+            assert sessionFactory.mappingEnv == mappingEnv;
+
+            //9. invoke beforeInitialize
+            if (factoryAdvice != null) {
+                factoryAdvice.beforeInitialize(sessionFactory);
+            }
+
+            //10. invoke initializingFactory
+            initializingFactory(sessionFactory);
+
+            //7. invoke afterInitialize
+            if (factoryAdvice != null) {
+                factoryAdvice.afterInitialize(sessionFactory);
+            }
+            return sessionFactory;
+        } catch (SessionFactoryException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new SessionFactoryException(e, e.getMessage());
+        }
+    }
 
 
+    protected abstract S
 
     protected final void scanSchema() {
 

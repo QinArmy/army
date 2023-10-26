@@ -5,6 +5,7 @@ import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.session.executor.StmtExecutorFactoryProviderSpec;
 
 /**
  * <p>
@@ -19,8 +20,9 @@ import io.army.session.DataAccessException;
  *  </pre>
  * </p>
  */
-public interface ExecutorProvider {
+public interface SyncStmtExecutorFactoryProvider extends StmtExecutorFactoryProviderSpec {
 
+    @Override
     ServerMeta createServerMeta(Dialect usedDialect) throws DataAccessException;
 
 
@@ -29,13 +31,15 @@ public interface ExecutorProvider {
      * @throws IllegalStateException         throw when invoke this method before {@link #createServerMeta()}
      * @throws IllegalArgumentException      throw when {@link  MappingEnv#serverMeta()} not match.
      */
-    LocalExecutorFactory createLocalFactory(ExecutorEnv env);
+    @Override
+    LocalExecutorFactory createFactory(ExecutorEnv env);
 
     /**
      * @throws UnsupportedOperationException throw when support only creating{@link LocalExecutorFactory }
      * @throws IllegalStateException         throw when invoke this method before {@link #createServerMeta()}
      * @throws IllegalArgumentException      throw when {@link  MappingEnv#serverMeta()} not match.
      */
+    @Override
     RmExecutorFactory createRmFactory(ExecutorEnv env);
 
 

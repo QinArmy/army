@@ -3,10 +3,11 @@ package io.army.jdbd;
 import io.army.ArmyException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.env.ArmyEnvironment;
 import io.army.executor.ExecutorEnv;
 import io.army.meta.ServerMeta;
-import io.army.reactive.executor.ExecutorProvider;
-import io.army.reactive.executor.StmtExecutorFactory;
+import io.army.reactive.executor.ReactiveStmtExecutorFactory;
+import io.army.reactive.executor.ReactiveStmtExecutorFactoryProvider;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 import io.jdbd.meta.DatabaseMetaData;
@@ -17,29 +18,34 @@ import io.jdbd.session.ServerVersion;
 import reactor.core.publisher.Mono;
 
 /**
- * <p>This class is a implementation of {@link ExecutorProvider} with jdbd spi.
+ * <p>This class is a implementation of {@link ReactiveStmtExecutorFactoryProvider} with jdbd spi.
  *
  * @since 10
  */
-public final class JdbdExecutorProvider implements ExecutorProvider {
+public final class JdbdStmtExecutorFactoryProvider implements ReactiveStmtExecutorFactoryProvider {
 
-    public static JdbdExecutorProvider create(final Object sessionFactory) {
-        if (!(sessionFactory instanceof DatabaseSessionFactory)) {
+    public static JdbdStmtExecutorFactoryProvider create(final Object datasource, final String factoryName,
+                                                         final ArmyEnvironment env) {
+        if (!(datasource instanceof DatabaseSessionFactory)) {
             String m = String.format("%s support only %s,but passing %s",
-                    JdbdExecutorProvider.class.getName(),
+                    JdbdStmtExecutorFactoryProvider.class.getName(),
                     DatabaseSessionFactory.class.getName(),
-                    _ClassUtils.safeClassName(sessionFactory)
+                    _ClassUtils.safeClassName(datasource)
             );
             throw new ArmyException(m);
         }
-        return new JdbdExecutorProvider((DatabaseSessionFactory) sessionFactory);
+        return new JdbdStmtExecutorFactoryProvider((DatabaseSessionFactory) datasource, factoryName);
     }
 
 
-    private final DatabaseSessionFactory sessionFactory;
+    final DatabaseSessionFactory sessionFactory;
 
-    private JdbdExecutorProvider(DatabaseSessionFactory sessionFactory) {
+    final String factoryName;
+
+
+    private JdbdStmtExecutorFactoryProvider(DatabaseSessionFactory sessionFactory, String factoryName) {
         this.sessionFactory = sessionFactory;
+        this.factoryName = factoryName;
     }
 
     @Override
@@ -51,8 +57,8 @@ public final class JdbdExecutorProvider implements ExecutorProvider {
     }
 
     @Override
-    public Mono<StmtExecutorFactory> createExecutorFactory(ExecutorEnv env) {
-        return Mono.just(JdbdStmtExecutorFactory.create(this.sessionFactory, env));
+    public Mono<ReactiveStmtExecutorFactory> createFactory(ExecutorEnv env) {
+        return Mono.just(JdbdStmtExecutorFactory.create(this.sessionFactory, this.factoryName, env));
     }
 
 

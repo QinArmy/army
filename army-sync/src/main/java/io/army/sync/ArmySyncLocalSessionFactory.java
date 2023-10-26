@@ -7,9 +7,9 @@ import io.army.meta.ServerMeta;
 import io.army.proxy._SessionCacheFactory;
 import io.army.session.DataAccessException;
 import io.army.session.SessionFactoryException;
-import io.army.sync.executor.ExecutorFactory;
 import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.LocalStmtExecutor;
+import io.army.sync.executor.SyncExecutorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +76,7 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
             try {
                 this.executorFactory.close();
             } catch (DataAccessException e) {
-                String m = String.format("%s close occur error.%s", ExecutorFactory.class.getName(), e.getMessage());
+                String m = String.format("%s close occur error.%s", SyncExecutorFactory.class.getName(), e.getMessage());
                 throw new SessionFactoryException(m, e);
             }
             this.closed = true;

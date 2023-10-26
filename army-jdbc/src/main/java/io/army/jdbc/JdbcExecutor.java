@@ -13,7 +13,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.session.CurrentRecord;
 import io.army.session.DataAccessException;
-import io.army.session.ExecutorSupport;
+import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.*;

@@ -8,21 +8,23 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.reactive.executor.LocalStmtExecutor;
 import io.army.reactive.executor.MetaExecutor;
+import io.army.reactive.executor.ReactiveStmtExecutorFactory;
 import io.army.reactive.executor.RmStmtExecutor;
-import io.army.reactive.executor.StmtExecutorFactory;
 import io.army.session.DataAccessException;
+import io.army.session.Option;
 import io.jdbd.JdbdException;
 import io.jdbd.session.DatabaseSessionFactory;
 import reactor.core.publisher.Mono;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-final class JdbdStmtExecutorFactory implements StmtExecutorFactory {
+final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
 
-    static JdbdStmtExecutorFactory create(DatabaseSessionFactory sessionFactory, ExecutorEnv executorEnv) {
-        return new JdbdStmtExecutorFactory(sessionFactory, executorEnv);
+    static JdbdStmtExecutorFactory create(JdbdStmtExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
+        return new JdbdStmtExecutorFactory(provider, executorEnv);
     }
 
+    final String name;
 
     final ExecutorEnv executorEnv;
 
@@ -35,8 +37,9 @@ final class JdbdStmtExecutorFactory implements StmtExecutorFactory {
 
     private final AtomicBoolean factoryClosed = new AtomicBoolean(false);
 
-    private JdbdStmtExecutorFactory(DatabaseSessionFactory sessionFactory, ExecutorEnv executorEnv) {
-        this.sessionFactory = sessionFactory;
+    private JdbdStmtExecutorFactory(JdbdStmtExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
+        this.name = provider.factoryName;
+        this.sessionFactory = provider.sessionFactory;
         this.executorEnv = executorEnv;
         this.mappingEnv = executorEnv.mappingEnv();
         this.serverMeta = executorEnv.serverMeta();
@@ -54,17 +57,28 @@ final class JdbdStmtExecutorFactory implements StmtExecutorFactory {
     }
 
     @Override
+    public boolean supportSavePoints() {
+        // true,jdbd provider save point spi
+        return true;
+    }
+
+    @Override
     public Mono<MetaExecutor> metaExecutor() {
         return null;
     }
 
     @Override
-    public Mono<LocalStmtExecutor> localStmtExecutor() {
+    public Mono<LocalStmtExecutor> localExecutor() {
         return null;
     }
 
     @Override
-    public Mono<RmStmtExecutor> rmStmtExecutor() {
+    public Mono<RmStmtExecutor> rmExecutor() {
+        return null;
+    }
+
+    @Override
+    public <T> T valueOf(Option<T> option) {
         return null;
     }
 
@@ -77,6 +91,7 @@ final class JdbdStmtExecutorFactory implements StmtExecutorFactory {
     public <T> Mono<T> close() {
         return Mono.defer(this::closeFactory);
     }
+
 
     private <T> Mono<T> closeFactory() {
         final Mono<T> mono;

@@ -2,6 +2,7 @@ package io.army.sync.executor;
 
 
 import io.army.session.DataAccessException;
+import io.army.session.executor.StmtExecutorFactory;
 
 /**
  * <p>
@@ -14,19 +15,14 @@ import io.army.session.DataAccessException;
  *
  * @since 1.0
  */
-public interface ExecutorFactory {
+public interface SyncExecutorFactory extends StmtExecutorFactory, AutoCloseable {
 
-
-    /**
-     * @return true : underlying database driver provider save point api.
-     */
-    boolean supportSavePoints();
 
     MetaExecutor createMetaExecutor() throws DataAccessException;
 
     /**
      * <p>
-     * close {@link ExecutorFactory},but don't close underlying data source(eg:{@code  javax.sql.DataSource}).
+     * close {@link SyncExecutorFactory},but don't close underlying data source(eg:{@code  javax.sql.DataSource}).
      * </p>
      */
     void close() throws DataAccessException;

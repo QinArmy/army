@@ -79,7 +79,7 @@ final class ArmyReactiveLocalSessionFactory extends ArmyReactiveSessionFactory i
         @Override
         protected Mono<ReactiveLocalSession> createSession() {
             return ((ArmyReactiveLocalSessionFactory) this.factory).stmtExecutorFactory
-                    .localStmtExecutor()
+                    .localExecutor()
                     .map(this::createLocalSession);
         }
 
