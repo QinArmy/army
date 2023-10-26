@@ -5,6 +5,7 @@ import io.army.dialect.h2.H2Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.oracle.OracleDialect;
 import io.army.dialect.postgre.PostgreDialect;
+import io.army.lang.Nullable;
 import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -69,6 +70,29 @@ public enum Database {
                 throw _Exceptions.unexpectedEnum(meta.dialectDatabase());
         }
         return dialect;
+    }
+
+    public static Database mapToDatabase(final String productFamily, final @Nullable Function<String, Database> func) {
+        Database database = null;
+        switch (productFamily) {
+            case "MySQL":
+                database = Database.MySQL;
+                break;
+            case "PostgreSQL":
+                database = Database.PostgreSQL;
+                break;
+            case "Oracle":
+                database = Database.Oracle;
+                break;
+            default:
+                if (func != null) {
+                    database = func.apply(productFamily);
+                }
+        }
+        if (database == null) {
+            throw _Exceptions.unsupportedDatabaseFamily(productFamily);
+        }
+        return database;
     }
 
 

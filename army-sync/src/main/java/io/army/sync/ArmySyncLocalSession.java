@@ -10,7 +10,7 @@ import io.army.meta.TableMeta;
 import io.army.proxy._SessionCache;
 import io.army.session.*;
 import io.army.stmt.*;
-import io.army.sync.executor.StmtExecutor;
+import io.army.sync.executor.SyncStmtExecutor;
 import io.army.tx.CannotCreateTransactionException;
 import io.army.tx.Isolation;
 import io.army.tx.NoTransactionException;
@@ -36,7 +36,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
 
     final ArmySyncLocalSessionFactory factory;
 
-    final StmtExecutor stmtExecutor;
+    final SyncStmtExecutor stmtExecutor;
 
     private final _SessionCache sessionCache;
 

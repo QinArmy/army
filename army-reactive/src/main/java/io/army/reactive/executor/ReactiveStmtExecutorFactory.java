@@ -1,17 +1,31 @@
 package io.army.reactive.executor;
 
 import io.army.reactive.ReactiveCloseable;
-import io.army.session.executor.StmtExecutorFactory;
+import io.army.session.executor.StmtExecutorFactorySpec;
 import reactor.core.publisher.Mono;
 
 
-public interface ReactiveStmtExecutorFactory extends StmtExecutorFactory, ReactiveCloseable {
+/**
+ * <p>This interface representing {@link ReactiveStmtExecutor} factory.
+ * <p>This interface extends {@link StmtExecutorFactorySpec} and have overridden following methods:
+ * <ul>
+ *     <li>{@link #metaExecutor(String)}</li>
+ *     <li>{@link #localExecutor(String)}</li>
+ *     <li>{@link #rmExecutor(String)}</li>
+ * </ul>
+ *
+ * @since 1.0
+ */
+public interface ReactiveStmtExecutorFactory extends StmtExecutorFactorySpec, ReactiveCloseable {
 
 
-    Mono<MetaExecutor> metaExecutor();
+    @Override
+    Mono<ReactiveMetaExecutor> metaExecutor(String name);
 
-    Mono<LocalStmtExecutor> localExecutor();
+    @Override
+    Mono<ReactiveLocalStmtExecutor> localExecutor(String name);
 
-    Mono<RmStmtExecutor> rmExecutor();
+    @Override
+    Mono<ReactiveRmStmtExecutor> rmExecutor(String name);
 
 }

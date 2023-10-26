@@ -1,5 +1,6 @@
 package io.army.session.executor;
 
+import io.army.ArmyException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.Selection;
@@ -126,6 +127,16 @@ public abstract class ExecutorSupport {
         String m = String.format("second query row count[%s] and first query row[%s] not match.",
                 secondRowCount, firstRowCount);
         return new DataAccessException(m);
+    }
+
+
+    public static ArmyException executorFactoryClosed(StmtExecutorFactorySpec factory) {
+        String m = String.format("%s have closed.", factory);
+        return new ArmyException(m);
+    }
+
+    public static Throwable wrapIfNeed(Throwable cause) {
+        return _Exceptions.wrapIfNeed(cause);
     }
 
 

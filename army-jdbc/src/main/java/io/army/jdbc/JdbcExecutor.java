@@ -17,7 +17,7 @@ import io.army.session.executor.ExecutorSupport;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.*;
-import io.army.sync.executor.StmtExecutor;
+import io.army.sync.executor.SyncStmtExecutor;
 import io.army.type.ImmutableSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -39,7 +39,7 @@ import java.util.function.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-abstract class JdbcExecutor extends ExecutorSupport implements StmtExecutor {
+abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor {
 
 
     final JdbcExecutorFactory factory;

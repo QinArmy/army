@@ -7,7 +7,7 @@ import io.army.criteria.SimpleDqlStatement;
 import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.ChildTableMeta;
-import io.army.reactive.executor.StmtExecutor;
+import io.army.reactive.executor.ReactiveStmtExecutor;
 import io.army.session.*;
 import io.army.stmt.*;
 import io.army.tx.TransactionInfo;
@@ -42,7 +42,7 @@ import java.util.function.Supplier;
  */
 abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSession {
 
-    final StmtExecutor stmtExecutor;
+    final ReactiveStmtExecutor stmtExecutor;
     private final AtomicBoolean sessionClosed = new AtomicBoolean(false);
 
     protected ArmyReactiveSession(ArmyReactiveSessionFactory.ReactiveSessionBuilder<?, ?> builder) {

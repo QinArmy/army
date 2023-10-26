@@ -1,6 +1,6 @@
 package io.army.reactive;
 
-import io.army.reactive.executor.LocalStmtExecutor;
+import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.session.DriverSpi;
 import io.army.session.Option;
 import io.army.session._ArmySession;
@@ -116,7 +116,7 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
         } else if (inTransaction()) {
             mono = Mono.error(_Exceptions.existsTransaction(this));
         } else {
-            mono = ((LocalStmtExecutor) this.stmtExecutor).startTransaction(option)
+            mono = ((ReactiveLocalStmtExecutor) this.stmtExecutor).startTransaction(option)
                     .doOnSuccess(info -> TRANSACTION_INFO.set(this, info))
                     .onErrorMap(error -> {
                         TRANSACTION_INFO.set(this, null);
@@ -151,7 +151,7 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
         } else if (ROLLBACK_ONLY.get(this) != 0) {
             mono = Mono.error(_Exceptions.rollbackOnlyTransaction(this));
         } else {
-            mono = ((LocalStmtExecutor) this.stmtExecutor).commit(optionFunc)
+            mono = ((ReactiveLocalStmtExecutor) this.stmtExecutor).commit(optionFunc)
                     .doOnSuccess(this::handleTransactionEndSuccess)
                     .onErrorMap(_ArmySession::wrapIfNeed)
                     .thenReturn(this);
@@ -170,7 +170,7 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
         if (isClosed()) {
             mono = Mono.error(_Exceptions.sessionClosed(this));
         } else {
-            mono = ((LocalStmtExecutor) this.stmtExecutor).rollback(optionFunc)
+            mono = ((ReactiveLocalStmtExecutor) this.stmtExecutor).rollback(optionFunc)
                     .doOnSuccess(this::handleTransactionEndSuccess)
                     .onErrorMap(_ArmySession::wrapIfNeed)
                     .thenReturn(this);

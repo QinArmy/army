@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 import java.util.function.Function;
 
-public interface LocalStmtExecutor extends StmtExecutor {
+public interface ReactiveLocalStmtExecutor extends ReactiveStmtExecutor {
 
     Mono<TransactionInfo> startTransaction(TransactionOption option);
 

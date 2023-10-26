@@ -1,6 +1,6 @@
 package io.army.sync.executor;
 
-public interface RmStmtExecutor extends StmtExecutor {
+public interface RmStmtExecutor extends SyncStmtExecutor {
 
 
 }

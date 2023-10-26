@@ -7,6 +7,7 @@ import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 import io.army.sync.executor.LocalStmtExecutor;
+import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util._Exceptions;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ import java.util.UUID;
 
 /**
  * <p>
- * This class is a implementation of {@link io.army.sync.executor.StmtExecutor} with postgre JDBC driver.
+ * This class is a implementation of {@link SyncStmtExecutor} with postgre JDBC driver.
  * </p>
  *
  * @since 1.0

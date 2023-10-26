@@ -1,7 +1,7 @@
 package io.army.reactive;
 
+import io.army.reactive.executor.ReactiveStmtExecutor;
 import io.army.reactive.executor.ReactiveStmtExecutorFactory;
-import io.army.reactive.executor.StmtExecutor;
 import io.army.session.DriverSpi;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmySessionFactory;
@@ -51,7 +51,7 @@ abstract class ArmyReactiveSessionFactory extends _ArmySessionFactory implements
 
     static abstract class ReactiveSessionBuilder<B, R> extends ArmySessionBuilder<B, R> {
 
-        StmtExecutor stmtExecutor;
+        ReactiveStmtExecutor stmtExecutor;
 
         ReactiveSessionBuilder(ArmyReactiveSessionFactory factory) {
             super(factory);

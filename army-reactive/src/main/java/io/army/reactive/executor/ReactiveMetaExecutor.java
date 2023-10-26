@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public interface MetaExecutor extends ReactiveCloseable {
+public interface ReactiveMetaExecutor extends ReactiveCloseable {
 
 
     /**
@@ -24,7 +24,7 @@ public interface MetaExecutor extends ReactiveCloseable {
      * @return emit <strong>this</strong>
      * @throws DataAccessException emit(not throw) when access database occur error.
      */
-    Mono<MetaExecutor> executeDdl(List<String> ddlList);
+    Mono<ReactiveMetaExecutor> executeDdl(List<String> ddlList);
 
 
 }

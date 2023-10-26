@@ -2,7 +2,7 @@ package io.army.reactive;
 
 import io.army.dialect.DialectParser;
 import io.army.meta.ServerMeta;
-import io.army.reactive.executor.LocalStmtExecutor;
+import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.util._Exceptions;
 import reactor.core.publisher.Mono;
 
@@ -88,7 +88,7 @@ final class ArmyReactiveLocalSessionFactory extends ArmyReactiveSessionFactory i
             return Mono.error(_Exceptions.wrapIfNeed(cause));
         }
 
-        private ReactiveLocalSession createLocalSession(final LocalStmtExecutor stmtExecutor) {
+        private ReactiveLocalSession createLocalSession(final ReactiveLocalStmtExecutor stmtExecutor) {
             this.stmtExecutor = stmtExecutor;
             return new ArmyReactiveLocalSession(this);
         }

@@ -6,6 +6,7 @@ import io.army.meta.TableMeta;
 import io.army.session.CurrentRecord;
 import io.army.session.DataAccessException;
 import io.army.session.OptimisticLockException;
+import io.army.session.executor.StmtExecutor;
 import io.army.stmt.*;
 import io.army.sync.MultiResult;
 import io.army.sync.MultiStream;
@@ -24,8 +25,7 @@ import java.util.stream.Stream;
  *
  * @since 1.0
  */
-public interface StmtExecutor {
-
+public interface SyncStmtExecutor extends StmtExecutor {
 
 
     /**

@@ -2,7 +2,7 @@ package io.army.sync.executor;
 
 
 import io.army.session.DataAccessException;
-import io.army.session.executor.StmtExecutorFactory;
+import io.army.session.executor.StmtExecutorFactorySpec;
 
 /**
  * <p>
@@ -15,10 +15,20 @@ import io.army.session.executor.StmtExecutorFactory;
  *
  * @since 1.0
  */
-public interface SyncExecutorFactory extends StmtExecutorFactory, AutoCloseable {
+public interface SyncExecutorFactory extends StmtExecutorFactorySpec, AutoCloseable {
 
 
     MetaExecutor createMetaExecutor() throws DataAccessException;
+
+
+    @Override
+    MetaExecutor metaExecutor(String name);
+
+    @Override
+    LocalStmtExecutor localExecutor(String name);
+
+    @Override
+    RmStmtExecutor rmExecutor(String name);
 
     /**
      * <p>

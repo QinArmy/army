@@ -2,17 +2,29 @@ package io.army.jdbd;
 
 import io.army.function.IntBiFunction;
 import io.army.mapping.MappingType;
+import io.army.reactive.executor.ReactiveLocalStmtExecutor;
+import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.session.Option;
 import io.army.sqltype.SqlType;
 import io.jdbd.meta.DataType;
 import io.jdbd.result.DataRow;
 import io.jdbd.result.ResultRowMeta;
 import io.jdbd.session.DatabaseSession;
+import io.jdbd.session.LocalDatabaseSession;
+import io.jdbd.session.RmDatabaseSession;
 import io.jdbd.session.TransactionOption;
 
 import java.util.function.Function;
 
 abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtExecutor<S> {
+
+    static ReactiveLocalStmtExecutor localExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    static ReactiveRmStmtExecutor rmExecutor(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name) {
+        throw new UnsupportedOperationException();
+    }
 
 
     public PostgreStmtExecutor(JdbdStmtExecutorFactory factory, S session) {

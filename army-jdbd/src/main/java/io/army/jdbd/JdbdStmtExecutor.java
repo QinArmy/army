@@ -16,7 +16,7 @@ import io.army.meta.TypeMeta;
 import io.army.reactive.QueryResults;
 import io.army.reactive.ReactiveStmtOption;
 import io.army.reactive.executor.ReactiveExecutorSupport;
-import io.army.reactive.executor.StmtExecutor;
+import io.army.reactive.executor.ReactiveStmtExecutor;
 import io.army.session.*;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
@@ -54,7 +54,7 @@ import java.util.function.Supplier;
 
 
 /**
- * <p>This class is a abstract implementation of {@link StmtExecutor} with jdbd spi.
+ * <p>This class is a abstract implementation of {@link ReactiveStmtExecutor} with jdbd spi.
  * <p>This class is base class of following jdbd executor:
  * <ul>
  *     <li>{@link MySQLStmtExecutor}</li>
@@ -64,20 +64,28 @@ import java.util.function.Supplier;
  * 当你在阅读这段代码时,我才真正在写这段代码,你阅读到哪里,我便写到哪里.
  *
  * @param <S> the java type of {@link DatabaseSession}
+ * @see JdbdStmtExecutorFactory
  * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
  */
 abstract class JdbdStmtExecutor<S extends DatabaseSession> extends ReactiveExecutorSupport
-        implements StmtExecutor {
+        implements ReactiveStmtExecutor {
 
     final JdbdStmtExecutorFactory factory;
 
     final S session;
 
-    JdbdStmtExecutor(JdbdStmtExecutorFactory factory, S session) {
+    final String name;
+
+    JdbdStmtExecutor(JdbdStmtExecutorFactory factory, S session, String name) {
+        this.name = name;
         this.factory = factory;
         this.session = session;
     }
 
+    @Override
+    public final String name() {
+        return this.name;
+    }
 
     @Override
     public final long sessionIdentifier() throws DataAccessException {
