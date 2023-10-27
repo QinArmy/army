@@ -1,16 +1,23 @@
 package io.army.sync;
 
-import io.army.criteria.*;
+import io.army.criteria.BatchDmlStatement;
+import io.army.criteria.InsertStatement;
+import io.army.criteria.SimpleDmlStatement;
+import io.army.criteria.SimpleDqlStatement;
 import io.army.criteria.dialect.BatchDqlStatement;
+import io.army.criteria.impl.inner._BatchStatement;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
 import io.army.session.CurrentRecord;
 import io.army.session.SessionException;
 import io.army.session._ArmySession;
+import io.army.stmt.BatchStmt;
+import io.army.stmt.SimpleStmt;
 import io.army.sync.executor.SyncStmtExecutor;
-import io.army.util.ArmyCriteria;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
@@ -44,346 +51,281 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         assert this.stmtExecutor != null;
     }
 
-
-    @Nullable
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
-        return this.queryOne(statement, resultClass, Visible.ONLY_VISIBLE);
+        return onlyRow(this.query(statement, resultClass, _Collections::arrayList, defaultOption()));
     }
 
-
-    @Nullable
     @Override
-    public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, final Visible visible) {
-        final List<R> resultList;
-        resultList = this.query(statement, resultClass, _Collections::arrayList, visible);
-        return onlyRow(resultList);
+    public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
+        return onlyRow(this.query(statement, resultClass, _Collections::arrayList, option));
     }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
-        return this.queryOneObject(statement, constructor, Visible.ONLY_VISIBLE);
+        return onlyRow(this.queryObject(statement, constructor, _Collections::arrayList, defaultOption()));
     }
 
-    @Nullable
     @Override
-    public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, final Visible visible) {
-        return onlyRow(this.queryObject(statement, constructor, _Collections::arrayList, visible));
+    public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
+        return onlyRow(this.queryObject(statement, constructor, _Collections::arrayList, option));
     }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.queryOneRecord(statement, function, Visible.ONLY_VISIBLE);
+        return onlyRow(this.queryRecord(statement, function, _Collections::arrayList, defaultOption()));
     }
 
     @Override
-    public final <R> R queryOneRecord(final SimpleDqlStatement statement, final Function<CurrentRecord, R> function,
-                                      final Visible visible) {
-        return onlyRow(this.queryRecord(statement, function, _Collections::arrayList, visible));
+    public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
+        return onlyRow(this.queryRecord(statement, function, _Collections::arrayList, option));
     }
 
     @Override
     public final <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass) {
-        return this.query(statement, resultClass, _Collections::arrayList, Visible.ONLY_VISIBLE);
+        return this.query(statement, resultClass, _Collections::arrayList, defaultOption());
+    }
+
+    @Override
+    public final <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
+        return this.query(statement, resultClass, _Collections::arrayList, option);
     }
 
     @Override
     public final <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor) {
-        return this.query(statement, resultClass, listConstructor, Visible.ONLY_VISIBLE);
+        return this.query(statement, resultClass, listConstructor, defaultOption());
     }
 
     @Override
-    public final <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Visible visible) {
-        return this.query(statement, resultClass, _Collections::arrayList, visible);
+    public final <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option) {
+        return this.executeQuery(statement, option, s -> this.stmtExecutor.query(s, resultClass, listConstructor, option));
     }
 
     @Override
     public final <R> List<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor) {
-        return this.queryObject(statement, constructor, _Collections::arrayList, Visible.ONLY_VISIBLE);
+        return this.queryObject(statement, constructor, _Collections::arrayList, defaultOption());
+    }
+
+    @Override
+    public final <R> List<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
+        return this.queryObject(statement, constructor, _Collections::arrayList, option);
     }
 
     @Override
     public final <R> List<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor) {
-        return this.queryObject(statement, constructor, listConstructor, Visible.ONLY_VISIBLE);
+        return this.queryObject(statement, constructor, listConstructor, defaultOption());
     }
 
     @Override
-    public final <R> List<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Visible visible) {
-        return this.queryObject(statement, constructor, _Collections::arrayList, visible);
+    public final <R> List<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option) {
+        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryObject(s, constructor, listConstructor, option));
     }
 
     @Override
     public final <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.queryRecord(statement, function, _Collections::arrayList, Visible.ONLY_VISIBLE);
+        return this.queryRecord(statement, function, _Collections::arrayList, defaultOption());
     }
 
     @Override
-    public final <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function,
-                                         Supplier<List<R>> listConstructor) {
-        return this.queryRecord(statement, function, listConstructor, Visible.ONLY_VISIBLE);
+    public final <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
+        return this.queryRecord(statement, function, _Collections::arrayList, option);
     }
 
     @Override
-    public final <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function,
-                                         Visible visible) {
-        return this.queryRecord(statement, function, _Collections::arrayList, visible);
-    }
-
-
-    @Override
-    public final <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, StreamOptions options) {
-        return this.queryStream(statement, resultClass, options, Visible.ONLY_VISIBLE);
-    }
-
-
-    @Override
-    public final <R> Stream<R> queryObjectStream(SimpleDqlStatement statement, Supplier<R> constructor,
-                                                 StreamOptions options) {
-        return this.queryObjectStream(statement, constructor, options, Visible.ONLY_VISIBLE);
+    public final <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor) {
+        return this.queryRecord(statement, function, listConstructor, defaultOption());
     }
 
     @Override
-    public final <R> Stream<R> queryRecardStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function,
-                                                 StreamOptions options) {
-        return this.queryRecardStream(statement, function, options, Visible.ONLY_VISIBLE);
+    public final <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) {
+        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryRecord(s, function, listConstructor, option));
+    }
+
+    @Override
+    public final <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass) {
+        return this.queryStream(statement, resultClass, defaultOption());
+    }
+
+    @Override
+    public final <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
+        return this.executeQueryStream(statement, option, s -> this.stmtExecutor.queryStream(s, resultClass, option));
+    }
+
+    @Override
+    public final <R> Stream<R> queryObjectStream(SimpleDqlStatement statement, Supplier<R> constructor) {
+        return this.queryObjectStream(statement, constructor, defaultOption());
+    }
+
+    @Override
+    public final <R> Stream<R> queryObjectStream(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
+        return this.executeQueryStream(statement, option, s -> this.stmtExecutor.queryObjectStream(s, constructor, option));
+    }
+
+    @Override
+    public final <R> Stream<R> queryRecordStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
+        return this.queryRecordStream(statement, function, defaultOption());
+    }
+
+    @Override
+    public final <R> Stream<R> queryRecordStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
+        return this.executeQueryStream(statement, option, s -> this.stmtExecutor.queryRecordStream(s, function, option));
     }
 
     @Override
     public final long update(SimpleDmlStatement statement) {
-        return this.update(statement, Visible.ONLY_VISIBLE);
-    }
-
-
-    @Override
-    public final <T> long save(T domain) {
-        return this.update(ArmyCriteria.insertStmt(this, domain), Visible.ONLY_VISIBLE);
+        return this.update(statement, defaultOption());
     }
 
     @Override
-    public final <T> long save(T domain, Visible visible) {
-        return this.update(ArmyCriteria.insertStmt(this, domain), visible);
-    }
+    public final long update(SimpleDmlStatement statement, SyncStmtOption option) {
+        if (statement instanceof _BatchStatement) {
+            throw _Exceptions.unexpectedStatement(statement);
+        }
+        try {
+            assertSession(statement);
+            final long rows;
+            if (statement instanceof InsertStatement) {
+                rows = this.executeInsert((InsertStatement) statement, option);
+            } else {
+                rows = this.executeUpdate(statement, option);
+            }
+            return rows;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).clear();
+            }
+        }
 
-    @Override
-    public final <T> long batchSave(List<T> domainList) {
-        return this.update(ArmyCriteria.batchInsertStmt(this, domainList), Visible.ONLY_VISIBLE);
-    }
 
-    @Override
-    public final <T> long batchSave(List<T> domainList, Visible visible) {
-        return this.update(ArmyCriteria.batchInsertStmt(this, domainList), visible);
     }
 
 
     @Override
     public final List<Long> batchUpdate(BatchDmlStatement statement) {
-        return this.batchUpdate(statement, _Collections::arrayList, false, Visible.ONLY_VISIBLE);
+        return this.batchUpdate(statement, _Collections::arrayList, defaultOption());
+    }
+
+    @Override
+    public final List<Long> batchUpdate(BatchDmlStatement statement, SyncStmtOption option) {
+        return this.batchUpdate(statement, _Collections::arrayList, option);
     }
 
     @Override
     public final List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor) {
-        return this.batchUpdate(statement, listConstructor, false, Visible.ONLY_VISIBLE);
+        return this.batchUpdate(statement, listConstructor, defaultOption());
     }
 
     @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement, Visible visible) {
-        return this.batchUpdate(statement, _Collections::arrayList, false, visible);
+    public final List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor, SyncStmtOption option) {
+        return null;
     }
 
     @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement, boolean useMultiStmt) {
-        return this.batchUpdate(statement, _Collections::arrayList, useMultiStmt, Visible.ONLY_VISIBLE);
+    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass) {
+        return null;
     }
 
     @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor,
-                                        boolean useMultiStmt) {
-        return this.batchUpdate(statement, listConstructor, useMultiStmt, Visible.ONLY_VISIBLE);
+    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
+        return null;
     }
 
     @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement, boolean useMultiStmt, Visible visible) {
-        return this.batchUpdate(statement, _Collections::arrayList, useMultiStmt, visible);
+    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor) {
+        return null;
     }
 
     @Override
-    public final List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor,
-                                        Visible visible) {
-        return this.batchUpdate(statement, listConstructor, false, visible);
-    }
-
-
-    @Override
-    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator) {
-        return this.batchQuery(statement, resultClass, terminator, _Collections::arrayList, false, Visible.ONLY_VISIBLE);
+    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor) {
+        return null;
     }
 
     @Override
-    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator,
-                                        Supplier<List<R>> listConstructor) {
-        return this.batchQuery(statement, resultClass, terminator, listConstructor, false, Visible.ONLY_VISIBLE);
+    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
+        return null;
     }
 
     @Override
-    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator,
-                                        Supplier<List<R>> listConstructor, boolean useMultiStmt) {
-        return this.batchQuery(statement, resultClass, terminator, listConstructor, useMultiStmt, Visible.ONLY_VISIBLE);
+    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor) {
+        return null;
     }
 
     @Override
-    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator,
-                                        Visible visible) {
-        return this.batchQuery(statement, resultClass, terminator, _Collections::arrayList, false, visible);
+    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function) {
+        return null;
     }
 
     @Override
-    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, R terminator,
-                                        Supplier<List<R>> listConstructor, Visible visible) {
-        return this.batchQuery(statement, resultClass, terminator, listConstructor, false, visible);
-    }
-
-
-    @Override
-    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator) {
-        return this.batchQueryObject(statement, constructor, terminator, _Collections::arrayList, false, Visible.ONLY_VISIBLE);
+    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
+        return null;
     }
 
     @Override
-    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
-                                              Supplier<List<R>> listConstructor) {
-        return this.batchQueryObject(statement, constructor, terminator, listConstructor, false, Visible.ONLY_VISIBLE);
+    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor) {
+        return null;
     }
 
     @Override
-    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
-                                              Supplier<List<R>> listConstructor, boolean useMultiStmt) {
-        return this.batchQueryObject(statement, constructor, terminator, listConstructor, useMultiStmt, Visible.ONLY_VISIBLE);
+    public final <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass) {
+        return null;
     }
 
     @Override
-    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator, Visible visible) {
-        return this.batchQueryObject(statement, constructor, terminator, _Collections::arrayList, false, visible);
+    public final <R> Stream<R> batchQueryObjectStream(BatchDqlStatement statement, Supplier<R> constructor) {
+        return null;
     }
 
     @Override
-    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
-                                              Supplier<List<R>> listConstructor, Visible visible) {
-        return this.batchQueryObject(statement, constructor, terminator, listConstructor, false, visible);
+    public final <R> Stream<R> batchQueryRecordStream(BatchDqlStatement statement, Function<CurrentRecord, R> function) {
+        return null;
     }
 
     @Override
-    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                              R terminator) {
-        return this.batchQueryRecord(statement, function, terminator, _Collections::arrayList, false, Visible.ONLY_VISIBLE);
+    public final boolean isClosed() {
+        return this.sessionClosed != 0;
     }
 
     @Override
-    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                              R terminator, Supplier<List<R>> listConstructor) {
-        return this.batchQueryRecord(statement, function, terminator, listConstructor, false, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                              R terminator, Supplier<List<R>> listConstructor, boolean useMultiStmt) {
-        return this.batchQueryRecord(statement, function, terminator, listConstructor, useMultiStmt, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                              R terminator, Visible visible) {
-        return this.batchQueryRecord(statement, function, terminator, _Collections::arrayList, false, visible);
-    }
-
-    @Override
-    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                              R terminator, Supplier<List<R>> listConstructor, Visible visible) {
-        return this.batchQueryRecord(statement, function, terminator, listConstructor, false, visible);
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass, R terminator,
-                                                StreamOptions options) {
-        return this.batchQueryStream(statement, resultClass, terminator, options, false, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass, R terminator,
-                                                StreamOptions options, boolean useMultiStmt) {
-        return this.batchQueryStream(statement, resultClass, terminator, options, useMultiStmt, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass, R terminator,
-                                                StreamOptions options, Visible visible) {
-        return this.batchQueryStream(statement, resultClass, terminator, options, false, visible);
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryObjectStream(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
-                                                      StreamOptions options) {
-        return this.batchQueryObjectStream(statement, constructor, terminator, options, false, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryObjectStream(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
-                                                      StreamOptions options, boolean useMultiStmt) {
-        return this.batchQueryObjectStream(statement, constructor, terminator, options, useMultiStmt, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryObjectStream(BatchDqlStatement statement, Supplier<R> constructor, R terminator,
-                                                      StreamOptions options, Visible visible) {
-        return this.batchQueryObjectStream(statement, constructor, terminator, options, false, visible);
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryRecordStream(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                                      R terminator, StreamOptions options) {
-        return this.batchQueryRecordStream(statement, function, terminator, options, false, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryRecordStream(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                                      R terminator, StreamOptions options, boolean useMultiStmt) {
-        return this.batchQueryRecordStream(statement, function, terminator, options, useMultiStmt, Visible.ONLY_VISIBLE);
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryRecordStream(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                                      R terminator, StreamOptions options, Visible visible) {
-        return this.batchQueryRecordStream(statement, function, terminator, options, false, visible);
+    public final void close() throws SessionException {
+        if (SESSION_CLOSED.compareAndSet(this, 0, 1)) {
+            this.stmtExecutor.close();
+        }
     }
 
 
-    @Override
-    public final MultiResult multiStmt(MultiResultStatement statement) {
-        return this.multiStmt(statement, StreamOptions.LIST_LIKE, Visible.ONLY_VISIBLE);
+    /*-------------------below private methods -------------------*/
+
+    private <R> List<R> executeQuery(final SimpleDqlStatement statement, final SyncStmtOption option,
+                                     final Function<SimpleStmt, List<R>> exeFunc) {
+        return Collections.emptyList();
     }
 
-    @Override
-    public final MultiResult multiStmt(MultiResultStatement statement, StreamOptions options) {
-        return this.multiStmt(statement, options, Visible.ONLY_VISIBLE);
+    private <R> Stream<R> executeQueryStream(final SimpleDqlStatement statement, final SyncStmtOption option,
+                                             final Function<SimpleStmt, Stream<R>> exeFunc) {
+        throw new UnsupportedOperationException();
     }
 
-    @Override
-    public final MultiResult multiStmt(MultiResultStatement statement, Visible visible) {
-        return this.multiStmt(statement, StreamOptions.LIST_LIKE, visible);
+    private <R> List<R> executeBatchQuery(final BatchDqlStatement statement, final SyncStmtOption option,
+                                          final Function<BatchStmt, List<R>> exeFunc) {
+        return Collections.emptyList();
     }
 
-    @Override
-    public final MultiStream multiStmtStream(MultiResultStatement statement) {
-        return this.multiStmtStream(statement, StreamOptions.LIST_LIKE, Visible.ONLY_VISIBLE);
+    private <R> Stream<R> executeBatchQueryStream(final BatchDqlStatement statement, final SyncStmtOption option,
+                                                  final Function<BatchStmt, Stream<R>> exeFunc) {
+        throw new UnsupportedOperationException();
     }
 
-    @Override
-    public final MultiStream multiStmtStream(MultiResultStatement statement, StreamOptions options) {
-        return this.multiStmtStream(statement, options, Visible.ONLY_VISIBLE);
+    /**
+     * @see #update(SimpleDmlStatement, SyncStmtOption)
+     */
+    private long executeInsert(InsertStatement statement, SyncStmtOption option) {
+        return 0;
     }
 
-    @Override
-    public final MultiStream multiStmtStream(MultiResultStatement statement, Visible visible) {
-        return this.multiStmtStream(statement, StreamOptions.LIST_LIKE, visible);
+    private long executeUpdate(SimpleDmlStatement statement, SyncStmtOption option) {
+        return 0;
     }
 
 
@@ -403,16 +345,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         return result;
     }
 
-    @Override
-    public final boolean isClosed() {
-        return this.sessionClosed != 0;
-    }
 
-    @Override
-    public final void close() throws SessionException {
-        if (SESSION_CLOSED.compareAndSet(this, 0, 1)) {
-            this.stmtExecutor.close();
-        }
+    private SyncStmtOption defaultOption() {
+        throw new UnsupportedOperationException();
     }
 
 

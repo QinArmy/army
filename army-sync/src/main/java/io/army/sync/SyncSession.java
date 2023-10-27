@@ -18,17 +18,13 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
- * <p>
- * This interface encapsulate blocking api than can access database.
- * </p>
+ * <p>This interface encapsulate blocking {@link Session}.
  *
- * <p>
- * This interface is base interface of below interface:
- *     <ul>
- *         <li>{@link SyncLocalSession}</li>
- *         <li>{@link SyncRmSession}</li>
- *     </ul>
- * </p>
+ * <p>This interface is base interface of below interface:
+ * <ul>
+ *     <li>{@link SyncLocalSession}</li>
+ *     <li>{@link SyncRmSession}</li>
+ * </ul>
  */
 public interface SyncSession extends Session, AutoCloseable {
 
@@ -144,7 +140,7 @@ public interface SyncSession extends Session, AutoCloseable {
      * and column value is null ,army remove element not put element.
      * </p>
      */
-    <R> Stream<R> queryRecardStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
+    <R> Stream<R> queryRecordStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
 
     /**
      * <p>
@@ -160,7 +156,7 @@ public interface SyncSession extends Session, AutoCloseable {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    <R> Stream<R> queryRecardStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
+    <R> Stream<R> queryRecordStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
 
 
     long update(SimpleDmlStatement statement);
@@ -193,21 +189,17 @@ public interface SyncSession extends Session, AutoCloseable {
 
     <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
-    <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass,
-                           Supplier<List<R>> listConstructor);
+    <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor);
 
-    <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass,
-                           Supplier<List<R>> listConstructor, SyncStmtOption option);
+    <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option);
 
     <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor);
 
     <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
 
-    <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor,
-                                 Supplier<List<R>> listConstructor);
+    <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor);
 
-    <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor,
-                                 Supplier<List<R>> listConstructor, SyncStmtOption option);
+    <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option);
 
 
     <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function);
@@ -215,11 +207,9 @@ public interface SyncSession extends Session, AutoCloseable {
 
     <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
 
-    <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                 Supplier<List<R>> listConstructor);
+    <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor);
 
-    <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function,
-                                 Supplier<List<R>> listConstructor, SyncStmtOption option);
+    <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option);
 
     /*-------------------below batch stream stream -------------------*/
 

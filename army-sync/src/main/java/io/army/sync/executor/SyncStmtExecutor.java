@@ -9,6 +9,7 @@ import io.army.stmt.*;
 import io.army.sync.MultiResult;
 import io.army.sync.MultiStream;
 import io.army.sync.StreamOptions;
+import io.army.sync.SyncStmtOption;
 
 import java.util.List;
 import java.util.function.Function;
@@ -69,14 +70,13 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
                            @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
 
 
-    <T> List<T> query(SimpleStmt stmt, int timeout, Class<T> resultClass, Supplier<List<T>> listConstructor)
+    <T> List<T> query(SimpleStmt stmt, Class<T> resultClass, Supplier<List<T>> listConstructor, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> List<R> queryObject(SimpleStmt stmt, int timeout, Supplier<R> constructor, Supplier<List<R>> listConstructor)
+    <R> List<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> List<R> queryRecord(SimpleStmt stmt, int timeout, Function<CurrentRecord, R> function,
-                            Supplier<List<R>> listConstructor) throws DataAccessException;
+    <R> List<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) throws DataAccessException;
 
     <R> int secondQuery(TwoStmtQueryStmt stmt, int timeout, List<R> resultList);
 
@@ -92,14 +92,13 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
                                  Supplier<List<R>> listConstructor, boolean useMultiStmt) throws DataAccessException;
 
 
-    <R> Stream<R> queryStream(SimpleStmt stmt, int timeout, Class<R> resultClass, StreamOptions options)
+    <R> Stream<R> queryStream(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> Stream<R> queryObjectStream(SimpleStmt stmt, int timeout, Supplier<R> constructor, StreamOptions options)
+    <R> Stream<R> queryObjectStream(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> Stream<R> queryRecordStream(SimpleStmt stmt, int timeout, Function<CurrentRecord, R> function,
-                                    StreamOptions options) throws DataAccessException;
+    <R> Stream<R> queryRecordStream(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option) throws DataAccessException;
 
     <R> Stream<R> batchQueryStream(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
                                    StreamOptions options, boolean useMultiStmt) throws DataAccessException;
