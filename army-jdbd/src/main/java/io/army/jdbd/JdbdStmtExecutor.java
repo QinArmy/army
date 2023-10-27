@@ -688,8 +688,11 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     /**
      * @see #transactionInfo()
      */
-    private TransactionInfo mapToArmyTransactionInfo(io.jdbd.session.TransactionInfo jdbdInfo) {
-        throw new UnsupportedOperationException();
+    private TransactionInfo mapToArmyTransactionInfo(io.jdbd.session.TransactionInfo info) {
+        return TransactionInfo.info(
+                info.inTransaction(), mapToArmyIsolation(info.isolation()), info.isReadOnly(),
+                mapToArmyOptionFunc(info::valueOf)
+        );
     }
 
 
@@ -782,6 +785,23 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                 return null;
             }
             return optionFunc.apply(armyOption);
+        };
+    }
+
+    /**
+     * @see #mapToArmyTransactionInfo(io.jdbd.session.TransactionInfo)
+     */
+    private Function<Option<?>, ?> mapToArmyOptionFunc(final @Nullable Function<io.jdbd.session.Option<?>, ?> optionFunc) {
+        if (optionFunc == io.jdbd.session.Option.EMPTY_OPTION_FUNC || optionFunc == null) {
+            return Option.EMPTY_OPTION_FUNC;
+        }
+        return armyOption -> {
+            final io.jdbd.session.Option<?> jdbdOption;
+            jdbdOption = mapToJdbdOption(armyOption);
+            if (jdbdOption == null) {
+                return null;
+            }
+            return optionFunc.apply(jdbdOption);
         };
     }
 

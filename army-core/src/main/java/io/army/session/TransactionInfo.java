@@ -5,6 +5,11 @@ import io.army.lang.NonNull;
 
 import java.util.function.Function;
 
+/**
+ * <p>This interface representing the transaction info of session.
+ *
+ * @since 1.0
+ */
 public interface TransactionInfo extends TransactionOption {
 
 
@@ -19,19 +24,31 @@ public interface TransactionInfo extends TransactionOption {
     @Override
     Isolation isolation();
 
-
     /**
+     * <p>session whether in transaction block.
+     * <p><strong>NOTE</strong> : for XA transaction {@link XaStates#PREPARED} always return false.
+     *
      * @return true : {@link Session} in transaction block.
      */
     boolean inTransaction();
 
-    static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly) {
-        return SimpleTransactionOption.info(inTransaction, isolation, readOnly);
-    }
+    /**
+     * <p>
+     * Application developer can get
+     *     <ul>
+     *         <li>{@link XaStates} with {@link Option#XA_STATES}</li>
+     *         <li>{@link Xid} with {@link Option#XID}</li>
+     *         <li>{@code flag} of last phase with {@link Option#XA_FLAGS}</li>
+     *     </ul>
+     *     when {@link RmSession} in XA transaction block.
+     * <br/>
+     */
+    @Override
+    <T> T valueOf(Option<T> option);
 
-    static TransactionInfo infoFrom(Function<Option<?>, ?> optionFunc) {
-        return SimpleTransactionOption.infoFrom(optionFunc);
+    static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly,
+                                Function<Option<?>, ?> optionFunc) {
+        return ArmyTransactionInfo.create(inTransaction, isolation, readOnly, optionFunc);
     }
-
 
 }

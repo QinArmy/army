@@ -8,7 +8,6 @@ import io.army.sqltype.SqlType;
 import io.jdbd.meta.DataType;
 import io.jdbd.result.DataRow;
 import io.jdbd.session.DatabaseSession;
-import io.jdbd.session.Isolation;
 import io.jdbd.session.LocalDatabaseSession;
 import io.jdbd.session.RmDatabaseSession;
 
@@ -49,11 +48,6 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
 
     @Override
     final Object get(DataRow row, int indexBasedZero, SqlType sqlType) {
-        return null;
-    }
-
-    @Override
-    final io.army.session.Isolation mapToArmyDialectIsolation(Isolation jdbdIsolation) {
         return null;
     }
 

@@ -25,7 +25,7 @@ public interface SyncRmSession extends SyncSession, RmSession {
 
     TransactionInfo start(Xid xid, int flags, TransactionOption option);
 
-    SyncRmSession end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+    TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
 
     int prepare(Xid xid, Function<Option<?>, ?> optionFunc);
 
