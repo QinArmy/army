@@ -25,10 +25,10 @@ public interface SyncExecutorFactory extends StmtExecutorFactorySpec, AutoClosea
     MetaExecutor metaExecutor(String name);
 
     @Override
-    LocalStmtExecutor localExecutor(String name);
+    SyncLocalStmtExecutor localExecutor(String name);
 
     @Override
-    RmStmtExecutor rmExecutor(String name);
+    SyncRmStmtExecutor rmExecutor(String name);
 
     /**
      * <p>

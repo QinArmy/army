@@ -216,13 +216,14 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
                 rmFunc = MySQLStmtExecutor::rmExecutor;
                 break;
             case PostgreSQL:
-                localFunc = PostgreStmtExecutor::localExecutor;
-                rmFunc = PostgreStmtExecutor::rmExecutor;
-                break;
+//                localFunc = PostgreStmtExecutor::localExecutor;
+//                rmFunc = PostgreStmtExecutor::rmExecutor;
+//                break;
             case Oracle:
             case H2:
             default:
-                throw new UnsupportedOperationException();
+                String m = String.format("currently,don't support %s", serverDatabase.name());
+                throw new UnsupportedOperationException(m);
         }
         return new Object[]{localFunc, rmFunc};
     }

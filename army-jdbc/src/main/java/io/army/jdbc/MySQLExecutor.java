@@ -6,8 +6,8 @@ import io.army.mapping.MappingType;
 import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
-import io.army.sync.executor.LocalStmtExecutor;
-import io.army.sync.executor.RmStmtExecutor;
+import io.army.sync.executor.SyncLocalStmtExecutor;
+import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ import java.time.LocalTime;
 
 abstract class MySQLExecutor extends JdbcExecutor {
 
-    static LocalStmtExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+    static SyncLocalStmtExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
         final MySQLLocalExecutor executor;
         if (factory.databaseSessionHolder) {
             executor = new MySQLLocalHolderExecutor(factory, conn);
@@ -272,7 +272,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }
 
 
-    private static class MySQLLocalExecutor extends MySQLExecutor implements LocalStmtExecutor {
+    private static class MySQLLocalExecutor extends MySQLExecutor implements SyncLocalStmtExecutor {
 
         private MySQLLocalExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
             super(factory, conn);
@@ -295,7 +295,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }//MySQLLocalExecutor
 
 
-    private static final class MySQLRmExecutor extends MySQLExecutor implements RmStmtExecutor {
+    private static final class MySQLRmExecutor extends MySQLExecutor implements SyncRmStmtExecutor {
 
         private final XAConnection xaConnection;
 

@@ -41,6 +41,8 @@ public interface Session extends CloseableSpec, OptionSpec {
      *     <li>{@link RmSession}</li>
      *     <li>RM {@link io.army.session.executor.StmtExecutor}</li>
      * </ul>
+     * /**
+     * <p><strong>NOTE</strong> : this interface never extends any interface.
      *
      * @since 1.0
      */
@@ -63,6 +65,8 @@ public interface Session extends CloseableSpec, OptionSpec {
          */
         int recoverSupportFlags();
 
+
+        boolean isSameRm(XaTransactionSupportSpec s);
 
     }
 

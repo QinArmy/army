@@ -4,7 +4,7 @@ import io.army.dialect.Database;
 import io.army.executor.ExecutorEnv;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.LocalExecutorFactory;
-import io.army.sync.executor.LocalStmtExecutor;
+import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.util._Exceptions;
 
 import javax.sql.DataSource;
@@ -21,7 +21,7 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
 
     private final DataSource dataSource;
 
-    private final BiFunction<JdbcLocalExecutorFactory, Connection, LocalStmtExecutor> executorFunction;
+    private final BiFunction<JdbcLocalExecutorFactory, Connection, SyncLocalStmtExecutor> executorFunction;
 
 
     private JdbcLocalExecutorFactory(final DataSource dataSource, final ExecutorEnv executorEnv
@@ -33,7 +33,7 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
 
 
     @Override
-    public LocalStmtExecutor createLocalStmtExecutor() throws DataAccessException {
+    public SyncLocalStmtExecutor createLocalStmtExecutor() throws DataAccessException {
         this.assertFactoryOpen();
         try {
             return this.executorFunction.apply(this, this.dataSource.getConnection());
@@ -58,9 +58,9 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Loca
         }
     }
 
-    private static BiFunction<JdbcLocalExecutorFactory, Connection, LocalStmtExecutor> localFunction(
+    private static BiFunction<JdbcLocalExecutorFactory, Connection, SyncLocalStmtExecutor> localFunction(
             final Database database) {
-        final BiFunction<JdbcLocalExecutorFactory, Connection, LocalStmtExecutor> func;
+        final BiFunction<JdbcLocalExecutorFactory, Connection, SyncLocalStmtExecutor> func;
         switch (database) {
             case MySQL:
                 func = MySQLExecutor::localExecutor;

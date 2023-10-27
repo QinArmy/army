@@ -40,6 +40,8 @@ public interface StmtExecutor extends OptionSpec {
 
     boolean inTransaction() throws DataAccessException;
 
+    boolean isSameFactory(StmtExecutor s);
+
     /**
      * override {@link Object#toString()}
      *

@@ -27,6 +27,11 @@ public abstract class ExecutorSupport {
     }
 
 
+    protected ArmyException unsupportedIsolation(Isolation isolation) {
+        return new ArmyException(String.format("%s don't support %s", this, isolation));
+    }
+
+
     protected static int restSeconds(final int timeout, final long startTime) {
         if (timeout == 0) {
             return 0;

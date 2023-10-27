@@ -6,7 +6,7 @@ import io.army.mapping.MappingType;
 import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
-import io.army.sync.executor.LocalStmtExecutor;
+import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util._Exceptions;
 import org.postgresql.util.PGobject;
@@ -31,7 +31,7 @@ import java.util.UUID;
  */
 abstract class PostgreExecutor extends JdbcExecutor {
 
-    static LocalStmtExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+    static SyncLocalStmtExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
         final LocalSessionExecutor executor;
         if (factory.databaseSessionHolder) {
             executor = new LocalSessionHolderExecutor(factory, conn);
@@ -902,7 +902,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
     }
 
 
-    private static class LocalSessionExecutor extends PostgreExecutor implements LocalStmtExecutor {
+    private static class LocalSessionExecutor extends PostgreExecutor implements SyncLocalStmtExecutor {
 
         private LocalSessionExecutor(JdbcExecutorFactory factory, Connection conn) {
             super(factory, conn);

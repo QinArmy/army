@@ -77,7 +77,11 @@ public interface ReactiveStmtExecutor extends StmtExecutor {
 
     <T> Mono<T> close();
 
-
+    /**
+     * <p><strong>NOTE</strong> : this interface never extends any interface.
+     *
+     * @since 1.0
+     */
     interface LocalTransactionSpec {
 
         Mono<TransactionInfo> startTransaction(TransactionOption option);
@@ -89,11 +93,16 @@ public interface ReactiveStmtExecutor extends StmtExecutor {
     }
 
 
-    interface XaTransactionSpec extends Session.XaTransactionSupportSpec {
+    /**
+     * <p><strong>NOTE</strong> : this interface never extends any interface.
+     *
+     * @since 1.0
+     */
+    interface XaTransactionSpec {
 
         Mono<TransactionInfo> start(Xid xid, int flags, TransactionOption option);
 
-        Mono<Void> end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+        Mono<TransactionInfo> end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
 
         Mono<Integer> prepare(Xid xid, Function<Option<?>, ?> optionFunc);
 

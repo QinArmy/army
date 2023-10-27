@@ -4,6 +4,6 @@ import io.army.session.DataAccessException;
 
 public interface LocalExecutorFactory extends SyncExecutorFactory {
 
-    LocalStmtExecutor createLocalStmtExecutor() throws DataAccessException;
+    SyncLocalStmtExecutor createLocalStmtExecutor() throws DataAccessException;
 
 }

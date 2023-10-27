@@ -140,6 +140,31 @@ public final class Option<T> {
 
     /**
      * <p>
+     * representing the XID option of {@link TransactionInfo#valueOf(Option)} from {@link RmSession}.
+     * <br/>
+     *
+     * @see Xid
+     */
+    public static final Option<Xid> XID = Option.from("XID", Xid.class);
+
+    /**
+     * <p>
+     * representing the XA_STATES option of {@link TransactionInfo#valueOf(Option)} from {@link RmSession}.
+     * <br/>
+     *
+     * @see XaStates
+     */
+    public static final Option<XaStates> XA_STATES = Option.from("XA STATES", XaStates.class);
+
+    /**
+     * <p>
+     * representing the xa flags option of {@link TransactionInfo#valueOf(Option)} from {@link RmSession}.
+     * <br/>
+     */
+    public static final Option<Integer> XA_FLAGS = Option.from("XA FLAGS", Integer.class);
+
+    /**
+     * <p>
      * This option representing {@link Session} is read only, <strong>usually</strong> (not always) database is read only. <br/>
      * That means application developer can't modify the read only status by sql.
      * <br/>

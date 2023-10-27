@@ -4,7 +4,7 @@ import io.army.dialect.Database;
 import io.army.executor.ExecutorEnv;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.RmExecutorFactory;
-import io.army.sync.executor.RmStmtExecutor;
+import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.util._Exceptions;
 
 import javax.sql.XAConnection;
@@ -23,7 +23,7 @@ final class JdbcRmExecutorFactory extends JdbcExecutorFactory implements RmExecu
 
     private final XADataSource dataSource;
 
-    private final BiFunction<JdbcRmExecutorFactory, XAConnection, RmStmtExecutor> executorFunction;
+    private final BiFunction<JdbcRmExecutorFactory, XAConnection, SyncRmStmtExecutor> executorFunction;
 
     private JdbcRmExecutorFactory(XADataSource dataSource, ExecutorEnv executorEnv, int methodFlag) {
         super(executorEnv, methodFlag);
@@ -33,7 +33,7 @@ final class JdbcRmExecutorFactory extends JdbcExecutorFactory implements RmExecu
 
 
     @Override
-    public RmStmtExecutor createRmStmtExecutor() {
+    public SyncRmStmtExecutor createRmStmtExecutor() {
         try {
             return this.executorFunction.apply(this, this.dataSource.getXAConnection());
         } catch (SQLException e) {
@@ -56,8 +56,8 @@ final class JdbcRmExecutorFactory extends JdbcExecutorFactory implements RmExecu
         doCloseDataSource(this.dataSource, dataSourceCloseMethod);
     }
 
-    private static BiFunction<JdbcRmExecutorFactory, XAConnection, RmStmtExecutor> rmFunction(final Database database) {
-        final BiFunction<JdbcRmExecutorFactory, XAConnection, RmStmtExecutor> function;
+    private static BiFunction<JdbcRmExecutorFactory, XAConnection, SyncRmStmtExecutor> rmFunction(final Database database) {
+        final BiFunction<JdbcRmExecutorFactory, XAConnection, SyncRmStmtExecutor> function;
         switch (database) {
             case MySQL:
                 function = MySQLExecutor::rmExecutor;

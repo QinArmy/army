@@ -8,8 +8,8 @@ import io.army.proxy._SessionCacheFactory;
 import io.army.session.DataAccessException;
 import io.army.session.SessionFactoryException;
 import io.army.sync.executor.LocalExecutorFactory;
-import io.army.sync.executor.LocalStmtExecutor;
 import io.army.sync.executor.SyncExecutorFactory;
+import io.army.sync.executor.SyncLocalStmtExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -205,7 +205,7 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
             implements SyncLocalSessionFactory.SessionBuilder {
 
 
-        LocalStmtExecutor stmtExecutor;
+        SyncLocalStmtExecutor stmtExecutor;
 
 
         private LocalSessionBuilder(ArmySyncLocalSessionFactory factory) {

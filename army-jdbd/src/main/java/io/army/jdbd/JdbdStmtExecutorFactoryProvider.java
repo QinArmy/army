@@ -9,6 +9,7 @@ import io.army.meta.ServerMeta;
 import io.army.reactive.executor.ReactiveStmtExecutorFactory;
 import io.army.reactive.executor.ReactiveStmtExecutorFactoryProvider;
 import io.army.util._ClassUtils;
+import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.jdbd.meta.DatabaseMetaData;
 import io.jdbd.meta.SchemaMeta;
@@ -59,12 +60,20 @@ public final class JdbdStmtExecutorFactoryProvider implements ReactiveStmtExecut
                         .onErrorResume(error -> Mono.from(session.close()))
                         .concatWith(Mono.defer(() -> Mono.from(session.close())))
                         .last()
-                );
+                ).onErrorMap(_Exceptions::wrapIfNeed);
     }
 
     @Override
     public Mono<ReactiveStmtExecutorFactory> createFactory(ExecutorEnv env) {
-        return Mono.just(JdbdStmtExecutorFactory.create(this, env));
+        Mono<ReactiveStmtExecutorFactory> mono;
+        final JdbdStmtExecutorFactory factory;
+        try {
+            factory = JdbdStmtExecutorFactory.create(this, env);
+            mono = Mono.just(factory);
+        } catch (Throwable e) {
+            mono = Mono.error(_Exceptions.wrapIfNeed(e));
+        }
+        return mono;
     }
 
 

@@ -1,5 +1,7 @@
 package io.army.reactive.executor;
 
+import io.army.session.Session;
+
 /**
  * <p>This interface representing RM(Resource Manager) {@link ReactiveStmtExecutor} that support XA transaction.
  * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
@@ -8,7 +10,9 @@ package io.army.reactive.executor;
  *
  * @since 1.0
  */
-public interface ReactiveRmStmtExecutor extends ReactiveStmtExecutor, ReactiveStmtExecutor.XaTransactionSpec {
+public interface ReactiveRmStmtExecutor extends ReactiveStmtExecutor,
+        ReactiveStmtExecutor.XaTransactionSpec,
+        Session.XaTransactionSupportSpec {
 
 
 }

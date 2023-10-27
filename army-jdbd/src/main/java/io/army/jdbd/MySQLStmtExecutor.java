@@ -1,10 +1,12 @@
 package io.army.jdbd;
 
+import io.army.mapping.MappingType;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.session.Option;
-import io.army.session.TransactionInfo;
-import io.army.session.TransactionOption;
+import io.army.sqltype.SqlType;
+import io.jdbd.meta.DataType;
+import io.jdbd.result.DataRow;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.Isolation;
 import io.jdbd.session.LocalDatabaseSession;
@@ -18,45 +20,69 @@ import io.jdbd.session.RmDatabaseSession;
 abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
 
     static ReactiveLocalStmtExecutor localExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
-        throw new UnsupportedOperationException();
+        return new LocalExecutor(factory, session, name);
     }
 
     static ReactiveRmStmtExecutor rmExecutor(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name) {
-        throw new UnsupportedOperationException();
+        return new RmExecutor(factory, session, name);
     }
 
     private static final Option<Boolean> WITH_CONSISTENT_SNAPSHOT = Option.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
 
-    private MySQLStmtExecutor(JdbdStmtExecutorFactory factory, DatabaseSession session) {
-        super(factory, session);
+    /**
+     * private constructor
+     */
+    private MySQLStmtExecutor(JdbdStmtExecutorFactory factory, DatabaseSession session, String name) {
+        super(factory, session, name);
     }
 
 
     @Override
-    TransactionInfo mapToArmyTransactionInfo(io.jdbd.session.TransactionInfo jdbdInfo) {
+    final DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType) {
         return null;
     }
 
     @Override
-    final io.jdbd.session.TransactionOption mapToJdbdTransactionOption(TransactionOption armyOption) {
-        final Isolation jdbdIsolation;
-        jdbdIsolation = mapToStandardJdbdIsolation(armyOption.isolation());
-
-        final io.jdbd.session.TransactionOption jdbdOption;
-        final Boolean consistentSnapshot;
-        consistentSnapshot = armyOption.valueOf(WITH_CONSISTENT_SNAPSHOT);
-
-        if (consistentSnapshot == null) {
-            jdbdOption = io.jdbd.session.TransactionOption.option(jdbdIsolation, armyOption.isReadOnly());
-        } else {
-            jdbdOption = io.jdbd.session.TransactionOption.builder()
-                    .option(io.jdbd.session.Option.ISOLATION, jdbdIsolation)
-                    .option(io.jdbd.session.Option.READ_ONLY, armyOption.isReadOnly())
-                    .option(io.jdbd.session.Option.WITH_CONSISTENT_SNAPSHOT, consistentSnapshot)
-                    .build();
-        }
-        return jdbdOption;
+    final SqlType getColumnMeta(DataRow row, int indexBasedZero) {
+        return null;
     }
+
+    @Override
+    final Object get(DataRow row, int indexBasedZero, SqlType sqlType) {
+        return null;
+    }
+
+    @Override
+    final io.army.session.Isolation mapToArmyDialectIsolation(Isolation jdbdIsolation) {
+        return null;
+    }
+
+    @Override
+    final io.jdbd.session.Option<?> mapToJdbdDialectOption(Option<?> option) {
+        return null;
+    }
+
+    @Override
+    final Option<?> mapToArmyDialectOption(io.jdbd.session.Option<?> option) {
+        return null;
+    }
+
+
+    private static final class LocalExecutor extends MySQLStmtExecutor implements ReactiveLocalStmtExecutor {
+
+        private LocalExecutor(JdbdStmtExecutorFactory factory, LocalDatabaseSession session, String name) {
+            super(factory, session, name);
+        }
+
+    } // LocalExecutor
+
+    private static final class RmExecutor extends MySQLStmtExecutor implements ReactiveRmStmtExecutor {
+
+        private RmExecutor(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name) {
+            super(factory, session, name);
+        }
+
+    } // RmExecutor
 
 
 }

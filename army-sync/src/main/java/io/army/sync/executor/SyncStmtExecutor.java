@@ -17,7 +17,12 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
- * <p>This interface representing sql statement executor with blocking way.
+ * <p>This interface representing blocking {@link StmtExecutor}
+ * <p>This interface is base interface of following:
+ * <ul>
+ *     <li>{@link SyncLocalStmtExecutor}</li>
+ *     <li>{@link SyncRmStmtExecutor}</li>
+ * </ul>
  * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
  * so all implementation of methods of this interface don't check whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
@@ -124,7 +129,11 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
     @Override
     void close() throws DataAccessException;
 
-
+    /**
+     * <p><strong>NOTE</strong> : this interface never extends any interface.
+     *
+     * @since 1.0
+     */
     interface LocalTransactionSpec {
 
         TransactionInfo startTransaction(TransactionOption option);
@@ -137,8 +146,12 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
     }
 
-
-    interface XaTransactionSpec extends Session.XaTransactionSupportSpec {
+    /**
+     * <p><strong>NOTE</strong> : this interface never extends any interface.
+     *
+     * @since 1.0
+     */
+    interface XaTransactionSpec {
 
         TransactionInfo start(Xid xid, int flags, TransactionOption option);
 

@@ -20,6 +20,7 @@ import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.reactive.executor.ReactiveStmtExecutor;
 import io.army.session.*;
+import io.army.session.executor.StmtExecutor;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.type.ImmutableSpec;
@@ -71,7 +72,8 @@ import java.util.function.Supplier;
 abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         implements ReactiveStmtExecutor,
         ReactiveStmtExecutor.LocalTransactionSpec,
-        ReactiveStmtExecutor.XaTransactionSpec {
+        ReactiveStmtExecutor.XaTransactionSpec,
+        Session.XaTransactionSupportSpec {
 
 
     final JdbdStmtExecutorFactory factory;
@@ -110,6 +112,11 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
+    public final boolean isSameFactory(StmtExecutor s) {
+        return s instanceof JdbdStmtExecutor && ((JdbdStmtExecutor) s).factory == this.factory;
+    }
+
+    @Override
     public final Mono<TransactionInfo> transactionInfo() {
         return Mono.from(this.session.transactionInfo())
                 .map(this::mapToArmyTransactionInfo)
@@ -118,15 +125,15 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
     @Override
     public final Mono<Void> setTransactionCharacteristics(TransactionOption option) {
-        Mono<Void> mono;
+        final io.jdbd.session.TransactionOption jdbdOption;
         try {
-            mono = Mono.from(this.session.setTransactionCharacteristics(mapToJdbdTransactionOption(option)))
-                    .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
-                    .then();
+            jdbdOption = mapToJdbdTransactionOption(option);
         } catch (Throwable e) {
-            mono = Mono.error(wrapErrorIfNeed(e));
+            return Mono.error(wrapErrorIfNeed(e));
         }
-        return mono;
+        return Mono.from(this.session.setTransactionCharacteristics(jdbdOption))
+                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
+                .then();
     }
 
     @Override
@@ -485,7 +492,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final Mono<Void> end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
+    public final Mono<TransactionInfo> end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveRmStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -496,8 +503,8 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
             return Mono.error(wrapErrorIfNeed(e));
         }
         return Mono.from(((RmDatabaseSession) this.session).end(jdbdXid, flags, mapToJdbdOptionFunc(optionFunc)))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
-                .then();
+                .map(this::mapToArmyTransactionInfo)
+                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
     }
 
     @Override
@@ -573,9 +580,54 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
     }
 
+    @Override
+    public final boolean isSupportForget() {
+        if (!(this instanceof ReactiveRmStmtExecutor)) {
+            throw new UnsupportedOperationException();
+        }
+        return ((RmDatabaseSession) this.session).isSupportForget();
+    }
 
     @Override
-    public final <T> T valueOf(Option<T> option) {
+    public final int startSupportFlags() {
+        if (!(this instanceof ReactiveRmStmtExecutor)) {
+            throw new UnsupportedOperationException();
+        }
+        return ((RmDatabaseSession) this.session).startSupportFlags();
+    }
+
+    @Override
+    public final int endSupportFlags() {
+        if (!(this instanceof ReactiveRmStmtExecutor)) {
+            throw new UnsupportedOperationException();
+        }
+        return ((RmDatabaseSession) this.session).endSupportFlags();
+    }
+
+    @Override
+    public final int recoverSupportFlags() {
+        if (!(this instanceof ReactiveRmStmtExecutor)) {
+            throw new UnsupportedOperationException();
+        }
+        return ((RmDatabaseSession) this.session).recoverSupportFlags();
+    }
+
+    @Override
+    public final boolean isSameRm(Session.XaTransactionSupportSpec s) {
+        return s instanceof JdbdStmtExecutor && this.session.isSameFactory(((JdbdStmtExecutor) s).session);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public final <T> T valueOf(final @Nullable Option<T> option) {
+        if (option == null) {
+            return null;
+        }
+        final Object value;
+        value = this.session.valueOf(mapToJdbdOption(option));
+        if (option.javaType().isInstance(value)) {
+            return (T) value;
+        }
         return null;
     }
 
@@ -608,6 +660,21 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     @Nullable
     abstract Object get(DataRow row, int indexBasedZero, SqlType sqlType);
 
+    @Nullable
+    abstract io.jdbd.session.Option<?> mapToJdbdDialectOption(Option<?> option);
+
+    @Nullable
+    abstract Option<?> mapToArmyDialectOption(io.jdbd.session.Option<?> option);
+
+    Isolation mapToArmyDialectIsolation(io.jdbd.session.Isolation jdbdIsolation) {
+        throw unknownJdbdIsolation(jdbdIsolation);
+    }
+
+    io.jdbd.session.Isolation mapToJdbdDialectIsolation(Isolation isolation) {
+        throw unsupportedIsolation(isolation);
+    }
+
+
     /*-------------------below private instance methods-------------------*/
 
     /**
@@ -626,26 +693,73 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
 
-    private io.jdbd.session.TransactionOption mapToJdbdTransactionOption(TransactionOption armyOption)
+    /**
+     * @throws ArmyException throw when isolation is unsupported by driver.
+     * @see #setTransactionCharacteristics(TransactionOption)
+     * @see #startTransaction(TransactionOption)
+     * @see #start(Xid, int, TransactionOption)
+     */
+    private io.jdbd.session.TransactionOption mapToJdbdTransactionOption(final TransactionOption option)
             throws ArmyException {
-        throw new UnsupportedOperationException();
+        return io.jdbd.session.TransactionOption.option(
+                mapToJdbdIsolation(option.isolation()), option.isReadOnly(), mapToJdbdOptionFunc(option::valueOf)
+        );
+
     }
 
+    @SuppressWarnings("all")
     private Optional<Xid> mapToOptionalArmyXid(Optional<io.jdbd.session.Xid> jdbdXidOptional) {
         throw new UnsupportedOperationException();
     }
 
-
-    private Isolation mapToArmyIsolation(io.jdbd.session.Isolation jdbdIsolation) {
-        throw new UnsupportedOperationException();
+    /**
+     * @throws ArmyException throw when isolation is unknown.
+     */
+    private Isolation mapToArmyIsolation(final io.jdbd.session.Isolation isolation) throws ArmyException {
+        final Isolation armyIsolation;
+        if (isolation == io.jdbd.session.Isolation.READ_COMMITTED) {
+            armyIsolation = Isolation.READ_COMMITTED;
+        } else if (isolation == io.jdbd.session.Isolation.REPEATABLE_READ) {
+            armyIsolation = Isolation.REPEATABLE_READ;
+        } else if (isolation == io.jdbd.session.Isolation.SERIALIZABLE) {
+            armyIsolation = Isolation.SERIALIZABLE;
+        } else if (isolation == io.jdbd.session.Isolation.READ_UNCOMMITTED) {
+            armyIsolation = Isolation.READ_UNCOMMITTED;
+        } else {
+            armyIsolation = mapToArmyDialectIsolation(isolation);
+        }
+        return armyIsolation;
     }
 
-    private io.jdbd.session.Isolation mapToJdbdIsolation(Isolation armyIsolation) {
-        throw new UnsupportedOperationException();
+    /**
+     * @throws ArmyException throw when isolation is unsupported by driver.
+     * @see #mapToJdbdTransactionOption(TransactionOption)
+     */
+    @Nullable
+    private io.jdbd.session.Isolation mapToJdbdIsolation(final @Nullable Isolation isolation) throws ArmyException {
+        final io.jdbd.session.Isolation jdbdIsolation;
+        if (isolation == null) {
+            jdbdIsolation = null;
+        } else if (isolation == Isolation.READ_COMMITTED) {
+            jdbdIsolation = io.jdbd.session.Isolation.READ_COMMITTED;
+        } else if (isolation == Isolation.REPEATABLE_READ) {
+            jdbdIsolation = io.jdbd.session.Isolation.REPEATABLE_READ;
+        } else if (isolation == Isolation.SERIALIZABLE) {
+            jdbdIsolation = io.jdbd.session.Isolation.SERIALIZABLE;
+        } else if (isolation == Isolation.READ_UNCOMMITTED) {
+            jdbdIsolation = io.jdbd.session.Isolation.READ_UNCOMMITTED;
+        } else {
+            jdbdIsolation = mapToJdbdDialectIsolation(isolation);
+        }
+        return jdbdIsolation;
     }
+
 
     @Nullable
-    private io.jdbd.session.Option<?> mapToJdbdOption(Option<?> option) {
+    private io.jdbd.session.Option<?> mapToJdbdOption(final Option<?> option) {
+        if (option == Option.IN_TRANSACTION) {
+
+        }
         throw new UnsupportedOperationException();
     }
 
@@ -998,23 +1112,9 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         return e;
     }
 
-    @Nullable
-    static io.jdbd.session.Isolation mapToStandardJdbdIsolation(final @Nullable Isolation isolation) {
-        io.jdbd.session.Isolation jdbdIsolation;
-        if (isolation == null) {
-            jdbdIsolation = null;
-        } else if (isolation == Isolation.READ_COMMITTED) {
-            jdbdIsolation = io.jdbd.session.Isolation.READ_COMMITTED;
-        } else if (isolation == Isolation.REPEATABLE_READ) {
-            jdbdIsolation = io.jdbd.session.Isolation.REPEATABLE_READ;
-        } else if (isolation == Isolation.SERIALIZABLE) {
-            jdbdIsolation = io.jdbd.session.Isolation.SERIALIZABLE;
-        } else if (isolation == Isolation.READ_UNCOMMITTED) {
-            jdbdIsolation = io.jdbd.session.Isolation.READ_UNCOMMITTED;
-        } else {
-            throw new IllegalArgumentException(String.format("%s non-standard isolation", isolation.name()));
-        }
-        return jdbdIsolation;
+
+    static ArmyException unknownJdbdIsolation(io.jdbd.session.Isolation isolation) {
+        return new ArmyException(String.format("unknown %s", isolation));
     }
 
 
