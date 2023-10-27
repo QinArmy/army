@@ -1,20 +1,19 @@
 package io.army.session;
 
-import io.army.lang.Nullable;
+import io.army.ArmyException;
 
-public class SessionException extends DataAccessException {
+public class SessionException extends ArmyException {
 
     public SessionException(String message) {
         super(message);
     }
 
-    @Deprecated
-    public SessionException(Throwable cause, String format, Object... args) {
-        super(format, cause);
+    public SessionException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public SessionException(String message, @Nullable Throwable cause) {
-        super(message, cause);
+    public SessionException(Throwable cause) {
+        super(cause);
     }
 
 }

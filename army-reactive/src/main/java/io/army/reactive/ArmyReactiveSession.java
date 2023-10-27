@@ -35,7 +35,7 @@ import java.util.function.Supplier;
  *     <li>{@link ArmyReactiveLocalSession}</li>
  *     <li>{@link ArmyReactiveRmSession}</li>
  * </ul>
- * <p>This class extends {@link _ArmySession} and implementation of {@link ReactiveSession}.
+ * <p>This class extends {@link _ArmySession} and implements of {@link ReactiveSession}.
  *
  * @since 1.0
  */

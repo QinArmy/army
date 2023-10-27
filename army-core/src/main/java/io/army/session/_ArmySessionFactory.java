@@ -47,8 +47,6 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     public final Map<Class<?>, TableMeta<?>> tableMap;
 
-    protected final Function<ArmyException, RuntimeException> exceptionFunction;
-
     protected final boolean readonly;
 
     protected final DialectParser dialectParser;
@@ -70,7 +68,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     final SqlLogMode sqlLogMode;
 
 
-    protected _ArmySessionFactory(final FactoryBuilderSupport<?, ?> support) throws SessionFactoryException {
+    protected _ArmySessionFactory(final _ArmyFactoryBuilder<?, ?> support) throws SessionFactoryException {
         final String name = _Assert.assertHasText(support.name, "factory name required");
         final ArmyEnvironment env = Objects.requireNonNull(support.environment);
 
@@ -82,7 +80,6 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         this.schemaMeta = Objects.requireNonNull(support.schemaMeta);
         this.tableMap = Objects.requireNonNull(support.tableMap);
 
-        this.exceptionFunction = exceptionFunction(support.exceptionFunction);
         this.readonly = env.getOrDefault(ArmyKey.READ_ONLY);
         final DialectEnv dialectEnv = support.dialectEnv;
         assert dialectEnv != null;
@@ -158,7 +155,6 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         return this.readonly;
     }
 
-
     @Override
     public final int hashCode() {
         return super.hashCode();
@@ -167,6 +163,18 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     @Override
     public final boolean equals(Object obj) {
         return obj == this;
+    }
+
+    @Override
+    public final String toString() {
+        return _StringUtils.builder(48)
+                .append(getClass().getName())
+                .append("[name:")
+                .append(this.name)
+                .append(",hash:")
+                .append(System.identityHashCode(this))
+                .append(']')
+                .toString();
     }
 
 
@@ -332,7 +340,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
                             factory, sessionName);
                     throw new CreateSessionException(m);
                 }
-            } catch (Throwable e) {
+            } catch (SessionException e) {
                 return handleError(e);
             }
 
@@ -341,7 +349,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
         protected abstract R createSession(String name);
 
-        protected abstract R handleError(Throwable cause);
+        protected abstract R handleError(SessionException cause);
 
 
         protected CreateSessionException createExecutorError(DataAccessException e) {

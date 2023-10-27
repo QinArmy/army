@@ -7,8 +7,6 @@ import io.army.session.DataAccessException;
 import io.army.session.SessionFactoryException;
 import io.army.sync.executor.SyncLocalExecutorFactory;
 import io.army.sync.executor.SyncLocalStmtExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,8 +17,6 @@ import java.lang.reflect.Modifier;
  */
 final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implements SyncLocalSessionFactory {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ArmySyncLocalSessionFactory.class);
-
     final SyncLocalExecutorFactory executorFactory;
 
     final boolean buildInExecutor;
@@ -30,8 +26,6 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
     private final SessionContext sessionContext;
 
     private final boolean supportSavePoints;
-
-    private boolean closed;
 
 
     ArmySyncLocalSessionFactory(LocalSessionFactoryBuilder builder) throws SessionFactoryException {
@@ -56,15 +50,6 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
         return new LocalSessionBuilder(this);
     }
 
-    @Override
-    public String toString() {
-        return String.format("%s[name:%s,hash:%s,readonly:%s]",
-                SyncLocalSessionFactory.class.getName(),
-                this.name,
-                System.identityHashCode(this),
-                this.readonly
-        );
-    }
 
 
 

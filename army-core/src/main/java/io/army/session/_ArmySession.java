@@ -144,7 +144,7 @@ public abstract class _ArmySession implements Session {
         builder.append("session[name : ")
                 .append(this.name)
                 .append("]\n");
-        factory.dialectParser().printStmt(stmt, beautify, builder::append);
+        factory.dialectParser.printStmt(stmt, beautify, builder::append);
         if (debug) {
             logger.debug(builder.toString());
         } else {
@@ -171,7 +171,7 @@ public abstract class _ArmySession implements Session {
         return restSeconds;
     }
 
-    protected final Stmt parseDqlStatement(final DqlStatement statement, final StatementOption option) {
+    protected final Stmt parseDqlStatement(final DqlStatement statement, final StmtOption option) {
         final boolean useMultiStmt;
         useMultiStmt = isUseStaticMultiStmt(option);
 
@@ -203,7 +203,7 @@ public abstract class _ArmySession implements Session {
         return stmt;
     }
 
-    protected final Stmt parseDmlStatement(final DmlStatement statement, final StatementOption option) {
+    protected final Stmt parseDmlStatement(final DmlStatement statement, final StmtOption option) {
         final boolean useMultiStmt;
         useMultiStmt = isUseStaticMultiStmt(option);
 
@@ -257,7 +257,7 @@ public abstract class _ArmySession implements Session {
         return domainTable;
     }
 
-    static boolean isUseStaticMultiStmt(StatementOption option) {
+    static boolean isUseStaticMultiStmt(StmtOption option) {
         final boolean use;
         switch (option.multiStmtMode()) {
             case EXECUTOR:

@@ -4,23 +4,44 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.lang.Nullable;
 import io.army.session.CurrentRecord;
+import io.army.session.SessionException;
 import io.army.session._ArmySession;
-import io.army.session._ArmySessionFactory;
+import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util.ArmyCriteria;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public abstract class ArmySyncSession extends _ArmySession implements SyncSession {
+/**
+ * <p>This class is base class of following :
+ * <ul>
+ *     <li>{@link ArmySyncLocalSession}</li>
+ *     <li>{@link ArmySyncRmSession}</li>
+ * </ul>
+ * <p>This class extends {@link _ArmySession} and implements of {@link SyncSession}.
+ *
+ * @since 1.0
+ */
+abstract class ArmySyncSession extends _ArmySession implements SyncSession {
+
+    private static final AtomicIntegerFieldUpdater<ArmySyncSession> SESSION_CLOSED =
+            AtomicIntegerFieldUpdater.newUpdater(ArmySyncSession.class, "sessionClosed");
 
 
-    protected ArmySyncSession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
+    final SyncStmtExecutor stmtExecutor;
+
+    private volatile int sessionClosed;
+
+    protected ArmySyncSession(ArmySyncSessionFactory.SyncSessionBuilder<?, ?> builder) {
         super(builder);
+        this.stmtExecutor = builder.stmtExecutor;
+        assert this.stmtExecutor != null;
     }
 
 
@@ -380,6 +401,18 @@ public abstract class ArmySyncSession extends _ArmySession implements SyncSessio
                 throw _Exceptions.nonUnique(resultList);
         }
         return result;
+    }
+
+    @Override
+    public final boolean isClosed() {
+        return this.sessionClosed != 0;
+    }
+
+    @Override
+    public final void close() throws SessionException {
+        if (SESSION_CLOSED.compareAndSet(this, 0, 1)) {
+            this.stmtExecutor.close();
+        }
     }
 
 

@@ -1,6 +1,5 @@
 package io.army.session;
 
-import io.army.ArmyException;
 import io.army.advice.FactoryAdvice;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
@@ -13,6 +12,7 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
+ * <p>This interface representing the builder of {@link SessionFactory} spec.
  * <p>This interface is base interface of all factory builder.
  *
  * @param <B> factory builder java type
@@ -64,10 +64,6 @@ public interface FactoryBuilderSpec<B, R> {
      */
     B factoryAdvice(Collection<FactoryAdvice> factoryAdvices);
 
-    /**
-     * <p>Optional.
-     */
-    B exceptionFunction(Function<ArmyException, RuntimeException> exceptionFunction);
 
     /**
      * <p>Optional.

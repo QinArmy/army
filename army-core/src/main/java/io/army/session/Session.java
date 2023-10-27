@@ -19,6 +19,10 @@ public interface Session extends CloseableSpec, OptionSpec {
 
     boolean isRollbackOnly();
 
+    boolean isReactiveSession();
+
+    boolean isSyncSession();
+
     Session markRollbackOnly() throws SessionException;
 
     String name();
@@ -33,6 +37,7 @@ public interface Session extends CloseableSpec, OptionSpec {
      * @throws IllegalArgumentException throw,when not found {@link TableMeta}.
      */
     <T> TableMeta<T> tableMeta(Class<T> domainClass);
+
 
     @Override
     String toString();

@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 import java.util.function.Consumer;
 
+@Deprecated
 public final class StreamOptions {
 
 

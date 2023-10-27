@@ -22,13 +22,13 @@ public interface SyncStmtExecutorFactory extends StmtExecutorFactorySpec, AutoCl
 
 
     @Override
-    MetaExecutor metaExecutor(String name);
+    MetaExecutor metaExecutor(String name) throws DataAccessException;
 
     @Override
-    SyncLocalStmtExecutor localExecutor(String name);
+    SyncLocalStmtExecutor localExecutor(String name) throws DataAccessException;
 
     @Override
-    SyncRmStmtExecutor rmExecutor(String name);
+    SyncRmStmtExecutor rmExecutor(String name) throws DataAccessException;
 
     /**
      * <p>

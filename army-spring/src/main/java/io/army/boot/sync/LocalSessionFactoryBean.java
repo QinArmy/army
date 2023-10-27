@@ -5,7 +5,7 @@ import io.army.env.ArmyEnvironment;
 import io.army.env.SpringArmyEnvironment;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
-import io.army.sync.LocalFactoryBuilder;
+import io.army.sync.SyncLocalFactoryBuilder;
 import io.army.sync.SyncLocalSessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
@@ -59,7 +59,7 @@ public class LocalSessionFactoryBean implements FactoryBean<SyncLocalSessionFact
     public void afterPropertiesSet() {
 
 
-        this.sessionFactory = LocalFactoryBuilder.builder()
+        this.sessionFactory = SyncLocalFactoryBuilder.builder()
                 .name(this.factoryName)
                 .datasource(this.getDataSource())
                 .packagesToScan(this.packageList)

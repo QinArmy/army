@@ -1,28 +1,40 @@
 package io.army.sync;
 
-import io.army.session.FactoryBuilderSupport;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmySessionFactory;
+import io.army.sync.executor.SyncStmtExecutor;
 import io.army.sync.executor.SyncStmtExecutorFactory;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
+/**
+ * <p>This class is a implementation of {@link SyncSessionFactory}.
+ * <p>This class is base class of following :
+ * <ul>
+ *     <li>{@link ArmySyncLocalSessionFactory}</li>
+ *     <li>{@link ArmySyncRmSessionFactory}</li>
+ * </ul>
+ *
+ * @since 1.0
+ */
 abstract class ArmySyncSessionFactory extends _ArmySessionFactory implements SyncSessionFactory {
 
     private static final AtomicIntegerFieldUpdater<ArmySyncSessionFactory> FACTORY_CLOSED =
             AtomicIntegerFieldUpdater.newUpdater(ArmySyncSessionFactory.class, "factoryClosed");
 
-    private SyncStmtExecutorFactory stmtExecutorFactory;
+    final SyncStmtExecutorFactory stmtExecutorFactory;
 
     private volatile int factoryClosed;
 
-    ArmySyncSessionFactory(FactoryBuilderSupport<?, ?> support) throws SessionFactoryException {
-        super(support);
+    ArmySyncSessionFactory(ArmySyncFactoryBuilder<?, ?> builder) throws SessionFactoryException {
+        super(builder);
+        this.stmtExecutorFactory = builder.stmtExecutorFactory;
+        assert this.stmtExecutorFactory != null;
     }
 
     @Override
     public final String driverSpiVendor() {
-        return null;
+        return this.stmtExecutorFactory.driverSpiVendor();
     }
 
     @Override
@@ -39,10 +51,26 @@ abstract class ArmySyncSessionFactory extends _ArmySessionFactory implements Syn
 
     @Override
     public final void close() throws SessionFactoryException {
-        if (FACTORY_CLOSED.compareAndSet(this, 0, 1)) {
+        if (!FACTORY_CLOSED.compareAndSet(this, 0, 1)) {
+            return;
+        }
+        try {
             this.stmtExecutorFactory.close();
+        } catch (Exception e) {
+            throw wrapError(e);
         }
     }
+
+    static abstract class SyncSessionBuilder<B, R> extends ArmySessionBuilder<B, R> {
+
+        SyncStmtExecutor stmtExecutor;
+
+        SyncSessionBuilder(ArmySyncSessionFactory factory) {
+            super(factory);
+        }
+
+
+    } // SyncSessionBuilder
 
 
 }

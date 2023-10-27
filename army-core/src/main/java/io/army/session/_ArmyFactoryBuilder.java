@@ -1,10 +1,10 @@
 package io.army.session;
 
-import io.army.ArmyException;
 import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
+import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
@@ -19,7 +19,7 @@ import io.army.util._Collections;
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class FactoryBuilderSupport<B, R> implements FactoryBuilderSpec<B, R> {
+public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B, R> {
 
     protected String name;
 
@@ -29,7 +29,6 @@ public abstract class FactoryBuilderSupport<B, R> implements FactoryBuilderSpec<
     protected Collection<FieldCodec> fieldCodecs;
 
     protected SchemaMeta schemaMeta = _SchemaMetaFactory.getSchema("", "");
-    protected Function<ArmyException, RuntimeException> exceptionFunction;
 
     protected Map<FieldMeta<?>, FieldGenerator> generatorMap = Collections.emptyMap();
 
@@ -38,6 +37,8 @@ public abstract class FactoryBuilderSupport<B, R> implements FactoryBuilderSpec<
     protected Collection<FactoryAdvice> factoryAdvices;
 
     protected List<String> packagesToScan;
+
+    private Function<String, Database> nameToDatabaseFunc;
 
     protected DdlMode ddlMode;
 
@@ -48,6 +49,9 @@ public abstract class FactoryBuilderSupport<B, R> implements FactoryBuilderSpec<
 
     Map<Class<?>, TableMeta<?>> tableMap;
 
+
+    protected _ArmyFactoryBuilder() {
+    }
 
     @Override
     public final B name(String sessionFactoryName) {
@@ -85,15 +89,16 @@ public abstract class FactoryBuilderSupport<B, R> implements FactoryBuilderSpec<
         return (B) this;
     }
 
-    @Override
-    public final B exceptionFunction(Function<ArmyException, RuntimeException> exceptionFunction) {
-        this.exceptionFunction = exceptionFunction;
-        return (B) this;
-    }
 
     @Override
     public final B fieldGeneratorFactory(FieldGeneratorFactory factory) {
         this.fieldGeneratorFactory = factory;
+        return (B) this;
+    }
+
+    @Override
+    public final B nameToDatabaseFunc(@Nullable Function<String, Database> function) {
+        this.nameToDatabaseFunc = function;
         return (B) this;
     }
 
@@ -170,8 +175,6 @@ public abstract class FactoryBuilderSupport<B, R> implements FactoryBuilderSpec<
         }
     }
 
-
-    protected abstract S
 
     protected final void scanSchema() {
 

@@ -18,7 +18,6 @@ import io.army.meta.TableMeta;
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.session.DdlMode;
-import io.army.session.FactoryBuilderSupport;
 import io.army.session.SessionFactoryException;
 import io.army.sync.executor.MetaExecutor;
 import io.army.sync.executor.SyncLocalExecutorFactory;
@@ -34,7 +33,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements LocalFactoryBuilder {
+final class LocalSessionFactoryBuilder extends ArmySyncFactoryBuilder<SyncLocalFactoryBuilder, SyncLocalSessionFactory>
+        implements SyncLocalFactoryBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(LocalSessionFactoryBuilder.class);
 
