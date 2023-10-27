@@ -70,7 +70,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     final SqlLogMode sqlLogMode;
 
 
-    protected _ArmySessionFactory(final FactoryBuilderSupport support) throws SessionFactoryException {
+    protected _ArmySessionFactory(final FactoryBuilderSupport<?, ?> support) throws SessionFactoryException {
         final String name = _Assert.assertHasText(support.name, "factory name required");
         final ArmyEnvironment env = Objects.requireNonNull(support.environment);
 
@@ -170,6 +170,9 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     }
 
 
+    /*-------------------below protected methods -------------------*/
+
+
     private boolean isSessionDontSupportQueryInsert(final String sessionName) {
         final boolean dontSupport;
         switch (this.queryInsertMode) {
@@ -209,7 +212,25 @@ public abstract class _ArmySessionFactory implements SessionFactory {
     }
 
 
-    /*################################## blow protected method ##################################*/
+    /*################################## blow protected static methods ##################################*/
+
+
+    protected static Throwable wrapErrorIfNeed(final Throwable cause) {
+        if (cause instanceof Exception) {
+            return wrapError((Exception) cause);
+        }
+        return cause;
+    }
+
+    protected static SessionFactoryException wrapError(final Exception cause) {
+        final SessionFactoryException error;
+        if (cause instanceof SessionFactoryException) {
+            error = (SessionFactoryException) cause;
+        } else {
+            error = new SessionFactoryException("unknown error," + cause.getMessage(), cause);
+        }
+        return error;
+    }
 
 
     /*################################## blow private static method ##################################*/
@@ -241,11 +262,6 @@ public abstract class _ArmySessionFactory implements SessionFactory {
                 throw _Exceptions.unexpectedEnum(mode);
         }
         return whiteMap;
-    }
-
-
-    protected static Throwable wrapIfNeed(Throwable cause) {
-        return _Exceptions.wrapIfNeed(cause);
     }
 
 
@@ -320,10 +336,10 @@ public abstract class _ArmySessionFactory implements SessionFactory {
                 return handleError(e);
             }
 
-            return this.createSession();
+            return this.createSession(sessionName);
         }
 
-        protected abstract R createSession();
+        protected abstract R createSession(String name);
 
         protected abstract R handleError(Throwable cause);
 

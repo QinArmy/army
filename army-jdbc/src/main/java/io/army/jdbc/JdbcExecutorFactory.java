@@ -9,13 +9,13 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.MetaExecutor;
-import io.army.sync.executor.SyncExecutorFactory;
+import io.army.sync.executor.SyncStmtExecutorFactory;
 
 import javax.sql.CommonDataSource;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 
-abstract class JdbcExecutorFactory implements SyncExecutorFactory {
+abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
     static final byte SET_OBJECT_METHOD = 1;
     static final byte EXECUTE_LARGE_UPDATE_METHOD = 2;

@@ -1,12 +1,9 @@
 package io.army.reactive;
 
-import io.army.dialect.DialectParser;
-import io.army.meta.ServerMeta;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.util._Exceptions;
 import reactor.core.publisher.Mono;
 
-import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -22,48 +19,13 @@ final class ArmyReactiveLocalSessionFactory extends ArmyReactiveSessionFactory i
     }
 
 
-    @Override
-    public ServerMeta serverMeta() {
-        return null;
-    }
-
-    @Override
-    public ZoneId zoneId() {
-        return null;
-    }
-
-    @Override
-    public boolean isSupportSavePoints() {
-        return false;
-    }
-
-    @Override
-    public boolean isReactive() {
-        return true;
-    }
 
 
     /*################################## blow InnerReactiveApiSessionFactory method ##################################*/
 
-
-    @Override
-    public boolean isClosed() {
-        return this.factoryClosed.get();
-    }
-
     @Override
     public ReactiveLocalSessionFactory.SessionBuilder builder() {
         return new LocalSessionBuilder(this);
-    }
-
-    @Override
-    public Mono<Void> close() {
-        return Mono.empty();
-    }
-
-    @Override
-    protected DialectParser dialectParser() {
-        throw new UnsupportedOperationException();
     }
 
     /*################################## blow private static inner class ##################################*/
@@ -77,9 +39,9 @@ final class ArmyReactiveLocalSessionFactory extends ArmyReactiveSessionFactory i
         }
 
         @Override
-        protected Mono<ReactiveLocalSession> createSession() {
+        protected Mono<ReactiveLocalSession> createSession(String name) {
             return ((ArmyReactiveLocalSessionFactory) this.factory).stmtExecutorFactory
-                    .localExecutor()
+                    .localExecutor(name)
                     .map(this::createLocalSession);
         }
 

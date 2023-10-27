@@ -3,7 +3,7 @@ package io.army.jdbc;
 import io.army.dialect.Database;
 import io.army.executor.ExecutorEnv;
 import io.army.session.DataAccessException;
-import io.army.sync.executor.LocalExecutorFactory;
+import io.army.sync.executor.SyncLocalExecutorFactory;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.util._Exceptions;
 
@@ -12,7 +12,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.BiFunction;
 
-final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements LocalExecutorFactory {
+final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements SyncLocalExecutorFactory {
 
     static JdbcLocalExecutorFactory create(DataSource dataSource, ExecutorEnv env, int methodFlag) {
         return new JdbcLocalExecutorFactory(dataSource, env, methodFlag);

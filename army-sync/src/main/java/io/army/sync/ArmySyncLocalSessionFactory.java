@@ -1,14 +1,11 @@
 package io.army.sync;
 
-import io.army.dialect.DialectParser;
 import io.army.env.SyncKey;
 import io.army.lang.Nullable;
-import io.army.meta.ServerMeta;
 import io.army.proxy._SessionCacheFactory;
 import io.army.session.DataAccessException;
 import io.army.session.SessionFactoryException;
-import io.army.sync.executor.LocalExecutorFactory;
-import io.army.sync.executor.SyncExecutorFactory;
+import io.army.sync.executor.SyncLocalExecutorFactory;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.time.ZoneId;
 
 /**
  * This class is a implementation of {@link SyncLocalSessionFactory}
@@ -25,7 +21,7 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmySyncLocalSessionFactory.class);
 
-    final LocalExecutorFactory executorFactory;
+    final SyncLocalExecutorFactory executorFactory;
 
     final boolean buildInExecutor;
 
@@ -56,63 +52,9 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
 
 
     @Override
-    public boolean isReactive() {
-        return false;
-    }
-
-    @Override
-    public ZoneId zoneId() {
-        return this.mappingEnv.zoneOffset();
-    }
-
-
-    @Override
-    public void close() throws SessionFactoryException {
-        synchronized (this) {
-            if (this.closed) {
-                return;
-            }
-            destroyArmyBeans();
-            try {
-                this.executorFactory.close();
-            } catch (DataAccessException e) {
-                String m = String.format("%s close occur error.%s", SyncExecutorFactory.class.getName(), e.getMessage());
-                throw new SessionFactoryException(m, e);
-            }
-            this.closed = true;
-        }
-    }
-
-    @Override
-    public boolean isSupportSavePoints() {
-        return this.supportSavePoints;
-    }
-
-    @Override
-    public ServerMeta serverMeta() {
-        return this.mappingEnv.serverMeta();
-    }
-
-    @Override
-    public SessionContext currentSessionContext() throws SessionFactoryException {
-        final SessionContext context = this.sessionContext;
-        if (context == null) {
-            String m = String.format("%s no specified %s.", this, SessionContext.class.getName());
-            throw new SessionFactoryException(m);
-        }
-        return context;
-    }
-
-    @Override
-    public SyncLocalSessionFactory.SessionBuilder builder() {
+    public SessionBuilder builder() {
         return new LocalSessionBuilder(this);
     }
-
-    @Override
-    public boolean isClosed() {
-        return this.closed;
-    }
-
 
     @Override
     public String toString() {
@@ -124,10 +66,6 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
         );
     }
 
-    @Override
-    protected DialectParser dialectParser() {
-        return this.dialectParser;
-    }
 
 
     /*################################## blow package method ##################################*/
@@ -187,7 +125,7 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
     }
 
 
-    private static boolean isBuildInExecutor(final LocalExecutorFactory executorFactory) {
+    private static boolean isBuildInExecutor(final SyncLocalExecutorFactory executorFactory) {
         return executorFactory.getClass().getName().startsWith("io.army.jdbc.");
     }
 
@@ -201,7 +139,7 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
 
     /*################################## blow instance inner class  ##################################*/
 
-    static final class LocalSessionBuilder extends ArmySessionBuilder<SyncLocalSessionFactory.SessionBuilder, SyncLocalSession>
+    static final class LocalSessionBuilder extends ArmySessionBuilder<SessionBuilder, SyncLocalSession>
             implements SyncLocalSessionFactory.SessionBuilder {
 
 
@@ -214,9 +152,9 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
 
 
         @Override
-        protected SyncLocalSession createSession() {
+        protected SyncLocalSession createSession(String name) {
             try {
-                this.stmtExecutor = this.factory.executorFactory.createLocalStmtExecutor();
+                //  this.stmtExecutor = this.factory.executorFactory.createLocalStmtExecutor();
 
                 return new ArmySyncLocalSession(this);
             } catch (DataAccessException e) {
@@ -224,7 +162,10 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
             }
         }
 
-
+        @Override
+        protected SyncLocalSession handleError(Throwable cause) {
+            return null;
+        }
     }//LocalSessionBuilder
 
 

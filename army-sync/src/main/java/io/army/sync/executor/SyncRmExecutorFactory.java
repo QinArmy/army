@@ -1,6 +1,6 @@
 package io.army.sync.executor;
 
-public interface RmExecutorFactory extends SyncExecutorFactory {
+public interface SyncRmExecutorFactory extends SyncStmtExecutorFactory {
 
     SyncRmStmtExecutor createRmStmtExecutor();
 

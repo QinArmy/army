@@ -20,9 +20,9 @@ import io.army.session.DataAccessException;
 import io.army.session.DdlMode;
 import io.army.session.FactoryBuilderSupport;
 import io.army.session.SessionFactoryException;
-import io.army.sync.executor.LocalExecutorFactory;
 import io.army.sync.executor.MetaExecutor;
-import io.army.sync.executor.SyncExecutorFactory;
+import io.army.sync.executor.SyncLocalExecutorFactory;
+import io.army.sync.executor.SyncStmtExecutorFactory;
 import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -42,7 +42,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
 
     private Object dataSource;
 
-    LocalExecutorFactory executorFactory;
+    SyncLocalExecutorFactory executorFactory;
 
     SessionContext sessionContext;
 
@@ -72,7 +72,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
             final ExecutorEnv executorEnv;
             executorEnv = createExecutorEnv(factoryName, serverMeta, env, mappingEnv);
             //6. create LocalExecutorFactory
-            final LocalExecutorFactory executorFactory;
+            final SyncLocalExecutorFactory executorFactory;
             executorFactory = executorProvider.createFactory(executorEnv);
 
             final FactoryAdvice factoryAdvice;
@@ -203,7 +203,7 @@ final class LocalSessionFactoryBuilder extends FactoryBuilderSupport implements 
         LOG.info(msgPrefix);
         final long startTime;
         startTime = System.currentTimeMillis();
-        final SyncExecutorFactory executorFactory;
+        final SyncStmtExecutorFactory executorFactory;
         executorFactory = sessionFactory.executorFactory;
 
         try (MetaExecutor metaExecutor = executorFactory.createMetaExecutor()) {

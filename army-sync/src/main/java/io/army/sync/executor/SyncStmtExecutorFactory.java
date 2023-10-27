@@ -8,14 +8,14 @@ import io.army.session.executor.StmtExecutorFactorySpec;
  * <p>
  * This interface is base interface of below:
  *     <ul>
- *         <li>{@link LocalExecutorFactory}</li>
- *         <li>{@link RmExecutorFactory}</li>
+ *         <li>{@link SyncLocalExecutorFactory}</li>
+ *         <li>{@link SyncRmExecutorFactory}</li>
  *     </ul>
  * </p>
  *
  * @since 1.0
  */
-public interface SyncExecutorFactory extends StmtExecutorFactorySpec, AutoCloseable {
+public interface SyncStmtExecutorFactory extends StmtExecutorFactorySpec, AutoCloseable {
 
 
     MetaExecutor createMetaExecutor() throws DataAccessException;
@@ -32,7 +32,7 @@ public interface SyncExecutorFactory extends StmtExecutorFactorySpec, AutoClosea
 
     /**
      * <p>
-     * close {@link SyncExecutorFactory},but don't close underlying data source(eg:{@code  javax.sql.DataSource}).
+     * close {@link SyncStmtExecutorFactory},but don't close underlying data source(eg:{@code  javax.sql.DataSource}).
      * </p>
      */
     void close() throws DataAccessException;

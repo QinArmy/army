@@ -27,20 +27,20 @@ public interface SyncStmtExecutorFactoryProvider extends StmtExecutorFactoryProv
 
 
     /**
-     * @throws UnsupportedOperationException throw when support only creating{@link RmExecutorFactory }
+     * @throws UnsupportedOperationException throw when support only creating{@link SyncRmExecutorFactory }
      * @throws IllegalStateException         throw when invoke this method before {@link #createServerMeta()}
      * @throws IllegalArgumentException      throw when {@link  MappingEnv#serverMeta()} not match.
      */
     @Override
-    LocalExecutorFactory createFactory(ExecutorEnv env);
+    SyncLocalExecutorFactory createFactory(ExecutorEnv env);
 
     /**
-     * @throws UnsupportedOperationException throw when support only creating{@link LocalExecutorFactory }
+     * @throws UnsupportedOperationException throw when support only creating{@link SyncLocalExecutorFactory }
      * @throws IllegalStateException         throw when invoke this method before {@link #createServerMeta()}
      * @throws IllegalArgumentException      throw when {@link  MappingEnv#serverMeta()} not match.
      */
     @Override
-    RmExecutorFactory createRmFactory(ExecutorEnv env);
+    SyncRmExecutorFactory createRmFactory(ExecutorEnv env);
 
 
 }

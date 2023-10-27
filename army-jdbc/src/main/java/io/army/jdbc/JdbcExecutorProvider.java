@@ -7,8 +7,8 @@ import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sync.executor.LocalExecutorFactory;
-import io.army.sync.executor.RmExecutorFactory;
+import io.army.sync.executor.SyncLocalExecutorFactory;
+import io.army.sync.executor.SyncRmExecutorFactory;
 import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
@@ -84,10 +84,10 @@ public final class JdbcExecutorProvider implements SyncStmtExecutorFactoryProvid
     }
 
     @Override
-    public LocalExecutorFactory createFactory(final ExecutorEnv env) {
+    public SyncLocalExecutorFactory createFactory(final ExecutorEnv env) {
         final CommonDataSource dataSource = this.dataSource;
         if (!(dataSource instanceof DataSource)) {
-            String m = String.format("unsupported creating %s", LocalExecutorFactory.class.getName());
+            String m = String.format("unsupported creating %s", SyncLocalExecutorFactory.class.getName());
             throw new UnsupportedOperationException(m);
         }
         this.validateServerMeta(env.mappingEnv());
@@ -95,10 +95,10 @@ public final class JdbcExecutorProvider implements SyncStmtExecutorFactoryProvid
     }
 
     @Override
-    public RmExecutorFactory createRmFactory(final ExecutorEnv env) {
+    public SyncRmExecutorFactory createRmFactory(final ExecutorEnv env) {
         final CommonDataSource dataSource = this.dataSource;
         if (!(dataSource instanceof XADataSource)) {
-            String m = String.format("unsupported creating %s", RmExecutorFactory.class.getName());
+            String m = String.format("unsupported creating %s", SyncRmExecutorFactory.class.getName());
             throw new UnsupportedOperationException(m);
         }
 

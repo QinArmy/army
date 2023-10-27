@@ -1,7 +1,6 @@
 package io.army.sync;
 
 import io.army.session.SessionException;
-import io.army.session.SessionFactoryException;
 
 /**
  * This interface representing single database(or single schema).
@@ -10,8 +9,6 @@ import io.army.session.SessionFactoryException;
 public interface SyncLocalSessionFactory extends SyncSessionFactory {
 
 
-    SessionContext currentSessionContext() throws SessionFactoryException;
-
     SessionBuilder builder();
 
 
@@ -19,7 +16,6 @@ public interface SyncLocalSessionFactory extends SyncSessionFactory {
 
         @Override
         SyncLocalSession build() throws SessionException;
-
 
     }
 

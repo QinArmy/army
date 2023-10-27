@@ -1,7 +1,6 @@
 package io.army.reactive;
 
 import io.army.session.SessionFactoryException;
-import io.army.session._ArmySessionFactory;
 import io.army.util._Exceptions;
 import reactor.core.publisher.Mono;
 
@@ -34,13 +33,13 @@ final class ArmyReactiveRmSessionFactory extends ArmyReactiveSessionFactory impl
         }
 
         @Override
-        protected Mono<ReactiveRmSession> createSession() {
+        protected Mono<ReactiveRmSession> createSession(String name) {
             throw new UnsupportedOperationException();
         }
 
         @Override
         protected Mono<ReactiveRmSession> handleError(Throwable cause) {
-            return Mono.error(_ArmySessionFactory.wrapIfNeed(cause));
+            return Mono.empty();
         }
 
 
