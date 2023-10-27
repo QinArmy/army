@@ -2,7 +2,6 @@ package io.army.reactive;
 
 import io.army.reactive.executor.ReactiveStmtExecutor;
 import io.army.reactive.executor.ReactiveStmtExecutorFactory;
-import io.army.session.DriverSpi;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmySessionFactory;
 import reactor.core.publisher.Mono;

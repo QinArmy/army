@@ -26,8 +26,17 @@ public abstract class ExecutorSupport {
 
     }
 
+    @Override
+    public final int hashCode() {
+        return super.hashCode();
+    }
 
-    protected ArmyException unsupportedIsolation(Isolation isolation) {
+    @Override
+    public final boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    protected final ArmyException unsupportedIsolation(Isolation isolation) {
         return new ArmyException(String.format("%s don't support %s", this, isolation));
     }
 
@@ -139,7 +148,6 @@ public abstract class ExecutorSupport {
         String m = String.format("%s have closed.", factory);
         return new ArmyException(m);
     }
-
 
 
     protected static final class ArmyResultRecordMeta implements ResultRecordMeta {

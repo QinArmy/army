@@ -38,4 +38,8 @@ public interface ReactiveRmSession extends ReactiveSession, RmSession {
     Mono<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc);
 
 
+    @Override
+    ReactiveRmSession markRollbackOnly() throws SessionException;
+
+
 }

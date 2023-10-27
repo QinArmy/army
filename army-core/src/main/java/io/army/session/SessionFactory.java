@@ -6,6 +6,7 @@ import io.army.lang.Nullable;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
+import io.army.session.executor.StmtExecutorFactorySpec;
 
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -19,7 +20,7 @@ import java.util.Map;
  *
  * @since 1.0
  */
-public interface SessionFactory {
+public interface SessionFactory extends CloseableSpec {
 
     String name();
 
@@ -40,15 +41,14 @@ public interface SessionFactory {
 
     AllowMode queryInsertMode();
 
+    /**
+     * See {@link StmtExecutorFactorySpec#driverSpiVendor()}
+     */
+    String driverSpiVendor();
+
 
     boolean isSupportSavePoints();
 
-    /**
-     * Is this factory already closed?
-     *
-     * @return True if this factory is already closed; false otherwise.
-     */
-    boolean isClosed();
 
     boolean isReadonly();
 

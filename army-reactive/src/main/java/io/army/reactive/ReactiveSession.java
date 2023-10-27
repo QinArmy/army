@@ -43,6 +43,10 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
      */
     long sessionIdentifier() throws SessionException;
 
+
+    @Override
+    ReactiveSession markRollbackOnly() throws SessionException;
+
     /**
      * <p>
      * <strong>NOTE</strong> : driver don't send message to database server before subscribing.

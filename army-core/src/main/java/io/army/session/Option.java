@@ -177,6 +177,26 @@ public final class Option<T> {
      */
     public static final Option<Boolean> READ_ONLY_SESSION = Option.from("READ ONLY SESSION", Boolean.class);
 
+    /**
+     * <p>
+     * [NO] CHAIN option of COMMIT command.
+     * <br/>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/commit.html">MySQL : COMMIT [WORK] [AND [NO] CHAIN]</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-commit.html">postgre : COMMIT [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]</a>
+     */
+    public static final Option<Boolean> CHAIN = Option.from("CHAIN", Boolean.class);
+
+
+    /**
+     * <p>
+     * [NO] RELEASE option of COMMIT/ROLLBACK command.
+     * <br/>
+     *
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/commit.html">MySQL : ROLLBACK [WORK] [[NO] RELEASE]</a>
+     */
+    public static final Option<Boolean> RELEASE = Option.from("RELEASE", Boolean.class);
+
 
     private final String name;
 

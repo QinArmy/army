@@ -44,22 +44,14 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     @Override
     public boolean inTransaction() {
-        final boolean in;
-        if (((ArmyReactiveLocalSessionFactory) this.factory).driverSpi != DriverSpi.JDBD) {
-            in = this.transactionInfo != null;
-        } else switch (this.factory.serverDatabase) {
-            case MySQL:
-            case PostgreSQL:
-                try {
-                    in = this.stmtExecutor.inTransaction();
-                } catch (Exception e) {
-                    throw wrapSessionError(e);
-                }
-                break;
-            default:
-                in = this.transactionInfo != null;
+        boolean in;
+        try {
+            in = this.stmtExecutor.inTransaction();
+        } catch (DataAccessException e) {
+            in = hasTransaction();
         }
         return in;
+
     }
 
     @Override

@@ -5,7 +5,7 @@ import io.army.criteria.Visible;
 import io.army.meta.TableMeta;
 
 /**
- *
+ * @see SessionFactory
  */
 public interface Session extends CloseableSpec, OptionSpec {
 
@@ -17,6 +17,9 @@ public interface Session extends CloseableSpec, OptionSpec {
 
     boolean hasTransaction();
 
+    boolean isRollbackOnly();
+
+    Session markRollbackOnly() throws SessionException;
 
     String name();
 

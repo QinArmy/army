@@ -5,7 +5,6 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
-import io.army.function.IntBiFunction;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
@@ -106,7 +105,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     public final boolean inTransaction() throws DataAccessException {
         try {
             return this.session.inTransaction();
-        } catch (Exception e) {
+        } catch (JdbdException e) {
             throw wrapExecuteError(e);
         }
     }
@@ -523,7 +522,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public Mono<Void> commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
+    public final Mono<Void> commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
         if (!(this instanceof ReactiveRmStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
@@ -620,34 +619,36 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     @SuppressWarnings("unchecked")
     @Override
     public final <T> T valueOf(final @Nullable Option<T> option) {
+        final Object v;
+        final T value;
+        final io.jdbd.session.Option<?> jdbdOption;
         if (option == null) {
-            return null;
+            value = null;
+        } else if ((jdbdOption = mapToJdbdOption(option)) == null) {
+            value = null;
+        } else if (option.javaType().isInstance(v = this.session.valueOf(jdbdOption))) {
+            value = (T) v;
+        } else {
+            value = null;
         }
-        final Object value;
-        value = this.session.valueOf(mapToJdbdOption(option));
-        if (option.javaType().isInstance(value)) {
-            return (T) value;
-        }
-        return null;
+        return value;
     }
 
 
     @Override
     public final <T> Mono<T> close() {
-        final Mono<T> mono;
-        mono = Mono.from(this.session.close());
-        return mono.onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+        return Mono.from(this.session.close());
     }
 
     @Override
     public final String toString() {
-        return _StringUtils.builder()
-                .append(getClass())
-                .append("[ name : ")
+        return _StringUtils.builder(48)
+                .append(getClass().getName())
+                .append("[name:")
                 .append(this.name)
-                .append(" , hash : ")
+                .append(",hash:")
                 .append(System.identityHashCode(this))
-                .append(" ]")
+                .append(']')
                 .toString();
     }
 
@@ -680,8 +681,12 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     /**
      * @see #start(Xid, int, TransactionOption)
      */
-    private io.jdbd.session.Xid mapToJdbdXid(Xid xid) {
-        throw new UnsupportedOperationException();
+    private io.jdbd.session.Xid mapToJdbdXid(final Xid xid) {
+        return io.jdbd.session.Xid.from(xid.getGtrid(), xid.getBqual(), xid.getFormatId());
+    }
+
+    private Xid mapToArmyXid(io.jdbd.session.Xid xid) {
+        return Xid.from(xid.getGtrid(), xid.getBqual(), xid.getFormatId(), mapToArmyOptionFunc(xid::valueOf));
     }
 
 
@@ -711,8 +716,11 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @SuppressWarnings("all")
-    private Optional<Xid> mapToOptionalArmyXid(Optional<io.jdbd.session.Xid> jdbdXidOptional) {
-        throw new UnsupportedOperationException();
+    private Optional<Xid> mapToOptionalArmyXid(Optional<io.jdbd.session.Xid> optional) {
+        if (optional.isPresent()) {
+            return Optional.of(mapToArmyXid(optional.get()));
+        }
+        return Optional.empty();
     }
 
     /**
@@ -759,16 +767,77 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
 
     @Nullable
-    private io.jdbd.session.Option<?> mapToJdbdOption(final Option<?> option) {
-        if (option == Option.IN_TRANSACTION) {
-
+    private io.jdbd.session.Option<?> mapToJdbdOption(final @Nullable Option<?> option) {
+        final io.jdbd.session.Option<?> jdbdOption;
+        if (option == null) {
+            jdbdOption = null;
+        } else if (option == Option.IN_TRANSACTION) {
+            jdbdOption = io.jdbd.session.Option.IN_TRANSACTION;
+        } else if (option == Option.ISOLATION) {
+            jdbdOption = io.jdbd.session.Option.ISOLATION;
+        } else if (option == Option.READ_ONLY) {
+            jdbdOption = io.jdbd.session.Option.READ_ONLY;
+        } else if (option == Option.XID) {
+            jdbdOption = io.jdbd.session.Option.XID;
+        } else if (option == Option.XA_STATES) {
+            jdbdOption = io.jdbd.session.Option.XA_STATES;
+        } else if (option == Option.XA_FLAGS) {
+            jdbdOption = io.jdbd.session.Option.XA_FLAGS;
+        } else if (option == Option.NAME) {
+            jdbdOption = io.jdbd.session.Option.NAME;
+        } else if (option == Option.CHAIN) {
+            jdbdOption = io.jdbd.session.Option.CHAIN;
+        } else if (option == Option.RELEASE) {
+            jdbdOption = io.jdbd.session.Option.RELEASE;
+        } else if (option == Option.AUTO_COMMIT) {
+            jdbdOption = io.jdbd.session.Option.AUTO_COMMIT;
+        } else if (option == Option.WAIT) {
+            jdbdOption = io.jdbd.session.Option.WAIT;
+        } else if (option == Option.LOCK_TIMEOUT) {
+            jdbdOption = io.jdbd.session.Option.LOCK_TIMEOUT;
+        } else if (option == Option.READ_ONLY_SESSION) {
+            jdbdOption = io.jdbd.session.Option.READ_ONLY_SESSION;
+        } else {
+            jdbdOption = mapToJdbdDialectOption(option);
         }
-        throw new UnsupportedOperationException();
+        return jdbdOption;
     }
 
     @Nullable
-    private Option<?> mapToArmyOption(io.jdbd.session.Option<?> option) {
-        throw new UnsupportedOperationException();
+    private Option<?> mapToArmyOption(final @Nullable io.jdbd.session.Option<?> option) {
+        final Option<?> armyOption;
+        if (option == null) {
+            armyOption = null;
+        } else if (option == io.jdbd.session.Option.IN_TRANSACTION) {
+            armyOption = Option.IN_TRANSACTION;
+        } else if (option == io.jdbd.session.Option.ISOLATION) {
+            armyOption = Option.ISOLATION;
+        } else if (option == io.jdbd.session.Option.READ_ONLY) {
+            armyOption = Option.READ_ONLY;
+        } else if (option == io.jdbd.session.Option.XID) {
+            armyOption = Option.XID;
+        } else if (option == io.jdbd.session.Option.XA_STATES) {
+            armyOption = Option.XA_STATES;
+        } else if (option == io.jdbd.session.Option.XA_FLAGS) {
+            armyOption = Option.XA_FLAGS;
+        } else if (option == io.jdbd.session.Option.NAME) {
+            armyOption = Option.NAME;
+        } else if (option == io.jdbd.session.Option.CHAIN) {
+            armyOption = Option.CHAIN;
+        } else if (option == io.jdbd.session.Option.RELEASE) {
+            armyOption = Option.RELEASE;
+        } else if (option == io.jdbd.session.Option.AUTO_COMMIT) {
+            armyOption = Option.AUTO_COMMIT;
+        } else if (option == io.jdbd.session.Option.WAIT) {
+            armyOption = Option.WAIT;
+        } else if (option == io.jdbd.session.Option.LOCK_TIMEOUT) {
+            armyOption = Option.LOCK_TIMEOUT;
+        } else if (option == io.jdbd.session.Option.READ_ONLY_SESSION) {
+            armyOption = Option.READ_ONLY_SESSION;
+        } else {
+            armyOption = mapToArmyDialectOption(option);
+        }
+        return armyOption;
     }
 
     /**
@@ -811,7 +880,10 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
      */
     @SuppressWarnings("all")
     private Optional<TransactionInfo> mapToArmyOptionalTransactionInfo(Optional<io.jdbd.session.TransactionInfo> jdbdOptional) {
-        throw new UnsupportedOperationException();
+        if (jdbdOptional.isPresent()) {
+            Optional.of(mapToArmyTransactionInfo(jdbdOptional.get()));
+        }
+        return Optional.empty();
     }
 
 
@@ -1524,14 +1596,14 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         }
 
         private void acceptRowMeta(final ResultRowMeta rowMeta, final IntFunction<SqlType> sqlTypeFunc) {
-            final IntBiFunction<Option<?>, ?> optionFunc;
-            optionFunc = this.executor.readJdbdRowMetaOptions(rowMeta);
-
-            final ArmyResultRecordMeta recordMeta;
-            recordMeta = new ArmyResultRecordMeta(rowMeta.getResultNo(), this.selectionList, sqlTypeFunc, optionFunc);
-
-            this.resultNo = rowMeta.getResultNo();
-            this.currentRecord = new JdbdCurrentRecord(recordMeta);
+//            final IntBiFunction<Option<?>, ?> optionFunc;
+//            optionFunc = this.executor.readJdbdRowMetaOptions(rowMeta);
+//
+//            final ArmyResultRecordMeta recordMeta;
+//            recordMeta = new ArmyResultRecordMeta(rowMeta.getResultNo(), this.selectionList, sqlTypeFunc, optionFunc);
+//
+//            this.resultNo = rowMeta.getResultNo();
+//            this.currentRecord = new JdbdCurrentRecord(recordMeta);
 
         }
 

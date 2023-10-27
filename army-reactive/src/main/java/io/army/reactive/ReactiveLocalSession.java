@@ -23,6 +23,7 @@ public interface ReactiveLocalSession extends ReactiveSession {
 
     Mono<TransactionInfo> startTransaction(TransactionOption option);
 
+    @Override
     ReactiveLocalSession markRollbackOnly() throws SessionException;
 
 
