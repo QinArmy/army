@@ -649,7 +649,7 @@ abstract class InsertSupports {
         }
 
         @Override
-        public void clear() {
+        public void close() {
             this.fieldList = null;
             this.fieldMap = null;
         }
@@ -942,8 +942,8 @@ abstract class InsertSupports {
 
 
         @Override
-        public void clear() {
-            super.clear();
+        public void close() {
+            super.close();
             this.commonExpMap = null;
         }
 
@@ -2045,10 +2045,10 @@ abstract class InsertSupports {
         }
 
         @Override
-        public final void clear() {
+        public final void close() {
             _Assert.prepared(this.prepared);
             if (this instanceof _Insert._ChildInsert) {
-                ((_ChildInsert) this).parentStmt().clear();
+                ((_ChildInsert) this).parentStmt().close();
             }
             this.prepared = Boolean.FALSE;
         }

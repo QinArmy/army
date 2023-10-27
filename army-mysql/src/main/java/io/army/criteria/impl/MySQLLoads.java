@@ -634,7 +634,7 @@ abstract class MySQLLoads {
         }
 
         @Override
-        public final void clear() {
+        public final void close() {
             _Assert.prepared(this.prepared);
             this.prepared = Boolean.FALSE;
         }

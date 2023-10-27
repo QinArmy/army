@@ -177,6 +177,11 @@
                 <artifactId>common-util</artifactId>
                 <version>${qinarmy.common.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.jdbd.mysql</groupId>
+                <artifactId>jdbd-mysql</artifactId>
+                <version>0.10.0</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.testng</groupId>

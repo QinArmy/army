@@ -1084,7 +1084,7 @@ abstract class PostgreUpdates<I extends Item, Q extends Item, T>
         }
 
         @Override
-        public final void clear() {
+        public final void close() {
             _Assert.prepared(this.prepared);
             this.prepared = null;
         }

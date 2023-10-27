@@ -189,7 +189,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             flux = Flux.error(_Exceptions.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
-                ((_Statement) statement).clear();
+                ((_Statement) statement).close();
             }
         }
 
@@ -281,7 +281,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             flux = Flux.error(_Exceptions.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
-                ((_Statement) statement).clear();
+                ((_Statement) statement).close();
             }
         }
         return flux;
@@ -314,7 +314,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             flux = Flux.error(_Exceptions.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
-                ((_Statement) statement).clear();
+                ((_Statement) statement).close();
             }
         }
         return flux;
@@ -377,7 +377,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             mono = Mono.error(_Exceptions.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
-                ((_Statement) statement).clear();
+                ((_Statement) statement).close();
             }
         }
         return mono;
@@ -416,7 +416,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             mono = Mono.error(_Exceptions.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
-                ((_Statement) statement).clear();
+                ((_Statement) statement).close();
             }
         }
         return mono;

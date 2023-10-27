@@ -1,5 +1,6 @@
 package io.army.criteria.impl.inner;
 
+import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLWords;
 import io.army.criteria.SortItem;
 import io.army.criteria.Statement;
@@ -8,10 +9,10 @@ import io.army.meta.TableMeta;
 
 import java.util.List;
 
-public interface _Statement extends Statement {
+public interface _Statement extends Statement, AutoCloseable {
 
 
-    void clear();
+    void close() throws CriteriaException;
 
     interface _WherePredicateListSpec {
 

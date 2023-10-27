@@ -328,7 +328,7 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
 
 
     @Override
-    public final void clear() {
+    public final void close() {
         _Assert.prepared(this.prepared);
         this.prepared = Boolean.FALSE;
         this.clearWhereClause();

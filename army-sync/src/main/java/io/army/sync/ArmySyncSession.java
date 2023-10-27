@@ -6,8 +6,8 @@ import io.army.criteria.SimpleDmlStatement;
 import io.army.criteria.SimpleDqlStatement;
 import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.criteria.impl.inner._BatchStatement;
-import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
+import io.army.session.ChildUpdateException;
 import io.army.session.CurrentRecord;
 import io.army.session.SessionException;
 import io.army.session._ArmySession;
@@ -178,29 +178,29 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final long update(SimpleDmlStatement statement, SyncStmtOption option) {
-        if (statement instanceof _BatchStatement) {
-            throw _Exceptions.unexpectedStatement(statement);
-        }
-        try {
-            assertSession(statement);
+        try (final SimpleDmlStatement s = statement) {
+            if (s instanceof _BatchStatement) {
+                throw _Exceptions.unexpectedStatement(s);
+            }
+            assertSession(s);
             final long rows;
-            if (statement instanceof InsertStatement) {
-                rows = this.executeInsert((InsertStatement) statement, option);
+            if (s instanceof InsertStatement) {
+                rows = this.executeInsert((InsertStatement) s, option);
             } else {
-                rows = this.executeUpdate(statement, option);
+                rows = this.executeUpdate(s, option);
             }
             return rows;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (statement instanceof _Statement) {
-                ((_Statement) statement).clear();
+        } catch (ChildUpdateException e) {
+            if (hasTransaction()) {
+                markRollbackOnly();
             }
+            throw e;
+        } catch (Exception e) {
+            throw wrapSessionError(e);
         }
 
 
     }
-
 
     @Override
     public final List<Long> batchUpdate(BatchDmlStatement statement) {

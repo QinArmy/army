@@ -102,7 +102,7 @@ abstract class SingleDeleteStatement<I extends Item, B extends CteBuilderSpec, W
 
 
     @Override
-    public final void clear() {
+    public final void close() {
         _Assert.prepared(this.prepared);
         this.onClear();
         this.prepared = Boolean.FALSE;

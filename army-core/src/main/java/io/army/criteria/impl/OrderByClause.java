@@ -228,7 +228,7 @@ abstract class OrderByClause<OR, OD> extends CriteriaSupports.StatementMockSuppo
         }
 
         @Override
-        public final void clear() {
+        public final void close() {
             //no-op
         }
 

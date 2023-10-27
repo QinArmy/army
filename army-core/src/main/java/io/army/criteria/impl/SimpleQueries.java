@@ -952,7 +952,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
 
 
     @Override
-    public final void clear() {
+    public final void close() {
         this.recursive = false;
         this.cteList = null;
         this.hintList = null;
@@ -2514,7 +2514,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
         @Override
-        public final void clear() {
+        public final void close() {
             if (!this.prepared) {
                 return;
             }

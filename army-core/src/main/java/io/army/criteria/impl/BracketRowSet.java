@@ -167,7 +167,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
     }
 
     @Override
-    public final void clear() {
+    public final void close() {
         _Assert.prepared(this.prepared);
         this.innerRowSet = null;
         this.clearOrderByList();
@@ -317,7 +317,7 @@ abstract class BracketRowSet<I extends Item, RR, OR, OD, LR, LO, LF, SP>
 
 
         @Override
-        public final void clear() {
+        public final void close() {
             if (!this.prepared) {
                 return;
             }

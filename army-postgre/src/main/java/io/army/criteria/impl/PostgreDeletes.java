@@ -929,7 +929,7 @@ abstract class PostgreDeletes<I extends Item, Q extends Item> extends JoinableDe
         }
 
         @Override
-        public final void clear() {
+        public final void close() {
             _Assert.prepared(this.prepared);
             this.prepared = null;
         }

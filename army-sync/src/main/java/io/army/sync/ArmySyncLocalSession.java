@@ -312,7 +312,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
             String m = String.format("Army execute %s occur error.", statement.getClass().getName());
             throw _Exceptions.unknownError(m, e);
         } finally {
-            ((_Statement) statement).clear();
+            ((_Statement) statement).close();
         }
     }
 
@@ -456,7 +456,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
             String m = String.format("Army execute %s occur error.", InsertStatement.class.getName());
             throw _Exceptions.unknownError(m, e);
         } finally {
-            ((_Statement) statement).clear();
+            ((_Statement) statement).close();
         }
     }
 
@@ -534,7 +534,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
         } catch (RuntimeException e) {
             throw _Exceptions.unknownSessionError(this, e);
         } finally {
-            ((_Statement) statement).clear();
+            ((_Statement) statement).close();
         }
     }
 
@@ -619,7 +619,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
         } catch (RuntimeException e) {
             throw _Exceptions.unknownSessionError(this, e);
         } finally {
-            ((_Statement) statement).clear();
+            ((_Statement) statement).close();
         }
     }
 
@@ -656,7 +656,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
         } catch (RuntimeException e) {
             throw _Exceptions.unknownError(e.getMessage(), e);
         } finally {
-            ((_Statement) statement).clear();
+            ((_Statement) statement).close();
         }
     }
 
@@ -679,7 +679,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
         } catch (RuntimeException e) {
             throw _Exceptions.unknownError(e.getMessage(), e);
         } finally {
-            ((_Statement) statement).clear();
+            ((_Statement) statement).close();
         }
     }
 
@@ -726,7 +726,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
             String m = String.format("Army execute %s occur error.", statement.getClass().getName());
             throw _Exceptions.unknownError(m, e);
         } finally {
-            ((_Statement) statement).clear();
+            ((_Statement) statement).close();
         }
     }
 
