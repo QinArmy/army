@@ -2,6 +2,7 @@ package io.army.session;
 
 import io.army.lang.NonNull;
 import io.army.lang.Nullable;
+import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import java.util.function.Function;
@@ -17,6 +18,21 @@ final class ArmyTransactionInfo implements TransactionInfo {
                                       @Nullable Function<Option<?>, ?> optionFunc) {
         if (isolation == null || optionFunc == null) {
             throw new NullPointerException();
+        }
+        final XaStates states;
+        states = (XaStates) optionFunc.apply(Option.XA_STATES);
+        if (states != null) {
+            switch (states) {
+                case ACTIVE:
+                case IDLE:
+                    assert inTransaction;
+                    break;
+                case PREPARED:
+                    assert !inTransaction;
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(states);
+            }
         }
         return new ArmyTransactionInfo(inTransaction, isolation, readOnly, optionFunc);
     }

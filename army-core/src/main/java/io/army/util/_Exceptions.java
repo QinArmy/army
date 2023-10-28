@@ -778,7 +778,7 @@ public abstract class _Exceptions {
     }
 
     public static NoTransactionException noTransaction(Session session) {
-        String m = String.format("%s no transaction");
+        String m = String.format("%s no transaction", session);
         return new NoTransactionException(m);
     }
 
@@ -787,11 +787,17 @@ public abstract class _Exceptions {
         return new TransactionUsageException(m);
     }
 
-    public static TransactionException rejectCommit(Session session, TransactionStatus status) {
-        String m = String.format("%s[%s] %s[%s] not match,reject commit", session.getClass().getName(), session.name(),
-                TransactionStatus.class.getName(), status.name());
-        return new IllegalTransactionStateException(m);
+
+    public static RmSessionException xaNonCurrentTransaction(Xid xid) {
+        String m = String.format("xid[%s] not current transaction.", xid);
+        return new RmSessionException(m, RmSessionException.XAER_PROTO);
     }
+
+    public static RmSessionException xaTransactionDontSupportEndCommand(Xid xid, XaStates states) {
+        String m = String.format("%s %s don't support end command", xid, states);
+        return new RmSessionException(m, RmSessionException.XAER_PROTO);
+    }
+
 
     public static TransactionException existsTransaction(Session session) {
         String m = String.format("%s exists transaction,couldn't start new transaction.", session);

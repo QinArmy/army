@@ -50,6 +50,10 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<String> QUERY_INSERT_SESSION_WHITE_LIST = new ArmyKey<>("query.insert.session_white_list", String.class, null);
 
+    public static final ArmyKey<AllowMode> DRIVER_SPI_MODE = new ArmyKey<>("driver.spi.mode", AllowMode.class, AllowMode.NEVER);
+
+    public static final ArmyKey<String> DRIVER_SPI_WHITE_LIST = new ArmyKey<>("driver.spi.session_white_list", String.class, null);
+
     /**
      * @see Column#scale()
      * @see FieldMeta#scale()

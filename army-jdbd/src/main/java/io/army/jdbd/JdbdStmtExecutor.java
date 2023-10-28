@@ -612,8 +612,19 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final boolean isSameRm(Session.XaTransactionSupportSpec s) {
-        return s instanceof JdbdStmtExecutor && this.session.isSameFactory(((JdbdStmtExecutor) s).session);
+    public final boolean isSameRm(final Session.XaTransactionSupportSpec s) {
+        if (!(this instanceof ReactiveRmStmtExecutor)) {
+            throw new UnsupportedOperationException();
+        }
+        final boolean match;
+        if (s == this) {
+            match = true;
+        } else if (s instanceof JdbdStmtExecutor) {
+            match = this.session.isSameFactory(((JdbdStmtExecutor) s).session);
+        } else {
+            match = false;
+        }
+        return match;
     }
 
     @SuppressWarnings("unchecked")

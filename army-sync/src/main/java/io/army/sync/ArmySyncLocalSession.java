@@ -19,11 +19,9 @@ import java.util.function.Function;
  */
 final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ArmySyncLocalSession.class);
+    private static final Logger LOG = LoggerFactory.getLogger(io.army.sync.ArmySyncLocalSession.class);
 
     private TransactionInfo transactionInfo;
-
-    private boolean rollbackOnly;
 
 
     ArmySyncLocalSession(final ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
@@ -39,37 +37,21 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
 
 
     @Override
-    public boolean hasTransaction() {
-        return this.transactionInfo != null;
-    }
-
-    @Override
-    public boolean isReadOnlyStatus() {
-        final TransactionInfo info;
-        return this.readonly || (info = this.transactionInfo) != null && info.isReadOnly();
-    }
-
-    @Override
-    public boolean isRollbackOnly() {
-        return this.rollbackOnly;
-    }
-
-    @Override
-    public void markRollbackOnly() {
-        this.rollbackOnly = true;
-    }
-
-    @Override
-    public TransactionInfo transactionInfo() {
+    public boolean inTransaction() {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
-        final TransactionInfo info = this.transactionInfo;
-        if (info != null) {
-            return info;
+        if (((ArmySyncLocalSessionFactory) this.factory).jdbcDriver) {
+            return hasTransactionInfo();
         }
-        return this.stmtExecutor.transactionInfo();
+        return this.stmtExecutor.inTransaction();
     }
+
+    @Override
+    public boolean hasTransactionInfo() {
+        return this.transactionInfo != null;
+    }
+
 
     @Override
     public TransactionInfo startTransaction() {
@@ -93,7 +75,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
                 case ERROR_IF_EXISTS:
                     throw _Exceptions.existsTransaction(this);
                 case COMMIT_IF_EXISTS: {
-                    if (this.rollbackOnly) {
+                    if (isRollbackOnly()) {
                         throw _Exceptions.rollbackOnlyTransaction(this);
                     }
                 }
@@ -105,10 +87,12 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
 
         final TransactionInfo info;
         info = ((SyncLocalStmtExecutor) this.stmtExecutor).startTransaction(option, mode);
+
         Objects.requireNonNull(info); // stmtExecutor no bug ,never error
+        assert info.inTransaction();
 
         this.transactionInfo = info;
-        this.rollbackOnly = false;
+        this.clearRollbackOnly();
         return info;
     }
 
@@ -121,7 +105,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
     public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
-        } else if (this.rollbackOnly) {
+        } else if (isRollbackOnly()) {
             throw _Exceptions.rollbackOnlyTransaction(this);
         }
 
@@ -130,7 +114,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
 
         if (optionFunc != Option.EMPTY_OPTION_FUNC
                 && Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
-            assert info != null;
+            assert info != null && info.inTransaction();
         } else {
             assert info == null;
         }
@@ -154,12 +138,12 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
 
         if (optionFunc != Option.EMPTY_OPTION_FUNC
                 && Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
-            assert info != null;
+            assert info != null && info.inTransaction();
         } else {
             assert info == null;
         }
         this.transactionInfo = info;
-        this.rollbackOnly = false;
+        this.clearRollbackOnly();
         return info;
     }
 
@@ -172,4 +156,12 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
     }
 
 
-}
+    /*-------------------below package template methods -------------------*/
+
+    @Override
+    TransactionInfo obtainTransactionInfo() {
+        return this.transactionInfo;
+    }
+
+
+} // ArmySyncLocalSession

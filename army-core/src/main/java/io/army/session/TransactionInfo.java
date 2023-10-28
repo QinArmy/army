@@ -2,6 +2,7 @@ package io.army.session;
 
 
 import io.army.lang.NonNull;
+import io.army.session.executor.StmtExecutor;
 
 import java.util.function.Function;
 
@@ -49,6 +50,16 @@ public interface TransactionInfo extends TransactionOption {
     static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly,
                                 Function<Option<?>, ?> optionFunc) {
         return ArmyTransactionInfo.create(inTransaction, isolation, readOnly, optionFunc);
+    }
+
+    static void validate(TransactionInfo info) {
+        if (!(info instanceof ArmyTransactionInfo)) {
+            String m = String.format("%s error ,currently army don't support other implementation of %s",
+                    StmtExecutor.class.getName(), TransactionInfo.class.getName()
+            );
+            throw new SessionException(m);
+        }
+
     }
 
 }

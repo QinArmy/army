@@ -32,10 +32,24 @@ public interface Session extends CloseableSpec, OptionSpec {
     boolean inTransaction() throws SessionException;
 
     /**
-     * @return session hold one  {@link TransactionInfo} instance.
-     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     * <p>Test session whether hold one  {@link TransactionInfo} instance or not.
+     * <p><strong>NOTE</strong> :
+     * <ol>
+     *     <li>This method don't check whether session closed or not</li>
+     *     <li>This method don't invoke {@link TransactionInfo#inTransaction()} method</li>
+     * </ol>
+     * <pre>The implementation of this method lke following
+     *         <code><br/>
+     *   &#64;Override
+     *   public boolean hasTransactionInfo() {
+     *       return this.transactionInfo != null;
+     *   }
+     *         </code>
+     * </pre>
+     *
+     * @return true : session hold one  {@link TransactionInfo} instance.
      */
-    boolean hasTransaction();
+    boolean hasTransactionInfo();
 
     /**
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
@@ -63,7 +77,7 @@ public interface Session extends CloseableSpec, OptionSpec {
     boolean isSyncSession();
 
     /**
-     * <p>Mark current session don't support rollback even if {@link #hasTransaction()} return false.
+     * <p>Mark current session don't support rollback even if {@link #hasTransactionInfo()} return false.
      * <p>The status will clear after rollback.
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
      *
@@ -133,8 +147,10 @@ public interface Session extends CloseableSpec, OptionSpec {
          */
         int recoverSupportFlags();
 
-
-        boolean isSameRm(XaTransactionSupportSpec s);
+        /**
+         * @throws SessionException throw when underlying database session have closed.
+         */
+        boolean isSameRm(XaTransactionSupportSpec s) throws SessionException;
 
     }
 

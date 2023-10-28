@@ -48,14 +48,14 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
         try {
             in = this.stmtExecutor.inTransaction();
         } catch (DataAccessException e) {
-            in = hasTransaction();
+            in = hasTransactionInfo();
         }
         return in;
 
     }
 
     @Override
-    public boolean hasTransaction() {
+    public boolean hasTransactionInfo() {
         return this.transactionInfo != null;
     }
 
@@ -119,7 +119,7 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
     public ReactiveLocalSession markRollbackOnly() {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
-        } else if (!hasTransaction()) {
+        } else if (!hasTransactionInfo()) {
             throw _Exceptions.noTransaction(this);
         }
         ROLLBACK_ONLY.compareAndSet(this, 0, 1);
@@ -203,11 +203,6 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
     @Override
     ReactiveStmtOption defaultOption() {
         return null;
-    }
-
-    @Override
-    protected String transactionName() {
-        return "unnamed";
     }
 
     @Override

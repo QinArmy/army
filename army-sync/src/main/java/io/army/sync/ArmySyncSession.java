@@ -38,6 +38,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     final SyncStmtExecutor stmtExecutor;
 
+
+    private boolean rollbackOnly;
+
     private volatile int sessionClosed;
 
     protected ArmySyncSession(ArmySyncSessionFactory.SyncSessionBuilder<?, ?> builder) {
@@ -58,17 +61,42 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         return true;
     }
 
+
     @Override
-    public final boolean inTransaction() {
+    public final TransactionInfo transactionInfo() {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
-        if (((ArmySyncLocalSessionFactory) this.factory).jdbcDriver) {
-            return hasTransaction();
+        final TransactionInfo info;
+        info = obtainTransactionInfo();
+        if (info != null) {
+            return info;
         }
-        return this.stmtExecutor.inTransaction();
+        return this.stmtExecutor.transactionInfo();
     }
 
+    @Override
+    public final boolean isReadOnlyStatus() {
+        final TransactionInfo info;
+        return this.readonly || (info = obtainTransactionInfo()) != null && info.isReadOnly();
+    }
+
+
+    /**
+     * @see #clearRollbackOnly()
+     */
+    @Override
+    public final boolean isRollbackOnly() {
+        return this.rollbackOnly;
+    }
+
+    /**
+     * @see #clearRollbackOnly()
+     */
+    @Override
+    public final void markRollbackOnly() {
+        this.rollbackOnly = true;
+    }
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
@@ -222,7 +250,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             }
             return rows;
         } catch (ChildUpdateException e) {
-            if (hasTransaction()) {
+            if (hasTransactionInfo()) {
                 markRollbackOnly();
             }
             throw e;
@@ -293,7 +321,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             }
             return resultList;
         } catch (ChildUpdateException e) {
-            if (hasTransaction()) {
+            if (hasTransactionInfo()) {
                 markRollbackOnly();
             }
             throw e;
@@ -322,6 +350,15 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         if (SESSION_CLOSED.compareAndSet(this, 0, 1)) {
             this.stmtExecutor.close();
         }
+    }
+
+    /*-------------------below package template methods -------------------*/
+
+    @Nullable
+    abstract TransactionInfo obtainTransactionInfo();
+
+    final void clearRollbackOnly() {
+        this.rollbackOnly = false;
     }
 
 
@@ -356,7 +393,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             }
             return resultList;
         } catch (ChildUpdateException e) {
-            if (hasTransaction()) {
+            if (hasTransactionInfo()) {
                 markRollbackOnly();
             }
             throw e;

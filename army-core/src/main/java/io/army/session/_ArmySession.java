@@ -27,7 +27,6 @@ public abstract class _ArmySession implements Session {
 
     private final Visible visible;
 
-
     protected _ArmySession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
 
         this.name = builder.name;
@@ -90,23 +89,16 @@ public abstract class _ArmySession implements Session {
 
     @Override
     public final String toString() {
-        return String.format("%s[name:%s,factory:%s,hash:%s,readonly:%s,transaction:%s,visible:%s,allow query insert:%s]",
-                this.getClass().getName(),
-                this.name,
-                this.sessionFactory().name(),
-                System.identityHashCode(this),
-                this.readonly,
-                this.transactionName(),
-                this.visible,
-                this.allowQueryInsert
-        );
+        return _StringUtils.builder(48)
+                .append(getClass().getName())
+                .append("[name:")
+                .append(this.name)
+                .append(",hash:")
+                .append(System.identityHashCode(this))
+                .append(']')
+                .toString();
     }
 
-
-    @Nullable
-    protected String transactionName() {
-        return "";
-    }
 
     protected abstract Logger getLogger();
 
@@ -159,23 +151,6 @@ public abstract class _ArmySession implements Session {
 
     }
 
-    protected final int restSeconds(final ChildTableMeta<?> domainTable, final long startTime, final int timeout) {
-        final int restSeconds;
-        final long restMills;
-        if (timeout == 0) {
-            restSeconds = 0;
-        } else if ((restMills = (timeout * 1000L) - (System.currentTimeMillis() - startTime)) < 1L) {
-            String m;
-            m = String.format("session[%s]\n %s first statement completion,but timeout,so no time insert child or update parent.",
-                    this.name, domainTable);
-            throw new ChildUpdateException(m, _Exceptions.timeout(timeout, restMills));
-        } else if ((restMills % 1000L) == 0) {
-            restSeconds = (int) (restMills / 1000L);
-        } else {
-            restSeconds = (int) (restMills / 1000L) + 1;
-        }
-        return restSeconds;
-    }
 
     protected final Stmt parseDqlStatement(final DqlStatement statement, final StmtOption option) {
         final boolean useMultiStmt;
@@ -236,7 +211,7 @@ public abstract class _ArmySession implements Session {
                 throw _Exceptions.readOnlySession(this);
             } else if (isReadOnlyStatus()) {
                 throw _Exceptions.readOnlyTransaction(this);
-            } else if (statement instanceof _Statement._ChildStatement && !hasTransaction()) {
+            } else if (statement instanceof _Statement._ChildStatement && !hasTransactionInfo()) {
                 final TableMeta<?> domainTable;
                 domainTable = ((_Statement._ChildStatement) statement).table();
                 throw _Exceptions.childDmlNoTransaction(this, (ChildTableMeta<?>) domainTable);

@@ -440,7 +440,7 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     }
 
     private Throwable handlePairStmtError(final Throwable cause) {
-        if (cause instanceof ChildUpdateException && hasTransaction()) {
+        if (cause instanceof ChildUpdateException && hasTransactionInfo()) {
             markRollbackOnlyOnError(cause);
         }
         return handleExecutionError(cause);

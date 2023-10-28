@@ -61,7 +61,11 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
     private final AllowMode visibleMode;
 
+    private final AllowMode driverSpiMode;
+
     private final Map<String, Boolean> visibleWhiteMap;
+
+    private final Map<String, Boolean> driverSpiWhiteMap;
 
     final boolean sqlLogDynamic;
 
@@ -77,6 +81,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         }
         this.name = name;
         this.env = env;
+        this.driverSpiMode = env.getOrDefault(ArmyKey.DRIVER_SPI_MODE);
         this.schemaMeta = Objects.requireNonNull(support.schemaMeta);
         this.tableMap = Objects.requireNonNull(support.tableMap);
 
@@ -94,6 +99,8 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
         this.sqlLogDynamic = env.getOrDefault(ArmyKey.SQL_LOG_DYNAMIC);
         this.sqlLogMode = env.getOrDefault(ArmyKey.SQL_LOG_MODE);
+
+        this.driverSpiWhiteMap = createWhitMap(this.driverSpiMode, env, ArmyKey.DRIVER_SPI_WHITE_LIST);
 
     }
 
@@ -292,6 +299,9 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
         @Override
         public final B name(@Nullable String name) {
+            if (this.name != null) {
+                throw new IllegalStateException("name non-null");
+            }
             this.name = name;
             return (B) this;
         }
@@ -346,6 +356,28 @@ public abstract class _ArmySessionFactory implements SessionFactory {
 
             return this.createSession(sessionName);
         }
+
+        public final boolean inOpenDriverSpi() {
+            final boolean match;
+            switch (this.factory.driverSpiMode) {
+                case NEVER:
+                    match = false;
+                    break;
+                case SUPPORT:
+                    match = true;
+                    break;
+                case WHITE_LIST: {
+                    final String sessionName = this.name;
+                    assert sessionName != null;
+                    match = this.factory.driverSpiWhiteMap.containsKey(sessionName);
+                }
+                break;
+                default:
+                    throw _Exceptions.unexpectedEnum(this.factory.driverSpiMode);
+            }
+            return match;
+        }
+
 
         protected abstract R createSession(String sessionName);
 

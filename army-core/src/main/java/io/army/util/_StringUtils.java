@@ -5,7 +5,6 @@ import io.army.dialect._Constant;
 import io.army.lang.Nullable;
 import io.army.modelgen._MetaBridge;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -96,7 +95,7 @@ public abstract class _StringUtils extends io.qinarmy.util.StringUtils {
                 map = _Collections.singletonMap(array[0].trim(), Boolean.TRUE);
                 break;
             default: {
-                final Map<String, Boolean> temp = new HashMap<>((int) (array.length / 0.75f));
+                final Map<String, Boolean> temp = _Collections.hashMap((int) (array.length / 0.75f));
                 for (int i = 0; i < array.length; i++) {
                     temp.put(array[i].trim(), Boolean.TRUE);
                 }

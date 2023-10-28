@@ -159,7 +159,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
         TransactionInfo start(Xid xid, int flags, TransactionOption option);
 
-        void end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+        TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
 
         int prepare(Xid xid, Function<Option<?>, ?> optionFunc);
 
