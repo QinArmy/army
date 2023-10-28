@@ -89,7 +89,6 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
 
-
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
         return onlyRow(this.query(statement, resultClass, _Collections::arrayList, defaultOption()));
@@ -513,6 +512,10 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
         if (stmt instanceof SimpleStmt) {
             affectedRows = this.stmtExecutor.update((SimpleStmt) stmt, option);
+
+            if (affectedRows == 0 && stmt.hasOptimistic()) {
+                throw _Exceptions.optimisticLock(affectedRows);
+            }
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
         } else {
@@ -522,6 +525,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             final long childRows;
             childRows = this.stmtExecutor.update(pairStmt.firstStmt(), option);
 
+            if (childRows == 0 && stmt.hasOptimistic()) {
+                throw _Exceptions.optimisticLock(childRows);
+            }
             try {
                 affectedRows = this.stmtExecutor.update(pairStmt.secondStmt(), option);
             } catch (Throwable e) {

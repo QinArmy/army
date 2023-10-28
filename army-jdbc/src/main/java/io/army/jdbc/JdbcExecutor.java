@@ -13,7 +13,10 @@ import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.session.CurrentRecord;
 import io.army.session.DataAccessException;
+import io.army.session.TimeoutException;
+import io.army.session.executor.DriverSpiHolder;
 import io.army.session.executor.ExecutorSupport;
+import io.army.session.executor.StmtExecutor;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.*;
@@ -35,29 +38,60 @@ import java.nio.file.StandardOpenOption;
 import java.sql.*;
 import java.time.temporal.Temporal;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor {
+/**
+ * <p>This class is a implementation of {@link SyncStmtExecutor} with JDBC spi.
+ *
+ * @since 1.0
+ */
+abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor, DriverSpiHolder {
 
+    private static final AtomicLong EXECUTOR_IDENTIFIER = new AtomicLong(0);
 
     final JdbcExecutorFactory factory;
 
     final Connection conn;
 
+    private final String name;
+    private final long identifier;
 
-    JdbcExecutor(JdbcExecutorFactory factory, Connection conn) {
+    JdbcExecutor(JdbcExecutorFactory factory, Connection conn, String name) {
+        this.name = name;
         this.factory = factory;
         this.conn = conn;
+        this.identifier = EXECUTOR_IDENTIFIER.addAndGet(1L);
     }
 
 
     @Override
-    public final long insert(final SimpleStmt stmt, final int timeout) {
-        if (timeout < 0) {
-            throw new IllegalArgumentException();
-        }
+    public final long sessionIdentifier() throws DataAccessException {
+        return this.identifier;
+    }
+
+    @Override
+    public final boolean inTransaction() throws DataAccessException {
+        return false;
+    }
+
+    @Override
+    public final boolean isSameFactory(StmtExecutor s) {
+        return s instanceof JdbcExecutor && ((JdbcExecutor) s).factory == this.factory;
+    }
+
+
+    @Override
+    public final <T> T getDriverSpi(Class<T> spiClass) {
+        return spiClass.cast(this.conn);
+    }
+
+
+    @Override
+    public final long insert(final SimpleStmt stmt, final SyncStmtOption option) {
+
         final List<? extends Selection> selectionList = stmt.selectionList();
         final boolean returningId;
         returningId = selectionList.size() == 1 && selectionList.get(0) instanceof PrimaryFieldMeta;
@@ -69,42 +103,27 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
             generatedKeys = Statement.NO_GENERATED_KEYS;
         }
 
-        final String sql = stmt.sqlText();
-        final List<SQLParam> paramGroup = stmt.paramGroup();
-        final int paramSize = paramGroup.size();
+        try (final Statement statement = bindInsertStatement(stmt, option, generatedKeys)) {
 
-        try (Statement statement = this.createInsertStatement(sql, paramSize, generatedKeys)) {
-
-            final boolean preparedStmt;
-            if (statement instanceof PreparedStatement) {
-                preparedStmt = true;
-                bindParameter((PreparedStatement) statement, paramGroup);
-            } else {
-                assert paramSize == 0;
-                preparedStmt = false;
-            }
-
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
-            }
             final long rows;
+
             if (returningId) {
-                if (preparedStmt) {
+                if (statement instanceof PreparedStatement) {
                     rows = doExtractId(((PreparedStatement) statement).executeQuery(), (GeneratedKeyStmt) stmt);
                 } else {
-                    rows = doExtractId(statement.executeQuery(sql), (GeneratedKeyStmt) stmt);
+                    rows = doExtractId(statement.executeQuery(stmt.sqlText()), (GeneratedKeyStmt) stmt);
                 }
             } else {
                 if (this.factory.useLargeUpdate) {
-                    if (preparedStmt) {
+                    if (statement instanceof PreparedStatement) {
                         rows = ((PreparedStatement) statement).executeLargeUpdate();
                     } else {
-                        rows = statement.executeLargeUpdate(sql, generatedKeys);
+                        rows = statement.executeLargeUpdate(stmt.sqlText(), generatedKeys);
                     }
-                } else if (preparedStmt) {
+                } else if (statement instanceof PreparedStatement) {
                     rows = ((PreparedStatement) statement).executeUpdate();
                 } else {
-                    rows = statement.executeUpdate(sql, generatedKeys);
+                    rows = statement.executeUpdate(stmt.sqlText(), generatedKeys);
                 }
 
                 if (generatedKeys == Statement.RETURN_GENERATED_KEYS) {
@@ -112,8 +131,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
                 }
             }
             return rows;
-        } catch (ArmyException e) {
-            throw e;
         } catch (Exception e) {
             throw wrapError(e);
         }
@@ -121,41 +138,25 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
     }
 
     @Override
-    public final long update(final SimpleStmt stmt, final int timeout) {
-        if (timeout < 0) {
-            throw new IllegalArgumentException();
-        }
-        final String sql = stmt.sqlText();
-        final List<SQLParam> paramGroup = stmt.paramGroup();
-        final int paramSize = paramGroup.size();
+    public final long update(final SimpleStmt stmt, final SyncStmtOption option) {
 
-        try (Statement statement = this.createUpdateStatement(sql, paramSize)) {
-
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
-            }
+        try (final Statement statement = bindStatement(stmt, option)) {
 
             final long rows;
+
             if (statement instanceof PreparedStatement) {
-
-                bindParameter((PreparedStatement) statement, paramGroup);
-
                 if (this.factory.useLargeUpdate) {
                     rows = ((PreparedStatement) statement).executeLargeUpdate();
                 } else {
                     rows = ((PreparedStatement) statement).executeUpdate();
                 }
-            } else if (paramSize > 0) {
-                //no bug,never here
-                throw new IllegalStateException();
             } else if (this.factory.useLargeUpdate) {
-                rows = statement.executeLargeUpdate(sql);
+                rows = statement.executeLargeUpdate(stmt.sqlText());
             } else {
-                rows = statement.executeUpdate(sql);
+                rows = statement.executeUpdate(stmt.sqlText());
             }
+
             return rows;
-        } catch (ArmyException e) {
-            throw e;
         } catch (Exception e) {
             throw wrapError(e);
         }
@@ -175,7 +176,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
         }
         return resultList;
     }
-
 
 
     @Override
@@ -723,18 +723,57 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
 
     /**
-     * @see #insert(SimpleStmt, int)
+     * @see #insert(SimpleStmt, SyncStmtOption)
      */
-    private Statement createInsertStatement(final String sql, final int paramSize, final int autoGeneratedKeys)
-            throws SQLException {
+    private Statement bindInsertStatement(final SimpleStmt stmt, final SyncStmtOption option, final int generatedKeys)
+            throws TimeoutException, SQLException {
+
+        final List<SQLParam> paramGroup;
+        paramGroup = stmt.paramGroup();
+
         final Statement statement;
-        if (paramSize > 0) {
-            statement = this.conn.prepareStatement(sql, autoGeneratedKeys);
-        } else {
+        if (!option.isPreferServerPrepare() && paramGroup.size() == 0) {
             statement = this.conn.createStatement();
+        } else {
+            statement = this.conn.prepareStatement(stmt.sqlText(), generatedKeys);
+            bindParameter((PreparedStatement) statement, paramGroup);
+        }
+
+        if (option.isSupportTimeout()) {
+            statement.setQueryTimeout(option.restSeconds());
         }
         return statement;
     }
+
+    /**
+     * @see #update(SimpleStmt, SyncStmtOption)
+     */
+    private Statement bindStatement(final SimpleStmt stmt, final SyncStmtOption option)
+            throws TimeoutException, SQLException {
+
+        final List<SQLParam> paramGroup;
+        paramGroup = stmt.paramGroup();
+
+        final Statement statement;
+        if (!option.isPreferServerPrepare() && paramGroup.size() == 0) {
+            statement = this.conn.createStatement();
+        } else {
+            statement = this.conn.prepareStatement(stmt.sqlText());
+            bindParameter((PreparedStatement) statement, paramGroup);
+        }
+
+        if (option.isSupportTimeout()) {
+            statement.setQueryTimeout(option.restSeconds());
+        }
+
+        final int fetchSize;
+        fetchSize = option.fetchSize();
+        if (fetchSize > 0 && stmt.selectionList().size() > 0) {
+            statement.setFetchSize(fetchSize);
+        }
+        return statement;
+    }
+
 
     /**
      * @see #update(SimpleStmt, int)
@@ -1679,7 +1718,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
         } else if (error instanceof ArmyException) {
             e = (ArmyException) error;
         } else {
-            e = _Exceptions.unknownError(error.getMessage(), error);
+            e = _Exceptions.unknownError(error);
         }
         return e;
     }

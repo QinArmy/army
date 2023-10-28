@@ -11,7 +11,20 @@ public interface StmtOption {
     int timeoutMillSeconds();
 
     /**
-     * @return negative : no time out
+     * <p>Get reset timeout seconds.
+     *
+     * @throws IllegalStateException throw when {@link #isSupportTimeout()} return false
+     * @throws TimeoutException      throw  {@link #isSupportTimeout()} return true and reset time is zero.
+     * @see #isSupportTimeout()
+     */
+    int restSeconds() throws TimeoutException;
+
+    /**
+     * <p>Get reset timeout mill seconds.
+     *
+     * @throws IllegalStateException throw when {@link #isSupportTimeout()} return false
+     * @throws TimeoutException      throw  {@link #isSupportTimeout()} return true and reset time is zero.
+     * @see #isSupportTimeout()
      */
     int restMillSeconds() throws TimeoutException;
 

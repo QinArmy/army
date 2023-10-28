@@ -3,7 +3,6 @@ package io.army.session.executor;
 
 import io.army.session.DataAccessException;
 import io.army.session.OptionSpec;
-import io.army.session.Session;
 
 /**
  * <p>This interface representing executor or {@link io.army.stmt.Stmt}.
@@ -21,10 +20,6 @@ import io.army.session.Session;
  */
 public interface StmtExecutor extends OptionSpec {
 
-    /**
-     * @return session name ,same with {@link Session#name()}.
-     */
-    String name();
 
     /**
      * <p>

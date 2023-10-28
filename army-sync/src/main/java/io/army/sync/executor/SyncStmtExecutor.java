@@ -5,10 +5,9 @@ import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
-import io.army.stmt.*;
-import io.army.sync.MultiResult;
-import io.army.sync.MultiStream;
-import io.army.sync.StreamOptions;
+import io.army.stmt.BatchStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.TwoStmtQueryStmt;
 import io.army.sync.SyncStmtOption;
 
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.stream.Stream;
  *     <li>{@link SyncRmStmtExecutor}</li>
  * </ul>
  * <p><strong>NOTE</strong> : This interface isn't the sub interface of {@link io.army.session.CloseableSpec},
- * so all implementation of methods of this interface don't check whether closed or not,<br/>
+ * so all implementation of methods of this interface don't check underlying database session whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
  *
  * <p>The instance of this interface is created by {@link SyncStmtExecutorFactory}.
@@ -37,13 +36,20 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
     TransactionInfo transactionInfo() throws DataAccessException;
 
+    void setTransactionCharacteristics(TransactionOption option) throws DataAccessException;
+
+    Object setSavePoint(Function<Option<?>, ?> optionFunc) throws DataAccessException;
+
+    void releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+
+    void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+
 
     /**
      * <p>
      * Execute INSERT statement that possibly get auto generated key.
      * </p>
      *
-     * @param timeout seconds
      * @throws io.army.session.DataAccessException when access database occur error.
      * @throws io.army.ArmyException               throw when:<ul>
      *                                             <li>param error</li>
@@ -57,7 +63,6 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
      * Executor non-insert dml.
      * </p>
      *
-     * @param timeout seconds
      * @throws io.army.session.DataAccessException when access database occur error.
      * @throws io.army.ArmyException               throw when:<ul>
      *                                             <li>param error</li>
@@ -81,21 +86,10 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
     <R> List<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> List<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) throws DataAccessException;
+    <R> List<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor,
+                            SyncStmtOption option) throws DataAccessException;
 
     <R> int secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> resultList);
-
-    <R> int secondBatchQuery(TwoStmtBatchQueryStmt stmt, int timeout, List<R> resultList);
-
-    <R> List<R> batchQuery(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
-                           Supplier<List<R>> listConstructor, boolean useMultiStmt) throws DataAccessException;
-
-    <R> List<R> batchQueryObject(BatchStmt stmt, int timeout, Supplier<R> Constructor, R terminator,
-                                 Supplier<List<R>> listConstructor, boolean useMultiStmt) throws DataAccessException;
-
-    <R> List<R> batchQueryRecord(BatchStmt stmt, int timeout, Function<CurrentRecord, R> function, R terminator,
-                                 Supplier<List<R>> listConstructor, boolean useMultiStmt) throws DataAccessException;
-
 
     <R> Stream<R> queryStream(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option)
             throws DataAccessException;
@@ -103,32 +97,8 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
     <R> Stream<R> queryObjectStream(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> Stream<R> queryRecordStream(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option) throws DataAccessException;
-
-    <R> Stream<R> batchQueryStream(BatchStmt stmt, int timeout, Class<R> resultClass, R terminator,
-                                   StreamOptions options, boolean useMultiStmt) throws DataAccessException;
-
-    <R> Stream<R> batchQueryObjectStream(BatchStmt stmt, int timeout, Supplier<R> constructor, R terminator,
-                                         StreamOptions options, boolean useMultiStmt) throws DataAccessException;
-
-    <R> Stream<R> batchQueryRecordStream(BatchStmt stmt, int timeout, Function<CurrentRecord, R> function, R terminator,
-                                         StreamOptions options, boolean useMultiStmt) throws DataAccessException;
-
-
-    MultiResult multiStmt(MultiStmt stmt, int timeout, StreamOptions options);
-
-    MultiStream multiStmtStream(MultiStmt stmt, int timeout, StreamOptions options);
-
-
-    Object createSavepoint() throws DataAccessException;
-
-    void rollbackToSavepoint(Object savepoint) throws DataAccessException;
-
-    void releaseSavepoint(Object savepoint) throws DataAccessException;
-
-    void executeBatch(List<String> stmtList) throws DataAccessException;
-
-    void execute(String stmt) throws DataAccessException;
+    <R> Stream<R> queryRecordStream(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
+            throws DataAccessException;
 
 
     void close() throws DataAccessException;

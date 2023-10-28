@@ -100,7 +100,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         this.sqlLogDynamic = env.getOrDefault(ArmyKey.SQL_LOG_DYNAMIC);
         this.sqlLogMode = env.getOrDefault(ArmyKey.SQL_LOG_MODE);
 
-        this.driverSpiWhiteMap = createWhitMap(this.driverSpiMode, env, ArmyKey.DRIVER_SPI_WHITE_LIST);
+        this.driverSpiWhiteMap = createWhitMap(this.driverSpiMode, env, ArmyKey.DRIVER_SPI_SESSION_WHITE_LIST);
 
     }
 
