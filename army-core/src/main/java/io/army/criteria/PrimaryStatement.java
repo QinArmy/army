@@ -1,13 +1,10 @@
 package io.army.criteria;
 
+
 /**
  * @see SubStatement
  */
-public interface PrimaryStatement extends Statement, Statement.StatementMockSpec, AutoCloseable {
-
-
-    @Override
-    void close() throws CriteriaException;
+public interface PrimaryStatement extends Statement, Statement.StatementMockSpec {
 
     @Override
     String toString();

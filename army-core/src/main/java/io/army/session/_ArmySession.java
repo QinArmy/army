@@ -28,7 +28,6 @@ public abstract class _ArmySession implements Session {
     private final Visible visible;
 
 
-
     protected _ArmySession(_ArmySessionFactory.ArmySessionBuilder<?, ?> builder) {
 
         this.name = builder.name;
@@ -230,7 +229,7 @@ public abstract class _ArmySession implements Session {
                 throw _Exceptions.readOnlySession(this);
             } else if (isReadOnlyStatus()) {
                 throw _Exceptions.readOnlyTransaction(this);
-            } else if (!hasTransaction() && statement instanceof _Statement._ChildStatement) {
+            } else if (statement instanceof _Statement._ChildStatement && !hasTransaction()) {
                 final TableMeta<?> domainTable;
                 domainTable = ((_Statement._ChildStatement) statement).table();
                 throw _Exceptions.childDmlNoTransaction(this, (ChildTableMeta<?>) domainTable);

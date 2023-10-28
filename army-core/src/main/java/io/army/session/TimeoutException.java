@@ -1,7 +1,7 @@
 package io.army.session;
 
 
-public class TimeoutException  extends DataAccessException {
+public class TimeoutException extends SessionException {
 
     private final long overspendMills;
 

@@ -37,7 +37,6 @@ public interface SyncRmSession extends SyncSession, RmSession {
 
     TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
 
-
     int prepare(Xid xid);
 
     int prepare(Xid xid, Function<Option<?>, ?> optionFunc);
@@ -54,6 +53,13 @@ public interface SyncRmSession extends SyncSession, RmSession {
 
     SyncRmSession forget(Xid xid);
 
+    /**
+     * @throws SessionException throw when
+     *                          <ul>
+     *                              <li>{@link #isSupportForget()} return false</li>
+     *                          </ul>
+     * @see #isSupportForget()
+     */
     SyncRmSession forget(Xid xid, Function<Option<?>, ?> optionFunc);
 
     List<Xid> recover(int flags);

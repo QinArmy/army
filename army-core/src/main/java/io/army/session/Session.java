@@ -23,7 +23,7 @@ public interface Session extends CloseableSpec, OptionSpec {
 
     boolean isSyncSession();
 
-    Session markRollbackOnly() throws SessionException;
+    void markRollbackOnly() throws SessionException;
 
     String name();
 

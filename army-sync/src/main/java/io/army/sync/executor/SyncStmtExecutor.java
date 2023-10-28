@@ -66,7 +66,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
-    List<Long> batchUpdate(BatchStmt stmt, int timeout, IntFunction<List<Long>> listConstructor, boolean useMultiStmt,
+    List<Long> batchUpdate(BatchStmt stmt, IntFunction<List<Long>> listConstructor, SyncStmtOption option,
                            @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
 
 
@@ -125,7 +125,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
     void execute(String stmt) throws DataAccessException;
 
-    @Override
+
     void close() throws DataAccessException;
 
     /**

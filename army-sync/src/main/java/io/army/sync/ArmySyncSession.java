@@ -1,19 +1,21 @@
 package io.army.sync;
 
-import io.army.criteria.BatchDmlStatement;
-import io.army.criteria.InsertStatement;
-import io.army.criteria.SimpleDmlStatement;
-import io.army.criteria.SimpleDqlStatement;
-import io.army.criteria.dialect.BatchDqlStatement;
+import io.army.criteria.*;
 import io.army.criteria.impl.inner._BatchStatement;
+import io.army.criteria.impl.inner._Statement;
 import io.army.lang.Nullable;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.TableMeta;
 import io.army.session.ChildUpdateException;
 import io.army.session.CurrentRecord;
 import io.army.session.SessionException;
 import io.army.session._ArmySession;
 import io.army.stmt.BatchStmt;
+import io.army.stmt.PairBatchStmt;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.Stmt;
 import io.army.sync.executor.SyncStmtExecutor;
+import io.army.util.ArmyCriteria;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -82,93 +84,103 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     @Override
-    public final <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass) {
+    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass) {
         return this.query(statement, resultClass, _Collections::arrayList, defaultOption());
     }
 
     @Override
-    public final <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
+    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
         return this.query(statement, resultClass, _Collections::arrayList, option);
     }
 
     @Override
-    public final <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor) {
+    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor) {
         return this.query(statement, resultClass, listConstructor, defaultOption());
     }
 
     @Override
-    public final <R> List<R> query(SimpleDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option) {
+    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option) {
         return this.executeQuery(statement, option, s -> this.stmtExecutor.query(s, resultClass, listConstructor, option));
     }
 
     @Override
-    public final <R> List<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor) {
+    public final <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor) {
         return this.queryObject(statement, constructor, _Collections::arrayList, defaultOption());
     }
 
     @Override
-    public final <R> List<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
+    public final <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
         return this.queryObject(statement, constructor, _Collections::arrayList, option);
     }
 
     @Override
-    public final <R> List<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor) {
+    public final <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor) {
         return this.queryObject(statement, constructor, listConstructor, defaultOption());
     }
 
     @Override
-    public final <R> List<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option) {
+    public final <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option) {
         return this.executeQuery(statement, option, s -> this.stmtExecutor.queryObject(s, constructor, listConstructor, option));
     }
 
     @Override
-    public final <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
+    public final <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function) {
         return this.queryRecord(statement, function, _Collections::arrayList, defaultOption());
     }
 
     @Override
-    public final <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
+    public final <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
         return this.queryRecord(statement, function, _Collections::arrayList, option);
     }
 
     @Override
-    public final <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor) {
+    public final <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor) {
         return this.queryRecord(statement, function, listConstructor, defaultOption());
     }
 
     @Override
-    public final <R> List<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) {
+    public final <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) {
         return this.executeQuery(statement, option, s -> this.stmtExecutor.queryRecord(s, function, listConstructor, option));
     }
 
     @Override
-    public final <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass) {
+    public final <R> Stream<R> queryStream(DqlStatement statement, Class<R> resultClass) {
         return this.queryStream(statement, resultClass, defaultOption());
     }
 
     @Override
-    public final <R> Stream<R> queryStream(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
+    public final <R> Stream<R> queryStream(DqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
         return this.executeQueryStream(statement, option, s -> this.stmtExecutor.queryStream(s, resultClass, option));
     }
 
     @Override
-    public final <R> Stream<R> queryObjectStream(SimpleDqlStatement statement, Supplier<R> constructor) {
+    public final <R> Stream<R> queryObjectStream(DqlStatement statement, Supplier<R> constructor) {
         return this.queryObjectStream(statement, constructor, defaultOption());
     }
 
     @Override
-    public final <R> Stream<R> queryObjectStream(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
+    public final <R> Stream<R> queryObjectStream(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
         return this.executeQueryStream(statement, option, s -> this.stmtExecutor.queryObjectStream(s, constructor, option));
     }
 
     @Override
-    public final <R> Stream<R> queryRecordStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
+    public final <R> Stream<R> queryRecordStream(DqlStatement statement, Function<CurrentRecord, R> function) {
         return this.queryRecordStream(statement, function, defaultOption());
     }
 
     @Override
-    public final <R> Stream<R> queryRecordStream(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
+    public final <R> Stream<R> queryRecordStream(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
         return this.executeQueryStream(statement, option, s -> this.stmtExecutor.queryRecordStream(s, function, option));
+    }
+
+    @Override
+    public final <T> long save(T domain) {
+        return this.update(ArmyCriteria.insertStmt(this, domain), defaultOption());
+    }
+
+    @Override
+    public final <T> long save(T domain, SyncStmtOption option) {
+        return this.update(ArmyCriteria.insertStmt(this, domain), option);
     }
 
     @Override
@@ -178,16 +190,16 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final long update(SimpleDmlStatement statement, SyncStmtOption option) {
-        try (final SimpleDmlStatement s = statement) {
-            if (s instanceof _BatchStatement) {
-                throw _Exceptions.unexpectedStatement(s);
+        try {
+            if (statement instanceof _BatchStatement) {
+                throw _Exceptions.unexpectedStatement(statement);
             }
-            assertSession(s);
+            assertSession(statement);
             final long rows;
-            if (s instanceof InsertStatement) {
-                rows = this.executeInsert((InsertStatement) s, option);
+            if (statement instanceof InsertStatement) {
+                rows = this.executeInsert((InsertStatement) statement, option);
             } else {
-                rows = this.executeUpdate(s, option);
+                rows = this.executeUpdate(statement, option);
             }
             return rows;
         } catch (ChildUpdateException e) {
@@ -197,8 +209,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             throw e;
         } catch (Exception e) {
             throw wrapSessionError(e);
+        } finally {
+            ((_Statement) statement).close();
         }
-
 
     }
 
@@ -219,68 +232,48 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor, SyncStmtOption option) {
-        return null;
+        try {
+            if (!(statement instanceof _BatchStatement)) {
+                throw _Exceptions.unexpectedStatement(statement);
+            }
+
+            assertSession(statement);
+
+            final Stmt stmt;
+            stmt = this.parseDmlStatement(statement, option);
+
+            final TableMeta<?> domainTable;
+            domainTable = getBatchUpdateDomainTable(statement);
+
+            final List<Long> resultList;
+            if (stmt instanceof BatchStmt) {
+                resultList = this.stmtExecutor.batchUpdate((BatchStmt) stmt, listConstructor, option, domainTable, null);
+            } else if (!(stmt instanceof PairBatchStmt)) {
+                throw _Exceptions.unexpectedStmt(stmt);
+            } else if (!this.inTransaction()) {
+                throw updateChildNoTransaction();
+            } else {
+                assert domainTable instanceof ChildTableMeta; // fail, bug.
+                final PairBatchStmt pairStmt = (PairBatchStmt) stmt;
+
+                final List<Long> childList;
+                childList = this.stmtExecutor.batchUpdate(pairStmt.firstStmt(), listConstructor, option, domainTable, null);
+                resultList = this.stmtExecutor.batchUpdate(pairStmt.secondStmt(), listConstructor, option, domainTable, childList);
+            }
+            return resultList;
+        } catch (ChildUpdateException e) {
+            if (hasTransaction()) {
+                markRollbackOnly();
+            }
+            throw e;
+        } catch (Exception e) {
+            throw wrapSessionError(e);
+        } finally {
+            ((_Statement) statement).close();
+        }
+
     }
 
-    @Override
-    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass) {
-        return null;
-    }
-
-    @Override
-    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
-        return null;
-    }
-
-    @Override
-    public final <R> List<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor) {
-        return null;
-    }
-
-    @Override
-    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor) {
-        return null;
-    }
-
-    @Override
-    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
-        return null;
-    }
-
-    @Override
-    public final <R> List<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor) {
-        return null;
-    }
-
-    @Override
-    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function) {
-        return null;
-    }
-
-    @Override
-    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
-        return null;
-    }
-
-    @Override
-    public final <R> List<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor) {
-        return null;
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryStream(BatchDqlStatement statement, Class<R> resultClass) {
-        return null;
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryObjectStream(BatchDqlStatement statement, Supplier<R> constructor) {
-        return null;
-    }
-
-    @Override
-    public final <R> Stream<R> batchQueryRecordStream(BatchDqlStatement statement, Function<CurrentRecord, R> function) {
-        return null;
-    }
 
     @Override
     public final boolean isClosed() {
@@ -297,25 +290,16 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     /*-------------------below private methods -------------------*/
 
-    private <R> List<R> executeQuery(final SimpleDqlStatement statement, final SyncStmtOption option,
+    private <R> List<R> executeQuery(final DqlStatement statement, final SyncStmtOption option,
                                      final Function<SimpleStmt, List<R>> exeFunc) {
         return Collections.emptyList();
     }
 
-    private <R> Stream<R> executeQueryStream(final SimpleDqlStatement statement, final SyncStmtOption option,
+    private <R> Stream<R> executeQueryStream(final DqlStatement statement, final SyncStmtOption option,
                                              final Function<SimpleStmt, Stream<R>> exeFunc) {
         throw new UnsupportedOperationException();
     }
 
-    private <R> List<R> executeBatchQuery(final BatchDqlStatement statement, final SyncStmtOption option,
-                                          final Function<BatchStmt, List<R>> exeFunc) {
-        return Collections.emptyList();
-    }
-
-    private <R> Stream<R> executeBatchQueryStream(final BatchDqlStatement statement, final SyncStmtOption option,
-                                                  final Function<BatchStmt, Stream<R>> exeFunc) {
-        throw new UnsupportedOperationException();
-    }
 
     /**
      * @see #update(SimpleDmlStatement, SyncStmtOption)
