@@ -73,6 +73,11 @@ public abstract class _ArmySession implements Session {
     }
 
     @Override
+    public final <T> T nonNullOf(Option<T> option) {
+        return Session.super.nonNullOf(option);
+    }
+
+    @Override
     public final int hashCode() {
         return super.hashCode();
     }
@@ -99,7 +104,9 @@ public abstract class _ArmySession implements Session {
 
 
     @Nullable
-    protected abstract String transactionName();
+    protected String transactionName() {
+        return "";
+    }
 
     protected abstract Logger getLogger();
 

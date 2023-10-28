@@ -2,6 +2,7 @@ package io.army.sync;
 
 import io.army.session.*;
 import io.army.sync.executor.SyncRmStmtExecutor;
+import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.function.Function;
@@ -13,6 +14,11 @@ final class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         return new ArmySyncRmSession(builder);
     }
 
+    private TransactionInfo transactionInfo;
+
+    private boolean rollbackOnly;
+
+
     private ArmySyncRmSession(ArmySyncRmSessionFactory.SyncRmSessionBuilder builder) {
         super(builder);
         assert this.stmtExecutor instanceof SyncRmStmtExecutor;
@@ -20,7 +26,33 @@ final class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     @Override
     public SyncRmSessionFactory sessionFactory() {
+        return (SyncRmSessionFactory) this.factory;
+    }
+
+
+    @Override
+    public boolean hasTransaction() {
+        return false;
+    }
+
+    @Override
+    public boolean isReadOnlyStatus() {
+        return false;
+    }
+
+    @Override
+    public TransactionInfo transactionInfo() {
         return null;
+    }
+
+    @Override
+    public boolean isRollbackOnly() {
+        return false;
+    }
+
+    @Override
+    public void markRollbackOnly() throws SessionException {
+
     }
 
     @Override
@@ -143,15 +175,9 @@ final class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         return false;
     }
 
-    @Override
-    public boolean isRollbackOnly() {
-        return false;
-    }
 
     @Override
-    public SyncRmSession markRollbackOnly() throws SessionException {
-        return this;
+    protected Logger getLogger() {
+        return null;
     }
-
-
 }

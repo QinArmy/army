@@ -6,10 +6,7 @@ import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
-import io.army.session.ChildUpdateException;
-import io.army.session.CurrentRecord;
-import io.army.session.SessionException;
-import io.army.session._ArmySession;
+import io.army.session.*;
 import io.army.stmt.*;
 import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util.ArmyCriteria;
@@ -48,6 +45,30 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         this.stmtExecutor = builder.stmtExecutor;
         assert this.stmtExecutor != null;
     }
+
+    @Override
+    public final boolean isReactiveSession() {
+        // always false
+        return false;
+    }
+
+    @Override
+    public final boolean isSyncSession() {
+        // always true
+        return true;
+    }
+
+    @Override
+    public final boolean inTransaction() {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
+        if (((ArmySyncLocalSessionFactory) this.factory).jdbcDriver) {
+            return hasTransaction();
+        }
+        return this.stmtExecutor.inTransaction();
+    }
+
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
@@ -216,6 +237,16 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     @Override
+    public final <T> long batchSave(List<T> domainList) {
+        return this.update(ArmyCriteria.batchInsertStmt(this, domainList), defaultOption());
+    }
+
+    @Override
+    public final <T> long batchSave(List<T> domainList, SyncStmtOption option) {
+        return this.update(ArmyCriteria.batchInsertStmt(this, domainList), option);
+    }
+
+    @Override
     public final List<Long> batchUpdate(BatchDmlStatement statement) {
         return this.batchUpdate(statement, _Collections::arrayList, defaultOption());
     }
@@ -276,6 +307,10 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     }
 
+    @Override
+    public final <T> T valueOf(Option<T> option) {
+        return null;
+    }
 
     @Override
     public final boolean isClosed() {
@@ -337,7 +372,23 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     private <R> Stream<R> executeQueryStream(final DqlStatement statement, final SyncStmtOption option,
                                              final Function<SimpleStmt, Stream<R>> exeFunc) {
-        throw new UnsupportedOperationException();
+        try {
+            assertSession(statement);
+
+            final Stmt stmt;
+            stmt = this.parseDqlStatement(statement, option);
+            if (!(stmt instanceof SimpleStmt)) {
+                throw new SessionException("army stream api don't support child pair statement.");
+            }
+            return exeFunc.apply((SimpleStmt) stmt);
+        } catch (Exception e) {
+            throw wrapSessionError(e);
+        } finally {
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).close();
+            }
+        }
+
     }
 
     /**
@@ -382,6 +433,14 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             throw _Exceptions.childInsertError(this, childTable, e);
         }
 
+        if (rows != resultList.size()) {
+            if (firstStmtIsQuery) {
+                throw _Exceptions.parentChildRowsNotMatch(this, childTable, resultList.size(), rows);
+            } else {
+                throw _Exceptions.parentChildRowsNotMatch(this, childTable, rows, resultList.size());
+            }
+        }
+
         if (firstStmtIsQuery && _Collections.isSecondQueryList(resultList)) {
             final List<R> tempList = listConstructor.get();
             if (tempList == null) {
@@ -391,15 +450,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             resultList = tempList;
         }
 
-        if (rows == resultList.size()) {
-            return resultList;
-        }
-        if (firstStmtIsQuery) {
-            throw _Exceptions.parentChildRowsNotMatch(this, childTable, resultList.size(), rows);
-        } else {
-            throw _Exceptions.parentChildRowsNotMatch(this, childTable, rows, resultList.size());
-        }
-
+        return resultList;
     }
 
 

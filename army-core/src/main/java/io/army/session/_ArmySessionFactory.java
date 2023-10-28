@@ -347,7 +347,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
             return this.createSession(sessionName);
         }
 
-        protected abstract R createSession(String name);
+        protected abstract R createSession(String sessionName);
 
         protected abstract R handleError(SessionException cause);
 

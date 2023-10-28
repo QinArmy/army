@@ -2,10 +2,7 @@ package io.army.sync;
 
 import io.army.criteria.*;
 import io.army.lang.Nullable;
-import io.army.session.CurrentRecord;
-import io.army.session.Session;
-import io.army.session.SessionException;
-import io.army.session.VisibleModeException;
+import io.army.session.*;
 
 import java.util.List;
 import java.util.function.Function;
@@ -26,6 +23,8 @@ public interface SyncSession extends Session, AutoCloseable {
 
     @Override
     SyncSessionFactory sessionFactory();
+
+    TransactionInfo transactionInfo();
 
     /**
      * @param <R> representing select result Java Type.

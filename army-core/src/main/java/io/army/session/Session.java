@@ -9,36 +9,96 @@ import io.army.meta.TableMeta;
  */
 public interface Session extends CloseableSpec, OptionSpec {
 
-    boolean isReadOnlyStatus();
 
-    boolean isReadonlySession();
-
-    boolean inTransaction();
-
-    boolean hasTransaction();
-
-    boolean isRollbackOnly();
-
-    boolean isReactiveSession();
-
-    boolean isSyncSession();
-
-    void markRollbackOnly() throws SessionException;
-
+    /**
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     */
     String name();
 
-    Visible visible();
-
-    boolean isAllowQueryInsert();
-
+    /**
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     */
     SessionFactory sessionFactory();
 
     /**
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     */
+    boolean isReadonlySession();
+
+    /**
+     * @return session in transaction block.
+     * @throws SessionException throw when session have closed
+     */
+    boolean inTransaction() throws SessionException;
+
+    /**
+     * @return session hold one  {@link TransactionInfo} instance.
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     */
+    boolean hasTransaction();
+
+    /**
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     */
+    boolean isReadOnlyStatus();
+
+
+    /**
+     * <p>The status will clear after rollback or start new transaction.
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     *
+     * @return true : current session support only rollback.
+     * @see #markRollbackOnly()
+     */
+    boolean isRollbackOnly();
+
+    /**
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     */
+    boolean isReactiveSession();
+
+    /**
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     */
+    boolean isSyncSession();
+
+    /**
+     * <p>Mark current session don't support rollback even if {@link #hasTransaction()} return false.
+     * <p>The status will clear after rollback.
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     *
+     * @see #isRollbackOnly()
+     */
+    void markRollbackOnly();
+
+
+    /**
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     */
+    Visible visible();
+
+    /**
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     */
+    boolean isAllowQueryInsert();
+
+
+    /**
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     *
      * @throws IllegalArgumentException throw,when not found {@link TableMeta}.
      */
     <T> TableMeta<T> tableMeta(Class<T> domainClass);
 
-
+    /**
+     * override {@link Object#toString()}
+     *
+     * @return driver info, contain : <ol>
+     * <li>implementation class name</li>
+     * <li>{@link #name()}</li>
+     * <li>{@link System#identityHashCode(Object)}</li>
+     * </ol>
+     */
     @Override
     String toString();
 

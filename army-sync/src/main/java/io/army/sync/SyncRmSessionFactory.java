@@ -10,9 +10,9 @@ import io.army.session.SessionException;
  */
 interface SyncRmSessionFactory extends SyncSessionFactory {
 
-    Builder builder();
+    SessionBuilder builder();
 
-    interface Builder extends SessionBuilderSpec<Builder, SyncRmSession> {
+    interface SessionBuilder extends SessionBuilderSpec<SessionBuilder, SyncRmSession> {
 
         @Override
         SyncRmSession build() throws SessionException;

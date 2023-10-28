@@ -33,7 +33,7 @@ final class ArmyReactiveRmSessionFactory extends ArmyReactiveSessionFactory impl
         }
 
         @Override
-        protected Mono<ReactiveRmSession> createSession(String name) {
+        protected Mono<ReactiveRmSession> createSession(String sessionName) {
             throw new UnsupportedOperationException();
         }
 

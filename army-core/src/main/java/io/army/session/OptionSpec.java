@@ -1,8 +1,7 @@
 package io.army.session;
 
 import io.army.lang.Nullable;
-
-import java.util.Objects;
+import io.army.util._Exceptions;
 
 public interface OptionSpec {
 
@@ -12,7 +11,9 @@ public interface OptionSpec {
     default <T> T nonNullOf(Option<T> option) {
         final T value;
         value = valueOf(option);
-        Objects.requireNonNull(value);
+        if (value == null) {
+            throw _Exceptions.optionValueIsNull(option);
+        }
         return value;
     }
 

@@ -15,7 +15,7 @@ import java.util.stream.Stream;
  * <a href="http://www.opengroup.org/public/pubs/catalog/c193.htm">The XA Specification</a>,
  * here ,you can download the pdf about The XA Specification.
  *
- * <p>The instance of this interface is created by {@link SyncRmSessionFactory.Builder#build()}.
+ * <p>The instance of this interface is created by {@link SyncRmSessionFactory.SessionBuilder#build()}.
  *
  * @see SyncRmSessionFactory
  * @since 1.0

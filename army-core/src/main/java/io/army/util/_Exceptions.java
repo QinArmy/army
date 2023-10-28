@@ -753,6 +753,11 @@ public abstract class _Exceptions {
         return new IllegalArgumentException(String.format("Don't support dialect[%s]", mode));
     }
 
+    public static NullPointerException optionValueIsNull(Option<?> option) {
+        String m = String.format("error %s.nonNullOf(),the value of %s is null", OptionSpec.class.getName(), option);
+        return new NullPointerException(m);
+    }
+
     public static SessionFactoryException sessionFactoryClosed(SessionFactory factory) {
         String m = String.format("%s have closed.", factory);
         return new SessionFactoryException(m);
@@ -789,8 +794,7 @@ public abstract class _Exceptions {
     }
 
     public static TransactionException existsTransaction(Session session) {
-        String m = String.format("%s[%s] exists transaction,couldn't start new transaction.",
-                session.getClass().getName(), session.name());
+        String m = String.format("%s exists transaction,couldn't start new transaction.", session);
         return new ExistsTransactionException(m);
     }
 

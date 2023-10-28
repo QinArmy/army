@@ -3,10 +3,9 @@ package io.army.sync;
 import io.army.env.SyncKey;
 import io.army.lang.Nullable;
 import io.army.proxy._SessionCacheFactory;
-import io.army.session.DataAccessException;
+import io.army.session.SessionException;
 import io.army.session.SessionFactoryException;
 import io.army.sync.executor.SyncLocalExecutorFactory;
-import io.army.sync.executor.SyncLocalStmtExecutor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,6 +19,8 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
     final SyncLocalExecutorFactory executorFactory;
 
     final boolean buildInExecutor;
+
+    final boolean jdbcDriver;
 
     final _SessionCacheFactory sessionCacheFactory;
 
@@ -35,6 +36,7 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
         assert this.executorFactory != null;
         this.buildInExecutor = isBuildInExecutor(this.executorFactory);
 
+        this.jdbcDriver = this.buildInExecutor || this.executorFactory.driverSpiVendor().equals("java.sql");
 
         this.sessionContext = getSessionContext();
         //this.sessionCacheFactory = SessionCacheFactory.build(this);
@@ -124,11 +126,8 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
 
     /*################################## blow instance inner class  ##################################*/
 
-    static final class LocalSessionBuilder extends ArmySessionBuilder<SessionBuilder, SyncLocalSession>
+    static final class LocalSessionBuilder extends SyncSessionBuilder<SessionBuilder, SyncLocalSession>
             implements SyncLocalSessionFactory.SessionBuilder {
-
-
-        SyncLocalStmtExecutor stmtExecutor;
 
 
         private LocalSessionBuilder(ArmySyncLocalSessionFactory factory) {
@@ -137,20 +136,18 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
 
 
         @Override
-        protected SyncLocalSession createSession(String name) {
-            try {
-                //  this.stmtExecutor = this.factory.executorFactory.createLocalStmtExecutor();
-
-                return new ArmySyncLocalSession(this);
-            } catch (DataAccessException e) {
-                throw createExecutorError(e);
-            }
+        protected SyncLocalSession createSession(String sessionName) {
+            this.stmtExecutor = ((ArmySyncLocalSessionFactory) this.factory)
+                    .stmtExecutorFactory.localExecutor(sessionName);
+            return new ArmySyncLocalSession(this);
         }
 
         @Override
-        protected SyncLocalSession handleError(Throwable cause) {
-            return null;
+        protected SyncLocalSession handleError(SessionException cause) {
+            throw cause;
         }
+
+
     }//LocalSessionBuilder
 
 

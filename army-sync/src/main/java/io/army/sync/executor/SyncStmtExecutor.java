@@ -35,6 +35,8 @@ import java.util.stream.Stream;
  */
 public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
+    TransactionInfo transactionInfo() throws DataAccessException;
+
 
     /**
      * <p>

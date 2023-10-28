@@ -21,21 +21,21 @@ final class ArmySyncRmSessionFactory extends ArmySyncSessionFactory implements S
 
 
     @Override
-    public Builder builder() {
+    public SessionBuilder builder() {
         return null;
     }
 
 
-    static final class SyncRmSessionBuilder extends SyncSessionBuilder<Builder, SyncRmSession>
-            implements Builder {
+    static final class SyncRmSessionBuilder extends SyncSessionBuilder<SessionBuilder, SyncRmSession>
+            implements SessionBuilder {
 
         private SyncRmSessionBuilder(ArmySyncRmSessionFactory factory) {
             super(factory);
         }
 
         @Override
-        protected SyncRmSession createSession(String name) {
-            this.stmtExecutor = ((ArmySyncRmSessionFactory) this.factory).stmtExecutorFactory.rmExecutor(name);
+        protected SyncRmSession createSession(String sessionName) {
+            this.stmtExecutor = ((ArmySyncRmSessionFactory) this.factory).stmtExecutorFactory.rmExecutor(sessionName);
             return ArmySyncRmSession.create(this);
         }
 

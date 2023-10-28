@@ -3,6 +3,7 @@ package io.army.session.executor;
 
 import io.army.session.DataAccessException;
 import io.army.session.OptionSpec;
+import io.army.session.Session;
 
 /**
  * <p>This interface representing executor or {@link io.army.stmt.Stmt}.
@@ -20,6 +21,9 @@ import io.army.session.OptionSpec;
  */
 public interface StmtExecutor extends OptionSpec {
 
+    /**
+     * @return session name ,same with {@link Session#name()}.
+     */
     String name();
 
     /**
@@ -34,10 +38,14 @@ public interface StmtExecutor extends OptionSpec {
      * <br/>
      *
      * @return session identifier
-     * @throws DataAccessException throw when session have closed.
+     * @throws DataAccessException throw when underlying database session have closed.
      */
     long sessionIdentifier() throws DataAccessException;
 
+    /**
+     * @return true : underlying database session in transaction block.
+     * @throws DataAccessException throw when underlying database session have closed.
+     */
     boolean inTransaction() throws DataAccessException;
 
     boolean isSameFactory(StmtExecutor s);
