@@ -51,6 +51,21 @@ public abstract class _ArmySession implements Session {
     }
 
     @Override
+    public final boolean isReadOnlyStatus() {
+        final boolean readOnlyStatus;
+        final TransactionInfo info;
+        if (this.readonly) {
+            readOnlyStatus = true;
+        } else if ((info = obtainTransactionInfo()) == null) {
+            readOnlyStatus = false;
+        } else {
+            readOnlyStatus = info.inTransaction() && info.isReadOnly();
+        }
+        return readOnlyStatus;
+    }
+
+
+    @Override
     public final Visible visible() {
         return this.visible;
     }
@@ -99,8 +114,13 @@ public abstract class _ArmySession implements Session {
                 .toString();
     }
 
+    /*-------------------below protected template methods -------------------*/
 
     protected abstract Logger getLogger();
+
+
+    @Nullable
+    protected abstract TransactionInfo obtainTransactionInfo();
 
 
     protected final void printSqlIfNeed(final Stmt stmt) {

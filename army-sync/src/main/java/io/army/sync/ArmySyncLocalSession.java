@@ -143,7 +143,6 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
             assert info == null;
         }
         this.transactionInfo = info;
-        this.clearRollbackOnly();
         return info;
     }
 
@@ -159,7 +158,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
     /*-------------------below package template methods -------------------*/
 
     @Override
-    TransactionInfo obtainTransactionInfo() {
+    protected final TransactionInfo obtainTransactionInfo() {
         return this.transactionInfo;
     }
 

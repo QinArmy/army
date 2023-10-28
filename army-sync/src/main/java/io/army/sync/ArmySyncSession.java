@@ -75,28 +75,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         return this.stmtExecutor.transactionInfo();
     }
 
-    @Override
-    public final boolean isReadOnlyStatus() {
-        final TransactionInfo info;
-        return this.readonly || (info = obtainTransactionInfo()) != null && info.isReadOnly();
-    }
 
-
-    /**
-     * @see #clearRollbackOnly()
-     */
-    @Override
-    public final boolean isRollbackOnly() {
-        return this.rollbackOnly;
-    }
-
-    /**
-     * @see #clearRollbackOnly()
-     */
-    @Override
-    public final void markRollbackOnly() {
-        this.rollbackOnly = true;
-    }
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
@@ -352,14 +331,6 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         }
     }
 
-    /*-------------------below package template methods -------------------*/
-
-    @Nullable
-    abstract TransactionInfo obtainTransactionInfo();
-
-    final void clearRollbackOnly() {
-        this.rollbackOnly = false;
-    }
 
 
     /*-------------------below private methods -------------------*/
@@ -393,8 +364,8 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             }
             return resultList;
         } catch (ChildUpdateException e) {
-            if (hasTransactionInfo()) {
-                markRollbackOnly();
+            if (this instanceof LocalSession && hasTransactionInfo()) {
+                ((LocalSession) this).markRollbackOnly();
             }
             throw e;
         } catch (Exception e) {

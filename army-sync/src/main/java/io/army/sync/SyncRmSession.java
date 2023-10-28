@@ -7,7 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * <p>This interface representing blocking RM(Resource Manager) session in XA transaction.
+ * <p>This interface representing blocking RM(Resource Manager) {@link SyncSession} in XA transaction.
  *
  * <p>This interface extends {@link RmSession} for support XA interface based on
  * the X/Open CAE Specification (Distributed Transaction Processing: The XA Specification).<br/>
@@ -41,17 +41,17 @@ public interface SyncRmSession extends SyncSession, RmSession {
 
     int prepare(Xid xid, Function<Option<?>, ?> optionFunc);
 
-    SyncRmSession commit(Xid xid);
+    void commit(Xid xid);
 
-    SyncRmSession commit(Xid xid, int flags);
+    void commit(Xid xid, int flags);
 
-    SyncRmSession commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+    void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
 
-    SyncRmSession rollback(Xid xid);
+    void rollback(Xid xid);
 
-    SyncRmSession rollback(Xid xid, Function<Option<?>, ?> optionFunc);
+    void rollback(Xid xid, Function<Option<?>, ?> optionFunc);
 
-    SyncRmSession forget(Xid xid);
+    void forget(Xid xid);
 
     /**
      * @throws SessionException throw when
@@ -60,7 +60,7 @@ public interface SyncRmSession extends SyncSession, RmSession {
      *                          </ul>
      * @see #isSupportForget()
      */
-    SyncRmSession forget(Xid xid, Function<Option<?>, ?> optionFunc);
+    void forget(Xid xid, Function<Option<?>, ?> optionFunc);
 
     List<Xid> recover(int flags);
 

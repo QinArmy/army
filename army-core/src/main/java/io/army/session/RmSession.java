@@ -57,8 +57,7 @@ public interface RmSession extends Session, Session.XaTransactionSupportSpec {
     int TM_RESUME = 1 << 27;
 
     /**
-     * Disassociates the caller and marks the transaction branch
-     * rollback-only.
+     * <p>Disassociates the caller and marks the transaction branch rollback-only.
      */
     int TM_FAIL = 1 << 29;
 

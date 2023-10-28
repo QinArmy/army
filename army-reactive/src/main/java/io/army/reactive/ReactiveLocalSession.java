@@ -1,11 +1,9 @@
 package io.army.reactive;
 
-import io.army.session.Option;
-import io.army.session.SessionException;
-import io.army.session.TransactionInfo;
-import io.army.session.TransactionOption;
+import io.army.session.*;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -14,7 +12,7 @@ import java.util.function.Function;
  * @see ReactiveLocalSessionFactory
  * @since 1.0
  */
-public interface ReactiveLocalSession extends ReactiveSession {
+public interface ReactiveLocalSession extends ReactiveSession, LocalSession {
 
     @Override
     ReactiveLocalSessionFactory sessionFactory();
@@ -23,18 +21,16 @@ public interface ReactiveLocalSession extends ReactiveSession {
 
     Mono<TransactionInfo> startTransaction(TransactionOption option);
 
-    @Override
-    ReactiveLocalSession markRollbackOnly() throws SessionException;
 
+    Mono<TransactionInfo> startTransaction(TransactionOption option, HandleMode mode);
 
     Mono<ReactiveLocalSession> commit();
 
-    Mono<ReactiveLocalSession> commit(Function<Option<?>, ?> optionFunc);
-
+    Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc);
 
     Mono<ReactiveLocalSession> rollback();
 
-    Mono<ReactiveLocalSession> rollback(Function<Option<?>, ?> optionFunc);
+    Mono<Optional<TransactionInfo>> rollback(Function<Option<?>, ?> optionFunc);
 
 
     @Override

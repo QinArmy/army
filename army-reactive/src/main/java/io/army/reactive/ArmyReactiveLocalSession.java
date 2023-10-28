@@ -59,23 +59,6 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
         return this.transactionInfo != null;
     }
 
-    @Override
-    public boolean isReadOnlyStatus() {
-        final boolean readOnlyStatus;
-        final TransactionInfo info;
-        if (this.readonly) {
-            readOnlyStatus = true;
-        } else if ((info = this.transactionInfo) == null) {
-            readOnlyStatus = false;
-        } else {
-            readOnlyStatus = info.isReadOnly();
-        }
-        return readOnlyStatus;
-    }
-
-
-
-    /*-------------------below statement methods -------------------*/
 
 
     /*-------------------below local transaction methods -------------------*/

@@ -788,16 +788,35 @@ public abstract class _Exceptions {
     }
 
 
-    public static RmSessionException xaNonCurrentTransaction(Xid xid) {
+    public static RmSessionException xaNonCurrentTransaction(@Nullable Xid xid) {
         String m = String.format("xid[%s] not current transaction.", xid);
         return new RmSessionException(m, RmSessionException.XAER_PROTO);
     }
 
-    public static RmSessionException xaTransactionDontSupportEndCommand(Xid xid, XaStates states) {
+    public static RmSessionException xaTransactionDontSupportEndCommand(@Nullable Xid xid, XaStates states) {
         String m = String.format("%s %s don't support end command", xid, states);
         return new RmSessionException(m, RmSessionException.XAER_PROTO);
     }
 
+    public static RmSessionException xaStatesDontSupportPrepareCommand(@Nullable Xid xid, XaStates states) {
+        String m = String.format("%s %s don't support prepare command", xid, states);
+        return new RmSessionException(m, RmSessionException.XAER_PROTO);
+    }
+
+    public static RmSessionException xaStatesDontSupportCommitCommand(@Nullable Xid xid, XaStates states) {
+        String m = String.format("%s %s don't support commit command", xid, states);
+        return new RmSessionException(m, RmSessionException.XAER_PROTO);
+    }
+
+    public static RmSessionException xaTransactionRollbackOnly(@Nullable Xid xid) {
+        String m = String.format("%s is rollback-only.", xid);
+        return new RmSessionException(m, RmSessionException.XA_RBROLLBACK);
+    }
+
+    public static RmSessionException xaDontSupportForget(RmSession session) {
+        String m = String.format("%s don't support forget command", session);
+        return new RmSessionException(m, RmSessionException.XAER_RMERR);
+    }
 
     public static TransactionException existsTransaction(Session session) {
         String m = String.format("%s exists transaction,couldn't start new transaction.", session);

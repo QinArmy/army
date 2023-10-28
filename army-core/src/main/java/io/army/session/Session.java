@@ -5,6 +5,15 @@ import io.army.criteria.Visible;
 import io.army.meta.TableMeta;
 
 /**
+ * <p>This interface representing database session.
+ * <p>This interface is direct base interface of following :
+ * <ul>
+ *     <li>{@link LocalSession}</li>
+ *     <li>{@link RmSession}</li>
+ *     <li>{@code io.army.sync.SyncSession}</li>
+ *     <li>{@code io.army.reactive.ReactiveSession}</li>
+ * </ul>
+ *
  * @see SessionFactory
  */
 public interface Session extends CloseableSpec, OptionSpec {
@@ -30,6 +39,20 @@ public interface Session extends CloseableSpec, OptionSpec {
      * @throws SessionException throw when session have closed
      */
     boolean inTransaction() throws SessionException;
+
+    /**
+     * <p>Test session whether is rollback only or not.
+     * <ul>
+     *     <li>local transaction : the status will clear after rollback or start new transaction. see {@link LocalSession#markRollbackOnly()}</li>
+     *     <li>XA transaction : the status will clear after prepare or one phase commit. see {@link RmSession#TM_FAIL}</li>
+     * </ul>
+     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     *
+     * @return true : current session support only rollback.
+     * @see LocalSession#markRollbackOnly()
+     * @see RmSession#TM_FAIL
+     */
+    boolean isRollbackOnly();
 
     /**
      * <p>Test session whether hold one  {@link TransactionInfo} instance or not.
@@ -58,15 +81,6 @@ public interface Session extends CloseableSpec, OptionSpec {
 
 
     /**
-     * <p>The status will clear after rollback or start new transaction.
-     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
-     *
-     * @return true : current session support only rollback.
-     * @see #markRollbackOnly()
-     */
-    boolean isRollbackOnly();
-
-    /**
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
      */
     boolean isReactiveSession();
@@ -75,15 +89,6 @@ public interface Session extends CloseableSpec, OptionSpec {
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
      */
     boolean isSyncSession();
-
-    /**
-     * <p>Mark current session don't support rollback even if {@link #hasTransactionInfo()} return false.
-     * <p>The status will clear after rollback.
-     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
-     *
-     * @see #isRollbackOnly()
-     */
-    void markRollbackOnly();
 
 
     /**

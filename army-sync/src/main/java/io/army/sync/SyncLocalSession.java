@@ -1,10 +1,7 @@
 package io.army.sync;
 
 import io.army.lang.Nullable;
-import io.army.session.HandleMode;
-import io.army.session.Option;
-import io.army.session.TransactionInfo;
-import io.army.session.TransactionOption;
+import io.army.session.*;
 
 import java.util.function.Function;
 
@@ -15,7 +12,7 @@ import java.util.function.Function;
  * @see SyncLocalSessionFactory
  * @since 1.0
  */
-public interface SyncLocalSession extends SyncSession {
+public interface SyncLocalSession extends SyncSession, LocalSession {
 
     @Override
     SyncLocalSessionFactory sessionFactory();
