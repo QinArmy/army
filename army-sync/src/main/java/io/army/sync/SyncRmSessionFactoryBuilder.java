@@ -11,13 +11,12 @@ import io.army.session.SessionFactoryException;
  */
 public interface SyncRmSessionFactoryBuilder extends FactoryBuilderSpec<SyncRmSessionFactoryBuilder, SyncRmSessionFactory> {
 
+    @Override
+    SyncRmSessionFactory build() throws SessionFactoryException;
+
     static SyncRmSessionFactoryBuilder builder() {
         return ArmySyncRmFactoryBuilder.create();
     }
-
-
-    @Override
-    SyncRmSessionFactory build() throws SessionFactoryException;
 
 
 }

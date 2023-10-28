@@ -52,7 +52,7 @@ public interface Session extends CloseableSpec, OptionSpec {
      *     </li>
      *     <li>XA transaction :
      *          <ol>
-     *              <li>pass {@link RmSession#TM_FAIL} flag to end() method</li>
+     *              <li>pass {@link RmSession#TM_FAIL} flag to {@link RmSession}'s end() method</li>
      *              <li>throw {@link ChildUpdateException} when execute dml</li>
      *          </ol>
      *     </li>
@@ -74,7 +74,7 @@ public interface Session extends CloseableSpec, OptionSpec {
      * </ul>
      * <p><strong>NOTE</strong> : This method don't check session whether closed or not.
      *
-     * @return true : current session support only rollback.
+     * @return true : session is rollback only.
      * @see LocalSession#markRollbackOnly()
      * @see RmSession#TM_FAIL
      */

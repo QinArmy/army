@@ -18,12 +18,12 @@ import java.util.stream.Stream;
 /**
  * <p>This class is a implementation of {@link SyncRmSession}
  *
- * @see ArmySyncLocalSessionFactory
+ * @see ArmySyncRmSessionFactory
  * @since 1.0
  */
 class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
-    static ArmySyncRmSession create(ArmySyncRmSessionFactory.SyncRmSessionBuilder builder) {
+    static ArmySyncRmSession create(ArmySyncRmSessionFactory.RmSessionBuilder builder) {
         final ArmySyncRmSession session;
         if (builder.inOpenDriverSpi()) {
             session = new OpenDriverSpiSession(builder);
@@ -44,7 +44,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     /**
      * private constructor
      */
-    private ArmySyncRmSession(ArmySyncRmSessionFactory.SyncRmSessionBuilder builder) {
+    private ArmySyncRmSession(ArmySyncRmSessionFactory.RmSessionBuilder builder) {
         super(builder);
         assert this.stmtExecutor instanceof SyncRmStmtExecutor;
     }
@@ -367,7 +367,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     private static final class OpenDriverSpiSession extends ArmySyncRmSession implements DriverSpiHolder {
 
-        private OpenDriverSpiSession(ArmySyncRmSessionFactory.SyncRmSessionBuilder builder) {
+        private OpenDriverSpiSession(ArmySyncRmSessionFactory.RmSessionBuilder builder) {
             super(builder);
         }
 

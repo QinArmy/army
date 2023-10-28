@@ -2,30 +2,33 @@ package io.army.session;
 
 import io.army.advice.FactoryAdvice;
 import io.army.codec.FieldCodec;
+import io.army.codec.JsonCodec;
 import io.army.criteria.impl._SchemaMetaFactory;
 import io.army.criteria.impl._TableMetaFactory;
 import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
 import io.army.env.ArmyEnvironment;
-import io.army.env.ArmyKey;
 import io.army.executor.ExecutorEnv;
 import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
+import io.army.schema._SchemaResult;
 import io.army.util._Collections;
+import io.army.util._StringUtils;
+import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.function.Function;
 
 public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B, R> {
 
-    protected String name;
+    String name;
 
-    protected ArmyEnvironment environment;
+    ArmyEnvironment environment;
 
-    protected Object dataSource;
+    private Object dataSource;
     protected Collection<FieldCodec> fieldCodecs;
 
     protected SchemaMeta schemaMeta = _SchemaMetaFactory.getSchema("", "");
@@ -38,7 +41,7 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
     protected List<String> packagesToScan;
 
-    private Function<String, Database> nameToDatabaseFunc;
+    protected Function<String, Database> nameToDatabaseFunc;
 
     protected DdlMode ddlMode;
 
@@ -55,6 +58,9 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
     @Override
     public final B name(String sessionFactoryName) {
+        if (this.name != null) {
+            throw new IllegalStateException("name non-null");
+        }
         this.name = sessionFactoryName;
         return (B) this;
     }
@@ -104,79 +110,64 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
     @Override
     public final R build() {
+        final String name = this.name;
+        final Object dataSource = this.dataSource;
+        final ArmyEnvironment env = this.environment;
 
-        try {
-            final ArmyEnvironment env = Objects.requireNonNull(this.environment);
-            //1. scan table meta
-            this.scanSchema();
 
-            //2. create ExecutorProvider
-            final ExecutorProvider executorProvider;
-            executorProvider = createExecutorProvider(env, Objects.requireNonNull(this.dataSource));
-            //3. create ServerMeta
-            final ServerMeta serverMeta;
-            serverMeta = executorProvider.createServerMeta(env.getRequired(ArmyKey.DIALECT));
+        SessionFactoryException error;
 
-            //4. create MappingEnv
-            final MappingEnv mappingEnv;
-            mappingEnv = MappingEnv.create(false, serverMeta, env.get(ArmyKey.ZONE_OFFSET), new MockJsonCodec());
+        if (!_StringUtils.hasText(name)) {
+            error = new SessionFactoryException("factory name is required");
+        } else if (dataSource == null) {
+            error = new SessionFactoryException("datasource is required");
+        } else if (env == null) {
+            error = new SessionFactoryException("environment is required");
+        } else if (_Collections.isEmpty(this.packagesToScan)) {
+            error = new SessionFactoryException("packagesToScan is required");
+        } else {
 
-            //5. create ExecutorEnv
-            final String factoryName = Objects.requireNonNull(this.name);
-            final ExecutorEnv executorEnv;
-            executorEnv = createExecutorEnv(factoryName, serverMeta, env, mappingEnv);
-            //6. create LocalExecutorFactory
-            final LocalExecutorFactory executorFactory;
-            executorFactory = executorProvider.createLocalFactory(executorEnv);
-
-            final FactoryAdvice factoryAdvice;
-            factoryAdvice = createFactoryAdviceComposite(this.factoryAdvices);
-            //7. invoke beforeInstance
-            if (factoryAdvice != null) {
-                factoryAdvice.beforeInstance(serverMeta, env);
+            try {
+                this.scanTableMeta();   // scan table meta
+                error = null;
+            } catch (SessionFactoryException e) {
+                error = e;
             }
-            //8. create DialectEnv
-            this.dialectEnv = DialectEnv.builder()
-                    .factoryName(factoryName)
-                    .environment(env)
-                    .fieldGeneratorMap(Collections.emptyMap())//TODO
-                    .mappingEnv(mappingEnv)
-                    .build();
-
-            //9. create SessionFactoryImpl instance
-            this.executorFactory = executorFactory;
-            this.ddlMode = env.getOrDefault(ArmyKey.DDL_MODE);
-            final ArmySyncLocalSessionFactory sessionFactory;
-            sessionFactory = new ArmySyncLocalSessionFactory(this);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Created {}[{}]", SyncLocalSessionFactory.class.getName(), sessionFactory.name());
-            }
-            assert factoryName.equals(sessionFactory.name());
-            assert sessionFactory.executorFactory == executorFactory;
-            assert sessionFactory.mappingEnv == mappingEnv;
-
-            //9. invoke beforeInitialize
-            if (factoryAdvice != null) {
-                factoryAdvice.beforeInitialize(sessionFactory);
-            }
-
-            //10. invoke initializingFactory
-            initializingFactory(sessionFactory);
-
-            //7. invoke afterInitialize
-            if (factoryAdvice != null) {
-                factoryAdvice.afterInitialize(sessionFactory);
-            }
-            return sessionFactory;
-        } catch (SessionFactoryException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new SessionFactoryException(e, e.getMessage());
         }
+
+        if (error != null) {
+            return handleError(error);
+        }
+
+        return buildAfterScanTableMeta(name, dataSource, env);
+    }
+
+    protected abstract R buildAfterScanTableMeta(final String name, final Object dataSource, final ArmyEnvironment env);
+
+    protected abstract R handleError(SessionFactoryException cause);
+
+
+    protected abstract Logger getLogger();
+
+
+    protected final ExecutorEnv createExecutorEnv(String factoryName, ServerMeta serverMeta, ArmyEnvironment env,
+                                                  MappingEnv mappingEnv) {
+        final Map<FieldMeta<?>, FieldCodec> codecMap;
+        codecMap = createCodecMap();
+        return new ArmyExecutorEnvironment(factoryName, serverMeta, codecMap, env, mappingEnv);
+    }
+
+    protected final Map<FieldMeta<?>, FieldGenerator> createFieldGeneratorMap() {
+        // TODO
+        return Collections.emptyMap();
+    }
+
+    protected final List<String> parseMetaDdl(_ArmySessionFactory sessionFactory, _SchemaResult schemaResult) {
+        return sessionFactory.dialectParser.schemaDdl(schemaResult);
     }
 
 
-    protected final void scanSchema() {
+    private void scanTableMeta() throws SessionFactoryException {
 
         final List<String> packagesToScan = this.packagesToScan;
         if (packagesToScan == null || packagesToScan.isEmpty()) {
@@ -228,6 +219,40 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         this.tableMap = tableMetaMap;
     }
 
+
+    /**
+     * @return a modified map
+     */
+    private Map<FieldMeta<?>, FieldCodec> createCodecMap() {
+        final Collection<FieldCodec> codecs = this.fieldCodecs;
+        final Map<FieldMeta<?>, FieldCodec> map;
+        if (codecs == null) {
+            map = Collections.emptyMap();
+        } else {
+            map = _Collections.hashMap((int) (codecs.size() / 0.75F));
+            for (FieldCodec codec : codecs) {
+                for (FieldMeta<?> fieldMeta : codec.fieldMetaSet()) {
+                    if (map.putIfAbsent(fieldMeta, codec) == null) {
+                        continue;
+                    }
+                    String m = String.format("%s %s duplication.", fieldMeta, FieldCodec.class.getName());
+                    throw new SessionFactoryException(m);
+                }
+            }
+        }
+        final SchemaMeta schemaMeta = Objects.requireNonNull(this.schemaMeta);
+        for (FieldMeta<?> fieldMeta : _TableMetaFactory.codecFieldMetaSet()) {
+            if (!fieldMeta.tableMeta().schema().equals(schemaMeta)) {
+                continue;
+            }
+            if (!map.containsKey(fieldMeta)) {
+                String m = String.format("%s not found %s.", fieldMeta, FieldCodec.class.getName());
+                throw new SessionFactoryException(m);
+            }
+        }
+        return map;
+    }
+
     private SessionFactoryException fieldGeneratorTypeError(GeneratorMeta meta, @Nullable FieldGenerator generator) {
         String m = String.format("%s %s type %s isn't %s."
                 , meta.field(), FieldGenerator.class.getName(), generator, meta.javaType().getName());
@@ -243,15 +268,33 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
 
     @Nullable
     protected static FactoryAdvice createFactoryAdviceComposite(Collection<FactoryAdvice> factoryAdvices) {
-        if (factoryAdvices == null || factoryAdvices.isEmpty()) {
+        if (_Collections.isEmpty(factoryAdvices)) {
             return null;
         }
         List<FactoryAdvice> orderedAdviceList;
-        orderedAdviceList = new ArrayList<>(factoryAdvices);
+        orderedAdviceList = _Collections.arrayList(factoryAdvices);
         orderedAdviceList.sort(Comparator.comparingInt(FactoryAdvice::order));
         orderedAdviceList = Collections.unmodifiableList(orderedAdviceList);
         return new SessionFactoryAdviceComposite(orderedAdviceList);
     }
+
+
+    protected static final class MockJsonCodec implements JsonCodec {
+
+        public MockJsonCodec() {
+        }
+
+        @Override
+        public String encode(Object obj) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object decode(String json) {
+            throw new UnsupportedOperationException();
+        }
+
+    }//MockJsonCodec
 
 
     protected static final class SessionFactoryAdviceComposite implements FactoryAdvice {
@@ -290,5 +333,73 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         }
 
     }
+
+
+    private static final class ArmyExecutorEnvironment implements ExecutorEnv {
+
+        private final String factoryName;
+
+        private final ServerMeta serverMeta;
+
+        private final Map<FieldMeta<?>, FieldCodec> fieldCodecMap;
+
+        private final ArmyEnvironment environment;
+
+        private final MappingEnv mappingEnv;
+
+        private ArmyExecutorEnvironment(String factoryName, ServerMeta serverMeta, Map<FieldMeta<?>, FieldCodec> fieldCodecMap,
+                                        ArmyEnvironment environment, MappingEnv mappingEnv) {
+
+            this.factoryName = factoryName;
+            this.serverMeta = serverMeta;
+            final Map<FieldMeta<?>, FieldCodec> emptyMap = Collections.emptyMap();
+            if (fieldCodecMap == emptyMap) {
+                this.fieldCodecMap = emptyMap;
+            } else {
+                this.fieldCodecMap = Collections.unmodifiableMap(fieldCodecMap);
+            }
+            this.environment = environment;
+            this.mappingEnv = mappingEnv;
+        }
+
+        @Override
+        public String factoryName() {
+            return this.factoryName;
+        }
+
+        @Override
+        public ServerMeta serverMeta() {
+            return this.serverMeta;
+        }
+
+        @Override
+        public Map<FieldMeta<?>, FieldCodec> fieldCodecMap() {
+            return this.fieldCodecMap;
+        }
+
+        @Override
+        public ArmyEnvironment environment() {
+            return this.environment;
+        }
+
+        @Override
+        public MappingEnv mappingEnv() {
+            return this.mappingEnv;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder(50)
+                    .append(getClass().getName())
+                    .append("[sessionFactoryName:")
+                    .append(this.factoryName)
+                    .append(",hash:")
+                    .append(System.identityHashCode(this))
+                    .append(']')
+                    .toString();
+        }
+
+
+    } //ArmyExecutorEnvironment
 
 }

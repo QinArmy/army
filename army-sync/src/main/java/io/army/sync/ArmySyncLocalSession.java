@@ -17,6 +17,9 @@ import java.util.function.Function;
  */
 class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
+    /**
+     * @see ArmySyncLocalSessionFactory.LocalSessionBuilder#createSession(String)
+     */
     static ArmySyncLocalSession create(ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
         final ArmySyncLocalSession session;
         if (builder.inOpenDriverSpi()) {
@@ -35,6 +38,8 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
     /**
      * private constructor
+     *
+     * @see ArmySyncLocalSession#create(ArmySyncLocalSessionFactory.LocalSessionBuilder)
      */
     private ArmySyncLocalSession(final ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
         super(builder);
@@ -124,9 +129,9 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
         if (optionFunc != Option.EMPTY_OPTION_FUNC
                 && Boolean.TRUE.equals(optionFunc.apply(Option.CHAIN))) {
-            assert info != null && info.inTransaction();
+            assert info != null && info.inTransaction(); // fail,executor bug
         } else {
-            assert info == null;
+            assert info == null; // fail,executor bug
         }
         this.transactionInfo = info;
         return info;
@@ -176,8 +181,13 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         this.rollbackOnly = true;
     }
 
+    /*-------------------below inner class -------------------*/
+
     private static final class OpenDriverSpiSession extends ArmySyncLocalSession implements DriverSpiHolder {
 
+        /**
+         * @see ArmySyncLocalSession#create(ArmySyncLocalSessionFactory.LocalSessionBuilder)
+         */
         private OpenDriverSpiSession(ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
             super(builder);
         }

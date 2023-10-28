@@ -1,5 +1,6 @@
 package io.army.sync;
 
+import io.army.session.SessionException;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmySessionFactory;
 import io.army.sync.executor.SyncStmtExecutor;
@@ -72,6 +73,12 @@ abstract class ArmySyncSessionFactory extends _ArmySessionFactory implements Syn
 
         SyncSessionBuilder(ArmySyncSessionFactory factory) {
             super(factory);
+        }
+
+
+        @Override
+        protected final R handleError(SessionException cause) {
+            throw cause;
         }
 
 

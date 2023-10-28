@@ -1,29 +1,23 @@
 package io.army.sync.executor;
 
+import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.executor.ExecutorEnv;
+import io.army.lang.Nullable;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.executor.StmtExecutorFactoryProviderSpec;
 
+import java.util.function.Function;
+
 /**
- * <p>
- * This interface representing provider of bloc executor.
- * This implementation of this interface must declared :
- * <pre>
- *      <code>
- *          public static {implementation class of ExecutorProvider} create(Object){
- *
- *          }
- *      </code>
- *  </pre>
- * </p>
+ * <p>This interface representing provider of blocking executor.
  */
 public interface SyncStmtExecutorFactoryProvider extends StmtExecutorFactoryProviderSpec {
 
     @Override
-    ServerMeta createServerMeta(Dialect usedDialect) throws DataAccessException;
+    ServerMeta createServerMeta(Dialect usedDialect, @Nullable Function<String, Database> func) throws DataAccessException;
 
 
     /**
@@ -32,15 +26,8 @@ public interface SyncStmtExecutorFactoryProvider extends StmtExecutorFactoryProv
      * @throws IllegalArgumentException      throw when {@link  MappingEnv#serverMeta()} not match.
      */
     @Override
-    SyncLocalExecutorFactory createFactory(ExecutorEnv env);
+    SyncStmtExecutorFactory createFactory(ExecutorEnv env);
 
-    /**
-     * @throws UnsupportedOperationException throw when support only creating{@link SyncLocalExecutorFactory }
-     * @throws IllegalStateException         throw when invoke this method before {@link #createServerMeta()}
-     * @throws IllegalArgumentException      throw when {@link  MappingEnv#serverMeta()} not match.
-     */
-    @Override
-    SyncRmExecutorFactory createRmFactory(ExecutorEnv env);
 
 
 }

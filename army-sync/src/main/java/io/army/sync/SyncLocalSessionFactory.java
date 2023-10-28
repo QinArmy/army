@@ -1,15 +1,24 @@
 package io.army.sync;
 
 import io.army.session.SessionException;
+import io.army.session.SessionFactoryException;
 
 /**
- * This interface representing single database(or single schema).
- * This interface run only below:
+ * <p>This interface representing the factory of {@link SyncLocalSession}.
+ * <p>The instance of this interface is created by {@link SyncLocalFactoryBuilder#build()} .
+ *
+ * @see SyncLocalFactoryBuilder
+ * @since 1.0
  */
 public interface SyncLocalSessionFactory extends SyncSessionFactory {
 
 
-    SessionBuilder builder();
+    /**
+     * Create the builder of {@link SyncLocalSession}
+     *
+     * @throws SessionFactoryException throw when factory have closed
+     */
+    SessionBuilder builder() throws SessionFactoryException;
 
 
     interface SessionBuilder extends SessionBuilderSpec<SessionBuilder, SyncLocalSession> {

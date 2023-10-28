@@ -5,6 +5,7 @@ import io.army.session.SessionFactoryException;
 
 /**
  * <p>This interface representing the builder of {@link SyncLocalSessionFactory}.
+ * <p>The instance of This interface is created by {@link #builder()}.
  *
  * @since 1.0
  */
@@ -16,7 +17,7 @@ public interface SyncLocalFactoryBuilder extends FactoryBuilderSpec<SyncLocalFac
 
 
     static SyncLocalFactoryBuilder builder() {
-        return new LocalSessionFactoryBuilder();
+        return ArmySyncLocalFactoryBuilder.create();
     }
 
 
