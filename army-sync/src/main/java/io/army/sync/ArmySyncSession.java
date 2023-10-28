@@ -7,6 +7,7 @@ import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.session.*;
+import io.army.session.executor.DriverSpiHolder;
 import io.army.stmt.*;
 import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util.ArmyCriteria;
@@ -38,9 +39,6 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     final SyncStmtExecutor stmtExecutor;
 
-
-    private boolean rollbackOnly;
-
     private volatile int sessionClosed;
 
     protected ArmySyncSession(ArmySyncSessionFactory.SyncSessionBuilder<?, ?> builder) {
@@ -59,6 +57,21 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     public final boolean isSyncSession() {
         // always true
         return true;
+    }
+
+    @Override
+    public final boolean inTransaction() {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
+
+        if (((ArmySyncSessionFactory) this.factory).jdbcDriver || !(this instanceof DriverSpiHolder)) {
+            // JDBC don't support to get the state from database client protocol.
+            final TransactionInfo info = obtainTransactionInfo();
+            return info != null && info.inTransaction();
+        }
+        // due to session open driver spi to application developer, TransactionInfo probably error.
+        return this.stmtExecutor.inTransaction();
     }
 
 
@@ -229,9 +242,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             }
             return rows;
         } catch (ChildUpdateException e) {
-            if (hasTransactionInfo()) {
-                markRollbackOnly();
-            }
+            rollbackOnlyOnError(e);
             throw e;
         } catch (Exception e) {
             throw wrapSessionError(e);
@@ -301,7 +312,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             return resultList;
         } catch (ChildUpdateException e) {
             if (hasTransactionInfo()) {
-                markRollbackOnly();
+                rollbackOnlyOnError(e);
             }
             throw e;
         } catch (Exception e) {
@@ -364,8 +375,8 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             }
             return resultList;
         } catch (ChildUpdateException e) {
-            if (this instanceof LocalSession && hasTransactionInfo()) {
-                ((LocalSession) this).markRollbackOnly();
+            if (hasTransactionInfo()) {
+                rollbackOnlyOnError(e);
             }
             throw e;
         } catch (Exception e) {

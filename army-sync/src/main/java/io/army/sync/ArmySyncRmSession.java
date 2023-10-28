@@ -35,9 +35,11 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmySyncRmSession.class);
 
-    private static final ConcurrentMap<Xid, TransactionInfo> PREPARED_XA_MAP = _Collections.concurrentHashMap();
+    private static final ConcurrentMap<Xid, TransactionInfo> ROLLBACK_ONLY_MAP = _Collections.concurrentHashMap();
 
     private TransactionInfo transactionInfo;
+
+    private boolean rollbackOnly;
 
     /**
      * private constructor
@@ -54,27 +56,15 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
 
 
     @Override
-    public final boolean inTransaction() {
-        if (isClosed()) {
-            throw _Exceptions.sessionClosed(this);
-        }
-
-        if (((ArmySyncLocalSessionFactory) this.factory).jdbcDriver || !(this instanceof OpenDriverSpiSession)) {
-            // JDBC don't support to get the state from database client protocol.
-            final TransactionInfo info = this.transactionInfo;
-            return info != null && info.inTransaction();
-        }
-        // due to session open driver spi to application developer, TransactionInfo probably error.
-        return this.stmtExecutor.inTransaction();
-    }
-
-    @Override
     public final boolean hasTransactionInfo() {
         return this.transactionInfo != null;
     }
 
     @Override
     public boolean isRollbackOnly() {
+        if (this.rollbackOnly) {
+            return true;
+        }
         final TransactionInfo info = this.transactionInfo;
         final Integer flags;
         return info != null
@@ -112,7 +102,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         assert info.nonNullOf(Option.XA_FLAGS) == flags;  // fail ,executor bug
 
         this.transactionInfo = info;
-
+        this.rollbackOnly = false;
         return info;
     }
 
@@ -188,11 +178,13 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         final int flags;
         flags = ((SyncRmStmtExecutor) this.stmtExecutor).prepare(infoXid, optionFunc); // use infoXid
 
+        final boolean rollbackOnly = this.rollbackOnly;
+
         this.transactionInfo = null;
+        this.rollbackOnly = false;
+        if (rollbackOnly || (lastInfo.nonNullOf(Option.XA_FLAGS) & TM_FAIL) != 0) { // rollback only
 
-        if ((lastInfo.nonNullOf(Option.XA_FLAGS) & TM_FAIL) != 0) { // rollback only
-
-            if (PREPARED_XA_MAP.putIfAbsent(infoXid, lastInfo) != null) {
+            if (ROLLBACK_ONLY_MAP.putIfAbsent(infoXid, lastInfo) != null) {
                 // no bug ,never here
                 String m = String.format("%s duplication prepare", infoXid);
                 throw new SessionException(m);
@@ -230,7 +222,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
                 throw _Exceptions.xaNonCurrentTransaction(xid); // use xid
             } else if ((states = info.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
                 throw _Exceptions.xaStatesDontSupportCommitCommand(infoXid, states); // use infoXid
-            } else if ((info.nonNullOf(Option.XA_FLAGS) & TM_FAIL) != 0) {
+            } else if (this.rollbackOnly || (info.nonNullOf(Option.XA_FLAGS) & TM_FAIL) != 0) {
                 // rollback only
                 throw _Exceptions.xaTransactionRollbackOnly(infoXid);
             }
@@ -241,15 +233,14 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         } else if (xid == null) {
             // application developer no bug,never here
             throw new NullPointerException();
-        } else if ((info = PREPARED_XA_MAP.get(xid)) != null && (info.nonNullOf(Option.XA_FLAGS) & TM_FAIL) != 0) {
+        } else if ((info = ROLLBACK_ONLY_MAP.get(xid)) != null) {
             // rollback only
             throw _Exceptions.xaTransactionRollbackOnly(info.nonNullOf(Option.XID));
         } else {
-            final Xid actualXid = info == null ? xid : info.nonNullOf(Option.XID);
 
-            ((SyncRmStmtExecutor) this.stmtExecutor).commit(actualXid, flags, optionFunc);
+            ((SyncRmStmtExecutor) this.stmtExecutor).commit(xid, flags, optionFunc);
 
-            PREPARED_XA_MAP.remove(actualXid);
+            ROLLBACK_ONLY_MAP.remove(xid);
         }
 
 
@@ -270,8 +261,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         }
 
         ((SyncRmStmtExecutor) this.stmtExecutor).rollback(xid, optionFunc);
-
-        PREPARED_XA_MAP.remove(xid);
+        ROLLBACK_ONLY_MAP.remove(xid);
 
     }
 
@@ -369,6 +359,11 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         return this.transactionInfo;
     }
 
+
+    @Override
+    protected void rollbackOnlyOnError(ChildUpdateException cause) {
+        this.rollbackOnly = true;
+    }
 
     private static final class OpenDriverSpiSession extends ArmySyncRmSession implements DriverSpiHolder {
 

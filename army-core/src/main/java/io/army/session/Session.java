@@ -41,12 +41,38 @@ public interface Session extends CloseableSpec, OptionSpec {
     boolean inTransaction() throws SessionException;
 
     /**
-     * <p>Test session whether is rollback only or not.
+     * <p>Test session is whether rollback only or not.
+     * <p> How to mark {@link Session}'s rollback only status ?
      * <ul>
-     *     <li>local transaction : the status will clear after rollback or start new transaction. see {@link LocalSession#markRollbackOnly()}</li>
-     *     <li>XA transaction : the status will clear after prepare or one phase commit. see {@link RmSession#TM_FAIL}</li>
+     *     <li>local transaction  :
+     *          <ol>
+     *              <li>{@link LocalSession#markRollbackOnly()}</li>
+     *              <li>throw {@link ChildUpdateException} when execute dml</li>
+     *          </ol>
+     *     </li>
+     *     <li>XA transaction :
+     *          <ol>
+     *              <li>pass {@link RmSession#TM_FAIL} flag to end() method</li>
+     *              <li>throw {@link ChildUpdateException} when execute dml</li>
+     *          </ol>
+     *     </li>
      * </ul>
-     * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
+     * <p> How to clear {@link Session}'s rollback only status ?
+     * <ul>
+     *     <li>local transaction  :
+     *          <ol>
+     *              <li>rollback transaction</li>
+     *              <li>start new transaction</li>
+     *          </ol>
+     *     </li>
+     *     <li>XA transaction :
+     *          <ol>
+     *              <li>prepare current transaction,but appropriate XA transaction is rollback only.</li>
+     *              <li>start new transaction,but appropriate XA transaction is rollback only.</li>
+     *          </ol>
+     *     </li>
+     * </ul>
+     * <p><strong>NOTE</strong> : This method don't check session whether closed or not.
      *
      * @return true : current session support only rollback.
      * @see LocalSession#markRollbackOnly()

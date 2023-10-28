@@ -24,12 +24,17 @@ abstract class ArmySyncSessionFactory extends _ArmySessionFactory implements Syn
 
     final SyncStmtExecutorFactory stmtExecutorFactory;
 
+    final boolean buildInExecutor;
+    final boolean jdbcDriver;
+
     private volatile int factoryClosed;
 
     ArmySyncSessionFactory(ArmySyncFactoryBuilder<?, ?> builder) throws SessionFactoryException {
         super(builder);
         this.stmtExecutorFactory = builder.stmtExecutorFactory;
         assert this.stmtExecutorFactory != null;
+        this.buildInExecutor = this.stmtExecutorFactory.getClass().getPackage().getName().startsWith("io.army.jdbc.");
+        this.jdbcDriver = this.buildInExecutor || this.stmtExecutorFactory.driverSpiVendor().equals("java.sql");
     }
 
     @Override

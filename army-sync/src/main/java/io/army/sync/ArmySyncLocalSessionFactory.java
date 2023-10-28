@@ -16,11 +16,6 @@ import java.lang.reflect.Modifier;
  */
 final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implements SyncLocalSessionFactory {
 
-    final SyncLocalExecutorFactory executorFactory;
-
-    final boolean buildInExecutor;
-
-    final boolean jdbcDriver;
 
     final _SessionCacheFactory sessionCacheFactory;
 
@@ -36,7 +31,6 @@ final class ArmySyncLocalSessionFactory extends ArmySyncSessionFactory implement
         assert this.executorFactory != null;
         this.buildInExecutor = isBuildInExecutor(this.executorFactory);
 
-        this.jdbcDriver = this.buildInExecutor || this.executorFactory.driverSpiVendor().equals("java.sql");
 
         this.sessionContext = getSessionContext();
         //this.sessionCacheFactory = SessionCacheFactory.build(this);

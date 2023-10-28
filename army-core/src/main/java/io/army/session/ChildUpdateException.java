@@ -1,6 +1,10 @@
 package io.army.session;
 
-public class ChildUpdateException extends DataAccessException {
+/**
+ * @see Session#isRollbackOnly()
+ * @since 1.0
+ */
+public final class ChildUpdateException extends DataAccessException {
 
     public ChildUpdateException(String message) {
         super(message);

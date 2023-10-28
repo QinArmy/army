@@ -1,9 +1,7 @@
 package io.army.sync;
 
-import io.army.session.HandleMode;
-import io.army.session.Option;
-import io.army.session.TransactionInfo;
-import io.army.session.TransactionOption;
+import io.army.session.*;
+import io.army.session.executor.DriverSpiHolder;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
@@ -17,55 +15,67 @@ import java.util.function.Function;
  *
  * @see ArmySyncLocalSessionFactory
  */
-final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
+class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
-    private static final Logger LOG = LoggerFactory.getLogger(io.army.sync.ArmySyncLocalSession.class);
+    static ArmySyncLocalSession create(ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
+        final ArmySyncLocalSession session;
+        if (builder.inOpenDriverSpi()) {
+            session = new OpenDriverSpiSession(builder);
+        } else {
+            session = new ArmySyncLocalSession(builder);
+        }
+        return session;
+    }
+
+    private static final Logger LOG = LoggerFactory.getLogger(ArmySyncLocalSession.class);
 
     private TransactionInfo transactionInfo;
 
+    private boolean rollbackOnly;
 
-    ArmySyncLocalSession(final ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
+    /**
+     * private constructor
+     */
+    private ArmySyncLocalSession(final ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
         super(builder);
         assert this.stmtExecutor instanceof SyncLocalStmtExecutor;
     }
 
 
     @Override
-    public SyncLocalSessionFactory sessionFactory() {
+    public final SyncLocalSessionFactory sessionFactory() {
         return (SyncLocalSessionFactory) this.factory;
     }
 
 
     @Override
-    public boolean inTransaction() {
-        if (isClosed()) {
-            throw _Exceptions.sessionClosed(this);
-        }
-        if (((ArmySyncLocalSessionFactory) this.factory).jdbcDriver) {
-            return hasTransactionInfo();
-        }
-        return this.stmtExecutor.inTransaction();
-    }
-
-    @Override
-    public boolean hasTransactionInfo() {
+    public final boolean hasTransactionInfo() {
         return this.transactionInfo != null;
     }
 
+    @Override
+    public final boolean isRollbackOnly() {
+        return this.rollbackOnly;
+    }
 
     @Override
-    public TransactionInfo startTransaction() {
+    public final void markRollbackOnly() {
+        this.rollbackOnly = true;
+    }
+
+    @Override
+    public final TransactionInfo startTransaction() {
         return this.startTransaction(TransactionOption.option(null, false), HandleMode.ERROR_IF_EXISTS);
     }
 
     @Override
-    public TransactionInfo startTransaction(TransactionOption option) {
+    public final TransactionInfo startTransaction(TransactionOption option) {
         return this.startTransaction(option, HandleMode.ERROR_IF_EXISTS);
     }
 
 
     @Override
-    public TransactionInfo startTransaction(TransactionOption option, HandleMode mode) {
+    public final TransactionInfo startTransaction(TransactionOption option, HandleMode mode) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
@@ -88,21 +98,21 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
         final TransactionInfo info;
         info = ((SyncLocalStmtExecutor) this.stmtExecutor).startTransaction(option, mode);
 
-        Objects.requireNonNull(info); // stmtExecutor no bug ,never error
-        assert info.inTransaction();
+        Objects.requireNonNull(info); // fail,executor bug
+        assert info.inTransaction(); // fail,executor bug
 
         this.transactionInfo = info;
-        this.clearRollbackOnly();
+        this.rollbackOnly = false;
         return info;
     }
 
     @Override
-    public void commit() {
+    public final void commit() {
         this.commit(Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
+    public final TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         } else if (isRollbackOnly()) {
@@ -123,12 +133,12 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
     }
 
     @Override
-    public void rollback() {
+    public final void rollback() {
         this.rollback(Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
+    public final TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
@@ -143,6 +153,7 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
             assert info == null;
         }
         this.transactionInfo = info;
+        this.rollbackOnly = false;
         return info;
     }
 
@@ -150,17 +161,34 @@ final class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSes
     /*-------------------below protected template methods -------------------*/
 
     @Override
-    protected Logger getLogger() {
+    protected final Logger getLogger() {
         return LOG;
     }
 
-
-    /*-------------------below package template methods -------------------*/
 
     @Override
     protected final TransactionInfo obtainTransactionInfo() {
         return this.transactionInfo;
     }
 
+    @Override
+    protected final void rollbackOnlyOnError(ChildUpdateException cause) {
+        this.rollbackOnly = true;
+    }
 
-} // ArmySyncLocalSession
+    private static final class OpenDriverSpiSession extends ArmySyncLocalSession implements DriverSpiHolder {
+
+        private OpenDriverSpiSession(ArmySyncLocalSessionFactory.LocalSessionBuilder builder) {
+            super(builder);
+        }
+
+        @Override
+        public <T> T getDriverSpi(Class<T> spiClass) {
+            return ((DriverSpiHolder) this.stmtExecutor).getDriverSpi(spiClass);
+        }
+
+
+    } // OpenDriverSpiSession
+
+
+}

@@ -118,9 +118,11 @@ public abstract class _ArmySession implements Session {
 
     protected abstract Logger getLogger();
 
-
     @Nullable
     protected abstract TransactionInfo obtainTransactionInfo();
+
+
+    protected abstract void rollbackOnlyOnError(ChildUpdateException cause);
 
 
     protected final void printSqlIfNeed(final Stmt stmt) {
