@@ -1070,12 +1070,19 @@ public abstract class _Exceptions {
                                                                long parentRows, long childRows) {
         String m = String.format("session[%s]\n %s parent insert/update rows[%s] and child insert/update rows[%s] not match.",
                 session.name(), domainTable, parentRows, childRows);
-        throw new ChildUpdateException(m);
+        return new ChildUpdateException(m);
     }
 
     public static ChildUpdateException childInsertError(Session session, ChildTableMeta<?> domainTable, Throwable clause) {
-        String m = String.format("session[%s]\n parent of %s  insert completion,but child insert occur error.",
+        String m = String.format("%s\n parent of %s  insert completion,but child insert occur error.",
                 session.name(), domainTable);
+        return new ChildUpdateException(m, clause);
+    }
+
+
+    public static ChildUpdateException childUpdateError(Session session, ChildTableMeta<?> domainTable, Throwable clause) {
+        String m = String.format("%s\n child of %s  update completion,but parent update occur error.",
+                session, domainTable);
         return new ChildUpdateException(m, clause);
     }
 

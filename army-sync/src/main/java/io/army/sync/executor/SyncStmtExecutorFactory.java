@@ -20,15 +20,14 @@ public interface SyncStmtExecutorFactory extends StmtExecutorFactorySpec, AutoCl
 
     MetaExecutor createMetaExecutor() throws DataAccessException;
 
+    @Override
+    MetaExecutor metaExecutor() throws DataAccessException;
 
     @Override
-    MetaExecutor metaExecutor(String name) throws DataAccessException;
+    SyncLocalStmtExecutor localExecutor(String sessionName) throws DataAccessException;
 
     @Override
-    SyncLocalStmtExecutor localExecutor(String name) throws DataAccessException;
-
-    @Override
-    SyncRmStmtExecutor rmExecutor(String name) throws DataAccessException;
+    SyncRmStmtExecutor rmExecutor(String sessionName) throws DataAccessException;
 
     /**
      * <p>

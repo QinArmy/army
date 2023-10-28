@@ -28,6 +28,9 @@ import java.util.stream.Stream;
  * so all implementation of methods of this interface don't check whether closed or not,<br/>
  * but {@link io.army.session.Session} need to do that.
  *
+ * <p>The instance of this interface is created by {@link SyncStmtExecutorFactory}.
+ *
+ * @see SyncStmtExecutorFactory
  * @since 1.0
  */
 public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
@@ -45,7 +48,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
      *                                             </ul>
      * @throws IllegalArgumentException            throw when timeout negative.
      */
-    long insert(SimpleStmt stmt, int timeout) throws DataAccessException;
+    long insert(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
 
     /**
      * <p>
@@ -59,7 +62,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
      *                                             </ul>
      * @throws IllegalArgumentException            throw when timeout negative.
      */
-    long update(SimpleStmt stmt, int timeout) throws DataAccessException;
+    long update(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
 
 
     /**
@@ -78,7 +81,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
     <R> List<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) throws DataAccessException;
 
-    <R> int secondQuery(TwoStmtQueryStmt stmt, int timeout, List<R> resultList);
+    <R> int secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> resultList);
 
     <R> int secondBatchQuery(TwoStmtBatchQueryStmt stmt, int timeout, List<R> resultList);
 

@@ -20,12 +20,12 @@ public interface ReactiveStmtExecutorFactory extends StmtExecutorFactorySpec, Re
 
 
     @Override
-    Mono<ReactiveMetaExecutor> metaExecutor(String name);
+    Mono<ReactiveMetaExecutor> metaExecutor();
 
     @Override
-    Mono<ReactiveLocalStmtExecutor> localExecutor(String name);
+    Mono<ReactiveLocalStmtExecutor> localExecutor(String sessionName);
 
     @Override
-    Mono<ReactiveRmStmtExecutor> rmExecutor(String name);
+    Mono<ReactiveRmStmtExecutor> rmExecutor(String sessionName);
 
 }

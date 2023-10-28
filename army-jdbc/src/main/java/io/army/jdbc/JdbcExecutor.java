@@ -1292,7 +1292,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
 
     /**
-     * @see #batchUpdate(BatchStmt, int, IntFunction, TableMeta, List)
+     * @see #batchUpdate(BatchStmt, IntFunction, TableMeta, List)
      */
     private List<Long> handleBatchResult(final boolean optimistic, final int bathSize,
                                          final IntToLongFunction accessor,

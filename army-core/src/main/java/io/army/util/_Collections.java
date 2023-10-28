@@ -134,6 +134,14 @@ public abstract class _Collections {
         return new FinalArrayList<>(c);
     }
 
+    public static <E> ArrayList<E> secondQueryList() {
+        return new SecondQueryArrayList<>();
+    }
+
+    public static boolean isSecondQueryList(List<?> list) {
+        return list instanceof SecondQueryArrayList;
+    }
+
     public static <E> LinkedList<E> linkedList() {
         return new FinalLinkedArray<>();
     }
@@ -250,6 +258,13 @@ public abstract class _Collections {
         }
 
     }//FinalArrayList
+
+    private static final class SecondQueryArrayList<E> extends ArrayList<E> {
+
+        private SecondQueryArrayList() {
+        }
+
+    } // SecondQueryArrayList
 
 
     private static final class FinalLinkedArray<E> extends LinkedList<E> {

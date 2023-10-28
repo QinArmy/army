@@ -101,15 +101,15 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     }
 
     @Override
-    public Mono<ReactiveMetaExecutor> metaExecutor(final @Nullable String name) {
+    public Mono<ReactiveMetaExecutor> metaExecutor(final @Nullable String sessionFactoryName) {
         final Mono<ReactiveMetaExecutor> mono;
         if (isClosed()) {
             mono = Mono.error(ExecutorSupport.executorFactoryClosed(this));
-        } else if (name == null) {
+        } else if (sessionFactoryName == null) {
             mono = Mono.error(new NullPointerException());
         } else {
             mono = Mono.from(this.sessionFactory.localSession())
-                    .map(session -> JdbdMetaExecutor.create(name, this, session))
+                    .map(session -> JdbdMetaExecutor.create(sessionFactoryName, this, session))
                     .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
         }
         return mono;
@@ -117,30 +117,30 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
 
 
     @Override
-    public Mono<ReactiveLocalStmtExecutor> localExecutor(final @Nullable String name) {
+    public Mono<ReactiveLocalStmtExecutor> localExecutor(final @Nullable String sessionName) {
         final Mono<ReactiveLocalStmtExecutor> mono;
         if (isClosed()) {
             mono = Mono.error(ExecutorSupport.executorFactoryClosed(this));
-        } else if (name == null) {
+        } else if (sessionName == null) {
             mono = Mono.error(new NullPointerException());
         } else {
             mono = Mono.from(this.sessionFactory.localSession())
-                    .map(session -> this.localFunc.apply(this, session, name))
+                    .map(session -> this.localFunc.apply(this, session, sessionName))
                     .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
         }
         return mono;
     }
 
     @Override
-    public Mono<ReactiveRmStmtExecutor> rmExecutor(final @Nullable String name) {
+    public Mono<ReactiveRmStmtExecutor> rmExecutor(final @Nullable String sessionName) {
         final Mono<ReactiveRmStmtExecutor> mono;
         if (isClosed()) {
             mono = Mono.error(ExecutorSupport.executorFactoryClosed(this));
-        } else if (name == null) {
+        } else if (sessionName == null) {
             mono = Mono.error(new NullPointerException());
         } else {
             mono = Mono.from(this.sessionFactory.rmSession())
-                    .map(session -> this.rmFunc.apply(this, session, name))
+                    .map(session -> this.rmFunc.apply(this, session, sessionName))
                     .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
         }
         return mono;

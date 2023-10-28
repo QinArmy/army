@@ -2,6 +2,7 @@ package io.army.session.executor;
 
 import io.army.session.CloseableSpec;
 import io.army.session.OptionSpec;
+import io.army.session.SessionFactory;
 
 /**
  * <p>This interface representing {@link StmtExecutor} factory spec .
@@ -21,6 +22,11 @@ import io.army.session.OptionSpec;
  */
 public interface StmtExecutorFactorySpec extends CloseableSpec, OptionSpec {
 
+    /**
+     * factory name
+     *
+     * @return factory name,same with {@link SessionFactory#name()}
+     */
     String name();
 
 
@@ -51,26 +57,24 @@ public interface StmtExecutorFactorySpec extends CloseableSpec, OptionSpec {
 
     /**
      * Sub interface must override this method return value type.
-     *
-     * @param name executor name
      */
-    Object metaExecutor(String name);
+    Object metaExecutor();
 
 
     /**
      * Sub interface must override this method return value type.
      *
-     * @param name executor name
+     * @param sessionName {@link io.army.session.Session}'s name.
      */
-    Object localExecutor(String name);
+    Object localExecutor(String sessionName);
 
 
     /**
      * Sub interface must override this method return value type.
      *
-     * @param name executor name
+     * @param sessionName {@link io.army.session.Session}'s name.
      */
-    Object rmExecutor(String name);
+    Object rmExecutor(String sessionName);
 
     /**
      * override {@link Object#toString()}

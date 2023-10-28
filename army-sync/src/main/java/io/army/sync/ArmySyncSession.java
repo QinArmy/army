@@ -1,8 +1,8 @@
 package io.army.sync;
 
+import io.army.ArmyException;
 import io.army.criteria.*;
-import io.army.criteria.impl.inner._BatchStatement;
-import io.army.criteria.impl.inner._Statement;
+import io.army.criteria.impl.inner.*;
 import io.army.lang.Nullable;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
@@ -10,16 +10,12 @@ import io.army.session.ChildUpdateException;
 import io.army.session.CurrentRecord;
 import io.army.session.SessionException;
 import io.army.session._ArmySession;
-import io.army.stmt.BatchStmt;
-import io.army.stmt.PairBatchStmt;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.Stmt;
+import io.army.stmt.*;
 import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util.ArmyCriteria;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
@@ -100,7 +96,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option) {
-        return this.executeQuery(statement, option, s -> this.stmtExecutor.query(s, resultClass, listConstructor, option));
+        return this.executeQueryList(statement, listConstructor, option, s -> this.stmtExecutor.query(s, resultClass, listConstructor, option));
     }
 
     @Override
@@ -120,7 +116,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option) {
-        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryObject(s, constructor, listConstructor, option));
+        return this.executeQueryList(statement, listConstructor, option, s -> this.stmtExecutor.queryObject(s, constructor, listConstructor, option));
     }
 
     @Override
@@ -140,7 +136,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) {
-        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryRecord(s, function, listConstructor, option));
+        return this.executeQueryList(statement, listConstructor, option, s -> this.stmtExecutor.queryRecord(s, function, listConstructor, option));
     }
 
     @Override
@@ -194,7 +190,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             if (statement instanceof _BatchStatement) {
                 throw _Exceptions.unexpectedStatement(statement);
             }
+
             assertSession(statement);
+
             final long rows;
             if (statement instanceof InsertStatement) {
                 rows = this.executeInsert((InsertStatement) statement, option);
@@ -210,7 +208,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         } catch (Exception e) {
             throw wrapSessionError(e);
         } finally {
-            ((_Statement) statement).close();
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).close();
+            }
         }
 
     }
@@ -269,7 +269,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         } catch (Exception e) {
             throw wrapSessionError(e);
         } finally {
-            ((_Statement) statement).close();
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).close();
+            }
         }
 
     }
@@ -290,26 +292,178 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     /*-------------------below private methods -------------------*/
 
-    private <R> List<R> executeQuery(final DqlStatement statement, final SyncStmtOption option,
-                                     final Function<SimpleStmt, List<R>> exeFunc) {
-        return Collections.emptyList();
+    /**
+     * @see #query(DqlStatement, Class, Supplier, SyncStmtOption)
+     * @see #queryObject(DqlStatement, Supplier, Supplier, SyncStmtOption)
+     * @see #queryRecord(DqlStatement, Function, Supplier, SyncStmtOption)
+     */
+    private <R> List<R> executeQueryList(final DqlStatement statement, final Supplier<List<R>> listConstructor,
+                                         final SyncStmtOption option, final Function<SimpleStmt, List<R>> exeFunc) {
+        try {
+
+            assertSession(statement);
+
+            final Stmt stmt;
+            stmt = this.parseDqlStatement(statement, option);
+
+            final List<R> resultList;
+            if (stmt instanceof SimpleStmt) {
+                resultList = exeFunc.apply((SimpleStmt) stmt);
+            } else if (!(stmt instanceof PairStmt)) {
+                // no bug,never here
+                throw _Exceptions.unexpectedStmt(stmt);
+            } else if (statement instanceof InsertStatement) {
+                resultList = executePairInsertQueryList((InsertStatement) statement, listConstructor, option, (PairStmt) stmt, exeFunc);
+            } else {
+                //TODO add DmlStatement code for firebird
+                // no bug,never here
+                throw _Exceptions.unexpectedStatement(statement);
+            }
+            return resultList;
+        } catch (ChildUpdateException e) {
+            if (hasTransaction()) {
+                markRollbackOnly();
+            }
+            throw e;
+        } catch (Exception e) {
+            throw wrapSessionError(e);
+        } finally {
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).close();
+            }
+        }
     }
+
 
     private <R> Stream<R> executeQueryStream(final DqlStatement statement, final SyncStmtOption option,
                                              final Function<SimpleStmt, Stream<R>> exeFunc) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @see #executeQueryList(DqlStatement, Supplier, SyncStmtOption, Function)
+     */
+    private <R> List<R> executePairInsertQueryList(InsertStatement statement, Supplier<List<R>> listConstructor,
+                                                   SyncStmtOption option, PairStmt stmt,
+                                                   Function<SimpleStmt, List<R>> exeFunc) {
+        final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
+        final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
+
+        long rows = 0;
+        List<R> resultList = null;
+        if (firstStmtIsQuery) {
+            resultList = exeFunc.apply(stmt.firstStmt());
+            if (resultList.size() == 0) {
+                // exists conflict clause
+                return resultList;
+            }
+        } else {
+            rows = this.stmtExecutor.insert(stmt.firstStmt(), option);
+            if (rows == 0) {
+                // exists conflict clause
+                resultList = listConstructor.get();
+                if (resultList == null) {
+                    throw _Exceptions.listConstructorError();
+                }
+                return resultList;
+            }
+        }
+
+        final ChildTableMeta<?> childTable;
+        childTable = (ChildTableMeta<?>) childInsert.table();
+
+        try {
+            if (firstStmtIsQuery) {
+                rows = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), option, resultList);
+            } else {
+                resultList = exeFunc.apply(stmt.secondStmt());
+            }
+        } catch (Throwable e) {
+            throw _Exceptions.childInsertError(this, childTable, e);
+        }
+
+        if (firstStmtIsQuery && _Collections.isSecondQueryList(resultList)) {
+            final List<R> tempList = listConstructor.get();
+            if (tempList == null) {
+                throw _Exceptions.listConstructorError();
+            }
+            tempList.addAll(resultList);
+            resultList = tempList;
+        }
+
+        if (rows == resultList.size()) {
+            return resultList;
+        }
+        if (firstStmtIsQuery) {
+            throw _Exceptions.parentChildRowsNotMatch(this, childTable, resultList.size(), rows);
+        } else {
+            throw _Exceptions.parentChildRowsNotMatch(this, childTable, rows, resultList.size());
+        }
+
+    }
+
 
     /**
      * @see #update(SimpleDmlStatement, SyncStmtOption)
      */
-    private long executeInsert(InsertStatement statement, SyncStmtOption option) {
-        return 0;
+    private long executeInsert(InsertStatement statement, SyncStmtOption option) throws ArmyException {
+        final Stmt stmt;
+        stmt = this.parseInsertStatement(statement);
+
+        final long affectedRows;
+
+        if (stmt instanceof SimpleStmt) {
+            affectedRows = this.stmtExecutor.insert((SimpleStmt) statement, option);
+        } else if (!(stmt instanceof PairStmt)) {
+            throw _Exceptions.unexpectedStmt(stmt);
+        } else {
+            final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_Insert) statement).table();
+            final PairStmt pairStmt = (PairStmt) stmt;
+
+            final long parentRows;
+            parentRows = this.stmtExecutor.insert(pairStmt.firstStmt(), option);
+
+            try {
+                affectedRows = this.stmtExecutor.insert(pairStmt.secondStmt(), option);
+            } catch (Throwable e) {
+                throw _Exceptions.childInsertError(this, domainTable, e);
+            }
+            if (affectedRows != parentRows) {
+                throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentRows, affectedRows);
+            }
+        }
+        return affectedRows;
     }
 
-    private long executeUpdate(SimpleDmlStatement statement, SyncStmtOption option) {
-        return 0;
+    private long executeUpdate(SimpleDmlStatement statement, SyncStmtOption option) throws ArmyException {
+        final Stmt stmt;
+        stmt = parseDmlStatement(statement, option);
+
+        final long affectedRows;
+
+        if (stmt instanceof SimpleStmt) {
+            affectedRows = this.stmtExecutor.update((SimpleStmt) stmt, option);
+        } else if (!(stmt instanceof PairStmt)) {
+            throw _Exceptions.unexpectedStmt(stmt);
+        } else {
+            final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_SingleUpdate._ChildUpdate) statement).table();
+            final PairStmt pairStmt = (PairStmt) stmt;
+
+            final long childRows;
+            childRows = this.stmtExecutor.update(pairStmt.firstStmt(), option);
+
+            try {
+                affectedRows = this.stmtExecutor.update(pairStmt.secondStmt(), option);
+            } catch (Throwable e) {
+                throw _Exceptions.childUpdateError(this, domainTable, e);
+            }
+
+            if (affectedRows != childRows) {
+                throw _Exceptions.parentChildRowsNotMatch(this, domainTable, affectedRows, childRows);
+            }
+
+        }
+        return affectedRows;
     }
 
 
