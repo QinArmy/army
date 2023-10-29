@@ -3,7 +3,7 @@ package io.army.session;
 public enum MultiStmtMode {
 
     DEFAULT,
-    ARMY,
-    EXECUTOR
+    STATIC,
+    DRIVER_SPI
 
 }

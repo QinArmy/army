@@ -16,6 +16,16 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
 
+/**
+ * <p>This class is all implementation of {@link Session}.
+ * <p>This class is direct base class of following :
+ * <ul>
+ *     <li>{@code  io.army.sync.ArmySyncSession}</li>
+ *     <li>{@code io.army.reactive.ArmyReactiveSession}</li>
+ * </ul>
+ *
+ * @since 1.0
+ */
 public abstract class _ArmySession implements Session {
 
     protected final _ArmySessionFactory factory;
@@ -175,12 +185,10 @@ public abstract class _ArmySession implements Session {
 
 
     protected final Stmt parseDqlStatement(final DqlStatement statement, final StmtOption option) {
-        final boolean useMultiStmt;
-        useMultiStmt = isUseStaticMultiStmt(option);
 
         final Stmt stmt;
         if (statement instanceof SelectStatement) {
-            stmt = this.factory.dialectParser.select((SelectStatement) statement, useMultiStmt, this.visible);
+            stmt = this.factory.dialectParser.select((SelectStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
         } else if (!(statement instanceof DmlStatement)) {
             stmt = this.factory.dialectParser.dialectDql(statement, this.visible);
         } else if (statement instanceof InsertStatement) {
@@ -188,9 +196,9 @@ public abstract class _ArmySession implements Session {
         } else if (statement instanceof _Statement._ChildStatement) {
             throw new ArmyException("current api don't support child dml statement.");
         } else if (statement instanceof UpdateStatement) {
-            stmt = this.factory.dialectParser.update((UpdateStatement) statement, useMultiStmt, this.visible);
+            stmt = this.factory.dialectParser.update((UpdateStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
         } else if (statement instanceof DeleteStatement) {
-            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, this.visible);
+            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
         } else {
             stmt = this.factory.dialectParser.dialectDml((DmlStatement) statement, this.visible);
         }
@@ -207,14 +215,12 @@ public abstract class _ArmySession implements Session {
     }
 
     protected final Stmt parseDmlStatement(final DmlStatement statement, final StmtOption option) {
-        final boolean useMultiStmt;
-        useMultiStmt = isUseStaticMultiStmt(option);
 
         final Stmt stmt;
         if (statement instanceof UpdateStatement) {
-            stmt = this.factory.dialectParser.update((UpdateStatement) statement, useMultiStmt, this.visible);
+            stmt = this.factory.dialectParser.update((UpdateStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
         } else if (statement instanceof DeleteStatement) {
-            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, useMultiStmt, this.visible);
+            stmt = this.factory.dialectParser.delete((DeleteStatement) statement, option.isParseBatchAsMultiStmt(), this.visible);
         } else {
             stmt = this.factory.dialectParser.dialectDml(statement, this.visible);
         }
@@ -260,20 +266,6 @@ public abstract class _ArmySession implements Session {
         return domainTable;
     }
 
-    static boolean isUseStaticMultiStmt(StmtOption option) {
-        final boolean use;
-        switch (option.multiStmtMode()) {
-            case EXECUTOR:
-                use = false;
-                break;
-            case DEFAULT:
-            case ARMY:
-            default:
-                use = true;
-        }
-        return use;
-    }
-
 
     protected static ChildDmlNoTractionException updateChildNoTransaction() {
         return new ChildDmlNoTractionException("update/delete child must in transaction.");
@@ -292,6 +284,21 @@ public abstract class _ArmySession implements Session {
 
     protected static Throwable wrapIfNeed(final Throwable cause) {
         return _Exceptions.wrapIfNeed(cause);
+    }
+
+
+    private static boolean isUseStaticMultiStmt(StmtOption option) {
+        final boolean use;
+        switch (option.multiStmtMode()) {
+            case DRIVER_SPI:
+                use = false;
+                break;
+            case DEFAULT:
+            case STATIC:
+            default:
+                use = true;
+        }
+        return use;
     }
 
 

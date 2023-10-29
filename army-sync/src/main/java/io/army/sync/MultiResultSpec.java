@@ -6,6 +6,12 @@ import io.army.lang.Nullable;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * <ul>
+ *     <li>{@link MultiResult}</li>
+ *     <li>{@link MultiStream}</li>
+ * </ul>
+ */
 public interface MultiResultSpec extends AutoCloseable {
 
     State next() throws ArmyException;

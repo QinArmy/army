@@ -1159,10 +1159,10 @@ public abstract class _Exceptions {
         return new ChildUpdateException(m);
     }
 
-    public static DataAccessException multiStmtBatchUpdateResultCountError(int statementCount) {
+    public static DataAccessException multiStmtBatchUpdateResultCountError(int statementCount, int actual) {
         String m;
-        m = String.format("error, multi-statement batch update result count greater than statement count[%s]",
-                statementCount);
+        m = String.format("error, multi-statement batch update result count[%s] and statement count[%s]",
+                actual, statementCount);
         throw new DataAccessException(m);
     }
 

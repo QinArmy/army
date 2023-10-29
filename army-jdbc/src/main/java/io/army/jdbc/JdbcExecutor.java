@@ -24,6 +24,7 @@ import io.army.sync.executor.SyncStmtExecutor;
 import io.army.type.ImmutableSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 import org.slf4j.Logger;
 
@@ -165,23 +166,22 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
     @Override
-    public final List<Long> batchUpdate(final BatchStmt stmt, final int timeout,
-                                        final IntFunction<List<Long>> listConstructor, boolean useMultiStmt,
-                                        final @Nullable TableMeta<?> domainTable, final @Nullable List<Long> rowsList) {
+    public final List<Long> batchUpdate(final BatchStmt stmt, final IntFunction<List<Long>> listConstructor,
+                                        SyncStmtOption option, final @Nullable TableMeta<?> domainTable,
+                                        final @Nullable List<Long> rowsList) {
         final List<Long> resultList;
-        if (useMultiStmt) {
-            resultList = this.batchUpdateAsList(stmt, timeout, listConstructor, domainTable, rowsList);
+        if (option.isParseBatchAsMultiStmt()) {
+            resultList = executeMultiStmtBatchUpdate(stmt, listConstructor, option, domainTable);
         } else {
-            resultList = this.multiStmtBatchUpdate(stmt, timeout, listConstructor, domainTable);
+            resultList = executeBatchUpdate(stmt, listConstructor, option, domainTable, rowsList);
         }
         return resultList;
     }
 
 
     @Override
-    public final <R> List<R> query(final SimpleStmt stmt, final int timeout, final Class<R> resultClass,
-                                   final Supplier<List<R>> listConstructor) {
-        return this.doQuery(stmt, timeout, listConstructor, this.beanReaderFunc(stmt, resultClass));
+    public final <R> List<R> query(SimpleStmt stmt, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option) {
+        return executeQuery(stmt, listConstructor, option, beanReaderFunc(stmt, resultClass));
 
     }
 
@@ -189,13 +189,13 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
     @Override
     public final <R> List<R> queryObject(SimpleStmt stmt, int timeout, Supplier<R> constructor,
                                          Supplier<List<R>> listConstructor) {
-        return this.doQuery(stmt, timeout, listConstructor, this.objectReaderFunc(stmt, constructor));
+        return this.executeQuery(stmt, timeout, listConstructor, this.objectReaderFunc(stmt, constructor));
     }
 
     @Override
     public final <R> List<R> queryRecord(SimpleStmt stmt, int timeout, Function<CurrentRecord, R> function,
                                          Supplier<List<R>> listConstructor) throws DataAccessException {
-        return this.doQuery(stmt, timeout, listConstructor, this.recordReaderFunc(stmt.selectionList(), function));
+        return this.executeQuery(stmt, timeout, listConstructor, this.recordReaderFunc(stmt.selectionList(), function));
     }
 
     @SuppressWarnings("unchecked")
@@ -570,6 +570,17 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
     }
 
 
+    @Override
+    public final String toString() {
+        return _StringUtils.builder(46)
+                .append(getClass().getName())
+                .append("[sessionName:")
+                .append(this.name)
+                .append(",hash:")
+                .append(System.identityHashCode(this))
+                .append(']')
+                .toString();
+    }
 
 
 
@@ -624,26 +635,27 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
     /**
-     * @see #batchUpdate(BatchStmt, int, IntFunction, boolean, TableMeta, List)
+     * @see #batchUpdate(BatchStmt, IntFunction, SyncStmtOption, TableMeta, List)
      */
-    private List<Long> batchUpdateAsList(final BatchStmt stmt, final int timeout,
-                                         final IntFunction<List<Long>> listConstructor,
-                                         final @Nullable TableMeta<?> domainTable, final @Nullable List<Long> rowsList) {
-        if (timeout < 0 || !(rowsList == null || domainTable instanceof ChildTableMeta)) {
+    private List<Long> executeBatchUpdate(final BatchStmt stmt, final IntFunction<List<Long>> listConstructor,
+                                          final SyncStmtOption option, final @Nullable TableMeta<?> domainTable,
+                                          final @Nullable List<Long> rowsList) {
+        if (!(rowsList == null || domainTable instanceof ChildTableMeta)) {
             throw new IllegalArgumentException();
         }
-        try (PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
-            final List<List<SQLParam>> paramGroupList = stmt.groupList();
+        try (final PreparedStatement statement = this.conn.prepareStatement(stmt.sqlText())) {
 
-            for (List<SQLParam> group : paramGroupList) {
+            for (List<SQLParam> group : stmt.groupList()) {
                 bindParameter(statement, group);
                 statement.addBatch();
             }
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
+
+            if (option.isSupportTimeout()) {
+                statement.setQueryTimeout(option.restSeconds());
             }
 
             final List<Long> resultList;
+
             if (this.factory.useLargeUpdate) {
                 final long[] affectedRows;
                 affectedRows = statement.executeLargeBatch();
@@ -659,36 +671,40 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             }
 
             return resultList;
-        } catch (DataAccessException e) {
-            throw e;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw wrapError(e);
         }
     }
 
     /**
-     * @see #batchUpdate(BatchStmt, int, IntFunction, boolean, TableMeta, List)
+     * @see #batchUpdate(BatchStmt, IntFunction, SyncStmtOption, TableMeta, List)
      */
-    private List<Long> multiStmtBatchUpdate(final BatchStmt stmt, final int timeout,
-                                            final IntFunction<List<Long>> listConstructor,
-                                            final @Nullable TableMeta<?> domainTable) {
-
-        final int stmtSize;
-        stmtSize = stmt.groupList().size();
-        List<Long> list = listConstructor.apply(stmtSize);
-        if (list == null) {
-            throw _Exceptions.listConstructorError();
+    private List<Long> executeMultiStmtBatchUpdate(final BatchStmt stmt, final IntFunction<List<Long>> listConstructor,
+                                                   SyncStmtOption option, final @Nullable TableMeta<?> domainTable) {
+        final List<List<SQLParam>> groupList;
+        groupList = stmt.groupList();
+        if (groupList.get(0).size() > 0) {
+            throw new IllegalArgumentException("stmt error");
         }
+
         try (Statement statement = this.conn.createStatement()) {
 
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
+            if (option.isSupportTimeout()) {
+                statement.setQueryTimeout(option.restSeconds());
             }
 
             if (statement.execute(stmt.sqlText())) {
                 // sql error
                 throw new DataAccessException("error,multi-statement batch update the first result is ResultSet");
             }
+
+            final int stmtSize;
+            stmtSize = groupList.size();
+            final List<Long> list = listConstructor.apply(stmtSize);
+            if (list == null) {
+                throw _Exceptions.listConstructorError();
+            }
+
             if (domainTable instanceof ChildTableMeta) {
                 handleChildMultiStmtBatchUpdate(statement, stmt, (ChildTableMeta<?>) domainTable, list);
             } else {
@@ -699,13 +715,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             if (stmtSize != list.size()) {
                 throw _Exceptions.batchCountNotMatch(stmtSize, list.size());
             }
-
-            if (list instanceof ImmutableSpec) {
-                list = _Collections.unmodifiableListForDeveloper(list);
-            }
             return list;
-        } catch (ArmyException e) {
-            throw e;
         } catch (Exception e) {
             throw wrapError(e);
         }
@@ -1025,47 +1035,29 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
     /**
-     * @see #query(SimpleStmt, int, Class, Supplier)
+     * @see #query(SimpleStmt, Class, Supplier, SyncStmtOption)
      * @see #queryObject(SimpleStmt, int, Supplier, Supplier)
      */
-    private <R> List<R> doQuery(final SimpleStmt stmt, final int timeout, final Supplier<List<R>> listConstructor,
-                                final Function<ResultSetMetaData, RowReader<R>> function) {
-        if (timeout < 0) {
-            throw new IllegalArgumentException();
-        }
+    private <R> List<R> executeQuery(final SimpleStmt stmt, final Supplier<List<R>> listConstructor, SyncStmtOption option,
+                                     final Function<ResultSetMetaData, RowReader<R>> function) {
 
-        final String sql = stmt.sqlText();
-        final List<SQLParam> paramGroup = stmt.paramGroup();
+        try (final Statement statement = bindStatement(stmt, option)) {
 
-        ResultSet resultSet = null;
-        RowReader<R> rowReader = null;
-        try (Statement statement = this.createQueryStatement(sql, paramGroup.size())) {
+            try (final ResultSet resultSet = jdbcExecuteQuery(statement, stmt.sqlText())) {
 
-            if (timeout > 0) {
-                statement.setQueryTimeout(timeout);
+                final RowReader<R> rowReader;
+
+                rowReader = function.apply(resultSet.getMetaData());
+
+                final List<R> resultList;
+                if (stmt instanceof GeneratedKeyStmt) {
+                    resultList = readReturningInsert(resultSet, rowReader, (GeneratedKeyStmt) stmt, listConstructor);
+                } else {
+                    resultList = readList(resultSet, rowReader, stmt, stmt.hasOptimistic(), listConstructor);
+                }
+                return resultList;
             }
-
-            if (statement instanceof PreparedStatement) {
-                bindParameter((PreparedStatement) statement, paramGroup);
-                resultSet = ((PreparedStatement) statement).executeQuery();
-            } else {
-                resultSet = statement.executeQuery(sql);
-            }
-
-            rowReader = function.apply(resultSet.getMetaData());
-
-            final List<R> resultList;
-            if (stmt instanceof GeneratedKeyStmt) {
-                resultList = readReturningInsert(resultSet, rowReader, (GeneratedKeyStmt) stmt, listConstructor);
-            } else {
-                resultList = readList(resultSet, rowReader, stmt, stmt.hasOptimistic(), listConstructor);
-            }
-            return resultList;
-        } catch (Throwable e) {
-            if (resultSet != null && rowReader == null) {
-                // create rowReader error
-                closeResource(resultSet);
-            }
+        } catch (Exception e) {
             throw wrapError(e);
         }
 
@@ -1331,7 +1323,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
     /**
-     * @see #batchUpdate(BatchStmt, IntFunction, TableMeta, List)
+     * @see #executeBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, TableMeta, List)
      */
     private List<Long> handleBatchResult(final boolean optimistic, final int bathSize,
                                          final IntToLongFunction accessor,
@@ -1340,7 +1332,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
                                          final @Nullable List<Long> rowsList) {
         assert rowsList == null || domainTable instanceof ChildTableMeta;
 
-        List<Long> list;
+        final List<Long> list;
         if (rowsList == null) {
             list = listConstructor.apply(bathSize);
             if (list == null) {
@@ -1351,10 +1343,11 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
         } else {
             list = rowsList;
         }
+
         long rows;
         for (int i = 0; i < bathSize; i++) {
             rows = accessor.applyAsLong(i);
-            if (optimistic && rows < 1) {
+            if (optimistic && rows == 0L) {
                 throw _Exceptions.batchOptimisticLock(domainTable, i + 1, rows);
             } else if (rowsList == null) {
                 list.add(rows);
@@ -1364,21 +1357,18 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             }
         }
 
-        if (rowsList == null && list instanceof ImmutableSpec) {
-            list = _Collections.unmodifiableListForDeveloper(list);
-        }
         return list;
     }
 
 
     /**
-     * @see #multiStmtBatchUpdate(BatchStmt, int, IntFunction, TableMeta)
+     * @see #executeMultiStmtBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, TableMeta)
      */
     private void handleChildMultiStmtBatchUpdate(final Statement statement, final BatchStmt stmt,
-                                                 final ChildTableMeta<?> domainTable,
-                                                 final List<Long> list) throws SQLException {
+                                                 final ChildTableMeta<?> domainTable, final List<Long> list)
+            throws SQLException {
 
-        final JdbcExecutorFactory factory = this.factory;
+        final boolean useLargeUpdate = this.factory.useLargeUpdate;
         final boolean optimistic = stmt.hasOptimistic();
 
         final int itemSize, itemPairSize;
@@ -1396,18 +1386,18 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
                 statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
                 throw _Exceptions.batchUpdateReturnResultSet(domainTable, (i >> 1) + 1);
             }
-            if (factory.useLargeUpdate) {
+            if (useLargeUpdate) {
                 rows = statement.getLargeUpdateCount();
             } else {
                 rows = statement.getUpdateCount();
             }
 
             if (rows == -1) {
-                // no more result,no bug,never here
-                break;
+                // no more result,sql error,no bug,never here
+                throw _Exceptions.multiStmtBatchUpdateResultCountError(itemPairSize, i);
             }
 
-            if (optimistic && rows < 1) {
+            if (optimistic && rows == 1) {
                 throw _Exceptions.batchOptimisticLock(domainTable, (i >> 1) + 1, rows);
             } else if ((i & 1) == 0) { // this code block representing child's update rows,because army update child and update parent
                 itemRows = rows;
@@ -1421,7 +1411,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
         if (statement.getMoreResults() || statement.getUpdateCount() != -1) {
             // sql error
-            throw _Exceptions.multiStmtBatchUpdateResultCountError(itemPairSize);
+            throw _Exceptions.multiStmtBatchUpdateResultCountError(itemPairSize, itemPairSize + 1);
         }
 
         if (itemSize != list.size()) {
@@ -1433,10 +1423,10 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
     /**
      * @param domainTable <ul>
      *                    <li>null : multi-table batch update </li>
-     *                    <li>{@link SingleTableMeta} : single table batch udpate</li>
+     *                    <li>{@link SingleTableMeta} : single table batch update</li>
      *
      *                    </ul>
-     * @see #multiStmtBatchUpdate(BatchStmt, int, IntFunction, TableMeta)
+     * @see #executeMultiStmtBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, TableMeta)
      */
     private void handleSimpleMultiStmtBatchUpdate(final Statement statement, final BatchStmt stmt,
                                                   final @Nullable TableMeta<?> domainTable,
@@ -1444,7 +1434,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
         assert domainTable == null || domainTable instanceof SingleTableMeta;
 
-        final JdbcExecutorFactory factory = this.factory;
+        final boolean useLargeUpdate = this.factory.useLargeUpdate;
         final boolean optimistic = stmt.hasOptimistic();
         final int itemSize = stmt.groupList().size();
 
@@ -1454,26 +1444,26 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
                 statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
                 throw _Exceptions.batchUpdateReturnResultSet(domainTable, i + 1);
             }
-            if (factory.useLargeUpdate) {
+            if (useLargeUpdate) {
                 rows = statement.getLargeUpdateCount();
             } else {
                 rows = statement.getUpdateCount();
             }
 
             if (rows == -1) {
-                // no more result
-                break;
+                // no more result,sql error
+                throw _Exceptions.multiStmtBatchUpdateResultCountError(itemSize, i);
             }
-            if (optimistic && rows < 1) {
+            if (optimistic && rows == 0) {
                 throw _Exceptions.batchOptimisticLock(domainTable, i + 1, rows);
             }
             list.add(rows);
 
-        }
+        } // loop for
 
         if (statement.getMoreResults() || statement.getUpdateCount() != -1) {
             // sql error
-            throw _Exceptions.multiStmtBatchUpdateResultCountError(itemSize);
+            throw _Exceptions.multiStmtBatchUpdateResultCountError(itemSize, itemSize + 1);
         }
 
         if (itemSize != list.size()) {
@@ -1637,9 +1627,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
             }// outer for
 
-            if (resultList instanceof ImmutableSpec) {
-                resultList = _Collections.unmodifiableListForDeveloper(resultList);
-            }
             return resultList;
         } catch (Throwable e) {
             throw wrapError(e);
@@ -1675,42 +1662,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
         return new IllegalArgumentException(m);
     }
 
-
-    /**
-     * @see #doQuery(SimpleStmt, int, Supplier, Function)
-     * @see JdbcMultiResult#query(Class, Supplier)
-     * @see JdbcMultiResult#queryObject(Supplier, Supplier)
-     */
-    private static <R> List<R> readList(final ResultSet set, final RowReader<R> rowReader,
-                                        final @Nullable GenericSimpleStmt stmt, final boolean optimistic,
-                                        final Supplier<List<R>> listConstructor) {
-
-
-        try (ResultSet resultSet = set) {
-
-            List<R> list = listConstructor.get();
-            if (list == null) {
-                throw _Exceptions.listConstructorError();
-            }
-
-            while (resultSet.next()) {
-                list.add(rowReader.readOneRow(resultSet));
-            }
-            if (optimistic && list.size() == 0) {
-                throw _Exceptions.optimisticLock(0);
-            }
-            if (list instanceof ImmutableSpec
-                    && !(stmt instanceof TwoStmtModeQuerySpec && rowReader instanceof ObjectReader)) {
-                list = _Collections.unmodifiableListForDeveloper(list);
-            }
-            return list;
-        } catch (SQLException e) { // other error is handled by invoker
-            throw wrapError(e);
-        }
-
-    }
-
-
     static ArmyException wrapError(final Throwable error) {
         final ArmyException e;
         if (error instanceof SQLException) {
@@ -1721,6 +1672,54 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             e = _Exceptions.unknownError(error);
         }
         return e;
+    }
+
+    /*-------------------below private static methods -------------------*/
+
+    /**
+     * @see #executeQuery(SimpleStmt, Supplier, SyncStmtOption, Function)
+     * @see JdbcMultiResult#query(Class, Supplier)
+     * @see JdbcMultiResult#queryObject(Supplier, Supplier)
+     */
+    private static <R> List<R> readList(final ResultSet set, final RowReader<R> rowReader,
+                                        final @Nullable GenericSimpleStmt stmt, final boolean optimistic,
+                                        final Supplier<List<R>> listConstructor) {
+
+
+        try (ResultSet resultSet = set) {
+
+            final List<R> list = listConstructor.get();
+            if (list == null) {
+                throw _Exceptions.listConstructorError();
+            }
+
+            while (resultSet.next()) {
+                list.add(rowReader.readOneRow(resultSet));
+            }
+            if (optimistic && list.size() == 0) {
+                throw _Exceptions.optimisticLock(0);
+            }
+            return list;
+        } catch (SQLException e) { // other error is handled by invoker
+            throw wrapError(e);
+        }
+
+    }
+
+
+    /**
+     * <p>Invoke {@link PreparedStatement#executeQuery()} or {@link Statement#executeQuery(String)} for {@link ResultSet} auto close.
+     *
+     * @see #executeQuery(SimpleStmt, Supplier, SyncStmtOption, Function)
+     */
+    private static ResultSet jdbcExecuteQuery(final Statement statement, final String sql) throws SQLException {
+        final ResultSet resultSet;
+        if (statement instanceof PreparedStatement) {
+            resultSet = ((PreparedStatement) statement).executeQuery();
+        } else {
+            resultSet = statement.executeQuery(sql);
+        }
+        return resultSet;
     }
 
     /**

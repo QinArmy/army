@@ -7,6 +7,15 @@ public interface StmtOption {
 
     boolean isSupportTimeout();
 
+    /**
+     * <p>{@link io.army.dialect.DialectParser} Whether parse batch statement as multi-statement or not .
+     * <p>Default : false
+     *
+     * @return true : {@link io.army.dialect.DialectParser} Whether parse batch statement as multi-statement.
+     */
+    boolean isParseBatchAsMultiStmt();
+
+    boolean isPreferClientStream();
 
     int timeoutMillSeconds();
 
