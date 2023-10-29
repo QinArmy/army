@@ -27,6 +27,19 @@ public interface SyncSession extends Session, AutoCloseable {
     TransactionInfo transactionInfo();
 
     /**
+     * <p>Set session level transaction characteristics:
+     * <ul>
+     *     <li>These characteristics applies to all subsequent transactions performed within the current session,if you use appropriate default characteristic.</li>
+     *     <li>This method is permitted within transactions ,but does not affect the current ongoing transaction.</li>
+     *     <li>If you don't use appropriate default value,then appropriate characteristic does not affect new transaction,for example : {@link TransactionOption#isolation()} not null.</li>
+     * </ul>
+     *
+     * @see SyncLocalSession#startTransaction(TransactionOption, HandleMode)
+     * @see SyncRmSession#start(Xid, int, TransactionOption)
+     */
+    void setTransactionCharacteristics(TransactionOption option);
+
+    /**
      * @param <R> representing select result Java Type.
      */
     @Nullable

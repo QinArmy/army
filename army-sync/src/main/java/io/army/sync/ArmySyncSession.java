@@ -90,6 +90,14 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
 
     @Override
+    public final void setTransactionCharacteristics(TransactionOption option) {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
+        this.stmtExecutor.setTransactionCharacteristics(option);
+    }
+
+    @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
         return onlyRow(this.query(statement, resultClass, _Collections::arrayList, defaultOption()));
     }

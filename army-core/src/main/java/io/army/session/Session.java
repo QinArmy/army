@@ -81,7 +81,7 @@ public interface Session extends CloseableSpec, OptionSpec {
     boolean isRollbackOnly();
 
     /**
-     * <p>Test session whether hold one  {@link TransactionInfo} instance or not.
+     * <p>Test session whether hold one  {@link TransactionInfo} instance or not, the instance is current transaction info of this session.
      * <p><strong>NOTE</strong> :
      * <ol>
      *     <li>This method don't check whether session closed or not</li>

@@ -16,6 +16,28 @@ import java.util.stream.Stream;
  * here ,you can download the pdf about The XA Specification.
  *
  * <p>The instance of this interface is created by {@link SyncRmSessionFactory.SessionBuilder#build()}.
+ * <p>Application developer can control XA transaction by following methods :
+ * <ol>
+ *     <li>{@link #start(Xid, int, TransactionOption)}</li>
+ *     <li>{@link #end(Xid, int, Function)}</li>
+ *     <li>{@link #prepare(Xid, Function)}</li>
+ *     <li>{@link #commit(Xid, int, Function)}</li>
+ *     <li>{@link #rollback(Xid, Function)}</li>
+ *     <li>{@link #forget(Xid, Function)}</li>
+ *     <li>{@link #recover(int, Function)}</li>
+ *     <li>{@link #recoverStream(int, Function)}</li>
+ *     <li>{@link #isSupportForget()}</li>
+ * </ol>
+ * and following methods :
+ * <ul>
+ *     <li>{@link #inTransaction()}</li>
+ *     <li>{@link #hasTransactionInfo()}</li>
+ *     <li>{@link #isRollbackOnly()}</li>
+ *     <li>{@link #startSupportFlags()}</li>
+ *     <li>{@link #endSupportFlags()}</li>
+ *     <li>{@link #recoverSupportFlags()}</li>
+ *     <li>{@link #isSameRm(XaTransactionSupportSpec)}</li>
+ * </ul>
  *
  * @see SyncRmSessionFactory
  * @since 1.0

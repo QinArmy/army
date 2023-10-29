@@ -2,8 +2,20 @@ package io.army.session;
 
 import io.army.lang.Nullable;
 
+/**
+ * @see TransactionInfo
+ * @since 1.0
+ */
 public interface TransactionOption extends OptionSpec {
 
+    /**
+     * <p>This transaction isolation.
+     *
+     * @return <ul>
+     * <li>null : use default isolation</li>
+     * <li>non-null : use specified isolation for this transaction,but does not affect subsequent transactions</li>
+     * </ul>
+     */
     @Nullable
     Isolation isolation();
 
