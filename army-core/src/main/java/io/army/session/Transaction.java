@@ -1,7 +1,7 @@
 package io.army.session;
 
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
 
 public interface Transaction {
 

@@ -27,6 +27,7 @@ import java.lang.annotation.*;
 @Documented
 @Nonnull
 @TypeQualifierDefault(ElementType.FIELD)
+@Deprecated
 public @interface NonNullFields {
 
 }

@@ -3,7 +3,9 @@ package io.army.session;
 import io.army.dialect._Constant;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 

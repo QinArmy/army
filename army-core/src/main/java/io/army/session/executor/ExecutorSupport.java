@@ -6,7 +6,9 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.Selection;
 import io.army.criteria.TypeInfer;
 import io.army.function.IntBiFunction;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.TypeMeta;

@@ -1,7 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.annotation.Table;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.*;
 import io.army.modelgen.ArmyMetaModelDomainProcessor;
 import io.army.modelgen._MetaBridge;

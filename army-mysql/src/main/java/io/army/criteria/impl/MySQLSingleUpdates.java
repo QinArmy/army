@@ -10,7 +10,9 @@ import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLUpdate;
 import io.army.dialect.Dialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.SingleTableMeta;

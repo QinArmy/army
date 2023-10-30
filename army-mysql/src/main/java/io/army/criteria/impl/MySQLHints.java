@@ -9,7 +9,9 @@ import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 

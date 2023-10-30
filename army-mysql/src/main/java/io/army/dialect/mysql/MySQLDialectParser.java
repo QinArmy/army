@@ -13,7 +13,9 @@ import io.army.criteria.mysql.MySQLLoadData;
 import io.army.criteria.mysql.MySQLReplace;
 import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.*;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.StringType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;

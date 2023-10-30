@@ -5,7 +5,9 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._DmlStatement;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.criteria.impl.inner._SelectItem;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.stmt.DmlStmtParams;
 import io.army.stmt.Stmt;
 import io.army.stmt.Stmts;

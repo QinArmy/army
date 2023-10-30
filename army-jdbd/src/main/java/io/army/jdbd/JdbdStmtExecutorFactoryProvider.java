@@ -4,7 +4,9 @@ import io.army.ArmyException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.executor.ExecutorEnv;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ServerMeta;
 import io.army.reactive.executor.ReactiveStmtExecutorFactory;
 import io.army.reactive.executor.ReactiveStmtExecutorFactoryProvider;

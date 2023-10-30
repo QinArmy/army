@@ -4,7 +4,9 @@ package io.army.boot.sync;
 import io.army.env.ArmyEnvironment;
 import io.army.env.SpringArmyEnvironment;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.sync.SyncLocalFactoryBuilder;
 import io.army.sync.SyncLocalSessionFactory;
 import org.springframework.beans.BeansException;

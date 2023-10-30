@@ -8,7 +8,9 @@ import io.army.criteria.mysql.MySQLCtes;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLStatement;
 import io.army.criteria.mysql.MySQLWindow;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;

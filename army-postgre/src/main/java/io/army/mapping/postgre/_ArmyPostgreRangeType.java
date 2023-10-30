@@ -5,7 +5,9 @@ import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
 import io.army.dialect._Constant;
 import io.army.function.TextFunction;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.mapping.postgre.array.PostgreMultiRangeArrayType;

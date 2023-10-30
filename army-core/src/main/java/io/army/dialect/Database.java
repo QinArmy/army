@@ -5,7 +5,9 @@ import io.army.dialect.h2.H2Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.oracle.OracleDialect;
 import io.army.dialect.postgre.PostgreDialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;

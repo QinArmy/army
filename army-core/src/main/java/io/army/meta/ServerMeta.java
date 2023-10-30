@@ -2,7 +2,8 @@ package io.army.meta;
 
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 public interface ServerMeta {
 

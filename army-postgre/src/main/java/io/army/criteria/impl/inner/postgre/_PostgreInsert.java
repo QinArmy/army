@@ -4,7 +4,8 @@ import io.army.criteria.SQLWords;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._Predicate;
 import io.army.criteria.impl.inner._Statement;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.List;
 

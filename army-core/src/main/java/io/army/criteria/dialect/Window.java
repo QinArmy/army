@@ -5,7 +5,9 @@ import io.army.criteria.Item;
 import io.army.criteria.SimpleExpression;
 import io.army.criteria.Statement;
 import io.army.criteria.impl.SQLs;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.IntegerType;
 
 import java.util.function.BiFunction;

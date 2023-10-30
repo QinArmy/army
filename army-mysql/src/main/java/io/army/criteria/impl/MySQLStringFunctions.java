@@ -8,7 +8,9 @@ import io.army.criteria.SimpleExpression;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLocale;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.StringType;

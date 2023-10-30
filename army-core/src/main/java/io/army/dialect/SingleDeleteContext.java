@@ -2,7 +2,8 @@ package io.army.dialect;
 
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleDelete;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 final class SingleDeleteContext extends SingleDmlContext implements _SingleDeleteContext {
 

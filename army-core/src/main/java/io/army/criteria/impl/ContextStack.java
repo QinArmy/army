@@ -4,7 +4,9 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

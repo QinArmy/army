@@ -1,7 +1,7 @@
 package io.army.sync;
 
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;

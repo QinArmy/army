@@ -33,6 +33,8 @@ import java.util.stream.Stream;
  *     <li>{@link #inTransaction()}</li>
  *     <li>{@link #hasTransactionInfo()}</li>
  *     <li>{@link #isRollbackOnly()}</li>
+ *     <li>{@link #transactionInfo()}</li>
+ *     <li>{@link #setTransactionCharacteristics(TransactionOption)}</li>
  *     <li>{@link #startSupportFlags()}</li>
  *     <li>{@link #endSupportFlags()}</li>
  *     <li>{@link #recoverSupportFlags()}</li>

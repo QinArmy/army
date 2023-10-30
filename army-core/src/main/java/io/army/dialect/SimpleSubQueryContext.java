@@ -2,7 +2,9 @@ package io.army.dialect;
 
 import io.army.criteria.SubQuery;
 import io.army.criteria.impl.inner._Query;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Exceptions;

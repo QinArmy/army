@@ -8,7 +8,9 @@ import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre._PostgreUpdate;
 import io.army.criteria.postgre.*;
 import io.army.dialect.Dialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.FieldMeta;

@@ -3,7 +3,8 @@ package io.army.session.executor;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.executor.ExecutorEnv;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.function.Function;
 

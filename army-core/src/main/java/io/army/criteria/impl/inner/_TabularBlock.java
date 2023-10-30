@@ -3,7 +3,8 @@ package io.army.criteria.impl.inner;
 import io.army.criteria.SQLWords;
 import io.army.criteria.TabularItem;
 import io.army.criteria.impl._JoinType;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.List;
 

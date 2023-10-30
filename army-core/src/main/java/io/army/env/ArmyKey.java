@@ -3,7 +3,9 @@ package io.army.env;
 import io.army.annotation.Column;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.FieldMeta;
 import io.army.session.AllowMode;
 import io.army.session.DdlMode;

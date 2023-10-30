@@ -6,7 +6,8 @@ import io.army.criteria.impl.inner._DoneFuncBlock;
 import io.army.criteria.impl.inner._FunctionField;
 import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.postgre.PostgreStatement;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.List;
 import java.util.Map;

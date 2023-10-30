@@ -2,7 +2,9 @@ package io.army.criteria.impl;
 
 import io.army.annotation.*;
 import io.army.generator.FieldGenerator;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.CodeEnumType;
 import io.army.mapping.MappingType;
 import io.army.mapping._MappingFactory;

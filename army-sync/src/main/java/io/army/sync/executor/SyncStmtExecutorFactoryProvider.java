@@ -3,7 +3,9 @@ package io.army.sync.executor;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.executor.ExecutorEnv;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;

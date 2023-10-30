@@ -6,7 +6,9 @@ import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.*;

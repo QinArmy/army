@@ -2,7 +2,9 @@ package io.army.criteria.impl.inner;
 
 import io.army.criteria.*;
 import io.army.criteria.impl._Pair;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.struct.CodeEnum;

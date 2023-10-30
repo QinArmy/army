@@ -1,7 +1,8 @@
 package io.army.proxy;
 
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
+
 import io.army.meta.TableMeta;
 import io.army.meta.UniqueFieldMeta;
 

@@ -4,7 +4,9 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Hint;
 import io.army.criteria.mysql.HintStrategy;
 import io.army.dialect._Constant;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.StringType;
 import io.army.util._StringUtils;
 

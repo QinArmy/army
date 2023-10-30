@@ -5,7 +5,9 @@ import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.executor.ExecutorEnv;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;

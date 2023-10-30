@@ -1,7 +1,8 @@
 package io.army.criteria.impl.inner.mysql;
 
 import io.army.criteria.SQLWords;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.List;
 

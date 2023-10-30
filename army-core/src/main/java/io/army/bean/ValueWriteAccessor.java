@@ -1,6 +1,6 @@
 package io.army.bean;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 

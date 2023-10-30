@@ -8,7 +8,9 @@ import io.army.criteria.impl._PostgreConsultant;
 import io.army.criteria.impl.inner.*;
 import io.army.criteria.impl.inner.postgre.*;
 import io.army.dialect.*;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;

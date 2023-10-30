@@ -10,7 +10,9 @@ import io.army.criteria.NullMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.stmt.InsertStmtParams;

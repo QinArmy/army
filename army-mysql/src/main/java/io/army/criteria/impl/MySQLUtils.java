@@ -3,7 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,7 +1,9 @@
 package io.army;
 
 import io.army.lang.NonNull;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.struct.CodeEnum;
 
 import java.util.Map;

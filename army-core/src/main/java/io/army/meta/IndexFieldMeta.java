@@ -2,7 +2,7 @@ package io.army.meta;
 
 
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
 
 public interface IndexFieldMeta<T> extends FieldMeta<T> {
 

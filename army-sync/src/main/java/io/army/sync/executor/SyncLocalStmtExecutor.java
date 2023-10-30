@@ -1,6 +1,7 @@
 package io.army.sync.executor;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
+
 import io.army.session.HandleMode;
 import io.army.session.Option;
 import io.army.session.TransactionInfo;

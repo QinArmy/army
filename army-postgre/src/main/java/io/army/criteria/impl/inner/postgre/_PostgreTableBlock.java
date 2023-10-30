@@ -2,7 +2,8 @@ package io.army.criteria.impl.inner.postgre;
 
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._ModifierTabularBlock;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 public interface _PostgreTableBlock extends _ModifierTabularBlock {
 

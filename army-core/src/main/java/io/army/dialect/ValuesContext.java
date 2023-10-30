@@ -6,7 +6,9 @@ import io.army.criteria.ValuesQuery;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._ValuesQuery;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.Stmts;

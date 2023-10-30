@@ -11,7 +11,9 @@ import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;

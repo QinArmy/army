@@ -2,7 +2,9 @@ package io.army.session;
 
 import io.army.criteria.Visible;
 import io.army.env.ArmyEnvironment;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;

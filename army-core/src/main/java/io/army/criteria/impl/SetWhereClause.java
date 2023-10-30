@@ -6,7 +6,9 @@ import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
 import io.army.dialect.Dialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Collections;

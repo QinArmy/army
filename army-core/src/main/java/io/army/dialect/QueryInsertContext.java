@@ -4,7 +4,9 @@ import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._RowSet;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 

@@ -4,7 +4,9 @@ import io.army.criteria.DialectStatement;
 import io.army.criteria.Expression;
 import io.army.criteria.Item;
 import io.army.criteria.impl.Postgres;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 
 import java.util.function.BiFunction;

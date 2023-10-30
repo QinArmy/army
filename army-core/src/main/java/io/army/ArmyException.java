@@ -1,6 +1,6 @@
 package io.army;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
 
 public class ArmyException extends RuntimeException {
 

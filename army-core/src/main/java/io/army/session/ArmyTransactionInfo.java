@@ -1,10 +1,11 @@
 package io.army.session;
 
 import io.army.lang.NonNull;
-import io.army.lang.Nullable;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
@@ -60,7 +61,7 @@ final class ArmyTransactionInfo implements TransactionInfo {
         return this.inTransaction;
     }
 
-    @NonNull
+    @Nonnull
     @Override
     public Isolation isolation() {
         return this.isolation;

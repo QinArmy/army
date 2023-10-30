@@ -10,7 +10,9 @@ import io.army.criteria.postgre.*;
 import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect.postgre.PostgreDialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;

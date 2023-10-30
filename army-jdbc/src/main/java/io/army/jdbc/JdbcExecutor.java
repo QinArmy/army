@@ -7,7 +7,9 @@ import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.criteria.impl.SqlTypeUtils;
 import io.army.function.TeFunction;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;

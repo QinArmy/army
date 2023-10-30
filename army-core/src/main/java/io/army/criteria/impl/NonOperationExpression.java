@@ -3,7 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.TypeMeta;
 
 import java.util.function.BiFunction;

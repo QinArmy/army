@@ -4,7 +4,9 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._SelectItem;
 import io.army.criteria.impl.inner._Statement;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;

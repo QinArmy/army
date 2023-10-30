@@ -29,5 +29,6 @@ import java.lang.annotation.*;
 @Documented
 @Nonnull
 @TypeQualifierNickname
+@Deprecated
 public @interface NonNull {
 }

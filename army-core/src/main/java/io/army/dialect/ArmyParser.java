@@ -15,7 +15,9 @@ import io.army.criteria.standard.StandardUpdate;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.NameMode;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.BooleanType;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;

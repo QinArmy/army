@@ -2,7 +2,9 @@ package io.army.criteria;
 
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;

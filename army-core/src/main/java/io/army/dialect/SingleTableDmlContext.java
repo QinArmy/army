@@ -6,7 +6,9 @@ import io.army.criteria.SQLField;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.*;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;

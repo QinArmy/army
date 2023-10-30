@@ -5,7 +5,9 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeInfer;
 import io.army.dialect.NotSupportDialectException;
 import io.army.dialect._Constant;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;

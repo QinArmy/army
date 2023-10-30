@@ -8,7 +8,9 @@ import io.army.dialect.*;
 import io.army.function.BetweenOperator;
 import io.army.function.BetweenValueOperator;
 import io.army.function.ExpressionOperator;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.util.ArrayUtils;

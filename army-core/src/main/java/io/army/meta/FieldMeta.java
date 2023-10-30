@@ -1,7 +1,9 @@
 package io.army.meta;
 
 import io.army.criteria.TypeTableField;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.modelgen._MetaBridge;
 
 import java.util.List;

@@ -1,7 +1,9 @@
 package io.army.mapping.postgre;
 
 import io.army.dialect._Constant;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.util._TimeUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;

@@ -3,7 +3,9 @@ package io.army.dialect;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._SingleUpdate;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.util._Collections;
 
 import java.util.List;

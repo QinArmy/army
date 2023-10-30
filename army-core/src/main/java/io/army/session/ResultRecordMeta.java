@@ -1,7 +1,9 @@
 package io.army.session;
 
 import io.army.criteria.Selection;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.sqltype.SqlType;
 
 import java.util.List;

@@ -1,6 +1,7 @@
 package io.army.schema;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
+
 import io.army.meta.TableMeta;
 
 import java.util.ArrayList;

@@ -1,7 +1,9 @@
 package io.army.mapping.postgre;
 
 import io.army.dialect._Constant;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.*;
 import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.meta.MetaException;

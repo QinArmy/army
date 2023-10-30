@@ -30,6 +30,7 @@ import java.lang.annotation.*;
 @Documented
 @Nonnull(when = When.MAYBE)
 @TypeQualifierNickname
+@Deprecated
 public @interface Nullable {
 
 }

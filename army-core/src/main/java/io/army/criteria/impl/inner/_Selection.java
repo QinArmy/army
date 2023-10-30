@@ -3,7 +3,8 @@ package io.army.criteria.impl.inner;
 import io.army.criteria.Expression;
 import io.army.criteria.Selection;
 import io.army.criteria.TableField;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 public interface _Selection extends Selection, _SelectItem {
 

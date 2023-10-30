@@ -1,7 +1,9 @@
 package io.army.mapping;
 
 import io.army.codec.JsonCodec;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ServerMeta;
 
 import java.time.ZoneOffset;

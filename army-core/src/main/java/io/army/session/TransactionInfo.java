@@ -1,8 +1,7 @@
 package io.army.session;
 
 
-import io.army.lang.NonNull;
-
+import javax.annotation.Nonnull;
 import java.util.function.Function;
 
 /**
@@ -22,7 +21,7 @@ public interface TransactionInfo extends TransactionOption {
      *
      * @return non-null
      */
-    @NonNull
+    @Nonnull
     @Override
     Isolation isolation();
 

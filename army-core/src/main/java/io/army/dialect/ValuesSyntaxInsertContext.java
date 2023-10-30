@@ -3,7 +3,9 @@ package io.army.dialect;
 import io.army.criteria.NullMode;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Insert;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.PrimaryFieldMeta;
 
 abstract class ValuesSyntaxInsertContext extends InsertContext implements _ValueSyntaxInsertContext {

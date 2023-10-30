@@ -4,7 +4,9 @@ import io.army.annotation.*;
 import io.army.dialect._Constant;
 import io.army.generator.FieldGenerator;
 import io.army.lang.NonNull;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;

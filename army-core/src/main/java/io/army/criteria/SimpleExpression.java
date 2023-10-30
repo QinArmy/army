@@ -3,7 +3,9 @@ package io.army.criteria;
 import io.army.criteria.impl.SQLs;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 import io.army.mapping.NoCastTextType;
 

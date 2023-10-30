@@ -3,7 +3,8 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Database;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 public abstract class _PostgreConsultant extends _SQLConsultant {
 

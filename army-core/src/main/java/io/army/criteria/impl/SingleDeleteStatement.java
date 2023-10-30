@@ -7,7 +7,9 @@ import io.army.criteria.Statement;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._Statement;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.util._Assert;
 
 import java.util.Collections;

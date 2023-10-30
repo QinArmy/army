@@ -6,7 +6,9 @@ import io.army.criteria.dialect.SubDelete;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
 import io.army.function.*;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;

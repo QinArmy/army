@@ -6,7 +6,9 @@ import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._JoinableUpdate;
 import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._SingleUpdate;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ChildTableMeta;
 
 final class SingleJoinableUpdateContext extends SingleJoinableDmlContext implements _SingleUpdateContext {

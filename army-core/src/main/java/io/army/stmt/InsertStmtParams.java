@@ -1,6 +1,7 @@
 package io.army.stmt;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
+
 import io.army.meta.PrimaryFieldMeta;
 
 import java.util.function.ObjIntConsumer;

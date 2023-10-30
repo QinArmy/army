@@ -1,7 +1,8 @@
 package io.army.schema;
 
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
+
 import io.army.meta.*;
 import io.army.sqltype.SqlType;
 import io.army.util._Collections;

@@ -4,7 +4,8 @@ import io.army.criteria.Query;
 import io.army.criteria.SelectStatement;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Query;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 final class SimpleSelectContext extends MultiTableQueryContext implements  _SelectContext {
 

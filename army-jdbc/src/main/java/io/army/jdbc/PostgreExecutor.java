@@ -1,7 +1,9 @@
 package io.army.jdbc;
 
 import io.army.dialect._Constant;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.PostgreSqlType;

@@ -3,7 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.mysql.MySQLCastType;
 import io.army.criteria.mysql.MySQLCharset;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.*;
 import io.army.util._Exceptions;
 

@@ -7,7 +7,8 @@ import io.army.criteria.postgre.PostgreStatement;
 import io.army.criteria.postgre.PostgreValues;
 import io.army.dialect.Dialect;
 import io.army.dialect.postgre.PostgreDialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.function.Consumer;
 import java.util.function.Function;

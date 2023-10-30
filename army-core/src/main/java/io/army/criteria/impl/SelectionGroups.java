@@ -7,7 +7,9 @@ import io.army.criteria.impl.inner._SelectionMap;
 import io.army.dialect.DialectParser;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.NoCastTextType;
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;

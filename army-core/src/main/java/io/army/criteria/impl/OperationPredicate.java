@@ -5,7 +5,9 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.function.*;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;

@@ -4,7 +4,9 @@ import io.army.criteria.NamedLiteral;
 import io.army.criteria.SQLParam;
 import io.army.criteria.SubQuery;
 import io.army.criteria.Visible;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.TypeMeta;
 
 /**

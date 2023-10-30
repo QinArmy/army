@@ -3,7 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.*;
 import io.army.mapping.optional.IntervalType;
 import io.army.mapping.postgre.PostgreInetType;

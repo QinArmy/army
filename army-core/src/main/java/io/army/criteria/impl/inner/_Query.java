@@ -4,7 +4,8 @@ import io.army.criteria.GroupByItem;
 import io.army.criteria.Query;
 import io.army.criteria.SQLWords;
 import io.army.criteria.dialect.Hint;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.List;
 

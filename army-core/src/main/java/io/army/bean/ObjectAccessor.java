@@ -1,7 +1,7 @@
 package io.army.bean;
 
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
 
 public interface ObjectAccessor extends ReadAccessor {
 

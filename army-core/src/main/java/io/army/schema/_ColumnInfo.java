@@ -1,6 +1,6 @@
 package io.army.schema;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
 
 public interface _ColumnInfo {
 

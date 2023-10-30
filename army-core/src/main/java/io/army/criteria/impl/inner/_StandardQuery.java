@@ -1,7 +1,8 @@
 package io.army.criteria.impl.inner;
 
 import io.army.criteria.SQLWords;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 public interface _StandardQuery extends _Query {
 

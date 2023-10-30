@@ -4,7 +4,9 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._DomainDelete;
 import io.army.criteria.impl.inner._JoinableDelete;
 import io.army.criteria.impl.inner._SingleDelete;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ChildTableMeta;
 
 final class SingleJoinableDeleteContext extends SingleJoinableDmlContext implements _SingleDeleteContext {

@@ -7,7 +7,9 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner._Expression;
 import io.army.criteria.impl.inner._Insert;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.*;
 import io.army.stmt.InsertStmtParams;
 import io.army.stmt.SingleParam;

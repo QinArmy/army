@@ -9,7 +9,9 @@ import io.army.criteria.dialect.Window;
 import io.army.criteria.mysql.MySQLFunction;
 import io.army.criteria.mysql.MySQLWindow;
 import io.army.criteria.standard.SQLFunction;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.*;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;

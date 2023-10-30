@@ -13,7 +13,9 @@ import io.army.criteria.postgre.PostgreQuery;
 import io.army.criteria.standard.SQLFunction;
 import io.army.dialect.*;
 import io.army.dialect.postgre.PostgreDialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util._Collections;

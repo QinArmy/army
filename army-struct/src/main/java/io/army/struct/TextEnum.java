@@ -1,6 +1,6 @@
 package io.army.struct;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
 
 import java.util.Map;
 

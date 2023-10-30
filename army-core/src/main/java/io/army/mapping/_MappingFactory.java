@@ -1,7 +1,9 @@
 package io.army.mapping;
 
 import io.army.annotation.Mapping;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.array.IntegerArrayType;
 import io.army.mapping.optional.OffsetDateTimeType;
 import io.army.mapping.optional.OffsetTimeType;

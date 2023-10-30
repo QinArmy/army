@@ -7,7 +7,9 @@ import io.army.criteria.impl.inner._TabularBlock;
 import io.army.criteria.standard.StandardCrosses;
 import io.army.criteria.standard.StandardJoins;
 import io.army.criteria.standard.StandardStatement;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.TableMeta;
 
 import java.util.function.Consumer;

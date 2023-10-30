@@ -11,7 +11,9 @@ import io.army.criteria.postgre.PostgreStatement;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.dialect.postgre.PostgreDialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;

@@ -9,7 +9,9 @@ import io.army.criteria.mysql.MySQLInsert;
 import io.army.criteria.mysql.MySQLQuery;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.*;
 import io.army.struct.CodeEnum;
 import io.army.util.ArrayUtils;

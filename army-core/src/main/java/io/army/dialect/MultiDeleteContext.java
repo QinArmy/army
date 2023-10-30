@@ -4,7 +4,9 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._Delete;
 import io.army.criteria.impl.inner._MultiDelete;
 import io.army.criteria.impl.inner._SingleDelete;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ChildTableMeta;
 import io.army.util._Exceptions;
 

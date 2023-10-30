@@ -1,6 +1,7 @@
 package io.army.sync;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
+
 import io.army.session.*;
 
 import java.util.function.Function;

@@ -3,7 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.SortItem;
 import io.army.criteria.Statement;
 import io.army.dialect._SqlContext;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.TypeMeta;
 
 class ArmySortItems implements ArmySortItem {

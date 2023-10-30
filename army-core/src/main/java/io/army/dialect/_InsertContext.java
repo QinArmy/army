@@ -1,7 +1,9 @@
 package io.army.dialect;
 
 import io.army.criteria.LiteralMode;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
 

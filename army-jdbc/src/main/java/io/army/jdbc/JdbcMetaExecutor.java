@@ -1,7 +1,9 @@
 package io.army.jdbc;
 
 import io.army.dialect._Constant;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.MetaExecutor;

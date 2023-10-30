@@ -1,7 +1,9 @@
 package io.army.meta;
 
 import io.army.criteria.TabularItem;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.struct.CodeEnum;
 
 import java.util.List;

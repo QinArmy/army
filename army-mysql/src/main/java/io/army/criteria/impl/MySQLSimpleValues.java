@@ -7,7 +7,8 @@ import io.army.criteria.mysql.MySQLQuery;
 import io.army.criteria.mysql.MySQLValues;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;

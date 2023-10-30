@@ -3,7 +3,9 @@ package io.army.stmt;
 import io.army.criteria.NamedParam;
 import io.army.criteria.SQLParam;
 import io.army.criteria.SqlValueParam;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.TypeMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;

@@ -4,7 +4,8 @@ import io.army.criteria.impl.SQLs;
 import io.army.criteria.impl.inner._DialectStatement;
 import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._Statement;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.List;
 

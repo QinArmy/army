@@ -5,7 +5,8 @@ import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.env.ArmyEnvironment;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.Collection;
 import java.util.List;

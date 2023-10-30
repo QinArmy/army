@@ -11,7 +11,9 @@ import io.army.criteria.mysql.MySQLCharset;
 import io.army.criteria.mysql.MySQLLoadData;
 import io.army.dialect.Dialect;
 import io.army.dialect.mysql.MySQLDialect;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.*;
 import io.army.util._Assert;
 import io.army.util._Collections;

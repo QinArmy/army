@@ -2,7 +2,9 @@ package io.army.stmt;
 
 import io.army.criteria.SQLParam;
 import io.army.criteria.SqlValueParam;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.TypeMeta;
 
 public interface SingleParam extends SQLParam, SqlValueParam.SingleValue {

@@ -2,7 +2,9 @@ package io.army.dialect;
 
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.FieldMeta;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.MultiStmtBatchStmt;

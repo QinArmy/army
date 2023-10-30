@@ -1,6 +1,7 @@
 package io.army.session;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
+
 import io.army.util._Exceptions;
 
 public interface OptionSpec {

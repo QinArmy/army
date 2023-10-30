@@ -2,7 +2,9 @@ package io.army.mapping.postgre;
 
 import io.army.annotation.Mapping;
 import io.army.criteria.CriteriaException;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingSupport;
 import io.army.mapping.MappingType;

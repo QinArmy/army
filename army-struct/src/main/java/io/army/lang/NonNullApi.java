@@ -27,6 +27,7 @@ import java.lang.annotation.*;
 @Documented
 @Nonnull
 @TypeQualifierDefault({ElementType.METHOD, ElementType.PARAMETER})
+@Deprecated
 public @interface NonNullApi {
 
 }

@@ -9,7 +9,9 @@ import io.army.dialect.DialectParserFactory;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingEnv;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;

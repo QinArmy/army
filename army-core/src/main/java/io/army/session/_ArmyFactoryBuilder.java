@@ -11,7 +11,9 @@ import io.army.env.ArmyEnvironment;
 import io.army.executor.ExecutorEnv;
 import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.schema._SchemaResult;

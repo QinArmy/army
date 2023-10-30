@@ -1,6 +1,6 @@
 package io.army.criteria.impl;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * package class

@@ -4,7 +4,8 @@ import io.army.criteria.Selection;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 public interface _PostgreCte extends _Cte {
 

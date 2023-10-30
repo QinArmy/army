@@ -8,7 +8,9 @@ import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
 import io.army.function.TeNamedOperator;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonPathType;
 import io.army.meta.TypeMeta;

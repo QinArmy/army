@@ -1,7 +1,9 @@
 package io.army.mapping;
 
 import io.army.ArmyException;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.sqltype.SqlType;
 
 public abstract class MappingSupport {

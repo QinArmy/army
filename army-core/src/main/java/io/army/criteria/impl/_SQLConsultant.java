@@ -6,7 +6,9 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._NestedItems;
 import io.army.dialect.Database;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.util._ClassUtils;
 
 public abstract class _SQLConsultant {

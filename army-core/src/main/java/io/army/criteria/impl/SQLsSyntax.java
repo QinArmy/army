@@ -1,7 +1,9 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.NoCastIntegerType;
 import io.army.mapping.NoCastTextType;
 import io.army.meta.FieldMeta;

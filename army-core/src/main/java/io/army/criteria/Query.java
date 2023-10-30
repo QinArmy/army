@@ -5,7 +5,9 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.SQLs;
 import io.army.function.DialectBooleanOperator;
 import io.army.function.ExpressionOperator;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;

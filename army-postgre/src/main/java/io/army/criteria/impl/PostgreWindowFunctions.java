@@ -5,7 +5,9 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Window;
 import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.SQLFunction;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.*;
 import io.army.mapping.array.DoubleArrayType;
 import io.army.mapping.array.IntervalArrayType;

@@ -8,7 +8,9 @@ import io.army.criteria.impl.inner._Cte;
 import io.army.criteria.impl.inner._Delete;
 import io.army.criteria.impl.inner._Statement;
 import io.army.criteria.impl.inner._TabularBlock;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.util._Assert;
 
 import java.util.Collections;

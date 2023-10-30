@@ -2,7 +2,9 @@ package io.army.util;
 
 
 import io.army.dialect._Constant;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.modelgen._MetaBridge;
 
 import java.util.Locale;

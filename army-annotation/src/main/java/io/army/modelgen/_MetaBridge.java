@@ -2,7 +2,8 @@ package io.army.modelgen;
 
 
 import io.army.lang.NonNull;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;

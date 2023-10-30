@@ -3,7 +3,9 @@ package io.army.mapping.array;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;

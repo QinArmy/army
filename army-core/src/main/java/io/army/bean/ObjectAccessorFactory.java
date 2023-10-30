@@ -1,7 +1,8 @@
 package io.army.bean;
 
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
+
 import io.army.proxy.ArmyProxy;
 import io.army.util._Collections;
 

@@ -1,7 +1,7 @@
 package io.army.example.common;
 
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
 
 import java.util.List;
 import java.util.Map;

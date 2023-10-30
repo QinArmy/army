@@ -1,6 +1,7 @@
 package io.army.sync;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
+
 import io.army.session.*;
 import io.army.session.executor.DriverSpiHolder;
 import io.army.sync.executor.SyncRmStmtExecutor;

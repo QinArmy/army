@@ -1,7 +1,6 @@
 package io.army.sync.executor;
 
 
-import io.army.lang.Nullable;
 import io.army.meta.TableMeta;
 import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
@@ -10,6 +9,8 @@ import io.army.stmt.SimpleStmt;
 import io.army.stmt.TwoStmtQueryStmt;
 import io.army.sync.SyncStmtOption;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -79,6 +80,14 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
     List<Long> batchUpdate(BatchStmt stmt, IntFunction<List<Long>> listConstructor, SyncStmtOption option,
                            @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
 
+    @Nullable
+    <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option);
+
+    @Nullable
+    <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option);
+
+    @Nullable
+    <R> R queryOneRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option);
 
     <T> List<T> query(SimpleStmt stmt, Class<T> resultClass, Supplier<List<T>> listConstructor, SyncStmtOption option)
             throws DataAccessException;

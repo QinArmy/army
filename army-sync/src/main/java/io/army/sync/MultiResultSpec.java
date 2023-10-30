@@ -1,7 +1,8 @@
 package io.army.sync;
 
 import io.army.ArmyException;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
 
 import java.util.Map;
 import java.util.function.Supplier;

@@ -1,7 +1,9 @@
 package io.army.util;
 
 import io.army.lang.NonNull;
-import io.army.lang.Nullable;
+
+import javax.annotation.Nullable;
+
 import io.army.mapping.MappingType;
 import io.army.mapping.UnaryGenericsMapping;
 

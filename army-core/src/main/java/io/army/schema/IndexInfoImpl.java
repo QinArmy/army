@@ -1,6 +1,7 @@
 package io.army.schema;
 
-import io.army.lang.Nullable;
+import javax.annotation.Nullable;
+
 import io.army.util._Collections;
 
 import java.util.Collections;
