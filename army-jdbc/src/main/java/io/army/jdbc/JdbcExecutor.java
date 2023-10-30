@@ -131,9 +131,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
             if (returningId) {
                 if (statement instanceof PreparedStatement) {
-                    rows = doExtractId(((PreparedStatement) statement).executeQuery(), (GeneratedKeyStmt) stmt);
+                    rows = readRowId(((PreparedStatement) statement).executeQuery(), (GeneratedKeyStmt) stmt);
                 } else {
-                    rows = doExtractId(statement.executeQuery(stmt.sqlText()), (GeneratedKeyStmt) stmt);
+                    rows = readRowId(statement.executeQuery(stmt.sqlText()), (GeneratedKeyStmt) stmt);
                 }
             } else {
                 if (this.factory.useLargeUpdate) {
@@ -149,7 +149,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
                 }
 
                 if (generatedKeys == Statement.RETURN_GENERATED_KEYS) {
-                    doExtractId(statement.getGeneratedKeys(), (GeneratedKeyStmt) stmt);
+                    readRowId(statement.getGeneratedKeys(), (GeneratedKeyStmt) stmt);
                 }
             }
             return rows;
@@ -1041,9 +1041,10 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
     /**
+     * @return row number
      * @see #insert(SimpleStmt, SyncStmtOption)
      */
-    private int doExtractId(final ResultSet idResultSet, final GeneratedKeyStmt stmt) throws SQLException {
+    private int readRowId(final ResultSet idResultSet, final GeneratedKeyStmt stmt) throws SQLException {
 
         try (ResultSet resultSet = idResultSet) {
 
@@ -1970,9 +1971,11 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             final PrimaryFieldMeta<?> idField = stmt.idField();
             final MappingType type = idField.mappingType();
             final MappingEnv env = executor.factory.mappingEnv;
-            final SqlType idSqlType = rowReader.sqlTypeArray[stmt.idSelectionIndex()];
+            final int idSelectionIndex = stmt.idSelectionIndex();
 
-            final int rowSize = stmt.rowSize();
+            final SqlType idSqlType = rowReader.sqlTypeArray[idSelectionIndex];
+
+            final int rowSize = stmt.rowSize(), idColumnIndexBaseOne = idSelectionIndex + 1;
 
             Object idValue;
             int readRowCount = 0, rowIndex = this.rowIndex;
@@ -1983,7 +1986,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
                 }
 
                 // below read id value
-                idValue = executor.get(resultSet, rowIndex + 1, idSqlType); // read id column
+                idValue = executor.get(resultSet, idColumnIndexBaseOne, idSqlType); // read id column
                 if (idValue == null) {
                     throw _Exceptions.idValueIsNull(rowIndex, idField);
                 }
@@ -2133,6 +2136,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             return readCount > 0;
         }
 
+
         @Nullable
         abstract ResultSet nextResultSet() throws SQLException, TimeoutException;
 
@@ -2153,12 +2157,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
         }
 
-
-        @Override
-        ArmyException handleException(Exception cause) {
-            close();
-            return this.rowReader.executor.handleException(cause);
-        }
 
         @Nullable
         ResultSet nextResultSet() throws SQLException, TimeoutException {
@@ -2182,6 +2180,17 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             return statement.executeQuery();
         }
 
+        @Override
+        ArmyException handleException(Exception cause) {
+            close();
+            return this.rowReader.executor.handleException(cause);
+        }
+
+        @Override
+        void handleError(Error cause) {
+            close();
+        }
+
 
     }//BatchRowSpliterator
 
@@ -2197,8 +2206,32 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             super(statement, rowReader, stmt, option, resultSet);
         }
 
+
+        @Nullable
+        @Override
+        ResultSet nextResultSet() throws SQLException, TimeoutException {
+            final Statement statement = this.statement;
+
+            final int groupIndex = this.groupIndex++, expectedCount; // groupIndex from 1 not 0
+            expectedCount = this.stmt.groupList().size();
+
+            return multiStatementNextResultSet(statement, groupIndex, expectedCount);
+        }
+
         @Override
         ArmyException handleException(Exception cause) {
+            onError();
+            return this.rowReader.executor.handleException(cause);
+        }
+
+
+        @Override
+        void handleError(Error cause) {
+            onError();
+        }
+
+
+        private void onError() {
             boolean closed = false;
             try {
                 this.statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
@@ -2210,18 +2243,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             if (!closed) {
                 close();
             }
-            return this.rowReader.executor.handleException(cause);
-        }
 
-        @Nullable
-        @Override
-        ResultSet nextResultSet() throws SQLException, TimeoutException {
-            final Statement statement = this.statement;
-
-            final int groupIndex = this.groupIndex++, expectedCount; // groupIndex from 1 not 0
-            expectedCount = this.stmt.groupList().size();
-
-            return multiStatementNextResultSet(statement, groupIndex, expectedCount);
         }
 
 
