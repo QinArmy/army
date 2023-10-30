@@ -198,6 +198,21 @@ public final class Option<T> {
     public static final Option<Boolean> RELEASE = Option.from("RELEASE", Boolean.class);
 
 
+    public static final Option<String> SQL_STATE = Option.from("SQL STATE", String.class);
+
+
+    public static final Option<String> MESSAGE = Option.from("MESSAGE", String.class);
+
+
+    public static final Option<Integer> VENDOR_CODE = Option.from("VENDOR CODE", Integer.class);
+
+
+    public static final Option<Integer> WARNING_COUNT = Option.from("WARNING COUNT", Integer.class);
+
+
+    public static final Option<String> USER = Option.from("USER", String.class);
+
+
     private final String name;
 
     private final Class<T> javaType;

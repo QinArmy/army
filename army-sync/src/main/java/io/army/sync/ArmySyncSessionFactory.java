@@ -1,5 +1,6 @@
 package io.army.sync;
 
+import io.army.env.SyncKey;
 import io.army.session.SessionException;
 import io.army.session.SessionFactoryException;
 import io.army.session._ArmySessionFactory;
@@ -25,15 +26,17 @@ abstract class ArmySyncSessionFactory extends _ArmySessionFactory implements Syn
 
     final SyncStmtExecutorFactory stmtExecutorFactory;
 
+    final boolean sessionIdentifierEnable;
+
     final boolean buildInExecutor;
     final boolean jdbcDriver;
-
     private volatile int factoryClosed;
 
     ArmySyncSessionFactory(ArmySyncFactoryBuilder<?, ?> builder) throws SessionFactoryException {
         super(builder);
         this.stmtExecutorFactory = builder.stmtExecutorFactory;
         assert this.stmtExecutorFactory != null;
+        this.sessionIdentifierEnable = this.env.getOrDefault(SyncKey.SESSION_IDENTIFIER_ENABLE);
         this.buildInExecutor = this.stmtExecutorFactory.getClass().getPackage().getName().startsWith("io.army.jdbc.");
         this.jdbcDriver = this.buildInExecutor || this.stmtExecutorFactory.driverSpiVendor().equals("java.sql");
     }

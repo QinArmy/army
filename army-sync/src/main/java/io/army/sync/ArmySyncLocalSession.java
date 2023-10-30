@@ -193,8 +193,13 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         }
 
         @Override
+        public boolean isDriverAssignableTo(Class<?> spiClass) {
+            return this.stmtExecutor.isDriverAssignableTo(spiClass);
+        }
+
+        @Override
         public <T> T getDriverSpi(Class<T> spiClass) {
-            return ((DriverSpiHolder) this.stmtExecutor).getDriverSpi(spiClass);
+            return this.stmtExecutor.getDriverSpi(spiClass);
         }
 
 

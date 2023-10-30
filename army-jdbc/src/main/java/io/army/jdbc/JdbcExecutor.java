@@ -10,7 +10,6 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.session.*;
-import io.army.session.executor.DriverSpiHolder;
 import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
 import io.army.sqltype.SqlType;
@@ -57,7 +56,7 @@ import java.util.stream.StreamSupport;
  * @see JdbcExecutorFactory
  * @see <a href="https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html">JDBC</a>
  */
-abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor, DriverSpiHolder {
+abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor {
 
     private static final AtomicLong EXECUTOR_IDENTIFIER = new AtomicLong(0);
 
@@ -103,6 +102,10 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
         return s instanceof JdbcExecutor && ((JdbcExecutor) s).factory == this.factory;
     }
 
+    @Override
+    public final boolean isDriverAssignableTo(Class<?> spiClass) {
+        return spiClass.isAssignableFrom(this.conn.getClass());
+    }
 
     @Override
     public final <T> T getDriverSpi(Class<T> spiClass) {
@@ -112,7 +115,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
     @Override
-    public final long insertAsLong(final SimpleStmt stmt, final SyncStmtOption option) {
+    public final ResultStates insert(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException {
 
         final List<? extends Selection> selectionList = stmt.selectionList();
         final boolean returningId;
@@ -152,20 +155,15 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
                     readRowId(statement.getGeneratedKeys(), (GeneratedKeyStmt) stmt);
                 }
             }
-            return rows;
+
+            return new SimpleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows);
         } catch (Exception e) {
             throw wrapError(e);
         }
-
     }
 
     @Override
-    public final ResultStates insert(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException {
-        return null;
-    }
-
-    @Override
-    public final long updateAsLong(final SimpleStmt stmt, final SyncStmtOption option) throws DataAccessException {
+    public final ResultStates update(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException {
 
         try (final Statement statement = bindStatement(stmt, option)) {
 
@@ -183,7 +181,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
                 rows = statement.executeUpdate(stmt.sqlText());
             }
 
-            return rows;
+            return new SimpleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows);
         } catch (Exception e) {
             throw wrapError(e);
         }
@@ -191,32 +189,42 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
     }
 
     @Override
-    public final ResultStates update(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException {
-        return null;
-    }
-
-    @Override
-    public final List<Long> batchUpdateList(final BatchStmt stmt, final IntFunction<List<Long>> listConstructor,
-                                            SyncStmtOption option, final @Nullable TableMeta<?> domainTable,
-                                            final @Nullable List<Long> rowsList) {
-        final List<Long> resultList;
+    public final <R> List<R> batchUpdateList(BatchStmt stmt, IntFunction<List<R>> listConstructor,
+                                             SyncStmtOption option, Class<R> elementClass,
+                                             @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList)
+            throws DataAccessException {
+        if (elementClass != Long.class && elementClass != ResultStates.class) {
+            throw new IllegalArgumentException("elementClass error");
+        }
+        final List<R> resultList;
         if (option.isParseBatchAsMultiStmt()) {
-            resultList = executeMultiStmtBatchUpdate(stmt, listConstructor, option, domainTable);
+            resultList = executeMultiStmtBatchUpdate(stmt, listConstructor, option, elementClass, domainTable);
         } else {
-            resultList = executeBatchUpdate(stmt, listConstructor, option, domainTable, rowsList);
+            resultList = executeBatchUpdate(stmt, listConstructor, option, elementClass, domainTable, rowsList);
         }
         return resultList;
     }
 
+
+    @Override
+    public final <R> Stream<R> batchUpdate(BatchStmt stmt, SyncStmtOption option, Class<R> elementClass,
+                                           @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList)
+            throws DataAccessException {
+        return batchUpdateList(stmt, _Collections::arrayList, option, elementClass, domainTable, rowsList)
+                .stream();
+    }
+
     @Nullable
     @Override
-    public final <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option) throws DataAccessException {
+    public final <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option)
+            throws DataAccessException {
         return executeQueryOne(stmt, option, beanReaderFunc(stmt, resultClass));
     }
 
     @Nullable
     @Override
-    public final <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option) throws DataAccessException {
+    public final <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option)
+            throws DataAccessException {
         return this.executeQueryOne(stmt, option, objectReaderFunc(stmt, constructor));
     }
 
@@ -246,7 +254,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
         return this.executeQuery(stmt, option, recordReaderFunc(stmt.selectionList(), function));
     }
 
-    @SuppressWarnings("unchecked")
+
     @Override
     public final <R> Stream<R> secondQuery(final TwoStmtModeQuerySpec stmt, final SyncStmtOption option, final List<R> resultList) {
         return null;
@@ -296,7 +304,9 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
      * @return current transaction cache instance
      */
     @Nullable
-    abstract Transaction obtainTransaction();
+    abstract TransactionInfo obtainTransaction();
+
+    abstract TransactionInfo executeQueryTransaction();
 
 
     final void setLongText(PreparedStatement stmt, int index, Object nonNull) throws SQLException {
@@ -340,11 +350,23 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
     /**
-     * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, TableMeta, List)
+     * @see #insert(SimpleStmt, SyncStmtOption)
      */
-    private List<Long> executeBatchUpdate(final BatchStmt stmt, final IntFunction<List<Long>> listConstructor,
-                                          final SyncStmtOption option, final @Nullable TableMeta<?> domainTable,
-                                          final @Nullable List<Long> rowsList) {
+    @Nullable
+    private Warning mapToArmyWarning(final @Nullable SQLWarning warning) {
+        if (warning == null) {
+            return null;
+        }
+        return new ArmyWarning(warning);
+    }
+
+
+    /**
+     * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List)
+     */
+    private <R> List<R> executeBatchUpdate(final BatchStmt stmt, final IntFunction<List<R>> listConstructor,
+                                           final SyncStmtOption option, final Class<R> elementClass,
+                                           final @Nullable TableMeta<?> domainTable, final @Nullable List<R> rowsList) {
         if (!(rowsList == null || domainTable instanceof ChildTableMeta)) {
             throw new IllegalArgumentException();
         }
@@ -359,18 +381,18 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
                 statement.setQueryTimeout(option.restSeconds());
             }
 
-            final List<Long> resultList;
+            final List<R> resultList;
 
             if (this.factory.useLargeUpdate) {
                 final long[] affectedRows;
                 affectedRows = statement.executeLargeBatch();
-                resultList = this.handleBatchResult(stmt.hasOptimistic(), affectedRows.length,
+                resultList = handleBatchResult(statement.getWarnings(), elementClass, stmt.hasOptimistic(), affectedRows.length,
                         index -> affectedRows[index], listConstructor, domainTable, rowsList
                 );
             } else {
                 final int[] affectedRows;
                 affectedRows = statement.executeBatch();
-                resultList = this.handleBatchResult(stmt.hasOptimistic(), affectedRows.length,
+                resultList = handleBatchResult(statement.getWarnings(), elementClass, stmt.hasOptimistic(), affectedRows.length,
                         index -> affectedRows[index], listConstructor, domainTable, rowsList
                 );
             }
@@ -382,10 +404,11 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
     }
 
     /**
-     * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, TableMeta, List)
+     * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List)
      */
-    private List<Long> executeMultiStmtBatchUpdate(final BatchStmt stmt, final IntFunction<List<Long>> listConstructor,
-                                                   SyncStmtOption option, final @Nullable TableMeta<?> domainTable) {
+    private <R> List<R> executeMultiStmtBatchUpdate(final BatchStmt stmt, final IntFunction<List<R>> listConstructor,
+                                                    SyncStmtOption option, Class<R> elementClass,
+                                                    final @Nullable TableMeta<?> domainTable) {
         final List<List<SQLParam>> groupList;
         groupList = stmt.groupList();
         if (groupList.get(0).size() > 0) {
@@ -405,16 +428,16 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
             final int stmtSize;
             stmtSize = groupList.size();
-            final List<Long> list = listConstructor.apply(stmtSize);
+            final List<R> list = listConstructor.apply(stmtSize);
             if (list == null) {
                 throw _Exceptions.listConstructorError();
             }
 
             if (domainTable instanceof ChildTableMeta) {
-                handleChildMultiStmtBatchUpdate(statement, stmt, (ChildTableMeta<?>) domainTable, list);
+                handleChildMultiStmtBatchUpdate(statement, stmt, elementClass, (ChildTableMeta<?>) domainTable, list);
             } else {
                 // SingleTableMeta batch update or multi-table batch update.
-                handleSimpleMultiStmtBatchUpdate(statement, stmt, domainTable, list);
+                handleSimpleMultiStmtBatchUpdate(statement, stmt, elementClass, domainTable, list);
             }
 
             if (stmtSize != list.size()) {
@@ -689,6 +712,13 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
                     row = null;
                 }
 
+                final Consumer<ResultStates> consumer;
+                consumer = option.stateConsumer();
+                if (consumer != ResultStates.IGNORE_STATES) {
+                    final Warning w;
+                    w = mapToArmyWarning(statement.getWarnings());
+                    consumer.accept(new SimpleQueryStates(obtainTransaction(), w, 1, false));
+                }
                 return row;
             }
         } catch (Exception e) {
@@ -713,11 +743,13 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
         final PrimaryFieldMeta<?> idField = stmt.idField();
         final MappingType type = idField.mappingType();
         final MappingEnv env = this.factory.mappingEnv;
-        final SqlType idSqlType = rowReader.sqlTypeArray[stmt.idSelectionIndex()];
+        final int idSelectionIndex = stmt.idSelectionIndex();
+
+        final SqlType idSqlType = rowReader.sqlTypeArray[idSelectionIndex];
 
         Object idValue;
         // below read id value
-        idValue = get(resultSet, 1, idSqlType); // read id column
+        idValue = get(resultSet, idSelectionIndex + 1, idSqlType); // read id column
         if (idValue == null) {
             throw _Exceptions.idValueIsNull(0, idField);
         }
@@ -890,38 +922,78 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
     /**
-     * @see #executeBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, TableMeta, List)
+     * @see #executeBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List)
      */
-    private List<Long> handleBatchResult(final boolean optimistic, final int bathSize,
-                                         final IntToLongFunction accessor,
-                                         final IntFunction<List<Long>> listConstructor,
-                                         final @Nullable TableMeta<?> domainTable,
-                                         final @Nullable List<Long> rowsList) {
+    @SuppressWarnings("unchecked")
+    private <R> List<R> handleBatchResult(final @Nullable SQLWarning warning, final Class<R> elementClass,
+                                          final boolean optimistic, final int bathSize,
+                                          final IntToLongFunction accessor, final IntFunction<List<R>> listConstructor,
+                                          final @Nullable TableMeta<?> domainTable, final @Nullable List<R> rowsList) {
         assert rowsList == null || domainTable instanceof ChildTableMeta;
 
-        final List<Long> list;
+        final boolean longElement = elementClass == Long.class;
+
+        final List<R> list;
+        final boolean newList;
         if (rowsList == null) {
             list = listConstructor.apply(bathSize);
             if (list == null) {
                 throw _Exceptions.listConstructorError();
             }
+            newList = true;
         } else if (rowsList.size() != bathSize) { // here bathSize representing parent's bathSize ,because army update child and update parent
             throw _Exceptions.childBatchSizeError((ChildTableMeta<?>) domainTable, rowsList.size(), bathSize);
-        } else {
+        } else if (longElement) {
             list = rowsList;
+            newList = false;
+        } else {
+            list = listConstructor.apply(bathSize);
+            if (list == null) {
+                throw _Exceptions.listConstructorError();
+            }
+            newList = true;
         }
+
+        final TransactionInfo info;
+        final Warning armyWarning;
+        if (longElement) {
+            info = null;
+            armyWarning = null;
+        } else {
+            info = obtainTransaction();
+            armyWarning = mapToArmyWarning(warning);
+        }
+
 
         long rows;
         for (int i = 0; i < bathSize; i++) {
             rows = accessor.applyAsLong(i);
             if (optimistic && rows == 0L) {
                 throw _Exceptions.batchOptimisticLock(domainTable, i + 1, rows);
-            } else if (rowsList == null) {
-                list.add(rows);
-            } else if (rows != rowsList.get(i)) { // here rows representing parent's rows,because army update child and update parent
-                throw _Exceptions.batchChildUpdateRowsError((ChildTableMeta<?>) domainTable, i + 1, rowsList.get(i),
+            }
+
+            if (newList) {
+                if (longElement) {
+                    list.add((R) Long.valueOf(rows));
+                } else {
+                    list.add((R) new SimpleUpdateStates(info, armyWarning, rows));
+                }
+            }
+
+            if (rowsList == null) {
+                continue;
+            }
+
+            if (longElement) {
+                if (rows != (Long) rowsList.get(i)) { // here rows representing parent's rows,because army update child and update parent
+                    throw _Exceptions.batchChildUpdateRowsError((ChildTableMeta<?>) domainTable, i + 1, (Long) rowsList.get(i),
+                            rows);
+                }
+            } else if (rows != ((ResultStates) rowsList.get(i)).affectedRows()) {
+                throw _Exceptions.batchChildUpdateRowsError((ChildTableMeta<?>) domainTable, i + 1, (Long) rowsList.get(i),
                         rows);
             }
+
         }
 
         return list;
@@ -929,14 +1001,27 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
     /**
-     * @see #executeMultiStmtBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, TableMeta)
+     * @see #executeMultiStmtBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta)
      */
-    private void handleChildMultiStmtBatchUpdate(final Statement statement, final BatchStmt stmt,
-                                                 final ChildTableMeta<?> domainTable, final List<Long> list)
+    @SuppressWarnings("unchecked")
+    private <R> void handleChildMultiStmtBatchUpdate(final Statement statement, final BatchStmt stmt,
+                                                     final Class<R> elementClass, final ChildTableMeta<?> domainTable,
+                                                     final List<R> list)
             throws SQLException {
 
         final boolean useLargeUpdate = this.factory.useLargeUpdate;
         final boolean optimistic = stmt.hasOptimistic();
+        final boolean longElement = elementClass == Long.class;
+
+        final TransactionInfo info;
+        final Warning warning;
+        if (longElement) {
+            info = null;
+            warning = null;
+        } else {
+            info = obtainTransaction();
+            warning = mapToArmyWarning(statement.getWarnings());
+        }
 
         final int itemSize, itemPairSize;
         itemSize = stmt.groupList().size();
@@ -968,7 +1053,11 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
                 throw _Exceptions.batchOptimisticLock(domainTable, (i >> 1) + 1, rows);
             } else if ((i & 1) == 0) { // this code block representing child's update rows,because army update child and update parent
                 itemRows = rows;
-                list.add(rows);
+                if (longElement) {
+                    list.add((R) Long.valueOf(rows));
+                } else {
+                    list.add((R) new SimpleUpdateStates(info, warning, rows));
+                }
             } else if (rows != itemRows) { // this code block representing parent's update rows,because army update child and update parent
                 throw _Exceptions.batchChildUpdateRowsError(domainTable, (i >> 1) + 1, itemRows, rows);
             }
@@ -993,17 +1082,29 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
      *                    <li>{@link SingleTableMeta} : single table batch update</li>
      *
      *                    </ul>
-     * @see #executeMultiStmtBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, TableMeta)
+     * @see #executeMultiStmtBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta)
      */
-    private void handleSimpleMultiStmtBatchUpdate(final Statement statement, final BatchStmt stmt,
-                                                  final @Nullable TableMeta<?> domainTable,
-                                                  final List<Long> list) throws SQLException {
+    @SuppressWarnings("unchecked")
+    private <R> void handleSimpleMultiStmtBatchUpdate(final Statement statement, final BatchStmt stmt,
+                                                      final Class<R> elementClass, final @Nullable TableMeta<?> domainTable,
+                                                      final List<R> list) throws SQLException {
 
         assert domainTable == null || domainTable instanceof SingleTableMeta;
 
         final boolean useLargeUpdate = this.factory.useLargeUpdate;
         final boolean optimistic = stmt.hasOptimistic();
+        final boolean longElement = elementClass == Long.class;
         final int itemSize = stmt.groupList().size();
+
+        final TransactionInfo info;
+        final Warning warning;
+        if (longElement) {
+            info = null;
+            warning = null;
+        } else {
+            info = obtainTransaction();
+            warning = mapToArmyWarning(statement.getWarnings());
+        }
 
         long rows;
         for (int i = 0; i < itemSize; i++) {
@@ -1024,7 +1125,12 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             if (optimistic && rows == 0) {
                 throw _Exceptions.batchOptimisticLock(domainTable, i + 1, rows);
             }
-            list.add(rows);
+
+            if (longElement) {
+                list.add((R) Long.valueOf(rows));
+            } else {
+                list.add((R) new SimpleUpdateStates(info, warning, rows));
+            }
 
         } // loop for
 
@@ -2249,5 +2355,206 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
     } // MultiSmtBatchRowSpliterator
 
+
+    private static abstract class JdbcResultStates implements ResultStates {
+
+        private final TransactionInfo info;
+
+        private final Warning warning;
+
+
+        private JdbcResultStates(@Nullable TransactionInfo info, @Nullable Warning warning) {
+            this.info = info;
+            this.warning = warning;
+        }
+
+        @Override
+        public final boolean inTransaction() {
+            final TransactionInfo info = this.info;
+            return info != null && info.inTransaction();
+        }
+
+        @Override
+        public final String message() {
+            // JDBC always empty
+            return "";
+        }
+
+        @Nullable
+        @Override
+        public final Warning warning() {
+            return this.warning;
+        }
+
+        @Nullable
+        @Override
+        public final <T> T valueOf(final Option<T> option) {
+            final TransactionInfo info = this.info;
+            final T value;
+            if (info == null) {
+                value = null;
+            } else if (option == Option.IN_TRANSACTION || option == Option.READ_ONLY) {
+                value = info.valueOf(option);
+            } else {
+                value = null;
+            }
+            return value;
+        }
+
+
+    } // JdbcResultStates
+
+    private static abstract class SimpleResultStates extends JdbcResultStates {
+
+        private SimpleResultStates(@Nullable TransactionInfo info, @Nullable Warning warning) {
+            super(info, warning);
+        }
+
+        @Override
+        public final int getResultNo() {
+            // simple statement always 1
+            return 1;
+        }
+
+        @Override
+        public final boolean hasColumn() {
+            return this instanceof SimpleQueryStates;
+        }
+
+
+        @Override
+        public final boolean hasMoreResult() {
+            // simple statement always false
+            return false;
+        }
+
+
+    } // SimpleResultStates
+
+
+    private static final class SimpleUpdateStates extends SimpleResultStates {
+
+        private final long affectedRows;
+
+        /**
+         * @see JdbcExecutor#insert(SimpleStmt, SyncStmtOption)
+         * @see JdbcExecutor#update(SimpleStmt, SyncStmtOption)
+         */
+        private SimpleUpdateStates(@Nullable TransactionInfo info, @Nullable Warning warning, long affectedRows) {
+            super(info, warning);
+            this.affectedRows = affectedRows;
+        }
+
+        @Override
+        public long affectedRows() {
+            return this.affectedRows;
+        }
+
+        @Override
+        public long rowCount() {
+            return 0L;
+        }
+
+        @Override
+        public boolean hasMoreFetch() {
+            return false;
+        }
+
+
+    } // SimpleUpdateStates
+
+
+    private static final class SimpleQueryStates extends SimpleResultStates {
+
+        private final long rowCount;
+
+        private final boolean moreFetch;
+
+        private SimpleQueryStates(@Nullable TransactionInfo info, @Nullable Warning warning, long rowCount,
+                                  boolean moreFetch) {
+            super(info, warning);
+            this.rowCount = rowCount;
+            this.moreFetch = moreFetch;
+        }
+
+
+        @Override
+        public long affectedRows() {
+            return this.rowCount;
+        }
+
+        @Override
+        public boolean hasMoreFetch() {
+            return this.moreFetch;
+        }
+
+        @Override
+        public long rowCount() {
+            return this.rowCount;
+        }
+
+
+    } // SimpleQueryStates
+
+
+    private static final class ArmyWarning implements Warning {
+
+        private final String message;
+
+        private final String sqlState;
+
+        private final int vendor;
+
+        /**
+         * @see JdbcExecutor#mapToArmyWarning(SQLWarning)
+         */
+        private ArmyWarning(SQLWarning w) {
+            final String m;
+            m = w.getMessage();
+            this.message = m == null ? "" : m;
+            this.sqlState = w.getSQLState();
+            this.vendor = w.getErrorCode();
+        }
+
+        @SuppressWarnings("unchecked")
+        @Nullable
+        @Override
+        public <T> T valueOf(final Option<T> option) {
+            final Object value;
+            if (option == Option.MESSAGE) {
+                value = this.message;
+            } else if (option == Option.SQL_STATE) {
+                value = this.sqlState;
+            } else if (option == Option.VENDOR_CODE) {
+                value = this.vendor;
+            } else {
+                value = null;
+            }
+            return (T) value;
+        }
+
+        @Override
+        public String message() {
+            return this.message;
+        }
+
+        @Override
+        public String toString() {
+            return _StringUtils.builder(50)
+                    .append(getClass().getName())
+                    .append("[message:")
+                    .append(this.message)
+                    .append(",sqlState:")
+                    .append(this.sqlState)
+                    .append(",vendor:")
+                    .append(this.vendor)
+                    .append(",hash:")
+                    .append(System.identityHashCode(this))
+                    .append(']')
+                    .toString();
+        }
+
+
+    } // ArmyWarning
 
 }

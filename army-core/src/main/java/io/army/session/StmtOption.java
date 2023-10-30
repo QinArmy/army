@@ -1,5 +1,7 @@
 package io.army.session;
 
+import java.util.function.Consumer;
+
 public interface StmtOption {
 
     boolean isPreferServerPrepare();
@@ -39,6 +41,9 @@ public interface StmtOption {
     int fetchSize();
 
     MultiStmtMode multiStmtMode();
+
+
+    Consumer<ResultStates> stateConsumer();
 
 
 }

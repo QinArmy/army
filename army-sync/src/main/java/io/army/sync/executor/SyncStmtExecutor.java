@@ -66,33 +66,8 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
     void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
 
-    /**
-     * <p>
-     * Execute INSERT statement that possibly get auto generated key.
-     * </p>
-     *
-     * @throws io.army.session.DataAccessException when access database occur error.
-     * @throws io.army.ArmyException               throw when:<ul>
-     *                                             <li>param error</li>
-     *                                             </ul>
-     * @throws IllegalArgumentException            throw when timeout negative.
-     */
-    long insertAsLong(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
-
     ResultStates insert(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
 
-    /**
-     * <p>
-     * Executor non-insert dml.
-     * </p>
-     *
-     * @throws io.army.session.DataAccessException when access database occur error.
-     * @throws io.army.ArmyException               throw when:<ul>
-     *                                             <li>param error</li>
-     *                                             </ul>
-     * @throws IllegalArgumentException            throw when timeout negative.
-     */
-    long updateAsLong(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
 
     ResultStates update(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
 
@@ -100,15 +75,17 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
-    List<Long> batchUpdateList(BatchStmt stmt, IntFunction<List<Long>> listConstructor, SyncStmtOption option,
-                               @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
+    <R> List<R> batchUpdateList(BatchStmt stmt, IntFunction<List<R>> listConstructor, SyncStmtOption option,
+                                Class<R> elementClass, @Nullable TableMeta<?> domainTable,
+                                @Nullable List<R> rowsList) throws DataAccessException;
 
     /**
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
-    Stream<Long> batchUpdate(BatchStmt stmt, IntFunction<List<Long>> listConstructor, SyncStmtOption option,
-                             @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
+    <R> Stream<R> batchUpdate(BatchStmt stmt, SyncStmtOption option, Class<R> elementClass,
+                              @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList)
+            throws DataAccessException;
 
 
     @Nullable

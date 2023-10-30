@@ -60,6 +60,14 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     @Override
+    public final long sessionIdentifier() throws SessionException {
+        if (((ArmySyncSessionFactory) this.factory).sessionIdentifierEnable) {
+            return this.stmtExecutor.sessionIdentifier();
+        }
+        return 0L;
+    }
+
+    @Override
     public final boolean inTransaction() {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
@@ -483,33 +491,33 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     /**
      * @see #update(SimpleDmlStatement, SyncStmtOption)
      */
-    private long executeInsert(InsertStatement statement, SyncStmtOption option) throws ArmyException {
+    private ResultStates executeInsert(InsertStatement statement, SyncStmtOption option) throws ArmyException {
         final Stmt stmt;
         stmt = this.parseInsertStatement(statement);
 
-        final long affectedRows;
+        final ResultStates states;
 
         if (stmt instanceof SimpleStmt) {
-            affectedRows = this.stmtExecutor.insertAsLong((SimpleStmt) statement, option);
+            states = this.stmtExecutor.insert((SimpleStmt) statement, option);
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
         } else {
             final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_Insert) statement).table();
             final PairStmt pairStmt = (PairStmt) stmt;
 
-            final long parentRows;
-            parentRows = this.stmtExecutor.insertAsLong(pairStmt.firstStmt(), option);
+            final ResultStates parentStates;
+            parentStates = this.stmtExecutor.insert(pairStmt.firstStmt(), option);
 
             try {
-                affectedRows = this.stmtExecutor.insertAsLong(pairStmt.secondStmt(), option);
+                states = this.stmtExecutor.insert(pairStmt.secondStmt(), option);
             } catch (Throwable e) {
                 throw _Exceptions.childInsertError(this, domainTable, e);
             }
-            if (affectedRows != parentRows) {
-                throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentRows, affectedRows);
+            if (states.affectedRows() != parentStates.affectedRows()) {
+                throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), states.affectedRows());
             }
         }
-        return affectedRows;
+        return states;
     }
 
     private long executeUpdate(SimpleDmlStatement statement, SyncStmtOption option) throws ArmyException {

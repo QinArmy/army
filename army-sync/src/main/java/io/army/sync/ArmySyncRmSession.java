@@ -1,7 +1,5 @@
 package io.army.sync;
 
-import javax.annotation.Nullable;
-
 import io.army.session.*;
 import io.army.session.executor.DriverSpiHolder;
 import io.army.sync.executor.SyncRmStmtExecutor;
@@ -10,6 +8,7 @@ import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
@@ -373,8 +372,13 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         }
 
         @Override
+        public boolean isDriverAssignableTo(Class<?> spiClass) {
+            return this.stmtExecutor.isDriverAssignableTo(spiClass);
+        }
+
+        @Override
         public <T> T getDriverSpi(Class<T> spiClass) {
-            return ((DriverSpiHolder) this.stmtExecutor).getDriverSpi(spiClass);
+            return this.stmtExecutor.getDriverSpi(spiClass);
         }
 
 

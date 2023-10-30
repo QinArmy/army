@@ -18,7 +18,7 @@ import io.army.session.OptionSpec;
  * @see StmtExecutorFactorySpec
  * @since 1.0
  */
-public interface StmtExecutor extends OptionSpec {
+public interface StmtExecutor extends OptionSpec, DriverSpiHolder {
 
 
     /**
