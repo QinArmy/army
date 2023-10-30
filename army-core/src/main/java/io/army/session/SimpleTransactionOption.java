@@ -1,12 +1,10 @@
 package io.army.session;
 
-import io.army.lang.NonNull;
-
-import javax.annotation.Nullable;
-
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -72,7 +70,7 @@ abstract class SimpleTransactionOption implements TransactionOption {
         return (T) value;
     }
 
-    @NonNull
+    @Nonnull
     @Override
     public final Isolation isolation() {
         return this.isolation;
@@ -313,7 +311,7 @@ abstract class SimpleTransactionOption implements TransactionOption {
             return (T) this.optionFunc.apply(option);
         }
 
-        @NonNull
+        @Nonnull
         @Override
         public Isolation isolation() {
             return nonNullOf(Option.ISOLATION);

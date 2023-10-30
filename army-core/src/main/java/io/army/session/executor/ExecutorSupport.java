@@ -6,9 +6,6 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.Selection;
 import io.army.criteria.TypeInfer;
 import io.army.function.IntBiFunction;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.TypeMeta;
@@ -17,6 +14,7 @@ import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntFunction;
@@ -74,9 +72,15 @@ public abstract class ExecutorSupport {
         } else if (infer instanceof TypeMeta) {
             type = ((TypeMeta) infer).mappingType();
         } else {
-            type = infer.typeMeta().mappingType();
+            final TypeMeta meta = infer.typeMeta();
+            if (meta instanceof MappingType) {
+                type = (MappingType) meta;
+            } else {
+                type = meta.mappingType();
+            }
         }
-        MappingType compatibleType;
+
+        final MappingType compatibleType;
         if (accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR) {
             assert resultClass != null;
             if (resultClass.isAssignableFrom(type.javaType())) {

@@ -3,7 +3,6 @@ package io.army.tx.sync;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.NamedThreadLocal;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Isolation;
@@ -60,8 +59,8 @@ public abstract class TransactionDefinitionHolder {
          */
         private final String name;
 
-        private TxDefinitionHolder(@Nullable TxDefinitionHolder suspended, @NonNull TransactionAttribute definition,
-                                   @NonNull String name) {
+        private TxDefinitionHolder(@Nullable TxDefinitionHolder suspended, @Nonnull TransactionAttribute definition,
+                                   @Nonnull String name) {
             this.suspended = suspended;
             this.definition = definition;
             this.name = name;

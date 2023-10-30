@@ -1,2 +1,1 @@
-@javax.annotation.Nonnull
-package io.army.codec;
+@io.army.lang.NonNullApi    io.army.codec;

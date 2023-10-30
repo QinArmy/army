@@ -1,7 +1,7 @@
 package io.army.struct;
 
 
-import io.army.lang.NonNull;
+import javax.annotation.Nonnull;
 
 /**
  * replace {@link Comparable#compareTo(Object)} return value
@@ -110,7 +110,7 @@ public enum CompareResult implements Compare.Comparer, CodeEnum {
 
     private final String display;
 
-    CompareResult(int code, @NonNull String display) {
+    CompareResult(int code, @Nonnull String display) {
         this.code = code;
         this.display = display;
     }
@@ -120,7 +120,7 @@ public enum CompareResult implements Compare.Comparer, CodeEnum {
         return code;
     }
 
-    @NonNull
+    @Nonnull
     @Override
     public String alias() {
         return display;

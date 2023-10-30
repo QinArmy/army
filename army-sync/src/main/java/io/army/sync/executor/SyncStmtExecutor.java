@@ -6,10 +6,10 @@ import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.SimpleStmt;
-import io.army.stmt.TwoStmtQueryStmt;
+import io.army.stmt.SingleSqlStmt;
+import io.army.stmt.TwoStmtModeQuerySpec;
 import io.army.sync.SyncStmtOption;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Function;
@@ -35,6 +35,26 @@ import java.util.stream.Stream;
  */
 public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
+
+    /**
+     * <p>Session identifier(non-unique, for example : database server cluster),probably is following :
+     *     <ul>
+     *         <li>server process id</li>
+     *         <li>server thread id</li>
+     *         <li>other identifier</li>
+     *     </ul>
+     *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
+     * <br/>
+     *
+     * @return {@link io.army.env.SyncKey#SESSION_IDENTIFIER_ENABLE} : <ul>
+     * <li>true :  session identifier </li>
+     * <li>false (default) : always 0 , because JDBC spi don't support get server process id (or server thread id)</li>
+     * </ul>
+     * @throws DataAccessException throw when underlying database session have closed
+     */
+    @Override
+    long sessionIdentifier() throws DataAccessException;
+
     TransactionInfo transactionInfo() throws DataAccessException;
 
     void setTransactionCharacteristics(TransactionOption option) throws DataAccessException;
@@ -57,7 +77,9 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
      *                                             </ul>
      * @throws IllegalArgumentException            throw when timeout negative.
      */
-    long insert(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
+    long insertAsLong(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
+
+    ResultStates insert(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
 
     /**
      * <p>
@@ -70,44 +92,34 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
      *                                             </ul>
      * @throws IllegalArgumentException            throw when timeout negative.
      */
-    long update(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
+    long updateAsLong(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
 
+    ResultStates update(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException;
 
     /**
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
-    List<Long> batchUpdate(BatchStmt stmt, IntFunction<List<Long>> listConstructor, SyncStmtOption option,
-                           @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
+    List<Long> batchUpdateList(BatchStmt stmt, IntFunction<List<Long>> listConstructor, SyncStmtOption option,
+                               @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
 
-    @Nullable
-    <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option);
+    /**
+     * @return a unmodified list.
+     * @throws OptimisticLockException when
+     */
+    Stream<Long> batchUpdate(BatchStmt stmt, IntFunction<List<Long>> listConstructor, SyncStmtOption option,
+                             @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
 
-    @Nullable
-    <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option);
-
-    @Nullable
-    <R> R queryOneRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option);
-
-    <T> List<T> query(SimpleStmt stmt, Class<T> resultClass, Supplier<List<T>> listConstructor, SyncStmtOption option)
+    <T> Stream<T> query(SingleSqlStmt stmt, Class<T> resultClass, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> List<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option)
+    <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> List<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor,
-                            SyncStmtOption option) throws DataAccessException;
-
-    <R> int secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> resultList);
-
-    <R> Stream<R> queryStream(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option)
+    <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> Stream<R> queryObjectStream(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option)
-            throws DataAccessException;
-
-    <R> Stream<R> queryRecordStream(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
-            throws DataAccessException;
+    <R> Stream<R> secondQuery(TwoStmtModeQuerySpec stmt, SyncStmtOption option, List<R> resultList);
 
 
     void close() throws DataAccessException;

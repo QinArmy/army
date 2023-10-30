@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @since 1.0
  */
-public interface SimpleStmt extends GenericSimpleStmt {
+public interface SimpleStmt extends SingleSqlStmt {
 
     /**
      * @return a unmodifiable list

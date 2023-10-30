@@ -31,22 +31,6 @@ import java.util.function.Supplier;
  */
 public interface ReactiveStmtExecutor extends StmtExecutor {
 
-    /**
-     * <p>
-     * Session identifier(non-unique, for example : database server cluster),probably is following :
-     *     <ul>
-     *         <li>server process id</li>
-     *         <li>server thread id</li>
-     *         <li>other identifier</li>
-     *     </ul>
-     *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
-     * <br/>
-     *
-     * @return session identifier
-     * @throws DataAccessException throw when underlying database session have closed.
-     */
-    long sessionIdentifier() throws DataAccessException;
-
     Mono<TransactionInfo> transactionInfo();
 
     Mono<Void> setTransactionCharacteristics(TransactionOption option);
@@ -84,10 +68,10 @@ public interface ReactiveStmtExecutor extends StmtExecutor {
     QueryResults batchQueryResults(BatchStmt stmt, ReactiveStmtOption option);
 
 
-    Flux<ResultItem> execute(GenericSimpleStmt stmt, ReactiveStmtOption option);
+    Flux<ResultItem> execute(SingleSqlStmt stmt, ReactiveStmtOption option);
 
 
-    Flux<ResultItem> executeMultiStmt(List<GenericSimpleStmt> stmtList, ReactiveStmtOption option);
+    Flux<ResultItem> executeMultiStmt(List<SingleSqlStmt> stmtList, ReactiveStmtOption option);
 
 
     <T> Mono<T> close();

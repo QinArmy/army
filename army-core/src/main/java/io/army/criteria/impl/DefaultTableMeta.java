@@ -4,16 +4,14 @@ import io.army.ArmyException;
 import io.army.annotation.DiscriminatorValue;
 import io.army.annotation.Inheritance;
 import io.army.annotation.Table;
-import io.army.lang.NonNull;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -603,7 +601,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
             return this.primaryField;
         }
 
-        @NonNull
+        @Nonnull
         @Override
         public FieldMeta<T> discriminator() {
             return this.discriminator;
@@ -676,7 +674,7 @@ abstract class DefaultTableMeta<T> implements TableMeta<T> {
             return this.parent.primaryField;
         }
 
-        @NonNull
+        @Nonnull
         @Override
         public FieldMeta<? super T> discriminator() {
             return this.parent.discriminator;

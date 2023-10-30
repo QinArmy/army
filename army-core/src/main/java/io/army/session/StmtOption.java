@@ -15,7 +15,6 @@ public interface StmtOption {
      */
     boolean isParseBatchAsMultiStmt();
 
-    boolean isPreferClientStream();
 
     int timeoutMillSeconds();
 

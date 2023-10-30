@@ -1,2 +1,1 @@
-@javax.annotation.Nonnull
-package io.army.bean;
+@io.army.lang.NonNullApi    io.army.bean;

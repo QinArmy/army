@@ -4,7 +4,7 @@ import io.army.criteria.SQLParam;
 
 import java.util.List;
 
-public interface BatchStmt extends GenericSimpleStmt {
+public interface BatchStmt extends SingleSqlStmt {
 
 
     List<List<SQLParam>> groupList();

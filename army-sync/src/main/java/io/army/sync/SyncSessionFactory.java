@@ -33,4 +33,5 @@ public interface SyncSessionFactory extends SessionFactory, AutoCloseable {
     @Override
     void close() throws SessionFactoryException;
 
+
 }

@@ -1,7 +1,7 @@
 package io.army.struct;
 
 
-import io.army.lang.NonNull;
+import javax.annotation.Nonnull;
 
 /**
  * @since 1.0
@@ -13,8 +13,8 @@ public interface Compare<T> {
     /**
      * @see CompareResult#resolve(int)
      */
-    @NonNull
-    CompareResult compare(@NonNull T o);
+    @Nonnull
+    CompareResult compare(@Nonnull T o);
 
 
     interface Comparer {

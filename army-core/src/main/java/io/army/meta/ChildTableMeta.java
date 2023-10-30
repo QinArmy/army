@@ -1,18 +1,19 @@
 package io.army.meta;
 
 
-import io.army.lang.NonNull;
 import io.army.struct.CodeEnum;
+
+import javax.annotation.Nonnull;
 
 public interface ChildTableMeta<T> extends TableMeta<T> {
 
-    @NonNull
+    @Nonnull
     @Override
     FieldMeta<? super T> discriminator();
 
     ParentTableMeta<?> parentMeta();
 
-    @NonNull
+    @Nonnull
     CodeEnum discriminatorValue();
 
 

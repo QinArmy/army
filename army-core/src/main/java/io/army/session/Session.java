@@ -25,6 +25,21 @@ public interface Session extends CloseableSpec, OptionSpec {
     String name();
 
     /**
+     * <p>
+     * Session identifier(non-unique, for example : database server cluster),probably is following :
+     *     <ul>
+     *         <li>server process id</li>
+     *         <li>server thread id</li>
+     *         <li>other identifier</li>
+     *     </ul>
+     *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
+     * </p>
+     *
+     * @throws SessionException throw when session have closed.
+     */
+    long sessionIdentifier() throws SessionException;
+
+    /**
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
      */
     SessionFactory sessionFactory();

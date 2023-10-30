@@ -14,9 +14,6 @@ import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.env.ArmyKey;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -25,6 +22,7 @@ import io.army.sqltype.SqlType;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.Stmt;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -872,9 +870,14 @@ public abstract class _Exceptions {
         throw new ArmyException(m);
     }
 
+    @Deprecated
     public static OptimisticLockException optimisticLock(long affectedRows) {
         String m = String.format("Affected rows is %s,don't satisfy expected rows.", affectedRows);
         return new OptimisticLockException(m);
+    }
+
+    public static OptimisticLockException optimisticLock() {
+        return new OptimisticLockException("Affected rows is zero,don't satisfy expected rows.");
     }
 
 

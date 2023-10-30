@@ -1,11 +1,9 @@
 package io.army.sync;
 
 import io.army.criteria.*;
-
-import javax.annotation.Nullable;
-
 import io.army.session.*;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -22,6 +20,27 @@ import java.util.stream.Stream;
  * </ul>
  */
 public interface SyncSession extends Session, AutoCloseable {
+
+
+    /**
+     * <p>
+     * Session identifier(non-unique, for example : database server cluster),probably is following :
+     *     <ul>
+     *         <li>server process id</li>
+     *         <li>server thread id</li>
+     *         <li>other identifier</li>
+     *     </ul>
+     *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
+     * </p>
+     *
+     * @return {@link io.army.env.SyncKey#SESSION_IDENTIFIER_ENABLE} : <ul>
+     * <li>true :  session identifier </li>
+     * <li>false (default) : always 0 , because JDBC spi don't support get server process id (or server thread id)</li>
+     * </ul>
+     * @throws SessionException throw when underlying database session have closed
+     */
+    @Override
+    long sessionIdentifier() throws SessionException;
 
     @Override
     SyncSessionFactory sessionFactory();

@@ -30,21 +30,6 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
 
     /**
      * <p>
-     * Session identifier(non-unique, for example : database server cluster),probably is following :
-     *     <ul>
-     *         <li>server process id</li>
-     *         <li>server thread id</li>
-     *         <li>other identifier</li>
-     *     </ul>
-     *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
-     * </p>
-     *
-     * @throws SessionException throw when session have closed.
-     */
-    long sessionIdentifier() throws SessionException;
-
-    /**
-     * <p>
      * <strong>NOTE</strong> : driver don't send message to database server before subscribing.
      * </p>
      *

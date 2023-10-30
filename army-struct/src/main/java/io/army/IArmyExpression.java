@@ -1,9 +1,7 @@
 package io.army;
 
-import io.army.lang.NonNull;
-
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.io.PrintWriter;
 
 /**
@@ -12,7 +10,7 @@ import java.io.PrintWriter;
 @Deprecated
 public interface IArmyExpression {
 
-    @NonNull
+    @Nonnull
     ErrorCode getErrorCode();
 
     /**

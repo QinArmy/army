@@ -1,11 +1,10 @@
 package io.army.bean;
 
 
-import javax.annotation.Nullable;
-
 import io.army.proxy.ArmyProxy;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.*;
 import java.util.Map;
@@ -89,8 +88,8 @@ public abstract class ObjectAccessorFactory {
         try {
             return constructor.newInstance();
         } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
-            String m = String.format("%s don't declared public default constructor."
-                    , constructor.getDeclaringClass().getName());
+            String m = String.format("%s occur error.",
+                    constructor.getDeclaringClass().getName());
             throw new ObjectAccessException(m, e);
         }
     }
@@ -99,8 +98,7 @@ public abstract class ObjectAccessorFactory {
         try {
             return beanClass.getConstructor();
         } catch (NoSuchMethodException e) {
-            String m = String.format("%s don't declared public default constructor."
-                    , beanClass.getName());
+            String m = String.format("%s don't declared public default constructor.", beanClass.getName());
             throw new ObjectAccessException(m, e);
         }
     }

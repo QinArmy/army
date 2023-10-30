@@ -1,2 +1,1 @@
-@javax.annotation.Nonnull
-package io.army.criteria.impl.inner;
+@io.army.lang.NonNullApi    io.army.criteria.impl.inner;

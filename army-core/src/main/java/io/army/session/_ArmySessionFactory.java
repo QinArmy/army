@@ -9,9 +9,6 @@ import io.army.dialect.DialectParserFactory;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingEnv;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
@@ -21,6 +18,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Objects;
@@ -325,6 +323,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
             this.visible = visible;
             return (B) this;
         }
+
 
         @Override
         public final R build() throws SessionException {

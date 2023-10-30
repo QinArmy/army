@@ -22,6 +22,23 @@ public interface StmtExecutor extends OptionSpec {
 
 
     /**
+     * <p>
+     * Session identifier(non-unique, for example : database server cluster),probably is following :
+     *     <ul>
+     *         <li>server process id</li>
+     *         <li>server thread id</li>
+     *         <li>other identifier</li>
+     *     </ul>
+     *     <strong>NOTE</strong>: identifier will probably be updated if reconnect.
+     * <br/>
+     *
+     * @return session identifier
+     * @throws DataAccessException throw when underlying database session have closed.
+     */
+    long sessionIdentifier() throws DataAccessException;
+
+
+    /**
      * @return true : underlying database session in transaction block.
      * @throws DataAccessException throw when underlying database session have closed.
      */

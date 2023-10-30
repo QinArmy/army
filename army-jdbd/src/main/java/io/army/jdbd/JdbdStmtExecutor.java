@@ -5,9 +5,6 @@ import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
@@ -43,6 +40,7 @@ import io.jdbd.statement.ParametrizedStatement;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.time.temporal.Temporal;
@@ -400,7 +398,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final Flux<ResultItem> execute(final GenericSimpleStmt stmt, final ReactiveStmtOption option) {
+    public final Flux<ResultItem> execute(final SingleSqlStmt stmt, final ReactiveStmtOption option) {
 //        Flux<ResultItem> flux;
 //        try {
 //            final BindStatement statement;
@@ -418,7 +416,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final Flux<ResultItem> executeMultiStmt(List<GenericSimpleStmt> stmtList, ReactiveStmtOption option) {
+    public final Flux<ResultItem> executeMultiStmt(List<SingleSqlStmt> stmtList, ReactiveStmtOption option) {
         // TODO
         throw new UnsupportedOperationException();
     }
@@ -1094,7 +1092,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
 
-    private BindStatement bindStatement(final GenericSimpleStmt stmt, final ReactiveStmtOption option)
+    private BindStatement bindStatement(final SingleSqlStmt stmt, final ReactiveStmtOption option)
             throws TimeoutException, JdbdException {
         final BindStatement statement;
         statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());

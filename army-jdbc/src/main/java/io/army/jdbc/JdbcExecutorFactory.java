@@ -20,8 +20,6 @@ abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
     static final byte SET_OBJECT_METHOD = 1;
     static final byte EXECUTE_LARGE_UPDATE_METHOD = 2;
     static final byte EXECUTE_LARGE_BATCH_METHOD = 4;
-
-
     final ExecutorEnv executorEnv;
 
     final MappingEnv mappingEnv;
@@ -45,6 +43,8 @@ abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
      */
     final boolean truncatedTimeType;
 
+    final boolean sessionIdentifierEnable;
+
     private final String dataSourceCloseMethod;
 
     private boolean closed;
@@ -55,7 +55,8 @@ abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
         this.serverMeta = this.mappingEnv.serverMeta();
         this.serverDataBase = this.serverMeta.serverDatabase();
 
-        this.env = executorEnv.environment();
+        final ArmyEnvironment env = executorEnv.environment();
+        this.env = env;
 
         if (this.env.getOrDefault(SyncKey.JDBC_FORBID_V18)) {
             this.useLargeUpdate = false;
@@ -67,9 +68,10 @@ abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
             this.useExecuteLargeBatch = (methodFlag & EXECUTE_LARGE_BATCH_METHOD) != 0;
         }
 
-        this.databaseSessionHolder = this.env.getOrDefault(ArmyKey.DATABASE_SESSION_HOLDER_ENABLE);
-        this.dataSourceCloseMethod = this.env.get(ArmyKey.DATASOURCE_CLOSE_METHOD);
-        this.truncatedTimeType = this.env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
+        this.databaseSessionHolder = env.getOrDefault(ArmyKey.DATABASE_SESSION_HOLDER_ENABLE);
+        this.dataSourceCloseMethod = env.get(ArmyKey.DATASOURCE_CLOSE_METHOD);
+        this.truncatedTimeType = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
+        this.sessionIdentifierEnable = env.getOrDefault(SyncKey.SESSION_IDENTIFIER_ENABLE);
 
     }
 

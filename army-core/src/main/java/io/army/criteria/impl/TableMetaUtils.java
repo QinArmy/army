@@ -3,10 +3,6 @@ package io.army.criteria.impl;
 import io.army.annotation.*;
 import io.army.dialect._Constant;
 import io.army.generator.FieldGenerator;
-import io.army.lang.NonNull;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.struct.CodeEnum;
@@ -14,6 +10,8 @@ import io.army.util._Collections;
 import io.army.util._StringUtils;
 import io.qinarmy.util.Pair;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -70,8 +68,8 @@ abstract class TableMetaUtils {
     }
 
 
-    @NonNull
-    static Table tableMeta(@NonNull Class<?> entityClass) {
+    @Nonnull
+    static Table tableMeta(@Nonnull Class<?> entityClass) {
         final Table table = entityClass.getAnnotation(Table.class);
         if (table == null) {
             throw createNonAnnotationException(entityClass, Table.class);

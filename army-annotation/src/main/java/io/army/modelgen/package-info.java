@@ -1,2 +1,1 @@
-@javax.annotation.Nonnull
-package io.army.modelgen;
+@io.army.lang.NonNullApi    io.army.modelgen;

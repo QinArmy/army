@@ -1,12 +1,10 @@
 package io.army.util;
 
-import io.army.lang.NonNull;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingType;
 import io.army.mapping.UnaryGenericsMapping;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 public abstract class ArrayUtils {
@@ -15,10 +13,10 @@ public abstract class ArrayUtils {
         throw new UnsupportedOperationException();
     }
 
-    @NonNull
+    @Nonnull
     @SafeVarargs
     @SuppressWarnings("varargs")
-    public static <T> Set<T> asSet(@NonNull Collection<T> collection, @Nullable T... e) {
+    public static <T> Set<T> asSet(@Nonnull Collection<T> collection, @Nullable T... e) {
         Set<T> set = new HashSet<>(collection);
         if (e != null) {
             Collections.addAll(set, e);
@@ -28,7 +26,7 @@ public abstract class ArrayUtils {
 
     @SafeVarargs
     @SuppressWarnings("varargs")
-    @NonNull
+    @Nonnull
     public static <T> Set<T> asSet(@Nullable T... e) {
         return asSet(Collections.emptySet(), e);
     }
@@ -36,14 +34,14 @@ public abstract class ArrayUtils {
 
     @SafeVarargs
     @SuppressWarnings("varargs")
-    @NonNull
-    public static <T> Set<T> asUnmodifiableSet(@NonNull Collection<T> collection, @Nullable T... e) {
+    @Nonnull
+    public static <T> Set<T> asUnmodifiableSet(@Nonnull Collection<T> collection, @Nullable T... e) {
         return Collections.unmodifiableSet(asSet(collection, e));
     }
 
     @SafeVarargs
     @SuppressWarnings("varargs")
-    @NonNull
+    @Nonnull
     public static <T> Set<T> asUnmodifiableSet(@Nullable T... e) {
         return asUnmodifiableSet(Collections.emptySet(), e);
     }
@@ -76,7 +74,7 @@ public abstract class ArrayUtils {
 
     @SafeVarargs
     @SuppressWarnings("varargs")
-    @NonNull
+    @Nonnull
     public static <T> List<T> of(T t1, T t2, T t3, T t4, T t5, @Nullable T... rest) {
         final List<T> list;
         if (rest == null) {
@@ -114,7 +112,7 @@ public abstract class ArrayUtils {
 
     @SafeVarargs
     @SuppressWarnings("varargs")
-    @NonNull
+    @Nonnull
     public static <T> List<T> unmodifiableListOf(T first, T... rest) {
         final List<T> list;
         if (rest.length == 0) {
@@ -130,8 +128,8 @@ public abstract class ArrayUtils {
 
     @SafeVarargs
     @SuppressWarnings("varargs")
-    @NonNull
-    public static <T> List<T> asList(@NonNull Collection<T> collection, @Nullable T... addElements) {
+    @Nonnull
+    public static <T> List<T> asList(@Nonnull Collection<T> collection, @Nullable T... addElements) {
         List<T> list;
         int size = collection.size();
         if (addElements != null) {

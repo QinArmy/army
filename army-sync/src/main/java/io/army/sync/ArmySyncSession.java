@@ -3,9 +3,6 @@ package io.army.sync;
 import io.army.ArmyException;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.session.*;
@@ -16,6 +13,7 @@ import io.army.util.ArmyCriteria;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
@@ -305,7 +303,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
             final List<Long> resultList;
             if (stmt instanceof BatchStmt) {
-                resultList = this.stmtExecutor.batchUpdate((BatchStmt) stmt, listConstructor, option, domainTable, null);
+                resultList = this.stmtExecutor.batchUpdateList((BatchStmt) stmt, listConstructor, option, domainTable, null);
             } else if (!(stmt instanceof PairBatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (!this.inTransaction()) {
@@ -315,8 +313,8 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
                 final PairBatchStmt pairStmt = (PairBatchStmt) stmt;
 
                 final List<Long> childList;
-                childList = this.stmtExecutor.batchUpdate(pairStmt.firstStmt(), listConstructor, option, domainTable, null);
-                resultList = this.stmtExecutor.batchUpdate(pairStmt.secondStmt(), listConstructor, option, domainTable, childList);
+                childList = this.stmtExecutor.batchUpdateList(pairStmt.firstStmt(), listConstructor, option, domainTable, null);
+                resultList = this.stmtExecutor.batchUpdateList(pairStmt.secondStmt(), listConstructor, option, domainTable, childList);
             }
             return resultList;
         } catch (ChildUpdateException e) {
@@ -437,7 +435,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
                 return resultList;
             }
         } else {
-            rows = this.stmtExecutor.insert(stmt.firstStmt(), option);
+            rows = this.stmtExecutor.insertAsLong(stmt.firstStmt(), option);
             if (rows == 0) {
                 // exists conflict clause
                 resultList = listConstructor.get();
@@ -492,7 +490,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         final long affectedRows;
 
         if (stmt instanceof SimpleStmt) {
-            affectedRows = this.stmtExecutor.insert((SimpleStmt) statement, option);
+            affectedRows = this.stmtExecutor.insertAsLong((SimpleStmt) statement, option);
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
         } else {
@@ -500,10 +498,10 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             final PairStmt pairStmt = (PairStmt) stmt;
 
             final long parentRows;
-            parentRows = this.stmtExecutor.insert(pairStmt.firstStmt(), option);
+            parentRows = this.stmtExecutor.insertAsLong(pairStmt.firstStmt(), option);
 
             try {
-                affectedRows = this.stmtExecutor.insert(pairStmt.secondStmt(), option);
+                affectedRows = this.stmtExecutor.insertAsLong(pairStmt.secondStmt(), option);
             } catch (Throwable e) {
                 throw _Exceptions.childInsertError(this, domainTable, e);
             }
@@ -521,7 +519,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         final long affectedRows;
 
         if (stmt instanceof SimpleStmt) {
-            affectedRows = this.stmtExecutor.update((SimpleStmt) stmt, option);
+            affectedRows = this.stmtExecutor.updateAsLong((SimpleStmt) stmt, option);
 
             if (affectedRows == 0 && stmt.hasOptimistic()) {
                 throw _Exceptions.optimisticLock(affectedRows);
@@ -533,13 +531,13 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
             final PairStmt pairStmt = (PairStmt) stmt;
 
             final long childRows;
-            childRows = this.stmtExecutor.update(pairStmt.firstStmt(), option);
+            childRows = this.stmtExecutor.updateAsLong(pairStmt.firstStmt(), option);
 
             if (childRows == 0 && stmt.hasOptimistic()) {
                 throw _Exceptions.optimisticLock(childRows);
             }
             try {
-                affectedRows = this.stmtExecutor.update(pairStmt.secondStmt(), option);
+                affectedRows = this.stmtExecutor.updateAsLong(pairStmt.secondStmt(), option);
             } catch (Throwable e) {
                 throw _Exceptions.childUpdateError(this, domainTable, e);
             }

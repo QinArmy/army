@@ -148,11 +148,11 @@ public abstract class Stmts {
         return item;
     }
 
-    private static abstract class SingleSqlStmt implements GenericSimpleStmt {
+    private static abstract class ArmySingleSqlStmt implements SingleSqlStmt {
 
         private final String sql;
 
-        private SingleSqlStmt(String sql) {
+        private ArmySingleSqlStmt(String sql) {
             this.sql = sql;
         }
 
@@ -173,7 +173,7 @@ public abstract class Stmts {
 
     }//SingleSqlStmt
 
-    private static final class MinSimpleStmt extends SingleSqlStmt implements SimpleStmt {
+    private static final class MinSimpleStmt extends ArmySingleSqlStmt implements SimpleStmt {
 
         private final List<SQLParam> paramGroup;
 
@@ -290,7 +290,7 @@ public abstract class Stmts {
     }//PairBatchStmtImpl
 
 
-    private static final class SimpleDmlStmt extends SingleSqlStmt implements SimpleStmt {
+    private static final class SimpleDmlStmt extends ArmySingleSqlStmt implements SimpleStmt {
 
 
         private final List<SQLParam> paramGroup;
@@ -325,7 +325,7 @@ public abstract class Stmts {
 
     }//MinDml
 
-    private static class MinBatchDmlStmt extends SingleSqlStmt implements BatchStmt {
+    private static class MinBatchDmlStmt extends ArmySingleSqlStmt implements BatchStmt {
 
 
         private final List<List<SQLParam>> paramGroupList;
@@ -357,7 +357,7 @@ public abstract class Stmts {
 
     }//MinBatchDmlStmt
 
-    private static final class MultiStmtBatchStmtImpl extends SingleSqlStmt implements MultiStmtBatchStmt {
+    private static final class MultiStmtBatchStmtImpl extends ArmySingleSqlStmt implements MultiStmtBatchStmt {
 
 
         private final List<? extends Selection> selectionList;
@@ -393,7 +393,7 @@ public abstract class Stmts {
     }//MultiStmtBatchStm
 
 
-    private static class QueryStmt extends SingleSqlStmt implements SimpleStmt {
+    private static class QueryStmt extends ArmySingleSqlStmt implements SimpleStmt {
 
         private final List<SQLParam> paramGroup;
 
@@ -454,7 +454,7 @@ public abstract class Stmts {
 
     }//TwoStmtModeQueryStmtIml
 
-    private static class PostStmt extends SingleSqlStmt implements GeneratedKeyStmt {
+    private static class PostStmt extends ArmySingleSqlStmt implements GeneratedKeyStmt {
 
 
         private final List<SQLParam> paramList;

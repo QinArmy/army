@@ -1,9 +1,9 @@
 package io.army.criteria.impl;
 
-import io.army.lang.NonNull;
 import io.army.meta.SchemaMeta;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -36,7 +36,7 @@ public abstract class _SchemaMetaFactory {
             this.schema = _StringUtils.toLowerCase(schema);
         }
 
-        @NonNull
+        @Nonnull
         @Override
         public String catalog() {
             return this.catalog;
@@ -47,7 +47,7 @@ public abstract class _SchemaMetaFactory {
             return this.catalog.isEmpty() && this.schema.isEmpty();
         }
 
-        @NonNull
+        @Nonnull
         @Override
         public String schema() {
             return this.schema;

@@ -2,6 +2,7 @@ package io.army.lang;
 
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.meta.TypeQualifierDefault;
 import java.lang.annotation.*;
 
@@ -18,16 +19,12 @@ import java.lang.annotation.*;
  * <p> reference{@code @org.springframework.lang.NonNullApi}
  *
  * @since 1.0
- * @see NonNullFields
- * @see Nullable
- * @see NonNull
  */
 @Target(ElementType.PACKAGE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Nonnull
 @TypeQualifierDefault({ElementType.METHOD, ElementType.PARAMETER})
-@Deprecated
 public @interface NonNullApi {
 
 }

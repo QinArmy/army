@@ -1,11 +1,9 @@
 package io.army;
 
-import io.army.lang.NonNull;
-
-import javax.annotation.Nullable;
-
 import io.army.struct.CodeEnum;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -126,7 +124,7 @@ public enum ErrorCode implements CodeEnum {
         this(code, display, null);
     }
 
-    ErrorCode(int code, @NonNull String display, @Nullable ErrorCode family) {
+    ErrorCode(int code, @Nonnull String display, @Nullable ErrorCode family) {
         this.code = code;
         this.display = display;
         this.family = family == null ? this : family;
@@ -138,13 +136,13 @@ public enum ErrorCode implements CodeEnum {
         return this.code;
     }
 
-    @NonNull
+    @Nonnull
     @Override
     public String alias() {
         return this.display;
     }
 
-    @NonNull
+    @Nonnull
     public ErrorCode family() {
         return family;
     }
