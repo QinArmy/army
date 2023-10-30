@@ -16,6 +16,7 @@ import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.StreamCommander;
 import io.army.sync.StreamOption;
+import io.army.sync.SyncCursor;
 import io.army.sync.SyncStmtOption;
 import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util._Collections;
@@ -114,8 +115,14 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
-    public final ResultStates insert(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException {
+    public final <R> R insert(final SimpleStmt stmt, final SyncStmtOption option, final Class<R> resultClass)
+            throws DataAccessException {
+
+        if (resultClass != Long.class && resultClass != ResultStates.class) {
+            throw new IllegalArgumentException();
+        }
 
         final List<? extends Selection> selectionList = stmt.selectionList();
         final boolean returningId;
@@ -156,16 +163,26 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
                 }
             }
 
-            return new SimpleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows);
+            final R r;
+            if (resultClass == Long.class) {
+                r = (R) Long.valueOf(rows);
+            } else {
+                r = (R) new SimpleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows);
+            }
+            return r;
         } catch (Exception e) {
             throw wrapError(e);
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public final <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass,
                               Function<Option<?>, ?> optionFunc) throws DataAccessException {
 
+        if (resultClass != Long.class && resultClass != ResultStates.class) {
+            throw new IllegalArgumentException();
+        }
         try (final Statement statement = bindStatement(stmt, option)) {
 
             final long rows;
@@ -182,19 +199,22 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
                 rows = statement.executeUpdate(stmt.sqlText());
             }
 
-            final R result;
+            final R r;
             if (resultClass == Long.class) {
-                result = (R) Long.valueOf(rows);
-            } else if (Boolean.TRUE.equals())
-            else{
-                result = (R) new SimpleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows);
+                r = (R) Long.valueOf(rows);
+            } else if (optionFunc != Option.EMPTY_OPTION_FUNC
+                    && Boolean.TRUE.equals(optionFunc.apply(SyncCursor.SYNC_CURSOR))) {
+                r = (R) createNamedCursor(statement, rows, optionFunc);
+            } else {
+                r = (R) new SimpleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows);
             }
-            return result;
+            return r;
         } catch (Exception e) {
             throw wrapError(e);
         }
 
     }
+
 
     @Override
     public final <R> List<R> batchUpdateList(BatchStmt stmt, IntFunction<List<R>> listConstructor,
@@ -315,6 +335,13 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
     abstract TransactionInfo obtainTransaction();
 
     abstract TransactionInfo executeQueryTransaction();
+
+    /**
+     * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
+     */
+    SimpleResultStates createNamedCursor(Statement statement, long rows, Function<Option<?>, ?> optionFunc) {
+        throw new UnsupportedOperationException();
+    }
 
 
     final void setLongText(PreparedStatement stmt, int index, Object nonNull) throws SQLException {
@@ -604,7 +631,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
     /**
      * @see #insert(SimpleStmt, SyncStmtOption)
-     * @see #update(SimpleStmt, SyncStmtOption)
+     * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
      * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
      * @see #executeBatchQuery(BatchStmt, SyncStmtOption, Function)
      * @see #executeBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List)

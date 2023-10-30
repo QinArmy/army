@@ -9,13 +9,25 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
+ * <p>This interface representing blocking {@link NamedCursor}.
+ *
  * @see ResultStates#valueOf(Option)
- * @see SyncOptions#SYNC_CURSOR
+ * @see SyncCursor#SYNC_CURSOR
  * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
  * @see <a href="https://www.postgresql.org/docs/current/sql-fetch.html">PostgreSQL FETCH</a>
  * @since 1.0
  */
 public interface SyncCursor extends NamedCursor, AutoCloseable {
+
+    /**
+     * <p>
+     * When this option is supported by {@link ResultStates},this option representing the statement that produce
+     * the {@link ResultStates} declare a cursor. For example : execute postgre DECLARE command.
+     * <br/>
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
+     */
+    Option<SyncCursor> SYNC_CURSOR = Option.from("SYNC CURSOR", SyncCursor.class);
 
 
     @Nullable

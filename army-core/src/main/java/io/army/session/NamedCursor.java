@@ -10,5 +10,8 @@ public interface NamedCursor extends CloseableSpec, OptionSpec {
 
     List<Selection> selectionList();
 
+    Selection selection(int indexBasedZero);
+
+    Selection selection(String name);
 
 }
