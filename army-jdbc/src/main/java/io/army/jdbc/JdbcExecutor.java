@@ -17,10 +17,8 @@ import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.StreamCommander;
 import io.army.sync.StreamOption;
-import io.army.sync.StreamOptions;
 import io.army.sync.SyncStmtOption;
 import io.army.sync.executor.SyncStmtExecutor;
-import io.army.type.ImmutableSpec;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -208,6 +206,25 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             resultList = executeBatchUpdate(stmt, listConstructor, option, domainTable, rowsList);
         }
         return resultList;
+    }
+
+    @Nullable
+    @Override
+    public final <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option) throws DataAccessException {
+        return executeQueryOne(stmt, option, beanReaderFunc(stmt, resultClass));
+    }
+
+    @Nullable
+    @Override
+    public final <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option) throws DataAccessException {
+        return this.executeQueryOne(stmt, option, objectReaderFunc(stmt, constructor));
+    }
+
+    @Nullable
+    @Override
+    public final <R> R queryOneRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
+            throws DataAccessException {
+        return this.executeQueryOne(stmt, option, recordReaderFunc(stmt.selectionList(), function));
     }
 
     @Override
@@ -512,83 +529,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
     /**
-     * @see #update(SimpleStmt, int)
-     */
-    private Statement createUpdateStatement(final String sql, final int paramSize) throws SQLException {
-        final Statement statement;
-        if (paramSize > 0) {
-            statement = this.conn.prepareStatement(sql);
-        } else {
-            statement = this.conn.createStatement();
-        }
-        return statement;
-    }
-
-    /**
-     * @see #doQuery(SimpleStmt, int, Supplier, Function)
-     */
-    private Statement createQueryStatement(final String sql, final int paramSize) throws SQLException {
-        final Statement statement;
-        if (paramSize > 0) {
-            statement = this.conn.prepareStatement(sql);
-        } else {
-            statement = this.conn.createStatement();
-        }
-        return statement;
-    }
-
-
-    /**
-     * @see #queryAsStream(SimpleStmt, int, StreamOptions, Function)
-     */
-    private Statement createStreamStmt(final String sql, final int paramSize, final StreamOptions options)
-            throws SQLException {
-        final Statement statement;
-        if (paramSize > 0 || options.serverStream == Boolean.TRUE) {
-            if (options == StreamOptions.LIST_LIKE) {
-                statement = this.conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            } else {
-                statement = this.conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
-                        ResultSet.CLOSE_CURSORS_AT_COMMIT);
-                statement.setFetchSize(options.fetchSize);
-            }
-
-        } else if (options == StreamOptions.LIST_LIKE || options.serverStream == null) {
-            statement = this.conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-        } else {
-            statement = this.conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY,
-                    ResultSet.CLOSE_CURSORS_AT_COMMIT);
-            setClientStreamFetchSize(statement, options);
-        }
-
-        return statement;
-
-    }
-
-    private void setClientStreamFetchSize(final Statement statement, final StreamOptions options)
-            throws SQLException {
-        switch (this.factory.serverDataBase) {
-            case MySQL: {
-                if (this instanceof MySQLExecutor) {
-                    statement.setFetchSize(Integer.MIN_VALUE);
-                } else {
-                    statement.setFetchSize(options.fetchSize);
-                }
-            }
-            break;
-            case PostgreSQL:
-            case Oracle:
-            case H2:
-                statement.setFetchSize(options.fetchSize);
-                break;
-            default:
-                throw _Exceptions.unexpectedEnum(this.factory.serverDataBase);
-        }
-    }
-
-
-
-    /**
      * @see #query(SingleSqlStmt, Class, SyncStmtOption)
      */
     private <R> Function<ResultSetMetaData, RowReader<R>> beanReaderFunc(
@@ -717,6 +657,76 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
     }
 
+
+    /**
+     * @see #queryOne(SimpleStmt, Class, SyncStmtOption)
+     * @see #queryOneObject(SimpleStmt, Supplier, SyncStmtOption)
+     * @see #queryOneRecord(SimpleStmt, Function, SyncStmtOption)
+     */
+    @Nullable
+    private <R> R executeQueryOne(final SimpleStmt stmt, final SyncStmtOption option,
+                                  final Function<ResultSetMetaData, RowReader<R>> function)
+            throws DataAccessException {
+
+        try (Statement statement = bindStatement(stmt, option)) {
+
+            try (ResultSet resultSet = jdbcExecuteQuery(statement, stmt.sqlText())) {
+
+                final RowReader<R> rowReader;
+                rowReader = function.apply(resultSet.getMetaData());
+
+                final R row;
+
+                if (resultSet.next()) {
+                    if (stmt instanceof GeneratedKeyStmt) {
+                        readOneInsertRowId(resultSet, rowReader, (GeneratedKeyStmt) stmt);
+                    }
+                    row = rowReader.readOneRow(resultSet);
+                    if (resultSet.next()) {
+                        throw new CriteriaException("Database response more than one row");
+                    }
+                } else {
+                    row = null;
+                }
+
+                return row;
+            }
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+
+    }
+
+
+    /**
+     * @see #executeQueryOne(SimpleStmt, SyncStmtOption, Function)
+     */
+    private void readOneInsertRowId(final ResultSet resultSet, final RowReader<?> rowReader, final GeneratedKeyStmt stmt)
+            throws SQLException {
+
+        if (stmt.rowSize() != 1) {
+            // no bug, never here
+            String m = String.format("insert row number[%s] not 1", stmt.rowSize());
+            throw new CriteriaException(m);
+        }
+
+        final PrimaryFieldMeta<?> idField = stmt.idField();
+        final MappingType type = idField.mappingType();
+        final MappingEnv env = this.factory.mappingEnv;
+        final SqlType idSqlType = rowReader.sqlTypeArray[stmt.idSelectionIndex()];
+
+        Object idValue;
+        // below read id value
+        idValue = get(resultSet, 1, idSqlType); // read id column
+        if (idValue == null) {
+            throw _Exceptions.idValueIsNull(0, idField);
+        }
+        idValue = type.afterGet(idSqlType, env, idValue); // MappingType convert id column
+        stmt.setGeneratedIdValue(0, idValue);     // set id column
+
+    }
+
+
     /**
      * @see #query(SingleSqlStmt, Class, SyncStmtOption)
      * @see #queryObject(SingleSqlStmt, Supplier, SyncStmtOption)
@@ -763,8 +773,12 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             final RowReader<R> rowReader;
             rowReader = function.apply(resultSet.getMetaData());
 
-            final RowSpliterator<R> spliterator;
-            spliterator = new RowSpliterator<>(statement, resultSet, rowReader, stmt, option);
+            final JdbcSimpleSpliterator<R> spliterator;
+            if (stmt instanceof GeneratedKeyStmt) {
+                spliterator = new InsertRowSpliterator<>(statement, resultSet, rowReader, (GeneratedKeyStmt) stmt, option);
+            } else {
+                spliterator = new SimpleRowSpliterator<>(statement, resultSet, rowReader, stmt, option);
+            }
 
             return assembleStream(spliterator, option);
         } catch (Throwable e) {
@@ -1025,59 +1039,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
     }
 
-    /**
-     * @see #doQuery(SimpleStmt, int, Supplier, Function)
-     */
-    private <R> List<R> readReturningInsert(final ResultSet set, final RowReader<R> rowReader,
-                                            final GeneratedKeyStmt stmt,
-                                            final Supplier<List<R>> listConstructor) throws SQLException {
-
-        try (ResultSet resultSet = set) {
-
-            final boolean optimistic = stmt.hasOptimistic();
-            final int idSelectionIndex = stmt.idSelectionIndex();
-
-            final PrimaryFieldMeta<?> idField = stmt.idField();
-            final MappingType type = idField.mappingType();
-            final SqlType idSqlType = rowReader.sqlTypeArray[idSelectionIndex];
-
-
-            final MappingEnv env = this.factory.mappingEnv;
-            final int rowSize = stmt.rowSize();
-
-            List<R> list = listConstructor.get();
-            if (list == null) {
-                throw _Exceptions.listConstructorError();
-            }
-            Object idValue;
-            int rowIndex = 0;
-            for (final int idIndexBasedOne = idSelectionIndex + 1; resultSet.next(); rowIndex++) {
-                if (rowIndex == rowSize) {
-                    throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex + 1);
-                }
-                // read id start
-                idValue = get(resultSet, idIndexBasedOne, idSqlType);
-                if (idValue == null) {
-                    throw _Exceptions.idValueIsNull(rowIndex, idField);
-                }
-                idValue = type.afterGet(idSqlType, env, idValue);
-                stmt.setGeneratedIdValue(rowIndex, idValue);
-                // read id end
-                list.add(rowReader.readOneRow(resultSet)); // read row
-            }
-            if (optimistic && rowIndex == 0) {
-                throw _Exceptions.optimisticLock(0);
-            } else if (rowIndex != rowSize) {
-                throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
-            }
-            if (list instanceof ImmutableSpec
-                    && !(stmt instanceof TwoStmtModeQuerySpec && rowReader instanceof ObjectReader)) {
-                list = _Collections.unmodifiableListForDeveloper(list);
-            }
-            return list;
-        }
-    }
-
 
     /**
      * @see #insert(SimpleStmt, SyncStmtOption)
@@ -1243,10 +1204,10 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
     }
 
 
-    private static SQLException insertedRowsAndGenerateIdNotMatch(int insertedRows, int actualCount) {
+    private static DataAccessException insertedRowsAndGenerateIdNotMatch(int insertedRows, int actualCount) {
         String m = String.format("insertedRows[%s] and generateKeys count[%s] not match.", insertedRows,
                 actualCount);
-        return new SQLException(m);
+        return new DataAccessException(m);
     }
 
 
@@ -1739,7 +1700,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
      * <p>This class is responsible for spite rows from {@link ResultSet} to {@link Stream} with {@link #readRowStream(int, Consumer)} method.
      * <p>This class is base class of following
      * <ul>
-     *     <li>{@link RowSpliterator}</li>
+     *     <li>{@link InsertRowSpliterator}</li>
      *     <li>{@link JdbcBatchSpliterator}</li>
      * </ul>
      *
@@ -1751,7 +1712,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
         private boolean closed;
 
-        private boolean canceled;
+        boolean canceled;
 
         int totalRowCount;
 
@@ -1773,7 +1734,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             } catch (Exception e) {
                 throw handleException(e);
             } catch (Error e) {
-                close();
+                handleError(e);
                 throw e;
             }
         }
@@ -1793,7 +1754,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             } catch (Exception e) {
                 throw handleException(e);
             } catch (Error e) {
-                close();
+                handleError(e);
                 throw e;
             }
         }
@@ -1815,7 +1776,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             } catch (Exception e) {
                 throw handleException(e);
             } catch (Error e) {
-                close();
+                handleError(e);
                 throw e;
             }
 
@@ -1835,12 +1796,13 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
         }
 
 
-        abstract boolean readRowStream(final int rowSize, final Consumer<? super R> action) throws SQLException;
+        abstract boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException;
 
         abstract void doCloseStream();
 
         abstract ArmyException handleException(Exception cause);
 
+        abstract void handleError(Error cause);
 
         final void close() {
             if (this.closed) {
@@ -1898,31 +1860,33 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
     }//JdbcRowSpliterator
 
 
-    private static final class RowSpliterator<R> extends JdbcRowSpliterator<R> {
+    private static abstract class JdbcSimpleSpliterator<R> extends JdbcRowSpliterator<R> {
 
-        private final Statement statement;
+        final Statement statement;
 
-        private final ResultSet resultSet;
+        final SimpleStmt stmt;
 
-        private final RowReader<R> rowReader;
+        final ResultSet resultSet;
 
-        private final boolean hasOptimistic;
+        final RowReader<R> rowReader;
 
-        /**
-         * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
-         */
-        private RowSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader,
-                               SimpleStmt stmt, StreamOption option) {
+        final boolean hasOptimistic;
+
+
+        private JdbcSimpleSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader,
+                                      SimpleStmt stmt, StreamOption option) {
             super(option);
             this.statement = statement;
+            this.stmt = stmt;
             this.resultSet = resultSet;
             this.rowReader = rowReader;
+
             this.hasOptimistic = stmt.hasOptimistic();
 
         }
 
         @Override
-        public int characteristics() {
+        public final int characteristics() {
             int bits = 0;
             if (!(this.rowReader instanceof SingleColumnRowReader)) {
                 bits |= NONNULL;
@@ -1930,13 +1894,25 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             return bits;
         }
 
+
+    } // JdbcSimpleSpliterator
+
+
+    private static final class SimpleRowSpliterator<R> extends JdbcSimpleSpliterator<R> {
+
         /**
-         * @see #tryAdvance(Consumer)
-         * @see #forEachRemaining(Consumer)
+         * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
          */
-        boolean readRowStream(final int rowSize, final Consumer<? super R> action) throws SQLException {
+        private SimpleRowSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader, SimpleStmt stmt,
+                                     StreamOption option) {
+            super(statement, resultSet, rowReader, stmt, option);
+        }
+
+        @Override
+        boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException {
+
             final int readRowCount;
-            readRowCount = readOneFetch(this.resultSet, this.rowReader, rowSize, action);
+            readRowCount = readOneFetch(this.resultSet, this.rowReader, readSize, action);
             if (readRowCount == 0 && this.hasOptimistic && this.totalRowCount == 0) {
                 throw _Exceptions.optimisticLock();
             }
@@ -1955,8 +1931,125 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             return this.rowReader.executor.handleException(cause);
         }
 
+        @Override
+        void handleError(Error cause) {
+            close();
+        }
 
-    }//RowSpliterator
+
+    } // SimpleRowSpliterator
+
+
+    private static final class InsertRowSpliterator<R> extends JdbcSimpleSpliterator<R> {
+
+        private int rowIndex;
+
+        private Throwable error;
+
+        /**
+         * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
+         */
+        private InsertRowSpliterator(Statement statement, ResultSet resultSet, RowReader<R> rowReader,
+                                     GeneratedKeyStmt stmt, StreamOption option) {
+            super(statement, resultSet, rowReader, stmt, option);
+
+
+        }
+
+
+        /**
+         * @see #tryAdvance(Consumer)
+         * @see #forEachRemaining(Consumer)
+         */
+        boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException {
+            final ResultSet resultSet = this.resultSet;
+            final RowReader<R> rowReader = this.rowReader;
+            final JdbcExecutor executor = rowReader.executor;
+            final GeneratedKeyStmt stmt = (GeneratedKeyStmt) this.stmt;
+
+            final PrimaryFieldMeta<?> idField = stmt.idField();
+            final MappingType type = idField.mappingType();
+            final MappingEnv env = executor.factory.mappingEnv;
+            final SqlType idSqlType = rowReader.sqlTypeArray[stmt.idSelectionIndex()];
+
+            final int rowSize = stmt.rowSize();
+
+            Object idValue;
+            int readRowCount = 0, rowIndex = this.rowIndex;
+            while (resultSet.next()) {
+
+                if (rowIndex == rowSize) {
+                    throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex + 1);
+                }
+
+                // below read id value
+                idValue = executor.get(resultSet, rowIndex + 1, idSqlType); // read id column
+                if (idValue == null) {
+                    throw _Exceptions.idValueIsNull(rowIndex, idField);
+                }
+                idValue = type.afterGet(idSqlType, env, idValue); // MappingType convert id column
+                stmt.setGeneratedIdValue(rowIndex, idValue);     // set id column
+
+                action.accept(rowReader.readOneRow(resultSet)); // read one row
+
+                readRowCount++;
+                rowIndex++;
+
+                if (readSize > 0 && readRowCount == readSize) {
+                    break;
+                }
+
+                if (this.canceled) { // canceled must after readRowCount++; because of OptimisticLockException
+                    break;
+                }
+
+                if (readRowCount < 0) {
+                    this.totalRowCount = Integer.MAX_VALUE;
+                    readRowCount = 1;
+                }
+
+            } // while loop
+
+            this.rowIndex = rowIndex;
+
+            if (this.totalRowCount != Integer.MAX_VALUE) {
+                this.totalRowCount = readRowCount;
+            }
+            if (readRowCount == 0 && this.hasOptimistic && this.totalRowCount == 0) {
+                throw _Exceptions.optimisticLock();
+            }
+            return readRowCount > 0;
+        }
+
+        @Override
+        void doCloseStream() {
+
+            closeResultSetAndStatement(this.resultSet, this.statement);
+
+            if (this.error == null
+                    && !this.canceled
+                    && this.rowIndex != ((GeneratedKeyStmt) this.stmt).rowSize()) {
+                throw insertedRowsAndGenerateIdNotMatch(((GeneratedKeyStmt) this.stmt).rowSize(), rowIndex);
+            }
+
+        }
+
+
+        @Override
+        ArmyException handleException(Exception cause) {
+            this.error = cause; // firstly
+            close();
+            return this.rowReader.executor.handleException(cause);
+        }
+
+        @Override
+        void handleError(Error cause) {
+            this.error = cause; // firstly
+            close();
+        }
+
+
+    }//InsertRowSpliterator
 
 
     /**
@@ -2018,7 +2111,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
 
 
         @Override
-        final boolean readRowStream(final int rowSize, final Consumer<? super R> action) throws SQLException {
+        final boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException {
             final boolean hasOptimistic = this.stmt.hasOptimistic();
             final RowReader<R> rowReader = this.rowReader;
 
@@ -2026,7 +2119,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor,
             int readCount = 0;
             while ((resultSet != null)) {
 
-                readCount = readOneFetch(resultSet, rowReader, rowSize, action);
+                readCount = readOneFetch(resultSet, rowReader, readSize, action);
                 if (readCount > 0) {
                     break;
                 }

@@ -110,7 +110,20 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
     Stream<Long> batchUpdate(BatchStmt stmt, IntFunction<List<Long>> listConstructor, SyncStmtOption option,
                              @Nullable TableMeta<?> domainTable, @Nullable List<Long> rowsList) throws DataAccessException;
 
-    <T> Stream<T> query(SingleSqlStmt stmt, Class<T> resultClass, SyncStmtOption option)
+
+    @Nullable
+    <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option)
+            throws DataAccessException;
+
+    @Nullable
+    <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option)
+            throws DataAccessException;
+
+    @Nullable
+    <R> R queryOneRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
+            throws DataAccessException;
+
+    <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option)
             throws DataAccessException;
 
     <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option)
