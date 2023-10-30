@@ -163,7 +163,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
     }
 
     @Override
-    public final ResultStates update(SimpleStmt stmt, SyncStmtOption option) throws DataAccessException {
+    public final <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass,
+                              Function<Option<?>, ?> optionFunc) throws DataAccessException {
 
         try (final Statement statement = bindStatement(stmt, option)) {
 
@@ -181,7 +182,14 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
                 rows = statement.executeUpdate(stmt.sqlText());
             }
 
-            return new SimpleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows);
+            final R result;
+            if (resultClass == Long.class) {
+                result = (R) Long.valueOf(rows);
+            } else if (Boolean.TRUE.equals())
+            else{
+                result = (R) new SimpleUpdateStates(obtainTransaction(), mapToArmyWarning(statement.getWarnings()), rows);
+            }
+            return result;
         } catch (Exception e) {
             throw wrapError(e);
         }
@@ -350,18 +358,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
 
     /**
-     * @see #insert(SimpleStmt, SyncStmtOption)
-     */
-    @Nullable
-    private Warning mapToArmyWarning(final @Nullable SQLWarning warning) {
-        if (warning == null) {
-            return null;
-        }
-        return new ArmyWarning(warning);
-    }
-
-
-    /**
      * @see #batchUpdateList(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List)
      */
     private <R> List<R> executeBatchUpdate(final BatchStmt stmt, final IntFunction<List<R>> listConstructor,
@@ -461,7 +457,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
 
     /**
-     * @see #insertAsLong(SimpleStmt, SyncStmtOption)
+     * @see #insert(SimpleStmt, SyncStmtOption)
      */
     private Statement bindInsertStatement(final SimpleStmt stmt, final SyncStmtOption option, final int generatedKeys)
             throws TimeoutException, SQLException {
@@ -491,7 +487,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
     }
 
     /**
-     * @see #updateAsLong(SimpleStmt, SyncStmtOption)
+     * @see #update(SimpleStmt, SyncStmtOption)
      * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
      */
     private Statement bindStatement(final SimpleStmt stmt, final SyncStmtOption option)
@@ -611,7 +607,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
      * @see #update(SimpleStmt, SyncStmtOption)
      * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
      * @see #executeBatchQuery(BatchStmt, SyncStmtOption, Function)
-     * @see #executeBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, TableMeta, List)
+     * @see #executeBatchUpdate(BatchStmt, IntFunction, SyncStmtOption, Class, TableMeta, List)
      */
     private void bindParameter(final PreparedStatement statement, final List<SQLParam> paramGroup)
             throws SQLException {
@@ -1255,6 +1251,18 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
     }
 
     /*-------------------below private static methods -------------------*/
+
+    /**
+     * @see #insert(SimpleStmt, SyncStmtOption)
+     * @see #update(SimpleStmt, SyncStmtOption)
+     */
+    @Nullable
+    private static Warning mapToArmyWarning(final @Nullable SQLWarning warning) {
+        if (warning == null) {
+            return null;
+        }
+        return new ArmyWarning(warning);
+    }
 
 
     /**
@@ -2438,7 +2446,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
         /**
          * @see JdbcExecutor#insert(SimpleStmt, SyncStmtOption)
-         * @see JdbcExecutor#update(SimpleStmt, SyncStmtOption)
+         * @see JdbcExecutor#update(SimpleStmt, SyncStmtOption, Class, Function)
          */
         private SimpleUpdateStates(@Nullable TransactionInfo info, @Nullable Warning warning, long affectedRows) {
             super(info, warning);
