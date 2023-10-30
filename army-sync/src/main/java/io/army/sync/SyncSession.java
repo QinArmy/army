@@ -21,16 +21,6 @@ import java.util.stream.Stream;
  */
 public interface SyncSession extends Session, AutoCloseable {
 
-    /**
-     * <p>
-     * When this option is supported by {@link ResultStates},this option representing the statement that produce
-     * the {@link ResultStates} declare a cursor. For example : execute postgre DECLARE command.
-     * <br/>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
-     */
-    Option<SyncCursor> SYNC_CURSOR = Option.from("SYNC CURSOR", SyncCursor.class);
-
 
     /**
      * <p>

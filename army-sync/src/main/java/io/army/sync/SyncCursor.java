@@ -10,7 +10,9 @@ import java.util.stream.Stream;
 
 /**
  * @see ResultStates#valueOf(Option)
- * @see SyncSession#SYNC_CURSOR
+ * @see SyncOptions#SYNC_CURSOR
+ * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
+ * @see <a href="https://www.postgresql.org/docs/current/sql-fetch.html">PostgreSQL FETCH</a>
  * @since 1.0
  */
 public interface SyncCursor extends NamedCursor, AutoCloseable {
