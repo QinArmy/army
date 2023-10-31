@@ -1,41 +1,28 @@
 package io.army.session;
 
-import javax.annotation.Nullable;
-
 import java.util.function.Function;
 
 
 /**
  * <p>This class representing server error message.
- * <p>Throw when database server response error message.
+ * <p>Throw(or emit) when database server response error message.
  *
  * @since 1.0
  */
-public final class ServerException extends DataAccessException implements OptionSpec {
-
-    private final String sqlState;
-
-    private final int vendorCode;
+public final class ServerException extends DriverException implements OptionSpec {
 
     private final Function<Option<?>, ?> optionFunc;
 
-    public ServerException(Throwable cause, @Nullable String sqlState, int vendorCode,
+    public ServerException(String message, Throwable cause, String sqlState, int vendorCode,
                            Function<Option<?>, ?> optionFunc) {
-        super(cause);
-        this.sqlState = sqlState;
-        this.vendorCode = vendorCode;
+        super(message, cause, sqlState, vendorCode);
         this.optionFunc = optionFunc;
     }
 
-
-    @Nullable
-    public String getSqlState() {
-        return this.sqlState;
-    }
-
-
-    public int getVendorCode() {
-        return this.vendorCode;
+    public ServerException(Throwable cause, String sqlState, int vendorCode,
+                           Function<Option<?>, ?> optionFunc) {
+        super(cause, sqlState, vendorCode);
+        this.optionFunc = optionFunc;
     }
 
     @SuppressWarnings("unchecked")

@@ -1,6 +1,6 @@
 package io.army.reactive;
 
-import io.army.session.OptionSpec;
+import io.army.session.Cursor;
 
 
 /**
@@ -8,10 +8,9 @@ import io.army.session.OptionSpec;
  *
  * @see ReactiveSession
  */
-public interface ReactiveCursor extends OptionSpec {
+public interface ReactiveCursor extends Cursor, ReactiveCloseable {
 
-    String name();
-
+    @Override
     ReactiveSession session();
 
 

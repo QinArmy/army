@@ -1275,8 +1275,15 @@ public abstract class _Exceptions {
         return new DataAccessException(m);
     }
 
-    public static DataAccessException secondStmtIdIsNull() {
-        return new DataAccessException("second statement id is null");
+    public static DataAccessException secondStmtIdIsNull(Selection idSelection) {
+        String m;
+        if (idSelection instanceof FieldSelection) {
+            m = String.format("second statement id %s is null", ((FieldSelection) idSelection).fieldMeta());
+        } else {
+            // criteria package no bug,never here
+            m = "second statement id is null";
+        }
+        return new DataAccessException(m);
     }
 
     public static DataAccessException noMatchFirstStmtRow(Object secondStmtRowId) {

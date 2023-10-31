@@ -1,9 +1,16 @@
 package io.army.session;
 
 /**
- * <p>This exception representing the exception that database driver throw or emit.
- * <p>Throw or emit when database driver occur error.
+ * <p>Throw(or emit) by {@link Session} or {@link Cursor} when access database occur.
+ * <p>Following
+ * <ul>
+ *     <li>{@link DriverException}</li>
+ *     <li>{@link OptimisticLockException}</li>
+ *     <li>{@link ChildUpdateException}</li>
+ * </ul>
+ * are  important sub-class
  *
+ * @see DriverException
  * @since 1.0
  */
 public class DataAccessException extends SessionException {

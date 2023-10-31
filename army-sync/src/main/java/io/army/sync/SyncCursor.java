@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
- * <p>This interface representing blocking {@link NamedCursor}.
+ * <p>This interface representing blocking {@link Cursor}.
  *
  * @see ResultStates#valueOf(Option)
  * @see SyncCursor#SYNC_CURSOR
@@ -17,7 +17,7 @@ import java.util.stream.Stream;
  * @see <a href="https://www.postgresql.org/docs/current/sql-fetch.html">PostgreSQL FETCH</a>
  * @since 1.0
  */
-public interface SyncCursor extends NamedCursor, AutoCloseable {
+public interface SyncCursor extends Cursor, AutoCloseable {
 
     /**
      * <p>
@@ -29,6 +29,8 @@ public interface SyncCursor extends NamedCursor, AutoCloseable {
      */
     Option<SyncCursor> SYNC_CURSOR = Option.from("SYNC CURSOR", SyncCursor.class);
 
+    @Override
+    SyncSession session();
 
     @Nullable
     <R> R next(Class<R> resultClass);

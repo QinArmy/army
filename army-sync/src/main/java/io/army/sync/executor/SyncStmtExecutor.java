@@ -6,9 +6,9 @@ import io.army.meta.TableMeta;
 import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.stmt.BatchStmt;
+import io.army.stmt.PairBatchStmt;
 import io.army.stmt.SimpleStmt;
 import io.army.stmt.SingleSqlStmt;
-import io.army.stmt.Stmt;
 import io.army.sync.SyncStmtOption;
 
 import javax.annotation.Nullable;
@@ -111,15 +111,19 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
     <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> Stream<R> pairQuery(Stmt.PairStmtSpec stmt, Class<R> resultClass, SyncStmtOption option, boolean firstIsQuery,
-                            ChildTableMeta<?> childTable, boolean insert) throws DataAccessException;
+    <R> Stream<R> secondQuery(SimpleStmt stmt, SyncStmtOption option, List<R> firstList)
+            throws DataAccessException;
 
-    <R> Stream<R> pairQueryObject(Stmt.PairStmtSpec stmt, Supplier<R> constructor, SyncStmtOption option, boolean firstIsQuery,
-                                  ChildTableMeta<?> childTable, boolean insert) throws DataAccessException;
+    <R> Stream<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, SyncStmtOption option, boolean firstIsQuery,
+                                 ChildTableMeta<?> childTable, boolean insert) throws DataAccessException;
 
-    <R> Stream<R> pairQueryRecord(Stmt.PairStmtSpec stmt, Function<CurrentRecord, R> function, SyncStmtOption option, boolean firstIsQuery,
-                                  ChildTableMeta<?> childTable, boolean insert) throws DataAccessException;
+    <R> Stream<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor, SyncStmtOption option, boolean firstIsQuery,
+                                       ChildTableMeta<?> childTable, boolean insert) throws DataAccessException;
 
+    <R> Stream<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option, boolean firstIsQuery,
+                                       ChildTableMeta<?> childTable, boolean insert) throws DataAccessException;
+
+    @Override
     void close() throws DataAccessException;
 
     /**
