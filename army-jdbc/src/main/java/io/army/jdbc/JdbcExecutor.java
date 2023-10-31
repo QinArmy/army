@@ -284,8 +284,61 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
 
     @Override
-    public final <R> Stream<R> secondQuery(final TwoStmtModeQuerySpec stmt, final SyncStmtOption option, final List<R> resultList) {
-        return null;
+    public final <R> Stream<R> pairQuery(Stmt.PairStmtSpec stmt, final @Nullable Class<R> resultClass, SyncStmtOption option,
+                                         boolean firstIsQuery, ChildTableMeta<?> childTable, boolean insert)
+            throws DataAccessException {
+        if (resultClass == null) {
+            throw new NullPointerException();
+        }
+        final BiFunction<SingleSqlStmt, ResultSetMetaData, RowReader<R>> readerFunc;
+        readerFunc = (queryStmt, meta) -> {
+            try {
+                return createBeanRowReader(meta, resultClass, queryStmt);
+            } catch (Exception e) {
+                throw handleException(e);
+            }
+        };
+        return executePairQuery(stmt, option, firstIsQuery, childTable, insert, readerFunc);
+    }
+
+    @Override
+    public final <R> Stream<R> pairQueryObject(Stmt.PairStmtSpec stmt, final @Nullable Supplier<R> constructor, SyncStmtOption option,
+                                               boolean firstIsQuery, ChildTableMeta<?> childTable, boolean insert)
+            throws DataAccessException {
+        if (constructor == null) {
+            throw new NullPointerException();
+        }
+        final BiFunction<SingleSqlStmt, ResultSetMetaData, RowReader<R>> readerFunc;
+        readerFunc = (queryStmt, meta) -> {
+            try {
+                return new ObjectReader<>(this, queryStmt.selectionList(), queryStmt instanceof TwoStmtModeQuerySpec,
+                        createSqlTypArray(meta), constructor
+                );
+            } catch (Exception e) {
+                throw handleException(e);
+            }
+        };
+        return executePairQuery(stmt, option, firstIsQuery, childTable, insert, readerFunc);
+    }
+
+    @Override
+    public final <R> Stream<R> pairQueryRecord(Stmt.PairStmtSpec stmt, final @Nullable Function<CurrentRecord, R> function,
+                                               SyncStmtOption option, boolean firstIsQuery,
+                                               ChildTableMeta<?> childTable, boolean insert)
+            throws DataAccessException {
+
+        if (function == null) {
+            throw new NullPointerException();
+        }
+        final BiFunction<SingleSqlStmt, ResultSetMetaData, RowReader<R>> readerFunc;
+        readerFunc = (queryStmt, meta) -> {
+            try {
+                return new RecordRowReader<>(this, queryStmt.selectionList(), createSqlTypArray(meta), function);
+            } catch (Exception e) {
+                throw handleException(e);
+            }
+        };
+        return executePairQuery(stmt, option, firstIsQuery, childTable, insert, readerFunc);
     }
 
 
@@ -484,7 +537,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
 
     /**
-     * @see #insert(SimpleStmt, SyncStmtOption)
+     * @see #insert(SimpleStmt, SyncStmtOption, Class)
      */
     private Statement bindInsertStatement(final SimpleStmt stmt, final SyncStmtOption option, final int generatedKeys)
             throws TimeoutException, SQLException {
@@ -514,7 +567,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
     }
 
     /**
-     * @see #update(SimpleStmt, SyncStmtOption)
+     * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
      * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
      */
     private Statement bindStatement(final SimpleStmt stmt, final SyncStmtOption option)
@@ -585,8 +638,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
         return metaData -> {
             try {
                 return this.createBeanRowReader(metaData, resultClass, stmt);
-            } catch (SQLException e) {
-                throw wrapError(e);
+            } catch (Exception e) {
+                throw handleException(e);
             }
 
         };
@@ -605,8 +658,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
                 return new ObjectReader<>(this, stmt.selectionList(), stmt instanceof TwoStmtModeQuerySpec,
                         this.createSqlTypArray(metaData), constructor
                 );
-            } catch (SQLException e) {
-                throw wrapError(e);
+            } catch (Exception e) {
+                throw handleException(e);
             }
         };
     }
@@ -622,15 +675,15 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
         return metaData -> {
             try {
                 return new RecordRowReader<>(this, selectionList, this.createSqlTypArray(metaData), function);
-            } catch (SQLException e) {
-                throw wrapError(e);
+            } catch (Exception e) {
+                throw handleException(e);
             }
         };
     }
 
 
     /**
-     * @see #insert(SimpleStmt, SyncStmtOption)
+     * @see #insert(SimpleStmt, SyncStmtOption, Class)
      * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
      * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
      * @see #executeBatchQuery(BatchStmt, SyncStmtOption, Function)
@@ -1171,7 +1224,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
     /**
      * @return row number
-     * @see #insert(SimpleStmt, SyncStmtOption)
+     * @see #insert(SimpleStmt, SyncStmtOption, Class)
      */
     private int readRowId(final ResultSet idResultSet, final GeneratedKeyStmt stmt) throws SQLException {
 
@@ -1179,7 +1232,11 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
             final PrimaryFieldMeta<?> idField = stmt.idField();
             final MappingType type = idField.mappingType();
-            final SqlType sqlType = type.map(this.factory.serverMeta);
+            final int idSelectionIndex = stmt.idSelectionIndex();
+            final int idColumnIndexBaseOne = idSelectionIndex + 1;
+
+            final SqlType sqlType;
+            sqlType = getSqlType(idResultSet.getMetaData(), idColumnIndexBaseOne);
 
             final MappingEnv env = this.factory.mappingEnv;
 
@@ -1190,7 +1247,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
                 if (rowIndex == rowSize) {
                     throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
                 }
-                idValue = get(resultSet, 1, sqlType);
+                idValue = get(resultSet, idColumnIndexBaseOne, sqlType);
                 if (idValue == null) {
                     throw _Exceptions.idValueIsNull(rowIndex, idField);
                 }
@@ -1202,6 +1259,77 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
             }
             return rowIndex;
         }
+    }
+
+
+    /**
+     * @see #pairQuery(Stmt.PairStmtSpec, Class, SyncStmtOption, boolean, ChildTableMeta, boolean)
+     * @see #pairQueryObject(Stmt.PairStmtSpec, Supplier, SyncStmtOption, boolean, ChildTableMeta, boolean)
+     * @see #pairQueryRecord(Stmt.PairStmtSpec, Function, SyncStmtOption, boolean, ChildTableMeta, boolean)
+     */
+    private <R> Stream<R> executePairQuery(Stmt.PairStmtSpec stmt, SyncStmtOption option, boolean firstIsQuery,
+                                           ChildTableMeta<?> childTable, boolean insert,
+                                           BiFunction<SingleSqlStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
+        try {
+            final Stream<R> stream;
+            if (stmt instanceof PairStmt) {
+                if (insert) {
+                    stream = executeSimpleInsertQuery((PairStmt) stmt, option, firstIsQuery, childTable, readerFunc);
+                } else {
+                    stream = executeSimpleUpdateQuery((PairStmt) stmt, option, firstIsQuery, childTable, readerFunc);
+                }
+            } else if (stmt instanceof PairBatchStmt) {
+                if (insert) {
+                    stream = executeBatchInsertQuery((PairBatchStmt) stmt, option, firstIsQuery, childTable, readerFunc);
+                } else {
+                    stream = executeBatchUpdateQuery((PairBatchStmt) stmt, option, firstIsQuery, childTable, readerFunc);
+                }
+            } else {
+                throw _Exceptions.unexpectedStmt(stmt);
+            }
+            return stream;
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+    /**
+     * @see #executePairQuery(Stmt.PairStmtSpec, SyncStmtOption, boolean, ChildTableMeta, boolean, BiFunction)
+     */
+    private <R> Stream<R> executeSimpleInsertQuery(PairStmt stmt, SyncStmtOption option, boolean firstIsQuery,
+                                                   ChildTableMeta<?> childTable,
+                                                   BiFunction<SingleSqlStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @see #executePairQuery(Stmt.PairStmtSpec, SyncStmtOption, boolean, ChildTableMeta, boolean, BiFunction)
+     */
+    private <R> Stream<R> executeSimpleUpdateQuery(PairStmt stmt, SyncStmtOption option, boolean firstIsQuery,
+                                                   ChildTableMeta<?> childTable,
+                                                   BiFunction<SingleSqlStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
+        // TODO add for firebird
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @see #executePairQuery(Stmt.PairStmtSpec, SyncStmtOption, boolean, ChildTableMeta, boolean, BiFunction)
+     */
+    private <R> Stream<R> executeBatchInsertQuery(PairBatchStmt stmt, SyncStmtOption option, boolean firstIsQuery,
+                                                  ChildTableMeta<?> childTable,
+                                                  BiFunction<SingleSqlStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
+        // TODO add for firebird
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @see #executePairQuery(Stmt.PairStmtSpec, SyncStmtOption, boolean, ChildTableMeta, boolean, BiFunction)
+     */
+    private <R> Stream<R> executeBatchUpdateQuery(PairBatchStmt stmt, SyncStmtOption option, boolean firstIsQuery,
+                                                  ChildTableMeta<?> childTable,
+                                                  BiFunction<SingleSqlStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
+        // TODO add for firebird
+        throw new UnsupportedOperationException();
     }
 
 
@@ -1280,8 +1408,8 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
     /*-------------------below private static methods -------------------*/
 
     /**
-     * @see #insert(SimpleStmt, SyncStmtOption)
-     * @see #update(SimpleStmt, SyncStmtOption)
+     * @see #insert(SimpleStmt, SyncStmtOption, Class)
+     * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
      */
     @Nullable
     private static Warning mapToArmyWarning(final @Nullable SQLWarning warning) {
@@ -1451,7 +1579,11 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
                 }
 
                 if ((type = compatibleTypeArray[i]) == null) {
-                    type = compatibleTypeFrom(selection, this.resultClass, accessor, fieldName);
+                    if (this instanceof RecordRowReader) {
+                        type = selection.typeMeta().mappingType();
+                    } else {
+                        type = compatibleTypeFrom(selection, this.resultClass, accessor, fieldName);
+                    }
                     compatibleTypeArray[i] = type;
                 }
 
@@ -2472,7 +2604,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
         private final long affectedRows;
 
         /**
-         * @see JdbcExecutor#insert(SimpleStmt, SyncStmtOption)
+         * @see JdbcExecutor#insert(SimpleStmt, SyncStmtOption, Class)
          * @see JdbcExecutor#update(SimpleStmt, SyncStmtOption, Class, Function)
          */
         private SimpleUpdateStates(@Nullable TransactionInfo info, @Nullable Warning warning, long affectedRows) {

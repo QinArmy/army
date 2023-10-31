@@ -491,30 +491,40 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     /**
      * @see #update(SimpleDmlStatement, SyncStmtOption)
      */
-    private ResultStates executeInsert(InsertStatement statement, SyncStmtOption option) throws ArmyException {
+    private <R> R executeInsert(InsertStatement statement, SyncStmtOption option, Class<R> resultClass)
+            throws ArmyException {
         final Stmt stmt;
         stmt = this.parseInsertStatement(statement);
 
-        final ResultStates states;
+        final R states;
 
         if (stmt instanceof SimpleStmt) {
-            states = this.stmtExecutor.insert((SimpleStmt) statement, option);
+            states = this.stmtExecutor.insert((SimpleStmt) statement, option, resultClass);
         } else if (!(stmt instanceof PairStmt)) {
             throw _Exceptions.unexpectedStmt(stmt);
         } else {
             final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) ((_Insert) statement).table();
             final PairStmt pairStmt = (PairStmt) stmt;
 
-            final ResultStates parentStates;
-            parentStates = this.stmtExecutor.insert(pairStmt.firstStmt(), option);
+            final R parentStates;
+            parentStates = this.stmtExecutor.insert(pairStmt.firstStmt(), option, resultClass);
 
             try {
-                states = this.stmtExecutor.insert(pairStmt.secondStmt(), option);
+                states = this.stmtExecutor.insert(pairStmt.secondStmt(), option, resultClass);
             } catch (Throwable e) {
                 throw _Exceptions.childInsertError(this, domainTable, e);
             }
-            if (states.affectedRows() != parentStates.affectedRows()) {
-                throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentStates.affectedRows(), states.affectedRows());
+
+            final long childRows, parentRows;
+            if (resultClass == Long.class) {
+                childRows = (Long) states;
+                parentRows = (Long) parentStates;
+            } else {
+                childRows = ((ResultStates) states).affectedRows();
+                parentRows = ((ResultStates) parentStates).affectedRows();
+            }
+            if (childRows != parentRows) {
+                throw _Exceptions.parentChildRowsNotMatch(this, domainTable, parentRows, childRows);
             }
         }
         return states;
