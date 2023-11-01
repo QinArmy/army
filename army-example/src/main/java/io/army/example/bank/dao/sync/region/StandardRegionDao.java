@@ -33,7 +33,7 @@ public class StandardRegionDao extends BankSyncBaseDao implements BankRegionDao 
                 .join(ChinaRegion_.T, AS, "province")
                 .on(SQLs.field("p_of_city", ChinaRegion_.parentId).equal(SQLs.field("province", ChinaRegion_.id)))
                 .asQuery();
-        return this.sessionContext.currentSession().queryObject(stmt, HashMap::new);
+        return this.sessionContext.currentSession().queryObjectList(stmt, HashMap::new);
     }
 
 

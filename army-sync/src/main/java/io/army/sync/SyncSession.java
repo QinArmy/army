@@ -2,6 +2,8 @@ package io.army.sync;
 
 import io.army.criteria.*;
 import io.army.session.*;
+import io.army.session.record.CurrentRecord;
+import io.army.session.record.ResultStates;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -85,27 +87,16 @@ public interface SyncSession extends Session, AutoCloseable {
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> List<R> query(DqlStatement statement, Class<R> resultClass);
+    <R> List<R> queryList(DqlStatement statement, Class<R> resultClass);
 
-    <R> List<R> query(DqlStatement statement, Class<R> resultClass, SyncStmtOption option);
+    <R> List<R> queryList(DqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor);
+    <R> List<R> queryList(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor);
 
-    <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option);
-
-
-    /**
-     * <p>
-     * <strong>NOTE</strong> : If constructor return {@link java.util.concurrent.ConcurrentMap}
-     * and column value is null ,army remove element not put element.
-     * </p>
-     */
-    <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor);
-
-    <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
+    <R> List<R> queryList(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option);
 
 
     /**
@@ -114,9 +105,10 @@ public interface SyncSession extends Session, AutoCloseable {
      * and column value is null ,army remove element not put element.
      * </p>
      */
-    <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor);
+    <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor);
 
-    <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option);
+    <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
+
 
     /**
      * <p>
@@ -124,13 +116,23 @@ public interface SyncSession extends Session, AutoCloseable {
      * and column value is null ,army remove element not put element.
      * </p>
      */
-    <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function);
+    <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor);
 
-    <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
+    <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option);
+
+    /**
+     * <p>
+     * <strong>NOTE</strong> : If constructor return {@link java.util.concurrent.ConcurrentMap}
+     * and column value is null ,army remove element not put element.
+     * </p>
+     */
+    <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function);
+
+    <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
 
 
-    <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function,
-                            Supplier<List<R>> listConstructor);
+    <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function,
+                                Supplier<List<R>> listConstructor);
 
     /**
      * @throws VisibleModeException throw when satisfy all the following conditions :
@@ -141,26 +143,17 @@ public interface SyncSession extends Session, AutoCloseable {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function,
-                            Supplier<List<R>> listConstructor, SyncStmtOption option);
+    <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function,
+                                Supplier<List<R>> listConstructor, SyncStmtOption option);
 
 
     /*-------------------below queryStream -------------------*/
 
-    <R> Stream<R> queryStream(DqlStatement statement, Class<R> resultClass);
+    <R> Stream<R> query(DqlStatement statement, Class<R> resultClass);
 
-    <R> Stream<R> queryStream(DqlStatement statement, Class<R> resultClass, SyncStmtOption option);
+    <R> Stream<R> query(DqlStatement statement, Class<R> resultClass, SyncStmtOption option);
 
-    <R> Stream<R> queryObjectStream(DqlStatement statement, Supplier<R> constructor);
-
-    /**
-     * <p>
-     * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
-     * and column value is null ,army remove element not put element.
-     * </p>
-     */
-    <R> Stream<R> queryObjectStream(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
-
+    <R> Stream<R> queryObject(DqlStatement statement, Supplier<R> constructor);
 
     /**
      * <p>
@@ -168,7 +161,16 @@ public interface SyncSession extends Session, AutoCloseable {
      * and column value is null ,army remove element not put element.
      * </p>
      */
-    <R> Stream<R> queryRecordStream(DqlStatement statement, Function<CurrentRecord, R> function);
+    <R> Stream<R> queryObject(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option);
+
+
+    /**
+     * <p>
+     * <strong>NOTE</strong> : If mapConstructor return {@link java.util.concurrent.ConcurrentMap}
+     * and column value is null ,army remove element not put element.
+     * </p>
+     */
+    <R> Stream<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function);
 
     /**
      * <p>
@@ -184,7 +186,7 @@ public interface SyncSession extends Session, AutoCloseable {
      * @see io.army.env.ArmyKey#VISIBLE_MODE
      * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
      */
-    <R> Stream<R> queryRecordStream(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
+    <R> Stream<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option);
 
 
     long update(SimpleDmlStatement statement);
@@ -200,13 +202,26 @@ public interface SyncSession extends Session, AutoCloseable {
      */
     long update(SimpleDmlStatement statement, SyncStmtOption option);
 
-    <T> long save(T domain);
+    ResultStates updateAsStates(SimpleDmlStatement statement);
 
-    <T> long save(T domain, SyncStmtOption option);
+    /**
+     * @throws VisibleModeException throw when satisfy all the following conditions :
+     *                              <ul>
+     *                                  <li>visible is {@link Visible#ONLY_NON_VISIBLE} or {@link Visible#BOTH}</li>
+     *                                  <li>{@link Session#visible()} is don't support visible value</li>
+     *                              </ul>
+     * @see io.army.env.ArmyKey#VISIBLE_MODE
+     * @see io.army.env.ArmyKey#VISIBLE_SESSION_WHITE_LIST
+     */
+    ResultStates updateAsStates(SimpleDmlStatement statement, SyncStmtOption option);
 
-    <T> long batchSave(List<T> domainList);
+    <T> int save(T domain);
 
-    <T> long batchSave(List<T> domainList, SyncStmtOption option);
+    <T> int save(T domain, SyncStmtOption option);
+
+    <T> int batchSave(List<T> domainList);
+
+    <T> int batchSave(List<T> domainList, SyncStmtOption option);
 
     List<Long> batchUpdate(BatchDmlStatement statement);
 
@@ -215,6 +230,10 @@ public interface SyncSession extends Session, AutoCloseable {
     List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor);
 
     List<Long> batchUpdate(BatchDmlStatement statement, IntFunction<List<Long>> listConstructor, SyncStmtOption option);
+
+    Stream<ResultStates> batchUpdateAsStates(BatchDmlStatement statement);
+
+    Stream<ResultStates> batchUpdateAsStates(BatchDmlStatement statement, SyncStmtOption option);
 
 
     @Override

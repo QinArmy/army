@@ -1,7 +1,12 @@
 package io.army.sync;
 
 import io.army.criteria.Selection;
-import io.army.session.*;
+import io.army.session.Cursor;
+import io.army.session.Direction;
+import io.army.session.Option;
+import io.army.session.record.CurrentRecord;
+import io.army.session.record.ResultItem;
+import io.army.session.record.ResultStates;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
@@ -33,19 +38,19 @@ public interface SyncCursor extends Cursor, AutoCloseable {
     <R> R nextRecord(Function<CurrentRecord, R> function);
 
     @Nullable
-    <R> R fetchOneRecord(CursorDirection direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
+    <R> R fetchOneRecord(Direction direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
-    <R> Stream<R> fetchRecord(CursorDirection direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
+    <R> Stream<R> fetchRecord(Direction direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
-    <R> Stream<R> fetchRecord(CursorDirection direction, long count, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
+    <R> Stream<R> fetchRecord(Direction direction, long count, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
-    Stream<ResultItem> fetchRecord(CursorDirection direction);
+    Stream<ResultItem> fetchRecord(Direction direction);
 
-    Stream<ResultItem> fetchRecord(CursorDirection direction, long count);
+    Stream<ResultItem> fetchRecord(Direction direction, long count);
 
-    ResultStates move(CursorDirection direction);
+    ResultStates move(Direction direction);
 
-    ResultStates move(CursorDirection direction, long count);
+    ResultStates move(Direction direction, long count);
 
 
 }

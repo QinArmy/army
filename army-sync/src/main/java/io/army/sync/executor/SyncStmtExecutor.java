@@ -5,6 +5,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
+import io.army.session.record.CurrentRecord;
 import io.army.stmt.BatchStmt;
 import io.army.stmt.PairBatchStmt;
 import io.army.stmt.SimpleStmt;

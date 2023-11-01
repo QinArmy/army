@@ -1,4 +1,4 @@
-package io.army.session;
+package io.army.session.record;
 
 /**
  * <p>This is base interface of following:

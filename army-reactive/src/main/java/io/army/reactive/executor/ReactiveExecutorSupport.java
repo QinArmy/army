@@ -1,9 +1,9 @@
 package io.army.reactive.executor;
 
 import io.army.reactive.ReactiveMultiResultSpec;
-import io.army.session.CurrentRecord;
-import io.army.session.ResultStates;
 import io.army.session.executor.ExecutorSupport;
+import io.army.session.record.CurrentRecord;
+import io.army.session.record.ResultStates;
 import reactor.core.publisher.Flux;
 
 import java.util.Optional;

@@ -1,4 +1,7 @@
-package io.army.session;
+package io.army.session.record;
+
+import io.army.session.Cursor;
+import io.army.session.Option;
 
 /**
  * <p>This enum is a implementation of {@link DataType} for the convenience that application get column type meta by ResultRecordMeta#getArmyType(int) .

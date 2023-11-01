@@ -9,6 +9,8 @@ import io.army.criteria.impl.inner.*;
 import io.army.meta.ChildTableMeta;
 import io.army.reactive.executor.ReactiveStmtExecutor;
 import io.army.session.*;
+import io.army.session.record.CurrentRecord;
+import io.army.session.record.ResultStates;
 import io.army.stmt.*;
 import io.army.util.ArmyCriteria;
 import io.army.util._Collections;

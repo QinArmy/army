@@ -1,8 +1,8 @@
 package io.army.reactive;
 
-import io.army.session.CurrentRecord;
-import io.army.session.ResultItem;
-import io.army.session.ResultStates;
+import io.army.session.record.CurrentRecord;
+import io.army.session.record.ResultItem;
+import io.army.session.record.ResultStates;
 import reactor.core.publisher.Flux;
 
 import java.util.Optional;

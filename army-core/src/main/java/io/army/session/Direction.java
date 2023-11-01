@@ -5,7 +5,7 @@ import io.army.util._StringUtils;
 /**
  * <p> This enum representing cursor
  */
-public enum CursorDirection {
+public enum Direction {
 
 
     /**

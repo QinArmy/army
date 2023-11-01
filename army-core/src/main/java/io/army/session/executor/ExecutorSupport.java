@@ -10,7 +10,13 @@ import io.army.function.IntBiFunction;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.TypeMeta;
-import io.army.session.*;
+import io.army.session.DataAccessException;
+import io.army.session.Isolation;
+import io.army.session.Option;
+import io.army.session.record.CurrentRecord;
+import io.army.session.record.DataRecord;
+import io.army.session.record.ResultRecord;
+import io.army.session.record.ResultRecordMeta;
 import io.army.sqltype.SQLType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -300,7 +306,7 @@ public abstract class ExecutorSupport {
         }
 
         @Override
-        public SQLType getSqlType(int indexBasedZero) {
+        public SQLType getDataType(int indexBasedZero) {
             return this.sqlTypeFunc.apply(checkIndex(indexBasedZero));
         }
 

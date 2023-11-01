@@ -79,7 +79,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
         final List<ChinaRegion<?>> resultList;
-        resultList = session.query(stmt, ChinaRegion_.CLASS);
+        resultList = session.queryList(stmt, ChinaRegion_.CLASS);
 
         Assert.assertEquals(resultList.size(), regionList.size());
 
@@ -115,7 +115,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
         final List<ChinaRegion<?>> resultList;
-        resultList = session.query(stmt, ChinaRegion_.CLASS);
+        resultList = session.queryList(stmt, ChinaRegion_.CLASS);
 
         Assert.assertEquals(resultList.size(), regionList.size());
 
@@ -142,7 +142,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 .asReturningInsert();
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
-        resultList = session.query(stmt, ChinaRegion_.CLASS);
+        resultList = session.queryList(stmt, ChinaRegion_.CLASS);
         Assert.assertEquals(resultList.size(), regionList.size());
 
         // conflict stmt
@@ -166,7 +166,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 .asReturningInsert();
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
-        resultList = session.query(stmt, ChinaRegion_.CLASS);
+        resultList = session.queryList(stmt, ChinaRegion_.CLASS);
         Assert.assertEquals(resultList.size(), regionList.size());
         LOG.debug("{}", JSON.toJSONString(resultList));
         releaseSyncSession(session);
@@ -247,7 +247,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<ChinaProvince> resultList;
-            resultList = session.query(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+            resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), provinceList.size());
 
@@ -308,7 +308,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<ChinaProvince> resultList;
-            resultList = session.query(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+            resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), provinceList.size());
 
@@ -373,7 +373,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<Map<String, Object>> resultList;
-            resultList = session.queryObject(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+            resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), provinceList.size());
 
@@ -437,7 +437,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<Map<String, Object>> resultList;
-            resultList = session.queryObject(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+            resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), provinceList.size());
 
@@ -524,7 +524,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 .asReturningInsert();
 
         final List<ChinaRegion<?>> resultList;
-        resultList = session.query(stmt, ChinaRegion_.CLASS, ImmutableArrayList::arrayList);
+        resultList = session.queryList(stmt, ChinaRegion_.CLASS, ImmutableArrayList::arrayList);
 
         Assert.assertEquals(resultList.size(), 2);
 
@@ -606,7 +606,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        resultList = session.query(stmt, ChinaRegion_.CLASS);
+        resultList = session.queryList(stmt, ChinaRegion_.CLASS);
 
         Assert.assertEquals(resultList.size(), 2);
 
@@ -635,7 +635,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
 
         Assert.assertTrue(stmt instanceof _ReturningDml);
 
-        resultList = session.query(stmt, ChinaRegion_.CLASS);
+        resultList = session.queryList(stmt, ChinaRegion_.CLASS);
 
         Assert.assertEquals(resultList.size(), 2);
 
@@ -746,7 +746,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<ChinaProvince> resultList;
-            resultList = session.query(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+            resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), 2);
 
@@ -819,7 +819,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<ChinaProvince> resultList;
-            resultList = session.query(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+            resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), 2);
 
@@ -896,7 +896,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             tx.start();
 
             final List<Map<String, Object>> resultList;
-            resultList = session.queryObject(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+            resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), 2);
 
@@ -973,7 +973,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
         try {
             tx.start();
             final List<Map<String, Object>> resultList;
-            resultList = session.queryObject(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
+            resultList = session.queryObjectList(stmt, ImmutableHashMap::hashMap, ImmutableArrayList::arrayList);
 
             Assert.assertEquals(resultList.size(), 2);
 
@@ -1059,7 +1059,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 .asReturningInsert();
 
         final List<ChinaRegion<?>> resultList;
-        resultList = session.query(stmt, ChinaRegion_.CLASS, ImmutableArrayList::arrayList);
+        resultList = session.queryList(stmt, ChinaRegion_.CLASS, ImmutableArrayList::arrayList);
 
         Assert.assertFalse(resultList instanceof ImmutableArrayList);
         Assert.assertTrue(resultList.size() > 0);
@@ -1091,7 +1091,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
                 .asQuery();
 
         final List<Long> idList;
-        idList = session.query(select, Long.class);
+        idList = session.queryList(select, Long.class);
 
         final ReturningInsert stmt;
         stmt = Postgres.singleInsert()
@@ -1130,7 +1130,7 @@ public class PostgreInsertSuiteTests extends PostgreSuiteTests {
             tx.start();
 
             final List<ChinaProvince> resultList;
-            resultList = session.query(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
+            resultList = session.queryList(stmt, ChinaProvince.class, ImmutableArrayList::arrayList);
 
             Assert.assertFalse(resultList instanceof ImmutableArrayList);
 

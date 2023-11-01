@@ -1,7 +1,7 @@
 package io.army.sync;
 
 import io.army.ArmyException;
-import io.army.session.CurrentRecord;
+import io.army.session.record.CurrentRecord;
 
 import java.util.List;
 import java.util.function.Function;

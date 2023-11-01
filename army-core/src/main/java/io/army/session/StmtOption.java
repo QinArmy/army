@@ -1,5 +1,7 @@
 package io.army.session;
 
+import io.army.session.record.ResultStates;
+
 import java.util.function.Consumer;
 
 public interface StmtOption {

@@ -1,7 +1,9 @@
-package io.army.session;
+package io.army.session.record;
+
+import io.army.session.OptionSpec;
+import io.army.session.Warning;
 
 import javax.annotation.Nullable;
-
 import java.util.function.Consumer;
 
 public interface ResultStates extends ResultItem, OptionSpec {

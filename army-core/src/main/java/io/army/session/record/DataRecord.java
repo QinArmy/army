@@ -1,7 +1,6 @@
-package io.army.session;
+package io.army.session.record;
 
 import javax.annotation.Nullable;
-
 import java.util.function.Supplier;
 
 public interface DataRecord extends ResultItem, ResultItem.ResultAccessSpec {

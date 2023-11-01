@@ -1,10 +1,10 @@
 package io.army.sync;
 
 import io.army.criteria.Selection;
-import io.army.session.CursorDirection;
+import io.army.session.Direction;
 import io.army.session.Option;
-import io.army.session.ResultStates;
 import io.army.session.StmtCursor;
+import io.army.session.record.ResultStates;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
@@ -40,18 +40,18 @@ public interface SyncStmtCursor extends StmtCursor, SyncCursor {
     <R> R nextObject(Supplier<R> constructor);
 
     @Nullable
-    <R> R fetchOne(CursorDirection direction, Class<R> resultClass, Consumer<ResultStates> consumer);
+    <R> R fetchOne(Direction direction, Class<R> resultClass, Consumer<ResultStates> consumer);
 
     @Nullable
-    <R> R fetchOneObject(CursorDirection direction, Supplier<R> constructor, Consumer<ResultStates> consumer);
+    <R> R fetchOneObject(Direction direction, Supplier<R> constructor, Consumer<ResultStates> consumer);
 
-    <R> Stream<R> fetch(CursorDirection direction, Class<R> resultClass, Consumer<ResultStates> consumer);
+    <R> Stream<R> fetch(Direction direction, Class<R> resultClass, Consumer<ResultStates> consumer);
 
-    <R> Stream<R> fetchObject(CursorDirection direction, Supplier<R> constructor, Consumer<ResultStates> consumer);
+    <R> Stream<R> fetchObject(Direction direction, Supplier<R> constructor, Consumer<ResultStates> consumer);
 
-    <R> Stream<R> fetch(CursorDirection direction, long count, Class<R> resultClass, Consumer<ResultStates> consumer);
+    <R> Stream<R> fetch(Direction direction, long count, Class<R> resultClass, Consumer<ResultStates> consumer);
 
-    <R> Stream<R> fetchObject(CursorDirection direction, long count, Supplier<R> constructor, Consumer<ResultStates> consumer);
+    <R> Stream<R> fetchObject(Direction direction, long count, Supplier<R> constructor, Consumer<ResultStates> consumer);
 
 
 }

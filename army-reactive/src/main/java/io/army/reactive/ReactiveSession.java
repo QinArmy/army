@@ -5,6 +5,8 @@ import io.army.criteria.SimpleDmlStatement;
 import io.army.criteria.SimpleDqlStatement;
 import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.session.*;
+import io.army.session.record.CurrentRecord;
+import io.army.session.record.ResultStates;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

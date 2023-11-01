@@ -2,8 +2,8 @@ package io.army.sqltype;
 
 import io.army.dialect.Database;
 import io.army.mapping.MappingType;
-import io.army.session.ArmyType;
-import io.army.session.DataType;
+import io.army.session.record.ArmyType;
+import io.army.session.record.DataType;
 
 public interface SQLType extends DataType {
 

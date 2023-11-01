@@ -18,6 +18,7 @@ import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.*;
+import io.army.session.record.CurrentRecord;
 import io.army.sqltype.SQLType;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.Stmt;

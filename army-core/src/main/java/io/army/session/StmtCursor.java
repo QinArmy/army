@@ -1,6 +1,7 @@
 package io.army.session;
 
 import io.army.criteria.Selection;
+import io.army.session.record.ResultStates;
 
 import java.util.List;
 

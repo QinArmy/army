@@ -7,6 +7,8 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.session.*;
 import io.army.session.executor.DriverSpiHolder;
+import io.army.session.record.CurrentRecord;
+import io.army.session.record.ResultStates;
 import io.army.stmt.*;
 import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util.ArmyCriteria;
@@ -19,6 +21,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -107,121 +110,122 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass) {
-        return onlyRow(this.query(statement, resultClass, _Collections::arrayList, defaultOption()));
+        return onlyRow(this.queryList(statement, resultClass, _Collections::arrayList, defaultOption()));
     }
 
     @Override
     public final <R> R queryOne(SimpleDqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
-        return onlyRow(this.query(statement, resultClass, _Collections::arrayList, option));
+        return onlyRow(this.queryList(statement, resultClass, _Collections::arrayList, option));
     }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor) {
-        return onlyRow(this.queryObject(statement, constructor, _Collections::arrayList, defaultOption()));
+        return onlyRow(this.queryObjectList(statement, constructor, _Collections::arrayList, defaultOption()));
     }
 
     @Override
     public final <R> R queryOneObject(SimpleDqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
-        return onlyRow(this.queryObject(statement, constructor, _Collections::arrayList, option));
+        return onlyRow(this.queryObjectList(statement, constructor, _Collections::arrayList, option));
     }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
-        return onlyRow(this.queryRecord(statement, function, _Collections::arrayList, defaultOption()));
+        return onlyRow(this.queryRecordList(statement, function, _Collections::arrayList, defaultOption()));
     }
 
     @Override
     public final <R> R queryOneRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
-        return onlyRow(this.queryRecord(statement, function, _Collections::arrayList, option));
+        return onlyRow(this.queryRecordList(statement, function, _Collections::arrayList, option));
     }
 
     @Override
-    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass) {
-        return this.query(statement, resultClass, _Collections::arrayList, defaultOption());
+    public final <R> List<R> queryList(DqlStatement statement, Class<R> resultClass) {
+        return queryList(statement, resultClass, _Collections::arrayList, defaultOption());
     }
 
     @Override
-    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
-        return this.query(statement, resultClass, _Collections::arrayList, option);
+    public final <R> List<R> queryList(DqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
+        return queryList(statement, resultClass, _Collections::arrayList, option);
     }
 
     @Override
-    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor) {
-        return this.query(statement, resultClass, listConstructor, defaultOption());
+    public final <R> List<R> queryList(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor) {
+        return queryList(statement, resultClass, listConstructor, defaultOption());
     }
 
     @Override
-    public final <R> List<R> query(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option) {
-        return this.executeQueryList(statement, listConstructor, option, s -> this.stmtExecutor.query(s, resultClass, listConstructor, option));
+    public final <R> List<R> queryList(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option) {
+        return query(statement, resultClass, option)
+                .collect(Collectors.toCollection(listConstructor));
     }
 
     @Override
-    public final <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor) {
-        return this.queryObject(statement, constructor, _Collections::arrayList, defaultOption());
+    public final <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor) {
+        return this.queryObjectList(statement, constructor, _Collections::arrayList, defaultOption());
     }
 
     @Override
-    public final <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
-        return this.queryObject(statement, constructor, _Collections::arrayList, option);
+    public final <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
+        return this.queryObjectList(statement, constructor, _Collections::arrayList, option);
     }
 
     @Override
-    public final <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor) {
-        return this.queryObject(statement, constructor, listConstructor, defaultOption());
+    public final <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor) {
+        return this.queryObjectList(statement, constructor, listConstructor, defaultOption());
     }
 
     @Override
-    public final <R> List<R> queryObject(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option) {
+    public final <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option) {
         return this.executeQueryList(statement, listConstructor, option, s -> this.stmtExecutor.queryObject(s, constructor, listConstructor, option));
     }
 
     @Override
-    public final <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.queryRecord(statement, function, _Collections::arrayList, defaultOption());
+    public final <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function) {
+        return this.queryRecordList(statement, function, _Collections::arrayList, defaultOption());
     }
 
     @Override
-    public final <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
-        return this.queryRecord(statement, function, _Collections::arrayList, option);
+    public final <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
+        return this.queryRecordList(statement, function, _Collections::arrayList, option);
     }
 
     @Override
-    public final <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor) {
-        return this.queryRecord(statement, function, listConstructor, defaultOption());
+    public final <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor) {
+        return this.queryRecordList(statement, function, listConstructor, defaultOption());
     }
 
     @Override
-    public final <R> List<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) {
+    public final <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) {
         return this.executeQueryList(statement, listConstructor, option, s -> this.stmtExecutor.queryRecord(s, function, listConstructor, option));
     }
 
     @Override
-    public final <R> Stream<R> queryStream(DqlStatement statement, Class<R> resultClass) {
-        return this.queryStream(statement, resultClass, defaultOption());
+    public final <R> Stream<R> query(DqlStatement statement, Class<R> resultClass) {
+        return this.query(statement, resultClass, defaultOption());
     }
 
     @Override
-    public final <R> Stream<R> queryStream(DqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
+    public final <R> Stream<R> query(DqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
         return this.executeQueryStream(statement, option, s -> this.stmtExecutor.queryStream(s, resultClass, option));
     }
 
     @Override
-    public final <R> Stream<R> queryObjectStream(DqlStatement statement, Supplier<R> constructor) {
-        return this.queryObjectStream(statement, constructor, defaultOption());
+    public final <R> Stream<R> queryObject(DqlStatement statement, Supplier<R> constructor) {
+        return this.queryObject(statement, constructor, defaultOption());
     }
 
     @Override
-    public final <R> Stream<R> queryObjectStream(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
+    public final <R> Stream<R> queryObject(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
         return this.executeQueryStream(statement, option, s -> this.stmtExecutor.queryObjectStream(s, constructor, option));
     }
 
     @Override
-    public final <R> Stream<R> queryRecordStream(DqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.queryRecordStream(statement, function, defaultOption());
+    public final <R> Stream<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function) {
+        return this.queryRecord(statement, function, defaultOption());
     }
 
     @Override
-    public final <R> Stream<R> queryRecordStream(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
+    public final <R> Stream<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
         return this.executeQueryStream(statement, option, s -> this.stmtExecutor.queryRecordStream(s, function, option));
     }
 
@@ -362,9 +366,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     /*-------------------below private methods -------------------*/
 
     /**
-     * @see #query(DqlStatement, Class, Supplier, SyncStmtOption)
-     * @see #queryObject(DqlStatement, Supplier, Supplier, SyncStmtOption)
-     * @see #queryRecord(DqlStatement, Function, Supplier, SyncStmtOption)
+     * @see #queryList(DqlStatement, Class, Supplier, SyncStmtOption)
+     * @see #queryObjectList(DqlStatement, Supplier, Supplier, SyncStmtOption)
+     * @see #queryRecordList(DqlStatement, Function, Supplier, SyncStmtOption)
      */
     private <R> List<R> executeQueryList(final DqlStatement statement, final Supplier<List<R>> listConstructor,
                                          final SyncStmtOption option, final Function<SimpleStmt, List<R>> exeFunc) {
