@@ -5,9 +5,6 @@ import io.army.criteria.CriteriaException;
 import io.army.criteria.TypeInfer;
 import io.army.dialect.NotSupportDialectException;
 import io.army.dialect._Constant;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
@@ -19,6 +16,7 @@ import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
@@ -79,13 +77,13 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     /**
      * @param type from {@link #map(ServerMeta)}
-     * @return the instance of the type that {@link SqlType} allow.
+     * @return non-null, the instance of the type that {@link SqlType} allow.
      */
     public abstract Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException;
 
     /**
      * @param type from {@code io.army.sync.executor.StmtExecutor} or {@code io.army.reactive.executor.StmtExecutor}
-     * @return the instance of {@link #javaType()}.
+     * @return non-null, the instance of {@link #javaType()}.
      */
     public abstract Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException;
 

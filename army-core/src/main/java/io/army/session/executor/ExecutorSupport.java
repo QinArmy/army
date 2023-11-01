@@ -3,6 +3,7 @@ package io.army.session.executor;
 import io.army.ArmyException;
 import io.army.bean.ObjectAccessor;
 import io.army.bean.ObjectAccessorFactory;
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Selection;
 import io.army.criteria.TypeInfer;
 import io.army.function.IntBiFunction;
@@ -117,6 +118,51 @@ public abstract class ExecutorSupport {
         for (int i = 0; i < selectionSize; i++) {
             map.put(selectionList.get(i).label(), i); // If alias duplication,then override.
         }
+        return _Collections.unmodifiableMap(map);
+    }
+
+    /**
+     * This method is designed for second query,so :
+     * <ul>
+     *     <li>resultList should be {@link java.util.ArrayList}</li>
+     *     <li>If accessor is {@link ObjectAccessorFactory#PSEUDO_ACCESSOR} ,then resultList representing single column row</li>
+     * </ul>
+     */
+    protected static <R> Map<Object, R> createIdToRowMap(final List<R> resultList, final String idFieldName,
+                                                         final ObjectAccessor accessor) {
+        final int rowSize = resultList.size();
+        final Map<Object, R> map = _Collections.hashMap((int) (rowSize / 0.75f));
+        final boolean singleColumnRow = accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR;
+
+        Object id;
+        R row;
+        for (int i = 0; i < rowSize; i++) {
+
+            row = resultList.get(i);
+
+            if (row == null) {
+                // no bug,never here
+                throw new NullPointerException(String.format("%s row is null", i + 1));
+            }
+
+            if (singleColumnRow) {
+                id = row;
+            } else {
+                id = accessor.get(row, idFieldName);
+            }
+
+            if (id == null) {
+                // no bug,never here
+                throw new NullPointerException(String.format("%s row id is null", i + 1));
+            }
+
+            if (map.putIfAbsent(id, row) != null) {
+                throw new CriteriaException(String.format("%s row id[%s] duplication", i + 1, id));
+            }
+
+        } // for loop
+
+
         return _Collections.unmodifiableMap(map);
     }
 
