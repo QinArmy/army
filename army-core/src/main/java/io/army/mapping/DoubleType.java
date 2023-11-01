@@ -5,7 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.util.function.BiFunction;
 
@@ -47,8 +47,8 @@ public final class DoubleType extends _NumericType._FloatNumericType {
     }
 
     @Override
-    public SqlType map(ServerMeta meta) {
-        final SqlType type;
+    public SQLType map(ServerMeta meta) {
+        final SQLType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.DOUBLE;
@@ -69,12 +69,12 @@ public final class DoubleType extends _NumericType._FloatNumericType {
 
 
     @Override
-    public Double beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+    public Double beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
         return convertToDouble(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public Double afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public Double afterGet(SQLType type, MappingEnv env, Object nonNull) {
         return convertToDouble(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

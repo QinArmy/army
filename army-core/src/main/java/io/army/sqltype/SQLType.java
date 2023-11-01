@@ -2,25 +2,15 @@ package io.army.sqltype;
 
 import io.army.dialect.Database;
 import io.army.mapping.MappingType;
+import io.army.session.ArmyType;
+import io.army.session.DataType;
 
-public interface SqlType {
-
-
-    /**
-     * @see Enum#name()
-     */
-    String name();
+public interface SQLType extends DataType {
 
     Database database();
 
-    boolean isUserDefined();
+    ArmyType armyType();
 
-    boolean isUnknown();
-
-
-    default boolean isArray() {
-        throw new UnsupportedOperationException();
-    }
 
     default boolean isNoPrecision() {
         throw new UnsupportedOperationException();

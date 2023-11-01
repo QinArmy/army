@@ -7,7 +7,7 @@ import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.struct.TextEnum;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -59,7 +59,7 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
     }
 
     @Override
-    protected void dataType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
+    protected void dataType(final FieldMeta<?> field, final SQLType type, final StringBuilder builder) {
         switch ((MySQLType) type) {
             case TINYINT:
             case SMALLINT:
@@ -158,7 +158,7 @@ final class MySQLDdlParser extends _DdlParser<MySQLParser> {
     }
 
     @Override
-    protected void postDataType(FieldMeta<?> field, SqlType type, StringBuilder builder) {
+    protected void postDataType(FieldMeta<?> field, SQLType type, StringBuilder builder) {
         // no-op
     }
 

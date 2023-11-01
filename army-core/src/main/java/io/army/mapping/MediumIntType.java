@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 /**
  * <p>
@@ -50,8 +50,8 @@ public final class MediumIntType extends _NumericType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
-        final SqlType sqlType;
+    public SQLType map(final ServerMeta meta) {
+        final SQLType sqlType;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.MEDIUMINT;
@@ -74,12 +74,12 @@ public final class MediumIntType extends _NumericType {
     }
 
     @Override
-    public Integer beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public Integer beforeBind(SQLType type, MappingEnv env, Object nonNull) {
         return IntegerType._convertToInt(this, nonNull, MIN_VALUE, MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public Integer afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public Integer afterGet(SQLType type, MappingEnv env, Object nonNull) {
         return IntegerType._convertToInt(this, nonNull, MIN_VALUE, MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

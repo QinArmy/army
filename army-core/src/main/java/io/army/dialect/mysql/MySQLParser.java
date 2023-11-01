@@ -7,20 +7,18 @@ import io.army.criteria.impl.inner._Insert;
 import io.army.criteria.impl.inner._SingleDelete;
 import io.army.criteria.impl.inner._SingleUpdate;
 import io.army.dialect.*;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.tx.Isolation;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -91,14 +89,14 @@ abstract class MySQLParser extends _ArmyDialectParser {
 
 
     @Override
-    protected final boolean isNeedConvert(final SqlType type, final Object nonNull) {
+    protected final boolean isNeedConvert(final SQLType type, final Object nonNull) {
         return !(type == MySQLType.DATETIME
                 && this.asOf80
                 && (nonNull instanceof OffsetDateTime || nonNull instanceof ZonedDateTime));
     }
 
     @Override
-    protected final void buildInTypeName(SqlType sqlType, MappingType type, StringBuilder sqlBuilder) {
+    protected final void buildInTypeName(SQLType sqlType, MappingType type, StringBuilder sqlBuilder) {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -110,13 +108,13 @@ abstract class MySQLParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final void bindLiteralNull(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
+    protected final void bindLiteralNull(final SQLType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
         //TODO convert
         sqlBuilder.append(_Constant.SPACE_NULL);
     }
 
     @Override
-    protected final void bindLiteral(final TypeMeta typeMeta, final SqlType type, final Object value,
+    protected final void bindLiteral(final TypeMeta typeMeta, final SQLType type, final Object value,
                                      final StringBuilder sqlBuilder) {
 
         switch ((MySQLType) type) {

@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.time.*;
 import java.time.format.DateTimeParseException;
@@ -48,7 +48,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
+    public SQLType map(ServerMeta meta) throws NotSupportDialectException {
         return LocalDateType.mapToSqlType(this, meta);
     }
 
@@ -63,7 +63,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public LocalDate beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
+    public LocalDate beforeBind(SQLType type, final MappingEnv env, final Object nonNull) {
         final LocalDate value;
         if (nonNull instanceof LocalDate) {
             value = (LocalDate) nonNull;
@@ -78,7 +78,7 @@ public final class YearMonthType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public YearMonth afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public YearMonth afterGet(SQLType type, MappingEnv env, Object nonNull) {
         return _convertToYearMonth(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

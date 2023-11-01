@@ -1,19 +1,17 @@
 package io.army.jdbc;
 
 import com.mysql.cj.MysqlType;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingType;
 import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.sql.XAConnection;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,7 +62,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     @Override
     final Object bind(final PreparedStatement stmt, final int indexBasedOne, final @Nullable Object attr,
-                      final MappingType type, final SqlType sqlType, final Object nonNull)
+                      final MappingType type, final SQLType sqlType, final Object nonNull)
             throws SQLException {
         switch ((MySQLType) sqlType) {
             case BOOLEAN:
@@ -192,12 +190,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
 
     @Override
-    SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne) {
+    SQLType getSqlType(ResultSetMetaData metaData, int indexBasedOne) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    Object get(final ResultSet resultSet, int indexBasedOne, final SqlType sqlType) throws SQLException {
+    Object get(final ResultSet resultSet, int indexBasedOne, final SQLType sqlType) throws SQLException {
         final Object value;
         switch ((MySQLType) sqlType) {
             case TINYINT:

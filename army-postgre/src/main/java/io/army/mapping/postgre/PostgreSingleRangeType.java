@@ -2,9 +2,6 @@ package io.army.mapping.postgre;
 
 import io.army.annotation.Mapping;
 import io.army.criteria.CriteriaException;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingSupport;
 import io.army.mapping.MappingType;
@@ -13,10 +10,11 @@ import io.army.mapping.postgre.array.PostgreSingleRangeArrayType;
 import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -242,13 +240,13 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) throws CriteriaException {
+    public String beforeBind(SQLType type, MappingEnv env, final Object nonNull) throws CriteriaException {
         return rangeBeforeBind(this::serialize, nonNull, type, this, PARAM_ERROR_HANDLER);
     }
 
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return rangeAfterGet(nonNull, this.rangeFunc, this::deserialize, type, this, ACCESS_ERROR_HANDLER);
     }
 
@@ -340,7 +338,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
      */
     @SuppressWarnings("unchecked")
     public static <T, R> R rangeConvert(final Object nonNull, final @Nullable RangeFunction<T, R> rangeFunc,
-                                        final Function<String, T> parseFunc, final SqlType sqlType,
+                                        final Function<String, T> parseFunc, final SQLType sqlType,
                                         final MappingType type, final ErrorHandler handler) {
 
         final R value;
@@ -355,7 +353,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
     }
 
     public static <T> String rangeBeforeBind(final BiConsumer<T, Consumer<String>> boundSerializer, final Object nonNull,
-                                             final SqlType sqlType, final MappingType type, final ErrorHandler handler)
+                                             final SQLType sqlType, final MappingType type, final ErrorHandler handler)
             throws CriteriaException {
 
         final String value, text;
@@ -391,7 +389,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
      * @throws io.army.session.DataAccessException when text error and handler throw this type.
      */
     public static <T, R> R rangeAfterGet(final Object nonNull, final @Nullable RangeFunction<T, R> rangeFunc,
-                                         final Function<String, T> parseFunc, final SqlType sqlType,
+                                         final Function<String, T> parseFunc, final SQLType sqlType,
                                          final MappingType type, final MappingSupport.ErrorHandler handler) {
         if (!(nonNull instanceof String)) {
             throw ACCESS_ERROR_HANDLER.apply(type, sqlType, nonNull, null);

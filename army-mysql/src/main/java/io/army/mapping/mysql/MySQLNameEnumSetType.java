@@ -6,7 +6,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,7 +47,7 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public SQLType map(final ServerMeta meta) {
         if (meta.dialectDatabase() != Database.MySQL) {
             throw noMappingError(meta);
         }
@@ -65,7 +65,7 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(SQLType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Set)) {
             throw outRangeOfSqlType(type, nonNull);
         }
@@ -86,7 +86,7 @@ public final class MySQLNameEnumSetType extends _ArmyNoInjectionMapping implemen
     }
 
     @Override
-    public Set<?> afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public Set<?> afterGet(SQLType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
             throw errorJavaTypeForSqlType(type, nonNull);
         }

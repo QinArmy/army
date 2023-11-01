@@ -3,7 +3,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public final class JsonListType extends MappingType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public SQLType map(final ServerMeta meta) {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -40,13 +40,13 @@ public final class JsonListType extends MappingType {
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public Object beforeBind(SQLType type, MappingEnv env, Object nonNull) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public Object afterGet(SQLType type, MappingEnv env, Object nonNull) {
         //TODO
         throw new UnsupportedOperationException();
     }

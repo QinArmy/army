@@ -4,19 +4,17 @@ import io.army.annotation.Mapping;
 import io.army.criteria.CriteriaException;
 import io.army.dialect._Constant;
 import io.army.function.TextFunction;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.mapping.array.PostgreArrays;
 import io.army.mapping.postgre.*;
 import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -250,12 +248,12 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
         return arrayBeforeBind(nonNull, this::serialize, type, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return arrayAfterGet(nonNull, this.rangeFunc, this::deserialize, type, this, ACCESS_ERROR_HANDLER);
     }
 
@@ -264,7 +262,7 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
      * @param rangeFunc null when {@link MappingType#javaType()} of type is {@link String#getClass()}
      */
     public static <T, R> Object arrayConvert(final Object nonNull, final @Nullable RangeFunction<T, R> rangeFunc,
-                                             final Function<String, T> parseFunc, final SqlType sqlType,
+                                             final Function<String, T> parseFunc, final SQLType sqlType,
                                              final MappingType type, final ErrorHandler handler) {
         final Object value;
         final String text;
@@ -291,7 +289,7 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
      * @param <T>             java type of subtype of range
      */
     public static <T> String arrayBeforeBind(final Object nonNull, final BiConsumer<T, Consumer<String>> boundSerializer,
-                                             final SqlType sqlType, final MappingType type,
+                                             final SQLType sqlType, final MappingType type,
                                              final ErrorHandler handler) {
         final BiConsumer<Object, Consumer<String>> rangeSerializer;
         rangeSerializer = (range, appender) -> PostgreRangeType.rangeToText(range, boundSerializer, type, appender);
@@ -300,7 +298,7 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
 
 
     public static <T> Object arrayAfterGet(final Object nonNull, final @Nullable RangeFunction<T, ?> rangeFunc,
-                                           final Function<String, T> parseFunc, final SqlType sqlType,
+                                           final Function<String, T> parseFunc, final SQLType sqlType,
                                            final MappingType type, final ErrorHandler handler) {
         if (!(nonNull instanceof String)) {
             throw handler.apply(type, sqlType, nonNull, null);
@@ -309,7 +307,7 @@ public final class PostgreMultiRangeArrayType extends _ArmyPostgreRangeType impl
     }
 
     private static <T> Object parseMultiRangeArray(final String text, final @Nullable RangeFunction<T, ?> rangeFunc,
-                                                   final Function<String, T> parseFunc, final SqlType sqlType,
+                                                   final Function<String, T> parseFunc, final SQLType sqlType,
                                                    final MappingType type, final ErrorHandler handler) {
 
         final TextFunction<?> elementFunc;

@@ -4,7 +4,7 @@ import io.army.dialect._Constant;
 import io.army.function.TextFunction;
 import io.army.mapping.MappingType;
 import io.army.mapping.UnaryGenericsMapping;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.type.ImmutableSpec;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
@@ -28,7 +28,7 @@ public abstract class PostgreArrays extends ArrayMappings {
 
 
     public static String arrayBeforeBind(final Object nonNull, final BiConsumer<Object, Consumer<String>> consumer,
-                                         final SqlType sqlType, final MappingType type,
+                                         final SQLType sqlType, final MappingType type,
                                          final ErrorHandler handler) {
 
         final String text, value;
@@ -74,7 +74,7 @@ public abstract class PostgreArrays extends ArrayMappings {
      *                    </ul>
      */
     public static Object parseArray(final String text, final boolean nonNull, final TextFunction<?> elementFunc,
-                                    final char delimiter, final SqlType sqlType, final MappingType type,
+                                    final char delimiter, final SQLType sqlType, final MappingType type,
                                     final ErrorHandler handler) throws IllegalArgumentException {
 
         if (!(type instanceof MappingType.SqlArrayType)) {
@@ -112,7 +112,7 @@ public abstract class PostgreArrays extends ArrayMappings {
         return value;
     }
 
-    public static Object parseMultiRange(final String text, final TextFunction<?> elementFunc, final SqlType sqlType,
+    public static Object parseMultiRange(final String text, final TextFunction<?> elementFunc, final SQLType sqlType,
                                          final MappingType type, final ErrorHandler handler)
             throws IllegalArgumentException {
         final Class<?> arrayJavaType;

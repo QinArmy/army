@@ -2,7 +2,7 @@ package io.army.mapping;
 
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -41,7 +41,7 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public SQLType map(final ServerMeta meta) {
         return UnsignedBigDecimalType.mapToSqlType(this, meta);
     }
 
@@ -57,7 +57,7 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
     }
 
     @Override
-    public BigDecimal beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public BigDecimal beforeBind(SQLType type, MappingEnv env, Object nonNull) {
         final BigDecimal value;
         value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0)
                 .stripTrailingZeros();
@@ -68,7 +68,7 @@ public final class UnsignedBigIntegerType extends _NumericType._UnsignedIntegerT
     }
 
     @Override
-    public BigInteger afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public BigInteger afterGet(SQLType type, MappingEnv env, Object nonNull) {
         final BigInteger value;
         value = BigIntegerType._convertToBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
         if (value.compareTo(BigInteger.ZERO) < 0) {

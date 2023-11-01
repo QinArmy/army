@@ -4,7 +4,7 @@ import io.army.mapping.MappingType;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.session.Option;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.jdbd.meta.DataType;
 import io.jdbd.result.DataRow;
 import io.jdbd.session.DatabaseSession;
@@ -37,17 +37,17 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
 
 
     @Override
-    final DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType) {
+    final DataType mapToJdbdDataType(MappingType mappingType, SQLType sqlType) {
         return null;
     }
 
     @Override
-    final SqlType getColumnMeta(DataRow row, int indexBasedZero) {
+    final SQLType getColumnMeta(DataRow row, int indexBasedZero) {
         return null;
     }
 
     @Override
-    final Object get(DataRow row, int indexBasedZero, SqlType sqlType) {
+    final Object get(DataRow row, int indexBasedZero, SQLType sqlType) {
         return null;
     }
 

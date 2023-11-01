@@ -3,16 +3,14 @@ package io.army.mapping.array;
 import io.army.criteria.CriteriaException;
 import io.army.dialect.Database;
 import io.army.dialect.NotSupportDialectException;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 
+import javax.annotation.Nullable;
 import java.lang.ref.SoftReference;
 import java.util.List;
 import java.util.Objects;
@@ -116,7 +114,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public SQLType map(final ServerMeta meta) throws NotSupportDialectException {
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
@@ -135,7 +133,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
         final Object value;
         if (nonNull instanceof String || nonNull.getClass().isArray()) {
             value = nonNull;
@@ -149,7 +147,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
         // TODO
         throw new UnsupportedOperationException();
     }
@@ -162,7 +160,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
 
     }
 
-    private String[] listToArray(final SqlType type, final List<?> list) {
+    private String[] listToArray(final SQLType type, final List<?> list) {
         final String[] array = new String[list.size()];
         Object element;
         for (int i = 0; i < array.length; i++) {

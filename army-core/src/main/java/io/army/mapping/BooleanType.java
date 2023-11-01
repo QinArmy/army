@@ -6,7 +6,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -56,8 +56,8 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        final SqlType sqlType;
+    public SQLType map(final ServerMeta meta) throws NotSupportDialectException {
+        final SQLType sqlType;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.BOOLEAN;
@@ -82,12 +82,12 @@ public final class BooleanType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Boolean beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+    public Boolean beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
         return convertToBoolean(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public Boolean afterGet(SqlType type, MappingEnv env, final Object nonNull) {
+    public Boolean afterGet(SQLType type, MappingEnv env, final Object nonNull) {
         return convertToBoolean(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

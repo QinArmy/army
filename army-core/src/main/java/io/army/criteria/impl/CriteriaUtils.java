@@ -6,18 +6,16 @@ import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.LongType;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -705,22 +703,22 @@ abstract class CriteriaUtils {
     }
 
 
-    static CriteriaException noPrecision(CriteriaContext context, SqlType type) {
+    static CriteriaException noPrecision(CriteriaContext context, SQLType type) {
         String m = String.format("You don't specified precision for %s", type);
         return ContextStack.criteriaError(context, m);
     }
 
-    static CriteriaException dontSupportPrecision(CriteriaContext context, SqlType type) {
+    static CriteriaException dontSupportPrecision(CriteriaContext context, SQLType type) {
         String m = String.format("%s don't support precision", type);
         return ContextStack.criteriaError(context, m);
     }
 
-    static CriteriaException dontSupportCharset(CriteriaContext context, SqlType type) {
+    static CriteriaException dontSupportCharset(CriteriaContext context, SQLType type) {
         String m = String.format("%s don't support charset", type);
         return ContextStack.criteriaError(context, m);
     }
 
-    static CriteriaException dontSupportPrecisionScale(CriteriaContext context, SqlType type) {
+    static CriteriaException dontSupportPrecisionScale(CriteriaContext context, SQLType type) {
         String m = String.format("%s don't support precision and scale", type);
         return ContextStack.criteriaError(context, m);
     }

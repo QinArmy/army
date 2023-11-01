@@ -1,11 +1,9 @@
 package io.army.session;
 
 import io.army.criteria.Selection;
+import io.army.sqltype.SQLType;
 
 import javax.annotation.Nullable;
-
-import io.army.sqltype.SqlType;
-
 import java.util.List;
 
 public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpec {
@@ -16,7 +14,9 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
 
     Selection getSelection(int indexBasedZero);
 
-    SqlType getSqlType(int indexBasedZero);
+    SQLType getSqlType(int indexBasedZero);
+
+    ArmyType getArmyType(int indexBasedZero);
 
     @Nullable
     <T> T getOf(int indexBasedZero, Option<T> option);

@@ -5,7 +5,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 public final class NoCastTextType extends _ArmyBuildInMapping implements MappingType.SqlTextType {
 
@@ -34,8 +34,8 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        final SqlType type;
+    public SQLType map(final ServerMeta meta) throws NotSupportDialectException {
+        final SQLType type;
         switch (meta.dialectDatabase()) {
             case PostgreSQL:
                 type = PostgreSqlType.NO_CAST_TEXT;
@@ -60,12 +60,12 @@ public final class NoCastTextType extends _ArmyBuildInMapping implements Mapping
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public String beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
         return StringType._convertToString(this, type, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public String afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public String afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return StringType._convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

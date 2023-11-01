@@ -6,7 +6,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.math.BigDecimal;
 import java.util.BitSet;
@@ -38,8 +38,8 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        final SqlType type;
+    public SQLType map(final ServerMeta meta) throws NotSupportDialectException {
+        final SQLType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.CHAR;
@@ -67,7 +67,7 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public String beforeBind(final SqlType type, final MappingEnv env, final Object nonNull)
+    public String beforeBind(final SQLType type, final MappingEnv env, final Object nonNull)
             throws CriteriaException {
         final String value;
         if (nonNull instanceof Character) {
@@ -105,7 +105,7 @@ public final class CharacterType extends _ArmyBuildInMapping implements MappingT
     }
 
     @Override
-    public Character afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Character afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

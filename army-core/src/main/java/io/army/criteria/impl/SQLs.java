@@ -11,19 +11,17 @@ import io.army.criteria.standard.StandardUpdate;
 import io.army.dialect._Constant;
 import io.army.dialect._SetClauseContext;
 import io.army.dialect._SqlContext;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -840,8 +838,8 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public SqlType map(final ServerMeta meta) {
-            final SqlType sqlType;
+        public SQLType map(final ServerMeta meta) {
+            final SQLType sqlType;
             switch (meta.dialectDatabase()) {
                 case MySQL:
                     sqlType = MySQLType.NULL;
@@ -866,12 +864,12 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+        public Object beforeBind(SQLType type, MappingEnv env, Object nonNull) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Object afterGet(SqlType type, MappingEnv env, Object nonNull) {
+        public Object afterGet(SQLType type, MappingEnv env, Object nonNull) {
             throw new UnsupportedOperationException();
         }
 

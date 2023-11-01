@@ -7,7 +7,7 @@ import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 
@@ -75,7 +75,7 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
+    public SQLType map(final ServerMeta meta) throws NotSupportDialectException {
         return mapSqlType(this, meta);
     }
 
@@ -91,18 +91,18 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public String beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
         return StringType._convertToString(this, type, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public String afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public String afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return StringType._convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 
-    static SqlType mapSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType sqlType;
+    static SQLType mapSqlType(final MappingType type, final ServerMeta meta) {
+        final SQLType sqlType;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.TEXT;

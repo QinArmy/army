@@ -9,7 +9,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util.ArrayUtils;
 
 import java.lang.reflect.Array;
@@ -56,7 +56,7 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
+    public SQLType map(ServerMeta meta) throws NotSupportDialectException {
         return null;
     }
 
@@ -76,17 +76,17 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public final Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public final Object beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
         return null;
     }
 
     @Override
-    public final Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public final Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return null;
     }
 
 
-    private void appendPostgreArray(final Object array, final StringBuilder builder, final SqlType type,
+    private void appendPostgreArray(final Object array, final StringBuilder builder, final SQLType type,
                                     final BiPredicate<Object, StringBuilder> valueHandler) {
         final int arrayDimension;
         arrayDimension = ArrayUtils.dimensionOf(array.getClass());
@@ -137,7 +137,7 @@ abstract class NumberArrayType extends _ArmyNoInjectionMapping
         builder.append('}');
     }
 
-    private void appendPostgreNumberList(final List<?> list, final StringBuilder builder, final SqlType type,
+    private void appendPostgreNumberList(final List<?> list, final StringBuilder builder, final SQLType type,
                                          final Class<? extends Number> numberClass) {
         builder.append('{');
         int index = 0;

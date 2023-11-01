@@ -1,12 +1,11 @@
 package io.army.schema;
 
 
-import javax.annotation.Nullable;
-
 import io.army.meta.*;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -64,12 +63,12 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
     /**
      * @return true : sql type definition is different.
      */
-    abstract boolean compareSqlType(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType);
+    abstract boolean compareSqlType(_ColumnInfo columnInfo, FieldMeta<?> field, SQLType sqlType);
 
     /**
      * @return true : default expression definition is different.
      */
-    abstract boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType);
+    abstract boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?> field, SQLType sqlType);
 
     /**
      * @return true : support column comment.
@@ -89,7 +88,7 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
         final boolean supportColumnComment = this.supportColumnComment();
 
         _ColumnInfo column;
-        SqlType sqlType;
+        SQLType sqlType;
         Boolean nullable;
         for (FieldMeta<?> field : table.fieldList()) {
             column = columnMap.get(field.columnName());

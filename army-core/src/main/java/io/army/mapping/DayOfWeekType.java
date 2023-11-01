@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.time.*;
 import java.time.format.DateTimeParseException;
@@ -50,7 +50,7 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public SQLType map(final ServerMeta meta) {
         return NameEnumType.mapToSqlEnumType(this, meta);
     }
 
@@ -65,14 +65,14 @@ public final class DayOfWeekType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull)
+    public String beforeBind(SQLType type, MappingEnv env, final Object nonNull)
             throws CriteriaException {
         return convertToDayOfWeek(this, nonNull, PARAM_ERROR_HANDLER_0)
                 .name();
     }
 
     @Override
-    public DayOfWeek afterGet(SqlType type, MappingEnv env, final Object nonNull) throws DataAccessException {
+    public DayOfWeek afterGet(SQLType type, MappingEnv env, final Object nonNull) throws DataAccessException {
         return convertToDayOfWeek(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

@@ -5,7 +5,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 public final class SQLCharType extends _ArmyBuildInMapping implements MappingType.SqlStringType {
 
@@ -32,8 +32,8 @@ public final class SQLCharType extends _ArmyBuildInMapping implements MappingTyp
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
-        final SqlType type;
+    public SQLType map(final ServerMeta meta) {
+        final SQLType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.CHAR;
@@ -65,12 +65,12 @@ public final class SQLCharType extends _ArmyBuildInMapping implements MappingTyp
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(SQLType type, MappingEnv env, Object nonNull) {
         return StringType._convertToString(this, type, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public String afterGet(SQLType type, MappingEnv env, Object nonNull) {
         return StringType._convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

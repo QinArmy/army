@@ -11,7 +11,7 @@ import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.TypeMeta;
 import io.army.session.*;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -208,7 +208,7 @@ public abstract class ExecutorSupport {
 
         private final List<? extends Selection> selectionList;
 
-        private final IntFunction<SqlType> sqlTypeFunc;
+        private final IntFunction<SQLType> sqlTypeFunc;
 
         private final IntBiFunction<Option<?>, ?> optionFunc;
 
@@ -219,7 +219,7 @@ public abstract class ExecutorSupport {
         private List<String> columnLabelList;
 
         public ArmyResultRecordMeta(int resultNo, List<? extends Selection> selectionList,
-                                    IntFunction<SqlType> sqlTypeFunc, IntBiFunction<Option<?>, ?> optionFunc) {
+                                    IntFunction<SQLType> sqlTypeFunc, IntBiFunction<Option<?>, ?> optionFunc) {
             this.resultNo = resultNo;
             this.selectionList = selectionList;
             this.sqlTypeFunc = sqlTypeFunc;
@@ -300,7 +300,7 @@ public abstract class ExecutorSupport {
         }
 
         @Override
-        public SqlType getSqlType(int indexBasedZero) {
+        public SQLType getSqlType(int indexBasedZero) {
             return this.sqlTypeFunc.apply(checkIndex(indexBasedZero));
         }
 

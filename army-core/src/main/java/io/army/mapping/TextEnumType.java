@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 import io.army.struct.TextEnum;
 
 import java.util.Map;
@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * <p>
- * This class representing the mapping from {@link TextEnum} to {@link SqlType}.
+ * This class representing the mapping from {@link TextEnum} to {@link SQLType}.
  * </p>
  *
  * @see TextEnum
@@ -52,7 +52,7 @@ public final class TextEnumType extends MappingType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public SQLType map(final ServerMeta meta) {
         return NameEnumType.mapToSqlEnumType(this, meta);
     }
 
@@ -71,7 +71,7 @@ public final class TextEnumType extends MappingType {
     }
 
     @Override
-    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(SQLType type, MappingEnv env, Object nonNull) {
         if (!this.javaType.isInstance(nonNull)) {
             throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
@@ -79,7 +79,7 @@ public final class TextEnumType extends MappingType {
     }
 
     @Override
-    public TextEnum afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public TextEnum afterGet(SQLType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
             throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }

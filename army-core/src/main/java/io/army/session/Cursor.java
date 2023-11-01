@@ -2,14 +2,14 @@ package io.army.session;
 
 import io.army.criteria.Selection;
 
-import java.util.List;
-
 /**
  * <p>This interface representing database cursor.
  * <p>This interface is base interface of following :
  * <ul>
- *     <li>{@code  io.army.sync.SyncCursor}</li>
- *     <li>{@code io.army.reactive.ReactiveCursor}</li>
+ *     <li>{@link StmtCursor},it's produced by statement,army know {@link Selection} list</li>
+ *     <li>{@link ProcCursor},it's produced by procedure,army don't know {@link Selection} list</li>
+ *     <li>{@code io.army.sync.SyncCursor} blocking cursor</li>
+ *     <li>{@code io.army.reactive.ReactiveCursor} reactive cursor</li>
  * </ul>
  *
  * @see ResultStates#valueOf(Option)
@@ -20,12 +20,6 @@ import java.util.List;
 public interface Cursor extends CloseableSpec, OptionSpec {
 
     String name();
-
-    List<Selection> selectionList();
-
-    Selection selection(int indexBasedZero);
-
-    Selection selection(String name);
 
     /**
      * Get The {@link Session} that create this instance.

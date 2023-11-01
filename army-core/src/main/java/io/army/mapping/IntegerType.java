@@ -6,7 +6,7 @@ import io.army.mapping.array.IntegerArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -64,7 +64,7 @@ public final class IntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public SQLType map(final ServerMeta meta) {
         return mapToInteger(this, meta);
     }
 
@@ -75,12 +75,12 @@ public final class IntegerType extends _NumericType._IntegerType {
     }
 
     @Override
-    public Integer beforeBind(SqlType type, final MappingEnv env, final Object nonNull) {
+    public Integer beforeBind(SQLType type, final MappingEnv env, final Object nonNull) {
         return _convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public Integer afterGet(SqlType type, final MappingEnv env, Object nonNull) {
+    public Integer afterGet(SQLType type, final MappingEnv env, Object nonNull) {
         return _convertToInt(this, nonNull, Integer.MIN_VALUE, Integer.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
@@ -134,8 +134,8 @@ public final class IntegerType extends _NumericType._IntegerType {
 
      }
 
-    static SqlType mapToInteger(final MappingType type, final ServerMeta meta) {
-        final SqlType sqlType;
+    static SQLType mapToInteger(final MappingType type, final ServerMeta meta) {
+        final SQLType sqlType;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.INT;

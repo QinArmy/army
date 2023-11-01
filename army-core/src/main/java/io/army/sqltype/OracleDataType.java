@@ -2,7 +2,7 @@ package io.army.sqltype;
 
 import io.army.dialect.Database;
 
-public enum OracleDataType implements SqlType {
+public enum OracleDataType implements SQLType {
 
     NUMBER,
     CHAR,

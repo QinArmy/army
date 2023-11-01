@@ -2,7 +2,7 @@ package io.army.sqltype;
 
 import io.army.dialect.Database;
 
-public enum H2DataType implements SqlType {
+public enum H2DataType implements SQLType {
 
 
     BOOLEAN,

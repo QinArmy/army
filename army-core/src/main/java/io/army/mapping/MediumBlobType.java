@@ -37,8 +37,8 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
-        final SqlType type;
+    public SQLType map(final ServerMeta meta) {
+        final SQLType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.MEDIUMBLOB;
@@ -73,7 +73,7 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public byte[] beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
+    public byte[] beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
@@ -81,7 +81,7 @@ public final class MediumBlobType extends _ArmyBuildInMapping {
     }
 
     @Override
-    public byte[] afterGet(SqlType type, MappingEnv env, final Object nonNull) {
+    public byte[] afterGet(SQLType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }

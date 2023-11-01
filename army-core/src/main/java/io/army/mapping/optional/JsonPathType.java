@@ -9,7 +9,7 @@ import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 public final class JsonPathType extends _ArmyBuildInMapping implements MappingType.SqlJsonPathType {
 
@@ -31,8 +31,8 @@ public final class JsonPathType extends _ArmyBuildInMapping implements MappingTy
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
-        final SqlType type;
+    public SQLType map(final ServerMeta meta) throws NotSupportDialectException {
+        final SQLType type;
         switch (meta.dialectDatabase()) {
             case PostgreSQL:
                 type = PostgreSqlType.JSONPATH;
@@ -58,7 +58,7 @@ public final class JsonPathType extends _ArmyBuildInMapping implements MappingTy
     }
 
     @Override
-    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
         if (nonNull instanceof String) {
             return nonNull;
         }
@@ -67,7 +67,7 @@ public final class JsonPathType extends _ArmyBuildInMapping implements MappingTy
     }
 
     @Override
-    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

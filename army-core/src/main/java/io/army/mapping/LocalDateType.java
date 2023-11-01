@@ -5,7 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.SQLType;
 
 import java.time.*;
 import java.time.format.DateTimeParseException;
@@ -52,7 +52,7 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public SqlType map(final ServerMeta meta) {
+    public SQLType map(final ServerMeta meta) {
         return mapToSqlType(this, meta);
     }
 
@@ -67,18 +67,18 @@ public final class LocalDateType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public LocalDate beforeBind(SqlType type, MappingEnv env, Object nonNull) {
+    public LocalDate beforeBind(SQLType type, MappingEnv env, Object nonNull) {
         return _convertToLocalDateTime(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public LocalDate afterGet(SqlType type, MappingEnv env, Object nonNull) {
+    public LocalDate afterGet(SQLType type, MappingEnv env, Object nonNull) {
         return _convertToLocalDateTime(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 
-    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SqlType sqlType;
+    static SQLType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SQLType sqlType;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.DATE;

@@ -1,69 +1,51 @@
 package io.army.sync;
 
+import io.army.criteria.Selection;
 import io.army.session.*;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
+
 
 /**
  * <p>This interface representing blocking {@link Cursor}.
+ * <p>This interface is base interface of following :
+ * <ul>
+ *     <li>{@link SyncStmtCursor},it's produced by statement,army know {@link Selection} list</li>
+ *     <li>{@link SyncProcCursor},it's produced by procedure,army don't know {@link Selection} list</li>
+ * </ul>
  *
  * @see ResultStates#valueOf(Option)
- * @see SyncCursor#SYNC_CURSOR
  * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
  * @see <a href="https://www.postgresql.org/docs/current/sql-fetch.html">PostgreSQL FETCH</a>
  * @since 1.0
  */
 public interface SyncCursor extends Cursor, AutoCloseable {
 
-    /**
-     * <p>
-     * When this option is supported by {@link ResultStates},this option representing the statement that produce
-     * the {@link ResultStates} declare a cursor. For example : execute postgre DECLARE command.
-     * <br/>
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/sql-declare.html">PostgreSQL DECLARE</a>
-     */
-    Option<SyncCursor> SYNC_CURSOR = Option.from("SYNC CURSOR", SyncCursor.class);
 
     @Override
     SyncSession session();
 
-    @Nullable
-    <R> R next(Class<R> resultClass);
-
-    @Nullable
-    <R> R nextObject(Supplier<R> constructor);
 
     @Nullable
     <R> R nextRecord(Function<CurrentRecord, R> function);
 
     @Nullable
-    <R> R fetchOne(CursorDirection direction, Class<R> resultClass, Consumer<ResultStates> consumer);
-
-    @Nullable
-    <R> R fetchOneObject(CursorDirection direction, Supplier<R> constructor, Consumer<ResultStates> consumer);
-
-    @Nullable
     <R> R fetchOneRecord(CursorDirection direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
-
-    <R> Stream<R> fetch(CursorDirection direction, Class<R> resultClass, Consumer<ResultStates> consumer);
-
-    <R> Stream<R> fetchObject(CursorDirection direction, Supplier<R> constructor, Consumer<ResultStates> consumer);
 
     <R> Stream<R> fetchRecord(CursorDirection direction, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
 
-    <R> Stream<R> fetch(CursorDirection direction, long count, Class<R> resultClass, Consumer<ResultStates> consumer);
-
-    <R> Stream<R> fetchObject(CursorDirection direction, long count, Supplier<R> constructor, Consumer<ResultStates> consumer);
-
     <R> Stream<R> fetchRecord(CursorDirection direction, long count, Function<CurrentRecord, R> function, Consumer<ResultStates> consumer);
+
+    Stream<ResultItem> fetchRecord(CursorDirection direction);
+
+    Stream<ResultItem> fetchRecord(CursorDirection direction, long count);
 
     ResultStates move(CursorDirection direction);
 
     ResultStates move(CursorDirection direction, long count);
+
 
 }
