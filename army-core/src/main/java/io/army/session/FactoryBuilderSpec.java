@@ -10,11 +10,12 @@ import io.army.session.executor.StmtExecutorFactoryProviderSpec;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * <p>This interface representing the builder of {@link SessionFactory} spec.
+ * <p>This interface representing the builder spec of {@link SessionFactory} .
  * <p>This interface is base interface of all factory builder.
  *
  * @param <B> factory builder java type,it is the sub interface of this interface
@@ -106,6 +107,29 @@ public interface FactoryBuilderSpec<B, R> {
      */
     B executorFactoryProviderValidator(@Nullable Consumer<StmtExecutorFactoryProviderSpec> consumer);
 
+    /**
+     * <p>Optional.
+     * <p>See {@link io.army.session.record.DataRecord#get(int, Class)}
+     *
+     * @return <strong>this</strong>
+     */
+    B columnConverterMap(@Nullable Map<Class<?>, Function<?, ?>> converterMap);
+
+    /**
+     * <p>Create {@link SessionFactory} instance
+     *
+     * @return <ul>
+     * <li>sync api : {@link SessionFactory} instance</li>
+     * <li>reactive api : Mono of {@link SessionFactory} instance</li>
+     * </ul>
+     * @throws SessionFactoryException throw (emit) when
+     *                                 <ul>
+     *                                     <li>required properties absent</li>
+     *                                     <li>name duplication</li>
+     *                                     <li>access database occur error</li>
+     *                                     <li>properties error</li>
+     *                                 </ul>
+     */
     R build();
 
 }

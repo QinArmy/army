@@ -1,5 +1,7 @@
 package io.army.session.record;
 
+import io.army.session.DataAccessException;
+
 public interface ResultItem {
 
     int getResultNo();
@@ -18,9 +20,9 @@ public interface ResultItem {
          *
          * @param indexBasedZero index based zero,the first value is 0 .
          * @return the suggested column title              .
-         * @throws IllegalArgumentException throw when indexBasedZero error
+         * @throws DataAccessException throw when indexBasedZero error
          */
-        String getColumnLabel(int indexBasedZero) throws IllegalArgumentException;
+        String getColumnLabel(int indexBasedZero) throws DataAccessException;
 
 
         /**
@@ -30,10 +32,11 @@ public interface ResultItem {
          *
          * @param columnLabel column label
          * @return index based zero,the first value is 0 .
-         * @throws IllegalArgumentException throw when indexBasedZero error
+         * @throws DataAccessException throw when indexBasedZero error
          */
-        int getColumnIndex(String columnLabel) throws IllegalArgumentException;
-    }
+        int getColumnIndex(String columnLabel) throws DataAccessException;
+
+    } // ResultAccessSpec
 
 
 }

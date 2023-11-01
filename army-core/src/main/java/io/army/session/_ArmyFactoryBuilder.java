@@ -11,17 +11,17 @@ import io.army.env.ArmyEnvironment;
 import io.army.executor.ExecutorEnv;
 import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
 import io.army.schema._SchemaResult;
+import io.army.session.executor.StmtExecutorFactoryProviderSpec;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B, R> {
@@ -107,6 +107,16 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
     @Override
     public final B nameToDatabaseFunc(@Nullable Function<String, Database> function) {
         this.nameToDatabaseFunc = function;
+        return (B) this;
+    }
+
+    @Override
+    public final B executorFactoryProviderValidator(@Nullable Consumer<StmtExecutorFactoryProviderSpec> consumer) {
+        return (B) this;
+    }
+
+    @Override
+    public final B columnConverterMap(@Nullable Map<Class<?>, Function<?, ?>> converterMap) {
         return (B) this;
     }
 

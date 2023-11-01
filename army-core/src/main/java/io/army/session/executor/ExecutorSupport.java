@@ -13,10 +13,7 @@ import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
 import io.army.session.Isolation;
 import io.army.session.Option;
-import io.army.session.record.CurrentRecord;
-import io.army.session.record.DataRecord;
-import io.army.session.record.ResultRecord;
-import io.army.session.record.ResultRecordMeta;
+import io.army.session.record.*;
 import io.army.sqltype.SQLType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
@@ -179,9 +176,9 @@ public abstract class ExecutorSupport {
     /*-------------------below Exception  -------------------*/
 
 
-    protected static NullPointerException currentRecordColumnIsNull(int indexBasedZero, Selection selection) {
-        String m = String.format("value is null of current record index[%s] selection label[%s] ",
-                indexBasedZero, selection.label());
+    protected static NullPointerException currentRecordColumnIsNull(int indexBasedZero, String columnLabel) {
+        String m = String.format("value is null of current record index[%s] column label[%s] ",
+                indexBasedZero, columnLabel);
         return new NullPointerException(m);
     }
 
@@ -335,6 +332,102 @@ public abstract class ExecutorSupport {
             return value;
         }
 
+        /*-------------------below label methods -------------------*/
+
+        @Override
+        public final Selection getSelection(String columnLabel) throws DataAccessException {
+            return getSelection(getColumnIndex(columnLabel));
+        }
+
+        @Override
+        public final DataType getDataType(String columnLabel) throws DataAccessException {
+            return getDataType(getColumnIndex(columnLabel));
+        }
+
+        @Override
+        public final ArmyType getArmyType(String columnLabel) throws DataAccessException {
+            return getArmyType(getColumnIndex(columnLabel));
+        }
+
+        @Nullable
+        @Override
+        public final <T> T getOf(String columnLabel, Option<T> option) throws DataAccessException {
+            return getOf(getColumnIndex(columnLabel), option);
+        }
+
+        @Override
+        public final <T> T getNonNullOf(String columnLabel, Option<T> option) throws DataAccessException {
+            return getNonNullOf(getColumnIndex(columnLabel), option);
+        }
+
+        @Nullable
+        @Override
+        public final String getCatalogName(String columnLabel) throws DataAccessException {
+            return getCatalogName(getColumnIndex(columnLabel));
+        }
+
+        @Nullable
+        @Override
+        public final String getSchemaName(String columnLabel) throws DataAccessException {
+            return getSchemaName(getColumnIndex(columnLabel));
+        }
+
+        @Nullable
+        @Override
+        public final String getTableName(String columnLabel) throws DataAccessException {
+            return getTableName(getColumnIndex(columnLabel));
+        }
+
+        @Nullable
+        @Override
+        public final String getColumnName(String columnLabel) throws DataAccessException {
+            return getColumnName(getColumnIndex(columnLabel));
+        }
+
+        @Override
+        public final int getPrecision(String columnLabel) throws DataAccessException {
+            return getPrecision(getColumnIndex(columnLabel));
+        }
+
+        @Override
+        public final int getScale(String columnLabel) throws DataAccessException {
+            return getScale(getColumnIndex(columnLabel));
+        }
+
+        @Override
+        public final FieldType getFieldType(String columnLabel) throws DataAccessException {
+            return getFieldType(getColumnIndex(columnLabel));
+        }
+
+        @Nullable
+        @Override
+        public final Boolean getAutoIncrementMode(String columnLabel) throws DataAccessException {
+            return getAutoIncrementMode(getColumnIndex(columnLabel));
+        }
+
+        @Override
+        public final KeyType getKeyMode(String columnLabel) throws DataAccessException {
+            return getKeyMode(getColumnIndex(columnLabel));
+        }
+
+        @Nullable
+        @Override
+        public final Boolean getNullableMode(String columnLabel) throws DataAccessException {
+            return getNullableMode(getColumnIndex(columnLabel));
+        }
+
+        @Override
+        public final Class<?> getFirstJavaType(String columnLabel) throws DataAccessException {
+            return getFirstJavaType(getColumnIndex(columnLabel));
+        }
+
+        @Nullable
+        @Override
+        public final Class<?> getSecondJavaType(String columnLabel) throws DataAccessException {
+            return getSecondJavaType(getColumnIndex(columnLabel));
+        }
+
+
         public int checkIndex(final int indexBasedZero) {
             if (indexBasedZero < 0 || indexBasedZero >= this.columnSize) {
                 String m = String.format("index[%s] not in [0,)", this.columnSize);
@@ -348,48 +441,33 @@ public abstract class ExecutorSupport {
 
     private static abstract class ArmyDataRecord implements DataRecord {
 
-        protected final ArmyResultRecordMeta meta;
-
-        private ArmyDataRecord(ArmyResultRecordMeta meta) {
-            this.meta = meta;
-        }
-
-        private ArmyDataRecord(ArmyCurrentRecord currentRecord) {
-            this.meta = currentRecord.meta;
-        }
-
-        @Override
-        public final ResultRecordMeta getRecordMeta() {
-            return this.meta;
-        }
 
         @Override
         public final int getResultNo() {
-            return this.meta.resultNo;
+            return getRecordMeta().getResultNo();
         }
 
         @Override
         public final int getColumnCount() {
-            return this.meta.columnSize;
+            return getRecordMeta().getColumnCount();
         }
 
         @Override
         public final String getColumnLabel(int indexBasedZero) throws IllegalArgumentException {
-            return this.meta.getColumnLabel(indexBasedZero);
+            return getRecordMeta().getColumnLabel(indexBasedZero);
         }
 
         @Override
         public final int getColumnIndex(String columnLabel) throws IllegalArgumentException {
-            return this.meta.getColumnIndex(columnLabel);
+            return getRecordMeta().getColumnIndex(columnLabel);
         }
 
-
         @Override
-        public final Object getNonNull(int indexBasedZero) {
+        public final Object getNonNull(final int indexBasedZero) {
             final Object value;
             value = get(indexBasedZero);
             if (value == null) {
-                throw currentRecordColumnIsNull(indexBasedZero, this.meta.selectionList.get(indexBasedZero));
+                throw currentRecordColumnIsNull(indexBasedZero, getColumnLabel(indexBasedZero));
             }
             return value;
         }
@@ -435,7 +513,7 @@ public abstract class ExecutorSupport {
             final T value;
             value = get(indexBasedZero, columnClass);
             if (value == null) {
-                throw currentRecordColumnIsNull(indexBasedZero, this.meta.selectionList.get(indexBasedZero));
+                throw currentRecordColumnIsNull(indexBasedZero, getColumnLabel(indexBasedZero));
             }
             return value;
         }
@@ -468,55 +546,61 @@ public abstract class ExecutorSupport {
         /*-------------------below label methods -------------------*/
 
         @Override
-        public final Object get(String selectionLabel) {
-            return get(getRecordMeta().getColumnIndex(selectionLabel));
+        public final Object get(String columnLabel) {
+            return get(getRecordMeta().getColumnIndex(columnLabel));
         }
 
         @Override
-        public final Object getNonNull(String selectionLabel) {
-            return getNonNull(getRecordMeta().getColumnIndex(selectionLabel));
+        public final Object getNonNull(String columnLabel) {
+            return getNonNull(getRecordMeta().getColumnIndex(columnLabel));
         }
 
         @Override
-        public final Object getOrDefault(String selectionLabel, Object defaultValue) {
-            return getOrDefault(getRecordMeta().getColumnIndex(selectionLabel), defaultValue);
+        public final Object getOrDefault(String columnLabel, Object defaultValue) {
+            return getOrDefault(getRecordMeta().getColumnIndex(columnLabel), defaultValue);
         }
 
         @Override
-        public final Object getOrSupplier(String selectionLabel, Supplier<?> supplier) {
-            return getOrSupplier(getRecordMeta().getColumnIndex(selectionLabel), supplier);
+        public final Object getOrSupplier(String columnLabel, Supplier<?> supplier) {
+            return getOrSupplier(getRecordMeta().getColumnIndex(columnLabel), supplier);
         }
 
         @Override
-        public final <T> T get(String selectionLabel, Class<T> columnClass) {
-            return get(getRecordMeta().getColumnIndex(selectionLabel), columnClass);
+        public final <T> T get(String columnLabel, Class<T> columnClass) {
+            return get(getRecordMeta().getColumnIndex(columnLabel), columnClass);
         }
 
         @Override
-        public final <T> T getNonNull(String selectionLabel, Class<T> columnClass) {
-            return getNonNull(getRecordMeta().getColumnIndex(selectionLabel), columnClass);
+        public final <T> T getNonNull(String columnLabel, Class<T> columnClass) {
+            return getNonNull(getRecordMeta().getColumnIndex(columnLabel), columnClass);
         }
 
         @Override
-        public final <T> T getOrDefault(String selectionLabel, Class<T> columnClass, T defaultValue) {
-            return getOrDefault(getRecordMeta().getColumnIndex(selectionLabel), columnClass, defaultValue);
+        public final <T> T getOrDefault(String columnLabel, Class<T> columnClass, T defaultValue) {
+            return getOrDefault(getRecordMeta().getColumnIndex(columnLabel), columnClass, defaultValue);
         }
 
         @Override
-        public final <T> T getOrSupplier(String selectionLabel, Class<T> columnClass, Supplier<T> supplier) {
-            return getOrSupplier(getRecordMeta().getColumnIndex(selectionLabel), columnClass, supplier);
+        public final <T> T getOrSupplier(String columnLabel, Class<T> columnClass, Supplier<T> supplier) {
+            return getOrSupplier(getRecordMeta().getColumnIndex(columnLabel), columnClass, supplier);
         }
 
 
     }//ArmyDataRecord
 
+
     protected static abstract class ArmyCurrentRecord extends ArmyDataRecord implements CurrentRecord {
 
+        private final ArmyResultRecordMeta meta;
 
         public ArmyCurrentRecord(ArmyResultRecordMeta meta) {
-            super(meta);
+            this.meta = meta;
         }
 
+        @Override
+        public final ResultRecordMeta getRecordMeta() {
+            return this.meta;
+        }
 
         @Override
         public final ResultRecord asResultRecord() {
@@ -531,14 +615,21 @@ public abstract class ExecutorSupport {
 
     private static final class ArmyResultRecord extends ArmyDataRecord implements ResultRecord {
 
+
+        private final ArmyResultRecordMeta meta;
+
         private final Object[] valueArray;
 
         public ArmyResultRecord(ArmyCurrentRecord currentRecord) {
-            super(currentRecord);
+            this.meta = currentRecord.meta;
             this.valueArray = currentRecord.copyValueArray();
             assert this.valueArray.length == currentRecord.meta.columnSize;
         }
 
+        @Override
+        public ResultRecordMeta getRecordMeta() {
+            return this.meta;
+        }
 
         @Override
         public Object get(int indexBasedZero) {

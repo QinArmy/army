@@ -1,5 +1,6 @@
 package io.army.session;
 
+@Deprecated
 public abstract class TransactionOptions {
 
     protected String name;

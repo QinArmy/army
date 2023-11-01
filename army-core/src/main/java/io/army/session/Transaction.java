@@ -3,6 +3,7 @@ package io.army.session;
 
 import javax.annotation.Nullable;
 
+@Deprecated
 public interface Transaction {
 
     Session session();

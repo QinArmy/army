@@ -12,10 +12,7 @@ import io.army.meta.*;
 import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
-import io.army.session.record.CurrentRecord;
-import io.army.session.record.ResultRecord;
-import io.army.session.record.ResultRecordMeta;
-import io.army.session.record.ResultStates;
+import io.army.session.record.*;
 import io.army.sqltype.SQLType;
 import io.army.stmt.*;
 import io.army.sync.StreamCommander;
@@ -1509,6 +1506,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
     }
 
 
+
     /**
      * <p>This class is responsible for reading a row from {@link ResultSet} with {@link #readOneRow(ResultSet)} method.
      * <p>This class is base class of following
@@ -1521,7 +1519,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
      *
      * @param <R> row java type
      */
-    private static abstract class RowReader<R> {
+    private static abstract class RowReader<R> implements ResultItem.RecordAccessSpec {
 
         final JdbcExecutor executor;
 
@@ -1544,6 +1542,64 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
             this.sqlTypeArray = sqlTypeArray;
             this.resultClass = resultClass;
             this.compatibleTypeArray = new MappingType[sqlTypeArray.length];
+        }
+
+
+        @Override
+        public final int getColumnCount() {
+            return this.sqlTypeArray.length;
+        }
+
+        @Override
+        public final String getColumnLabel(int indexBasedZero) throws DataAccessException {
+            return this.selectionList.get(indexBasedZero).label();
+        }
+
+        @Override
+        public int getColumnIndex(String columnLabel) throws DataAccessException {
+            return 0;
+        }
+
+        @Nullable
+        @Override
+        public final Object get(String columnLabel) {
+            return get(getColumnIndex(columnLabel));
+        }
+
+        @Override
+        public final Object getNonNull(String columnLabel) {
+            return getNonNull(getColumnIndex(columnLabel));
+        }
+
+        @Override
+        public final Object getOrDefault(String columnLabel, Object defaultValue) {
+            return getOrDefault(getColumnIndex(columnLabel), defaultValue);
+        }
+
+        @Override
+        public final Object getOrSupplier(String columnLabel, Supplier<?> supplier) {
+            return getOrSupplier(getColumnIndex(columnLabel), supplier);
+        }
+
+        @Nullable
+        @Override
+        public final <T> T get(String columnLabel, Class<T> columnClass) {
+            return get(getColumnIndex(columnLabel), columnClass);
+        }
+
+        @Override
+        public final <T> T getNonNull(String columnLabel, Class<T> columnClass) {
+            return getNonNull(getColumnIndex(columnLabel), columnClass);
+        }
+
+        @Override
+        public final <T> T getOrDefault(String columnLabel, Class<T> columnClass, T defaultValue) {
+            return getOrDefault(getColumnIndex(columnLabel), columnClass, defaultValue);
+        }
+
+        @Override
+        public final <T> T getOrSupplier(String columnLabel, Class<T> columnClass, Supplier<T> supplier) {
+            return getOrSupplier(getColumnIndex(columnLabel), columnClass, supplier);
         }
 
         @Nullable
@@ -1609,6 +1665,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
         @Nullable
         abstract R endOneRow();
+
 
 
     }//RowReader
@@ -1858,42 +1915,42 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
         }
 
         @Override
-        public final Object get(String selectionAlias) {
-            return this.get(mapToIndex(selectionAlias));
+        public final Object get(String columnLabel) {
+            return this.get(mapToIndex(columnLabel));
         }
 
         @Override
-        public final Object getNonNull(String selectionAlias) {
-            return this.getNonNull(mapToIndex(selectionAlias));
+        public final Object getNonNull(String columnLabel) {
+            return this.getNonNull(mapToIndex(columnLabel));
         }
 
         @Override
-        public final <T> T get(String selectionAlias, Class<T> columnClass) {
-            return this.get(mapToIndex(selectionAlias), columnClass);
+        public final <T> T get(String columnLabel, Class<T> columnClass) {
+            return this.get(mapToIndex(columnLabel), columnClass);
         }
 
         @Override
-        public final <T> T getNonNull(String selectionAlias, Class<T> columnClass) {
-            return this.getNonNull(mapToIndex(selectionAlias), columnClass);
+        public final <T> T getNonNull(String columnLabel, Class<T> columnClass) {
+            return this.getNonNull(mapToIndex(columnLabel), columnClass);
         }
 
         @Override
-        public final Object getOrDefault(String selectionLabel, Object defaultValue) {
+        public final Object getOrDefault(String columnLabel, Object defaultValue) {
             return null;
         }
 
         @Override
-        public final Object getOrSupplier(String selectionLabel, Supplier<?> supplier) {
+        public final Object getOrSupplier(String columnLabel, Supplier<?> supplier) {
             return null;
         }
 
         @Override
-        public final <T> T getOrDefault(String selectionLabel, Class<T> columnClass, T defaultValue) {
+        public final <T> T getOrDefault(String columnLabel, Class<T> columnClass, T defaultValue) {
             return null;
         }
 
         @Override
-        public final <T> T getOrSupplier(String selectionLabel, Class<T> columnClass, Supplier<T> supplier) {
+        public final <T> T getOrSupplier(String columnLabel, Class<T> columnClass, Supplier<T> supplier) {
             return null;
         }
 
@@ -2024,8 +2081,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
         boolean canceled;
 
-        private boolean end;
-
         private JdbcRowSpliterator(SyncStmtOption option) {
             this.option = option;
 
@@ -2033,7 +2088,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
         @Override
         public final boolean tryAdvance(final @Nullable Consumer<? super R> action) {
-            if (this.closed || this.end || this.canceled) {
+            if (this.closed || this.canceled) {
                 return false;
             }
             try {
@@ -2052,7 +2107,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
         @Override
         public final void forEachRemaining(final @Nullable Consumer<? super R> action) {
-            if (this.closed || this.end || this.canceled) {
+            if (this.closed || this.canceled) {
                 return;
             }
 
@@ -2074,7 +2129,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
         @Override
         public final Spliterator<R> trySplit() {
             final int splitSize = this.option.splitSize();
-            if (this.closed || this.end || this.canceled || splitSize < 1) {
+            if (this.closed || this.canceled || splitSize < 1) {
                 return null;
             }
 
@@ -2135,9 +2190,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
             }
         }
 
-        final void markStreamEnd() {
-            this.end = true;
-        }
 
         final void close() {
             if (this.closed) {
@@ -2361,7 +2413,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
             if (!hasNextRow) {
                 emitResultStates(rowIndex, this.statement, rowReader, false); // here ,rowIndex not rowIndex + 1
-                markStreamEnd();
+                close();
             }
             return readRowCount > 0;
         }
@@ -2502,7 +2554,7 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
             if (!hasNextRow) {
                 emitResultStates(this.totalRowCount, this.statement, rowReader, false);
-                markStreamEnd();
+                close();
             }
             return readRowCount > 0;
         }

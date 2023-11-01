@@ -3,14 +3,13 @@ package io.army.session;
 import io.army.dialect._Constant;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
-
-import javax.annotation.Nullable;
-
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
+@Deprecated
 public abstract class _ArmyTransaction implements Transaction {
 
     protected final Isolation isolation;
