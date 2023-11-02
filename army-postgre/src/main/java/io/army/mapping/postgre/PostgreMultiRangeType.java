@@ -13,7 +13,7 @@ import io.army.mapping.postgre.array.PostgreMultiRangeArrayType;
 import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 
@@ -256,12 +256,12 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
     @Override
-    public Object beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
         return rangeBeforeBind(nonNull, this::serialize, type, this, PARAM_ERROR_HANDLER);
     }
 
     @Override
-    public Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return rangeAfterGet(nonNull, this.rangeFunc, this::deserialize, type, this, ACCESS_ERROR_HANDLER);
     }
 
@@ -346,7 +346,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
     public static <T> Object rangeConvert(Object nonNull, @Nullable RangeFunction<T, ?> rangeFunc,
-                                          Function<String, T> parseFunc, SQLType sqlType,
+                                          Function<String, T> parseFunc, SqlType sqlType,
                                           MappingType type, ErrorHandler handler) {
         final Object value;
         final String text;
@@ -370,7 +370,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
 
 
     public static <T> String rangeBeforeBind(final Object nonNull, final BiConsumer<T, Consumer<String>> boundSerializer,
-                                             final SQLType sqlType, final MappingType type, final ErrorHandler handler)
+                                             final SqlType sqlType, final MappingType type, final ErrorHandler handler)
             throws CriteriaException {
 
         final String value, text;
@@ -398,7 +398,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
     public static <T> Object rangeAfterGet(Object nonNull, @Nullable RangeFunction<T, ?> rangeFunc,
-                                           Function<String, T> parseFunc, SQLType sqlType,
+                                           Function<String, T> parseFunc, SqlType sqlType,
                                            MappingType type, ErrorHandler handler) {
         if (!(nonNull instanceof String)) {
             throw handler.apply(type, sqlType, nonNull, null);
@@ -408,7 +408,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
 
 
     private static <T> Object parseMultiRange(final String text, final @Nullable RangeFunction<T, ?> rangeFunc,
-                                              final Function<String, T> parseFunc, final SQLType sqlType,
+                                              final Function<String, T> parseFunc, final SqlType sqlType,
                                               final MappingType type, final ErrorHandler handler) {
 
         final TextFunction<?> elementFunc;

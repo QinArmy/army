@@ -52,7 +52,7 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
 
 
     @Override
-    public SQLType map(final ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         return mapToDecimal(this, meta);
     }
 
@@ -63,18 +63,18 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
     }
 
     @Override
-    public BigDecimal beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
+    public BigDecimal beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         return _convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public BigDecimal afterGet(SQLType type, MappingEnv env, final Object nonNull) {
+    public BigDecimal afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         return _convertToBigDecimal(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
 
     @Deprecated
-    public static BigDecimal convertToBigDecimal(final SQLType type, final Object nonNull) {
+    public static BigDecimal convertToBigDecimal(final SqlType type, final Object nonNull) {
         final BigDecimal value;
         if (nonNull instanceof BigDecimal) {
             value = (BigDecimal) nonNull;
@@ -129,8 +129,8 @@ public final class BigDecimalType extends _NumericType implements MappingType.Sq
         return value;
     }
 
-    static SQLType mapToDecimal(final MappingType type, final ServerMeta meta) {
-        final SQLType sqlType;
+    static SqlType mapToDecimal(final MappingType type, final ServerMeta meta) {
+        final SqlType sqlType;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.DECIMAL;

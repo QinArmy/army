@@ -5,7 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 import java.time.*;
 import java.time.format.DateTimeParseException;
@@ -51,8 +51,8 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
-        final SQLType type;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.YEAR;
@@ -78,7 +78,7 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
     }
 
     @Override
-    public Temporal beforeBind(final SQLType type, final MappingEnv env, final Object nonNull) {
+    public Temporal beforeBind(final SqlType type, final MappingEnv env, final Object nonNull) {
         final Temporal value;
         switch (type.database()) {
             case MySQL:
@@ -103,7 +103,7 @@ public final class YearType extends _ArmyNoInjectionMapping implements MappingTy
     }
 
     @Override
-    public Year afterGet(SQLType type, MappingEnv env, Object nonNull) {
+    public Year afterGet(SqlType type, MappingEnv env, Object nonNull) {
         return _convertToYear(this, env, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

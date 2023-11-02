@@ -13,7 +13,7 @@ import io.army.mapping.postgre.PostgreAclItemType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 
 /**
@@ -46,7 +46,7 @@ public final class PostgreAclItemArrayType extends _ArmyBuildInMapping implement
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
@@ -73,7 +73,7 @@ public final class PostgreAclItemArrayType extends _ArmyBuildInMapping implement
     }
 
     @Override
-    public Object beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof String[])) {
             throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
         }
@@ -81,7 +81,7 @@ public final class PostgreAclItemArrayType extends _ArmyBuildInMapping implement
     }
 
     @Override
-    public Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
         if (!(nonNull instanceof String)) {
             throw ACCESS_ERROR_HANDLER.apply(this, type, nonNull, null);
         }

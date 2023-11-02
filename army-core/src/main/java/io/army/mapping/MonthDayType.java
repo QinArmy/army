@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -60,7 +60,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
     }
 
     @Override
-    public SQLType map(ServerMeta meta) {
+    public SqlType map(ServerMeta meta) {
         return LocalDateType.mapToSqlType(this, meta);
     }
 
@@ -76,7 +76,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
     }
 
     @Override
-    public LocalDate beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
+    public LocalDate beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         final LocalDate value;
         if (nonNull instanceof LocalDate) {
             value = (LocalDate) nonNull;
@@ -95,7 +95,7 @@ public final class MonthDayType extends _ArmyNoInjectionMapping implements Mappi
     }
 
     @Override
-    public MonthDay afterGet(SQLType type, MappingEnv env, final Object nonNull) {
+    public MonthDay afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         return convertToMonthDay(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
 
     }

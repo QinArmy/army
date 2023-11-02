@@ -10,7 +10,7 @@ import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -50,7 +50,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
                     .append(safeColumnName)
                     .append(" SET DATA TYPE ");
 
-            final SQLType sqlType;
+            final SqlType sqlType;
             sqlType = field.mappingType().map(this.serverMeta);
             if (field.generatorType() == GeneratorType.POST) {
                 postDataType(field, sqlType, builder);
@@ -97,7 +97,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
 
     @Override
-    protected void dataType(final FieldMeta<?> field, final SQLType type, final StringBuilder builder) {
+    protected void dataType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
         switch ((PostgreSqlType) type) {
             case UNKNOWN:
                 throw _Exceptions.unexpectedEnum((Enum<?>) type);
@@ -125,7 +125,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
 
     @Override
-    protected void postDataType(FieldMeta<?> field, SQLType type, StringBuilder builder) {
+    protected void postDataType(FieldMeta<?> field, SqlType type, StringBuilder builder) {
         switch ((PostgreSqlType) type) {
             case SMALLINT:
                 builder.append("SMALLSERIAL");
@@ -205,9 +205,9 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
 
     /**
-     * @see #dataType(FieldMeta, SQLType, StringBuilder)
+     * @see #dataType(FieldMeta, SqlType, StringBuilder)
      */
-    private void appendTimeDateType(final FieldMeta<?> field, final SQLType type, final StringBuilder builder) {
+    private void appendTimeDateType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
         String safeTypeName;
         safeTypeName = type.name();
         final int index;
@@ -224,9 +224,9 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
     }
 
     /**
-     * @see #dataType(FieldMeta, SQLType, StringBuilder)
+     * @see #dataType(FieldMeta, SqlType, StringBuilder)
      */
-    private void appendDecimalDateType(final FieldMeta<?> field, final SQLType type, final StringBuilder builder) {
+    private void appendDecimalDateType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
         int precision, scale;
         precision = field.precision();
         scale = field.scale();

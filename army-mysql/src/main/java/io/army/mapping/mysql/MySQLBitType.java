@@ -8,7 +8,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 import java.util.BitSet;
 
@@ -36,7 +36,7 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SQLType map(ServerMeta meta) {
+    public SqlType map(ServerMeta meta) {
         if (meta.dialectDatabase() != Database.MySQL) {
             throw noMappingError(meta);
         }
@@ -55,19 +55,19 @@ public final class MySQLBitType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Long beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
+    public Long beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         return beforeBind(type, nonNull);
     }
 
     @Override
-    public Long afterGet(SQLType type, MappingEnv env, Object nonNull) {
+    public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Long)) {
             throw errorJavaTypeForSqlType(type, nonNull);
         }
         return (Long) nonNull;
     }
 
-    public static long beforeBind(SQLType sqlType, final Object nonNull) {
+    public static long beforeBind(SqlType sqlType, final Object nonNull) {
         final long value;
         if (nonNull instanceof Long) {
             value = (Long) nonNull;

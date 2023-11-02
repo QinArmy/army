@@ -6,7 +6,7 @@ import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.util.List;
@@ -70,7 +70,7 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         return mapSqlType(this, meta);
     }
 
@@ -86,7 +86,7 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Object beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
         if (nonNull instanceof String || nonNull instanceof int[] || nonNull instanceof Integer[]) {
             return nonNull;
         }
@@ -95,13 +95,13 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
     }
 
     @Override
-    public Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
         // TODO
         throw new UnsupportedOperationException();
     }
 
-    static SQLType mapSqlType(final MappingType mappingType, final ServerMeta meta) {
-        final SQLType type;
+    static SqlType mapSqlType(final MappingType mappingType, final ServerMeta meta) {
+        final SqlType type;
         switch (meta.dialectDatabase()) {
             case PostgreSQL:
                 type = PostgreSqlType.INTEGER_ARRAY;

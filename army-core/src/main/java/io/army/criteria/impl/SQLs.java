@@ -16,7 +16,7 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -838,8 +838,8 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public SQLType map(final ServerMeta meta) {
-            final SQLType sqlType;
+        public SqlType map(final ServerMeta meta) {
+            final SqlType sqlType;
             switch (meta.dialectDatabase()) {
                 case MySQL:
                     sqlType = MySQLType.NULL;
@@ -864,12 +864,12 @@ public abstract class SQLs extends SQLsSyntax {
         }
 
         @Override
-        public Object beforeBind(SQLType type, MappingEnv env, Object nonNull) {
+        public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Object afterGet(SQLType type, MappingEnv env, Object nonNull) {
+        public Object afterGet(SqlType type, MappingEnv env, Object nonNull) {
             throw new UnsupportedOperationException();
         }
 

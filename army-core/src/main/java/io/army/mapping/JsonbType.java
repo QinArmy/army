@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -37,8 +37,8 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
-        final SQLType sqlDataType;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType sqlDataType;
         switch (meta.dialectDatabase()) {
             case PostgreSQL:
                 sqlDataType = PostgreSqlType.JSONB;
@@ -64,7 +64,7 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
     }
 
     @Override
-    public String beforeBind(SQLType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         if (nonNull instanceof String) {
             return (String) nonNull;
         }
@@ -73,7 +73,7 @@ public final class JsonbType extends _ArmyBuildInMapping implements MappingType.
     }
 
     @Override
-    public String afterGet(SQLType type, MappingEnv env, Object nonNull) {
+    public String afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
             throw errorJavaTypeForSqlType(type, nonNull);
         }

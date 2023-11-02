@@ -4,6 +4,11 @@ import io.army.session.DataAccessException;
 
 public interface ResultItem {
 
+    /**
+     * <p>Get result no (based one)
+     *
+     * @return result no (based one)
+     */
     int getResultNo();
 
 

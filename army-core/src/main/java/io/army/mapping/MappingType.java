@@ -10,7 +10,7 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
 import io.army.session.ParamException;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
@@ -54,7 +54,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     public abstract Class<?> javaType();
 
 
-    public abstract SQLType map(ServerMeta meta) throws NotSupportDialectException;
+    public abstract SqlType map(ServerMeta meta) throws NotSupportDialectException;
 
     /**
      * @throws CriteriaException when this instance don't support array type.
@@ -77,15 +77,15 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
 
     /**
      * @param type from {@link #map(ServerMeta)}
-     * @return non-null, the instance of the type that {@link SQLType} allow.
+     * @return non-null, the instance of the type that {@link SqlType} allow.
      */
-    public abstract Object beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException;
+    public abstract Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException;
 
     /**
      * @param type from {@code io.army.sync.executor.StmtExecutor} or {@code io.army.reactive.executor.StmtExecutor}
      * @return non-null, the instance of {@link #javaType()}.
      */
-    public abstract Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException;
+    public abstract Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException;
 
     @Override
     public final int hashCode() {
@@ -196,14 +196,14 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         return cause == null ? new ParamException(m) : new ParamException(m, cause);
     }
 
-    protected static DataAccessException errorJavaTypeForSqlType(SQLType sqlType, final Object nonNull) {
+    protected static DataAccessException errorJavaTypeForSqlType(SqlType sqlType, final Object nonNull) {
         String m = String.format("Statement executor passing error java type[%s] for %s.%s ."
                 , nonNull.getClass().getName(), sqlType.getClass().getSimpleName(), sqlType.name());
         return new DataAccessException(m);
     }
 
 
-    protected static DataAccessException errorValueForSqlType(SQLType sqlType, final Object nonNull
+    protected static DataAccessException errorValueForSqlType(SqlType sqlType, final Object nonNull
             , @Nullable Throwable cause) {
         final String m = String.format("Statement executor passing error java type[%s] value for %s.%s ."
                 , nonNull.getClass().getName(), sqlType.getClass().getSimpleName(), sqlType.name());
@@ -217,15 +217,15 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     }
 
 
-    protected static CriteriaException valueOutRange(SQLType sqlType, final Object nonNull, @Nullable Throwable cause) {
+    protected static CriteriaException valueOutRange(SqlType sqlType, final Object nonNull, @Nullable Throwable cause) {
         return _Exceptions.valueOutRange(sqlType, nonNull, cause);
     }
 
-    protected static CriteriaException outRangeOfSqlType(SQLType sqlType, final Object nonNull) {
+    protected static CriteriaException outRangeOfSqlType(SqlType sqlType, final Object nonNull) {
         return _Exceptions.outRangeOfSqlType(sqlType, nonNull);
     }
 
-    protected static CriteriaException outRangeOfSqlType(SQLType sqlType, final Object nonNull
+    protected static CriteriaException outRangeOfSqlType(SqlType sqlType, final Object nonNull
             , @Nullable Throwable cause) {
         return _Exceptions.outRangeOfSqlType(sqlType, nonNull, cause);
     }
@@ -265,7 +265,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         return new CriteriaException(createConvertErrorMessage(type, nonNull));
     }
 
-    private static CriteriaException paramError(final MappingType type, SQLType sqlType,
+    private static CriteriaException paramError(final MappingType type, SqlType sqlType,
                                                 final Object nonNull, final @Nullable Throwable cause) {
         final CriteriaException e;
         if (cause == null) {
@@ -276,7 +276,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         return e;
     }
 
-    private static DataAccessException dataAccessError(final MappingType type, SQLType sqlType,
+    private static DataAccessException dataAccessError(final MappingType type, SqlType sqlType,
                                                        final Object nonNull, final @Nullable Throwable cause) {
         final DataAccessException e;
         if (cause == null) {
@@ -610,6 +610,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
         String sqlTypeName(ServerMeta meta);
     }
 
+    @Deprecated
     public interface SqlUserDefinedType extends TypeNameSpec {
 
 

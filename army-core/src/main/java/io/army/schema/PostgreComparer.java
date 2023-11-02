@@ -7,7 +7,7 @@ import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 
 import java.util.Locale;
@@ -35,7 +35,7 @@ final class PostgreComparer extends ArmySchemaComparer {
     }
 
     @Override
-    boolean compareSqlType(final _ColumnInfo columnInfo, final FieldMeta<?> field, final SQLType sqlType) {
+    boolean compareSqlType(final _ColumnInfo columnInfo, final FieldMeta<?> field, final SqlType sqlType) {
         final String typeName;
         typeName = columnInfo.typeName().toLowerCase(Locale.ROOT);
         final boolean notMatch;
@@ -485,7 +485,7 @@ final class PostgreComparer extends ArmySchemaComparer {
     }
 
     @Override
-    boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?> field, SQLType sqlType) {
+    boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
         //currently, false
         return false;
     }

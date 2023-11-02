@@ -10,7 +10,7 @@ import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
 import java.util.List;
@@ -42,7 +42,7 @@ public final class MySubRowType extends MappingType
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
@@ -66,7 +66,7 @@ public final class MySubRowType extends MappingType
      * @see <a href="https://www.postgresql.org/docs/current/rowtypes.html#id-1.5.7.24.6">Constructing Composite Values</a>
      */
     @Override
-    public String beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
         if (!(nonNull instanceof MySubRow)) {
             throw PARAM_ERROR_HANDLER.apply(this, type, nonNull, null);
         }
@@ -93,7 +93,7 @@ public final class MySubRowType extends MappingType
     }
 
     @Override
-    public Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
         //TODO
         throw new UnsupportedOperationException();
     }

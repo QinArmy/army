@@ -14,7 +14,9 @@ import io.army.session.DataAccessException;
 import io.army.session.Isolation;
 import io.army.session.Option;
 import io.army.session.record.*;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.ArmyType;
+import io.army.sqltype.DataType;
+import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -205,132 +207,50 @@ public abstract class ExecutorSupport {
     }
 
 
-    protected static final class ArmyResultRecordMeta implements ResultRecordMeta {
+    protected static abstract class ArmyResultRecordMeta implements ResultRecordMeta {
 
         private final int resultNo;
 
-        private final List<? extends Selection> selectionList;
+        final DataType[] dataTypeArray;
 
-        private final IntFunction<SQLType> sqlTypeFunc;
-
-        private final IntBiFunction<Option<?>, ?> optionFunc;
-
-        private final int columnSize;
-
-        private final Map<String, Integer> aliasToIndexMap;
-
-        private List<String> columnLabelList;
-
-        public ArmyResultRecordMeta(int resultNo, List<? extends Selection> selectionList,
-                                    IntFunction<SQLType> sqlTypeFunc, IntBiFunction<Option<?>, ?> optionFunc) {
+        protected ArmyResultRecordMeta(int resultNo, DataType[] dataTypeArray) {
+            assert resultNo > 0;
             this.resultNo = resultNo;
-            this.selectionList = selectionList;
-            this.sqlTypeFunc = sqlTypeFunc;
-            this.optionFunc = optionFunc;
-
-            this.columnSize = selectionList.size();
-            if (this.columnSize < 6) {
-                this.aliasToIndexMap = null;
-            } else {
-                this.aliasToIndexMap = createAliasToIndexMap(selectionList);
-            }
+            this.dataTypeArray = dataTypeArray;
         }
 
-
         @Override
-        public int getResultNo() {
+        public final int getResultNo() {
             return this.resultNo;
         }
 
         @Override
-        public int getColumnCount() {
-            return this.columnSize;
+        public final int getColumnCount() {
+            return this.dataTypeArray.length;
         }
 
         @Override
-        public String getColumnLabel(int indexBasedZero) throws IllegalArgumentException {
-            return this.selectionList.get(checkIndex(indexBasedZero)).label();
+        public final DataType getDataType(int indexBasedZero) throws DataAccessException {
+            return this.dataTypeArray[checkIndex(indexBasedZero)];
         }
 
         @Override
-        public int getColumnIndex(final @Nullable String columnLabel) throws IllegalArgumentException {
-            if (columnLabel == null) {
-                throw new NullPointerException("columnLabel is null");
-            }
-            int index = -1;
-            final Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
-            if (aliasToIndexMap == null) {
-                final List<? extends Selection> selectionList = this.selectionList;
-                for (int i = this.columnSize - 1; i > -1; i--) {  // If alias duplication,then override.
-                    if (columnLabel.equals(selectionList.get(i).label())) {
-                        index = i;
-                        break;
-                    }
-                }
+        public final ArmyType getArmyType(final int indexBasedZero) throws DataAccessException {
+            final DataType dataType;
+            dataType = this.dataTypeArray[checkIndex(indexBasedZero)];
+            final ArmyType armyType;
+            if (dataType instanceof SqlType) {
+                armyType = ((SqlType) dataType).armyType();
+            } else if (dataType.isUnknown()) {
+                armyType = ArmyType.UNKNOWN;
             } else {
-                index = aliasToIndexMap.getOrDefault(columnLabel, -1);
+                armyType = ArmyType.DIALECT_TYPE;
             }
-            if (index < 0) {
-                throw _Exceptions.unknownSelectionAlias(columnLabel);
-            }
-            return index;
+            return armyType;
         }
 
 
-        @Override
-        public List<? extends Selection> selectionList() {
-            return this.selectionList;
-        }
 
-        @Override
-        public List<String> columnLabelList() {
-            List<String> list = this.columnLabelList;
-            if (list != null) {
-                return list;
-            }
-            final List<? extends Selection> selectionList = this.selectionList;
-            list = _Collections.arrayList(selectionList.size());
-            for (Selection selection : selectionList) {
-                list.add(selection.label());
-            }
-            this.columnLabelList = list = _Collections.unmodifiableList(list);
-            return list;
-        }
-
-        @Override
-        public Selection getSelection(int indexBasedZero) {
-            return this.selectionList.get(checkIndex(indexBasedZero));
-        }
-
-        @Override
-        public SQLType getDataType(int indexBasedZero) {
-            return this.sqlTypeFunc.apply(checkIndex(indexBasedZero));
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public <T> T getOf(final int indexBasedZero, Option<T> option) {
-            final Object value;
-            value = this.optionFunc.apply(checkIndex(indexBasedZero), option);
-            final T finalValue;
-            if (value == null || option.javaType().isInstance(value)) {
-                finalValue = (T) value;
-            } else {
-                finalValue = null;
-            }
-            return finalValue;
-        }
-
-        @Override
-        public <T> T getNonNullOf(int indexBasedZero, Option<T> option) {
-            final T value;
-            value = getOf(indexBasedZero, option);
-            if (value == null) {
-                String m = String.format("option value is null,index[%s]", indexBasedZero);
-                throw new NullPointerException(m);
-            }
-            return value;
-        }
 
         /*-------------------below label methods -------------------*/
 
@@ -425,6 +345,152 @@ public abstract class ExecutorSupport {
         @Override
         public final Class<?> getSecondJavaType(String columnLabel) throws DataAccessException {
             return getSecondJavaType(getColumnIndex(columnLabel));
+        }
+
+        public final int checkIndex(final int indexBasedZero) {
+            if (indexBasedZero < 0 || indexBasedZero >= this.dataTypeArray.length) {
+                String m = String.format("index not in [0,%s)", this.dataTypeArray.length);
+                throw new DataAccessException(m);
+            }
+            return indexBasedZero;
+        }
+
+        public final int checkIndexBasedOne(final int indexBasedZero) {
+            if (indexBasedZero < 0 || indexBasedZero >= this.dataTypeArray.length) {
+                String m = String.format("index not in [0,%s)", this.dataTypeArray.length);
+                throw new DataAccessException(m);
+            }
+            return indexBasedZero + 1;
+        }
+
+    } // ArmyResultRecordMeta
+
+
+    protected static final class ArmyStmtRecordMeta implements ResultRecordMeta {
+
+        private final int resultNo;
+
+        private final List<? extends Selection> selectionList;
+
+        private final IntFunction<SqlType> sqlTypeFunc;
+
+        private final IntBiFunction<Option<?>, ?> optionFunc;
+
+        private final int columnSize;
+
+        private final Map<String, Integer> aliasToIndexMap;
+
+        private List<String> columnLabelList;
+
+        public ArmyStmtRecordMeta(int resultNo, List<? extends Selection> selectionList,
+                                  IntFunction<SqlType> sqlTypeFunc, IntBiFunction<Option<?>, ?> optionFunc) {
+            this.resultNo = resultNo;
+            this.selectionList = selectionList;
+            this.sqlTypeFunc = sqlTypeFunc;
+            this.optionFunc = optionFunc;
+
+            this.columnSize = selectionList.size();
+            if (this.columnSize < 6) {
+                this.aliasToIndexMap = null;
+            } else {
+                this.aliasToIndexMap = createAliasToIndexMap(selectionList);
+            }
+        }
+
+
+        @Override
+        public int getResultNo() {
+            return this.resultNo;
+        }
+
+        @Override
+        public int getColumnCount() {
+            return this.columnSize;
+        }
+
+        @Override
+        public String getColumnLabel(int indexBasedZero) throws IllegalArgumentException {
+            return this.selectionList.get(checkIndex(indexBasedZero)).label();
+        }
+
+        @Override
+        public int getColumnIndex(final @Nullable String columnLabel) throws IllegalArgumentException {
+            if (columnLabel == null) {
+                throw new NullPointerException("columnLabel is null");
+            }
+            int index = -1;
+            final Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
+            if (aliasToIndexMap == null) {
+                final List<? extends Selection> selectionList = this.selectionList;
+                for (int i = this.columnSize - 1; i > -1; i--) {  // If alias duplication,then override.
+                    if (columnLabel.equals(selectionList.get(i).label())) {
+                        index = i;
+                        break;
+                    }
+                }
+            } else {
+                index = aliasToIndexMap.getOrDefault(columnLabel, -1);
+            }
+            if (index < 0) {
+                throw _Exceptions.unknownSelectionAlias(columnLabel);
+            }
+            return index;
+        }
+
+
+        @Override
+        public List<? extends Selection> selectionList() {
+            return this.selectionList;
+        }
+
+        @Override
+        public List<String> columnLabelList() {
+            List<String> list = this.columnLabelList;
+            if (list != null) {
+                return list;
+            }
+            final List<? extends Selection> selectionList = this.selectionList;
+            list = _Collections.arrayList(selectionList.size());
+            for (Selection selection : selectionList) {
+                list.add(selection.label());
+            }
+            this.columnLabelList = list = _Collections.unmodifiableList(list);
+            return list;
+        }
+
+        @Override
+        public Selection getSelection(int indexBasedZero) {
+            return this.selectionList.get(checkIndex(indexBasedZero));
+        }
+
+        @Override
+        public SqlType getDataType(int indexBasedZero) {
+            return this.sqlTypeFunc.apply(checkIndex(indexBasedZero));
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public <T> T getOf(final int indexBasedZero, Option<T> option) {
+            final Object value;
+            value = this.optionFunc.apply(checkIndex(indexBasedZero), option);
+            final T finalValue;
+            if (value == null || option.javaType().isInstance(value)) {
+                finalValue = (T) value;
+            } else {
+                finalValue = null;
+            }
+            return finalValue;
+        }
+
+        @Override
+        public <T> T getNonNullOf(int indexBasedZero, Option<T> option) {
+            final T value;
+            value = getOf(indexBasedZero, option);
+            if (value == null) {
+                String m = String.format("option value is null,index[%s]", indexBasedZero);
+                throw new NullPointerException(m);
+            }
+            return value;
         }
 
 
@@ -591,9 +657,9 @@ public abstract class ExecutorSupport {
 
     protected static abstract class ArmyCurrentRecord extends ArmyDataRecord implements CurrentRecord {
 
-        private final ArmyResultRecordMeta meta;
+        private final ArmyStmtRecordMeta meta;
 
-        public ArmyCurrentRecord(ArmyResultRecordMeta meta) {
+        public ArmyCurrentRecord(ArmyStmtRecordMeta meta) {
             this.meta = meta;
         }
 
@@ -616,7 +682,7 @@ public abstract class ExecutorSupport {
     private static final class ArmyResultRecord extends ArmyDataRecord implements ResultRecord {
 
 
-        private final ArmyResultRecordMeta meta;
+        private final ArmyStmtRecordMeta meta;
 
         private final Object[] valueArray;
 

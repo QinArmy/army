@@ -1,7 +1,10 @@
-package io.army.session.record;
+package io.army.sqltype;
 
 import io.army.session.Cursor;
 import io.army.session.Option;
+import io.army.session.record.DataRecord;
+import io.army.session.record.ResultRecordMeta;
+import io.army.session.record.ResultStates;
 
 /**
  * <p>This enum is a implementation of {@link DataType} for the convenience that application get column type meta by ResultRecordMeta#getArmyType(int) .

@@ -5,7 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -56,8 +56,8 @@ public final class LongType extends _NumericType._IntegerType {
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
-        final SQLType type;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.BIGINT;
@@ -79,12 +79,12 @@ public final class LongType extends _NumericType._IntegerType {
     }
 
     @Override
-    public Long beforeBind(SQLType type, MappingEnv env, Object nonNull) {
+    public Long beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public Long afterGet(SQLType type, MappingEnv env, Object nonNull) {
+    public Long afterGet(SqlType type, MappingEnv env, Object nonNull) {
         return _convertToLong(this, nonNull, Long.MIN_VALUE, Long.MAX_VALUE, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

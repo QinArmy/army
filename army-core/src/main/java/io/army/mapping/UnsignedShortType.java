@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 /**
  * <p>
@@ -51,8 +51,8 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
-        final SQLType type;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.SMALLINT_UNSIGNED;
@@ -75,12 +75,12 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public Integer beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
+    public Integer beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         return IntegerType._convertToInt(this, nonNull, 0, 0xFFFF, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public Integer afterGet(SQLType type, MappingEnv env, Object nonNull) {
+    public Integer afterGet(SqlType type, MappingEnv env, Object nonNull) {
         return IntegerType._convertToInt(this, nonNull, 0, 0xFFFF, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

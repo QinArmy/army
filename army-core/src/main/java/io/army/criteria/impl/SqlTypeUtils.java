@@ -3,7 +3,7 @@ package io.army.criteria.impl;
 
 import io.army.criteria.Selection;
 import io.army.mapping.MappingType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -21,7 +21,7 @@ public abstract class SqlTypeUtils {
     /**
      * @return a unmodified list
      */
-    public static List<Selection> mapSelectionList(final SQLType[] sqlTypeArray,
+    public static List<Selection> mapSelectionList(final SqlType[] sqlTypeArray,
                                                    final IntFunction<String> function) {
         final List<Selection> selectionList = new ArrayList<>(sqlTypeArray.length);
         String name;
@@ -38,7 +38,7 @@ public abstract class SqlTypeUtils {
     }
 
 
-    public static MappingType sqlTypeToMappingType(final SQLType sqlType) {
+    public static MappingType sqlTypeToMappingType(final SqlType sqlType) {
         switch (sqlType.database()) {
             case MySQL:
             case PostgreSQL:

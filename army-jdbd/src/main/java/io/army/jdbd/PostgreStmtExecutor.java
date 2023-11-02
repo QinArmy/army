@@ -5,7 +5,7 @@ import io.army.mapping.MappingType;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.session.Option;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.jdbd.meta.DataType;
 import io.jdbd.result.DataRow;
 import io.jdbd.result.ResultRowMeta;
@@ -62,17 +62,17 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
     }
 
     @Override
-    DataType mapToJdbdDataType(MappingType mappingType, SQLType sqlType) {
+    DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType) {
         return null;
     }
 
     @Override
-    SQLType getColumnMeta(DataRow row, int indexBasedZero) {
+    SqlType getColumnMeta(DataRow row, int indexBasedZero) {
         return null;
     }
 
     @Override
-    Object get(DataRow row, int indexBasedZero, SQLType sqlType) {
+    Object get(DataRow row, int indexBasedZero, SqlType sqlType) {
         return null;
     }
 }

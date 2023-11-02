@@ -4,7 +4,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 
@@ -37,7 +37,7 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         return mapToSqlType(this, meta);
     }
 
@@ -52,7 +52,7 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     }
 
     @Override
-    public BigDecimal beforeBind(SQLType type, MappingEnv env, Object nonNull) {
+    public BigDecimal beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         final BigDecimal value;
         value = BigDecimalType._convertToBigDecimal(this, nonNull, PARAM_ERROR_HANDLER_0);
         if (value.compareTo(BigDecimal.ZERO) < 0) {
@@ -62,7 +62,7 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     }
 
     @Override
-    public BigDecimal afterGet(SQLType type, MappingEnv env, Object nonNull) {
+    public BigDecimal afterGet(SqlType type, MappingEnv env, Object nonNull) {
         final BigDecimal value;
         value = BigDecimalType._convertToBigDecimal(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
         if (value.compareTo(BigDecimal.ZERO) < 0) {
@@ -72,8 +72,8 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
     }
 
 
-    static SQLType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SQLType sqlType;
+    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SqlType sqlType;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.DECIMAL_UNSIGNED;

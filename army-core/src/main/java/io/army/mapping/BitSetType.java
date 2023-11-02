@@ -5,7 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util._MappingUtils;
 
 import java.math.BigInteger;
@@ -52,8 +52,8 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
-        final SQLType type;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.BIT;
@@ -81,7 +81,7 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
     }
 
     @Override
-    public Object beforeBind(final SQLType type, final MappingEnv env, final Object nonNull) {
+    public Object beforeBind(final SqlType type, final MappingEnv env, final Object nonNull) {
         final Object value;
         switch (type.database()) {
             case MySQL:
@@ -97,7 +97,7 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
     }
 
     @Override
-    public BitSet afterGet(final SQLType type, final MappingEnv env, final Object nonNull) {
+    public BitSet afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
         return convertToBitSet(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

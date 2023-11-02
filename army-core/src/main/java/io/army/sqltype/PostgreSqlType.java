@@ -9,14 +9,14 @@ import io.army.util._StringUtils;
 /**
  * @see <a href="https://www.postgresql.org/docs/11/datatype.html">Postgre Data Types</a>
  */
-public enum PostgreSqlType implements SQLType {
+public enum PostgreSqlType implements SqlType {
 
 
     /**
      * <p>
      *     <ul>
-     *         <li>{@link MappingType#beforeBind(SQLType, MappingEnv, Object)} must return {@link Boolean}</li>
-     *         <li>{@link MappingType#afterGet(SQLType, MappingEnv, Object)} nonNull parameter must be {@link Boolean}</li>
+     *         <li>{@link MappingType#beforeBind(SqlType, MappingEnv, Object)} must return {@link Boolean}</li>
+     *         <li>{@link MappingType#afterGet(SqlType, MappingEnv, Object)} nonNull parameter must be {@link Boolean}</li>
      *     </ul>
      * </p>
      */

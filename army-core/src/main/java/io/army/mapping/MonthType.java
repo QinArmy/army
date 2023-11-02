@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 import java.time.*;
 import java.time.temporal.TemporalAccessor;
@@ -49,7 +49,7 @@ public final class MonthType extends _ArmyNoInjectionMapping implements MappingT
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         return NameEnumType.mapToSqlEnumType(this, meta);
     }
 
@@ -64,13 +64,13 @@ public final class MonthType extends _ArmyNoInjectionMapping implements MappingT
     }
 
     @Override
-    public String beforeBind(SQLType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         return convertToMoth(this, nonNull, PARAM_ERROR_HANDLER_0)
                 .name();
     }
 
     @Override
-    public Month afterGet(SQLType type, MappingEnv env, Object nonNull) {
+    public Month afterGet(SqlType type, MappingEnv env, Object nonNull) {
         return convertToMoth(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

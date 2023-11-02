@@ -14,7 +14,7 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
@@ -75,13 +75,13 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final boolean isNeedConvert(SQLType type, Object nonNull) {
+    protected final boolean isNeedConvert(SqlType type, Object nonNull) {
         //always need
         return true;
     }
 
     @Override
-    protected final void buildInTypeName(final SQLType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
+    protected final void buildInTypeName(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
         switch ((PostgreSqlType) sqlType) {
             case BOOLEAN:
             case SMALLINT:
@@ -206,7 +206,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final void bindLiteralNull(final SQLType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
+    protected final void bindLiteralNull(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
         switch ((PostgreSqlType) sqlType) {
             case UNKNOWN:
                 throw _Exceptions.mapMethodError(type, PostgreSqlType.class);
@@ -224,7 +224,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     @Override
-    protected final void bindLiteral(final TypeMeta typeMeta, final SQLType type, final Object value,
+    protected final void bindLiteral(final TypeMeta typeMeta, final SqlType type, final Object value,
                                      final StringBuilder sqlBuilder) {
         switch ((PostgreSqlType) type) {
             case BOOLEAN: {
@@ -1059,9 +1059,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     /**
-     * @see #bindLiteral(TypeMeta, SQLType, Object, StringBuilder)
+     * @see #bindLiteral(TypeMeta, SqlType, Object, StringBuilder)
      */
-    private void safeArray(final TypeMeta typeMeta, final SQLType type, final Object value,
+    private void safeArray(final TypeMeta typeMeta, final SqlType type, final Object value,
                            final StringBuilder sqlBuilder,
                            final _Literals.ArrayElementHandler handler) {
         final MappingType mappingType;
@@ -1086,9 +1086,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     /**
-     * @see #bindLiteral(TypeMeta, SQLType, Object, StringBuilder)
+     * @see #bindLiteral(TypeMeta, SqlType, Object, StringBuilder)
      */
-    private void unsafeArray(final TypeMeta typeMeta, final SQLType type, final Object value,
+    private void unsafeArray(final TypeMeta typeMeta, final SqlType type, final Object value,
                              final StringBuilder sqlBuilder,
                              final _Literals.ArrayElementHandler handler) {
         final MappingType mappingType;
@@ -1114,10 +1114,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
     }
 
     /**
-     * @see #bindLiteral(TypeMeta, SQLType, Object, StringBuilder)
-     * @see #safeArray(TypeMeta, SQLType, Object, StringBuilder, _Literals.ArrayElementHandler)
+     * @see #bindLiteral(TypeMeta, SqlType, Object, StringBuilder)
+     * @see #safeArray(TypeMeta, SqlType, Object, StringBuilder, _Literals.ArrayElementHandler)
      */
-    private void arrayForStringValue(final TypeMeta typeMeta, final SQLType type, final String value,
+    private void arrayForStringValue(final TypeMeta typeMeta, final SqlType type, final String value,
                                      final StringBuilder sqlBuilder) {
         final int length;
         length = value.length();

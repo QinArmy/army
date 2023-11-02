@@ -3,7 +3,7 @@ package io.army.dialect;
 import io.army.criteria.CriteriaException;
 import io.army.mapping.BooleanType;
 import io.army.meta.TypeMeta;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
 
@@ -37,7 +37,7 @@ public abstract class _Literals {
     }
 
 
-    public static void bindBoolean(final TypeMeta typeMeta, final SQLType type, final Object value,
+    public static void bindBoolean(final TypeMeta typeMeta, final SqlType type, final Object value,
                                    final StringBuilder sqlBuilder) {
         if (!(value instanceof Boolean)) {
             throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -46,7 +46,7 @@ public abstract class _Literals {
     }
 
 
-    public static StringBuilder bindLocalTime(final TypeMeta typeMeta, final SQLType type, final Object value,
+    public static StringBuilder bindLocalTime(final TypeMeta typeMeta, final SqlType type, final Object value,
                                               final StringBuilder sqlBuilder) {
         if (!(value instanceof LocalTime)) {
             throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -56,7 +56,7 @@ public abstract class _Literals {
                 .append(_Constant.QUOTE);
     }
 
-    public static StringBuilder bindLocalDate(final TypeMeta typeMeta, final SQLType type, final Object value,
+    public static StringBuilder bindLocalDate(final TypeMeta typeMeta, final SqlType type, final Object value,
                                               final StringBuilder sqlBuilder) {
         if (!(value instanceof LocalDate)) {
             throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -67,7 +67,7 @@ public abstract class _Literals {
     }
 
 
-    public static StringBuilder bindLocalDateTime(final TypeMeta typeMeta, final SQLType type, final Object value,
+    public static StringBuilder bindLocalDateTime(final TypeMeta typeMeta, final SqlType type, final Object value,
                                                   final StringBuilder sqlBuilder) {
         if (!(value instanceof LocalDateTime)) {
             throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -78,7 +78,7 @@ public abstract class _Literals {
 
     }
 
-    public static StringBuilder bindOffsetTime(final TypeMeta typeMeta, final SQLType type, final Object value,
+    public static StringBuilder bindOffsetTime(final TypeMeta typeMeta, final SqlType type, final Object value,
                                                final StringBuilder sqlBuilder) {
         if (!(value instanceof OffsetTime)) {
             throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -88,7 +88,7 @@ public abstract class _Literals {
                 .append(_Constant.QUOTE);
     }
 
-    public static StringBuilder bindOffsetDateTime(final TypeMeta typeMeta, final SQLType type, final Object value,
+    public static StringBuilder bindOffsetDateTime(final TypeMeta typeMeta, final SqlType type, final Object value,
                                                    final StringBuilder sqlBuilder) {
         final OffsetDateTime dateTime;
         if (value instanceof OffsetDateTime) {
@@ -105,7 +105,7 @@ public abstract class _Literals {
 
     }
 
-    public static void booleanArrayElement(final TypeMeta typeMeta, final SQLType type, final Object element,
+    public static void booleanArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
                                            final StringBuilder sqlBuilder) {
         if (!(element instanceof Boolean)) {
             throw arrayElementError(typeMeta, type, element);
@@ -113,7 +113,7 @@ public abstract class _Literals {
         sqlBuilder.append(element);
     }
 
-    public static void byteArrayElement(final TypeMeta typeMeta, final SQLType type, final Object element,
+    public static void byteArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
                                         final StringBuilder sqlBuilder) {
         if (!(element instanceof Byte)) {
             throw arrayElementError(typeMeta, type, element);
@@ -121,7 +121,7 @@ public abstract class _Literals {
         sqlBuilder.append(element);
     }
 
-    public static void shortArrayElement(final TypeMeta typeMeta, final SQLType type, final Object element,
+    public static void shortArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
                                          final StringBuilder sqlBuilder) {
         if (!(element instanceof Short)) {
             throw arrayElementError(typeMeta, type, element);
@@ -129,7 +129,7 @@ public abstract class _Literals {
         sqlBuilder.append(element);
     }
 
-    public static void integerArrayElement(final TypeMeta typeMeta, final SQLType type, final Object element,
+    public static void integerArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
                                            final StringBuilder sqlBuilder) {
         if (!(element instanceof Integer)) {
             throw arrayElementError(typeMeta, type, element);
@@ -137,7 +137,7 @@ public abstract class _Literals {
         sqlBuilder.append(element);
     }
 
-    public static void longArrayElement(final TypeMeta typeMeta, final SQLType type, final Object element,
+    public static void longArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
                                         final StringBuilder sqlBuilder) {
         if (!(element instanceof Long)) {
             throw arrayElementError(typeMeta, type, element);
@@ -145,7 +145,7 @@ public abstract class _Literals {
         sqlBuilder.append(element);
     }
 
-    public static void bigDecimalArrayElement(final TypeMeta typeMeta, final SQLType type, final Object element,
+    public static void bigDecimalArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
                                               final StringBuilder sqlBuilder) {
         if (!(element instanceof BigDecimal)) {
             throw arrayElementError(typeMeta, type, element);
@@ -153,7 +153,7 @@ public abstract class _Literals {
         sqlBuilder.append(((BigDecimal) element).toPlainString());
     }
 
-    public static void doubleArrayElement(final TypeMeta typeMeta, final SQLType type, final Object element,
+    public static void doubleArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
                                           final StringBuilder sqlBuilder) {
         if (!(element instanceof Double)) {
             throw arrayElementError(typeMeta, type, element);
@@ -161,7 +161,7 @@ public abstract class _Literals {
         sqlBuilder.append(element);
     }
 
-    public static void floatArrayElement(final TypeMeta typeMeta, final SQLType type, final Object element,
+    public static void floatArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
                                          final StringBuilder sqlBuilder) {
         if (!(element instanceof Float)) {
             throw arrayElementError(typeMeta, type, element);
@@ -170,7 +170,7 @@ public abstract class _Literals {
     }
 
 
-    public static void stringArrayElement(final TypeMeta typeMeta, final SQLType type, final Object element,
+    public static void stringArrayElement(final TypeMeta typeMeta, final SqlType type, final Object element,
                                           final StringBuilder sqlBuilder) {
         if (!(element instanceof String)) {
             throw arrayElementError(typeMeta, type, element);
@@ -179,7 +179,7 @@ public abstract class _Literals {
     }
 
 
-    private static CriteriaException arrayElementError(TypeMeta typeMeta, SQLType type, Object element) {
+    private static CriteriaException arrayElementError(TypeMeta typeMeta, SqlType type, Object element) {
         String m = String.format("%s %s don't support %s array.", typeMeta.mappingType(), type
                 , element.getClass().getName());
         return new CriteriaException(m);
@@ -187,7 +187,7 @@ public abstract class _Literals {
 
     public interface ArrayElementHandler {
 
-        void appendElement(final TypeMeta typeMeta, final SQLType type, final Object element,
+        void appendElement(final TypeMeta typeMeta, final SqlType type, final Object element,
                            final StringBuilder sqlBuilder);
 
     }

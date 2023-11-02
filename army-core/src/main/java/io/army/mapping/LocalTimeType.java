@@ -5,7 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
 import java.time.*;
@@ -52,8 +52,8 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
 
 
     @Override
-    public SQLType map(final ServerMeta meta) {
-        final SQLType type;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.TIME;
@@ -79,12 +79,12 @@ public final class LocalTimeType extends _ArmyNoInjectionMapping implements Mapp
     }
 
     @Override
-    public LocalTime beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
+    public LocalTime beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         return convertToLocalTime(this, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public LocalTime afterGet(final SQLType type, MappingEnv env, final Object nonNull) {
+    public LocalTime afterGet(final SqlType type, MappingEnv env, final Object nonNull) {
         return convertToLocalTime(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

@@ -4,7 +4,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
 import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util._Exceptions;
@@ -60,7 +60,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
     @Override
     final Object bind(final PreparedStatement stmt, final int indexBasedOne, final @Nullable Object attr,
-                      final MappingType type, final SQLType sqlType, final Object nonNull)
+                      final MappingType type, final SqlType sqlType, final Object nonNull)
             throws SQLException {
         PGobject pgObject;
         if (attr == null) {
@@ -318,7 +318,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
     }
 
     @Override
-    final SQLType getSqlType(final ResultSetMetaData metaData, final int indexBasedOne) throws SQLException {
+    final SqlType getSqlType(final ResultSetMetaData metaData, final int indexBasedOne) throws SQLException {
 
         final PostgreSqlType type;
         switch (metaData.getColumnTypeName(indexBasedOne).toLowerCase(Locale.ROOT)) {
@@ -714,7 +714,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
     }
 
     @Override
-    final Object get(final ResultSet resultSet, final int indexBasedOne, final SQLType sqlType) throws SQLException {
+    final Object get(final ResultSet resultSet, final int indexBasedOne, final SqlType sqlType) throws SQLException {
         final Object value;
 
         switch ((PostgreSqlType) sqlType) {

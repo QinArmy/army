@@ -4,7 +4,7 @@ import com.mysql.cj.MysqlType;
 import io.army.mapping.MappingType;
 import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.util._Exceptions;
@@ -62,7 +62,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     @Override
     final Object bind(final PreparedStatement stmt, final int indexBasedOne, final @Nullable Object attr,
-                      final MappingType type, final SQLType sqlType, final Object nonNull)
+                      final MappingType type, final SqlType sqlType, final Object nonNull)
             throws SQLException {
         switch ((MySQLType) sqlType) {
             case BOOLEAN:
@@ -190,12 +190,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
 
     @Override
-    SQLType getSqlType(ResultSetMetaData metaData, int indexBasedOne) {
+    SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    Object get(final ResultSet resultSet, int indexBasedOne, final SQLType sqlType) throws SQLException {
+    Object get(final ResultSet resultSet, int indexBasedOne, final SqlType sqlType) throws SQLException {
         final Object value;
         switch ((MySQLType) sqlType) {
             case TINYINT:

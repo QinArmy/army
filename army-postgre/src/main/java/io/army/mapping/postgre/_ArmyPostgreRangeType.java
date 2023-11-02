@@ -12,7 +12,7 @@ import io.army.mapping.postgre.array.PostgreSingleRangeArrayType;
 import io.army.meta.MetaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
@@ -85,7 +85,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public final SQLType map(final ServerMeta meta) throws NotSupportDialectException {
+    public final SqlType map(final ServerMeta meta) throws NotSupportDialectException {
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
@@ -302,7 +302,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
     }
 
     protected static <T> TextFunction<?> multiRangeParseFunc(final Object nonNull, final RangeFunction<T, ?> rangeFunc,
-                                                             final Function<String, T> parseFunc, final SQLType sqlType,
+                                                             final Function<String, T> parseFunc, final SqlType sqlType,
                                                              final MappingType type, final ErrorHandler handler) {
         return (str, offset, end) -> {
             char ch;
@@ -323,7 +323,7 @@ public abstract class _ArmyPostgreRangeType extends _ArmyNoInjectionMapping {
      */
     @SuppressWarnings("unchecked")
     static <T, R> R parseRange(final String text, final @Nullable RangeFunction<T, R> rangeFunc,
-                               final Function<String, T> parseFunc, final SQLType sqlType,
+                               final Function<String, T> parseFunc, final SqlType sqlType,
                                final MappingType type, final ErrorHandler handler) {
         final Class<?> javaType;
         javaType = type.javaType();

@@ -8,7 +8,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 public class DoubleArrayType extends _ArmyNoInjectionMapping {
 
@@ -24,7 +24,7 @@ public class DoubleArrayType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SQLType map(ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
         return null;
     }
 
@@ -39,12 +39,12 @@ public class DoubleArrayType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Object beforeBind(SQLType type, MappingEnv env, Object nonNull) throws CriteriaException {
+    public Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException {
         return null;
     }
 
     @Override
-    public Object afterGet(SQLType type, MappingEnv env, Object nonNull) throws DataAccessException {
+    public Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException {
         return null;
     }
 }

@@ -3,6 +3,8 @@ package io.army.session.record;
 import io.army.criteria.Selection;
 import io.army.session.DataAccessException;
 import io.army.session.Option;
+import io.army.sqltype.ArmyType;
+import io.army.sqltype.DataType;
 
 import javax.annotation.Nullable;
 import java.util.List;

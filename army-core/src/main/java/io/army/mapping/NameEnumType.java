@@ -5,7 +5,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.H2DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 
@@ -55,7 +55,7 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         return mapToSqlEnumType(this, meta);
     }
 
@@ -71,12 +71,12 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public String beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         return this.convertToEnum(nonNull).name();
     }
 
     @Override
-    public Enum<?> afterGet(SQLType type, MappingEnv env, Object nonNull) {
+    public Enum<?> afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
             throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }
@@ -109,8 +109,8 @@ public final class NameEnumType extends _ArmyNoInjectionMapping {
     }
 
 
-    static SQLType mapToSqlEnumType(final MappingType type, final ServerMeta meta) {
-        final SQLType sqlType;
+    static SqlType mapToSqlEnumType(final MappingType type, final ServerMeta meta) {
+        final SqlType sqlType;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.ENUM;

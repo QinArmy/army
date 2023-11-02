@@ -5,7 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -46,8 +46,8 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
-        final SQLType type;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.BIGINT_UNSIGNED;
@@ -69,7 +69,7 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public Number beforeBind(final SQLType type, MappingEnv env, final Object nonNull) {
+    public Number beforeBind(final SqlType type, MappingEnv env, final Object nonNull) {
         final BigInteger integerValue;
         integerValue = _convertToUnsignedBigInteger(this, nonNull, PARAM_ERROR_HANDLER_0);
         final Number value;
@@ -87,7 +87,7 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
     }
 
     @Override
-    public BigInteger afterGet(SQLType type, MappingEnv env, final Object nonNull) {
+    public BigInteger afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         return _convertToUnsignedBigInteger(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 

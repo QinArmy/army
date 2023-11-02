@@ -5,7 +5,7 @@ import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.util._StringUtils;
 
-public enum MySQLType implements SQLType, SQLWords {
+public enum MySQLType implements SqlType, SQLWords {
 
     NULL,
     BOOLEAN,

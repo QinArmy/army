@@ -36,8 +36,8 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
-        final SQLType type;
+    public SqlType map(final ServerMeta meta) {
+        final SqlType type;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 type = MySQLType.VARBINARY;
@@ -72,7 +72,7 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public byte[] beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
+    public byte[] beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
@@ -80,7 +80,7 @@ public final class BinaryType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public byte[] afterGet(SQLType type, MappingEnv env, final Object nonNull) {
+    public byte[] afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         if (!(nonNull instanceof byte[])) {
             throw DATA_ACCESS_ERROR_HANDLER_0.apply(this, nonNull);
         }

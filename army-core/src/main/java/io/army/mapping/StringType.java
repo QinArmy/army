@@ -8,7 +8,7 @@ import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 import io.army.util._TimeUtils;
@@ -81,7 +81,7 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         return mapToSqlType(this, meta);
     }
 
@@ -97,22 +97,22 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
     }
 
     @Override
-    public String beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         return _convertToString(this, type, nonNull, PARAM_ERROR_HANDLER_0);
     }
 
     @Override
-    public String afterGet(final SQLType type, final MappingEnv env, final Object nonNull) {
+    public String afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
         return _convertToString(this, type, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
     @Deprecated
-    public static String beforeBind(SQLType sqlType, final Object nonNull) {
+    public static String beforeBind(SqlType sqlType, final Object nonNull) {
         throw new UnsupportedOperationException();
     }
 
-    static SQLType mapToSqlType(final MappingType type, final ServerMeta meta) {
-        final SQLType sqlType;
+    static SqlType mapToSqlType(final MappingType type, final ServerMeta meta) {
+        final SqlType sqlType;
         switch (meta.dialectDatabase()) {
             case MySQL:
                 sqlType = MySQLType.VARCHAR;
@@ -132,7 +132,7 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
         return sqlType;
     }
 
-    static String _convertToString(final MappingType type, final SQLType sqlType, final Object nonNull,
+    static String _convertToString(final MappingType type, final SqlType sqlType, final Object nonNull,
                                    final BiFunction<MappingType, Object, ArmyException> errorHandler) {
         final String value;
         if (nonNull instanceof String) {

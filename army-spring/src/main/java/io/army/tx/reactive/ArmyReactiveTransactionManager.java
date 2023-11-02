@@ -3,7 +3,6 @@ package io.army.tx.reactive;
 
 import io.army.reactive.ReactiveLocalSession;
 import io.army.reactive.ReactiveLocalSessionFactory;
-import io.army.reactive.Transaction;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.TransactionDefinition;
@@ -27,7 +26,7 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
             txObject.reset(session);
         }
         return txObject;
-     }
+    }
 
     @Override
     protected Mono<Void> doBegin(TransactionSynchronizationManager synchronizationManager, final Object transaction
@@ -151,25 +150,16 @@ public class ArmyReactiveTransactionManager extends AbstractReactiveTransactionM
         if (session.inTransaction()) {
             return Mono.error(this::existsTransactionException);
         }
-        ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
-        return txObject.reset(session)
-                .flatMap(sessionAfterRest -> this.createSessionTransaction(sessionAfterRest, definition))
-                .flatMap(Transaction::start)
-                ;
+//        ArmyTransactionObject txObject = (ArmyTransactionObject) transaction;
+//        return txObject.reset(session)
+//                .flatMap(sessionAfterRest -> this.createSessionTransaction(sessionAfterRest, definition))
+//                .flatMap(Transaction::start)
+//                ;
 
-    }
-
-    private Mono<Transaction> createSessionTransaction(ReactiveLocalSession session
-            , TransactionDefinition definition) {
-//        return session.builder()
-//                .isolation(SpringUtils.convertTotArmyIsolation(definition.getIsolationLevel()))
-//                .readOnly(definition.isReadOnly())
-//                .timeout(definition.getTimeout())
-//                .name(definition.getName())
-//                .build();
         return Mono.empty();
 
     }
+
 
     /*################################## blow static inner class ##################################*/
 

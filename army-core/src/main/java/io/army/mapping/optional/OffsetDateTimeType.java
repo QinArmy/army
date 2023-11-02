@@ -8,7 +8,7 @@ import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.OracleDataType;
 import io.army.sqltype.PostgreSqlType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
 import java.time.LocalDateTime;
@@ -54,7 +54,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         return mapToSqlType(meta, this);
     }
 
@@ -69,7 +69,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
     @Override
-    public Temporal beforeBind(final SQLType type, MappingEnv env, final Object nonNull) {
+    public Temporal beforeBind(final SqlType type, MappingEnv env, final Object nonNull) {
         final OffsetDateTime dateTime;
         dateTime = this.convertBeforeBind(type, nonNull);
         final Temporal value;
@@ -87,7 +87,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
     @Override
-    public OffsetDateTime afterGet(final SQLType type, final MappingEnv env, final Object nonNull) {
+    public OffsetDateTime afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
         final OffsetDateTime value;
         if (nonNull instanceof OffsetDateTime) {
             value = (OffsetDateTime) nonNull;
@@ -108,7 +108,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
 
-    private OffsetDateTime convertBeforeBind(final SQLType sqlType, final Object nonNull) {
+    private OffsetDateTime convertBeforeBind(final SqlType sqlType, final Object nonNull) {
         final OffsetDateTime dateTime;
         if (nonNull instanceof OffsetDateTime) {
             dateTime = (OffsetDateTime) nonNull;
@@ -130,8 +130,8 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
 
-    static SQLType mapToSqlType(final ServerMeta meta, final MappingType type) {
-        final SQLType sqlType;
+    static SqlType mapToSqlType(final ServerMeta meta, final MappingType type) {
+        final SqlType sqlType;
         switch (meta.dialectDatabase()) {
             case PostgreSQL:
                 sqlType = PostgreSqlType.TIMESTAMPTZ;
@@ -146,7 +146,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
 
-    private static OffsetDateTime parseBeforeBind(final SQLType sqlType, final Object nonNull)
+    private static OffsetDateTime parseBeforeBind(final SqlType sqlType, final Object nonNull)
             throws DateTimeParseException {
         OffsetDateTime value;
         switch (sqlType.database()) {
@@ -174,7 +174,7 @@ public final class OffsetDateTimeType extends _ArmyNoInjectionMapping implements
     }
 
 
-    private static OffsetDateTime parseAfterGet(final SQLType sqlType, final MappingEnv env, final Object nonNull)
+    private static OffsetDateTime parseAfterGet(final SqlType sqlType, final MappingEnv env, final Object nonNull)
             throws DateTimeParseException {
         final OffsetDateTime value;
         switch (sqlType.database()) {

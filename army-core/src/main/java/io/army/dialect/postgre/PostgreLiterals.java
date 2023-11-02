@@ -4,7 +4,7 @@ import io.army.dialect._Constant;
 import io.army.dialect._Literals;
 import io.army.mapping.MappingType;
 import io.army.meta.TypeMeta;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -17,7 +17,7 @@ abstract class PostgreLiterals extends _Literals {
     }
 
 
-    static StringBuilder postgreBackslashEscapes(final TypeMeta typeMeta, final SQLType type, final Object value,
+    static StringBuilder postgreBackslashEscapes(final TypeMeta typeMeta, final SqlType type, final Object value,
                                                  final StringBuilder sqlBuilder) {
         if (!(value instanceof String)) {//TODO think long string
             throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -86,7 +86,7 @@ abstract class PostgreLiterals extends _Literals {
     }
 
 
-    static StringBuilder postgreBitString(final TypeMeta typeMeta, final SQLType type, final Object value,
+    static StringBuilder postgreBitString(final TypeMeta typeMeta, final SqlType type, final Object value,
                                           final StringBuilder sqlBuilder) {
         if (!(value instanceof String)) {
             throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -102,7 +102,7 @@ abstract class PostgreLiterals extends _Literals {
     }
 
 
-    static void appendSimpleTypeArray(final MappingType mappingType, final SQLType type, final Object array,
+    static void appendSimpleTypeArray(final MappingType mappingType, final SqlType type, final Object array,
                                       final StringBuilder sqlBuilder,
                                       final ArrayElementHandler handler) {
 

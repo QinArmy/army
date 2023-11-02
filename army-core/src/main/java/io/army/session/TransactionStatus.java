@@ -3,7 +3,6 @@ package io.army.session;
 /**
  * Enum representing the status in which Transaction is running.
  *
- * @see Transaction#status()
  * @since 1.0
  */
 @Deprecated

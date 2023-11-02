@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
@@ -57,7 +57,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
 
 
     @Override
-    public SQLType map(final ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         return IntegerType.mapToInteger(this, meta);
     }
 
@@ -75,7 +75,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public Integer beforeBind(SQLType type, MappingEnv env, final Object nonNull) {
+    public Integer beforeBind(SqlType type, MappingEnv env, final Object nonNull) {
         if (!this.enumClass.isInstance(nonNull)) {
             throw PARAM_ERROR_HANDLER_0.apply(this, nonNull);
         }
@@ -83,7 +83,7 @@ public final class CodeEnumType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public CodeEnum afterGet(SQLType type, MappingEnv env, final Object nonNull) {
+    public CodeEnum afterGet(SqlType type, MappingEnv env, final Object nonNull) {
         final int code;
         if (nonNull instanceof Integer) {
             code = (Integer) nonNull;

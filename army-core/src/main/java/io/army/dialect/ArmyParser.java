@@ -23,7 +23,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
 import io.army.schema._TableResult;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.util.*;
 
@@ -681,7 +681,7 @@ abstract class ArmyParser implements DialectParser {
 
     @Override
     public final void typeName(final MappingType type, final StringBuilder sqlBuilder) {
-        final SQLType sqlType;
+        final SqlType sqlType;
         sqlType = type.map(this.serverMeta);
         if (type instanceof MappingType.SqlUserDefinedType) {
             if (!sqlType.isUserDefined()) {
@@ -723,7 +723,7 @@ abstract class ArmyParser implements DialectParser {
         } else {
             type = typeMeta.mappingType();
         }
-        final SQLType sqlType;
+        final SqlType sqlType;
         sqlType = type.map(this.serverMeta);
 
         if (value == null) {
@@ -745,14 +745,14 @@ abstract class ArmyParser implements DialectParser {
 
     protected abstract void arrayTypeName(String safeTypeNme, int dimension, StringBuilder sqlBuilder);
 
-    protected abstract void buildInTypeName(SQLType sqlType, MappingType type, StringBuilder sqlBuilder);
+    protected abstract void buildInTypeName(SqlType sqlType, MappingType type, StringBuilder sqlBuilder);
 
 
-    protected abstract boolean isNeedConvert(SQLType type, Object nonNull);
+    protected abstract boolean isNeedConvert(SqlType type, Object nonNull);
 
-    protected abstract void bindLiteralNull(SQLType sqlType, MappingType type, StringBuilder sqlBuilder);
+    protected abstract void bindLiteralNull(SqlType sqlType, MappingType type, StringBuilder sqlBuilder);
 
-    protected abstract void bindLiteral(TypeMeta typeMeta, SQLType type, Object value, StringBuilder sqlBuilder);
+    protected abstract void bindLiteral(TypeMeta typeMeta, SqlType type, Object value, StringBuilder sqlBuilder);
 
     protected abstract DdlParser createDdlDialect();
 

@@ -6,7 +6,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
 
@@ -50,7 +50,7 @@ public final class MySQLTextEnumSetType extends MappingType implements MultiGene
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         if (meta.dialectDatabase() != Database.MySQL) {
             throw noMappingError(meta);
         }
@@ -68,7 +68,7 @@ public final class MySQLTextEnumSetType extends MappingType implements MultiGene
     }
 
     @Override
-    public String beforeBind(SQLType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof Set)) {
             throw outRangeOfSqlType(type, nonNull);
         }
@@ -89,7 +89,7 @@ public final class MySQLTextEnumSetType extends MappingType implements MultiGene
     }
 
     @Override
-    public Set<?> afterGet(SQLType type, MappingEnv env, Object nonNull) {
+    public Set<?> afterGet(SqlType type, MappingEnv env, Object nonNull) {
         if (!(nonNull instanceof String)) {
             throw errorJavaTypeForSqlType(type, nonNull);
         }

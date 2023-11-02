@@ -4,6 +4,7 @@ import io.army.session.record.ResultStates;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
@@ -29,6 +30,15 @@ public final class Option<T> {
             return (Option<T>) option;
         }
         return new Option<>(name, javaType);
+    }
+
+    public static <T> Function<Option<?>, ?> singleFunc(final Option<T> option, final @Nullable T value) {
+        return o -> {
+            if (option.equals(o)) {
+                return value;
+            }
+            return null;
+        };
     }
 
     public static final Function<Option<?>, ?> EMPTY_OPTION_FUNC = option -> null;

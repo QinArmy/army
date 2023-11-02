@@ -22,7 +22,7 @@ import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultItem;
 import io.army.session.record.ResultStates;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.type.ImmutableSpec;
 import io.army.util._Collections;
@@ -30,7 +30,6 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 import io.jdbd.JdbdException;
-import io.jdbd.meta.DataType;
 import io.jdbd.result.CurrentRow;
 import io.jdbd.result.DataRow;
 import io.jdbd.result.ResultRowMeta;
@@ -90,10 +89,6 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         this.session = session;
     }
 
-    @Override
-    public final String name() {
-        return this.name;
-    }
 
     @Override
     public final long sessionIdentifier() throws DataAccessException {
@@ -180,7 +175,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         if (returningId) {
             final GeneratedKeyStmt keyStmt = (GeneratedKeyStmt) stmt;
             final MappingType type = keyStmt.idField().mappingType();
-            final SQLType sqlType = type.map(this.factory.serverMeta);
+            final SqlType sqlType = type.map(this.factory.serverMeta);
             jdbdStatesHolder = new AtomicReference<>(null);
 
             final int rowSize = keyStmt.rowSize();
@@ -668,12 +663,12 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
     /*-------------------below package instance methods-------------------*/
 
-    abstract DataType mapToJdbdDataType(MappingType mappingType, SQLType sqlType);
+    abstract io.jdbd.meta.DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType);
 
-    abstract SQLType getColumnMeta(DataRow row, int indexBasedZero);
+    abstract SqlType getColumnMeta(DataRow row, int indexBasedZero);
 
     @Nullable
-    abstract Object get(DataRow row, int indexBasedZero, SQLType sqlType);
+    abstract Object get(DataRow row, int indexBasedZero, SqlType sqlType);
 
     @Nullable
     abstract io.jdbd.session.Option<?> mapToJdbdDialectOption(Option<?> option);
@@ -1027,7 +1022,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
         final int indexBasedZero = keyStmt.idSelectionIndex();
         final MappingType type = keyStmt.idField().mappingType();
-        final SQLType sqlType = type.map(this.factory.serverMeta);
+        final SqlType sqlType = type.map(this.factory.serverMeta);
 
         final int[] rowIndexHolder = new int[]{0};
         return dataRow -> {
@@ -1065,7 +1060,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
         final PrimaryFieldMeta<?> idField = stmt.idField();
         final MappingType type = idField.mappingType();
-        final SQLType sqlType = type.map(this.factory.serverMeta);
+        final SqlType sqlType = type.map(this.factory.serverMeta);
         final MappingEnv env = this.factory.mappingEnv;
 
         final int lastRowIndex = rowSize - 1;
@@ -1137,7 +1132,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         Object value;
         MappingType mappingType;
         TypeMeta typeMeta;
-        SQLType sqlType;
+        SqlType sqlType;
         DataType dataType;
         for (int i = 0, paramIndex = 0; i < paramSize; i++) {
             sqlParam = paramList.get(i);
@@ -1234,13 +1229,14 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     /*-------------------below static class -------------------*/
 
 
+
     private static abstract class RowReader<R> {
 
         final JdbdStmtExecutor executor;
 
         final List<? extends Selection> selectionList;
 
-        private final SQLType[] sqlTypeArray;
+        private final SqlType[] sqlTypeArray;
 
         private final MappingType[] compatibleTypeArray;
 
@@ -1250,7 +1246,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                           @Nullable Class<?> resultClass) {
             this.executor = executor;
             this.selectionList = selectionList;
-            this.sqlTypeArray = new SQLType[selectionList.size()];
+            this.sqlTypeArray = new SqlType[selectionList.size()];
             this.compatibleTypeArray = new MappingType[this.sqlTypeArray.length];
 
             this.resultClass = resultClass;
@@ -1262,7 +1258,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
             final JdbdStmtExecutor executor = this.executor;
             final MappingEnv env = executor.factory.mappingEnv;
-            final SQLType[] sqlTypeArray = this.sqlTypeArray;
+            final SqlType[] sqlTypeArray = this.sqlTypeArray;
             final List<? extends Selection> selectionList = this.selectionList;
 
             final MappingType[] compatibleTypeArray = this.compatibleTypeArray;
@@ -1291,7 +1287,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
             MappingType type;
             Selection selection;
             Object columnValue;
-            SQLType sqlType;
+            SqlType sqlType;
             String fieldName;
 
             for (int i = 0; i < columnCount; i++) {
@@ -1329,7 +1325,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         abstract R endOneRow();
 
 
-        private SQLType getSqlType(int index) {
+        private SqlType getSqlType(int index) {
             return this.sqlTypeArray[index];
         }
 
@@ -1609,7 +1605,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
             return row;
         }
 
-        private void acceptRowMeta(final ResultRowMeta rowMeta, final IntFunction<SQLType> sqlTypeFunc) {
+        private void acceptRowMeta(final ResultRowMeta rowMeta, final IntFunction<SqlType> sqlTypeFunc) {
 //            final IntBiFunction<Option<?>, ?> optionFunc;
 //            optionFunc = this.executor.readJdbdRowMetaOptions(rowMeta);
 //
@@ -1630,7 +1626,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
         private long rowCount = 0;
 
-        private JdbdCurrentRecord(ArmyResultRecordMeta meta) {
+        private JdbdCurrentRecord(ArmyStmtRecordMeta meta) {
             super(meta);
             this.valueArray = new Object[meta.getColumnCount()];
         }

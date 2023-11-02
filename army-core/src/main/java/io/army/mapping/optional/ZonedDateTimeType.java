@@ -8,7 +8,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.util._TimeUtils;
 
 import java.time.LocalDateTime;
@@ -56,7 +56,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
 
 
     @Override
-    public SQLType map(ServerMeta meta) throws NotSupportDialectException {
+    public SqlType map(ServerMeta meta) throws NotSupportDialectException {
         return OffsetDateTimeType.mapToSqlType(meta, this);
     }
 
@@ -71,7 +71,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
     }
 
     @Override
-    public Temporal beforeBind(final SQLType type, final MappingEnv env, final Object nonNull) throws CriteriaException {
+    public Temporal beforeBind(final SqlType type, final MappingEnv env, final Object nonNull) throws CriteriaException {
         final ZonedDateTime dateTime;
         dateTime = this.convertBeforeBind(type, nonNull);
         final Temporal value;
@@ -89,7 +89,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
     }
 
     @Override
-    public ZonedDateTime afterGet(final SQLType type, final MappingEnv env, final Object nonNull)
+    public ZonedDateTime afterGet(final SqlType type, final MappingEnv env, final Object nonNull)
             throws DataAccessException {
         final ZonedDateTime value;
         if (nonNull instanceof ZonedDateTime) {
@@ -111,7 +111,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
     }
 
 
-    private ZonedDateTime convertBeforeBind(final SQLType sqlType, final Object nonNull) {
+    private ZonedDateTime convertBeforeBind(final SqlType sqlType, final Object nonNull) {
         final ZonedDateTime dateTime;
         if (nonNull instanceof ZonedDateTime) {
             dateTime = (ZonedDateTime) nonNull;
@@ -133,7 +133,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
     }
 
 
-    private static ZonedDateTime parseBeforeBind(final SQLType sqlType, final Object nonNull)
+    private static ZonedDateTime parseBeforeBind(final SqlType sqlType, final Object nonNull)
             throws DateTimeParseException {
         ZonedDateTime value;
         switch (sqlType.database()) {
@@ -161,7 +161,7 @@ public final class ZonedDateTimeType extends _ArmyNoInjectionMapping implements 
     }
 
 
-    private static ZonedDateTime parseAfterGet(final SQLType sqlType, final MappingEnv env, final Object nonNull)
+    private static ZonedDateTime parseAfterGet(final SqlType sqlType, final MappingEnv env, final Object nonNull)
             throws DateTimeParseException {
         final ZonedDateTime value;
         switch (sqlType.database()) {

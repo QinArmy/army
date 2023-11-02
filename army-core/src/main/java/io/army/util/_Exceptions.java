@@ -19,7 +19,7 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.*;
 import io.army.session.record.CurrentRecord;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.Stmt;
 
@@ -69,14 +69,14 @@ public abstract class _Exceptions {
     }
 
 
-    public static MetaException beforeBindMethod(SQLType sqlType, MappingType mappingType,
+    public static MetaException beforeBindMethod(SqlType sqlType, MappingType mappingType,
                                                  @Nullable Object returnValue) {
         String m = String.format("%s beforeBind() method return type %s and %s type not match."
                 , mappingType, _ClassUtils.safeClassName(returnValue), sqlType);
         return new MetaException(m);
     }
 
-    public static MetaException beforeBindMethod(SQLType sqlType, Object nonNull) {
+    public static MetaException beforeBindMethod(SqlType sqlType, Object nonNull) {
         String m = String.format("%s and %s not match.", sqlType, _ClassUtils.safeClassName(nonNull));
         return new MetaException(m);
     }
@@ -464,7 +464,7 @@ public abstract class _Exceptions {
         return new CriteriaException(String.format("unknown %s type.", query.getClass().getName()));
     }
 
-    public static CriteriaException literalDontSupport(SQLType sqlType) {
+    public static CriteriaException literalDontSupport(SqlType sqlType) {
         return new CriteriaException(String.format("literal don't support %s", sqlType));
     }
 
@@ -623,13 +623,13 @@ public abstract class _Exceptions {
         return new ArmyException(m);
     }
 
-    public static CriteriaException outRangeOfSqlType(final SQLType sqlType, final Object nonNull) {
+    public static CriteriaException outRangeOfSqlType(final SqlType sqlType, final Object nonNull) {
         String m = String.format("%s[%s] literal don't support java type[%s]"
                 , sqlType.getClass().getName(), sqlType, nonNull.getClass().getName());
         return new CriteriaException(m);
     }
 
-    public static CriteriaException outRangeOfSqlType(final SQLType sqlType, final Object nonNull
+    public static CriteriaException outRangeOfSqlType(final SqlType sqlType, final Object nonNull
             , @Nullable Throwable cause) {
         String m = String.format("%s[%s] literal don't support java type[%s]"
                 , sqlType.getClass().getName(), sqlType, nonNull.getClass().getName());
@@ -642,11 +642,11 @@ public abstract class _Exceptions {
         return e;
     }
 
-    public static CriteriaException valueOutRange(final SQLType sqlType, final Object nonNull) {
+    public static CriteriaException valueOutRange(final SqlType sqlType, final Object nonNull) {
         return valueOutRange(sqlType, nonNull, null);
     }
 
-    public static CriteriaException valueOutRange(final SQLType sqlType, final Object nonNull
+    public static CriteriaException valueOutRange(final SqlType sqlType, final Object nonNull
             , @Nullable Throwable cause) {
         String m = String.format("Value[%s] out of %s.", nonNull, sqlType);
         final CriteriaException exception;
@@ -1014,7 +1014,7 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
-    public static CriteriaException unknownArrayDimension(SQLType sqlType, MappingType type) {
+    public static CriteriaException unknownArrayDimension(SqlType sqlType, MappingType type) {
         String m = String.format("unknown array type %s dimension of %s", sqlType, type);
         return new CriteriaException(m);
     }
@@ -1039,18 +1039,18 @@ public abstract class _Exceptions {
         return new MetaException(m);
     }
 
-    public static MetaException mapMethodError(MappingType type, Class<? extends SQLType> sqlType) {
+    public static MetaException mapMethodError(MappingType type, Class<? extends SqlType> sqlType) {
         String m = String.format("%s map(%s) don't return %s", type, ServerMeta.class.getName(), sqlType.getName());
         return new MetaException(m);
     }
 
-    public static MetaException notUserDefinedType(MappingType type, SQLType sqlType) {
+    public static MetaException notUserDefinedType(MappingType type, SqlType sqlType) {
         String m = String.format("%s return %s but don't implements %s .", type, sqlType,
                 MappingType.SqlUserDefinedType.class.getName());
         return new MetaException(m);
     }
 
-    public static MetaException nonArrayType(MappingType type, SQLType sqlType) {
+    public static MetaException nonArrayType(MappingType type, SqlType sqlType) {
         String m = String.format("%s return %s but don't implements %s .", type, sqlType,
                 MappingType.SqlArrayType.class.getName());
         return new MetaException(m);

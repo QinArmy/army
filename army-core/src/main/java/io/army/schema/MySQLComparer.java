@@ -6,7 +6,7 @@ import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 final class MySQLComparer extends ArmySchemaComparer {
 
@@ -36,7 +36,7 @@ final class MySQLComparer extends ArmySchemaComparer {
     }
 
     @Override
-    boolean compareSqlType(_ColumnInfo columnInfo, FieldMeta<?> field, SQLType sqlType) {
+    boolean compareSqlType(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
         final boolean match;
         switch ((MySQLType) sqlType) {
             case INT:
@@ -108,7 +108,7 @@ final class MySQLComparer extends ArmySchemaComparer {
     }
 
     @Override
-    boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?> field, SQLType sqlType) {
+    boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
 //        switch ((MySqlType) sqlType) {
 //            case INT:
 //            case BIGINT:

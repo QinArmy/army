@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
-import io.army.sqltype.SQLType;
+import io.army.sqltype.SqlType;
 
 import java.time.*;
 import java.util.function.BiFunction;
@@ -35,7 +35,7 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public SQLType map(final ServerMeta meta) {
+    public SqlType map(final ServerMeta meta) {
         return StringType.mapToSqlType(this, meta);
     }
 
@@ -50,7 +50,7 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public String beforeBind(SQLType type, MappingEnv env, Object nonNull) {
+    public String beforeBind(SqlType type, MappingEnv env, Object nonNull) {
         ZoneId zoneId;
         zoneId = convertToZoneId(this, nonNull, PARAM_ERROR_HANDLER_0);
         if (!(zoneId instanceof ZoneOffset)) {
@@ -60,7 +60,7 @@ public final class ZoneIdType extends _ArmyNoInjectionMapping {
     }
 
     @Override
-    public ZoneId afterGet(final SQLType type, final MappingEnv env, final Object nonNull) {
+    public ZoneId afterGet(final SqlType type, final MappingEnv env, final Object nonNull) {
         return convertToZoneId(this, nonNull, DATA_ACCESS_ERROR_HANDLER_0);
     }
 
