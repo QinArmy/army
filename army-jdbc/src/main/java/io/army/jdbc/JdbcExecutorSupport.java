@@ -9,6 +9,7 @@ import io.army.session.executor.ExecutorSupport;
 import io.army.session.record.FieldType;
 import io.army.session.record.KeyType;
 import io.army.session.record.ResultStates;
+import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.stmt.SimpleStmt;
 import io.army.sync.SyncStmtOption;
@@ -102,7 +103,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         public final String getCatalogName(int indexBasedZero) throws DataAccessException {
             try {
                 final String name;
-                name = this.meta.getCatalogName(checkIndexBasedOne(indexBasedZero));
+                name = this.meta.getCatalogName(checkIndexAndToBasedOne(indexBasedZero));
                 return _StringUtils.isEmpty(name) ? null : name;   // avoid bug
             } catch (Exception e) {
                 throw this.executor.handleException(e);
@@ -114,7 +115,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         public final String getSchemaName(int indexBasedZero) throws DataAccessException {
             try {
                 final String name;
-                name = this.meta.getSchemaName(checkIndexBasedOne(indexBasedZero));
+                name = this.meta.getSchemaName(checkIndexAndToBasedOne(indexBasedZero));
                 return _StringUtils.isEmpty(name) ? null : name;   // avoid bug
             } catch (Exception e) {
                 throw this.executor.handleException(e);
@@ -126,7 +127,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         public final String getTableName(int indexBasedZero) throws DataAccessException {
             try {
                 final String name;
-                name = this.meta.getTableName(checkIndexBasedOne(indexBasedZero));
+                name = this.meta.getTableName(checkIndexAndToBasedOne(indexBasedZero));
                 return _StringUtils.isEmpty(name) ? null : name;   // avoid bug
             } catch (Exception e) {
                 throw this.executor.handleException(e);
@@ -138,7 +139,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         public final String getColumnName(int indexBasedZero) throws DataAccessException {
             try {
                 final String name;
-                name = this.meta.getColumnName(checkIndexBasedOne(indexBasedZero));
+                name = this.meta.getColumnName(checkIndexAndToBasedOne(indexBasedZero));
                 return _StringUtils.isEmpty(name) ? null : name;   // avoid bug
             } catch (Exception e) {
                 throw this.executor.handleException(e);
@@ -171,23 +172,70 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Override
         public final int getPrecision(final int indexBasedZero) throws DataAccessException {
             try {
+                final ArmyType armyType;
+                armyType = getArmyType(indexBasedZero);
+
                 final int precision;
-                precision = this.meta.getPrecision(checkIndexBasedOne(indexBasedZero));
-                return 0;
+                if (!armyType.isDecimalType() && (armyType.isNumberType() || armyType.isTimeType())) {
+                    precision = 0;
+                } else {
+                    precision = this.meta.getPrecision(indexBasedZero);
+                }
+                return precision;
             } catch (Exception e) {
                 throw this.executor.handleException(e);
             }
         }
 
         @Override
-        public final int getScale(int indexBasedZero) throws DataAccessException {
-            return 0;
+        public final int getScale(final int indexBasedZero) throws DataAccessException {
+            try {
+                final ArmyType armyType;
+                armyType = getArmyType(indexBasedZero);
+                final int scale;
+                if (armyType.isDecimalType()) {
+                    scale = this.meta.getScale(checkIndexAndToBasedOne(indexBasedZero));
+                } else if (armyType.isNumberType() || armyType.isTextString() || armyType.isBinaryString()) {
+                    scale = 0;
+                } else switch (armyType) {
+                    case TIME:
+                    case TIME_WITH_TIMEZONE:
+                    case TIMESTAMP:
+                    case TIMESTAMP_WITH_TIMEZONE:
+                        scale = -1; // JDBC don't support
+                        break;
+                    default:
+                        scale = this.meta.getScale(checkIndexAndToBasedOne(indexBasedZero));
+                        break;
+                }
+                return scale;
+            } catch (Exception e) {
+                throw this.executor.handleException(e);
+            }
         }
 
         @Nullable
         @Override
-        public final Boolean getAutoIncrementMode(int indexBasedZero) throws DataAccessException {
-            return null;
+        public final Boolean getAutoIncrementMode(final int indexBasedZero) throws DataAccessException {
+            final Boolean mode;
+            switch (this.executor.factory.serverDataBase) {
+                case MySQL:
+                case SQLite:
+                case H2:
+                    try {
+                        mode = this.meta.isAutoIncrement(checkIndexAndToBasedOne(indexBasedZero));
+                    } catch (Exception e) {
+                        throw this.executor.handleException(e);
+                    }
+                    break;
+                case PostgreSQL:  // postgre client protocol don't support
+                    mode = null;
+                    break;
+                case Oracle:
+                default:
+                    throw _Exceptions.unexpectedEnum(this.executor.factory.serverDataBase);
+            }
+            return mode;
         }
 
         @Override

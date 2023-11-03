@@ -94,6 +94,7 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
      *     <li>bit string type : return maximum bit length</li>
      *     <li>integer and float :  return 0</li>
      *     <li>time/date : return 0</li>
+     *      <li>-1 : unknown</li>
      *     <li>other dialect type : it's up to driver developer</li>
      * </ul>
      * <br/>
@@ -114,6 +115,7 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
      *     <li>decimal type : return scale of decimal,for example decimal(14,2),return 2</li>
      *     <li>integer and float :  return 0</li>
      *     <li>time and timestamp : return micro second precision,for example : time(5) return 5</li>
+     *      <li>-1 : unknown</li>
      *     <li>other dialect type : it's up to driver developer</li>
      * </ul>
      * <br/>

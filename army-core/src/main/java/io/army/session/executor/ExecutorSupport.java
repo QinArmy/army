@@ -241,14 +241,11 @@ public abstract class ExecutorSupport {
             final ArmyType armyType;
             if (dataType instanceof SqlType) {
                 armyType = ((SqlType) dataType).armyType();
-            } else if (dataType.isUnknown()) {
-                armyType = ArmyType.UNKNOWN;
             } else {
-                armyType = ArmyType.DIALECT_TYPE;
+                armyType = ArmyType.UNKNOWN;
             }
             return armyType;
         }
-
 
 
 
@@ -355,7 +352,7 @@ public abstract class ExecutorSupport {
             return indexBasedZero;
         }
 
-        public final int checkIndexBasedOne(final int indexBasedZero) {
+        public final int checkIndexAndToBasedOne(final int indexBasedZero) {
             if (indexBasedZero < 0 || indexBasedZero >= this.dataTypeArray.length) {
                 String m = String.format("index not in [0,%s)", this.dataTypeArray.length);
                 throw new DataAccessException(m);
