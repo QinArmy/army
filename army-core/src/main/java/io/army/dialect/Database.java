@@ -5,23 +5,28 @@ import io.army.dialect.h2.H2Dialect;
 import io.army.dialect.mysql.MySQLDialect;
 import io.army.dialect.oracle.OracleDialect;
 import io.army.dialect.postgre.PostgreDialect;
-
-import javax.annotation.Nullable;
-
+import io.army.dialect.sqlite.SQLiteDialect;
 import io.army.meta.ServerMeta;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 
+/**
+ * <p>This enum representing database product family.
+ *
+ * @since 1.0
+ */
 public enum Database {
 
     MySQL(MySQLDialect::values, MySQLDialect::valueOf),
     Oracle(OracleDialect::values, OracleDialect::valueOf),
     PostgreSQL(PostgreDialect::values, PostgreDialect::valueOf),
-    H2(H2Dialect::values, H2Dialect::valueOf);
+    H2(H2Dialect::values, H2Dialect::valueOf),
+    SQLite(SQLiteDialect::values, SQLiteDialect::valueOf);
 
 
     private final Supplier<Dialect[]> supplier;
@@ -75,7 +80,7 @@ public enum Database {
     }
 
     public static Database mapToDatabase(final String productFamily, final @Nullable Function<String, Database> func) {
-        Database database = null;
+        final Database database;
         switch (productFamily) {
             case "MySQL":
                 database = Database.MySQL;
@@ -83,11 +88,19 @@ public enum Database {
             case "PostgreSQL":
                 database = Database.PostgreSQL;
                 break;
+            case "SQLite":
+                database = Database.SQLite;
+                break;
+            case "H2":
+                database = Database.H2;
+                break;
             case "Oracle":
                 database = Database.Oracle;
                 break;
             default:
-                if (func != null) {
+                if (func == null) {
+                    database = null;
+                } else {
                     database = func.apply(productFamily);
                 }
         }

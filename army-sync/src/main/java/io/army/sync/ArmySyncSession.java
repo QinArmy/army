@@ -155,8 +155,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final <R> List<R> queryList(DqlStatement statement, Class<R> resultClass, Supplier<List<R>> listConstructor, SyncStmtOption option) {
-        return query(statement, resultClass, option)
-                .collect(Collectors.toCollection(listConstructor));
+        try (Stream<R> stream = query(statement, resultClass, option)) {
+            return stream.collect(Collectors.toCollection(listConstructor));
+        }
     }
 
     @Override
@@ -176,7 +177,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final <R> List<R> queryObjectList(DqlStatement statement, Supplier<R> constructor, Supplier<List<R>> listConstructor, SyncStmtOption option) {
-        return this.executeQueryList(statement, listConstructor, option, s -> this.stmtExecutor.queryObject(s, constructor, listConstructor, option));
+        try (Stream<R> stream = queryObject(statement, constructor, option)) {
+            return stream.collect(Collectors.toCollection(listConstructor));
+        }
     }
 
     @Override
@@ -196,7 +199,9 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
     @Override
     public final <R> List<R> queryRecordList(DqlStatement statement, Function<CurrentRecord, R> function, Supplier<List<R>> listConstructor, SyncStmtOption option) {
-        return this.executeQueryList(statement, listConstructor, option, s -> this.stmtExecutor.queryRecord(s, function, listConstructor, option));
+        try (Stream<R> stream = queryRecord(statement, function, option)) {
+            return stream.collect(Collectors.toCollection(listConstructor));
+        }
     }
 
     @Override

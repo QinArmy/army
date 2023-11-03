@@ -417,7 +417,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
-    public interface WordNull extends BooleanTestWord, Expression, NullOption { // extends Expression not SimpleExpression
+    public interface WordNull extends BooleanTestWord, SimpleExpression, NullOption { // extends Expression not SimpleExpression
 
     }
 
@@ -425,7 +425,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
-    public interface WordDefault extends Expression {
+    public interface WordDefault extends SimpleExpression {
 
     }
 

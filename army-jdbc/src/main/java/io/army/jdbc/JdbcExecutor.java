@@ -1579,13 +1579,61 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
             final String tableName;
             tableName = getTableName(indexBasedZero);
             final FieldType fieldType;
-            if (tableName == null) {
-
+            if (tableName != null) {
+                fieldType = FieldType.FIELD;
+            } else switch (this.executor.factory.serverDataBase) {
+                case MySQL:
+                    fieldType = FieldType.EXPRESSION;
+                    break;
+                case PostgreSQL: // postgre client protocol don't support
+                    fieldType = FieldType.UNKNOWN;
+                    break;
+                case SQLite: //TODO
+                case H2:
+                case Oracle:
+                default:
+                    throw _Exceptions.unexpectedEnum(this.executor.factory.serverDataBase);
             }
+            return fieldType;
+        }
+
+        @Override
+        public final int getPrecision(int indexBasedZero) throws DataAccessException {
+            return 0;
+        }
+
+        @Override
+        public final int getScale(int indexBasedZero) throws DataAccessException {
+            return 0;
+        }
+
+        @Nullable
+        @Override
+        public final Boolean getAutoIncrementMode(int indexBasedZero) throws DataAccessException {
             return null;
         }
 
+        @Override
+        public final KeyType getKeyMode(int indexBasedZero) throws DataAccessException {
+            return null;
+        }
 
+        @Nullable
+        @Override
+        public Boolean getNullableMode(int indexBasedZero) throws DataAccessException {
+            return null;
+        }
+
+        @Override
+        public Class<?> getFirstJavaType(int indexBasedZero) throws DataAccessException {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Class<?> getSecondJavaType(int indexBasedZero) throws DataAccessException {
+            return null;
+        }
     } // JdbcRecordMeta
 
     /**

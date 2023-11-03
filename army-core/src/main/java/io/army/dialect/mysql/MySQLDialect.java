@@ -6,6 +6,12 @@ import io.army.dialect.Dialect;
 import io.army.meta.ServerMeta;
 import io.army.util._StringUtils;
 
+/**
+ * <p>This enum representing MySQL dialect version.
+ *
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/">MySQL</a>
+ * @since 1.0
+ */
 public enum MySQLDialect implements Dialect {
 
     MySQL55(55),
