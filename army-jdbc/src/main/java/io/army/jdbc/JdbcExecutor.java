@@ -10,10 +10,8 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.session.*;
-import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.*;
-import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.StreamCommander;
@@ -59,7 +57,7 @@ import java.util.stream.StreamSupport;
  * @see JdbcExecutorFactory
  * @see <a href="https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html">JDBC</a>
  */
-abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor {
+abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecutor {
 
     private static final AtomicLong EXECUTOR_IDENTIFIER = new AtomicLong(0);
 
@@ -1408,18 +1406,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
     /*-------------------below private static methods -------------------*/
 
-    /**
-     * @see #insert(SimpleStmt, SyncStmtOption, Class)
-     * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
-     */
-    @Nullable
-    private static Warning mapToArmyWarning(final @Nullable SQLWarning warning) {
-        if (warning == null) {
-            return null;
-        }
-        return new ArmyWarning(warning);
-    }
-
 
     /**
      * <p>Invoke {@link PreparedStatement#executeQuery()} or {@link Statement#executeQuery(String)} for {@link ResultSet} auto close.
@@ -1434,44 +1420,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
             resultSet = statement.executeQuery(sql);
         }
         return resultSet;
-    }
-
-    private static ArmyException handleError(final Throwable error, final @Nullable ResultSet resultSet,
-                                             final @Nullable Statement statement)
-            throws ArmyException {
-
-        closeResultSetAndStatement(resultSet, statement);
-
-        return wrapError(error);
-    }
-
-    private static void closeResultSetAndStatement(final @Nullable ResultSet resultSet,
-                                                   final @Nullable Statement statement) {
-        if (statement != null) {
-            if (resultSet == null) {
-                closeResource(statement);
-            } else {
-                try {
-                    closeResource(resultSet);
-                } finally {
-                    closeResource(statement);
-                }
-            }
-
-        } else if (resultSet != null) {
-            closeResource(resultSet);
-        }
-    }
-
-
-    private static void closeResource(final AutoCloseable resource)
-            throws ArmyException {
-        try {
-            resource.close();
-        } catch (Exception e) {
-            throw wrapError(e);
-        }
-
     }
 
 
@@ -1508,133 +1456,6 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
     /*-------------------below static class -------------------*/
 
-
-    private static abstract class JdbcRecordMeta extends ArmyResultRecordMeta {
-
-        private final JdbcExecutor executor;
-
-        private final ResultSetMetaData meta;
-
-        private JdbcRecordMeta(int resultNo, JdbcExecutor executor, DataType[] dataTypeArray, ResultSetMetaData meta) {
-            super(resultNo, dataTypeArray);
-            this.executor = executor;
-            this.meta = meta;
-        }
-
-
-        @Nullable
-        @Override
-        public final <T> T getOf(int indexBasedZero, Option<T> option) throws DataAccessException {
-            return null;
-        }
-
-        @Override
-        public final <T> T getNonNullOf(int indexBasedZero, Option<T> option) throws DataAccessException {
-            return null;
-        }
-
-
-        @Nullable
-        @Override
-        public final String getCatalogName(int indexBasedZero) throws DataAccessException {
-            try {
-                return this.meta.getCatalogName(checkIndexBasedOne(indexBasedZero));
-            } catch (Exception e) {
-                throw this.executor.handleException(e);
-            }
-        }
-
-        @Nullable
-        @Override
-        public final String getSchemaName(int indexBasedZero) throws DataAccessException {
-            try {
-                return this.meta.getSchemaName(checkIndexBasedOne(indexBasedZero));
-            } catch (Exception e) {
-                throw this.executor.handleException(e);
-            }
-        }
-
-        @Nullable
-        @Override
-        public final String getTableName(int indexBasedZero) throws DataAccessException {
-            try {
-                return this.meta.getTableName(checkIndexBasedOne(indexBasedZero));
-            } catch (Exception e) {
-                throw this.executor.handleException(e);
-            }
-        }
-
-        @Nullable
-        @Override
-        public final String getColumnName(int indexBasedZero) throws DataAccessException {
-            try {
-                return this.meta.getColumnName(checkIndexBasedOne(indexBasedZero));
-            } catch (Exception e) {
-                throw this.executor.handleException(e);
-            }
-        }
-
-        @Override
-        public final FieldType getFieldType(final int indexBasedZero) throws DataAccessException {
-            final String tableName;
-            tableName = getTableName(indexBasedZero);
-            final FieldType fieldType;
-            if (tableName != null) {
-                fieldType = FieldType.FIELD;
-            } else switch (this.executor.factory.serverDataBase) {
-                case MySQL:
-                    fieldType = FieldType.EXPRESSION;
-                    break;
-                case PostgreSQL: // postgre client protocol don't support
-                    fieldType = FieldType.UNKNOWN;
-                    break;
-                case SQLite: //TODO
-                case H2:
-                case Oracle:
-                default:
-                    throw _Exceptions.unexpectedEnum(this.executor.factory.serverDataBase);
-            }
-            return fieldType;
-        }
-
-        @Override
-        public final int getPrecision(int indexBasedZero) throws DataAccessException {
-            return 0;
-        }
-
-        @Override
-        public final int getScale(int indexBasedZero) throws DataAccessException {
-            return 0;
-        }
-
-        @Nullable
-        @Override
-        public final Boolean getAutoIncrementMode(int indexBasedZero) throws DataAccessException {
-            return null;
-        }
-
-        @Override
-        public final KeyType getKeyMode(int indexBasedZero) throws DataAccessException {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public Boolean getNullableMode(int indexBasedZero) throws DataAccessException {
-            return null;
-        }
-
-        @Override
-        public Class<?> getFirstJavaType(int indexBasedZero) throws DataAccessException {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public Class<?> getSecondJavaType(int indexBasedZero) throws DataAccessException {
-            return null;
-        }
-    } // JdbcRecordMeta
 
     /**
      * <p>This class is responsible for reading a row from {@link ResultSet} with {@link #readOneRow(ResultSet)} method.
@@ -2913,206 +2734,5 @@ abstract class JdbcExecutor extends ExecutorSupport implements SyncStmtExecutor 
 
     } // MultiSmtBatchRowSpliterator
 
-
-    private static abstract class JdbcResultStates implements ResultStates {
-
-        private final TransactionInfo info;
-
-        private final Warning warning;
-
-
-        private JdbcResultStates(@Nullable TransactionInfo info, @Nullable Warning warning) {
-            this.info = info;
-            this.warning = warning;
-        }
-
-        @Override
-        public final boolean inTransaction() {
-            final TransactionInfo info = this.info;
-            return info != null && info.inTransaction();
-        }
-
-        @Override
-        public final String message() {
-            // JDBC always empty
-            return "";
-        }
-
-        @Nullable
-        @Override
-        public final Warning warning() {
-            return this.warning;
-        }
-
-        @Nullable
-        @Override
-        public final <T> T valueOf(final Option<T> option) {
-            final TransactionInfo info = this.info;
-            final T value;
-            if (info == null) {
-                value = null;
-            } else if (option == Option.IN_TRANSACTION || option == Option.READ_ONLY) {
-                value = info.valueOf(option);
-            } else {
-                value = null;
-            }
-            return value;
-        }
-
-
-    } // JdbcResultStates
-
-    private static abstract class SimpleResultStates extends JdbcResultStates {
-
-        private SimpleResultStates(@Nullable TransactionInfo info, @Nullable Warning warning) {
-            super(info, warning);
-        }
-
-        @Override
-        public final int getResultNo() {
-            // simple statement always 1
-            return 1;
-        }
-
-        @Override
-        public final boolean hasColumn() {
-            return this instanceof SimpleQueryStates;
-        }
-
-
-        @Override
-        public final boolean hasMoreResult() {
-            // simple statement always false
-            return false;
-        }
-
-
-    } // SimpleResultStates
-
-
-    private static final class SimpleUpdateStates extends SimpleResultStates {
-
-        private final long affectedRows;
-
-        /**
-         * @see JdbcExecutor#insert(SimpleStmt, SyncStmtOption, Class)
-         * @see JdbcExecutor#update(SimpleStmt, SyncStmtOption, Class, Function)
-         */
-        private SimpleUpdateStates(@Nullable TransactionInfo info, @Nullable Warning warning, long affectedRows) {
-            super(info, warning);
-            this.affectedRows = affectedRows;
-        }
-
-        @Override
-        public long affectedRows() {
-            return this.affectedRows;
-        }
-
-        @Override
-        public long rowCount() {
-            return 0L;
-        }
-
-        @Override
-        public boolean hasMoreFetch() {
-            return false;
-        }
-
-
-    } // SimpleUpdateStates
-
-
-    private static final class SimpleQueryStates extends SimpleResultStates {
-
-        private final long rowCount;
-
-        private final boolean moreFetch;
-
-        private SimpleQueryStates(@Nullable TransactionInfo info, @Nullable Warning warning, long rowCount,
-                                  boolean moreFetch) {
-            super(info, warning);
-            this.rowCount = rowCount;
-            this.moreFetch = moreFetch;
-        }
-
-
-        @Override
-        public long affectedRows() {
-            return this.rowCount;
-        }
-
-        @Override
-        public boolean hasMoreFetch() {
-            return this.moreFetch;
-        }
-
-        @Override
-        public long rowCount() {
-            return this.rowCount;
-        }
-
-
-    } // SimpleQueryStates
-
-
-    private static final class ArmyWarning implements Warning {
-
-        private final String message;
-
-        private final String sqlState;
-
-        private final int vendor;
-
-        /**
-         * @see JdbcExecutor#mapToArmyWarning(SQLWarning)
-         */
-        private ArmyWarning(SQLWarning w) {
-            final String m;
-            m = w.getMessage();
-            this.message = m == null ? "" : m;
-            this.sqlState = w.getSQLState();
-            this.vendor = w.getErrorCode();
-        }
-
-        @SuppressWarnings("unchecked")
-        @Nullable
-        @Override
-        public <T> T valueOf(final Option<T> option) {
-            final Object value;
-            if (option == Option.MESSAGE) {
-                value = this.message;
-            } else if (option == Option.SQL_STATE) {
-                value = this.sqlState;
-            } else if (option == Option.VENDOR_CODE) {
-                value = this.vendor;
-            } else {
-                value = null;
-            }
-            return (T) value;
-        }
-
-        @Override
-        public String message() {
-            return this.message;
-        }
-
-        @Override
-        public String toString() {
-            return _StringUtils.builder(50)
-                    .append(getClass().getName())
-                    .append("[message:")
-                    .append(this.message)
-                    .append(",sqlState:")
-                    .append(this.sqlState)
-                    .append(",vendor:")
-                    .append(this.vendor)
-                    .append(",hash:")
-                    .append(System.identityHashCode(this))
-                    .append(']')
-                    .toString();
-        }
-
-
-    } // ArmyWarning
 
 }

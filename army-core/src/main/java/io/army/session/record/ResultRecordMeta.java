@@ -32,6 +32,10 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
      * Get catalog name
      *
      * @param indexBasedZero index based zero,the first value is 0 .
+     * @return <ul>
+     * <li>non-null : catalog name</li>
+     * <li>null : no catalog name or unknown</li>
+     * </ul>
      * @throws DataAccessException throw when indexBasedZero error
      */
     @Nullable
@@ -42,6 +46,10 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
      * Get schema name
      *
      * @param indexBasedZero index based zero,the first value is 0 .
+     * @return <ul>
+     * <li>non-null : schema name</li>
+     * <li>null : no schema name or unknown</li>
+     * </ul>
      * @throws DataAccessException throw when indexBasedZero error
      */
     @Nullable
@@ -52,6 +60,10 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
      * Get table name
      *
      * @param indexBasedZero index based zero,the first value is 0 .
+     * @return <ul>
+     * <li>non-null : table name</li>
+     * <li>null : no table name or unknown</li>
+     * </ul>
      * @throws DataAccessException throw when indexBasedZero error
      */
     @Nullable
@@ -61,7 +73,10 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
      * Get the column's name.
      *
      * @param indexBasedZero index based zero,the first value is 0 .
-     * @return column name
+     * @return <ul>
+     * <li>non-null : column name</li>
+     * <li>null : no column name or unknown</li>
+     * </ul>
      * @throws DataAccessException throw when indexBasedZero error
      */
     @Nullable
@@ -86,6 +101,7 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
      * @param indexBasedZero index based zero,the first value is 0 .
      * @return precision
      * @throws DataAccessException throw when indexBasedZero error
+     * @see #getScale(int)
      */
     int getPrecision(int indexBasedZero) throws DataAccessException;
 
@@ -105,6 +121,7 @@ public interface ResultRecordMeta extends ResultItem, ResultItem.ResultAccessSpe
      * @param indexBasedZero index based zero,the first value is 0 .
      * @return precision
      * @throws DataAccessException throw when indexBasedZero error
+     * @see #getPrecision(int)
      */
     int getScale(int indexBasedZero) throws DataAccessException;
 
