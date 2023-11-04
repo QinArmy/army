@@ -17,10 +17,15 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.time.MonthDay;
+import java.time.Year;
+import java.time.YearMonth;
 import java.util.function.Function;
 
 /**
@@ -149,7 +154,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Override
         public final FieldType getFieldType(final int indexBasedZero) throws DataAccessException {
             final FieldType fieldType;
-            switch (this.executor.factory.serverDataBase) {
+            switch (this.executor.factory.serverDatabase) {
                 case MySQL:
                 case SQLite:
                 case H2:
@@ -164,7 +169,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                     break;
                 case Oracle:
                 default:
-                    throw _Exceptions.unexpectedEnum(this.executor.factory.serverDataBase);
+                    throw _Exceptions.unexpectedEnum(this.executor.factory.serverDatabase);
             }
             return fieldType;
         }
@@ -218,7 +223,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Override
         public final Boolean getAutoIncrementMode(final int indexBasedZero) throws DataAccessException {
             final Boolean mode;
-            switch (this.executor.factory.serverDataBase) {
+            switch (this.executor.factory.serverDatabase) {
                 case MySQL:
                 case SQLite:
                 case H2:
@@ -229,34 +234,151 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                     }
                     break;
                 case PostgreSQL:  // postgre client protocol don't support
+                case Oracle:
                     mode = null;
                     break;
-                case Oracle:
                 default:
-                    throw _Exceptions.unexpectedEnum(this.executor.factory.serverDataBase);
+                    throw _Exceptions.unexpectedEnum(this.executor.factory.serverDatabase);
             }
             return mode;
         }
 
         @Override
-        public final KeyType getKeyMode(int indexBasedZero) throws DataAccessException {
+        public final KeyType getKeyMode(final int indexBasedZero) throws DataAccessException {
+
+            try {
+                final KeyType keyType;
+                if (this.meta.isAutoIncrement(checkIndexAndToBasedOne(indexBasedZero))) {
+                    keyType = KeyType.PRIMARY_KEY;
+                } else {
+                    keyType = KeyType.UNKNOWN;
+                }
+                return keyType;
+            } catch (Exception e) {
+                throw this.executor.handleException(e);
+            }
+        }
+
+        @Nullable
+        @Override
+        public final Boolean getNullableMode(final int indexBasedZero) throws DataAccessException {
+            try {
+                final Boolean mode;
+                switch (this.meta.isNullable(checkIndexAndToBasedOne(indexBasedZero))) {
+                    case ResultSetMetaData.columnNullable:
+                        mode = Boolean.TRUE;
+                        break;
+                    case ResultSetMetaData.columnNoNulls:
+                        mode = Boolean.FALSE;
+                        break;
+                    case ResultSetMetaData.columnNullableUnknown:
+                        mode = null;
+                        break;
+                    default:
+                        throw new DataAccessException("unknown null mode");
+                }
+                return mode;
+            } catch (Exception e) {
+                throw this.executor.handleException(e);
+            }
+        }
+
+        @Override
+        public final Class<?> getFirstJavaType(final int indexBasedZero) throws DataAccessException {
+            final Class<?> javaType;
+            switch (getArmyType(indexBasedZero)) {
+                case BOOLEAN:
+                    javaType = Boolean.class;
+                    break;
+                case TINYINT:
+                    javaType = Byte.class;
+                    break;
+                case SMALLINT:
+                case TINYINT_UNSIGNED:
+                    javaType = Short.class;
+                    break;
+                case SMALLINT_UNSIGNED:
+                case MEDIUMINT:
+                case MEDIUMINT_UNSIGNED:
+                case INTEGER:
+                    javaType = Integer.class;
+                    break;
+                case INTEGER_UNSIGNED:
+                case BIGINT:
+                    javaType = Long.class;
+                    break;
+                case DECIMAL:
+                case NUMERIC:
+                case DECIMAL_UNSIGNED:
+                    javaType = BigDecimal.class;
+                    break;
+                case FLOAT:
+                    javaType = Float.class;
+                    break;
+                case DOUBLE:
+                    javaType = Double.class;
+                    break;
+                case BIGINT_UNSIGNED:
+                    javaType = BigInteger.class;
+                    break;
+                case CHAR:
+                case VARCHAR:
+                case ENUM:
+                case TINYTEXT:
+                case MEDIUMTEXT:
+                case TEXT:
+                case LONGTEXT:
+
+                case JSON:
+                case JSONB:
+                case XML:
+                    javaType = String.class;
+                    break;
+                case BINARY:
+                case VARBINARY:
+                case TINYBLOB:
+                case MEDIUMBLOB:
+                case BLOB:
+                case LONGBLOB:
+                    javaType = byte[].class;
+                    break;
+                case YEAR:
+                    javaType = Year.class;
+                    break;
+                case MONTH_DAY:
+                    javaType = MonthDay.class;
+                    break;
+                case YEAR_MONTH:
+                    javaType = YearMonth.class;
+                    break;
+                case TIME:
+                case TIME_WITH_TIMEZONE:
+                case DATE:
+                case TIMESTAMP:
+                case TIMESTAMP_WITH_TIMEZONE:
+
+                case BIT:
+                case VARBIT:
+
+                case DURATION:
+                case PERIOD:
+                case INTERVAL:
+
+                case UNKNOWN:
+                case ARRAY:
+                case COMPOSITE:
+                case ROWID:
+                case REF_CURSOR:
+                case GEOMETRY:
+                case DIALECT_TYPE:
+
+            }
             return null;
         }
 
         @Nullable
         @Override
-        public Boolean getNullableMode(int indexBasedZero) throws DataAccessException {
-            return null;
-        }
-
-        @Override
-        public Class<?> getFirstJavaType(int indexBasedZero) throws DataAccessException {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public Class<?> getSecondJavaType(int indexBasedZero) throws DataAccessException {
+        public final Class<?> getSecondJavaType(int indexBasedZero) throws DataAccessException {
             return null;
         }
 

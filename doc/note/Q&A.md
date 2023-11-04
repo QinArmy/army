@@ -191,7 +191,7 @@
     * parent sub-insert rowNumber CTE 同理
 43. 为什么 firebird 和 h2 的子表一更新不支持 IN 操作符指定 id?
     * 因为由于过滤条件的原因实际更新行数可能小于 IN 操作符的右操作数
-
-
+44. 为什么 sub query 不用 leftParen 开始 rightParen 结束?
+    * 因为要和 primary query 使用同一套 接口,这是由于 java 不能支持像 go 一样的组合造成的
 
 

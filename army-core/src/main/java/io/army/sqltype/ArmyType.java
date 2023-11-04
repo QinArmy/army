@@ -101,10 +101,6 @@ public enum ArmyType implements DataType {
      */
     FLOAT,
     /**
-     * Identifies the generic SQL type {@code REAL}.
-     */
-    REAL,
-    /**
      * Identifies the generic SQL type {@code DOUBLE}.
      */
     DOUBLE,
@@ -414,7 +410,6 @@ public enum ArmyType implements DataType {
             case DECIMAL:
             case NUMERIC:
             case FLOAT:
-            case REAL:
             case DOUBLE:
                 match = true;
                 break;

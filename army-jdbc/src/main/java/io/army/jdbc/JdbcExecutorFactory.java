@@ -26,7 +26,7 @@ abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
     final ServerMeta serverMeta;
 
-    final Database serverDataBase;
+    final Database serverDatabase;
 
     final ArmyEnvironment env;
 
@@ -53,7 +53,7 @@ abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
         this.executorEnv = executorEnv;
         this.mappingEnv = executorEnv.mappingEnv();
         this.serverMeta = this.mappingEnv.serverMeta();
-        this.serverDataBase = this.serverMeta.serverDatabase();
+        this.serverDatabase = this.serverMeta.serverDatabase();
 
         final ArmyEnvironment env = executorEnv.environment();
         this.env = env;
