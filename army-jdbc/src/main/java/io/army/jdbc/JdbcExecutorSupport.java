@@ -774,6 +774,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     } // SimpleResultStates
 
+
+    static abstract class MultiResultStates
+
     static final class SimpleUpdateStates extends SimpleResultStates {
 
         private final long affectedRows;
