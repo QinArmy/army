@@ -18,6 +18,7 @@ import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.reactive.executor.ReactiveStmtExecutor;
 import io.army.session.*;
+import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultItem;
@@ -1344,7 +1345,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         @Override
         ObjectAccessor createRow() {
             this.row = null;
-            return ObjectAccessorFactory.PSEUDO_ACCESSOR;
+            return ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
         }
 
         @SuppressWarnings("unchecked")
@@ -1375,7 +1376,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         @Override
         ObjectAccessor createRow() {
             this.row = null;
-            return ObjectAccessorFactory.PSEUDO_ACCESSOR;
+            return ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
         }
 
         @SuppressWarnings("unchecked")
@@ -1521,7 +1522,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
             final ObjectAccessor accessor;
             if (this.singleColumn) {
-                accessor = ObjectAccessorFactory.PSEUDO_ACCESSOR;
+                accessor = ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
             } else {
                 accessor = ObjectAccessorFactory.fromInstance(row);
             }
@@ -1579,7 +1580,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
             final JdbdCurrentRecord record = this.currentRecord;
             assert record != null;
             record.rowCount++;
-            return ObjectAccessorFactory.PSEUDO_ACCESSOR;
+            return ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
         }
 
         @Override

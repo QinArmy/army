@@ -10,8 +10,10 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.session.*;
+import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
-import io.army.session.record.*;
+import io.army.session.record.CurrentRecord;
+import io.army.session.record.ResultStates;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.StreamCommander;
@@ -260,7 +262,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     @Override
     public final <R> R queryOneRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
             throws DataAccessException {
-        return this.executeQueryOne(stmt, option, recordReaderFunc(stmt.selectionList(), function));
+        return this.executeQueryOne(stmt, option, recordReaderFunc(1, stmt.selectionList(), function));
     }
 
     @Override
@@ -279,7 +281,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     @Override
     public final <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
             throws DataAccessException {
-        return this.executeQuery(stmt, option, recordReaderFunc(stmt.selectionList(), function));
+        return this.executeQuery(stmt, option, recordReaderFunc(1, stmt.selectionList(), function));
     }
 
     @Override
@@ -359,7 +361,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         final BiFunction<BatchStmt, ResultSetMetaData, RowReader<R>> readerFunc;
         readerFunc = (queryStmt, meta) -> {
             try {
-                return new RecordRowReader<>(this, queryStmt.selectionList(), createSqlTypArray(meta), function);
+                return new RecordRowReader<>(1, this, queryStmt.selectionList(), createSqlTypArray(meta), function, meta);
             } catch (Exception e) {
                 throw handleException(e);
             }
@@ -693,15 +695,15 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     /**
      * @see #queryRecord(SingleSqlStmt, Function, SyncStmtOption)
      */
-    private <R> Function<ResultSetMetaData, RowReader<R>> recordReaderFunc(
-            final List<? extends Selection> selectionList,
-            final @Nullable Function<CurrentRecord, R> function) {
+    private <R> Function<ResultSetMetaData, RowReader<R>> recordReaderFunc(final int resultNo,
+                                                                           final List<? extends Selection> selectionList,
+                                                                           final @Nullable Function<CurrentRecord, R> function) {
         if (function == null) {
             throw new NullPointerException();
         }
-        return metaData -> {
+        return meta -> {
             try {
-                return new RecordRowReader<>(this, selectionList, this.createSqlTypArray(metaData), function);
+                return new RecordRowReader<>(resultNo, this, selectionList, createSqlTypArray(meta), function, meta);
             } catch (Exception e) {
                 throw handleException(e);
             }
@@ -1469,7 +1471,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
      *
      * @param <R> row java type
      */
-    private static abstract class RowReader<R> implements ResultItem.RecordAccessSpec {
+    private static abstract class RowReader<R> extends ArmyCurrentRecord {
 
         final JdbcExecutor executor;
 
@@ -1494,62 +1496,25 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             this.compatibleTypeArray = new MappingType[sqlTypeArray.length];
         }
 
-
         @Override
-        public final int getColumnCount() {
-            return this.sqlTypeArray.length;
+        protected Object[] copyValueArray() {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public final String getColumnLabel(int indexBasedZero) throws DataAccessException {
-            return this.selectionList.get(indexBasedZero).label();
+        public long rowNumber() {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public int getColumnIndex(String columnLabel) throws DataAccessException {
-            return 0;
-        }
-
-        @Nullable
-        @Override
-        public final Object get(String columnLabel) {
-            return get(getColumnIndex(columnLabel));
-        }
-
-        @Override
-        public final Object getNonNull(String columnLabel) {
-            return getNonNull(getColumnIndex(columnLabel));
-        }
-
-        @Override
-        public final Object getOrDefault(String columnLabel, Object defaultValue) {
-            return getOrDefault(getColumnIndex(columnLabel), defaultValue);
-        }
-
-        @Override
-        public final Object getOrSupplier(String columnLabel, Supplier<?> supplier) {
-            return getOrSupplier(getColumnIndex(columnLabel), supplier);
+        public ArmyResultRecordMeta getRecordMeta() {
+            throw new UnsupportedOperationException();
         }
 
         @Nullable
         @Override
-        public final <T> T get(String columnLabel, Class<T> columnClass) {
-            return get(getColumnIndex(columnLabel), columnClass);
-        }
-
-        @Override
-        public final <T> T getNonNull(String columnLabel, Class<T> columnClass) {
-            return getNonNull(getColumnIndex(columnLabel), columnClass);
-        }
-
-        @Override
-        public final <T> T getOrDefault(String columnLabel, Class<T> columnClass, T defaultValue) {
-            return getOrDefault(getColumnIndex(columnLabel), columnClass, defaultValue);
-        }
-
-        @Override
-        public final <T> T getOrSupplier(String columnLabel, Class<T> columnClass, Supplier<T> supplier) {
-            return getOrSupplier(getColumnIndex(columnLabel), columnClass, supplier);
+        public Object get(int indexBasedZero) {
+            throw new UnsupportedOperationException();
         }
 
         @Nullable
@@ -1670,7 +1635,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         @Override
         ObjectAccessor createRow() {
-            return ObjectAccessorFactory.PSEUDO_ACCESSOR;
+            return SINGLE_COLUMN_PSEUDO_ACCESSOR;
         }
 
         @SuppressWarnings("unchecked")
@@ -1754,201 +1719,80 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     }//ObjectReader
 
 
-    private static class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
+    private static final class RecordRowReader<R> extends RowReader<R> implements CurrentRecord {
 
+        private final JdbcStmtRecordMeta meta;
 
         private final Function<CurrentRecord, R> function;
 
         private final Object[] valueArray;
 
-        private int currentResultNo;
-
-        private Map<String, Integer> aliasToIndexMap;
+        private long rowNumber = 0L;
 
         /**
-         * @see JdbcExecutor#recordReaderFunc(List, Function)
+         * @see JdbcExecutor#recordReaderFunc(int, List, Function)
          */
-        private RecordRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                                SqlType[] sqlTypeArray, Function<CurrentRecord, R> function) {
+        private RecordRowReader(int resultNo, JdbcExecutor executor, List<? extends Selection> selectionList,
+                                SqlType[] sqlTypeArray, Function<CurrentRecord, R> function, ResultSetMetaData meta) {
             super(executor, selectionList, sqlTypeArray, Object.class);
             this.function = function;
             this.valueArray = new Object[sqlTypeArray.length];
+            this.meta = new JdbcStmtRecordMeta(resultNo, executor, sqlTypeArray, selectionList, meta);
         }
 
 
         @Override
-        public int getResultNo() {
-            return this.currentResultNo;
+        public ArmyResultRecordMeta getRecordMeta() {
+            return this.meta;
         }
 
         @Override
-        public ResultRecordMeta getRecordMeta() {
-            return null;
+        public long rowNumber() {
+            return this.rowNumber;
         }
 
-        @Override
-        public final long rowNumber() {
-            return 0;
-        }
 
         @Override
-        public final ResultRecord asResultRecord() {
-            return null;
-        }
-
-        @Override
-        public final int getColumnCount() {
-            return 0;
-        }
-
-        @Override
-        public final String getColumnLabel(int indexBasedZero) throws IllegalArgumentException {
-            return null;
-        }
-
-        @Override
-        public final int getColumnIndex(String columnLabel) throws IllegalArgumentException {
-            return 0;
-        }
-
-        @Override
-        public final Object get(int indexBasedZero) {
+        public Object get(int indexBasedZero) {
             return this.valueArray[indexBasedZero];
         }
 
+        /*-------------------below protected -------------------*/
+
         @Override
-        public final Object getNonNull(int indexBasedZero) {
-            final Object value;
-            value = this.valueArray[indexBasedZero];
-            if (value == null) {
-                throw new NullPointerException();
-            }
-            return value;
+        protected Object[] copyValueArray() {
+            final Object[] array = new Object[this.valueArray.length];
+            System.arraycopy(this.valueArray, 0, array, 0, array.length);
+            return array;
+        }
+
+
+        /*-------------------below package methods -------------------*/
+
+        @Override
+        ObjectAccessor createRow() {
+            // just return accessor
+            return RECORD_PSEUDO_ACCESSOR;
         }
 
         @Override
-        public final Object getOrDefault(int indexBasedZero, Object defaultValue) {
-            return null;
-        }
-
-        @Override
-        public final Object getOrSupplier(int indexBasedZero, Supplier<?> supplier) {
-            return null;
-        }
-
-        @Override
-        public final <T> T getOrDefault(int indexBasedZero, Class<T> columnClass, T defaultValue) {
-            return null;
-        }
-
-        @Override
-        public final <T> T getOrSupplier(int indexBasedZero, Class<T> columnClass, Supplier<T> supplier) {
-            return null;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public final <T> T get(int indexBasedZero, Class<T> columnClass) {
-            return (T) this.valueArray[indexBasedZero];
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public final <T> T getNonNull(int indexBasedZero, Class<T> columnClass) {
-            final Object value;
-            value = this.valueArray[indexBasedZero];
-            if (value == null) {
-                throw new NullPointerException();
-            }
-            return (T) value;
-        }
-
-        @Override
-        public final Object get(String columnLabel) {
-            return this.get(mapToIndex(columnLabel));
-        }
-
-        @Override
-        public final Object getNonNull(String columnLabel) {
-            return this.getNonNull(mapToIndex(columnLabel));
-        }
-
-        @Override
-        public final <T> T get(String columnLabel, Class<T> columnClass) {
-            return this.get(mapToIndex(columnLabel), columnClass);
-        }
-
-        @Override
-        public final <T> T getNonNull(String columnLabel, Class<T> columnClass) {
-            return this.getNonNull(mapToIndex(columnLabel), columnClass);
-        }
-
-        @Override
-        public final Object getOrDefault(String columnLabel, Object defaultValue) {
-            return null;
-        }
-
-        @Override
-        public final Object getOrSupplier(String columnLabel, Supplier<?> supplier) {
-            return null;
-        }
-
-        @Override
-        public final <T> T getOrDefault(String columnLabel, Class<T> columnClass, T defaultValue) {
-            return null;
-        }
-
-        @Override
-        public final <T> T getOrSupplier(String columnLabel, Class<T> columnClass, Supplier<T> supplier) {
-            return null;
-        }
-
-        @Override
-        public final ObjectAccessor createRow() {
-            // no bug,never here
-            return ObjectAccessorFactory.PSEUDO_ACCESSOR;
-        }
-
-        @Override
-        public final void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
-
+        void acceptColumn(int indexBasedZero, String fieldName, @Nullable Object value) {
+            this.valueArray[indexBasedZero] = value;
         }
 
         @Nullable
         @Override
-        public final R endOneRow() {
-            return null;
-        }
-
-        private int mapToIndex(final String selectionAlias) {
-            final Object[] valueArray = this.valueArray;
-
-            int index = -1;
-            if (valueArray.length < 6) {
-                final List<? extends Selection> selectionList = this.selectionList;
-
-                for (int i = valueArray.length - 1; i > -1; i--) {  // If alias duplication,then override.
-                    if (selectionList.get(i).label().equals(selectionAlias)) {
-                        index = i;
-                        break;
-                    }
-                }
-            } else {
-                Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
-                if (aliasToIndexMap == null) {
-                    this.aliasToIndexMap = aliasToIndexMap = createAliasToIndexMap(this.selectionList);
-                }
-                index = aliasToIndexMap.getOrDefault(selectionAlias, -1);
+        public R endOneRow() {
+            final R r;
+            r = this.function.apply(this);
+            if (r instanceof CurrentRecord) {
+                throw _Exceptions.recordFuncError(this.function, this);
             }
-
-            if (index < 0) {
-                throw _Exceptions.unknownSelectionAlias(selectionAlias);
-            }
-            return index;
+            return r;
         }
 
 
-    }//RecordRowReader
+    } //RecordRowReader
 
     private static final class SecondRowReader<R> extends RowReader<R> {
 
@@ -1989,7 +1833,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         @Override
         void acceptColumn(final int indexBasedZero, String fieldName, @Nullable Object value) {
             final ObjectAccessor accessor = this.accessor;
-            if (accessor != ObjectAccessorFactory.PSEUDO_ACCESSOR) {
+            if (accessor != ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR) {
                 accessor.set(this.currentRow, fieldName, value);
             } else if (this.currentRow.equals(value)) { // single id row
                 assert indexBasedZero == 0;
@@ -2225,10 +2069,27 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         @Override
         public final int characteristics() {
             int bits = 0;
-            if (!(this.rowReader instanceof SingleColumnRowReader)) {
+            if (this.rowReader instanceof BeanRowReader || this.rowReader instanceof ObjectReader) {
                 bits |= NONNULL;
             }
             return bits;
+        }
+
+        @Override
+        final void doCloseStream() {
+            closeResultSetAndStatement(this.resultSet, this.statement);
+        }
+
+
+        @Override
+        final ArmyException handleException(Exception cause) {
+            close();
+            return this.rowReader.executor.handleException(cause);
+        }
+
+        @Override
+        final void handleError(Error cause) {
+            close();
         }
 
 
@@ -2264,23 +2125,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             return readRowCount > 0;
         }
 
-        @Override
-        void doCloseStream() {
-            closeResultSetAndStatement(this.resultSet, this.statement);
-        }
-
-
-        @Override
-        ArmyException handleException(Exception cause) {
-            close();
-            return this.rowReader.executor.handleException(cause);
-        }
-
-        @Override
-        void handleError(Error cause) {
-            close();
-        }
-
 
     } // SimpleRowSpliterator
 
@@ -2288,8 +2132,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     private static final class InsertRowSpliterator<R> extends JdbcSimpleSpliterator<R> {
 
         private int rowIndex;
-
-        private Throwable error;
 
         /**
          * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
@@ -2300,7 +2142,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
 
         }
-
 
         /**
          * @see #tryAdvance(Consumer)
@@ -2361,37 +2202,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             }
 
             if (!hasNextRow) {
+                if (!this.canceled
+                        && this.rowIndex != ((GeneratedKeyStmt) this.stmt).rowSize()) {
+                    throw insertedRowsAndGenerateIdNotMatch(((GeneratedKeyStmt) this.stmt).rowSize(), rowIndex);
+                }
                 emitResultStates(rowIndex, this.statement, rowReader, false); // here ,rowIndex not rowIndex + 1
                 close();
             }
             return readRowCount > 0;
-        }
-
-        @Override
-        void doCloseStream() {
-
-            closeResultSetAndStatement(this.resultSet, this.statement);
-
-            if (this.error == null
-                    && !this.canceled
-                    && this.rowIndex != ((GeneratedKeyStmt) this.stmt).rowSize()) {
-                throw insertedRowsAndGenerateIdNotMatch(((GeneratedKeyStmt) this.stmt).rowSize(), rowIndex);
-            }
-
-        }
-
-
-        @Override
-        ArmyException handleException(Exception cause) {
-            this.error = cause; // firstly
-            close();
-            return this.rowReader.executor.handleException(cause);
-        }
-
-        @Override
-        void handleError(Error cause) {
-            this.error = cause; // firstly
-            close();
         }
 
 
@@ -2427,7 +2245,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             if (row instanceof Map || stmt.maxColumnSize() > 1) {
                 this.accessor = ObjectAccessorFactory.fromInstance(firstList.get(0));
             } else {
-                this.accessor = ObjectAccessorFactory.PSEUDO_ACCESSOR;
+                this.accessor = ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
             }
             this.firstList = firstList;
 
@@ -2506,23 +2324,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 close();
             }
             return readRowCount > 0;
-        }
-
-
-        @Override
-        void doCloseStream() {
-            closeResultSetAndStatement(this.resultSet, this.statement);
-        }
-
-        @Override
-        ArmyException handleException(Exception cause) {
-            close();
-            return this.rowReader.executor.handleException(cause);
-        }
-
-        @Override
-        void handleError(Error cause) {
-            close();
         }
 
 

@@ -1,12 +1,12 @@
 package io.army.session.executor;
 
 import io.army.ArmyException;
+import io.army.bean.ObjectAccessException;
 import io.army.bean.ObjectAccessor;
-import io.army.bean.ObjectAccessorFactory;
+import io.army.bean.ReadAccessor;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Selection;
 import io.army.criteria.TypeInfer;
-import io.army.function.IntBiFunction;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
 import io.army.meta.TypeMeta;
@@ -23,14 +23,18 @@ import io.army.util._Exceptions;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 public abstract class ExecutorSupport {
 
+    protected static final ObjectAccessor SINGLE_COLUMN_PSEUDO_ACCESSOR = new PseudoWriterAccessor();
+
+    protected static final ObjectAccessor RECORD_PSEUDO_ACCESSOR = new PseudoWriterAccessor();
+
     protected ExecutorSupport() {
 
     }
+
 
     @Override
     public final int hashCode() {
@@ -87,7 +91,7 @@ public abstract class ExecutorSupport {
         }
 
         final MappingType compatibleType;
-        if (accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR) {
+        if (accessor == SINGLE_COLUMN_PSEUDO_ACCESSOR) {
             assert resultClass != null;
             if (resultClass.isAssignableFrom(type.javaType())) {
                 compatibleType = type;
@@ -130,14 +134,14 @@ public abstract class ExecutorSupport {
      * This method is designed for second query,so :
      * <ul>
      *     <li>resultList should be {@link java.util.ArrayList}</li>
-     *     <li>If accessor is {@link ObjectAccessorFactory#PSEUDO_ACCESSOR} ,then resultList representing single column row</li>
+     *     <li>If accessor is {@link ExecutorSupport#SINGLE_COLUMN_PSEUDO_ACCESSOR} ,then resultList representing single column row</li>
      * </ul>
      */
     protected static <R> Map<Object, R> createIdToRowMap(final List<R> resultList, final String idFieldName,
                                                          final ObjectAccessor accessor) {
         final int rowSize = resultList.size();
         final Map<Object, R> map = _Collections.hashMap((int) (rowSize / 0.75f));
-        final boolean singleColumnRow = accessor == ObjectAccessorFactory.PSEUDO_ACCESSOR;
+        final boolean singleColumnRow = accessor == SINGLE_COLUMN_PSEUDO_ACCESSOR;
 
         Object id;
         R row;
@@ -363,145 +367,6 @@ public abstract class ExecutorSupport {
     } // ArmyResultRecordMeta
 
 
-    protected static final class ArmyStmtRecordMeta implements ResultRecordMeta {
-
-        private final int resultNo;
-
-        private final List<? extends Selection> selectionList;
-
-        private final IntFunction<SqlType> sqlTypeFunc;
-
-        private final IntBiFunction<Option<?>, ?> optionFunc;
-
-        private final int columnSize;
-
-        private final Map<String, Integer> aliasToIndexMap;
-
-        private List<String> columnLabelList;
-
-        public ArmyStmtRecordMeta(int resultNo, List<? extends Selection> selectionList,
-                                  IntFunction<SqlType> sqlTypeFunc, IntBiFunction<Option<?>, ?> optionFunc) {
-            this.resultNo = resultNo;
-            this.selectionList = selectionList;
-            this.sqlTypeFunc = sqlTypeFunc;
-            this.optionFunc = optionFunc;
-
-            this.columnSize = selectionList.size();
-            if (this.columnSize < 6) {
-                this.aliasToIndexMap = null;
-            } else {
-                this.aliasToIndexMap = createAliasToIndexMap(selectionList);
-            }
-        }
-
-
-        @Override
-        public int getResultNo() {
-            return this.resultNo;
-        }
-
-        @Override
-        public int getColumnCount() {
-            return this.columnSize;
-        }
-
-        @Override
-        public String getColumnLabel(int indexBasedZero) throws IllegalArgumentException {
-            return this.selectionList.get(checkIndex(indexBasedZero)).label();
-        }
-
-        @Override
-        public int getColumnIndex(final @Nullable String columnLabel) throws IllegalArgumentException {
-            if (columnLabel == null) {
-                throw new NullPointerException("columnLabel is null");
-            }
-            int index = -1;
-            final Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
-            if (aliasToIndexMap == null) {
-                final List<? extends Selection> selectionList = this.selectionList;
-                for (int i = this.columnSize - 1; i > -1; i--) {  // If alias duplication,then override.
-                    if (columnLabel.equals(selectionList.get(i).label())) {
-                        index = i;
-                        break;
-                    }
-                }
-            } else {
-                index = aliasToIndexMap.getOrDefault(columnLabel, -1);
-            }
-            if (index < 0) {
-                throw _Exceptions.unknownSelectionAlias(columnLabel);
-            }
-            return index;
-        }
-
-
-        @Override
-        public List<? extends Selection> selectionList() {
-            return this.selectionList;
-        }
-
-        @Override
-        public List<String> columnLabelList() {
-            List<String> list = this.columnLabelList;
-            if (list != null) {
-                return list;
-            }
-            final List<? extends Selection> selectionList = this.selectionList;
-            list = _Collections.arrayList(selectionList.size());
-            for (Selection selection : selectionList) {
-                list.add(selection.label());
-            }
-            this.columnLabelList = list = _Collections.unmodifiableList(list);
-            return list;
-        }
-
-        @Override
-        public Selection getSelection(int indexBasedZero) {
-            return this.selectionList.get(checkIndex(indexBasedZero));
-        }
-
-        @Override
-        public SqlType getDataType(int indexBasedZero) {
-            return this.sqlTypeFunc.apply(checkIndex(indexBasedZero));
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public <T> T getOf(final int indexBasedZero, Option<T> option) {
-            final Object value;
-            value = this.optionFunc.apply(checkIndex(indexBasedZero), option);
-            final T finalValue;
-            if (value == null || option.javaType().isInstance(value)) {
-                finalValue = (T) value;
-            } else {
-                finalValue = null;
-            }
-            return finalValue;
-        }
-
-        @Override
-        public <T> T getNonNullOf(int indexBasedZero, Option<T> option) {
-            final T value;
-            value = getOf(indexBasedZero, option);
-            if (value == null) {
-                String m = String.format("option value is null,index[%s]", indexBasedZero);
-                throw new NullPointerException(m);
-            }
-            return value;
-        }
-
-
-        public int checkIndex(final int indexBasedZero) {
-            if (indexBasedZero < 0 || indexBasedZero >= this.columnSize) {
-                String m = String.format("index[%s] not in [0,)", this.columnSize);
-                throw new IllegalArgumentException(m);
-            }
-            return indexBasedZero;
-        }
-
-    }// ArmyResultRecordMeta
-
-
     private static abstract class ArmyDataRecord implements DataRecord {
 
 
@@ -654,16 +519,9 @@ public abstract class ExecutorSupport {
 
     protected static abstract class ArmyCurrentRecord extends ArmyDataRecord implements CurrentRecord {
 
-        private final ArmyStmtRecordMeta meta;
-
-        public ArmyCurrentRecord(ArmyStmtRecordMeta meta) {
-            this.meta = meta;
-        }
 
         @Override
-        public final ResultRecordMeta getRecordMeta() {
-            return this.meta;
-        }
+        public abstract ArmyResultRecordMeta getRecordMeta();
 
         @Override
         public final ResultRecord asResultRecord() {
@@ -679,14 +537,14 @@ public abstract class ExecutorSupport {
     private static final class ArmyResultRecord extends ArmyDataRecord implements ResultRecord {
 
 
-        private final ArmyStmtRecordMeta meta;
+        private final ArmyResultRecordMeta meta;
 
         private final Object[] valueArray;
 
         public ArmyResultRecord(ArmyCurrentRecord currentRecord) {
-            this.meta = currentRecord.meta;
+            this.meta = currentRecord.getRecordMeta();
             this.valueArray = currentRecord.copyValueArray();
-            assert this.valueArray.length == currentRecord.meta.columnSize;
+            assert this.valueArray.length == this.meta.getColumnCount();
         }
 
         @Override
@@ -700,6 +558,51 @@ public abstract class ExecutorSupport {
         }
 
     }// ArmyResultRecord
+
+
+    private static final class PseudoWriterAccessor implements ObjectAccessor {
+
+        @Override
+        public boolean isWritable(String propertyName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isWritable(String propertyName, Class<?> valueType) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Class<?> getJavaType(String propertyName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void set(Object target, String propertyName, @Nullable Object value) throws ObjectAccessException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ReadAccessor getReadAccessor() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isReadable(String propertyName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object get(Object target, String propertyName) throws ObjectAccessException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Class<?> getAccessedType() {
+            throw new UnsupportedOperationException();
+        }
+
+    }// PseudoWriterAccessor
 
 
 }

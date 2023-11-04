@@ -1,6 +1,8 @@
 package io.army.jdbc;
 
 import io.army.ArmyException;
+import io.army.criteria.Selection;
+import io.army.mapping.optional.OffsetTimeType;
 import io.army.session.DataAccessException;
 import io.army.session.Option;
 import io.army.session.TransactionInfo;
@@ -12,20 +14,21 @@ import io.army.session.record.ResultStates;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.stmt.SimpleStmt;
+import io.army.sync.SyncProcCursor;
+import io.army.sync.SyncStmtCursor;
 import io.army.sync.SyncStmtOption;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.time.MonthDay;
-import java.time.Year;
-import java.time.YearMonth;
+import java.sql.*;
+import java.time.*;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -81,9 +84,9 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     static abstract class JdbcRecordMeta extends ArmyResultRecordMeta {
 
-        private final JdbcExecutor executor;
+        final JdbcExecutor executor;
 
-        private final ResultSetMetaData meta;
+        final ResultSetMetaData meta;
 
         JdbcRecordMeta(int resultNo, JdbcExecutor executor, DataType[] dataTypeArray, ResultSetMetaData meta) {
             super(resultNo, dataTypeArray);
@@ -285,8 +288,10 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         @Override
         public final Class<?> getFirstJavaType(final int indexBasedZero) throws DataAccessException {
+            final ArmyType armyType;
+            armyType = getArmyType(indexBasedZero);
             final Class<?> javaType;
-            switch (getArmyType(indexBasedZero)) {
+            switch (armyType) {
                 case BOOLEAN:
                     javaType = Boolean.class;
                     break;
@@ -332,6 +337,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                 case JSON:
                 case JSONB:
                 case XML:
+                case INTERVAL:
+                case COMPOSITE:
                     javaType = String.class;
                     break;
                 case BINARY:
@@ -352,38 +359,283 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                     javaType = YearMonth.class;
                     break;
                 case TIME:
+                    javaType = LocalTime.class;
+                    break;
                 case TIME_WITH_TIMEZONE:
+                    javaType = OffsetTime.class;
+                    break;
                 case DATE:
+                    javaType = LocalDate.class;
+                    break;
                 case TIMESTAMP:
+                    javaType = LocalDateTime.class;
+                    break;
                 case TIMESTAMP_WITH_TIMEZONE:
-
+                    javaType = OffsetTimeType.class;
+                    break;
                 case BIT:
+                    switch (this.executor.factory.serverDatabase) {
+                        case MySQL:
+                            javaType = Long.class;
+                            break;
+                        case PostgreSQL:
+                            javaType = BitSet.class;
+                            break;
+                        case H2:
+                        case SQLite:
+                        case Oracle:
+                        default:
+                            throw _Exceptions.unexpectedEnum(this.executor.factory.serverDatabase);
+                    }
+                    break;
                 case VARBIT:
-
+                    javaType = BitSet.class;
+                    break;
                 case DURATION:
+                    javaType = Duration.class;
+                    break;
                 case PERIOD:
-                case INTERVAL:
-
-                case UNKNOWN:
-                case ARRAY:
-                case COMPOSITE:
-                case ROWID:
-                case REF_CURSOR:
+                    javaType = Period.class;
+                    break;
                 case GEOMETRY:
+                    switch (this.executor.factory.serverDatabase) {
+                        case MySQL:
+                            javaType = byte[].class;
+                            break;
+                        case PostgreSQL:
+                            javaType = String.class;
+                            break;
+                        case H2: //TODO
+                        case SQLite:
+                        case Oracle:
+                        default:
+                            throw _Exceptions.unexpectedEnum(this.executor.factory.serverDatabase);
+                    }
+                    break;
+                case REF_CURSOR:
+                    if (this instanceof JdbcStmtRecordMeta) {
+                        javaType = SyncStmtCursor.class;
+                    } else {
+                        javaType = SyncProcCursor.class;
+                    }
+                    break;
+                case ROWID: // TODO oracle
                 case DIALECT_TYPE:
+                case ARRAY:
+                case UNKNOWN:
+                    javaType = Object.class;
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(armyType);
 
             }
-            return null;
+            return javaType;
         }
 
         @Nullable
         @Override
         public final Class<?> getSecondJavaType(int indexBasedZero) throws DataAccessException {
-            return null;
+            final ArmyType armyType;
+            armyType = getArmyType(indexBasedZero);
+            final Class<?> javaType;
+            switch (armyType) {
+                case TIME:
+                    switch (this.executor.factory.serverDatabase) {
+                        case MySQL:
+                            javaType = Duration.class;
+                            break;
+                        case PostgreSQL:
+                        case SQLite:
+                        default:
+                            javaType = null;
+                    }
+                    break;
+                case LONGBLOB:
+                    javaType = io.army.session.record.BlobPath.class;
+                    break;
+                case LONGTEXT:
+                    javaType = io.army.session.record.TextPath.class;
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(armyType);
+            }
+            return javaType;
         }
 
 
     } // JdbcRecordMeta
+
+
+    static final class JdbcStmtRecordMeta extends JdbcRecordMeta {
+
+        private final List<? extends Selection> selectionList;
+
+        private final Map<String, Integer> aliasToIndexMap;
+
+        private List<String> columnLabelList;
+
+        JdbcStmtRecordMeta(int resultNo, JdbcExecutor executor, DataType[] dataTypeArray,
+                           List<? extends Selection> selectionList, ResultSetMetaData meta) {
+            super(resultNo, executor, dataTypeArray, meta);
+            this.selectionList = selectionList;
+            if (selectionList.size() < 6) {
+                this.aliasToIndexMap = null;
+            } else {
+                this.aliasToIndexMap = createAliasToIndexMap(selectionList);
+            }
+        }
+
+        @Override
+        public String getColumnLabel(final int indexBasedZero) throws DataAccessException {
+            return this.selectionList.get(checkIndex(indexBasedZero)).label();
+        }
+
+        @Override
+        public int getColumnIndex(final @Nullable String columnLabel) throws DataAccessException {
+            if (columnLabel == null) {
+                throw new NullPointerException("columnLabel is null");
+            }
+            int index = -1;
+            final Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
+            if (aliasToIndexMap == null) {
+                final List<? extends Selection> selectionList = this.selectionList;
+                final int columnSize = getColumnCount();
+                for (int i = columnSize - 1; i > -1; i--) {  // If alias duplication,then override.
+                    if (columnLabel.equals(selectionList.get(i).label())) {
+                        index = i;
+                        break;
+                    }
+                }
+            } else {
+                index = aliasToIndexMap.getOrDefault(columnLabel, -1);
+            }
+            if (index < 0) {
+                throw _Exceptions.unknownSelectionAlias(columnLabel);
+            }
+            return index;
+        }
+
+        @Override
+        public List<String> columnLabelList() {
+            List<String> list = this.columnLabelList;
+            if (list != null) {
+                return list;
+            }
+            final List<? extends Selection> selectionList = this.selectionList;
+            list = _Collections.arrayList(selectionList.size());
+            for (Selection selection : selectionList) {
+                list.add(selection.label());
+            }
+            this.columnLabelList = list = _Collections.unmodifiableList(list);
+            return list;
+        }
+
+        @Override
+        public List<? extends Selection> selectionList() throws DataAccessException {
+            return this.selectionList;
+        }
+
+        @Override
+        public Selection getSelection(final int indexBasedZero) throws DataAccessException {
+            return this.selectionList.get(checkIndex(indexBasedZero));
+        }
+
+
+    } // JdbcStmtRecordMeta
+
+
+    static final class JdbcProcRecordMeta extends JdbcRecordMeta {
+
+        private Map<String, Integer> labelToIndexMap;
+
+        private List<String> columnLabelList;
+
+
+        JdbcProcRecordMeta(int resultNo, JdbcExecutor executor, DataType[] dataTypeArray, ResultSetMetaData meta) {
+            super(resultNo, executor, dataTypeArray, meta);
+        }
+
+        @Override
+        public String getColumnLabel(final int indexBasedZero) throws DataAccessException {
+            try {
+                return this.meta.getColumnLabel(checkIndexAndToBasedOne(indexBasedZero));
+            } catch (Exception e) {
+                throw this.executor.handleException(e);
+            }
+        }
+
+        @Override
+        public int getColumnIndex(final String columnLabel) throws DataAccessException {
+            try {
+                Map<String, Integer> map = this.labelToIndexMap;
+
+                if (map == null) {
+                    this.labelToIndexMap = map = createLabelToIndexMap();
+                }
+                Integer index;
+                index = map.get(columnLabel);
+                if (index == null) {
+                    throw _Exceptions.unknownColumnLabel(columnLabel);
+                }
+                return index;
+            } catch (Exception e) {
+                throw this.executor.handleException(e);
+            }
+        }
+
+
+        @Override
+        public List<String> columnLabelList() {
+            List<String> list = this.columnLabelList;
+            if (list != null) {
+                return list;
+            }
+
+            try {
+                final ResultSetMetaData meta = this.meta;
+                final int columnCount;
+                columnCount = meta.getColumnCount();
+                list = _Collections.arrayList(columnCount);
+                for (int i = 0; i < columnCount; i++) {
+                    list.add(meta.getColumnLabel(i + 1));
+                }
+
+                this.columnLabelList = list = _Collections.unmodifiableList(list);
+                return list;
+            } catch (Exception e) {
+                throw this.executor.handleException(e);
+            }
+        }
+
+        @Override
+        public List<? extends Selection> selectionList() throws DataAccessException {
+            throw noSelectionError();
+        }
+
+        @Override
+        public Selection getSelection(final int indexBasedZero) throws DataAccessException {
+            checkIndex(indexBasedZero);
+            throw noSelectionError();
+        }
+
+        private Map<String, Integer> createLabelToIndexMap() throws SQLException {
+            final ResultSetMetaData meta = this.meta;
+            final int columnCount;
+            columnCount = meta.getColumnCount();
+            final Map<String, Integer> map = _Collections.hashMap((int) (columnCount / 0.75f));
+            for (int i = 0; i < columnCount; i++) {
+                map.put(meta.getColumnLabel(i + 1), i);
+            }
+            return _Collections.unmodifiableMap(map);
+        }
+
+        private DataAccessException noSelectionError() {
+            String m = String.format("this %s is returned by store procedure,army don't known %s",
+                    ResultSetMetaData.class.getName(), Selection.class);
+            return new DataAccessException(m);
+        }
+
+    } // JdbcProcRecordMeta
 
 
     private static final class ArmyWarning implements Warning {
@@ -495,7 +747,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     } // JdbcResultStates
 
-    private static abstract class SimpleResultStates extends JdbcResultStates {
+    static abstract class SimpleResultStates extends JdbcResultStates {
 
         private SimpleResultStates(@Nullable TransactionInfo info, @Nullable Warning warning) {
             super(info, warning);

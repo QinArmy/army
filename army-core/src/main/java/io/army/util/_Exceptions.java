@@ -113,6 +113,7 @@ public abstract class _Exceptions {
         return new CriteriaException(m);
     }
 
+
     public static CriteriaException unknownColumn(SQLField field) {
         return new CriteriaException(String.format("Unknown %s", field));
     }
@@ -1209,6 +1210,10 @@ public abstract class _Exceptions {
 
     public static DataAccessException currentResultIsQuery() {
         return new DataAccessException("current result is query result,isn't update result.");
+    }
+
+    public static DataAccessException unknownColumnLabel(String columnLabel) {
+        return new DataAccessException(String.format("unknown column label[%s]", columnLabel));
     }
 
     public static DataAccessException currentResultIsUpdate() {
