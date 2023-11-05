@@ -268,6 +268,23 @@ public abstract class SQLs extends SQLsSyntax {
 
     /*-------------------below package method-------------------*/
 
+    static AssignmentItem _assignmentItem(final SQLField field, final @Nullable Object value) {
+        final AssignmentItem item;
+        if (value instanceof AssignmentItem) {
+            item = (AssignmentItem) value;
+        } else {
+            item = SQLs.param(field, value);
+        }
+        return item;
+    }
+
+    static Expression _paramExp(Expression type, @Nullable Object value) {
+        if (value instanceof Expression) {
+            return (Expression) value;
+        }
+        return SQLs.param(type, value);
+    }
+
 
     /**
      * <p>
@@ -417,7 +434,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
-    public interface WordNull extends BooleanTestWord, SimpleExpression, NullOption { // extends Expression not SimpleExpression
+    public interface WordNull extends BooleanTestWord, Expression, NullOption { // extends Expression not SimpleExpression
 
     }
 
@@ -425,7 +442,7 @@ public abstract class SQLs extends SQLsSyntax {
 
     }
 
-    public interface WordDefault extends SimpleExpression {
+    public interface WordDefault extends Expression {
 
     }
 

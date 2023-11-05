@@ -2,14 +2,12 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-
-import javax.annotation.Nullable;
-
 import io.army.util._Assert;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -115,8 +113,8 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
     }
 
     @Override
-    public final <R extends AssignmentItem> SR set(F field, Supplier<R> supplier) {
-        return this.onAddAssignmentItemPair(field, supplier.get());
+    public final SR set(F field, Supplier<?> supplier) {
+        return this.onAddAssignmentItemPair(field, SQLs._assignmentItem(field, supplier.get()));
     }
 
 
@@ -423,7 +421,6 @@ abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE exten
         }
         return this.onAddItemPair(pair);
     }
-
 
 
 }

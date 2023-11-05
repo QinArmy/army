@@ -3,11 +3,9 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.TypeMeta;
 
+import javax.annotation.Nullable;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -39,12 +37,12 @@ abstract class NonOperationExpression implements ArmyExpression {
     }
 
     @Override
-    public final CompoundPredicate equal(Expression operand) {
+    public final CompoundPredicate equal(Object operand) {
         throw unsupportedOperation(this);
     }
 
     @Override
-    public final CompoundPredicate notEqual(Expression operand) {
+    public final CompoundPredicate notEqual(Object operand) {
         throw unsupportedOperation(this);
     }
 

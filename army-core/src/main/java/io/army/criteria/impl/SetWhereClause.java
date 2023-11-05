@@ -6,14 +6,12 @@ import io.army.criteria.impl.inner._DomainUpdate;
 import io.army.criteria.impl.inner._ItemPair;
 import io.army.criteria.impl.inner._Statement;
 import io.army.dialect.Dialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,8 +58,8 @@ abstract class SetWhereClause<F extends TableField, SR, WR, WA, OR, OD, LR, LO, 
     }
 
     @Override
-    public final <R extends AssignmentItem> SR set(F field, Supplier<R> supplier) {
-        return this.onAddAssignmentItemPair(field, supplier.get());
+    public final SR set(F field, Supplier<?> supplier) {
+        return this.onAddAssignmentItemPair(field, SQLs._assignmentItem(field, supplier.get()));
     }
 
 

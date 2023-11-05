@@ -1877,13 +1877,18 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         private final SyncStmtOption option;
 
+        final int fetchSize;
+
         private boolean closed;
 
         boolean canceled;
 
+        int currentFetchRows = 0;
+
         private JdbcRowSpliterator(SyncStmtOption option) {
             this.option = option;
-
+            this.fetchSize = option.fetchSize();
+            assert this.fetchSize > -1;
         }
 
         @Override
@@ -2024,21 +2029,25 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         /**
          * <p>Read one fetch,if fetchSize is 0 ,read all row.
          *
-         * @param fetchSize 0 or positive
+         * @param readSize 0 or positive
          */
-        final long readOneFetch(final ResultSet resultSet, final RowReader<R> rowReader, final int fetchSize,
+        final long readOneFetch(final ResultSet resultSet, final RowReader<R> rowReader, final int readSize,
                                 final Consumer<? super R> action) throws SQLException {
 
-            final int maxValue = Integer.MAX_VALUE;
+            final int maxValue = Integer.MAX_VALUE, fetchSize = this.fetchSize;
 
-            int readRowCount = 0;
+            int readRowCount = 0, currentFetchSizeRows = fetchSize > 0 ? this.currentFetchRows : 0;
             long bigReadCount = 0L;
             while (resultSet.next()) {
 
                 action.accept(rowReader.readOneRow(resultSet));
                 readRowCount++;
 
-                if (fetchSize > 0 && readRowCount == fetchSize) {
+                if (fetchSize > 0 && (++currentFetchSizeRows) == fetchSize) {
+                    currentFetchSizeRows = 0;
+                }
+
+                if (readSize > 0 && readRowCount == readSize) {
                     break;
                 }
 
@@ -2051,6 +2060,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                     readRowCount = 0;
                 }
 
+            } // while loop
+
+            if (fetchSize > 0) {
+                this.currentFetchRows = currentFetchSizeRows;
             }
             bigReadCount += readRowCount;
             return bigReadCount;
@@ -2160,6 +2173,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     private static final class InsertRowSpliterator<R> extends JdbcSimpleSpliterator<R> {
 
         private int rowIndex;
+
 
         /**
          * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)

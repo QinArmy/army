@@ -3,12 +3,10 @@ package io.army.criteria;
 import io.army.criteria.impl.SQLs;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.function.BiFunction;
@@ -45,9 +43,9 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#rowParam(TypeInfer, Collection)}
      */
-    CompoundPredicate equal(Expression operand);
+    CompoundPredicate equal(Object operand);
 
-    CompoundPredicate notEqual(Expression operand);
+    CompoundPredicate notEqual(Object operand);
 
     CompoundPredicate nullSafeEqual(Expression operand);
 

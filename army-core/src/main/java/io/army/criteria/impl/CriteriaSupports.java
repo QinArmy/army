@@ -5,9 +5,6 @@ import io.army.criteria.*;
 import io.army.criteria.dialect.Returnings;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.*;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
@@ -17,6 +14,7 @@ import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -473,8 +471,8 @@ abstract class CriteriaSupports {
         }
 
         @Override
-        public final <R extends AssignmentItem> SR set(F field, Supplier<R> supplier) {
-            return this.onAddAssignmentItemPair(field, supplier.get());
+        public final SR set(F field, Supplier<?> supplier) {
+            return this.onAddAssignmentItemPair(field, SQLs._assignmentItem(field, supplier.get()));
         }
 
         @Override

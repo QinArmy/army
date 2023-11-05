@@ -747,47 +747,145 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     } // JdbcResultStates
 
-    static abstract class SimpleResultStates extends JdbcResultStates {
 
-        private SimpleResultStates(@Nullable TransactionInfo info, @Nullable Warning warning) {
+    private static abstract class JdbcUpdateStates extends JdbcResultStates {
+
+        private JdbcUpdateStates(@Nullable TransactionInfo info, @Nullable Warning warning) {
             super(info, warning);
-        }
-
-        @Override
-        public final int getResultNo() {
-            // simple statement always 1
-            return 1;
         }
 
         @Override
         public final boolean hasColumn() {
-            return this instanceof SimpleQueryStates;
+            // always false for update result
+            return false;
+        }
+
+        @Override
+        public final boolean hasMoreFetch() {
+            // always false for update result
+            return false;
+        }
+
+        @Override
+        public final long rowCount() {
+            // always 0 for update result
+            return 0L;
+        }
+
+
+    } // JdbcUpdateStates
+
+
+    private static abstract class JdbcQueryStates extends JdbcResultStates {
+
+        private final long rowCount;
+
+        private final long affectedRows;
+
+        private JdbcQueryStates(@Nullable TransactionInfo info, @Nullable Warning warning, long rowCount,
+                                long affectedRows) {
+            super(info, warning);
+            this.rowCount = rowCount;
+            this.affectedRows = affectedRows;
+        }
+
+        @Override
+        public final long rowCount() {
+            return this.rowCount;
         }
 
 
         @Override
-        public final boolean hasMoreResult() {
-            // simple statement always false
+        public final long affectedRows() {
+            return this.affectedRows;
+        }
+
+        @Override
+        public final boolean hasColumn() {
+            // always true for query result
+            return true;
+        }
+
+
+    } // JdbcQueryStates
+
+    static final class SingleQueryStates extends JdbcQueryStates {
+
+
+        private final boolean moreFetch;
+
+        SingleQueryStates(@Nullable TransactionInfo info, @Nullable Warning warning, long rowCount, boolean moreFetch,
+                          long affectedRows) {
+            super(info, warning, rowCount, affectedRows);
+            this.moreFetch = moreFetch;
+        }
+
+        @Override
+        public int getResultNo() {
+            // always 1 for single result
+            return 1;
+        }
+
+        @Override
+        public boolean hasMoreResult() {
+            // always false for single result
+            return false;
+        }
+
+        @Override
+        public boolean hasMoreFetch() {
+            return this.moreFetch;
+        }
+
+
+    } // SingleQueryStates
+
+
+    static final class MultiResultQueryStates extends JdbcQueryStates {
+
+        private final int resultNo;
+
+        private final boolean moreResult;
+
+        MultiResultQueryStates(int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning,
+                               long rowCount, boolean moreResult, long affectedRows) {
+            super(info, warning, rowCount, affectedRows);
+            this.resultNo = resultNo;
+            this.moreResult = moreResult;
+        }
+
+        @Override
+        public int getResultNo() {
+            return this.resultNo;
+        }
+
+        @Override
+        public boolean hasMoreResult() {
+            return this.moreResult;
+        }
+
+        @Override
+        public boolean hasMoreFetch() {
+            // always false for multi result
             return false;
         }
 
 
-    } // SimpleResultStates
+    } // MultiResultQueryStates
 
-
-    static abstract class MultiResultStates
-
-    static final class SimpleUpdateStates extends SimpleResultStates {
+    static final class SingleUpdateStates extends JdbcUpdateStates {
 
         private final long affectedRows;
 
-        /**
-         * @see JdbcExecutor#insert(SimpleStmt, SyncStmtOption, Class)
-         * @see JdbcExecutor#update(SimpleStmt, SyncStmtOption, Class, Function)
-         */
-        SimpleUpdateStates(@Nullable TransactionInfo info, @Nullable Warning warning, long affectedRows) {
+        SingleUpdateStates(@Nullable TransactionInfo info, @Nullable Warning warning, long affectedRows) {
             super(info, warning);
             this.affectedRows = affectedRows;
+        }
+
+        @Override
+        public int getResultNo() {
+            // always 1 for single result
+            return 1;
         }
 
         @Override
@@ -796,50 +894,48 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
 
         @Override
-        public long rowCount() {
-            return 0L;
-        }
-
-        @Override
-        public boolean hasMoreFetch() {
+        public boolean hasMoreResult() {
+            // always false for single result
             return false;
         }
 
 
-    } // SimpleUpdateStates
+    } // SingleUpdateStates
 
 
-    static final class SimpleQueryStates extends SimpleResultStates {
+    static final class MultiResultUpdateStates extends JdbcUpdateStates {
 
-        private final long rowCount;
+        private final int resultNo;
 
-        private final boolean moreFetch;
+        private final long affectedRows;
 
-        SimpleQueryStates(@Nullable TransactionInfo info, @Nullable Warning warning, long rowCount,
-                          boolean moreFetch) {
+        private final boolean moreResult;
+
+        MultiResultUpdateStates(int resultNo, @Nullable TransactionInfo info, @Nullable Warning warning,
+                                long affectedRows, boolean moreResult) {
             super(info, warning);
-            this.rowCount = rowCount;
-            this.moreFetch = moreFetch;
+            this.resultNo = resultNo;
+            this.affectedRows = affectedRows;
+            this.moreResult = moreResult;
         }
 
+        @Override
+        public int getResultNo() {
+            return this.resultNo;
+        }
 
         @Override
         public long affectedRows() {
-            return this.rowCount;
+            return this.affectedRows;
         }
 
         @Override
-        public boolean hasMoreFetch() {
-            return this.moreFetch;
-        }
-
-        @Override
-        public long rowCount() {
-            return this.rowCount;
+        public boolean hasMoreResult() {
+            return this.moreResult;
         }
 
 
-    } // SimpleQueryStates
+    } // MultiResultUpdateStates
 
 
 }

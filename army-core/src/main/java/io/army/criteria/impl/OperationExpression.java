@@ -8,14 +8,12 @@ import io.army.dialect._SqlContext;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeFunction;
 import io.army.function.TeNamedOperator;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.*;
 import io.army.mapping.optional.JsonPathType;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -49,13 +47,13 @@ abstract class OperationExpression extends OperationSQLExpression
     }
 
     @Override
-    public final CompoundPredicate equal(Expression operand) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, operand);
+    public final CompoundPredicate equal(Object operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.EQUAL, SQLs._paramExp(this, operand));
     }
 
     @Override
-    public final CompoundPredicate notEqual(Expression operand) {
-        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, operand);
+    public final CompoundPredicate notEqual(Object operand) {
+        return Expressions.dualPredicate(this, DualBooleanOperator.NOT_EQUAL, SQLs._paramExp(this, operand));
     }
 
     @Override

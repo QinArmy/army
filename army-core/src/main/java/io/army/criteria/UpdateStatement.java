@@ -4,7 +4,6 @@ package io.army.criteria;
 import io.army.function.ExpressionOperator;
 
 import javax.annotation.Nullable;
-
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -47,7 +46,7 @@ public interface UpdateStatement extends NarrowDmlStatement {
 
         SR set(F field, Expression value);
 
-        <R extends AssignmentItem> SR set(F field, Supplier<R> supplier);
+        SR set(F field, Supplier<?> supplier);
 
         <R extends AssignmentItem> SR set(F field, Function<F, R> function);
 
