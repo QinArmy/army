@@ -5,14 +5,13 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._DmlStatement;
 import io.army.criteria.impl.inner._ReturningDml;
 import io.army.criteria.impl.inner._SelectItem;
-
-import javax.annotation.Nullable;
-
 import io.army.stmt.DmlStmtParams;
 import io.army.stmt.Stmt;
+import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
@@ -75,6 +74,10 @@ abstract class NarrowDmlStmtContext extends BatchSpecStatementContext implements
         return this.versionPredicate;
     }
 
+    @Override
+    public final StmtType stmtType() {
+        return StmtType.UPDATE;
+    }
 
     @Override
     public final int idSelectionIndex() {

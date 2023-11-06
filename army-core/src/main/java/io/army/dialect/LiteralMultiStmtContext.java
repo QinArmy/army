@@ -3,6 +3,7 @@ package io.army.dialect;
 import io.army.criteria.Visible;
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.StmtType;
 
 final class LiteralMultiStmtContext extends StatementContext {
 
@@ -17,6 +18,10 @@ final class LiteralMultiStmtContext extends StatementContext {
         return false;
     }
 
+    @Override
+    public StmtType stmtType() {
+        return StmtType.UPDATE;
+    }
 
     @Override
     public SimpleStmt build() {

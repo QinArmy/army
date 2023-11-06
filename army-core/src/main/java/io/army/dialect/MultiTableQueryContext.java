@@ -4,14 +4,13 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner._Query;
 import io.army.criteria.impl.inner._SelectItem;
 import io.army.criteria.impl.inner._Statement;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 abstract class MultiTableQueryContext extends BatchSpecStatementContext implements _MultiTableStmtContext, _SimpleQueryContext {
@@ -86,6 +85,11 @@ abstract class MultiTableQueryContext extends BatchSpecStatementContext implemen
         return false;
     }
 
+    @Override
+    public final StmtType stmtType() {
+        // query must QUERY
+        return StmtType.QUERY;
+    }
 
     @Override
     public final SimpleStmt build() {

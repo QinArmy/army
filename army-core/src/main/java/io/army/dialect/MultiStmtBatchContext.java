@@ -2,15 +2,14 @@ package io.army.dialect;
 
 import io.army.criteria.Selection;
 import io.army.criteria.Visible;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.FieldMeta;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.MultiStmtBatchStmt;
+import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 final class MultiStmtBatchContext extends StatementContext implements MultiStmtContext {
@@ -39,6 +38,10 @@ final class MultiStmtBatchContext extends StatementContext implements MultiStmtC
         return this.optimistic;
     }
 
+    @Override
+    public StmtType stmtType() {
+        return StmtType.UPDATE;
+    }
 
     @Override
     public void batchStmtStart(final int batchSize) {

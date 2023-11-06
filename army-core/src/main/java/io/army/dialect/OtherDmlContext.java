@@ -1,14 +1,13 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
 final class OtherDmlContext extends StatementContext implements _OtherDmlContext {
@@ -46,6 +45,10 @@ final class OtherDmlContext extends StatementContext implements _OtherDmlContext
         return false;
     }
 
+    @Override
+    public StmtType stmtType() {
+        return StmtType.UPDATE;
+    }
 
     @Override
     public void appendField(final String tableAlias, final FieldMeta<?> field) {

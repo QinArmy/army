@@ -12,6 +12,7 @@ public interface StmtParams {
 
     boolean hasOptimistic();
 
+    StmtType stmtType();
 
     /**
      * @return a unmodified list

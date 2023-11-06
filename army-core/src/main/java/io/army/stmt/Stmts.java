@@ -152,13 +152,21 @@ public abstract class Stmts {
 
         private final String sql;
 
-        private ArmySingleSqlStmt(String sql) {
-            this.sql = sql;
+        private final StmtType stmtType;
+
+        private ArmySingleSqlStmt(StmtParams params) {
+            this.sql = params.sql();
+            this.stmtType = params.stmtType();
         }
 
         @Override
         public final String sqlText() {
             return this.sql;
+        }
+
+        @Override
+        public final StmtType stmtType() {
+            return this.stmtType;
         }
 
         @Override
@@ -178,7 +186,7 @@ public abstract class Stmts {
         private final List<SQLParam> paramGroup;
 
         private MinSimpleStmt(StmtParams params) {
-            super(params.sql());
+            super(params);
             this.paramGroup = params.paramList();
         }
 
@@ -215,6 +223,11 @@ public abstract class Stmts {
         @Override
         public boolean hasOptimistic() {
             return this.first.hasOptimistic();
+        }
+
+        @Override
+        public StmtType stmtType() {
+            return this.first.stmtType();
         }
 
         @Override
@@ -272,6 +285,11 @@ public abstract class Stmts {
         }
 
         @Override
+        public StmtType stmtType() {
+            return this.first.stmtType();
+        }
+
+        @Override
         public void printSql(BiConsumer<String, Consumer<String>> beautifyFunc, Consumer<String> appender) {
             appender.accept("batch pair first:\n");
             beautifyFunc.accept(this.first.sqlText(), appender);
@@ -300,7 +318,7 @@ public abstract class Stmts {
         private final boolean hasOptimistic;
 
         private SimpleDmlStmt(StmtParams params) {
-            super(params.sql());
+            super(params);
             this.paramGroup = params.paramList();
             this.selectionList = params.selectionList();
             this.hasOptimistic = params.hasOptimistic();
@@ -333,7 +351,7 @@ public abstract class Stmts {
         private final boolean hasOptimistic;
 
         private MinBatchDmlStmt(StmtParams params, List<List<SQLParam>> paramGroupList) {
-            super(params.sql());
+            super(params);
             this.paramGroupList = Collections.unmodifiableList(paramGroupList);
             this.hasOptimistic = params.hasOptimistic();
         }
@@ -367,7 +385,7 @@ public abstract class Stmts {
         private final boolean optimistic;
 
         private MultiStmtBatchStmtImpl(StmtParams params, List<List<SQLParam>> paramGroupList) {
-            super(params.sql());
+            super(params);
             this.selectionList = params.selectionList();
             this.paramGroupList = _Collections.unmodifiableList(paramGroupList);
             this.optimistic = params.hasOptimistic();
@@ -402,7 +420,7 @@ public abstract class Stmts {
         private final boolean optimistic;
 
         private QueryStmt(StmtParams params) {
-            super(params.sql());
+            super(params);
             this.paramGroup = params.paramList();
             this.selectionList = params.selectionList();
             this.optimistic = params.hasOptimistic();
@@ -470,7 +488,7 @@ public abstract class Stmts {
         private final ObjIntConsumer<Object> consumer;
 
         private PostStmt(InsertStmtParams params) {
-            super(params.sql());
+            super(params);
             this.paramList = params.paramList();
             this.selectionList = params.selectionList();
             this.rowSize = params.rowSize();

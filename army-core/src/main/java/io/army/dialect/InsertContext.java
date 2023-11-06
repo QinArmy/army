@@ -6,21 +6,16 @@ import io.army.bean.ObjectAccessException;
 import io.army.bean.ReadWrapper;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingEnv;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.stmt.InsertStmtParams;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.SingleParam;
-import io.army.stmt.Stmts;
+import io.army.stmt.*;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._TimeUtils;
 
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
@@ -305,6 +300,11 @@ abstract class InsertContext extends StatementContext
     @Override
     public final boolean hasOptimistic() {
         return false;
+    }
+
+    @Override
+    public final StmtType stmtType() {
+        return this.returnId == null ? StmtType.UPDATE : StmtType.INSERT;
     }
 
     @Override

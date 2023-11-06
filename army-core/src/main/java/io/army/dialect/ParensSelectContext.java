@@ -6,14 +6,13 @@ import io.army.criteria.Visible;
 import io.army.criteria.impl.inner._PrimaryRowSet;
 import io.army.criteria.impl.inner._SelectItem;
 import io.army.criteria.impl.inner._Statement;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 final class ParensSelectContext extends BatchSpecStatementContext implements _SelectContext, _ParenRowSetContext {
@@ -39,6 +38,10 @@ final class ParensSelectContext extends BatchSpecStatementContext implements _Se
         return false;
     }
 
+    @Override
+    public StmtType stmtType() {
+        return StmtType.QUERY;
+    }
 
     @Override
     public void appendField(String tableAlias, FieldMeta<?> field) {

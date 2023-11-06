@@ -1,13 +1,13 @@
 package io.army.dialect;
 
 import io.army.criteria.Visible;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.FieldMeta;
 import io.army.stmt.SimpleStmt;
+import io.army.stmt.StmtType;
 import io.army.stmt.Stmts;
 import io.army.util._Exceptions;
+
+import javax.annotation.Nullable;
 
 final class ParenSubRowSetContext extends StatementContext implements _ParenRowSetContext {
 
@@ -39,6 +39,10 @@ final class ParenSubRowSetContext extends StatementContext implements _ParenRowS
         return false;
     }
 
+    @Override
+    public StmtType stmtType() {
+        return StmtType.QUERY;
+    }
 
     @Override
     public SimpleStmt build() {

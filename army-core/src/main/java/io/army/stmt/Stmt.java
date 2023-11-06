@@ -12,6 +12,7 @@ public interface Stmt {
 
     boolean hasOptimistic();
 
+    StmtType stmtType();
 
     void printSql(BiConsumer<String, Consumer<String>> beautifyFunc, Consumer<String> appender);
 
