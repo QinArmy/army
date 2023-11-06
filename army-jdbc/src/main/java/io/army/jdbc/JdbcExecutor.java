@@ -119,8 +119,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <R> R insert(final SimpleStmt stmt, final SyncStmtOption option, final Class<R> resultClass)
-            throws DataAccessException {
+    public final <R> R insert(final SimpleStmt stmt, final SyncStmtOption option, final Class<R> resultClass,
+                              Function<Option<?>, ?> optionFunc) throws DataAccessException {
 
         if (resultClass != Long.class && resultClass != ResultStates.class) {
             throw new IllegalArgumentException();
@@ -221,7 +221,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     @Override
     public final <R> List<R> batchUpdateList(BatchStmt stmt, IntFunction<List<R>> listConstructor,
                                              SyncStmtOption option, Class<R> elementClass,
-                                             @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList)
+                                             @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList,
+                                             Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         if (elementClass != Long.class && elementClass != ResultStates.class) {
             throw new IllegalArgumentException("elementClass error");
@@ -238,54 +239,61 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
     @Override
     public final <R> Stream<R> batchUpdate(BatchStmt stmt, SyncStmtOption option, Class<R> elementClass,
-                                           @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList)
+                                           @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList,
+                                           Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
-        return batchUpdateList(stmt, _Collections::arrayList, option, elementClass, domainTable, rowsList)
+        return batchUpdateList(stmt, _Collections::arrayList, option, elementClass, domainTable, rowsList, optionFunc)
                 .stream();
     }
 
     @Nullable
     @Override
-    public final <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option)
+    public final <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option,
+                                Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         return executeQueryOne(stmt, option, beanReaderFunc(stmt, resultClass));
     }
 
     @Nullable
     @Override
-    public final <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option)
+    public final <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option,
+                                      Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         return this.executeQueryOne(stmt, option, objectReaderFunc(stmt, constructor));
     }
 
     @Nullable
     @Override
-    public final <R> R queryOneRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
+    public final <R> R queryOneRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option,
+                                      Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         return this.executeQueryOne(stmt, option, recordReaderFunc(stmt.selectionList(), function));
     }
 
     @Override
-    public final <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option)
+    public final <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option,
+                                     Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         return executeQuery(stmt, option, beanReaderFunc(stmt, resultClass));
 
     }
 
     @Override
-    public final <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option)
+    public final <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option,
+                                           Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         return this.executeQuery(stmt, option, objectReaderFunc(stmt, constructor));
     }
 
     @Override
-    public final <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
+    public final <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option,
+                                           Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
         return this.executeQuery(stmt, option, recordReaderFunc(stmt.selectionList(), function));
     }
 
     @Override
-    public final <R> Stream<R> secondQuery(SimpleStmt stmt, SyncStmtOption option, List<R> firstList)
+    public final <R> Stream<R> secondQuery(SimpleStmt stmt, SyncStmtOption option, List<R> firstList, Function<Option<?>, ?> optionFunc)
             throws DataAccessException {
 
         Statement statement = null;
@@ -1875,9 +1883,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
      */
     private static abstract class JdbcRowSpliterator<R> implements Spliterator<R> {
 
-        private final SyncStmtOption option;
+        final Statement statement;
 
         final int fetchSize;
+        private final SyncStmtOption option;
 
         private boolean closed;
 
@@ -1885,7 +1894,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         int currentFetchRows = 0;
 
-        private JdbcRowSpliterator(SyncStmtOption option) {
+        private JdbcRowSpliterator(Statement statement, SyncStmtOption option) {
+            this.statement = statement;
             this.option = option;
             this.fetchSize = option.fetchSize();
             assert this.fetchSize > -1;
@@ -1996,6 +2006,23 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         }
 
         final void emitBatchResultStates(long rowCount, Statement statement, RowReader<R> rowReader, boolean moreResult) {
+
+
+            try {
+                final ResultStates states;
+                states = new SimpleQueryStates(rowReader.executor.obtainTransaction(),
+                        mapToArmyWarning(statement.getWarnings()),
+                        rowCount, hasMoreFetch
+                );
+                consumer.accept(states);
+            } catch (Exception e) {
+                throw handleException(e);
+            } catch (Error e) {
+                handleError(e);
+            }
+        }
+
+        final void emitMoreFetchStates(final RowReader<R> rowReader, int fetchSize, final boolean moreFetch) {
             final Consumer<ResultStates> consumer;
             consumer = this.option.stateConsumer();
             if (consumer == ResultStates.IGNORE_STATES) {
@@ -2004,10 +2031,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
             try {
                 final ResultStates states;
-                states = new SimpleQueryStates(rowReader.executor.obtainTransaction(),
-                        mapToArmyWarning(statement.getWarnings()),
-                        rowCount, hasMoreFetch
-                );
+                states = new SingleQueryStates(rowReader.executor.obtainTransaction(),
+                        mapToArmyWarning(this.statement.getWarnings()),
+                        fetchSize,
+                        moreFetch,
+
+                        )
                 consumer.accept(states);
             } catch (Exception e) {
                 throw handleException(e);
@@ -2066,6 +2095,44 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 this.currentFetchRows = currentFetchSizeRows;
             }
             bigReadCount += readRowCount;
+            return bigReadCount;
+        }
+
+
+        final long readWithFetchSize(final ResultSet resultSet, final RowReader<R> rowReader, final int readSize,
+                                     final Consumer<? super R> action) throws SQLException {
+
+            final int fetchSize = this.fetchSize;
+            assert fetchSize > 0;
+
+            int currentFetchRows = this.currentFetchRows;
+            long bigReadCount = 0L;
+            boolean moreRow;
+            while (moreRow = resultSet.next()) {
+
+                if (currentFetchRows == 0 && bigReadCount > 0) {
+                    // emit ResultStates
+                }
+                action.accept(rowReader.readOneRow(resultSet));
+                currentFetchRows++;
+
+                if (readSize > 0 && currentFetchRows == readSize) {
+                    break;
+                }
+
+                if (this.canceled) { // canceled must after readRowCount++; because of OptimisticLockException
+                    break;
+                }
+
+                if (currentFetchRows == fetchSize) {
+                    bigReadCount += currentFetchRows;
+                    currentFetchRows = 0;
+                }
+
+            } // while loop
+
+            this.currentFetchRows = currentFetchRows;
+            bigReadCount += currentFetchRows;
             return bigReadCount;
         }
 

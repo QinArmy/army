@@ -2,6 +2,7 @@ package io.army.session.executor;
 
 
 import io.army.session.DataAccessException;
+import io.army.session.Option;
 import io.army.session.OptionSpec;
 
 /**
@@ -19,6 +20,8 @@ import io.army.session.OptionSpec;
  * @since 1.0
  */
 public interface StmtExecutor extends OptionSpec, DriverSpiHolder {
+
+    Option<Boolean> UPDATE_STMT = Option.from("_ARMY_UPDATE_STMT", Boolean.class);
 
 
     /**
