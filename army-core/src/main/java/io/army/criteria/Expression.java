@@ -42,11 +42,14 @@ public interface Expression extends SQLExpression, TypeInfer, TypeInfer.TypeUpda
      * @param operand non-null
      * @throws CriteriaException throw when Operand isn't operable {@link Expression},for example {@link SQLs#DEFAULT},
      *                           {@link SQLs#rowParam(TypeInfer, Collection)}
+     * @see SimpleExpression#equal(BiFunction, Object)
+     * @see SQLField#equal(BiFunction)
      */
     CompoundPredicate equal(Object operand);
 
     CompoundPredicate notEqual(Object operand);
 
+    @Deprecated
     CompoundPredicate nullSafeEqual(Expression operand);
 
 

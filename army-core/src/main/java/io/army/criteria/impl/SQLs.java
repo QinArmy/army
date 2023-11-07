@@ -278,11 +278,20 @@ public abstract class SQLs extends SQLsSyntax {
         return item;
     }
 
-    static Expression _paramExp(Expression type, @Nullable Object value) {
+    static Expression _nonNullExp(final @Nullable Object value) {
+        if (value == null) {
+            throw new CriteriaException("appropriate operator don't allow that operand is null");
+        }
         if (value instanceof Expression) {
             return (Expression) value;
         }
-        return SQLs.param(type, value);
+
+        if (value instanceof RightOperand) {
+            String m = String.format("appropriate operator don't allow that operand is %s",
+                    value.getClass().getName());
+            throw new CriteriaException(m);
+        }
+        return SQLs.paramValue(value);
     }
 
 

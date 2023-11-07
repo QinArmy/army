@@ -8,12 +8,12 @@ public enum StmtType {
     QUERY,
 
     /**
-     * insert statement that need return id.
+     * insert statement that need to return id.
      */
     INSERT,
 
     /**
-     * update statement,contain the insert statement that don't need return id.
+     * update statement,contain the insert statement that don't need to return id.
      */
     UPDATE
 }

@@ -68,7 +68,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
     void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) throws DataAccessException;
 
 
-    <R> R insert(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    <R> R insert(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass) throws DataAccessException;
 
 
     <R> R update(SimpleStmt stmt, SyncStmtOption option, Class<R> resultClass, Function<Option<?>, ?> optionFunc)
@@ -80,50 +80,43 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
      */
     <R> List<R> batchUpdateList(BatchStmt stmt, IntFunction<List<R>> listConstructor, SyncStmtOption option,
                                 Class<R> elementClass, @Nullable TableMeta<?> domainTable,
-                                @Nullable List<R> rowsList, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+                                @Nullable List<R> rowsList) throws DataAccessException;
 
     /**
      * @return a unmodified list.
      * @throws OptimisticLockException when
      */
     <R> Stream<R> batchUpdate(BatchStmt stmt, SyncStmtOption option, Class<R> elementClass,
-                              @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList,
-                              Function<Option<?>, ?> optionFunc)
+                              @Nullable TableMeta<?> domainTable, @Nullable List<R> rowsList)
             throws DataAccessException;
 
 
     @Nullable
-    <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
-            throws DataAccessException;
+    <R> R queryOne(SimpleStmt stmt, Class<R> resultClass, SyncStmtOption option) throws DataAccessException;
 
     @Nullable
-    <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
-            throws DataAccessException;
+    <R> R queryOneObject(SimpleStmt stmt, Supplier<R> constructor, SyncStmtOption option) throws DataAccessException;
 
     @Nullable
-    <R> R queryOneRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
+    <R> R queryOneRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option) throws DataAccessException;
+
+    <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option) throws DataAccessException;
+
+    <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option) throws DataAccessException;
+
+    <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> Stream<R> query(SingleSqlStmt stmt, Class<R> resultClass, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
-            throws DataAccessException;
+    <R> Stream<R> secondQuery(SimpleStmt stmt, SyncStmtOption option, List<R> firstList) throws DataAccessException;
 
-    <R> Stream<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
-            throws DataAccessException;
-
-    <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option, Function<Option<?>, ?> optionFunc)
-            throws DataAccessException;
-
-    <R> Stream<R> secondQuery(SimpleStmt stmt, SyncStmtOption option, List<R> firstList, Function<Option<?>, ?> optionFunc)
-            throws DataAccessException;
-
-    <R> Stream<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, SyncStmtOption option,
-                                 ChildTableMeta<?> childTable, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+    <R> Stream<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, SyncStmtOption option, boolean firstIsQuery,
+                                 ChildTableMeta<?> childTable) throws DataAccessException;
 
     <R> Stream<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor, SyncStmtOption option,
-                                       ChildTableMeta<?> childTable, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+                                       boolean firstIsQuery, ChildTableMeta<?> childTable) throws DataAccessException;
 
     <R> Stream<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option,
-                                       ChildTableMeta<?> childTable, Function<Option<?>, ?> optionFunc) throws DataAccessException;
+                                       boolean firstIsQuery, ChildTableMeta<?> childTable) throws DataAccessException;
 
     @Override
     void close() throws DataAccessException;
