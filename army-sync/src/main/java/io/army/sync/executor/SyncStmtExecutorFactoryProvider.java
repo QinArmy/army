@@ -3,14 +3,12 @@ package io.army.sync.executor;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
 import io.army.executor.ExecutorEnv;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.session.executor.StmtExecutorFactoryProviderSpec;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
@@ -23,9 +21,8 @@ public interface SyncStmtExecutorFactoryProvider extends StmtExecutorFactoryProv
 
 
     /**
-     * @throws UnsupportedOperationException throw when support only creating{@link SyncRmExecutorFactory }
-     * @throws IllegalStateException         throw when invoke this method before {@link #createServerMeta()}
-     * @throws IllegalArgumentException      throw when {@link  MappingEnv#serverMeta()} not match.
+     * @throws IllegalStateException    throw when invoke this method before {@link #createServerMeta(Dialect, Function)}
+     * @throws IllegalArgumentException throw when {@link  MappingEnv#serverMeta()} not match.
      */
     @Override
     SyncStmtExecutorFactory createFactory(ExecutorEnv env);

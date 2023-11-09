@@ -38,7 +38,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
         return executor;
     }
 
-    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, XAConnection xaConnection, String sessionName) {
+    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, Object conn, String sessionName) {
         try {
             final Connection connection;
             connection = xaConnection.getConnection();

@@ -8,13 +8,14 @@ import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.SyncLocalExecutorFactory;
-import io.army.sync.executor.SyncRmExecutorFactory;
+import io.army.sync.executor.SyncStmtExecutorFactory;
 import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util._ClassUtils;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
@@ -22,33 +23,36 @@ import javax.sql.XADataSource;
 import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.Objects;
+import java.util.function.Function;
 
 @SuppressWarnings("unused")
-public final class JdbcExecutorProvider implements SyncStmtExecutorFactoryProvider {
+public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactoryProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JdbcExecutorProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcExecutorFactoryProvider.class);
 
-    public static JdbcExecutorProvider create(Object dataSource) {
+    public static JdbcExecutorFactoryProvider create(Object dataSource) {
         if (!(dataSource instanceof DataSource || dataSource instanceof XADataSource)) {
             throw unsupportedDataSource(dataSource);
         }
-        return new JdbcExecutorProvider((CommonDataSource) dataSource);
+        return new JdbcExecutorFactoryProvider((CommonDataSource) dataSource);
     }
 
 
-    private final CommonDataSource dataSource;
+    final CommonDataSource dataSource;
 
-    private int methodFlag = 0;
+    final String sessionFactoryName;
 
-    private ServerMeta meta;
+    int methodFlag = 0;
 
-    private JdbcExecutorProvider(CommonDataSource dataSource) {
+    ServerMeta meta;
+
+    private JdbcExecutorFactoryProvider(CommonDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
 
     @Override
-    public ServerMeta createServerMeta(final Dialect usedDialect) throws DataAccessException {
+    public ServerMeta createServerMeta(final Dialect usedDialect, @Nullable Function<String, Database> func) throws DataAccessException {
         final CommonDataSource dataSource = this.dataSource;
 
         XAConnection xaConnection = null;
@@ -84,7 +88,7 @@ public final class JdbcExecutorProvider implements SyncStmtExecutorFactoryProvid
     }
 
     @Override
-    public SyncLocalExecutorFactory createFactory(final ExecutorEnv env) {
+    public SyncStmtExecutorFactory createFactory(final ExecutorEnv env) {
         final CommonDataSource dataSource = this.dataSource;
         if (!(dataSource instanceof DataSource)) {
             String m = String.format("unsupported creating %s", SyncLocalExecutorFactory.class.getName());
@@ -92,18 +96,6 @@ public final class JdbcExecutorProvider implements SyncStmtExecutorFactoryProvid
         }
         this.validateServerMeta(env.mappingEnv());
         return JdbcLocalExecutorFactory.create((DataSource) dataSource, env, (byte) this.methodFlag);
-    }
-
-    @Override
-    public SyncRmExecutorFactory createRmFactory(final ExecutorEnv env) {
-        final CommonDataSource dataSource = this.dataSource;
-        if (!(dataSource instanceof XADataSource)) {
-            String m = String.format("unsupported creating %s", SyncRmExecutorFactory.class.getName());
-            throw new UnsupportedOperationException(m);
-        }
-
-        this.validateServerMeta(env.mappingEnv());
-        return JdbcRmExecutorFactory.create((XADataSource) dataSource, env, (byte) this.methodFlag);
     }
 
 
@@ -230,7 +222,7 @@ public final class JdbcExecutorProvider implements SyncStmtExecutorFactoryProvid
     private static ArmyException unsupportedDataSource(Object dataSource) {
         final String m;
         m = String.format("%s support only %s or %s,but dataSource is %s.",
-                JdbcExecutorProvider.class.getName(),
+                JdbcExecutorFactoryProvider.class.getName(),
                 DataSource.class.getName(),
                 XADataSource.class.getName(),
                 _ClassUtils.safeClassName(dataSource)

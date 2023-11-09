@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import javax.sql.XAConnection;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -42,7 +41,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
         return executor;
     }
 
-    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, XAConnection conn, String sessionName) {
+    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, Object conn, String sessionName) {
         throw new UnsupportedOperationException();
     }
 

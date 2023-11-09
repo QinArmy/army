@@ -1,5 +1,6 @@
 package io.army.jdbc;
 
+import io.army.ArmyException;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
@@ -18,11 +19,21 @@ import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
 import javax.sql.CommonDataSource;
-import javax.sql.XAConnection;
+import javax.sql.DataSource;
+import javax.sql.XADataSource;
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.sql.SQLException;
 
+/**
+ * @see JdbcExecutorFactoryProvider
+ * @since 1.0
+ */
 final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
+
+    static JdbcExecutorFactory create(JdbcExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
+        return new JdbcExecutorFactory(provider, executorEnv);
+    }
 
     static final byte SET_OBJECT_METHOD = 1;
     static final byte EXECUTE_LARGE_UPDATE_METHOD = 2;
@@ -58,6 +69,8 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
     private final String sessionFactoryName;
 
+    private final CommonDataSource dataSource;
+
     private final LocalExecutorFunction localFunc;
 
     private final RmExecutorFunction rmFunc;
@@ -65,7 +78,10 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
     private boolean closed;
 
-    JdbcExecutorFactory(final ExecutorEnv executorEnv, final int methodFlag, String sessionFactoryName) {
+    /**
+     * private constructor
+     */
+    private JdbcExecutorFactory(JdbcExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
         this.executorEnv = executorEnv;
         this.mappingEnv = executorEnv.mappingEnv();
         this.serverMeta = this.mappingEnv.serverMeta();
@@ -79,6 +95,7 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
             this.useSetObjectMethod = false;
             this.useExecuteLargeBatch = false;
         } else {
+            final int methodFlag = provider.methodFlag;
             this.useLargeUpdate = (methodFlag & EXECUTE_LARGE_UPDATE_METHOD) != 0;
             this.useSetObjectMethod = (methodFlag & SET_OBJECT_METHOD) != 0;
             this.useExecuteLargeBatch = (methodFlag & EXECUTE_LARGE_BATCH_METHOD) != 0;
@@ -89,7 +106,8 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
         this.truncatedTimeType = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
         this.sessionIdentifierEnable = env.getOrDefault(SyncKey.SESSION_IDENTIFIER_ENABLE);
 
-        this.sessionFactoryName = sessionFactoryName;
+        this.sessionFactoryName = provider.sessionFactoryName;
+        this.dataSource = provider.dataSource;
 
         final Object[] funcArray;
         funcArray = createExecutorFunc(this.serverDatabase);
@@ -119,26 +137,98 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
     }
 
     @Override
-    public final MetaExecutor metaExecutor() throws DataAccessException {
+    public MetaExecutor metaExecutor() throws DataAccessException {
         assertFactoryOpen();
-        return JdbcMetaExecutor.create(getConnection());
+
+        try {
+            final CommonDataSource dataSource = this.dataSource;
+            final Connection conn;
+            if (dataSource instanceof XADataSource) {
+                conn = ((XADataSource) dataSource).getXAConnection().getConnection();
+            } else {
+                conn = ((DataSource) dataSource).getConnection();
+            }
+            return JdbcMetaExecutor.create(conn);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+
     }
 
+    @Override
+    public SyncLocalStmtExecutor localExecutor(final @Nullable String sessionName) throws DataAccessException {
+        assertFactoryOpen();
+
+        if (sessionName == null) {
+            throw new NullPointerException();
+        }
+        final CommonDataSource dataSource = this.dataSource;
+        if (!(dataSource instanceof DataSource)) {
+            String m = String.format("%s isn't %s ,couldn't create local executor.", dataSource,
+                    DataSource.class.getName());
+            throw new DataAccessException(m);
+        }
+        Connection conn = null;
+        try {
+            conn = ((DataSource) dataSource).getConnection();
+            return this.localFunc.apply(this, conn, sessionName);
+        } catch (Exception e) {
+            if (conn != null) {
+                JdbcExecutor.closeResource(conn);
+            }
+            throw handleException(e);
+        } catch (Throwable e) {
+            if (conn != null) {
+                JdbcExecutor.closeResource(conn);
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public SyncRmStmtExecutor rmExecutor(final @Nullable String sessionName) throws DataAccessException {
+        assertFactoryOpen();
+
+        if (sessionName == null) {
+            throw new NullPointerException();
+        }
+        final CommonDataSource dataSource = this.dataSource;
+        Object conn = null;
+        try {
+            if (dataSource instanceof XADataSource) {
+                conn = ((XADataSource) dataSource).getXAConnection();
+            } else {
+                conn = ((DataSource) dataSource).getConnection();
+            }
+            return this.rmFunc.apply(this, conn, sessionName);
+        } catch (Exception e) {
+            if (conn instanceof Connection) {
+                JdbcExecutor.closeResource((Connection) conn);
+            }
+            throw handleException(e);
+        } catch (Throwable e) {
+            if (conn instanceof Connection) {
+                JdbcExecutor.closeResource((Connection) conn);
+            }
+            throw e;
+        }
+
+    }
 
     @Nullable
     @Override
-    public final <T> T valueOf(Option<T> option) {
+    public <T> T valueOf(Option<T> option) {
         return null;
     }
 
     @Override
-    public final boolean isClosed() {
+    public boolean isClosed() {
         return this.closed;
     }
 
 
     @Override
-    public final void close() throws DataAccessException {
+    public void close() throws DataAccessException {
         if (this.closed) {
             return;
         }
@@ -148,8 +238,7 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
             return;
         }
         synchronized (this) {
-            final CommonDataSource dataSource;
-            dataSource = getDataSource();
+            final CommonDataSource dataSource = this.dataSource;
 
             final Method method;
             try {
@@ -164,7 +253,7 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
 
     @Override
-    public final String toString() {
+    public String toString() {
         return _StringUtils.builder(60)
                 .append(getClass().getName())
                 .append("[sessionFactoryName:")
@@ -178,6 +267,18 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
     }
 
 
+    ArmyException handleException(final Exception cause) {
+        final ArmyException error;
+        if (cause instanceof SQLException) {
+            // TODO convert to  ServerException
+            error = new DataAccessException(cause.getMessage(), cause);
+        } else {
+            error = _Exceptions.unknownError(cause);
+        }
+        return error;
+    }
+
+
     private void assertFactoryOpen() {
         if (this.closed) {
             String m;
@@ -185,10 +286,6 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
             throw new DataAccessException(m);
         }
     }
-
-    abstract Connection getConnection();
-
-    abstract CommonDataSource getDataSource();
 
 
     private static Object[] createExecutorFunc(final Database serverDatabase) {
@@ -221,7 +318,7 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
     @FunctionalInterface
     private interface RmExecutorFunction {
-        SyncRmStmtExecutor apply(JdbcExecutorFactory factory, XAConnection conn, String sessionName);
+        SyncRmStmtExecutor apply(JdbcExecutorFactory factory, Object conn, String sessionName);
     }
 
 
