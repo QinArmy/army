@@ -1,6 +1,7 @@
 package io.army.jdbc;
 
 import io.army.ArmyException;
+import io.army.criteria.CriteriaException;
 import io.army.criteria.Selection;
 import io.army.mapping.optional.OffsetTimeType;
 import io.army.session.DataAccessException;
@@ -77,6 +78,64 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             throw JdbcExecutor.wrapError(e);
         }
 
+    }
+
+    /*
+     * not java doc
+     * @see JdbcExecutor#executeMultiStmtBatchQuery(BatchStmt, SyncStmtOption, Function)
+     * @see JdbcExecutor.MultiSmtBatchRowSpliterator#nextResultSet()
+     */
+    @Nullable
+    static ResultSet multiStatementNextResultSet(final Statement statement, final int groupIndex,
+                                                 final int expectedCount) throws SQLException {
+        final ResultSet resultSet;
+        if (statement.getMoreResults()) {
+            resultSet = statement.getResultSet();
+            if (resultSet == null) {
+                throw jdbcMultiStmtGetResultSetError();
+            } else if (groupIndex >= 0) {
+                closeResource(resultSet);
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                throw multiStatementGreaterThanExpected(groupIndex, expectedCount);
+            }
+        } else if (statement.getUpdateCount() != -1) {
+            statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+            if (groupIndex < expectedCount) {
+                throw multiStatementPartNotQuery(groupIndex);
+            }
+            throw multiStatementGreaterThanExpected(groupIndex, expectedCount);
+        } else if (groupIndex < expectedCount) {
+            throw multiStatementLessThanExpected(groupIndex, expectedCount);
+        } else {
+            resultSet = null;
+        }
+        return resultSet;
+    }
+
+    static CriteriaException multiStatementGreaterThanExpected(int groupIndex, int expected) {
+        String m = String.format("Multi-statement batch query ResultSet count[%s] greater than expected count[%s]",
+                groupIndex, expected
+        );  // here groupIndex don't plus 1 .
+        throw new CriteriaException(m);
+    }
+
+    static CriteriaException multiStatementLessThanExpected(int groupIndex, int expected) {
+        String m = String.format("Multi-statement batch query ResultSet count[%s] less than expected count[%s]",
+                groupIndex, expected
+        );  // here groupIndex don't plus 1 .
+        throw new CriteriaException(m);
+    }
+
+    static CriteriaException multiStatementPartNotQuery(int groupIndex) {
+        String m = String.format("Multi-statement batch query number %s result isn't ResultSet", groupIndex + 1);
+        return new CriteriaException(m);
+    }
+
+    /*-------------------below private static methods  -------------------*/
+
+    private static DataAccessException jdbcMultiStmtGetResultSetError() {
+        String m = "Jdbc error statement.getMoreResults() is true ,but statement.getResultSet() is null";
+        return new DataAccessException(m);
     }
 
 

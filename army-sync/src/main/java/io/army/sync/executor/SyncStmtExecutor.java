@@ -6,10 +6,7 @@ import io.army.meta.TableMeta;
 import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
-import io.army.stmt.BatchStmt;
-import io.army.stmt.PairBatchStmt;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.SingleSqlStmt;
+import io.army.stmt.*;
 import io.army.sync.SyncStmtOption;
 
 import javax.annotation.Nullable;
@@ -107,7 +104,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
     <R> Stream<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option)
             throws DataAccessException;
 
-    <R> Stream<R> secondQuery(SimpleStmt stmt, SyncStmtOption option, List<R> firstList) throws DataAccessException;
+    <R> Stream<R> secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList) throws DataAccessException;
 
     <R> Stream<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, SyncStmtOption option, boolean firstIsQuery,
                                  ChildTableMeta<?> childTable) throws DataAccessException;
