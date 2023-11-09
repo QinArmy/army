@@ -2,7 +2,6 @@ package io.army.session.executor;
 
 import io.army.session.CloseableSpec;
 import io.army.session.OptionSpec;
-import io.army.session.SessionFactory;
 
 /**
  * <p>This interface representing {@link StmtExecutor} factory spec .
@@ -22,12 +21,6 @@ import io.army.session.SessionFactory;
  */
 public interface StmtExecutorFactorySpec extends CloseableSpec, OptionSpec {
 
-    /**
-     * factory name
-     *
-     * @return factory name,same with {@link SessionFactory#name()}
-     */
-    String name();
 
 
     /**

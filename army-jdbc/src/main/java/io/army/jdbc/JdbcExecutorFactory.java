@@ -8,18 +8,27 @@ import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
+import io.army.session.Option;
 import io.army.sync.executor.MetaExecutor;
+import io.army.sync.executor.SyncLocalStmtExecutor;
+import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.sync.executor.SyncStmtExecutorFactory;
+import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import javax.sql.CommonDataSource;
+import javax.sql.XAConnection;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 
-abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
+final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
     static final byte SET_OBJECT_METHOD = 1;
     static final byte EXECUTE_LARGE_UPDATE_METHOD = 2;
     static final byte EXECUTE_LARGE_BATCH_METHOD = 4;
+
+
     final ExecutorEnv executorEnv;
 
     final MappingEnv mappingEnv;
@@ -47,9 +56,16 @@ abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
     private final String dataSourceCloseMethod;
 
+    private final String sessionFactoryName;
+
+    private final LocalExecutorFunction localFunc;
+
+    private final RmExecutorFunction rmFunc;
+
+
     private boolean closed;
 
-    JdbcExecutorFactory(final ExecutorEnv executorEnv, final int methodFlag) {
+    JdbcExecutorFactory(final ExecutorEnv executorEnv, final int methodFlag, String sessionFactoryName) {
         this.executorEnv = executorEnv;
         this.mappingEnv = executorEnv.mappingEnv();
         this.serverMeta = this.mappingEnv.serverMeta();
@@ -73,30 +89,74 @@ abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
         this.truncatedTimeType = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
         this.sessionIdentifierEnable = env.getOrDefault(SyncKey.SESSION_IDENTIFIER_ENABLE);
 
+        this.sessionFactoryName = sessionFactoryName;
+
+        final Object[] funcArray;
+        funcArray = createExecutorFunc(this.serverDatabase);
+
+        this.localFunc = (LocalExecutorFunction) funcArray[0];
+        this.rmFunc = (RmExecutorFunction) funcArray[1];
+
+
     }
 
 
     @Override
-    public final boolean supportSavePoints() {
+    public boolean supportSavePoints() {
         //JDBC support save point api
         return true;
     }
 
+
     @Override
-    public final MetaExecutor createMetaExecutor() throws DataAccessException {
-        this.assertFactoryOpen();
-        return JdbcMetaExecutor.create(this.getConnection());
+    public String driverSpiVendor() {
+        return "java.sql";
     }
+
+    @Override
+    public String executorVendor() {
+        return "io.qinarmy";
+    }
+
+    @Override
+    public final MetaExecutor metaExecutor() throws DataAccessException {
+        assertFactoryOpen();
+        return JdbcMetaExecutor.create(getConnection());
+    }
+
+
+    @Nullable
+    @Override
+    public final <T> T valueOf(Option<T> option) {
+        return null;
+    }
+
+    @Override
+    public final boolean isClosed() {
+        return this.closed;
+    }
+
 
     @Override
     public final void close() throws DataAccessException {
         if (this.closed) {
             return;
         }
+        final String dataSourceCloseMethod = this.dataSourceCloseMethod;
+        if (dataSourceCloseMethod == null) {
+            this.closed = true;
+            return;
+        }
         synchronized (this) {
-            final String dataSourceCloseMethod = this.dataSourceCloseMethod;
-            if (dataSourceCloseMethod != null) {
-                this.closeDataSource(dataSourceCloseMethod);
+            final CommonDataSource dataSource;
+            dataSource = getDataSource();
+
+            final Method method;
+            try {
+                method = dataSource.getClass().getMethod(dataSourceCloseMethod);
+                method.invoke(dataSource);
+            } catch (Exception e) {
+                throw new DataAccessException(e);
             }
             this.closed = true;
         }
@@ -105,15 +165,20 @@ abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
     @Override
     public final String toString() {
-        return String.format("%s ,%s", this.getClass().getName(), this.serverMeta);
+        return _StringUtils.builder(60)
+                .append(getClass().getName())
+                .append("[sessionFactoryName:")
+                .append(this.sessionFactoryName)
+                .append(",serverDatabase:")
+                .append(this.serverDatabase.name())
+                .append(",driver:JDBC,hash:")
+                .append(System.identityHashCode(this))
+                .append(']')
+                .toString();
     }
 
-    abstract Connection getConnection() throws DataAccessException;
 
-    abstract void closeDataSource(String dataSourceCloseMethod) throws DataAccessException;
-
-
-    final void assertFactoryOpen() {
+    private void assertFactoryOpen() {
         if (this.closed) {
             String m;
             m = String.format("%s have closed.", this);
@@ -121,16 +186,42 @@ abstract class JdbcExecutorFactory implements SyncStmtExecutorFactory {
         }
     }
 
+    abstract Connection getConnection();
 
-    static void doCloseDataSource(final CommonDataSource dataSource, final String dataSourceCloseMethod)
-            throws DataAccessException {
-        final Method method;
-        try {
-            method = dataSource.getClass().getMethod(dataSourceCloseMethod);
-            method.invoke(dataSource);
-        } catch (Throwable e) {
-            throw new DataAccessException(e);
+    abstract CommonDataSource getDataSource();
+
+
+    private static Object[] createExecutorFunc(final Database serverDatabase) {
+        final LocalExecutorFunction localFunc;
+        final RmExecutorFunction rmFunc;
+        switch (serverDatabase) {
+            case MySQL:
+                localFunc = MySQLExecutor::localExecutor;
+                rmFunc = MySQLExecutor::rmExecutor;
+                break;
+            case PostgreSQL:
+                localFunc = PostgreExecutor::localExecutor;
+                rmFunc = PostgreExecutor::rmExecutor;
+                break;
+            case H2:
+            case SQLite:
+            case Oracle:
+            default:
+                throw _Exceptions.unexpectedEnum(serverDatabase);
         }
+        return new Object[]{localFunc, rmFunc};
+    }
+
+
+    @FunctionalInterface
+    private interface LocalExecutorFunction {
+        SyncLocalStmtExecutor apply(JdbcExecutorFactory factory, Connection conn, String sessionName);
+
+    }
+
+    @FunctionalInterface
+    private interface RmExecutorFunction {
+        SyncRmStmtExecutor apply(JdbcExecutorFactory factory, XAConnection conn, String sessionName);
     }
 
 

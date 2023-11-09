@@ -1,11 +1,9 @@
 package io.army.jdbc;
 
-import io.army.dialect.Database;
 import io.army.executor.ExecutorEnv;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.SyncLocalExecutorFactory;
 import io.army.sync.executor.SyncLocalStmtExecutor;
-import io.army.util._Exceptions;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -56,24 +54,6 @@ final class JdbcLocalExecutorFactory extends JdbcExecutorFactory implements Sync
         } catch (SQLException e) {
             throw JdbcExecutor.wrapError(e);
         }
-    }
-
-    private static BiFunction<JdbcLocalExecutorFactory, Connection, SyncLocalStmtExecutor> localFunction(
-            final Database database) {
-        final BiFunction<JdbcLocalExecutorFactory, Connection, SyncLocalStmtExecutor> func;
-        switch (database) {
-            case MySQL:
-                func = MySQLExecutor::localExecutor;
-                break;
-            case PostgreSQL:
-                func = PostgreExecutor::localExecutor;
-                break;
-            case Oracle:
-            case H2:
-            default:
-                throw _Exceptions.unexpectedEnum(database);
-        }
-        return func;
     }
 
 

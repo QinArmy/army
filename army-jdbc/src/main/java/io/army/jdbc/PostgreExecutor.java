@@ -6,6 +6,7 @@ import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 import io.army.sync.executor.SyncLocalStmtExecutor;
+import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.sync.executor.SyncStmtExecutor;
 import io.army.util._Exceptions;
 import org.postgresql.util.PGobject;
@@ -31,7 +32,7 @@ import java.util.UUID;
  */
 abstract class PostgreExecutor extends JdbcExecutor {
 
-    static SyncLocalStmtExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+    static SyncLocalStmtExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
         final LocalSessionExecutor executor;
         if (factory.databaseSessionHolder) {
             executor = new LocalSessionHolderExecutor(factory, conn);
@@ -41,7 +42,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
         return executor;
     }
 
-    static PostgreExecutor rmExecutor(JdbcRmExecutorFactory factory, XAConnection xaConn) {
+    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, XAConnection conn, String sessionName) {
         throw new UnsupportedOperationException();
     }
 

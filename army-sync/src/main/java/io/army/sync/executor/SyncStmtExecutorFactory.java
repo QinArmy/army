@@ -5,20 +5,12 @@ import io.army.session.DataAccessException;
 import io.army.session.executor.StmtExecutorFactorySpec;
 
 /**
- * <p>
- * This interface is base interface of below:
- *     <ul>
- *         <li>{@link SyncLocalExecutorFactory}</li>
- *         <li>{@link SyncRmExecutorFactory}</li>
- *     </ul>
- * </p>
+ * <p>This interface representing blocking {@link SyncStmtExecutor} factory.
  *
  * @since 1.0
  */
 public interface SyncStmtExecutorFactory extends StmtExecutorFactorySpec, AutoCloseable {
 
-
-    MetaExecutor createMetaExecutor() throws DataAccessException;
 
     @Override
     MetaExecutor metaExecutor() throws DataAccessException;

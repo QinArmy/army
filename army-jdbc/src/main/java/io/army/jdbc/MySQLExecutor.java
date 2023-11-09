@@ -28,7 +28,7 @@ import java.time.LocalTime;
 
 abstract class MySQLExecutor extends JdbcExecutor {
 
-    static SyncLocalStmtExecutor localExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
+    static SyncLocalStmtExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
         final MySQLLocalExecutor executor;
         if (factory.databaseSessionHolder) {
             executor = new MySQLLocalHolderExecutor(factory, conn);
@@ -38,7 +38,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
         return executor;
     }
 
-    static MySQLRmExecutor rmExecutor(final JdbcRmExecutorFactory factory, final XAConnection xaConnection) {
+    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, XAConnection xaConnection, String sessionName) {
         try {
             final Connection connection;
             connection = xaConnection.getConnection();
@@ -50,8 +50,8 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
 
-    private MySQLExecutor(JdbcExecutorFactory factory, Connection conn) {
-        super(factory, conn);
+    private MySQLExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+        super(factory, conn, sessionName);
     }
 
     @Override
