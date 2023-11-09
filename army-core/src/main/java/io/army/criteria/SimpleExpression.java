@@ -3,12 +3,10 @@ package io.army.criteria;
 import io.army.criteria.impl.SQLs;
 import io.army.function.OptionalClauseOperator;
 import io.army.function.TeNamedOperator;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingType;
 import io.army.mapping.NoCastTextType;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
@@ -34,8 +32,8 @@ public interface SimpleExpression extends Expression {
 
     /**
      * <p>
-     * <strong>=</strong> operator. This method is similar to {@link #equal(Expression)},except that the operand
-     * of {@link #equal(Expression)} is returned by funcRef.
+     * <strong>=</strong> operator. This method is similar to {@link #equal(Object)},except that the operand
+     * of {@link #equal(Object)} is returned by funcRef.
      * </p>
      * <p>
      * <strong>Note</strong>: The first argument of funcRef always is <strong>this</strong>.

@@ -1898,7 +1898,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         @Override
         public final boolean tryAdvance(final @Nullable Consumer<? super R> action) {
-            if (this.closed || this.canceled) {
+            if (this.closed) {
                 return false;
             }
             try {
@@ -1917,7 +1917,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         @Override
         public final void forEachRemaining(final @Nullable Consumer<? super R> action) {
-            if (this.closed || this.canceled) {
+            if (this.closed) {
                 return;
             }
 
@@ -2075,7 +2075,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
          * @param readSize 0 or positive
          */
         final long readRowSet(final ResultSet resultSet, final RowReader<R> rowReader, final int readSize,
-                              final Consumer<? super R> action,) throws SQLException {
+                              final Consumer<? super R> action) throws SQLException {
             assert this.fetchSize < 1;
 
             final int maxValue = Integer.MAX_VALUE;
@@ -2230,7 +2230,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     private static final class SimpleRowSpliterator<R> extends JdbcSimpleSpliterator<R> {
 
 
-        private boolean hasRow;
+        private long totalRowCount = 0L;
 
         /**
          * @see #executeSimpleQuery(SimpleStmt, SyncStmtOption, Function)
@@ -2242,20 +2242,27 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         @Override
         boolean readRowStream(final int readSize, final Consumer<? super R> action) throws SQLException {
-
+            final int fetchSize = this.fetchSize;
             final long readRowCount;
-            if (this.fetchSize > 0) {
+            if (fetchSize > 0) {
                 readRowCount = readWithFetchSize(this.resultSet, this.rowReader, readSize, action);
             } else {
                 readRowCount = readRowSet(this.resultSet, this.rowReader, readSize, action);
             }
 
             if (readRowCount > 0) {
-                if (!this.hasRow) {
-                    this.hasRow = true;
-                }
-            } else if (this.hasOptimistic && !this.hasRow) {
+                this.totalRowCount += readRowCount;
+            } else if (this.hasOptimistic && this.totalRowCount == 0L) {
                 throw _Exceptions.optimisticLock();
+            }
+
+            if (this.canceled) {
+                close();
+            } else if (fetchSize < 1
+                    && (readSize == 0 || (readSize > 0 && readRowCount < readSize))) {
+                // readRowSet() dont' emit ResultStates,so here emit
+                emitSingleResultStates(this.rowReader, this.totalRowCount);
+                close();
             }
             return readRowCount > 0;
         }
@@ -2301,8 +2308,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
             Object idValue;
             int readRowCount = 0, rowIndex = this.rowIndex;
-            boolean hasMoreRow;
-            while (hasMoreRow = resultSet.next()) {
+            boolean interrupt = false;
+            while (resultSet.next()) {
 
                 if (rowIndex == rowSize) {
                     throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex + 1);
@@ -2322,6 +2329,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 rowIndex++;
 
                 if (readSize > 0 && readRowCount == readSize) {
+                    interrupt = true;
                     break;
                 }
 
@@ -2337,11 +2345,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 throw _Exceptions.optimisticLock();
             }
 
-            if (!hasMoreRow) {
+            if (this.canceled) {
+                close();
+            } else if (!interrupt) {
                 if (this.rowIndex != ((GeneratedKeyStmt) this.stmt).rowSize()) {
                     throw insertedRowsAndGenerateIdNotMatch(((GeneratedKeyStmt) this.stmt).rowSize(), rowIndex);
                 }
-                emitResultStates(rowIndex, this.statement, rowReader, false); // here ,rowIndex not rowIndex + 1
+                emitSingleResultStates(rowReader, this.rowIndex); // here ,rowIndex not rowIndex + 1
                 close();
             }
             return readRowCount > 0;
@@ -2410,8 +2420,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             Object idValue;
             int readRowCount = 0, rowIndex = this.rowIndex;
             R row;
-            boolean hasMoreRow;
-            while (hasMoreRow = resultSet.next()) {
+            boolean interrupt = false;
+            while (resultSet.next()) {
 
                 idValue = executor.get(resultSet, idColumnIndexBasedOne, idSqlType);
                 if (idValue == null) {
@@ -2438,6 +2448,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 readRowCount++;
                 rowIndex++;
                 if (readSize > 0 && readRowCount == readSize) {
+                    interrupt = true;
                     break;
                 }
 
@@ -2452,10 +2463,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             }
 
             this.rowIndex = rowIndex;
-            this.totalRowCount += readRowCount;
+            if (readRowCount > 0) {
+                this.totalRowCount += readRowCount;
+            }
 
-            if (!hasMoreRow) {
-                emitResultStates(this.totalRowCount, this.statement, rowReader, false);
+            if (this.canceled) {
+                close();
+            } else if (!interrupt) {
+                emitSingleResultStates(rowReader, this.totalRowCount);
                 close();
             }
             return readRowCount > 0;
@@ -2487,11 +2502,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         private ResultSet resultSet;
 
+        private int resultNo = 1; // from 1 not 0
+
         private long currentResultTotalRows = 0L;
 
         private JdbcBatchSpliterator(Statement statement, RowReader<R> rowReader,
                                      BatchStmt stmt, SyncStmtOption option, ResultSet resultSet) {
-            super(option);
+            super(statement, stmt.stmtType(), option);
 
             this.statement = statement;
             this.rowReader = rowReader;
@@ -2535,9 +2552,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             for (int restReadSize = readSize; resultSet != null; ) {
 
                 readCount = readRowSet(resultSet, rowReader, restReadSize, action);
-                multiSetRowCount += readCount;
 
                 if (readCount > 0) {
+                    multiSetRowCount += readCount;
                     this.currentResultTotalRows += readCount;
                     if (readSize > 0 && (restReadSize -= readCount) == 0) {
                         break;
@@ -2550,14 +2567,25 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 closeResource(resultSet); // secondly close
 
                 this.resultSet = resultSet = nextResultSet();
-                if (resultSet != null && rowReader instanceof RecordRowReader) {
-                    this.rowReader = rowReader = new RecordRowReader<>((RecordRowReader<R>) rowReader, resultSet.getMetaData());
+                if (!this.canceled) {
+                    // emit ResultStates
+                    emitMultiResultStates(this.resultNo, rowReader, this.currentResultTotalRows, resultSet != null);
                 }
-                emitResultStates(this.currentResultTotalRows, this.statement, rowReader, false);
 
+                // reset for next result set
+                this.resultNo++;
+                this.currentResultTotalRows = 0L;
+                if (resultSet != null && rowReader instanceof RecordRowReader) {
+                    rowReader = new RecordRowReader<>((RecordRowReader<R>) rowReader, resultSet.getMetaData());
+                    this.rowReader = rowReader;
+                    assert rowReader.getResultNo() == this.resultNo;
+                }
 
             }// for loop
 
+            if (readSize == 0 || (readSize > 0 && multiSetRowCount < readSize)) {
+                close();
+            }
             return multiSetRowCount > 0;
         }
 
@@ -2585,7 +2613,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         @Nullable
         ResultSet nextResultSet() throws SQLException, TimeoutException {
-
+            if (this.canceled) {
+                return null;
+            }
             final BatchStmt stmt = this.stmt;
 
             final List<List<SQLParam>> paramGroupList = stmt.groupList();
@@ -2635,8 +2665,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         @Nullable
         @Override
         ResultSet nextResultSet() throws SQLException, TimeoutException {
-            final Statement statement = this.statement;
 
+            final Statement statement = this.statement;
+            if (this.canceled) {
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                return null;
+            }
             final int groupIndex = this.groupIndex++, expectedCount; // groupIndex from 1 not 0
             expectedCount = this.stmt.groupList().size();
 
