@@ -2,7 +2,6 @@ package io.army.jdbc;
 
 import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
-import io.army.session.DatabaseSessionHolder;
 import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 import io.army.sync.executor.SyncLocalStmtExecutor;
@@ -911,8 +910,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
     }//LocalSessionExecutor
 
-    private static final class LocalSessionHolderExecutor extends LocalSessionExecutor
-            implements DatabaseSessionHolder {
+    private static final class LocalSessionHolderExecutor extends LocalSessionExecutor {
 
         private LocalSessionHolderExecutor(JdbcExecutorFactory factory, Connection conn) {
             super(factory, conn);

@@ -22,7 +22,6 @@ import io.army.session.OptionSpec;
 public interface StmtExecutorFactorySpec extends CloseableSpec, OptionSpec {
 
 
-
     /**
      * @return true : underlying database driver provider save point spi.
      */
@@ -59,7 +58,7 @@ public interface StmtExecutorFactorySpec extends CloseableSpec, OptionSpec {
      *
      * @param sessionName {@link io.army.session.Session}'s name.
      */
-    Object localExecutor(String sessionName);
+    Object localExecutor(String sessionName, boolean readOnly);
 
 
     /**
@@ -67,14 +66,14 @@ public interface StmtExecutorFactorySpec extends CloseableSpec, OptionSpec {
      *
      * @param sessionName {@link io.army.session.Session}'s name.
      */
-    Object rmExecutor(String sessionName);
+    Object rmExecutor(String sessionName, boolean readOnly);
 
     /**
      * override {@link Object#toString()}
      *
      * @return driver info, contain : <ol>
      * <li>implementation class name</li>
-     * <li>{@link #name()}</li>
+     * <li>session factory name</li>
      * <li>{@link System#identityHashCode(Object)}</li>
      * </ol>
      */

@@ -2,7 +2,7 @@ package io.army.jdbc;
 
 import com.mysql.cj.MysqlType;
 import io.army.mapping.MappingType;
-import io.army.session.DatabaseSessionHolder;
+import io.army.session.*;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.sync.executor.SyncLocalStmtExecutor;
@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import javax.sql.XAConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -25,17 +24,14 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 abstract class MySQLExecutor extends JdbcExecutor {
 
     static SyncLocalStmtExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
-        final MySQLLocalExecutor executor;
-        if (factory.databaseSessionHolder) {
-            executor = new MySQLLocalHolderExecutor(factory, conn);
-        } else {
-            executor = new MySQLLocalExecutor(factory, conn);
-        }
-        return executor;
+        return new LocalExecutor(factory, conn, sessionName);
     }
 
     static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, Object conn, String sessionName) {
@@ -50,13 +46,39 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
 
+
+    private TransactionInfo info;
+
     private MySQLExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
         super(factory, conn, sessionName);
     }
 
+
     @Override
-    Logger getLogger() {
+    public final TransactionInfo transactionInfo() throws DataAccessException {
+        return null;
+    }
+
+    @Override
+    public final void setTransactionCharacteristics(TransactionOption option) throws DataAccessException {
+
+    }
+
+    @Nullable
+    @Override
+    public final <T> T valueOf(Option<T> option) {
+        return null;
+    }
+
+    @Override
+    final Logger getLogger() {
         return LOG;
+    }
+
+    @Nullable
+    @Override
+    final TransactionInfo obtainTransaction() {
+        return this.info;
     }
 
 
@@ -272,37 +294,104 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }
 
 
-    private static class MySQLLocalExecutor extends MySQLExecutor implements SyncLocalStmtExecutor {
+    private static class LocalExecutor extends MySQLExecutor implements SyncLocalStmtExecutor {
 
-        private MySQLLocalExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
-            super(factory, conn);
+        private LocalExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+            super(factory, conn, sessionName);
         }
 
-
-    }//MySQLLocalExecutor
-
-    private static class MySQLLocalHolderExecutor extends MySQLLocalExecutor implements DatabaseSessionHolder {
-
-        private MySQLLocalHolderExecutor(JdbcLocalExecutorFactory factory, Connection conn) {
-            super(factory, conn);
-        }
 
         @Override
-        public Object databaseSession() {
-            return this.conn;
+        public TransactionInfo startTransaction(TransactionOption option, HandleMode mode) {
+            return null;
         }
 
-    }//MySQLLocalExecutor
+        @Nullable
+        @Override
+        public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
+            return null;
+        }
+
+
+    } // MySQLLocalExecutor
 
 
     private static final class MySQLRmExecutor extends MySQLExecutor implements SyncRmStmtExecutor {
 
-        private final XAConnection xaConnection;
 
+        public MySQLRmExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+            super(factory, conn, sessionName);
+        }
 
-        private MySQLRmExecutor(JdbcRmExecutorFactory factory, XAConnection xaConnection, Connection connection) {
-            super(factory, connection);
-            this.xaConnection = xaConnection;
+        @Override
+        public TransactionInfo start(Xid xid, int flags, TransactionOption option) {
+            return null;
+        }
+
+        @Override
+        public TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
+            return null;
+        }
+
+        @Override
+        public int prepare(Xid xid, Function<Option<?>, ?> optionFunc) {
+            return 0;
+        }
+
+        @Override
+        public void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
+
+        }
+
+        @Override
+        public void rollback(Xid xid, Function<Option<?>, ?> optionFunc) {
+
+        }
+
+        @Override
+        public void forget(Xid xid, Function<Option<?>, ?> optionFunc) {
+
+        }
+
+        @Override
+        public List<Xid> recover(int flags, Function<Option<?>, ?> optionFunc) {
+            return null;
+        }
+
+        @Override
+        public Stream<Xid> recoverStream(int flags, Function<Option<?>, ?> optionFunc) {
+            return null;
+        }
+
+        @Override
+        public boolean isSupportForget() {
+            return false;
+        }
+
+        @Override
+        public int startSupportFlags() {
+            return 0;
+        }
+
+        @Override
+        public int endSupportFlags() {
+            return 0;
+        }
+
+        @Override
+        public int recoverSupportFlags() {
+            return 0;
+        }
+
+        @Override
+        public boolean isSameRm(Session.XaTransactionSupportSpec s) throws SessionException {
+            return false;
         }
 
 

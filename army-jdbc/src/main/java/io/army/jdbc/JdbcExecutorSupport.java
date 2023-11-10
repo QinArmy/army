@@ -23,6 +23,7 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
+import javax.sql.XAConnection;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -78,6 +79,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             throw JdbcExecutor.wrapError(e);
         }
 
+    }
+
+    static void closeXaConnection(XAConnection conn) {
+        try {
+            conn.close();
+        } catch (Exception e) {
+            throw JdbcExecutor.wrapError(e);
+        }
     }
 
     /*

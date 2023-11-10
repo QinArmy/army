@@ -3,10 +3,8 @@ package io.army.jdbd;
 import io.army.ArmyException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.env.ArmyEnvironment;
 import io.army.executor.ExecutorEnv;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ServerMeta;
 import io.army.reactive.executor.ReactiveStmtExecutorFactory;
 import io.army.reactive.executor.ReactiveStmtExecutorFactoryProvider;
@@ -19,6 +17,7 @@ import io.jdbd.session.DatabaseSessionFactory;
 import io.jdbd.session.ServerVersion;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
@@ -29,7 +28,7 @@ import java.util.function.Function;
  */
 public final class JdbdStmtExecutorFactoryProvider implements ReactiveStmtExecutorFactoryProvider {
 
-    public static JdbdStmtExecutorFactoryProvider create(final Object datasource, final String factoryName) {
+    public static JdbdStmtExecutorFactoryProvider create(final Object datasource, final String factoryName, ArmyEnvironment env) {
         if (!(datasource instanceof DatabaseSessionFactory)) {
             String m = String.format("%s support only %s,but passing %s",
                     JdbdStmtExecutorFactoryProvider.class.getName(),

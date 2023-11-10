@@ -39,6 +39,8 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
     static final byte EXECUTE_LARGE_UPDATE_METHOD = 2;
     static final byte EXECUTE_LARGE_BATCH_METHOD = 4;
 
+    static final byte MULTI_STMT = 1 << 3;
+
 
     final ExecutorEnv executorEnv;
 
@@ -156,7 +158,8 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
     }
 
     @Override
-    public SyncLocalStmtExecutor localExecutor(final @Nullable String sessionName) throws DataAccessException {
+    public SyncLocalStmtExecutor localExecutor(final @Nullable String sessionName, final boolean readOnly)
+            throws DataAccessException {
         assertFactoryOpen();
 
         if (sessionName == null) {
@@ -186,7 +189,8 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
     }
 
     @Override
-    public SyncRmStmtExecutor rmExecutor(final @Nullable String sessionName) throws DataAccessException {
+    public SyncRmStmtExecutor rmExecutor(final @Nullable String sessionName, final boolean readOnly)
+            throws DataAccessException {
         assertFactoryOpen();
 
         if (sessionName == null) {

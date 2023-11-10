@@ -3,11 +3,11 @@ package io.army.jdbc;
 import io.army.ArmyException;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
+import io.army.env.ArmyEnvironment;
 import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sync.executor.SyncLocalExecutorFactory;
 import io.army.sync.executor.SyncStmtExecutorFactory;
 import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util._ClassUtils;
@@ -30,11 +30,11 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcExecutorFactoryProvider.class);
 
-    public static JdbcExecutorFactoryProvider create(Object dataSource) {
+    public static JdbcExecutorFactoryProvider create(Object dataSource, String factoryName, ArmyEnvironment env) {
         if (!(dataSource instanceof DataSource || dataSource instanceof XADataSource)) {
             throw unsupportedDataSource(dataSource);
         }
-        return new JdbcExecutorFactoryProvider((CommonDataSource) dataSource);
+        return new JdbcExecutorFactoryProvider((CommonDataSource) dataSource, factoryName);
     }
 
 
@@ -46,23 +46,25 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
 
     ServerMeta meta;
 
-    private JdbcExecutorFactoryProvider(CommonDataSource dataSource) {
+    private JdbcExecutorFactoryProvider(CommonDataSource dataSource, String factoryName) {
         this.dataSource = dataSource;
+        this.sessionFactoryName = factoryName;
     }
 
 
     @Override
-    public ServerMeta createServerMeta(final Dialect usedDialect, @Nullable Function<String, Database> func) throws DataAccessException {
+    public ServerMeta createServerMeta(final Dialect usedDialect, @Nullable Function<String, Database> func)
+            throws DataAccessException {
         final CommonDataSource dataSource = this.dataSource;
 
         XAConnection xaConnection = null;
         final ServerMeta meta;
         try {
             if (dataSource instanceof DataSource) {
-                meta = this.innerCreateServerMeta(((DataSource) dataSource).getConnection(), usedDialect);
+                meta = createServerMetaAndDriverFlags(((DataSource) dataSource).getConnection(), usedDialect, func);
             } else if (dataSource instanceof XADataSource) {
                 xaConnection = ((XADataSource) dataSource).getXAConnection();
-                meta = this.innerCreateServerMeta(xaConnection.getConnection(), usedDialect);
+                meta = createServerMetaAndDriverFlags(xaConnection.getConnection(), usedDialect, func);
             } else {
                 //no bug,never here
                 throw unsupportedDataSource(dataSource);
@@ -78,47 +80,27 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
             throw new DataAccessException(m, e);
         } finally {
             if (xaConnection != null) {
-                try {
-                    xaConnection.close();
-                } catch (SQLException e) {
-                    throw JdbcExecutor.wrapError(e);
-                }
+                JdbcExecutorSupport.closeXaConnection(xaConnection);
             }
         }
     }
 
     @Override
-    public SyncStmtExecutorFactory createFactory(final ExecutorEnv env) {
-        final CommonDataSource dataSource = this.dataSource;
-        if (!(dataSource instanceof DataSource)) {
-            String m = String.format("unsupported creating %s", SyncLocalExecutorFactory.class.getName());
-            throw new UnsupportedOperationException(m);
-        }
-        this.validateServerMeta(env.mappingEnv());
-        return JdbcLocalExecutorFactory.create((DataSource) dataSource, env, (byte) this.methodFlag);
+    public SyncStmtExecutorFactory createFactory(final ExecutorEnv env) throws DataAccessException {
+        validateServerMeta(env.mappingEnv());
+        return JdbcExecutorFactory.create(this, env);
     }
 
 
-    private ServerMeta innerCreateServerMeta(final Connection connection, final Dialect usedDialect) {
+    private ServerMeta createServerMetaAndDriverFlags(final Connection connection, final Dialect usedDialect,
+                                                      final @Nullable Function<String, Database> func) {
         try (Connection conn = connection) {
             final ServerMeta serverMeta;
-            serverMeta = doCreateServerMeta(conn, usedDialect);
-            LOG.debug("create {}", serverMeta);
-            int methodFlag = 0;
-            try (PreparedStatement statement = conn.prepareStatement("SELECT 1 + ? AS armyJdbcTest")) {
-                final Class<?> clazz = statement.getClass();
+            serverMeta = builderServerMeta(conn, usedDialect, func);
 
-                if (definiteSetObjectMethod(clazz)) {
-                    methodFlag |= JdbcExecutorFactory.SET_OBJECT_METHOD;
-                }
-                if (definiteExecuteLargeUpdateMethod(clazz)) {
-                    methodFlag |= JdbcExecutorFactory.EXECUTE_LARGE_UPDATE_METHOD;
-                }
-                if (definiteExecuteLargeBatchMethod(clazz)) {
-                    methodFlag |= JdbcExecutorFactory.EXECUTE_LARGE_BATCH_METHOD;
-                }
-            }
-            this.methodFlag = methodFlag;
+            LOG.debug("create {}", serverMeta);
+
+            this.methodFlag = createDriverImplFlags(conn, serverMeta.serverDatabase());
             return serverMeta;
         } catch (SQLException e) {
             throw JdbcExecutor.wrapError(e);
@@ -139,7 +121,8 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
         }
     }
 
-    private static ServerMeta doCreateServerMeta(final Connection conn, final Dialect usedDialect)
+    private static ServerMeta builderServerMeta(final Connection conn, final Dialect usedDialect,
+                                                final @Nullable Function<String, Database> func)
             throws SQLException {
         final DatabaseMetaData metaData;
         metaData = conn.getMetaData();
@@ -161,6 +144,51 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
                 .usedDialect(usedDialect)
                 .supportSavePoint(metaData.supportsSavepoints())
                 .build();
+    }
+
+
+    private static int createDriverImplFlags(final Connection conn, final Database serverDatabase) throws SQLException {
+
+        int methodFlag = 0;
+
+        try (PreparedStatement statement = conn.prepareStatement("SELECT 1 + ? AS armyJdbcTest")) {
+            final Class<?> clazz = statement.getClass();
+
+            if (definiteSetObjectMethod(clazz)) {
+                methodFlag |= JdbcExecutorFactory.SET_OBJECT_METHOD;
+            }
+            if (definiteExecuteLargeUpdateMethod(clazz)) {
+                methodFlag |= JdbcExecutorFactory.EXECUTE_LARGE_UPDATE_METHOD;
+            }
+            if (definiteExecuteLargeBatchMethod(clazz)) {
+                methodFlag |= JdbcExecutorFactory.EXECUTE_LARGE_BATCH_METHOD;
+            }
+
+        }
+
+        switch (serverDatabase) {
+            case MySQL: {
+                try (Statement statement = conn.createStatement()) {
+                    statement.execute("SELECT 1 AS one ; SELECT 2 AS two");
+
+                    statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+
+                    methodFlag |= JdbcExecutorFactory.MULTI_STMT;
+                } catch (SQLException e) {
+                    LOG.debug("{} driver don't support multi-statement.", serverDatabase.name());
+                }
+            }
+            break;
+            case PostgreSQL:
+            case SQLite:
+            case H2:
+            case Oracle:
+            default:// no-op
+        }
+
+        return methodFlag;
+
+
     }
 
 

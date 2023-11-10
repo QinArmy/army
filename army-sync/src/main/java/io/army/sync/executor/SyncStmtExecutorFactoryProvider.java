@@ -25,7 +25,7 @@ public interface SyncStmtExecutorFactoryProvider extends StmtExecutorFactoryProv
      * @throws IllegalArgumentException throw when {@link  MappingEnv#serverMeta()} not match.
      */
     @Override
-    SyncStmtExecutorFactory createFactory(ExecutorEnv env);
+    SyncStmtExecutorFactory createFactory(ExecutorEnv env) throws DataAccessException;
 
 
 

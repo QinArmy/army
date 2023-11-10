@@ -117,6 +117,59 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     }
 
 
+    @Override
+    public final Object setSavePoint(Function<Option<?>, ?> optionFunc) throws DataAccessException {
+        final Object name;
+        if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+            name = null;
+        } else {
+            name = optionFunc.apply(Option.NAME);
+        }
+
+        try {
+            final Savepoint savepoint;
+            if (name instanceof String) {
+                savepoint = this.conn.setSavepoint((String) name);
+            } else {
+                savepoint = this.conn.setSavepoint();
+            }
+            return savepoint;
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+    @Override
+    public final void releaseSavePoint(final Object savepoint, final Function<Option<?>, ?> optionFunc)
+            throws DataAccessException {
+
+        if (!(savepoint instanceof Savepoint)) {
+            throw _Exceptions.unknownSavePoint(savepoint);
+        }
+
+        try {
+            this.conn.releaseSavepoint((Savepoint) savepoint);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+
+    }
+
+    @Override
+    public final void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc)
+            throws DataAccessException {
+        if (!(savepoint instanceof Savepoint)) {
+            throw _Exceptions.unknownSavePoint(savepoint);
+        }
+
+        try {
+            this.conn.rollback((Savepoint) savepoint);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+
     @SuppressWarnings("unchecked")
     @Override
     public final <R> R insert(final SimpleStmt stmt, final SyncStmtOption option, final Class<R> resultClass)
@@ -461,8 +514,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     }
 
     final ArmyException handleException(Exception cause) {
-        // TODO
-        return wrapError(cause);
+        return this.factory.handleException(cause);
     }
 
     /*################################## blow private method ##################################*/

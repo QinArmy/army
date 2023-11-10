@@ -50,7 +50,7 @@ public interface StmtExecutor extends OptionSpec, DriverSpiHolder {
      *
      * @return driver info, contain : <ol>
      * <li>implementation class name</li>
-     * <li>{@link #name()}</li>
+     * <li>session name</li>
      * <li>{@link System#identityHashCode(Object)}</li>
      * </ol>
      */

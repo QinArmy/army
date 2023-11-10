@@ -125,7 +125,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
      */
     interface LocalTransactionSpec {
 
-        TransactionInfo startTransaction(TransactionOption option);
+        TransactionInfo startTransaction(TransactionOption option, HandleMode mode);
 
         @Nullable
         TransactionInfo commit(Function<Option<?>, ?> optionFunc);
