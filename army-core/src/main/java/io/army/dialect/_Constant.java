@@ -141,6 +141,8 @@ public interface _Constant {
 
     String SPACE_COMMA_SPACE = " , ";
 
+    String SPACE_SEMICOLON_SPACE = " ; ";
+
     String SPACE_LEFT_PAREN = " (";
 
     String SPACE_RIGHT_PAREN = " )";

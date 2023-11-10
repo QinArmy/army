@@ -8,7 +8,7 @@ import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
-import io.army.util._Exceptions;
+import io.army.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -26,6 +27,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -300,7 +302,78 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }
 
 
-    final Isolation getMySqlIsolation(final ResultSet rs) throws SQLException {
+    final Isolation executeStartTransaction(final int stmtCount, final @Nullable Isolation isolation,
+                                            final StringBuilder builder) throws DataAccessException {
+
+        try (final Statement statement = this.conn.createStatement()) {
+
+            Isolation sessionIsolation = null;
+            int batchSize = 0;
+            if (this.factory.useMultiStmt) {
+                if (statement.execute(builder.toString())) {
+                    statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                    // no bug never here
+                    throw new IllegalStateException("sql error");
+                } else if (statement.getUpdateCount() == -1) {
+                    throw multiStatementLessThanExpected(0, stmtCount); // no result
+                }
+                batchSize++;
+                while (true) {
+                    if (statement.getMoreResults()) {
+                        assert sessionIsolation == null;
+                        sessionIsolation = getMySqlIsolation(statement.getResultSet());
+                    } else if (statement.getUpdateCount() == -1) {
+                        break;
+                    }
+                    batchSize++;
+                }
+            } else if (isolation == null) {
+                int start = 0;
+                String sql;
+
+                for (int semicolon; (semicolon = builder.indexOf(SEMICOLON, start)) > 0; start = semicolon + 1) {
+                    sql = builder.substring(start, semicolon);
+                    batchSize++;
+                    if (sql.startsWith(" SELECT")) {
+                        assert sessionIsolation == null;
+                        sessionIsolation = getMySqlIsolation(statement.executeQuery(sql));
+                    } else {
+                        statement.executeUpdate(sql);
+                    }
+                }
+                statement.executeUpdate(builder.substring(start, builder.length()));
+                batchSize++;
+                assert sessionIsolation != null;
+            } else {
+                int start = 0;
+                for (int semicolon; (semicolon = builder.indexOf(SEMICOLON, start)) > 0; start = semicolon + 1) {
+                    statement.addBatch(builder.substring(start, semicolon));
+                    batchSize++;
+                }
+                statement.addBatch(builder.substring(start, builder.length()));
+                batchSize++;
+                statement.executeBatch();
+            }
+
+            assert batchSize == stmtCount;
+
+            final Isolation finalIsolation;
+            if (isolation == null) {
+                assert sessionIsolation != null;
+                finalIsolation = sessionIsolation;
+            } else {
+                finalIsolation = isolation;
+            }
+            return finalIsolation;
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+
+    }
+
+    /*-------------------below private static  -------------------*/
+
+    private static Isolation getMySqlIsolation(final ResultSet rs) throws SQLException {
         try (ResultSet resultSet = rs) {
             if (!resultSet.next()) {
                 // no bug,never here
@@ -355,12 +428,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
                         throw transactionExistsRejectStart(this.sessionName);
                     case COMMIT_IF_EXISTS:
                         builder.append(COMMIT)
-                                .append(SPACE_SEMICOLON_SPACE);
+                                .append(_Constant.SPACE_SEMICOLON_SPACE);
                         stmtCount++;
                         break;
                     case ROLLBACK_IF_EXISTS:
                         builder.append(ROLLBACK)
-                                .append(SPACE_SEMICOLON_SPACE);
+                                .append(_Constant.SPACE_SEMICOLON_SPACE);
                         stmtCount++;
                         break;
                     default:
@@ -379,7 +452,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             } else {
                 builder.append("SET TRANSACTION ISOLATION LEVEL ");
                 standardIsolation(isolation, builder);
-                builder.append(SPACE_SEMICOLON_SPACE);
+                builder.append(_Constant.SPACE_SEMICOLON_SPACE);
                 stmtCount++;
             }
 
@@ -395,7 +468,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             consistentSnapshot = option.valueOf(WITH_CONSISTENT_SNAPSHOT);
 
             if (Boolean.TRUE.equals(consistentSnapshot)) {
-                builder.append(SPACE_COMMA_SPACE)
+                builder.append(_Constant.SPACE_COMMA_SPACE)
                         .append("WITH CONSISTENT SNAPSHOT");
             }
 
@@ -439,76 +512,6 @@ abstract class MySQLExecutor extends JdbcExecutor {
         @Override
         TransactionInfo obtainTransaction() {
             return this.transactionInfo;
-        }
-
-
-        private Isolation executeStartTransaction(final int stmtCount, final @Nullable Isolation isolation,
-                                                  final StringBuilder builder) throws DataAccessException {
-
-            try (final Statement statement = this.conn.createStatement()) {
-
-                Isolation sessionIsolation = null;
-                int batchSize = 0;
-                if (this.factory.useMultiStmt) {
-                    if (statement.execute(builder.toString())) {
-                        statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
-                        // no bug never here
-                        throw new IllegalStateException("sql error");
-                    } else if (statement.getUpdateCount() == -1) {
-                        throw multiStatementLessThanExpected(0, stmtCount); // no result
-                    }
-                    batchSize++;
-                    while (true) {
-                        if (statement.getMoreResults()) {
-                            assert sessionIsolation == null;
-                            sessionIsolation = getMySqlIsolation(statement.getResultSet());
-                        } else if (statement.getUpdateCount() == -1) {
-                            break;
-                        }
-                        batchSize++;
-                    }
-                } else if (isolation == null) {
-                    int start = 0;
-                    String sql;
-
-                    for (int semicolon; (semicolon = builder.indexOf(SEMICOLON, start)) > 0; start = semicolon + 1) {
-                        sql = builder.substring(start, semicolon);
-                        batchSize++;
-                        if (sql.startsWith(" SELECT")) {
-                            assert sessionIsolation == null;
-                            sessionIsolation = getMySqlIsolation(statement.executeQuery(sql));
-                        } else {
-                            statement.executeUpdate(sql);
-                        }
-                    }
-                    statement.executeUpdate(builder.substring(start, builder.length()));
-                    batchSize++;
-                    assert sessionIsolation != null;
-                } else {
-                    int start = 0;
-                    for (int semicolon; (semicolon = builder.indexOf(SEMICOLON, start)) > 0; start = semicolon + 1) {
-                        statement.addBatch(builder.substring(start, semicolon));
-                        batchSize++;
-                    }
-                    statement.addBatch(builder.substring(start, builder.length()));
-                    batchSize++;
-                    statement.executeBatch();
-                }
-
-                assert batchSize == stmtCount;
-
-                final Isolation finalIsolation;
-                if (isolation == null) {
-                    assert sessionIsolation != null;
-                    finalIsolation = sessionIsolation;
-                } else {
-                    finalIsolation = isolation;
-                }
-                return finalIsolation;
-            } catch (Exception e) {
-                throw handleException(e);
-            }
-
         }
 
 
@@ -577,9 +580,77 @@ abstract class MySQLExecutor extends JdbcExecutor {
             super(factory, conn, sessionName);
         }
 
+        /**
+         * <p>
+         * the conversion process of xid is same with MySQL Connector/J .
+         * <br/>
+         *
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
+         */
         @Override
-        public final TransactionInfo start(Xid xid, int flags, TransactionOption option) {
-            return null;
+        public final TransactionInfo start(final Xid xid, final int flags, final TransactionOption option)
+                throws RmSessionException {
+
+            if (this.transactionInfo != null) {
+                throw _Exceptions.xaBusyOnOtherTransaction();
+            }
+
+            final StringBuilder builder = new StringBuilder(140);
+            final Isolation isolation;
+            isolation = option.isolation();
+
+            int stmtCount = 0;
+            final String setTransactionSpace = "SET TRANSACTION ";
+            if (isolation == null) {
+                builder.append("SET @@transaction_isolation =  @@SESSION.transaction_isolation ; ") // here,must guarantee isolation is session isolation
+                        .append("SELECT @@SESSION.transaction_isolation AS txIsolationLevel ; ")
+                        .append(setTransactionSpace);
+                stmtCount += 2;
+            } else {
+                builder.append(setTransactionSpace)
+                        .append("ISOLATION LEVEL ");
+                standardIsolation(isolation, builder);
+                builder.append(_Constant.SPACE_COMMA_SPACE);
+            }
+
+            final boolean readOnly;
+            readOnly = option.isReadOnly();
+
+            if (readOnly) {
+                builder.append(READ_ONLY);
+            } else {
+                builder.append(READ_WRITE);
+            }
+            stmtCount++;
+
+            builder.append(_Constant.SPACE_SEMICOLON_SPACE)
+                    .append("XA START");
+
+            xidToString(xid, builder);
+
+            if ((flags & (~startSupportFlags())) != 0) {
+                throw _Exceptions.xaInvalidFlag(flags, "start");
+            } else if ((flags & RmSession.TM_JOIN) != 0) {
+                builder.append(" JOIN");
+            } else if ((flags & RmSession.TM_RESUME) != 0) {
+                builder.append(" RESUME");
+            }
+
+            stmtCount++;
+
+            final Isolation finalIsolation;
+            finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
+
+            final Map<Option<?>, Object> map = _Collections.hashMap(5);
+
+            map.put(Option.XID, xid);
+            map.put(Option.XA_FLAGS, flags);
+            map.put(Option.XA_STATES, XaStates.ACTIVE);
+
+            final TransactionInfo info;
+            this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, map::get);
+
+            return info;
         }
 
         @Override
@@ -608,7 +679,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
         }
 
         @Override
-        public final Stream<Xid> recoverStream(int flags, Function<Option<?>, ?> optionFunc) {
+        public final Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc) {
             return null;
         }
 
@@ -641,6 +712,50 @@ abstract class MySQLExecutor extends JdbcExecutor {
         @Override
         TransactionInfo obtainTransaction() {
             return this.transactionInfo;
+        }
+
+
+        private void xidToString(final Xid xid, final StringBuilder builder) {
+            final String gtrid, bqual;
+            gtrid = xid.getGtrid();
+            bqual = xid.getBqual();
+
+            final byte[] gtridBytes, bqualBytes, formatIdBytes;
+
+            if (!_StringUtils.hasText(gtrid)) {
+                throw _Exceptions.xaGtridNoText();
+            } else if ((gtridBytes = gtrid.getBytes(StandardCharsets.UTF_8)).length > 64) {
+                throw _Exceptions.xaGtridBeyond64Bytes();
+            }
+
+            builder.append(" 0x")
+                    .append(HexUtils.hexEscapesText(true, gtridBytes, gtridBytes.length));
+
+            builder.append(_Constant.COMMA);
+            if (bqual != null) {
+                if ((bqualBytes = bqual.getBytes(StandardCharsets.UTF_8)).length > 64) {
+                    throw _Exceptions.xaBqualBeyond64Bytes();
+                }
+                builder.append("0x")
+                        .append(HexUtils.hexEscapesText(true, bqualBytes, bqualBytes.length));
+            }
+            final int formatId;
+            formatId = xid.getFormatId();
+
+            builder.append(",0x");
+            if (formatId == 0) {
+                builder.append('0');
+            } else {
+                formatIdBytes = NumberUtils.toBinaryBytes(formatId, true);
+                int offset = 0;
+                for (; offset < formatIdBytes.length; offset++) {
+                    if (formatIdBytes[offset] != 0) {
+                        break;
+                    }
+                }
+                builder.append(HexUtils.hexEscapesText(true, formatIdBytes, offset, formatIdBytes.length));
+            }
+
         }
 
 

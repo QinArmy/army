@@ -148,10 +148,6 @@ public class RmSessionException extends SessionException {
         this.xaCode = xaCode;
     }
 
-    public RmSessionException(Throwable cause, int xaCode) {
-        super(cause);
-        this.xaCode = xaCode;
-    }
 
 
     public final int getXaCode() {

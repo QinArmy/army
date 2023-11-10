@@ -47,10 +47,6 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
     protected static final String READ_WRITE = "READ WRITE";
 
-    protected static final String SPACE_SEMICOLON_SPACE = " ; ";
-
-    protected static final String SPACE_COMMA_SPACE = " , ";
-
 
     JdbcExecutorSupport() {
     }

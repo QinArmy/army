@@ -84,11 +84,13 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     }
 
     @Override
-    public final TransactionInfo start(final Xid xid, final int flags, TransactionOption option) {
+    public final TransactionInfo start(final @Nullable Xid xid, final int flags, TransactionOption option) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         } else if (this.transactionInfo != null) {
             throw _Exceptions.existsTransaction(this);
+        } else if (xid == null) {
+            throw _Exceptions.xidIsNull();
         }
 
         final TransactionInfo info;
@@ -308,7 +310,7 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
-        return ((SyncRmStmtExecutor) this.stmtExecutor).recoverStream(flags, optionFunc);
+        return ((SyncRmStmtExecutor) this.stmtExecutor).recover(flags, optionFunc);
     }
 
     @Override

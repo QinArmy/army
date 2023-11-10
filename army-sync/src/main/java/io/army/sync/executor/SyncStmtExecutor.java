@@ -142,19 +142,19 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
      */
     interface XaTransactionSpec {
 
-        TransactionInfo start(Xid xid, int flags, TransactionOption option);
+        TransactionInfo start(Xid xid, int flags, TransactionOption option) throws RmSessionException;
 
-        TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+        TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException;
 
-        int prepare(Xid xid, Function<Option<?>, ?> optionFunc);
+        int prepare(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
 
-        void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc);
+        void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException;
 
-        void rollback(Xid xid, Function<Option<?>, ?> optionFunc);
+        void rollback(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
 
-        void forget(Xid xid, Function<Option<?>, ?> optionFunc);
+        void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
 
-        Stream<Xid> recoverStream(int flags, Function<Option<?>, ?> optionFunc);
+        Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException;
 
 
     }

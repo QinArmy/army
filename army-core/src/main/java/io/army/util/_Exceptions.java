@@ -35,6 +35,20 @@ public abstract class _Exceptions {
         throw new UnsupportedOperationException();
     }
 
+
+    //Xa
+    static final String ER_XAER_NOTA = "XAE04";
+    static final String ER_XAER_INVAL = "XAE05";
+    static final String ER_XAER_RMFAIL = "XAE07";
+    static final String ER_XAER_OUTSIDE = "XAE09";
+
+    static final String ER_XA_RMERR = "XAE03";
+    static final String ER_XA_RBROLLBACK = "XA100";
+    static final String ER_XAER_DUPID = "XAE08";
+    static final String XA_RBTIMEOUT = "XA106";
+
+    static final String ER_XA_RBDEADLOCK = "XA102";
+
     public static ArmyException unexpectedEnum(Enum<?> e) {
         String m = String.format("unexpected enum %s.%s", e.getClass().getName(), e.name());
         return new ArmyException(m);
@@ -789,6 +803,31 @@ public abstract class _Exceptions {
         return new TransactionUsageException(m);
     }
 
+    public static RmSessionException xidIsNull() {
+        return new RmSessionException("xid must be non-null", RmSessionException.XAER_INVAL);
+    }
+
+
+    public static RmSessionException xaGtridNoText() {
+        return new RmSessionException("gtrid of xid must have text.", RmSessionException.XAER_NOTA);
+    }
+
+    public static RmSessionException xaGtridBeyond64Bytes() {
+        return new RmSessionException("bytes length of gtrid beyond 64 bytes.", RmSessionException.XAER_NOTA);
+    }
+
+    public static RmSessionException xaBusyOnOtherTransaction() {
+        return new RmSessionException("session is busy with another transaction", RmSessionException.XAER_PROTO);
+    }
+
+    public static RmSessionException xaInvalidFlag(final int flags, final String method) {
+        String m = String.format("XA invalid flag[%s] for method %s", Integer.toBinaryString(flags), method);
+        return new RmSessionException(m, RmSessionException.XAER_INVAL);
+    }
+
+    public static RmSessionException xaBqualBeyond64Bytes() {
+        return new RmSessionException("bytes length of bqual beyond 64 bytes.", RmSessionException.XAER_NOTA);
+    }
 
     public static RmSessionException xaNonCurrentTransaction(@Nullable Xid xid) {
         String m = String.format("xid[%s] not current transaction.", xid);
