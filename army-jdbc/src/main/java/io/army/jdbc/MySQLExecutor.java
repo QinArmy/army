@@ -1,6 +1,7 @@
 package io.army.jdbc;
 
 import com.mysql.cj.MysqlType;
+import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
 import io.army.session.*;
 import io.army.sqltype.MySQLType;
@@ -59,7 +60,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
 
     private static final String SEMICOLON = ";";
-    private TransactionInfo info;
+
 
     private MySQLExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
         super(factory, conn, sessionName);
@@ -86,13 +87,6 @@ abstract class MySQLExecutor extends JdbcExecutor {
     final Logger getLogger() {
         return LOG;
     }
-
-    @Nullable
-    @Override
-    final TransactionInfo obtainTransaction() {
-        return this.info;
-    }
-
 
     @Override
     final Object bind(final PreparedStatement stmt, final int indexBasedOne, final @Nullable Object attr,
@@ -335,9 +329,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }
 
 
-    private static class LocalExecutor extends MySQLExecutor implements SyncLocalStmtExecutor {
+    private static final class LocalExecutor extends MySQLExecutor implements SyncLocalStmtExecutor {
 
         private static final Option<Boolean> WITH_CONSISTENT_SNAPSHOT = Option.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
+
+
+        private TransactionInfo transactionInfo;
 
         private LocalExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
             super(factory, conn, sessionName);
@@ -416,25 +413,37 @@ abstract class MySQLExecutor extends JdbcExecutor {
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
 
             final TransactionInfo info;
-            ((MySQLExecutor) this).info = info = TransactionInfo.info(true, finalIsolation, readOnly, optionFunc);
+            this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, optionFunc);
             return info;
         }
 
+        /**
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/commit.html">COMMIT Statement</a>
+         */
         @Nullable
         @Override
-        public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
-            return null;
+        public TransactionInfo commit(final Function<Option<?>, ?> optionFunc) {
+            return commitOrRollback(true, optionFunc);
+        }
+
+        /**
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/commit.html">ROLLBACK Statement</a>
+         */
+        @Nullable
+        @Override
+        public TransactionInfo rollback(final Function<Option<?>, ?> optionFunc) {
+            return commitOrRollback(false, optionFunc);
         }
 
         @Nullable
         @Override
-        public TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
-            return null;
+        TransactionInfo obtainTransaction() {
+            return this.transactionInfo;
         }
 
 
         private Isolation executeStartTransaction(final int stmtCount, final @Nullable Isolation isolation,
-                                                  final StringBuilder builder) {
+                                                  final StringBuilder builder) throws DataAccessException {
 
             try (final Statement statement = this.conn.createStatement()) {
 
@@ -499,6 +508,61 @@ abstract class MySQLExecutor extends JdbcExecutor {
             } catch (Exception e) {
                 throw handleException(e);
             }
+
+        }
+
+
+        @Nullable
+        private TransactionInfo commitOrRollback(final boolean commit, final Function<Option<?>, ?> optionFunc)
+                throws DataAccessException {
+
+            final Object chain, release;
+            if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+                chain = release = null;
+            } else {
+                chain = optionFunc.apply(Option.CHAIN);
+                release = optionFunc.apply(Option.RELEASE);
+            }
+            if (Boolean.TRUE.equals(chain) && Boolean.TRUE.equals(release)) {
+                String m = String.format("%s[true] and %s[true] conflict", Option.CHAIN.name(), Option.RELEASE.name());
+                throw new IllegalArgumentException(m);
+            }
+
+            final StringBuilder builder = new StringBuilder(20);
+            if (commit) {
+                builder.append(COMMIT);
+            } else {
+                builder.append(ROLLBACK);
+            }
+
+            final TransactionInfo newInfo;
+            if (chain instanceof Boolean) {
+                builder.append(_Constant.SPACE_AND);
+                if (!((Boolean) chain)) {
+                    builder.append(" NO");
+                    newInfo = null;
+                } else if ((newInfo = this.transactionInfo) == null) {
+                    throw new DataAccessException("CHAIN option can only be used in transaction blocks ");
+                }
+                builder.append(" CHAIN");
+            } else {
+                newInfo = null;
+            }
+
+            if (release instanceof Boolean) {
+                if (!((Boolean) release)) {
+                    builder.append(" NO");
+                }
+                builder.append(" RELEASE");
+            }
+
+            try (Statement statement = this.conn.createStatement()) {
+                statement.executeUpdate(builder.toString());
+
+                return newInfo;
+            } catch (Exception e) {
+                throw handleException(e);
+            }
         }
 
 
@@ -507,6 +571,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     private static class RmExecutor extends MySQLExecutor implements SyncRmStmtExecutor {
 
+        private TransactionInfo transactionInfo;
 
         private RmExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
             super(factory, conn, sessionName);
@@ -570,6 +635,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
         @Override
         public final boolean isSameRm(Session.XaTransactionSupportSpec s) throws SessionException {
             return false;
+        }
+
+        @Nullable
+        @Override
+        TransactionInfo obtainTransaction() {
+            return this.transactionInfo;
         }
 
 
