@@ -3,9 +3,6 @@ package io.army.env;
 import io.army.annotation.Column;
 import io.army.dialect.Database;
 import io.army.dialect.Dialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.FieldMeta;
 import io.army.session.AllowMode;
 import io.army.session.DdlMode;
@@ -13,6 +10,7 @@ import io.army.util._ClassUtils;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.time.ZoneOffset;
@@ -31,8 +29,6 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<Dialect> DIALECT = new ArmyKey<>("dialect", Dialect.class, null);
 
-    public static final ArmyKey<String> DATASOURCE_CLOSE_METHOD = new ArmyKey<>("datasource.close.method", String.class, null);
-
     public static final ArmyKey<ZoneOffset> ZONE_OFFSET = new ArmyKey<>("zone_offset", ZoneOffset.class, null);
 
     public static final ArmyKey<Boolean> QUALIFIED_TABLE_NAME_ENABLE = new ArmyKey<>("qualified_table_name.enable", Boolean.class, Boolean.FALSE);
@@ -44,8 +40,6 @@ public class ArmyKey<T> {
 
     public static final ArmyKey<AllowMode> VISIBLE_MODE = new ArmyKey<>("visible.mode", AllowMode.class, AllowMode.NEVER);
 
-    public static final ArmyKey<Boolean> DATABASE_SESSION_HOLDER_ENABLE = new ArmyKey<>("database.session_holder.enable", Boolean.class, Boolean.FALSE);
-
     public static final ArmyKey<String> VISIBLE_SESSION_WHITE_LIST = new ArmyKey<>("visible.session_white_list", String.class, null);
 
     public static final ArmyKey<AllowMode> QUERY_INSERT_MODE = new ArmyKey<>("query.insert.mode", AllowMode.class, AllowMode.WHITE_LIST);
@@ -55,6 +49,9 @@ public class ArmyKey<T> {
     public static final ArmyKey<AllowMode> DRIVER_SPI_MODE = new ArmyKey<>("driver.spi.mode", AllowMode.class, AllowMode.NEVER);
 
     public static final ArmyKey<String> DRIVER_SPI_SESSION_WHITE_LIST = new ArmyKey<>("driver.spi.session_white_list", String.class, null);
+
+    public static final ArmyKey<String> DATASOURCE_CLOSE_METHOD = new ArmyKey<>("datasource.close_method", String.class, "close");
+
 
     /**
      * @see Column#scale()

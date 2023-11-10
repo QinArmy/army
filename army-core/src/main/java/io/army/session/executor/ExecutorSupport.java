@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 
 public abstract class ExecutorSupport {
 
+
     protected static final ObjectAccessor SINGLE_COLUMN_PSEUDO_ACCESSOR = new PseudoWriterAccessor();
 
     protected static final ObjectAccessor RECORD_PSEUDO_ACCESSOR = new PseudoWriterAccessor();
@@ -179,6 +180,8 @@ public abstract class ExecutorSupport {
         throw new UnsupportedOperationException();
     }
 
+
+
     /*-------------------below Exception  -------------------*/
 
 
@@ -201,6 +204,16 @@ public abstract class ExecutorSupport {
     protected static DataAccessException secondQueryRowCountNotMatch(final int firstRowCount, final int secondRowCount) {
         String m = String.format("second query row count[%s] and first query row[%s] not match.",
                 secondRowCount, firstRowCount);
+        return new DataAccessException(m);
+    }
+
+    protected static DataAccessException transactionExistsRejectStart(String sessionName) {
+        String m = String.format("Session[%s] in transaction ,reject start a new transaction before commit or rollback.", sessionName);
+        return new DataAccessException(m);
+    }
+
+    protected static DataAccessException unknownIsolation(String isolation) {
+        String m = String.format("unknown isolation %s", isolation);
         return new DataAccessException(m);
     }
 

@@ -166,7 +166,7 @@ public abstract class AbstractRoutingCommonDataSource<D extends CommonDataSource
      * see {@code io.army.boot.sync.SyncSessionFactoryUtils#obtainPrimaryDataSource(CommonDataSource) }
      */
     @SuppressWarnings({"unused"})
-    public D getPrimaryDataSource() {
+    public D writableDataSource() {
         return this.dataSourceMap.get(DataSourceRole.PRIMARY);
     }
 

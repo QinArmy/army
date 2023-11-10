@@ -4,10 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.Selection;
 import io.army.mapping.optional.OffsetTimeType;
-import io.army.session.DataAccessException;
-import io.army.session.Option;
-import io.army.session.TransactionInfo;
-import io.army.session.Warning;
+import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
 import io.army.session.record.FieldType;
 import io.army.session.record.KeyType;
@@ -40,7 +37,38 @@ import java.util.function.Function;
  */
 abstract class JdbcExecutorSupport extends ExecutorSupport {
 
+    protected static final String START_TRANSACTION_SPACE = "START TRANSACTION ";
+
+    protected static final String COMMIT = "COMMIT";
+
+    protected static final String ROLLBACK = "ROLLBACK";
+
+    protected static final String READ_ONLY = "READ ONLY";
+
+    protected static final String READ_WRITE = "READ WRITE";
+
+    protected static final String SPACE_SEMICOLON_SPACE = " ; ";
+
+    protected static final String SPACE_COMMA_SPACE = " , ";
+
+
     JdbcExecutorSupport() {
+    }
+
+    static void standardIsolation(final Isolation isolation, final StringBuilder builder) {
+
+        if (isolation == Isolation.READ_COMMITTED) {
+            builder.append("READ COMMITTED");
+        } else if (isolation == Isolation.REPEATABLE_READ) {
+            builder.append("REPEATABLE READ");
+        } else if (isolation == Isolation.SERIALIZABLE) {
+            builder.append("SERIALIZABLE");
+        } else if (isolation == Isolation.READ_UNCOMMITTED) {
+            builder.append("READ UNCOMMITTED");
+        } else {
+            throw new ArmyException(String.format("unknown isolation %s", isolation));
+        }
+
     }
 
     /**
@@ -89,6 +117,16 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         }
     }
 
+    static void closeJdbcConnection(final @Nullable Object conn) {
+        if (conn instanceof Connection) {
+            closeResource((Connection) conn);
+        } else if (conn instanceof XAConnection) {
+            closeXaConnection((XAConnection) conn);
+        } else if (conn != null) {
+            throw new IllegalArgumentException();
+        }
+    }
+
     /*
      * not java doc
      * @see JdbcExecutor#executeMultiStmtBatchQuery(BatchStmt, SyncStmtOption, Function)
@@ -128,12 +166,14 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         throw new CriteriaException(m);
     }
 
-    static CriteriaException multiStatementLessThanExpected(int groupIndex, int expected) {
+
+    static CriteriaException multiStatementLessThanExpected(int count, int expected) {
         String m = String.format("Multi-statement batch query ResultSet count[%s] less than expected count[%s]",
-                groupIndex, expected
+                count, expected
         );  // here groupIndex don't plus 1 .
         throw new CriteriaException(m);
     }
+
 
     static CriteriaException multiStatementPartNotQuery(int groupIndex) {
         String m = String.format("Multi-statement batch query number %s result isn't ResultSet", groupIndex + 1);
@@ -1004,6 +1044,12 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
 
     } // MultiResultUpdateStates
+
+    interface XaConnectionExecutor {
+
+        void closeXaConnection() throws SQLException;
+
+    }
 
 
 }

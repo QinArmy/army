@@ -1,6 +1,7 @@
 package io.army.jdbc;
 
 import io.army.ArmyException;
+import io.army.datasource.RoutingDataSource;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
@@ -58,7 +59,7 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
 
     final boolean useExecuteLargeBatch;
 
-    final boolean databaseSessionHolder;
+    final boolean useMultiStmt;
 
     /**
      * @see ArmyKey#TRUNCATED_TIME_TYPE
@@ -96,14 +97,16 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
             this.useLargeUpdate = false;
             this.useSetObjectMethod = false;
             this.useExecuteLargeBatch = false;
+            this.useMultiStmt = false;
         } else {
             final int methodFlag = provider.methodFlag;
             this.useLargeUpdate = (methodFlag & EXECUTE_LARGE_UPDATE_METHOD) != 0;
             this.useSetObjectMethod = (methodFlag & SET_OBJECT_METHOD) != 0;
             this.useExecuteLargeBatch = (methodFlag & EXECUTE_LARGE_BATCH_METHOD) != 0;
+            this.useMultiStmt = (methodFlag & MULTI_STMT) != 0;
+            ;
         }
 
-        this.databaseSessionHolder = env.getOrDefault(ArmyKey.DATABASE_SESSION_HOLDER_ENABLE);
         this.dataSourceCloseMethod = env.get(ArmyKey.DATASOURCE_CLOSE_METHOD);
         this.truncatedTimeType = env.getOrDefault(ArmyKey.TRUNCATED_TIME_TYPE);
         this.sessionIdentifierEnable = env.getOrDefault(SyncKey.SESSION_IDENTIFIER_ENABLE);
@@ -143,14 +146,17 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
         assertFactoryOpen();
 
         try {
-            final CommonDataSource dataSource = this.dataSource;
-            final Connection conn;
-            if (dataSource instanceof XADataSource) {
-                conn = ((XADataSource) dataSource).getXAConnection().getConnection();
-            } else {
-                conn = ((DataSource) dataSource).getConnection();
+            CommonDataSource dataSource = this.dataSource;
+            if (dataSource instanceof RoutingDataSource) {
+                dataSource = (CommonDataSource) ((RoutingDataSource<?>) dataSource).writableDataSource();
             }
-            return JdbcMetaExecutor.create(conn);
+            final JdbcMetaExecutor executor;
+            if (dataSource instanceof DataSource) {
+                executor = JdbcMetaExecutor.from(((DataSource) dataSource).getConnection());
+            } else {
+                executor = JdbcMetaExecutor.fromXa(((XADataSource) dataSource).getXAConnection());
+            }
+            return executor;
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -165,14 +171,19 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
         if (sessionName == null) {
             throw new NullPointerException();
         }
-        final CommonDataSource dataSource = this.dataSource;
-        if (!(dataSource instanceof DataSource)) {
-            String m = String.format("%s isn't %s ,couldn't create local executor.", dataSource,
-                    DataSource.class.getName());
-            throw new DataAccessException(m);
-        }
+
+
         Connection conn = null;
         try {
+            CommonDataSource dataSource = this.dataSource;
+            if (readOnly && dataSource instanceof RoutingDataSource) {
+                dataSource = (CommonDataSource) ((RoutingDataSource<?>) dataSource).readOnlyDataSource();
+            }
+            if (!(dataSource instanceof DataSource)) {
+                String m = String.format("%s isn't %s ,couldn't create local executor.", dataSource,
+                        DataSource.class.getName());
+                throw new DataAccessException(m);
+            }
             conn = ((DataSource) dataSource).getConnection();
             return this.localFunc.apply(this, conn, sessionName);
         } catch (Exception e) {
@@ -196,24 +207,24 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
         if (sessionName == null) {
             throw new NullPointerException();
         }
-        final CommonDataSource dataSource = this.dataSource;
+
         Object conn = null;
         try {
-            if (dataSource instanceof XADataSource) {
-                conn = ((XADataSource) dataSource).getXAConnection();
-            } else {
+            CommonDataSource dataSource = this.dataSource;
+            if (readOnly && dataSource instanceof RoutingDataSource) {
+                dataSource = (CommonDataSource) ((RoutingDataSource<?>) dataSource).readOnlyDataSource();
+            }
+            if (dataSource instanceof DataSource) {
                 conn = ((DataSource) dataSource).getConnection();
+            } else {
+                conn = ((XADataSource) dataSource).getXAConnection();
             }
             return this.rmFunc.apply(this, conn, sessionName);
         } catch (Exception e) {
-            if (conn instanceof Connection) {
-                JdbcExecutor.closeResource((Connection) conn);
-            }
+            JdbcExecutorSupport.closeJdbcConnection(conn);
             throw handleException(e);
         } catch (Throwable e) {
-            if (conn instanceof Connection) {
-                JdbcExecutor.closeResource((Connection) conn);
-            }
+            JdbcExecutorSupport.closeJdbcConnection(conn);
             throw e;
         }
 

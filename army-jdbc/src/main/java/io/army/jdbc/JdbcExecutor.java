@@ -67,7 +67,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
     final Connection conn;
 
-    private final String name;
+    final String sessionName;
     private final long identifier;
 
     /**
@@ -77,8 +77,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
      */
     private boolean driverSpiOpened;
 
-    JdbcExecutor(JdbcExecutorFactory factory, Connection conn, String name) {
-        this.name = name;
+    JdbcExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+        this.sessionName = sessionName;
         this.factory = factory;
         this.conn = conn;
 
@@ -428,10 +428,30 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
     @Override
     public final void close() throws DataAccessException {
+        Throwable error = null;
         try {
             this.conn.close();
-        } catch (Exception e) {
-            throw handleException(e);
+
+        } catch (Throwable e) {
+            error = e;
+        }
+
+        if (this instanceof XaConnectionExecutor) {
+            try {
+                ((XaConnectionExecutor) this).closeXaConnection();
+            } catch (Exception e) {
+                if (error == null) {
+                    error = e;
+                }
+            }
+        }
+
+        if (error != null) {
+            if (error instanceof Exception) {
+                throw handleException((Exception) error);
+            } else {
+                throw (Error) error;
+            }
         }
 
     }
@@ -442,7 +462,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         return _StringUtils.builder(46)
                 .append(getClass().getName())
                 .append("[sessionName:")
-                .append(this.name)
+                .append(this.sessionName)
                 .append(",hash:")
                 .append(System.identityHashCode(this))
                 .append(']')

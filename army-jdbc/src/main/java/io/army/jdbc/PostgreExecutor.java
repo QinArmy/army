@@ -32,7 +32,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
     static SyncLocalStmtExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
         final LocalSessionExecutor executor;
-        if (factory.databaseSessionHolder) {
+        if (factory.dataSourceCloseEnable) {
             executor = new LocalSessionHolderExecutor(factory, conn);
         } else {
             executor = new LocalSessionExecutor(factory, conn);

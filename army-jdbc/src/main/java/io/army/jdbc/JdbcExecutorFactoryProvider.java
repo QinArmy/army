@@ -127,14 +127,12 @@ public final class JdbcExecutorFactoryProvider implements SyncStmtExecutorFactor
         final DatabaseMetaData metaData;
         metaData = conn.getMetaData();
 
-        final String name, version;
-        name = metaData.getDatabaseProductName();
+        final String family, version;
+        family = metaData.getDatabaseProductName();
 
-        final Database database;
-        database = getDatabase(name);
         return ServerMeta.builder()
-                .name(name)
-                .database(database)
+                .name(family)
+                .database(Database.mapToDatabase(family, func))
                 .catalog(conn.getCatalog())
                 .schema(conn.getSchema())
                 .version(metaData.getDatabaseProductVersion())

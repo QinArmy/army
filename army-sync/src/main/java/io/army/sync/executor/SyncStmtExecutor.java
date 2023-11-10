@@ -154,8 +154,6 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
         void forget(Xid xid, Function<Option<?>, ?> optionFunc);
 
-        List<Xid> recover(int flags, Function<Option<?>, ?> optionFunc);
-
         Stream<Xid> recoverStream(int flags, Function<Option<?>, ?> optionFunc);
 
 

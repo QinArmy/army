@@ -1,9 +1,6 @@
 package io.army.jdbc;
 
 import io.army.dialect._Constant;
-
-import javax.annotation.Nullable;
-
 import io.army.schema.*;
 import io.army.session.DataAccessException;
 import io.army.sync.executor.MetaExecutor;
@@ -11,13 +8,19 @@ import io.army.util._Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+import javax.sql.XAConnection;
 import java.sql.*;
 import java.util.List;
 import java.util.Map;
 
 final class JdbcMetaExecutor implements MetaExecutor {
 
-    static JdbcMetaExecutor create(Connection conn) {
+    static JdbcMetaExecutor from(Connection conn) {
+        return new JdbcMetaExecutor(conn);
+    }
+
+    static JdbcMetaExecutor fromXa(XAConnection conn) {
         return new JdbcMetaExecutor(conn);
     }
 

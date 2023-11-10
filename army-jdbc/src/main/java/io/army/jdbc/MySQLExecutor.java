@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.sql.XAConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -24,7 +25,6 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -34,11 +34,23 @@ abstract class MySQLExecutor extends JdbcExecutor {
         return new LocalExecutor(factory, conn, sessionName);
     }
 
-    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, Object conn, String sessionName) {
+    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, final Object connObj, String sessionName) {
         try {
-            final Connection connection;
-            connection = xaConnection.getConnection();
-            return new MySQLRmExecutor(factory, xaConnection, connection);
+            final SyncRmStmtExecutor executor;
+
+            if (connObj instanceof Connection) {
+                executor = new RmExecutor(factory, (Connection) connObj, sessionName);
+            } else if (connObj instanceof XAConnection) {
+                final XAConnection xaConn = (XAConnection) connObj;
+                final Connection conn;
+                conn = ((XAConnection) connObj).getConnection();
+
+                executor = new XaRmExecutor(factory, xaConn, conn, sessionName);
+            } else {
+                throw new IllegalArgumentException();
+            }
+
+            return executor;
         } catch (SQLException e) {
             throw JdbcExecutor.wrapError(e);
         }
@@ -46,7 +58,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
 
-
+    private static final String SEMICOLON = ";";
     private TransactionInfo info;
 
     private MySQLExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
@@ -294,16 +306,118 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }
 
 
+    final Isolation getMySqlIsolation(final ResultSet rs) throws SQLException {
+        try (ResultSet resultSet = rs) {
+            if (!resultSet.next()) {
+                // no bug,never here
+                throw new DataAccessException("isolation no result");
+            }
+            final Isolation isolation;
+            switch (resultSet.getString(1)) {
+                case "READ-COMMITTED":
+                    isolation = Isolation.READ_COMMITTED;
+                    break;
+                case "REPEATABLE-READ":
+                    isolation = Isolation.REPEATABLE_READ;
+                    break;
+                case "SERIALIZABLE":
+                    isolation = Isolation.SERIALIZABLE;
+                    break;
+                case "READ-UNCOMMITTED":
+                    isolation = Isolation.READ_UNCOMMITTED;
+                    break;
+                default:
+                    throw unknownIsolation(resultSet.getString(1));
+
+            }
+            return isolation;
+        }
+    }
+
+
     private static class LocalExecutor extends MySQLExecutor implements SyncLocalStmtExecutor {
+
+        private static final Option<Boolean> WITH_CONSISTENT_SNAPSHOT = Option.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
 
         private LocalExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
             super(factory, conn, sessionName);
         }
 
-
+        /**
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/commit.html">START TRANSACTION Statement</a>
+         */
         @Override
-        public TransactionInfo startTransaction(TransactionOption option, HandleMode mode) {
-            return null;
+        public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
+
+            final StringBuilder builder = new StringBuilder(168);
+
+            int stmtCount = 0;
+            if (inTransaction()) {
+                switch (mode) {
+                    case ERROR_IF_EXISTS:
+                        throw transactionExistsRejectStart(this.sessionName);
+                    case COMMIT_IF_EXISTS:
+                        builder.append(COMMIT)
+                                .append(SPACE_SEMICOLON_SPACE);
+                        stmtCount++;
+                        break;
+                    case ROLLBACK_IF_EXISTS:
+                        builder.append(ROLLBACK)
+                                .append(SPACE_SEMICOLON_SPACE);
+                        stmtCount++;
+                        break;
+                    default:
+                        throw _Exceptions.unexpectedEnum(mode);
+                }
+            }
+
+
+            final Isolation isolation;
+            isolation = option.isolation();
+
+            if (isolation == null) {
+                builder.append("SET @@transaction_isolation = @@SESSION.transaction_isolation ; "); // here,must guarantee isolation is session isolation , must tail space
+                builder.append("SELECT @@SESSION.transaction_isolation AS txIsolationLevel ; ");
+                stmtCount += 2;
+            } else {
+                builder.append("SET TRANSACTION ISOLATION LEVEL ");
+                standardIsolation(isolation, builder);
+                builder.append(SPACE_SEMICOLON_SPACE);
+                stmtCount++;
+            }
+
+            builder.append(START_TRANSACTION_SPACE);
+            final boolean readOnly = option.isReadOnly();
+            if (readOnly) {
+                builder.append(READ_ONLY);
+            } else {
+                builder.append(READ_WRITE);
+            }
+
+            final Boolean consistentSnapshot;
+            consistentSnapshot = option.valueOf(WITH_CONSISTENT_SNAPSHOT);
+
+            if (Boolean.TRUE.equals(consistentSnapshot)) {
+                builder.append(SPACE_COMMA_SPACE)
+                        .append("WITH CONSISTENT SNAPSHOT");
+            }
+
+            stmtCount++;
+
+            final Function<Option<?>, ?> optionFunc;
+            if (consistentSnapshot != null && consistentSnapshot) {
+                optionFunc = Option.singleFunc(WITH_CONSISTENT_SNAPSHOT, Boolean.TRUE);
+            } else {
+                optionFunc = Option.EMPTY_OPTION_FUNC;
+            }
+
+            // execute start transaction statements
+            final Isolation finalIsolation;
+            finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
+
+            final TransactionInfo info;
+            ((MySQLExecutor) this).info = info = TransactionInfo.info(true, finalIsolation, readOnly, optionFunc);
+            return info;
         }
 
         @Nullable
@@ -319,83 +433,167 @@ abstract class MySQLExecutor extends JdbcExecutor {
         }
 
 
-    } // MySQLLocalExecutor
+        private Isolation executeStartTransaction(final int stmtCount, final @Nullable Isolation isolation,
+                                                  final StringBuilder builder) {
+
+            try (final Statement statement = this.conn.createStatement()) {
+
+                Isolation sessionIsolation = null;
+                int batchSize = 0;
+                if (this.factory.useMultiStmt) {
+                    if (statement.execute(builder.toString())) {
+                        statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                        // no bug never here
+                        throw new IllegalStateException("sql error");
+                    } else if (statement.getUpdateCount() == -1) {
+                        throw multiStatementLessThanExpected(0, stmtCount); // no result
+                    }
+                    batchSize++;
+                    while (true) {
+                        if (statement.getMoreResults()) {
+                            assert sessionIsolation == null;
+                            sessionIsolation = getMySqlIsolation(statement.getResultSet());
+                        } else if (statement.getUpdateCount() == -1) {
+                            break;
+                        }
+                        batchSize++;
+                    }
+                } else if (isolation == null) {
+                    int start = 0;
+                    String sql;
+
+                    for (int semicolon; (semicolon = builder.indexOf(SEMICOLON, start)) > 0; start = semicolon + 1) {
+                        sql = builder.substring(start, semicolon);
+                        batchSize++;
+                        if (sql.startsWith(" SELECT")) {
+                            assert sessionIsolation == null;
+                            sessionIsolation = getMySqlIsolation(statement.executeQuery(sql));
+                        } else {
+                            statement.executeUpdate(sql);
+                        }
+                    }
+                    statement.executeUpdate(builder.substring(start, builder.length()));
+                    batchSize++;
+                    assert sessionIsolation != null;
+                } else {
+                    int start = 0;
+                    for (int semicolon; (semicolon = builder.indexOf(SEMICOLON, start)) > 0; start = semicolon + 1) {
+                        statement.addBatch(builder.substring(start, semicolon));
+                        batchSize++;
+                    }
+                    statement.addBatch(builder.substring(start, builder.length()));
+                    batchSize++;
+                    statement.executeBatch();
+                }
+
+                assert batchSize == stmtCount;
+
+                final Isolation finalIsolation;
+                if (isolation == null) {
+                    assert sessionIsolation != null;
+                    finalIsolation = sessionIsolation;
+                } else {
+                    finalIsolation = isolation;
+                }
+                return finalIsolation;
+            } catch (Exception e) {
+                throw handleException(e);
+            }
+        }
 
 
-    private static final class MySQLRmExecutor extends MySQLExecutor implements SyncRmStmtExecutor {
+    } // LocalExecutor
 
 
-        public MySQLRmExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+    private static class RmExecutor extends MySQLExecutor implements SyncRmStmtExecutor {
+
+
+        private RmExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
             super(factory, conn, sessionName);
         }
 
         @Override
-        public TransactionInfo start(Xid xid, int flags, TransactionOption option) {
+        public final TransactionInfo start(Xid xid, int flags, TransactionOption option) {
             return null;
         }
 
         @Override
-        public TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
+        public final TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
             return null;
         }
 
         @Override
-        public int prepare(Xid xid, Function<Option<?>, ?> optionFunc) {
+        public final int prepare(Xid xid, Function<Option<?>, ?> optionFunc) {
             return 0;
         }
 
         @Override
-        public void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
+        public final void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
 
         }
 
         @Override
-        public void rollback(Xid xid, Function<Option<?>, ?> optionFunc) {
+        public final void rollback(Xid xid, Function<Option<?>, ?> optionFunc) {
 
         }
 
         @Override
-        public void forget(Xid xid, Function<Option<?>, ?> optionFunc) {
+        public final void forget(Xid xid, Function<Option<?>, ?> optionFunc) {
 
         }
 
         @Override
-        public List<Xid> recover(int flags, Function<Option<?>, ?> optionFunc) {
+        public final Stream<Xid> recoverStream(int flags, Function<Option<?>, ?> optionFunc) {
             return null;
         }
 
         @Override
-        public Stream<Xid> recoverStream(int flags, Function<Option<?>, ?> optionFunc) {
-            return null;
-        }
-
-        @Override
-        public boolean isSupportForget() {
+        public final boolean isSupportForget() {
             return false;
         }
 
         @Override
-        public int startSupportFlags() {
+        public final int startSupportFlags() {
             return 0;
         }
 
         @Override
-        public int endSupportFlags() {
+        public final int endSupportFlags() {
             return 0;
         }
 
         @Override
-        public int recoverSupportFlags() {
+        public final int recoverSupportFlags() {
             return 0;
         }
 
         @Override
-        public boolean isSameRm(Session.XaTransactionSupportSpec s) throws SessionException {
+        public final boolean isSameRm(Session.XaTransactionSupportSpec s) throws SessionException {
             return false;
         }
 
 
-    }//MySQLRmExecutor
+    } // RmExecutor
+
+
+    private static final class XaRmExecutor extends RmExecutor implements XaConnectionExecutor {
+
+        private final XAConnection xaCon;
+
+        private XaRmExecutor(JdbcExecutorFactory factory, XAConnection xaConn, Connection conn, String sessionName) {
+            super(factory, conn, sessionName);
+
+            this.xaCon = xaConn;
+        }
+
+
+        @Override
+        public void closeXaConnection() throws SQLException {
+            this.xaCon.close();
+        }
+
+
+    } // XaRmExecutor
 
 
 }
