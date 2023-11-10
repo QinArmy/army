@@ -175,6 +175,8 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
             throw _Exceptions.xaNonCurrentTransaction(xid); // use xid
         } else if ((states = lastInfo.nonNullOf(Option.XA_STATES)) != XaStates.IDLE) {
             throw _Exceptions.xaStatesDontSupportPrepareCommand(infoXid, states); // use infoXid
+        } else if ((lastInfo.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0) {
+            throw _Exceptions.xaTransactionRollbackOnly(infoXid);
         }
 
         final int flags;

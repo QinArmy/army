@@ -562,6 +562,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             try (Statement statement = this.conn.createStatement()) {
                 statement.executeUpdate(builder.toString());
 
+                this.transactionInfo = newInfo;
                 return newInfo;
             } catch (Exception e) {
                 throw handleException(e);
@@ -581,8 +582,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
         }
 
         /**
-         * <p>
-         * the conversion process of xid is same with MySQL Connector/J .
+         * <p>the conversion process of xid is same with MySQL Connector/J .
          * <br/>
          *
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
@@ -641,7 +641,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             final Isolation finalIsolation;
             finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
 
-            final Map<Option<?>, Object> map = _Collections.hashMap(5);
+            final Map<Option<?>, Object> map = _Collections.hashMap(6);
 
             map.put(Option.XID, xid);
             map.put(Option.XA_FLAGS, flags);
@@ -653,33 +653,160 @@ abstract class MySQLExecutor extends JdbcExecutor {
             return info;
         }
 
+        /**
+         * <p>the conversion process of xid is same with MySQL Connector/J .
+         * <br/>
+         *
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
+         */
         @Override
-        public final TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
-            return null;
+        public final TransactionInfo end(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
+
+            final TransactionInfo info = this.transactionInfo;
+
+            final Xid infoXid;
+            if (info == null || (infoXid = info.valueOf(Option.XID)) == null || !infoXid.equals(xid)) {
+                throw _Exceptions.xaNonCurrentTransaction(xid); // here use xid
+            } else if (info.nonNullOf(Option.XA_STATES) != XaStates.ACTIVE) {
+                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(Option.XA_STATES));
+            } else if (((~endSupportFlags()) & flags) != 0) {
+                throw _Exceptions.xaInvalidFlag(flags, "end");
+            }
+
+            final StringBuilder builder = new StringBuilder(140);
+            builder.append("XA END");
+
+            xidToString(infoXid, builder);
+
+            if ((flags & RmSession.TM_SUSPEND) != 0) {
+                builder.append(" SUSPEND");
+            }
+
+            try (Statement statement = this.conn.createStatement()) {
+
+                statement.executeUpdate(builder.toString());
+
+                final Map<Option<?>, Object> map = _Collections.hashMap(6);
+
+                map.put(Option.XID, infoXid); // same instance
+                map.put(Option.XA_FLAGS, flags);
+                map.put(Option.XA_STATES, XaStates.IDLE);
+
+                final TransactionInfo newInfo;
+                this.transactionInfo = newInfo = TransactionInfo.info(true, info.isolation(), info.isReadOnly(), map::get);
+
+                return newInfo;
+            } catch (Exception e) {
+                throw handleException(e);
+            }
         }
 
         @Override
-        public final int prepare(Xid xid, Function<Option<?>, ?> optionFunc) {
-            return 0;
+        public final int prepare(final Xid xid, Function<Option<?>, ?> optionFunc) {
+
+            final TransactionInfo info = this.transactionInfo;
+
+            final Xid infoXid;
+            if (info == null || (infoXid = info.valueOf(Option.XID)) == null || !infoXid.equals(xid)) {
+                throw _Exceptions.xaNonCurrentTransaction(xid); // here use xid
+            } else if (info.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
+                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(Option.XA_STATES));
+            } else if ((info.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0) {
+                throw _Exceptions.xaTransactionRollbackOnly(infoXid);
+            }
+
+            final StringBuilder builder = new StringBuilder(140);
+
+            final boolean readOnly = info.isReadOnly();
+            if (readOnly) {
+                builder.append("XA COMMIT");
+            } else {
+                builder.append("XA PREPARE");
+            }
+
+            xidToString(infoXid, builder);
+
+            if (readOnly) {
+                builder.append(" ONE PHASE");
+            }
+
+            try (Statement statement = this.conn.createStatement()) {
+
+                statement.executeUpdate(builder.toString());
+
+                this.transactionInfo = null; // clear
+                return readOnly ? RmSession.XA_RDONLY : RmSession.XA_OK;
+            } catch (Exception e) {
+                throw handleException(e);
+            }
         }
 
         @Override
-        public final void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) {
+        public final void commit(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
+
+
+            final StringBuilder builder = new StringBuilder(140);
+            builder.append("XA COMMIT");
+
+            final TransactionInfo info;
+            final Xid infoXid;
+
+            if ((flags & RmSession.TM_ONE_PHASE) == 0) {
+
+                if (flags != RmSession.TM_NO_FLAGS) {
+                    throw _Exceptions.xaInvalidFlag(flags, "commit");
+                }
+                xidToString(xid, builder);
+            } else if ((info = this.transactionInfo) == null
+                    || (infoXid = info.valueOf(Option.XID)) == null
+                    || !infoXid.equals(xid)) {
+                throw _Exceptions.xaNonCurrentTransaction(xid); // here use xid
+            } else if (info.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
+                throw _Exceptions.xaTransactionDontSupportEndCommand(infoXid, info.nonNullOf(Option.XA_STATES));
+            } else if ((info.nonNullOf(Option.XA_FLAGS) & RmSession.TM_FAIL) != 0) {
+                throw _Exceptions.xaTransactionRollbackOnly(infoXid);
+            } else {
+                xidToString(infoXid, builder);
+                builder.append(" ONE PHASE");
+            }
+
+            try (Statement statement = this.conn.createStatement()) {
+
+                statement.executeUpdate(builder.toString());
+
+                if ((flags & RmSession.TM_ONE_PHASE) != 0) {
+                    this.transactionInfo = null; // clear for one phase
+                }
+            } catch (Exception e) {
+                throw handleException(e);
+            }
 
         }
 
         @Override
-        public final void rollback(Xid xid, Function<Option<?>, ?> optionFunc) {
+        public final void rollback(final Xid xid, Function<Option<?>, ?> optionFunc) {
 
+            final StringBuilder builder = new StringBuilder(140);
+            builder.append("XA ROLLBACK");
+
+            xidToString(xid, builder);
+
+            try (Statement statement = this.conn.createStatement()) {
+
+                statement.executeUpdate(builder.toString());
+
+            } catch (Exception e) {
+                throw handleException(e);
+            }
         }
 
         @Override
         public final void forget(Xid xid, Function<Option<?>, ?> optionFunc) {
-
+            throw new RmSessionException("MySQL don't support forget method.", RmSessionException.XAER_RMERR);
         }
 
         @Override
-        public final Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc) {
+        public final Stream<Xid> recover(final int flags, Function<Option<?>, ?> optionFunc) {
             return null;
         }
 
