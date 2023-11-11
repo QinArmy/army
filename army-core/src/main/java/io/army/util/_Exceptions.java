@@ -820,6 +820,11 @@ public abstract class _Exceptions {
         return new RmSessionException("session is busy with another transaction", RmSessionException.XAER_PROTO);
     }
 
+    public static RmSessionException xaDontSupportForget(Database database) {
+        String m = String.format("%s don't support forget method.", database.name());
+        return new RmSessionException(m, RmSessionException.XAER_RMERR);
+    }
+
     public static RmSessionException xaInvalidFlag(final int flags, final String method) {
         String m = String.format("XA invalid flag[%s] for method %s", Integer.toBinaryString(flags), method);
         return new RmSessionException(m, RmSessionException.XAER_INVAL);
@@ -846,6 +851,11 @@ public abstract class _Exceptions {
 
     public static RmSessionException xaStatesDontSupportCommitCommand(@Nullable Xid xid, XaStates states) {
         String m = String.format("%s %s don't support commit command", xid, states);
+        return new RmSessionException(m, RmSessionException.XAER_PROTO);
+    }
+
+    public static RmSessionException xaStatesDontSupportRollbackCommand(@Nullable Xid xid, XaStates states) {
+        String m = String.format("%s %s don't support rollback command", xid, states);
         return new RmSessionException(m, RmSessionException.XAER_PROTO);
     }
 

@@ -17,6 +17,7 @@ import io.army.session.record.ResultStates;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.StreamCommander;
+import io.army.sync.StreamOption;
 import io.army.sync.SyncStmtCursor;
 import io.army.sync.SyncStmtOption;
 import io.army.sync.executor.SyncStmtExecutor;
@@ -498,6 +499,42 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     @SuppressWarnings("unused")
     ResultStates createNamedCursor(Statement statement, long rows, Function<Option<?>, ?> optionFunc) {
         throw new UnsupportedOperationException();
+    }
+
+    final Stream<Xid> jdbcRecover(final String sql, Function<String, Xid> function, StreamOption option) {
+
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+
+            statement = this.conn.createStatement();
+
+            final int fetchSize = option.fetchSize();
+            if (fetchSize > 0) {
+                statement.setFetchSize(fetchSize);
+            } else if (fetchSize == 0 && option.isPreferClientStream() && this instanceof MySQLExecutor) {
+                statement.setFetchSize(Integer.MIN_VALUE);
+            }
+
+            resultSet = statement.executeQuery(sql);
+
+            final XidRowSpliterator spliterator;
+            spliterator = new XidRowSpliterator(this, option, statement, resultSet, function);
+
+            final Consumer<StreamCommander> consumer;
+            consumer = option.streamCommanderConsumer();
+            if (consumer != null) {
+                consumer.accept(spliterator::cancel);
+            }
+            return StreamSupport.stream(spliterator, false)
+                    .onClose(spliterator::close);
+        } catch (Exception e) {
+            closeResultSetAndStatement(resultSet, statement);
+            throw handleException(e);
+        } catch (Error e) {
+            closeResultSetAndStatement(resultSet, statement);
+            throw e;
+        }
     }
 
 
@@ -2748,6 +2785,164 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
 
     } // MultiSmtBatchRowSpliterator
+
+
+    private static final class XidRowSpliterator implements Spliterator<Xid> {
+
+        private final JdbcExecutor executor;
+
+        private final StreamOption option;
+
+        private final Statement statement;
+
+        private final ResultSet resultSet;
+
+        private final Function<String, Xid> function;
+
+        private boolean canceled;
+        private boolean closed;
+
+        /**
+         * @see JdbcExecutor#jdbcRecover(String, Function, StreamOption)
+         */
+        private XidRowSpliterator(JdbcExecutor executor, StreamOption option, Statement statement, ResultSet resultSet,
+                                  Function<String, Xid> function) {
+            this.executor = executor;
+            this.option = option;
+            this.statement = statement;
+            this.resultSet = resultSet;
+
+            this.function = function;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Xid> action) {
+            if (this.closed || this.canceled) {
+                return false;
+            }
+            try {
+                return readRowStream(1, action);
+            } catch (Exception e) {
+                close();
+                throw this.executor.handleException(e);
+            } catch (Error e) {
+                close();
+                throw e;
+            }
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super Xid> action) {
+            if (this.closed || this.canceled) {
+                return;
+            }
+            try {
+                readRowStream(0, action);
+            } catch (Exception e) {
+                close();
+                throw this.executor.handleException(e);
+            } catch (Error e) {
+                close();
+                throw e;
+            }
+        }
+
+
+        @Nullable
+        @Override
+        public Spliterator<Xid> trySplit() {
+            final int splitSize = this.option.splitSize();
+            if (this.closed || this.canceled || splitSize < 1) {
+                return null;
+            }
+
+            final List<Xid> itemList;
+            itemList = _Collections.arrayList(Math.min(300, splitSize));
+            try {
+                readRowStream(splitSize, itemList::add);
+            } catch (Exception e) {
+                close();
+                throw this.executor.handleException(e);
+            } catch (Error e) {
+                close();
+                throw e;
+            }
+
+            final Spliterator<Xid> spliterator;
+            if (itemList.size() == 0) {
+                spliterator = null;
+            } else {
+                spliterator = itemList.spliterator();
+            }
+            return spliterator;
+        }
+
+
+        @Override
+        public long estimateSize() {
+            return Long.MAX_VALUE;
+        }
+
+        @Override
+        public int characteristics() {
+            return 0;
+        }
+
+        private void close() {
+            if (this.closed) {
+                return;
+            }
+            this.closed = true;
+            closeResultSetAndStatement(this.resultSet, this.statement);
+        }
+
+        private void cancel() {
+            this.canceled = true;
+        }
+
+
+        private boolean readRowStream(final int readSize, final @Nullable Consumer<? super Xid> action)
+                throws SQLException {
+
+            if (action == null) {
+                throw new NullPointerException();
+            }
+
+            final ResultSet resultSet = this.resultSet;
+            final Function<String, Xid> function = this.function;
+
+            int readRowCount = 0;
+            String str;
+            while (resultSet.next()) {
+
+                str = resultSet.getString(1);
+
+                if (str == null) {
+                    action.accept(null);
+                } else {
+                    action.accept(function.apply(str));
+                }
+
+                readRowCount++;
+
+                if (this.canceled) {
+                    break;
+                }
+
+                if (readSize > 0 && readRowCount == readSize) {
+                    break;
+                }
+
+            }
+
+            if (this.canceled || readSize == 0 || readSize > readRowCount) {
+                close();
+            }
+            return readRowCount > 0;
+        }
+
+
+    } // XidRowSpliterator
 
 
 }

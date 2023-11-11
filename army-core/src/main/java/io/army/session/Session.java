@@ -189,9 +189,15 @@ public interface Session extends CloseableSpec, OptionSpec {
         int endSupportFlags();
 
         /**
+         * @return the sub set of {@code #commit(Xid, int, Function)} support flags(bit set).
+         */
+        int commitSupportFlags();
+
+        /**
          * @return the sub set of {@code #recover(int, Function)} support flags(bit set).
          */
         int recoverSupportFlags();
+
 
         /**
          * @throws SessionException throw when underlying database session have closed.

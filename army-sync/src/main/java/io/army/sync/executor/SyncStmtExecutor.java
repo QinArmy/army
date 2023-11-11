@@ -7,6 +7,7 @@ import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.stmt.*;
+import io.army.sync.StreamOption;
 import io.army.sync.SyncStmtOption;
 
 import javax.annotation.Nullable;
@@ -146,6 +147,22 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
         TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException;
 
+        /**
+         * @param xid        target transaction xid
+         * @param optionFunc dialect option function
+         * @return flags :
+         * <ul>
+         *     <li>{@link RmSession#XA_OK} :  prepared</li>
+         *     <li>{@link RmSession#XA_RDONLY} : current transaction is readonly and have committed with one phase</li>
+         * </ul>
+         * @throws RmSessionException throw when
+         *                            <ol>
+         *                                <li>xid and current transaction not match</li>
+         *                                <li>current transaction {@link XaStates} isn't {@link XaStates#IDLE}</li>
+         *                                <li>current transaction is rollback only ,for example : current transaction's {@link RmSession#TM_FAIL} is set </li>
+         *                                <li>database server response error message</li>
+         *                            </ol>
+         */
         int prepare(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
 
         void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException;
@@ -154,7 +171,7 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
         void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException;
 
-        Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException;
+        Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option) throws RmSessionException;
 
 
     }

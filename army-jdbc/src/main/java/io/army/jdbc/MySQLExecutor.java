@@ -1,11 +1,13 @@
 package io.army.jdbc;
 
 import com.mysql.cj.MysqlType;
+import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
 import io.army.session.*;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
+import io.army.sync.StreamOption;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.util.*;
@@ -701,6 +703,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
             }
         }
 
+        /**
+         * <p>the conversion process of xid is same with MySQL Connector/J .
+         * <br/>
+         *
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
+         */
         @Override
         public final int prepare(final Xid xid, Function<Option<?>, ?> optionFunc) {
 
@@ -734,16 +742,25 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
                 statement.executeUpdate(builder.toString());
 
-                this.transactionInfo = null; // clear
+                this.transactionInfo = null; // clear current transaction info
                 return readOnly ? RmSession.XA_RDONLY : RmSession.XA_OK;
             } catch (Exception e) {
                 throw handleException(e);
             }
         }
 
+        /**
+         * <p>the conversion process of xid is same with MySQL Connector/J .
+         * <br/>
+         *
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
+         */
         @Override
         public final void commit(final Xid xid, final int flags, Function<Option<?>, ?> optionFunc) {
 
+            if (((~commitSupportFlags()) & flags) != 0) {
+                throw _Exceptions.xaInvalidFlag(flags, "commit");
+            }
 
             final StringBuilder builder = new StringBuilder(140);
             builder.append("XA COMMIT");
@@ -751,11 +768,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             final TransactionInfo info;
             final Xid infoXid;
 
-            if ((flags & RmSession.TM_ONE_PHASE) == 0) {
-
-                if (flags != RmSession.TM_NO_FLAGS) {
-                    throw _Exceptions.xaInvalidFlag(flags, "commit");
-                }
+            if ((flags & RmSession.TM_ONE_PHASE) == 0) { // two phase commit
                 xidToString(xid, builder);
             } else if ((info = this.transactionInfo) == null
                     || (infoXid = info.valueOf(Option.XID)) == null
@@ -783,56 +796,104 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
         }
 
+        /**
+         * <p>the conversion process of xid is same with MySQL Connector/J .
+         * <br/>
+         *
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/xa-statements.html">XA Transaction SQL Statements</a>
+         */
         @Override
         public final void rollback(final Xid xid, Function<Option<?>, ?> optionFunc) {
+
+            final TransactionInfo info = this.transactionInfo;
+
+            final Xid infoXid, actualXid;
+            final boolean onePhaseRollback;
+            if (info != null
+                    && (infoXid = info.valueOf(Option.XID)) != null
+                    && infoXid.equals(xid)) {
+                // rollback current transaction
+                if (infoXid.nonNullOf(Option.XA_STATES) != XaStates.IDLE) {
+                    throw _Exceptions.xaStatesDontSupportRollbackCommand(infoXid, infoXid.nonNullOf(Option.XA_STATES));
+                }
+                actualXid = infoXid;
+                onePhaseRollback = true;
+            } else {
+                actualXid = xid;
+                onePhaseRollback = false;
+            }
+
 
             final StringBuilder builder = new StringBuilder(140);
             builder.append("XA ROLLBACK");
 
-            xidToString(xid, builder);
+            xidToString(actualXid, builder);
 
             try (Statement statement = this.conn.createStatement()) {
 
                 statement.executeUpdate(builder.toString());
 
+                if (onePhaseRollback) {
+                    this.transactionInfo = null; // clear for one phase rollback
+                }
             } catch (Exception e) {
                 throw handleException(e);
             }
         }
 
         @Override
-        public final void forget(Xid xid, Function<Option<?>, ?> optionFunc) {
-            throw new RmSessionException("MySQL don't support forget method.", RmSessionException.XAER_RMERR);
+        public final void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+            throw _Exceptions.xaDontSupportForget(Database.MySQL);
         }
 
         @Override
-        public final Stream<Xid> recover(final int flags, Function<Option<?>, ?> optionFunc) {
-            return null;
+        public final Stream<Xid> recover(final int flags, Function<Option<?>, ?> optionFunc, StreamOption option) {
+
+            if (((~recoverSupportFlags()) & flags) != 0) {
+                throw _Exceptions.xaInvalidFlag(flags, "recover");
+            }
+
+            if ((flags & RmSession.TM_START_RSCAN) != 0) {
+                return Stream.empty();
+            }
+            return jdbcRecover("XA RECOVER CONVERT XID", this::stringToXid, option);
         }
 
         @Override
         public final boolean isSupportForget() {
+            // always false, MySQL don't support forget
             return false;
         }
 
         @Override
         public final int startSupportFlags() {
-            return 0;
+            return (RmSession.TM_JOIN | RmSession.TM_RESUME);
         }
 
         @Override
         public final int endSupportFlags() {
-            return 0;
+            return (RmSession.TM_SUCCESS | RmSession.TM_SUSPEND | RmSession.TM_FAIL);
+        }
+
+        @Override
+        public final int commitSupportFlags() {
+            return RmSession.TM_ONE_PHASE;
         }
 
         @Override
         public final int recoverSupportFlags() {
-            return 0;
+            return (RmSession.TM_START_RSCAN | RmSession.TM_END_RSCAN | RmSession.TM_NO_FLAGS);
         }
 
         @Override
-        public final boolean isSameRm(Session.XaTransactionSupportSpec s) throws SessionException {
-            return false;
+        public final boolean isSameRm(final Session.XaTransactionSupportSpec s) throws SessionException {
+            try {
+                return s instanceof XaRmExecutor
+                        && this instanceof XaRmExecutor
+                        && ((XaRmExecutor) this).xaCon.getXAResource().isSameRM(((XaRmExecutor) s).xaCon.getXAResource());
+            } catch (Exception e) {
+                throw handleException(e);
+            }
         }
 
         @Nullable
@@ -883,6 +944,11 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 builder.append(HexUtils.hexEscapesText(true, formatIdBytes, offset, formatIdBytes.length));
             }
 
+        }
+
+
+        private Xid stringToXid(final String xidStr) {
+            return null;
         }
 
 
