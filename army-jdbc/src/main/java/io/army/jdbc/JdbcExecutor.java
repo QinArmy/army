@@ -32,6 +32,7 @@ import io.army.util._TimeUtils;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import javax.sql.XAConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -115,9 +116,17 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     }
 
     @Override
-    public final <T> T getDriverSpi(Class<T> spiClass) {
-        this.driverSpiOpened = Connection.class.isAssignableFrom(spiClass);
-        return spiClass.cast(this.conn);
+    public final <T> T getDriverSpi(final Class<T> spiClass) {
+        final T spi;
+        if (Connection.class.isAssignableFrom(spiClass)) {
+            spi = spiClass.cast(this.conn);
+        } else if (this instanceof XaConnectionExecutor && XAConnection.class.isAssignableFrom(spiClass)) {
+            spi = spiClass.cast(((XaConnectionExecutor) this).getXAConnection());
+        } else {
+            spi = spiClass.cast(this.conn);
+        }
+        this.driverSpiOpened = true;
+        return spi;
     }
 
     @Override
@@ -627,6 +636,35 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             }
             return readIsolation(resultSet.getString(1));
         }
+    }
+
+    /**
+     * @throws DataAccessException throw when chain is true and {@link #obtainTransaction()} is null.
+     */
+    final boolean transactionChain(final Function<Option<?>, ?> optionFunc, final StringBuilder builder)
+            throws DataAccessException {
+
+        final Object chainValue;
+        if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+            chainValue = null;
+        } else {
+            chainValue = optionFunc.apply(Option.CHAIN);
+        }
+
+        final boolean chain;
+        if (chainValue instanceof Boolean) {
+            builder.append(_Constant.SPACE_AND);
+            chain = (Boolean) chainValue;
+            if (!chain) {
+                builder.append(" NO");
+            } else if (obtainTransaction() == null) {
+                throw new DataAccessException("COMMIT AND CHAIN can only be used in transaction blocks");
+            }
+            builder.append(" CHAIN");
+        } else {
+            chain = false;
+        }
+        return chain;
     }
 
 

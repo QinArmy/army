@@ -1141,27 +1141,15 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 builder.append(ROLLBACK);
             }
 
-            final Object chain;
-            if (optionFunc == Option.EMPTY_OPTION_FUNC) {
-                chain = null;
-            } else {
-                chain = optionFunc.apply(Option.CHAIN);
-            }
-
+            final boolean chain;
+            chain = transactionChain(optionFunc, builder);
             final TransactionInfo newInfo;
-            if (chain instanceof Boolean) {
-                builder.append(_Constant.SPACE_AND);
-                if ((Boolean) chain) {
-                    newInfo = this.transactionInfo;
-                } else {
-                    builder.append(" NO");
-                    newInfo = null;
-                }
-                builder.append(" CHAIN");
+            if (chain) {
+                newInfo = this.transactionInfo;
+                assert newInfo != null;
             } else {
                 newInfo = null;
             }
-
 
             try (Statement statement = this.conn.createStatement()) {
                 statement.executeUpdate(builder.toString());

@@ -503,18 +503,6 @@ abstract class MySQLExecutor extends JdbcExecutor {
         private TransactionInfo commitOrRollback(final boolean commit, final Function<Option<?>, ?> optionFunc)
                 throws DataAccessException {
 
-            final Object chain, release;
-            if (optionFunc == Option.EMPTY_OPTION_FUNC) {
-                chain = release = null;
-            } else {
-                chain = optionFunc.apply(Option.CHAIN);
-                release = optionFunc.apply(Option.RELEASE);
-            }
-            if (Boolean.TRUE.equals(chain) && Boolean.TRUE.equals(release)) {
-                String m = String.format("%s[true] and %s[true] conflict", Option.CHAIN.name(), Option.RELEASE.name());
-                throw new IllegalArgumentException(m);
-            }
-
             final StringBuilder builder = new StringBuilder(20);
             if (commit) {
                 builder.append(COMMIT);
@@ -522,18 +510,25 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 builder.append(ROLLBACK);
             }
 
+            final boolean chain;
+            chain = transactionChain(optionFunc, builder);
             final TransactionInfo newInfo;
-            if (chain instanceof Boolean) {
-                builder.append(_Constant.SPACE_AND);
-                if ((Boolean) chain) {
-                    newInfo = this.transactionInfo;
-                } else {
-                    builder.append(" NO");
-                    newInfo = null;
-                }
-                builder.append(" CHAIN");
+            if (chain) {
+                newInfo = this.transactionInfo;
+                assert newInfo != null;
             } else {
                 newInfo = null;
+            }
+
+            final Object release;
+            if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+                release = null;
+            } else {
+                release = optionFunc.apply(Option.RELEASE);
+            }
+            if (chain && Boolean.TRUE.equals(release)) {
+                String m = String.format("%s[true] and %s[true] conflict", Option.CHAIN.name(), Option.RELEASE.name());
+                throw new IllegalArgumentException(m);
             }
 
             if (release instanceof Boolean) {
