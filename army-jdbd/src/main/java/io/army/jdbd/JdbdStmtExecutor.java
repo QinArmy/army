@@ -1621,7 +1621,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
     }//CurrentRecordRowReader
 
-    private static final class JdbdCurrentRecord extends ArmyCurrentRecord {
+    private static final class JdbdCurrentRecord extends ArmyStmtCurrentRecord {
 
         private final Object[] valueArray;
 

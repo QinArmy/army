@@ -13,7 +13,9 @@ import io.army.session.*;
 import io.army.session.executor.ExecutorSupport;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
+import io.army.session.record.DataRecord;
 import io.army.session.record.ResultStates;
+import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.sync.StreamCommander;
@@ -501,7 +503,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         throw new UnsupportedOperationException();
     }
 
-    final Stream<Xid> jdbcRecover(final String sql, Function<String, Xid> function, StreamOption option) {
+    final Stream<Xid> jdbcRecover(final String sql, Function<DataRecord, Xid> function, StreamOption option) {
 
         Statement statement = null;
         ResultSet resultSet = null;
@@ -518,8 +520,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
             resultSet = statement.executeQuery(sql);
 
+            final DataType[] dataTypeArray;
+            dataTypeArray = createSqlTypArray(resultSet.getMetaData());
+
             final XidRowSpliterator spliterator;
-            spliterator = new XidRowSpliterator(this, option, statement, resultSet, function);
+            spliterator = new XidRowSpliterator(this, option, statement, resultSet, dataTypeArray, function);
 
             final Consumer<StreamCommander> consumer;
             consumer = option.streamCommanderConsumer();
@@ -1538,7 +1543,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
      *
      * @param <R> row java type
      */
-    private static abstract class RowReader<R> extends ArmyCurrentRecord {
+    private static abstract class RowReader<R> extends ArmyStmtCurrentRecord {
 
         final JdbcExecutor executor;
 
@@ -2787,7 +2792,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     } // MultiSmtBatchRowSpliterator
 
 
-    private static final class XidRowSpliterator implements Spliterator<Xid> {
+    private static final class XidRowSpliterator extends ArmyDriverCurrentRecord implements Spliterator<Xid> {
 
         private final JdbcExecutor executor;
 
@@ -2797,7 +2802,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         private final ResultSet resultSet;
 
-        private final Function<String, Xid> function;
+        private final Function<DataRecord, Xid> function;
+
+        private final ArmyResultRecordMeta meta;
+
+        private long rowCount;
 
         private boolean canceled;
         private boolean closed;
@@ -2806,13 +2815,58 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
          * @see JdbcExecutor#jdbcRecover(String, Function, StreamOption)
          */
         private XidRowSpliterator(JdbcExecutor executor, StreamOption option, Statement statement, ResultSet resultSet,
-                                  Function<String, Xid> function) {
+                                  DataType[] dataTypeArray, Function<DataRecord, Xid> function) throws SQLException {
             this.executor = executor;
             this.option = option;
             this.statement = statement;
             this.resultSet = resultSet;
 
             this.function = function;
+            this.meta = new JdbcProcRecordMeta(1, executor, dataTypeArray, resultSet.getMetaData());
+        }
+
+        @Override
+        public ArmyResultRecordMeta getRecordMeta() {
+            return this.meta;
+        }
+
+        @Override
+        protected Object[] copyValueArray() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long rowNumber() {
+            return this.rowCount;
+        }
+
+        @Nullable
+        @Override
+        public Object get(int indexBasedZero) {
+            try {
+                return this.resultSet.getObject(this.meta.checkIndexAndToBasedOne(indexBasedZero));
+            } catch (Exception e) {
+                throw this.executor.handleException(e);
+            }
+        }
+
+        @Nullable
+        @Override
+        public <T> T get(final int indexBasedZero, final Class<T> columnClass) {
+            if (columnClass != Integer.class
+                    && columnClass != String.class
+                    && columnClass != Long.class
+                    && columnClass != Boolean.class) {
+                String m = String.format("don't support convert to %s", columnClass.getName());
+                // no bug,never here
+                throw new DataAccessException(m);
+            }
+
+            try {
+                return (T) this.resultSet.getObject(this.meta.checkIndexAndToBasedOne(indexBasedZero), columnClass);
+            } catch (Exception e) {
+                throw this.executor.handleException(e);
+            }
         }
 
         @Override
@@ -2909,19 +2963,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             }
 
             final ResultSet resultSet = this.resultSet;
-            final Function<String, Xid> function = this.function;
+            final Function<DataRecord, Xid> function = this.function;
+            final int maxValue = Integer.MAX_VALUE;
 
+            long totalRowCount = this.rowCount;
             int readRowCount = 0;
-            String str;
             while (resultSet.next()) {
 
-                str = resultSet.getString(1);
-
-                if (str == null) {
-                    action.accept(null);
-                } else {
-                    action.accept(function.apply(str));
-                }
+                action.accept(function.apply(this));
 
                 readRowCount++;
 
@@ -2933,12 +2982,49 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                     break;
                 }
 
+                if (readRowCount == maxValue) {
+                    totalRowCount += readRowCount;
+                    readRowCount = 0;
+                }
+
             }
 
-            if (this.canceled || readSize == 0 || readSize > readRowCount) {
+            totalRowCount += readRowCount;
+
+            this.rowCount = totalRowCount;
+
+            if (this.canceled) {
+                close();
+            } else if (readSize == 0 || readSize > readRowCount) {
+                emitStates(totalRowCount);
                 close();
             }
+
             return readRowCount > 0;
+        }
+
+        private void emitStates(final long rowCount) {
+            final Consumer<ResultStates> consumer;
+            consumer = this.option.stateConsumer();
+            if (consumer == ResultStates.IGNORE_STATES) {
+                return;
+            }
+
+            try {
+                final ResultStates states;
+                states = new SingleQueryStates(this.executor.obtainTransaction(),
+                        mapToArmyWarning(this.statement.getWarnings()),
+                        rowCount, false, 0L
+                );
+                consumer.accept(states);
+            } catch (Exception e) {
+                close();
+                throw this.executor.handleException(e);
+            } catch (Error e) {
+                close();
+                throw e;
+            }
+
         }
 
 

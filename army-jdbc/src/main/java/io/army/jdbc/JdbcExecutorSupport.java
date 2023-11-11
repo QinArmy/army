@@ -202,12 +202,18 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         @Nullable
         @Override
         public final <T> T getOf(int indexBasedZero, Option<T> option) throws DataAccessException {
+            checkIndex(indexBasedZero);
             return null;
         }
 
         @Override
         public final <T> T getNonNullOf(int indexBasedZero, Option<T> option) throws DataAccessException {
-            return null;
+            final T value;
+            value = getOf(indexBasedZero, option);
+            if (value == null) {
+                throw new NullPointerException();
+            }
+            return value;
         }
 
         @Nullable
@@ -1042,6 +1048,8 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
     } // MultiResultUpdateStates
 
     interface XaConnectionExecutor {
+
+        XAConnection getXAConnection();
 
         void closeXaConnection() throws SQLException;
 

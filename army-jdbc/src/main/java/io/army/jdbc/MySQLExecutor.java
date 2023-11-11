@@ -5,6 +5,7 @@ import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
 import io.army.session.*;
+import io.army.session.record.DataRecord;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.sync.StreamOption;
@@ -856,7 +857,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
             if ((flags & RmSession.TM_START_RSCAN) != 0) {
                 return Stream.empty();
             }
-            return jdbcRecover("XA RECOVER CONVERT XID", this::stringToXid, option);
+            return jdbcRecover("XA RECOVER CONVERT XID", this::recordToXid, option);
         }
 
         @Override
@@ -947,8 +948,33 @@ abstract class MySQLExecutor extends JdbcExecutor {
         }
 
 
-        private Xid stringToXid(final String xidStr) {
-            return null;
+        @Nullable
+        private Xid recordToXid(final DataRecord row) {
+            final int formatId, gtridLength, bqualLength;
+
+            formatId = row.getNonNull(0, Integer.class); // formatID
+            gtridLength = row.getNonNull(1, Integer.class); // gtrid_length
+            bqualLength = row.getNonNull(2, Integer.class); // bqual_length
+
+            final String hexString;
+            hexString = row.getNonNull(3, String.class); // data
+
+            assert hexString.startsWith("0x") : "mysql XA RECOVER convert xid response error";
+
+            final byte[] idBytes;
+            idBytes = HexUtils.decodeHex(hexString.substring(2).getBytes(StandardCharsets.UTF_8));
+
+            final String gtrid, bqual;
+            if (gtridLength == 0) {
+                return null;  // non-jdbd create xid
+            }
+            gtrid = new String(idBytes, 0, gtridLength);
+            if (bqualLength == 0) {
+                bqual = null;
+            } else {
+                bqual = new String(idBytes, gtridLength, bqualLength);
+            }
+            return Xid.from(gtrid, bqual, formatId);
         }
 
 
@@ -965,6 +991,10 @@ abstract class MySQLExecutor extends JdbcExecutor {
             this.xaCon = xaConn;
         }
 
+        @Override
+        public XAConnection getXAConnection() {
+            return this.xaCon;
+        }
 
         @Override
         public void closeXaConnection() throws SQLException {

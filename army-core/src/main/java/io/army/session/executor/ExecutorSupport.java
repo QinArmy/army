@@ -438,16 +438,6 @@ public abstract class ExecutorSupport {
             return value;
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
-        public final <T> T get(int indexBasedZero, Class<T> columnClass) {
-            final Object value;
-            value = get(indexBasedZero);
-            if (value == null || columnClass.isInstance(value)) {
-                return (T) value;
-            }
-            return convertToTarget(value, columnClass);
-        }
 
         @Override
         public final <T> T getNonNull(int indexBasedZero, Class<T> columnClass) {
@@ -527,11 +517,26 @@ public abstract class ExecutorSupport {
         }
 
 
-    }//ArmyDataRecord
+    } // ArmyDataRecord
 
 
-    protected static abstract class ArmyCurrentRecord extends ArmyDataRecord implements CurrentRecord {
+    private static abstract class ArmyStmtDataRecord extends ArmyDataRecord {
 
+        @SuppressWarnings("unchecked")
+        @Override
+        public final <T> T get(int indexBasedZero, Class<T> columnClass) {
+            final Object value;
+            value = get(indexBasedZero);
+            if (value == null || columnClass.isInstance(value)) {
+                return (T) value;
+            }
+            return convertToTarget(value, columnClass);
+        }
+
+    } // ArmyStmtDataRecord
+
+
+    protected static abstract class ArmyDriverCurrentRecord extends ArmyDataRecord implements CurrentRecord {
 
         @Override
         public abstract ArmyResultRecordMeta getRecordMeta();
@@ -544,17 +549,51 @@ public abstract class ExecutorSupport {
         protected abstract Object[] copyValueArray();
 
 
-    }// ArmyCurrentRecord
+    } // ArmyDriverCurrentRecord
 
 
-    private static final class ArmyResultRecord extends ArmyDataRecord implements ResultRecord {
+    protected static abstract class ArmyStmtCurrentRecord extends ArmyDataRecord implements CurrentRecord {
+
+
+        @Override
+        public abstract ArmyResultRecordMeta getRecordMeta();
+
+        @Override
+        public final ResultRecord asResultRecord() {
+            return new ArmyResultRecord(this);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public final <T> T get(int indexBasedZero, Class<T> columnClass) {
+            final Object value;
+            value = get(indexBasedZero);
+            if (value == null || columnClass.isInstance(value)) {
+                return (T) value;
+            }
+            return convertToTarget(value, columnClass);
+        }
+
+        protected abstract Object[] copyValueArray();
+
+
+    }// ArmyStmtCurrentRecord
+
+
+    private static final class ArmyResultRecord extends ArmyStmtDataRecord implements ResultRecord {
 
 
         private final ArmyResultRecordMeta meta;
 
         private final Object[] valueArray;
 
-        public ArmyResultRecord(ArmyCurrentRecord currentRecord) {
+        private ArmyResultRecord(ArmyStmtCurrentRecord currentRecord) {
+            this.meta = currentRecord.getRecordMeta();
+            this.valueArray = currentRecord.copyValueArray();
+            assert this.valueArray.length == this.meta.getColumnCount();
+        }
+
+        private ArmyResultRecord(ArmyDriverCurrentRecord currentRecord) {
             this.meta = currentRecord.getRecordMeta();
             this.valueArray = currentRecord.copyValueArray();
             assert this.valueArray.length == this.meta.getColumnCount();
