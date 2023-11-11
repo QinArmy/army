@@ -119,6 +119,15 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         return spiClass.cast(this.conn);
     }
 
+    @Override
+    public final TransactionInfo transactionInfo() throws DataAccessException {
+        final TransactionInfo info;
+        info = obtainTransaction();
+        if (info != null) {
+            return info;
+        }
+        return sessionTransactionCharacteristics();
+    }
 
     @Override
     public final Object setSavePoint(Function<Option<?>, ?> optionFunc) throws DataAccessException {
@@ -494,6 +503,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
      */
     @Nullable
     abstract TransactionInfo obtainTransaction();
+
+    /**
+     * <p>Query session level transaction characteristics
+     */
+    abstract TransactionInfo sessionTransactionCharacteristics();
 
     /**
      * @see #update(SimpleStmt, SyncStmtOption, Class, Function)

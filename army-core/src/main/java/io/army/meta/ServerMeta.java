@@ -40,7 +40,8 @@ public interface ServerMeta {
      */
     Dialect usedDialect();
 
-    boolean meetsMinimum(int major, int minor);
+
+    boolean meetsMinimum(int major, int minor, int subMinor);
 
     boolean isSupportSavePoints();
 

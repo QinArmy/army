@@ -117,9 +117,18 @@ final class ServerMetaImpl implements ServerMeta {
         return this.supportSavePoint;
     }
 
+
     @Override
-    public boolean meetsMinimum(final int major, final int minor) {
-        return this.major > major || (this.major == major && this.minor >= minor);
+    public boolean meetsMinimum(final int major, final int minor, final int subMinor) {
+        final boolean meets;
+        if (this.major != major) {
+            meets = this.major > major;
+        } else if (this.minor != minor) {
+            meets = this.minor > minor;
+        } else {
+            meets = this.subMinor > subMinor;
+        }
+        return meets;
     }
 
     @Override

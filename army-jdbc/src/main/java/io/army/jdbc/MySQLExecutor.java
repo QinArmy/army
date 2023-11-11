@@ -4,6 +4,7 @@ import com.mysql.cj.MysqlType;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
+import io.army.meta.ServerMeta;
 import io.army.session.*;
 import io.army.session.record.DataRecord;
 import io.army.sqltype.MySQLType;
@@ -71,15 +72,33 @@ abstract class MySQLExecutor extends JdbcExecutor {
         super(factory, conn, sessionName);
     }
 
-
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/set-transaction.html">SET TRANSACTION Statement</a>
+     */
     @Override
-    public final TransactionInfo transactionInfo() throws DataAccessException {
-        return null;
-    }
+    public final void setTransactionCharacteristics(final TransactionOption option) throws DataAccessException {
+        final StringBuilder builder = new StringBuilder(30);
+        builder.append("SET SESSION TRANSACTION ");
 
-    @Override
-    public final void setTransactionCharacteristics(TransactionOption option) throws DataAccessException {
+        final Isolation isolation;
+        isolation = option.isolation();
+        if (isolation != null) {
+            builder.append("ISOLATION LEVEL ");
+            standardIsolation(isolation, builder);
+            builder.append(_Constant.SPACE_COMMA_SPACE);
+        }
+        if (option.isReadOnly()) {
+            builder.append(READ_ONLY);
+        } else {
+            builder.append(READ_WRITE);
+        }
 
+        try (Statement statement = this.conn.createStatement()) {
+
+            statement.executeUpdate(builder.toString());
+        } catch (Exception e) {
+            throw handleException(e);
+        }
     }
 
     @Nullable
@@ -305,6 +324,45 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }
 
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_transaction_isolation">transaction_isolation</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_transaction_read_only">transaction_read_only</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_tx_isolation">tx_isolation</a>
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_tx_read_only">tx_read_only</a>
+     */
+    @Override
+    final TransactionInfo sessionTransactionCharacteristics() {
+        final String sql;
+        final ServerMeta serverMeta = this.factory.serverMeta;
+        if (serverMeta.meetsMinimum(8, 0, 3)
+                || (serverMeta.meetsMinimum(5, 7, 20) && !serverMeta.meetsMinimum(8, 0, 0))) {
+            sql = "SELECT @@session.transaction_isolation AS txLevel,@@session.transaction_read_only AS txReadOnly";
+        } else {
+            sql = "SELECT @@session.tx_isolation AS txLevel,@@session.tx_read_only AS txReadOnly";
+        }
+
+        try (Statement statement = this.conn.createStatement()) {
+
+            try (ResultSet resultSet = statement.executeQuery(sql)) {
+
+                if (!resultSet.next()) {
+                    throw new DataAccessException("jdbc error");
+                }
+
+                final Isolation isolation;
+                final boolean readOnly;
+
+                isolation = readMySqlIsolation(resultSet.getString(1));
+                readOnly = resultSet.getBoolean(2);
+
+                return TransactionInfo.info(false, isolation, readOnly, Option.EMPTY_OPTION_FUNC);
+            }
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+
     final Isolation executeStartTransaction(final int stmtCount, final @Nullable Isolation isolation,
                                             final StringBuilder builder) throws DataAccessException {
 
@@ -374,6 +432,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     }
 
+
     /*-------------------below private static  -------------------*/
 
     private static Isolation getMySqlIsolation(final ResultSet rs) throws SQLException {
@@ -382,26 +441,30 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 // no bug,never here
                 throw new DataAccessException("isolation no result");
             }
-            final Isolation isolation;
-            switch (resultSet.getString(1)) {
-                case "READ-COMMITTED":
-                    isolation = Isolation.READ_COMMITTED;
-                    break;
-                case "REPEATABLE-READ":
-                    isolation = Isolation.REPEATABLE_READ;
-                    break;
-                case "SERIALIZABLE":
-                    isolation = Isolation.SERIALIZABLE;
-                    break;
-                case "READ-UNCOMMITTED":
-                    isolation = Isolation.READ_UNCOMMITTED;
-                    break;
-                default:
-                    throw unknownIsolation(resultSet.getString(1));
-
-            }
-            return isolation;
+            return readMySqlIsolation(rs.getString(1));
         }
+    }
+
+    private static Isolation readMySqlIsolation(final String level) {
+        final Isolation isolation;
+        switch (level) {
+            case "READ-COMMITTED":
+                isolation = Isolation.READ_COMMITTED;
+                break;
+            case "REPEATABLE-READ":
+                isolation = Isolation.REPEATABLE_READ;
+                break;
+            case "SERIALIZABLE":
+                isolation = Isolation.SERIALIZABLE;
+                break;
+            case "READ-UNCOMMITTED":
+                isolation = Isolation.READ_UNCOMMITTED;
+                break;
+            default:
+                throw unknownIsolation(level);
+
+        }
+        return isolation;
     }
 
 
@@ -418,6 +481,8 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
         /**
          * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/commit.html">START TRANSACTION Statement</a>
+         * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_transaction_isolation">transaction_isolation</a>
+         * @see <a href="https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_tx_isolation">tx_isolation</a>
          */
         @Override
         public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
@@ -448,15 +513,22 @@ abstract class MySQLExecutor extends JdbcExecutor {
             final Isolation isolation;
             isolation = option.isolation();
 
-            if (isolation == null) {
+            final ServerMeta serverMeta;
+            if (isolation != null) {
+                builder.append("SET TRANSACTION ISOLATION LEVEL ");
+                standardIsolation(isolation, builder);
+                stmtCount++;
+
+                builder.append(_Constant.SPACE_SEMICOLON_SPACE);
+            } else if ((serverMeta = this.factory.serverMeta).meetsMinimum(8, 0, 3)
+                    || (serverMeta.meetsMinimum(5, 7, 20) && !serverMeta.meetsMinimum(8, 0, 0))) {
                 builder.append("SET @@transaction_isolation = @@SESSION.transaction_isolation ; "); // here,must guarantee isolation is session isolation , must tail space
                 builder.append("SELECT @@SESSION.transaction_isolation AS txIsolationLevel ; ");
                 stmtCount += 2;
             } else {
-                builder.append("SET TRANSACTION ISOLATION LEVEL ");
-                standardIsolation(isolation, builder);
-                builder.append(_Constant.SPACE_SEMICOLON_SPACE);
-                stmtCount++;
+                builder.append("SET @@tx_isolation = @@SESSION.tx_isolation ; "); // here,must guarantee isolation is session isolation , must tail space
+                builder.append("SELECT @@SESSION.tx_isolation AS txIsolationLevel ; ");
+                stmtCount += 2;
             }
 
             builder.append(START_TRANSACTION_SPACE);
