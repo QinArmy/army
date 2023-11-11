@@ -2,8 +2,10 @@ package io.army.jdbc;
 
 import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
+import io.army.session.*;
 import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
+import io.army.sync.StreamOption;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.sync.executor.SyncStmtExecutor;
@@ -13,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.sql.XAConnection;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -20,6 +23,8 @@ import java.sql.*;
 import java.time.*;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -31,26 +36,74 @@ import java.util.UUID;
 abstract class PostgreExecutor extends JdbcExecutor {
 
     static SyncLocalStmtExecutor localExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
-        final LocalSessionExecutor executor;
-        if (factory.dataSourceCloseEnable) {
-            executor = new LocalSessionHolderExecutor(factory, conn);
-        } else {
-            executor = new LocalSessionExecutor(factory, conn);
-        }
-        return executor;
+        return new LocalExecutor(factory, conn, sessionName);
     }
 
-    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, Object conn, String sessionName) {
-        throw new UnsupportedOperationException();
+    static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, final Object connObj, String sessionName) {
+        final SyncRmStmtExecutor executor;
+        if (connObj instanceof Connection) {
+            executor = new RmExecutor(factory, (Connection) connObj, sessionName);
+        } else if (connObj instanceof XAConnection) {
+            try {
+                final XAConnection xaConn = (XAConnection) connObj;
+                final Connection conn;
+                conn = xaConn.getConnection();
+
+                executor = new XaConnRmExecutor(factory, xaConn, conn, sessionName);
+            } catch (SQLException e) {
+                throw JdbcExecutor.wrapError(e);
+            }
+        } else {
+            // no bug,never here
+            throw new IllegalArgumentException();
+        }
+        return executor;
     }
 
 
     private static final Logger LOG = LoggerFactory.getLogger(PostgreExecutor.class);
 
-    private PostgreExecutor(JdbcExecutorFactory factory, Connection conn) {
-        super(factory, conn);
+    private static final Option<Boolean> DEFERRABLE = Option.from("DEFERRABLE", Boolean.class);
+
+    /**
+     * private constructor
+     */
+    private PostgreExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+        super(factory, conn, sessionName);
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-set-transaction.html">SET TRANSACTION Statement</a>
+     */
+    @Override
+    public final void setTransactionCharacteristics(final TransactionOption option) throws DataAccessException {
+        final StringBuilder builder = new StringBuilder(35);
+        builder.append("SET SESSION TRANSACTION ");
+
+        if (option.isReadOnly()) {
+            builder.append(READ_ONLY);
+        } else {
+            builder.append(READ_WRITE);
+        }
+
+        final Isolation isolation;
+        isolation = option.isolation();
+        if (isolation != null) {
+            builder.append(_Constant.SPACE_COMMA_SPACE);
+            builder.append("ISOLATION LEVEL ");
+            standardIsolation(isolation, builder);
+        }
+
+        appendDeferrable(option, builder);
+
+        try (Statement statement = this.conn.createStatement()) {
+
+            statement.executeUpdate(builder.toString());
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+
+    }
 
     @Override
     final Logger getLogger() {
@@ -900,28 +953,333 @@ abstract class PostgreExecutor extends JdbcExecutor {
         return value;
     }
 
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/sql-set-transaction.html">SET TRANSACTION</a>
+     * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-TRANSACTION-ISOLATION">transaction_isolation</a>
+     * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-TRANSACTION-READ-ONLY">transaction_read_only</a>
+     * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-TRANSACTION-DEFERRABLE">transaction_deferrable</a>
+     */
+    @Override
+    final TransactionInfo sessionTransactionCharacteristics() {
+        final String sql = "SHOW transaction_isolation ; SHOW transaction_read_only ; SHOW transaction_deferrable ";
+        try (final Statement statement = this.conn.createStatement()) {
 
-    private static class LocalSessionExecutor extends PostgreExecutor implements SyncLocalStmtExecutor {
+            if (!statement.execute(sql)) {
+                statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                throw driverError();
+            }
+            final Isolation isolation;
+            isolation = readIsolationAndClose(statement.getResultSet());
 
-        private LocalSessionExecutor(JdbcExecutorFactory factory, Connection conn) {
-            super(factory, conn);
+            final boolean readOnly, deferrable;
+            readOnly = readBooleanFromMultiResult(statement);
+            deferrable = readBooleanFromMultiResult(statement);
+
+            return TransactionInfo.info(false, isolation, readOnly, Option.singleFunc(DEFERRABLE, deferrable));
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+    /**
+     * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-DEFAULT-TRANSACTION-ISOLATION">default_transaction_isolation</a>
+     */
+    final Isolation readIsolation(final String level) {
+        final Isolation isolation;
+        switch (level.toLowerCase(Locale.ROOT)) {
+            case "read committed":
+                isolation = Isolation.READ_COMMITTED;
+                break;
+            case "repeatable read":
+                isolation = Isolation.REPEATABLE_READ;
+                break;
+            case "serializable":
+                isolation = Isolation.SERIALIZABLE;
+                break;
+            case "read uncommitted":
+                isolation = Isolation.READ_UNCOMMITTED;
+                break;
+            default:
+                throw unknownIsolation(level);
+
+        }
+        return isolation;
+    }
+
+
+    /*-------------------below private static  -------------------*/
+
+
+    /**
+     * @see #sessionTransactionCharacteristics()
+     */
+    private static boolean readBooleanFromMultiResult(Statement statement) throws SQLException {
+        if (!statement.getMoreResults()) {
+            statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+            throw driverError();
+        }
+
+        try (ResultSet resultSet = statement.getResultSet()) {
+            if (!resultSet.next()) {
+                throw driverError();
+            }
+            return resultSet.getBoolean(1);
+        }
+    }
+
+
+    @Nullable
+    private static Boolean appendDeferrable(final TransactionOption option, final StringBuilder builder) {
+        final Boolean deferrable;
+        deferrable = option.valueOf(DEFERRABLE);
+        if (deferrable != null) {
+            builder.append(_Constant.SPACE_COMMA_SPACE);
+            if (!deferrable) {
+                builder.append("NOT ");
+            }
+            builder.append("DEFERRABLE");
+        }
+        return deferrable;
+    }
+
+
+    private static final class LocalExecutor extends PostgreExecutor implements SyncLocalStmtExecutor {
+
+        private TransactionInfo transactionInfo;
+
+        private LocalExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+            super(factory, conn, sessionName);
+        }
+
+        /**
+         * @see <a href="https://www.postgresql.org/docs/current/sql-start-transaction.html">START TRANSACTION Statement</a>
+         * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-DEFAULT-TRANSACTION-ISOLATION">default_transaction_isolation</a>
+         */
+        @Override
+        public TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
+            final StringBuilder builder = new StringBuilder(168);
+
+            int stmtCount = 0;
+            if (this.transactionInfo != null) {
+                handleInTransaction(builder, mode);
+                stmtCount++;
+            }
+
+            final Isolation isolation;
+            isolation = option.isolation();
+
+            if (isolation == null) {
+                builder.append("SHOW default_transaction_isolation ; ");
+                stmtCount++;
+            }
+
+            builder.append("START TRANSACTION ");
+            final boolean readOnly = option.isReadOnly();
+            if (readOnly) {
+                builder.append(READ_ONLY);
+            } else {
+                builder.append(READ_WRITE);
+            }
+
+            if (isolation != null) {
+                builder.append(_Constant.SPACE_COMMA_SPACE);
+                standardIsolation(isolation, builder);
+            }
+
+            final Boolean deferrable;
+            deferrable = appendDeferrable(option, builder);
+            stmtCount++;
+
+            // execute start transaction statements
+            final Isolation finalIsolation;
+            finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
+
+            final Function<Option<?>, ?> optionFunc;
+            if (deferrable != null) {
+                optionFunc = Option.singleFunc(DEFERRABLE, deferrable);
+            } else {
+                optionFunc = Option.EMPTY_OPTION_FUNC;
+            }
+
+            final TransactionInfo info;
+            this.transactionInfo = info = TransactionInfo.info(true, finalIsolation, readOnly, optionFunc);
+            return info;
         }
 
 
-    }//LocalSessionExecutor
+        @Nullable
+        @Override
+        public TransactionInfo commit(Function<Option<?>, ?> optionFunc) {
+            return commitOrRollback(true, optionFunc);
+        }
 
-    private static final class LocalSessionHolderExecutor extends LocalSessionExecutor {
+        @Nullable
+        @Override
+        public TransactionInfo rollback(Function<Option<?>, ?> optionFunc) {
+            return commitOrRollback(false, optionFunc);
+        }
 
-        private LocalSessionHolderExecutor(JdbcExecutorFactory factory, Connection conn) {
-            super(factory, conn);
+        @Nullable
+        @Override
+        TransactionInfo obtainTransaction() {
+            return this.transactionInfo;
+        }
+
+
+        /**
+         * @see <a href="https://www.postgresql.org/docs/current/sql-commit.html">COMMIT Statement</a>
+         * @see <a href="https://www.postgresql.org/docs/current/sql-rollback.html">ROLLBACK Statement</a>
+         */
+        @Nullable
+        private TransactionInfo commitOrRollback(final boolean commit, final Function<Option<?>, ?> optionFunc)
+                throws DataAccessException {
+
+            final StringBuilder builder = new StringBuilder(20);
+            if (commit) {
+                builder.append(COMMIT);
+            } else {
+                builder.append(ROLLBACK);
+            }
+
+            final Object chain;
+            if (optionFunc == Option.EMPTY_OPTION_FUNC) {
+                chain = null;
+            } else {
+                chain = optionFunc.apply(Option.CHAIN);
+            }
+
+            final TransactionInfo newInfo;
+            if (chain instanceof Boolean) {
+                builder.append(_Constant.SPACE_AND);
+                if ((Boolean) chain) {
+                    newInfo = this.transactionInfo;
+                } else {
+                    builder.append(" NO");
+                    newInfo = null;
+                }
+                builder.append(" CHAIN");
+            } else {
+                newInfo = null;
+            }
+
+
+            try (Statement statement = this.conn.createStatement()) {
+                statement.executeUpdate(builder.toString());
+
+                this.transactionInfo = newInfo;
+                return newInfo;
+            } catch (Exception e) {
+                throw handleException(e);
+            }
+        }
+
+
+    } // LocalExecutor
+
+    private static class RmExecutor extends PostgreExecutor implements SyncRmStmtExecutor {
+
+        private TransactionInfo transactionInfo;
+
+        private RmExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
+            super(factory, conn, sessionName);
+        }
+
+
+        @Override
+        public final TransactionInfo start(Xid xid, int flags, TransactionOption option) throws RmSessionException {
+            return null;
         }
 
         @Override
-        public Object databaseSession() {
-            return this.conn;
+        public final TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+            return null;
         }
 
-    }//LocalSessionHolderExecutor
+        @Override
+        public final int prepare(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+            return 0;
+        }
+
+        @Override
+        public final void commit(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+
+        }
+
+        @Override
+        public final void rollback(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+
+        }
+
+        @Override
+        public final void forget(Xid xid, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+
+        }
+
+        @Override
+        public final Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option) throws RmSessionException {
+            return null;
+        }
+
+
+        @Override
+        public final boolean isSupportForget() {
+            return false;
+        }
+
+        @Override
+        public final int startSupportFlags() {
+            return 0;
+        }
+
+        @Override
+        public final int endSupportFlags() {
+            return 0;
+        }
+
+        @Override
+        public final int commitSupportFlags() {
+            return 0;
+        }
+
+        @Override
+        public final int recoverSupportFlags() {
+            return 0;
+        }
+
+        @Override
+        public final boolean isSameRm(Session.XaTransactionSupportSpec s) throws SessionException {
+            return false;
+        }
+
+        @Nullable
+        @Override
+        final TransactionInfo obtainTransaction() {
+            return this.transactionInfo;
+        }
+
+
+    } // RmExecutor
+
+    private static final class XaConnRmExecutor extends RmExecutor implements XaConnectionExecutor {
+
+        private final XAConnection xaConn;
+
+        private XaConnRmExecutor(JdbcExecutorFactory factory, XAConnection xaConn, Connection conn, String sessionName) {
+            super(factory, conn, sessionName);
+            this.xaConn = xaConn;
+        }
+
+        @Override
+        public XAConnection getXAConnection() {
+            return this.xaConn;
+        }
+
+        @Override
+        public void closeXaConnection() throws SQLException {
+            this.xaConn.close();
+        }
+
+    } // XaConnRmExecutor
 
 
 }

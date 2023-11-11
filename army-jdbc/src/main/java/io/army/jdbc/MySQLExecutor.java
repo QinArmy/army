@@ -31,6 +31,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -42,25 +43,25 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }
 
     static SyncRmStmtExecutor rmExecutor(JdbcExecutorFactory factory, final Object connObj, String sessionName) {
-        try {
-            final SyncRmStmtExecutor executor;
+        final SyncRmStmtExecutor executor;
 
-            if (connObj instanceof Connection) {
-                executor = new RmExecutor(factory, (Connection) connObj, sessionName);
-            } else if (connObj instanceof XAConnection) {
+        if (connObj instanceof Connection) {
+            executor = new RmExecutor(factory, (Connection) connObj, sessionName);
+        } else if (connObj instanceof XAConnection) {
+            try {
                 final XAConnection xaConn = (XAConnection) connObj;
                 final Connection conn;
-                conn = ((XAConnection) connObj).getConnection();
+                conn = xaConn.getConnection();
 
                 executor = new XaRmExecutor(factory, xaConn, conn, sessionName);
-            } else {
-                throw new IllegalArgumentException();
+            } catch (SQLException e) {
+                throw JdbcExecutor.wrapError(e);
             }
-
-            return executor;
-        } catch (SQLException e) {
-            throw JdbcExecutor.wrapError(e);
+        } else {
+            throw new IllegalArgumentException();
         }
+
+        return executor;
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
@@ -68,6 +69,9 @@ abstract class MySQLExecutor extends JdbcExecutor {
     private static final String SEMICOLON = ";";
 
 
+    /**
+     * private constructor
+     */
     private MySQLExecutor(JdbcExecutorFactory factory, Connection conn, String sessionName) {
         super(factory, conn, sessionName);
     }
@@ -101,11 +105,6 @@ abstract class MySQLExecutor extends JdbcExecutor {
         }
     }
 
-    @Nullable
-    @Override
-    public final <T> T valueOf(Option<T> option) {
-        return null;
-    }
 
     @Override
     final Logger getLogger() {
@@ -352,7 +351,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 final Isolation isolation;
                 final boolean readOnly;
 
-                isolation = readMySqlIsolation(resultSet.getString(1));
+                isolation = readIsolation(resultSet.getString(1));
                 readOnly = resultSet.getBoolean(2);
 
                 return TransactionInfo.info(false, isolation, readOnly, Option.EMPTY_OPTION_FUNC);
@@ -362,92 +361,9 @@ abstract class MySQLExecutor extends JdbcExecutor {
         }
     }
 
-
-    final Isolation executeStartTransaction(final int stmtCount, final @Nullable Isolation isolation,
-                                            final StringBuilder builder) throws DataAccessException {
-
-        try (final Statement statement = this.conn.createStatement()) {
-
-            Isolation sessionIsolation = null;
-            int batchSize = 0;
-            if (this.factory.useMultiStmt) {
-                if (statement.execute(builder.toString())) {
-                    statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
-                    // no bug never here
-                    throw new IllegalStateException("sql error");
-                } else if (statement.getUpdateCount() == -1) {
-                    throw multiStatementLessThanExpected(0, stmtCount); // no result
-                }
-                batchSize++;
-                while (true) {
-                    if (statement.getMoreResults()) {
-                        assert sessionIsolation == null;
-                        sessionIsolation = getMySqlIsolation(statement.getResultSet());
-                    } else if (statement.getUpdateCount() == -1) {
-                        break;
-                    }
-                    batchSize++;
-                }
-            } else if (isolation == null) {
-                int start = 0;
-                String sql;
-
-                for (int semicolon; (semicolon = builder.indexOf(SEMICOLON, start)) > 0; start = semicolon + 1) {
-                    sql = builder.substring(start, semicolon);
-                    batchSize++;
-                    if (sql.startsWith(" SELECT")) {
-                        assert sessionIsolation == null;
-                        sessionIsolation = getMySqlIsolation(statement.executeQuery(sql));
-                    } else {
-                        statement.executeUpdate(sql);
-                    }
-                }
-                statement.executeUpdate(builder.substring(start, builder.length()));
-                batchSize++;
-                assert sessionIsolation != null;
-            } else {
-                int start = 0;
-                for (int semicolon; (semicolon = builder.indexOf(SEMICOLON, start)) > 0; start = semicolon + 1) {
-                    statement.addBatch(builder.substring(start, semicolon));
-                    batchSize++;
-                }
-                statement.addBatch(builder.substring(start, builder.length()));
-                batchSize++;
-                statement.executeBatch();
-            }
-
-            assert batchSize == stmtCount;
-
-            final Isolation finalIsolation;
-            if (isolation == null) {
-                assert sessionIsolation != null;
-                finalIsolation = sessionIsolation;
-            } else {
-                finalIsolation = isolation;
-            }
-            return finalIsolation;
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-
-    }
-
-
-    /*-------------------below private static  -------------------*/
-
-    private static Isolation getMySqlIsolation(final ResultSet rs) throws SQLException {
-        try (ResultSet resultSet = rs) {
-            if (!resultSet.next()) {
-                // no bug,never here
-                throw new DataAccessException("isolation no result");
-            }
-            return readMySqlIsolation(rs.getString(1));
-        }
-    }
-
-    private static Isolation readMySqlIsolation(final String level) {
+    final Isolation readIsolation(final String level) {
         final Isolation isolation;
-        switch (level) {
+        switch (level.toUpperCase(Locale.ROOT)) {
             case "READ-COMMITTED":
                 isolation = Isolation.READ_COMMITTED;
                 break;
@@ -466,6 +382,13 @@ abstract class MySQLExecutor extends JdbcExecutor {
         }
         return isolation;
     }
+
+
+
+
+    /*-------------------below private static  -------------------*/
+
+
 
 
     private static final class LocalExecutor extends MySQLExecutor implements SyncLocalStmtExecutor {
@@ -491,22 +414,8 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
             int stmtCount = 0;
             if (inTransaction()) {
-                switch (mode) {
-                    case ERROR_IF_EXISTS:
-                        throw transactionExistsRejectStart(this.sessionName);
-                    case COMMIT_IF_EXISTS:
-                        builder.append(COMMIT)
-                                .append(_Constant.SPACE_SEMICOLON_SPACE);
-                        stmtCount++;
-                        break;
-                    case ROLLBACK_IF_EXISTS:
-                        builder.append(ROLLBACK)
-                                .append(_Constant.SPACE_SEMICOLON_SPACE);
-                        stmtCount++;
-                        break;
-                    default:
-                        throw _Exceptions.unexpectedEnum(mode);
-                }
+                handleInTransaction(builder, mode);
+                stmtCount++;
             }
 
 
@@ -616,11 +525,11 @@ abstract class MySQLExecutor extends JdbcExecutor {
             final TransactionInfo newInfo;
             if (chain instanceof Boolean) {
                 builder.append(_Constant.SPACE_AND);
-                if (!((Boolean) chain)) {
+                if ((Boolean) chain) {
+                    newInfo = this.transactionInfo;
+                } else {
                     builder.append(" NO");
                     newInfo = null;
-                } else if ((newInfo = this.transactionInfo) == null) {
-                    throw new DataAccessException("CHAIN option can only be used in transaction blocks ");
                 }
                 builder.append(" CHAIN");
             } else {

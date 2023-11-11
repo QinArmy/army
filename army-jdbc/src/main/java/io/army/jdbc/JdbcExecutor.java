@@ -6,6 +6,7 @@ import io.army.bean.ObjectAccessorFactory;
 import io.army.criteria.CriteriaException;
 import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
+import io.army.dialect._Constant;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
@@ -437,6 +438,11 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         return executePairBatchQuery(stmt, option, firstIsQuery, childTable, readerFunc);
     }
 
+    @Nullable
+    @Override
+    public final <T> T valueOf(Option<T> option) {
+        return null;
+    }
 
     @Override
     public final void close() throws DataAccessException {
@@ -510,12 +516,119 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     abstract TransactionInfo sessionTransactionCharacteristics();
 
     /**
+     * @see #readIsolationAndClose(ResultSet)
+     */
+    abstract Isolation readIsolation(String level);
+
+    /**
      * @see #update(SimpleStmt, SyncStmtOption, Class, Function)
      */
     @SuppressWarnings("unused")
     ResultStates createNamedCursor(Statement statement, long rows, Function<Option<?>, ?> optionFunc) {
         throw new UnsupportedOperationException();
     }
+
+    final void handleInTransaction(final StringBuilder builder, final HandleMode mode) {
+        switch (mode) {
+            case ERROR_IF_EXISTS:
+                throw transactionExistsRejectStart(this.sessionName);
+            case COMMIT_IF_EXISTS:
+                builder.append(COMMIT)
+                        .append(_Constant.SPACE_SEMICOLON_SPACE);
+                break;
+            case ROLLBACK_IF_EXISTS:
+                builder.append(ROLLBACK)
+                        .append(_Constant.SPACE_SEMICOLON_SPACE);
+                break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+        }
+    }
+
+
+    final Isolation executeStartTransaction(final int stmtCount, final @Nullable Isolation isolation,
+                                            final StringBuilder builder) throws DataAccessException {
+
+        final String semicolonStr = ";";
+        try (final Statement statement = this.conn.createStatement()) {
+
+            Isolation sessionIsolation = null;
+            int batchSize = 0;
+            if (this.factory.useMultiStmt) {
+                if (statement.execute(builder.toString())) {
+                    statement.getMoreResults(Statement.CLOSE_ALL_RESULTS);
+                    // no bug never here
+                    throw new IllegalStateException("sql error");
+                } else if (statement.getUpdateCount() == -1) {
+                    throw multiStatementLessThanExpected(0, stmtCount); // no result
+                }
+                batchSize++;
+                while (true) {
+                    if (statement.getMoreResults()) {
+                        assert sessionIsolation == null;
+                        sessionIsolation = readIsolationAndClose(statement.getResultSet());
+                    } else if (statement.getUpdateCount() == -1) {
+                        break;
+                    }
+                    batchSize++;
+                }
+            } else if (isolation == null) {
+                int start = 0;
+                String sql;
+
+                for (int semicolon; (semicolon = builder.indexOf(semicolonStr, start)) > 0; start = semicolon + 1) {
+                    sql = builder.substring(start, semicolon).trim();
+                    batchSize++;
+                    if (sql.startsWith("SELECT ") || sql.startsWith("SHOW ")) {
+                        assert sessionIsolation == null;
+                        sessionIsolation = readIsolationAndClose(statement.executeQuery(sql));
+                    } else {
+                        statement.executeUpdate(sql);
+                    }
+                }
+                statement.executeUpdate(builder.substring(start, builder.length()));
+                batchSize++;
+                assert sessionIsolation != null;
+            } else {
+                int start = 0;
+                for (int semicolon; (semicolon = builder.indexOf(semicolonStr, start)) > 0; start = semicolon + 1) {
+                    statement.addBatch(builder.substring(start, semicolon));
+                    batchSize++;
+                }
+                statement.addBatch(builder.substring(start, builder.length()));
+                batchSize++;
+                statement.executeBatch();
+            }
+
+            assert batchSize == stmtCount;
+
+            final Isolation finalIsolation;
+            if (isolation == null) {
+                assert sessionIsolation != null;
+                finalIsolation = sessionIsolation;
+            } else {
+                finalIsolation = isolation;
+            }
+            return finalIsolation;
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+
+    }
+
+
+    /**
+     * @see #executeStartTransaction(int, Isolation, StringBuilder)
+     */
+    final Isolation readIsolationAndClose(final ResultSet rs) throws SQLException {
+        try (ResultSet resultSet = rs) {
+            if (!resultSet.next()) {
+                throw driverError();
+            }
+            return readIsolation(resultSet.getString(1));
+        }
+    }
+
 
     final Stream<Xid> jdbcRecover(final String sql, Function<DataRecord, Xid> function, StreamOption option) {
 
@@ -1492,6 +1605,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         }
         return rowReader;
     }
+
 
 
 

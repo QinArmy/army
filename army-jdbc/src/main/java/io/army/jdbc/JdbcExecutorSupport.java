@@ -155,6 +155,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         return resultSet;
     }
 
+
     static CriteriaException multiStatementGreaterThanExpected(int groupIndex, int expected) {
         String m = String.format("Multi-statement batch query ResultSet count[%s] greater than expected count[%s]",
                 groupIndex, expected
@@ -174,6 +175,11 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
     static CriteriaException multiStatementPartNotQuery(int groupIndex) {
         String m = String.format("Multi-statement batch query number %s result isn't ResultSet", groupIndex + 1);
         return new CriteriaException(m);
+    }
+
+    static DataAccessException driverError() {
+        // driver no bug,never here
+        return new DataAccessException("driver error");
     }
 
     /*-------------------below private static methods  -------------------*/
