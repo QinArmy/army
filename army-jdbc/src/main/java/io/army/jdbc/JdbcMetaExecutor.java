@@ -14,27 +14,49 @@ import java.sql.*;
 import java.util.List;
 import java.util.Map;
 
-final class JdbcMetaExecutor implements MetaExecutor {
+class JdbcMetaExecutor implements MetaExecutor {
 
-    static JdbcMetaExecutor from(Connection conn) {
-        return new JdbcMetaExecutor(conn);
+    static JdbcMetaExecutor from(Connection conn, String sessionFactoryName) {
+        return new JdbcMetaExecutor(conn, sessionFactoryName);
     }
 
-    static JdbcMetaExecutor fromXa(XAConnection conn) {
-        return new JdbcMetaExecutor(conn);
+    static JdbcMetaExecutor fromXa(final XAConnection xaConn, String sessionFactoryName) {
+        try {
+            final Connection conn;
+            conn = xaConn.getConnection();
+
+            return new XaConnMetaExecutor(xaConn, conn, sessionFactoryName);
+        } catch (SQLException e) {
+            try {
+                xaConn.close();
+            } catch (SQLException ex) {
+                // ignore ex
+                throw JdbcExecutor.wrapError(e);
+            }
+            throw JdbcExecutor.wrapError(e);
+        }
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcMetaExecutor.class);
 
+
     private final Connection conn;
 
-    private JdbcMetaExecutor(Connection conn) {
+    private final String sessionFactoryName;
+
+
+    /**
+     * private constructor
+     */
+
+    private JdbcMetaExecutor(Connection conn, String sessionFactoryName) {
         this.conn = conn;
+        this.sessionFactoryName = sessionFactoryName;
     }
 
 
     @Override
-    public SchemaInfo extractInfo() throws DataAccessException {
+    public final SchemaInfo extractInfo() throws DataAccessException {
         final Connection conn = this.conn;
 
         try {
@@ -60,7 +82,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
     }
 
     @Override
-    public void executeDdl(final List<String> ddlList) throws DataAccessException {
+    public final void executeDdl(final List<String> ddlList) throws DataAccessException {
         final int size = ddlList.size();
         if (size == 0) {
             return;
@@ -89,12 +111,29 @@ final class JdbcMetaExecutor implements MetaExecutor {
     }
 
     @Override
-    public void close() throws DataAccessException {
+    public final void close() throws DataAccessException {
+        Throwable error = null;
         try {
             this.conn.close();
-        } catch (SQLException e) {
-            throw JdbcExecutor.wrapError(e);
+
+        } catch (Throwable e) {
+            error = e;
         }
+
+        if (this instanceof XaConnMetaExecutor) {
+            try {
+                ((XaConnMetaExecutor) this).xaConn.close();
+            } catch (Throwable e) {
+                if (error == null) {
+                    error = e;
+                }
+            }
+        }
+
+        if (error != null) {
+            throw JdbcExecutor.wrapError(error);
+        }
+
     }
 
 
@@ -154,7 +193,7 @@ final class JdbcMetaExecutor implements MetaExecutor {
                         .defaultExp(resultSet.getString("COLUMN_DEF"))
 
                         .comment(resultSet.getString("REMARKS"))
-                        .autoincrement("YES".equals(resultSet.getString("IS_AUTOINCREMENT")))
+                        .autoincrement("YES" .equals(resultSet.getString("IS_AUTOINCREMENT")))
                         .precision(resultSet.getInt("COLUMN_SIZE"));
                 nullable = resultSet.getString("IS_NULLABLE");
                 switch (nullable) {
@@ -242,6 +281,18 @@ final class JdbcMetaExecutor implements MetaExecutor {
 
 
     }
+
+
+    private static final class XaConnMetaExecutor extends JdbcMetaExecutor {
+
+        private final XAConnection xaConn;
+
+        private XaConnMetaExecutor(XAConnection xaConn, Connection conn, String sessionFactoryName) {
+            super(conn, sessionFactoryName);
+            this.xaConn = xaConn;
+        }
+
+    } // JdbcXaConnMetaExecutor
 
 
 }

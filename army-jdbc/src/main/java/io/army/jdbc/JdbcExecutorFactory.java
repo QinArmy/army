@@ -152,9 +152,9 @@ final class JdbcExecutorFactory implements SyncStmtExecutorFactory {
             }
             final JdbcMetaExecutor executor;
             if (dataSource instanceof DataSource) {
-                executor = JdbcMetaExecutor.from(((DataSource) dataSource).getConnection());
+                executor = JdbcMetaExecutor.from(((DataSource) dataSource).getConnection(), this.sessionFactoryName);
             } else {
-                executor = JdbcMetaExecutor.fromXa(((XADataSource) dataSource).getXAConnection());
+                executor = JdbcMetaExecutor.fromXa(((XADataSource) dataSource).getXAConnection(), this.sessionFactoryName);
             }
             return executor;
         } catch (Exception e) {
