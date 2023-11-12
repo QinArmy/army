@@ -4,9 +4,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl._JoinType;
 import io.army.criteria.impl._Pair;
 import io.army.criteria.impl.inner.*;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.ParentTableMeta;
@@ -15,6 +12,7 @@ import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +62,7 @@ final class TableContext {
             if (pair instanceof _ItemPair._FieldItemPair) {
                 childMap = handleUpdateField(((_ItemPair._FieldItemPair) pair).field(), childMap);
             } else if (pair instanceof _ItemPair._RowItemPair) {
-                for (SQLField dataField : ((_ItemPair._RowItemPair) pair).rowFieldList()) {
+                for (SqlField dataField : ((_ItemPair._RowItemPair) pair).rowFieldList()) {
                     childMap = handleUpdateField(dataField, childMap);
                 }
             } else {
@@ -148,7 +146,7 @@ final class TableContext {
      * @see #forUpdate(_JoinableUpdate, ArmyParser, Visible)
      */
     @Nullable
-    private static Map<ChildTableMeta<?>, Boolean> handleUpdateField(final SQLField dataField
+    private static Map<ChildTableMeta<?>, Boolean> handleUpdateField(final SqlField dataField
             , @Nullable Map<ChildTableMeta<?>, Boolean> childMap) {
         if (!(dataField instanceof TableField)) {
             //TODO

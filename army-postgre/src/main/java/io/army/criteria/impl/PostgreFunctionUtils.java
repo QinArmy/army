@@ -9,9 +9,6 @@ import io.army.criteria.postgre.PostgreWindow;
 import io.army.criteria.standard.StandardQuery;
 import io.army.dialect.*;
 import io.army.dialect.postgre.PostgreDialect;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.IntegerType;
 import io.army.mapping.MappingType;
 import io.army.mapping.TextType;
@@ -22,6 +19,7 @@ import io.army.stmt.SimpleStmt;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -361,7 +359,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
                     sqlBuilder.append(_Constant.SPACE);
                     parser.identifier(attrPair.second, sqlBuilder);
 
-                } else if (attObject instanceof SQLField) {
+                } else if (attObject instanceof SqlField) {
                     ((ArmyExpression) attObject).appendSql(sqlBuilder, context);
                 } else {
                     //no bug,never here
@@ -373,7 +371,7 @@ abstract class PostgreFunctionUtils extends DialectFunctionUtils {
 
 
         @Override
-        public Postgres._XmlNamedElementFieldClause accept(final @Nullable SQLField field) {
+        public Postgres._XmlNamedElementFieldClause accept(final @Nullable SqlField field) {
             if (!this.supportField) {
                 throw ContextStack.castCriteriaApi(this.outerContext);
             }

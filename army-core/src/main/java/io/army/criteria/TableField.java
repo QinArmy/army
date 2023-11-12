@@ -2,15 +2,13 @@ package io.army.criteria;
 
 import io.army.annotation.GeneratorType;
 import io.army.annotation.UpdateMode;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingType;
 import io.army.meta.DatabaseObject;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 
 /**
@@ -26,7 +24,7 @@ import java.lang.reflect.Field;
  * @see QualifiedField
  */
 @SuppressWarnings("unused")
-public interface TableField extends SQLField, FieldSelection, TypeMeta, DatabaseObject {
+public interface TableField extends SqlField, FieldSelection, TypeMeta, DatabaseObject {
 
     TableMeta<?> tableMeta();
 

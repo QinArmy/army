@@ -21,9 +21,9 @@ public interface SelectionConsumer extends Statement._DeferContextSpec {
 
     SelectionConsumer selection(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2);
 
-    SelectionConsumer selection(SQLField field1, SQLField field2, SQLField field3);
+    SelectionConsumer selection(SqlField field1, SqlField field2, SqlField field3);
 
-    SelectionConsumer selection(SQLField field1, SQLField field2, SQLField field3, SQLField field4);
+    SelectionConsumer selection(SqlField field1, SqlField field2, SqlField field3, SqlField field4);
 
     SelectionConsumer selection(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 

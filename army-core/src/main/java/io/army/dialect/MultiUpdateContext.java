@@ -3,15 +3,13 @@ package io.army.dialect;
 import io.army.annotation.UpdateMode;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +30,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
     }
 
 
-    private List<SQLField> conditionFieldList;
+    private List<SqlField> conditionFieldList;
 
 
     private MultiUpdateContext(@Nullable StatementContext outerContext, _Update stmt, TableContext tableContext
@@ -42,7 +40,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
 
 
     @Override
-    public String singleTableAliasOf(final SQLField dataField) {
+    public String singleTableAliasOf(final SqlField dataField) {
         final String singleTableAlias;
         if (!(dataField instanceof TableField)) {
             //TODO
@@ -72,7 +70,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
     }
 
     @Override
-    public void appendSetLeftItem(final SQLField dataField) {
+    public void appendSetLeftItem(final SqlField dataField) {
         final UpdateMode updateMode;
         if (dataField instanceof TableField) {
             updateMode = ((TableField) dataField).updateMode();
@@ -145,7 +143,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
                 if (updateMode == UpdateMode.ONLY_DEFAULT && !this.parser.isSupportOnlyDefault()) {
                     throw _Exceptions.dontSupportOnlyDefault(this.parser.dialect());
                 }
-                List<SQLField> conditionFieldList = this.conditionFieldList;
+                List<SqlField> conditionFieldList = this.conditionFieldList;
                 if (conditionFieldList == null) {
                     conditionFieldList = _Collections.arrayList();
                     this.conditionFieldList = conditionFieldList;
@@ -161,7 +159,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
 
     @Override
     public void appendConditionFields() {
-        final List<SQLField> conditionFieldList = this.conditionFieldList;
+        final List<SqlField> conditionFieldList = this.conditionFieldList;
         if (conditionFieldList == null || conditionFieldList.size() == 0) {
             return;
         }
@@ -170,7 +168,7 @@ final class MultiUpdateContext extends MultiTableDmlContext implements _MultiUpd
         String safeTableAlias, objectName;
         UpdateMode updateMode;
         TableField tableField;
-        for (SQLField field : conditionFieldList) {
+        for (SqlField field : conditionFieldList) {
 
             if (field instanceof FieldMeta) {
                 safeTableAlias = this.multiTableContext.tableToSafeAlias.get(((FieldMeta<?>) field).tableMeta());

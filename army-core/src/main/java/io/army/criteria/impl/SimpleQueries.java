@@ -8,9 +8,6 @@ import io.army.dialect.Dialect;
 import io.army.function.DialectBooleanOperator;
 import io.army.function.ExpressionOperator;
 import io.army.function.TeFunction;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
@@ -18,6 +15,7 @@ import io.army.util.ArrayUtils;
 import io.army.util._Assert;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -161,7 +159,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     }
 
     @Override
-    public final SR select(SQLField field1, SQLField field2, SQLField field3) {
+    public final SR select(SqlField field1, SqlField field2, SqlField field3) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3);
@@ -169,7 +167,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     }
 
     @Override
-    public final SR select(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+    public final SR select(SqlField field1, SqlField field2, SqlField field3, SqlField field4) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3)
@@ -325,7 +323,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     }
 
     @Override
-    public final SR space(SQLField field1, SQLField field2, SQLField field3) {
+    public final SR space(SqlField field1, SqlField field2, SqlField field3) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3);
@@ -333,7 +331,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     }
 
     @Override
-    public final SR space(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+    public final SR space(SqlField field1, SqlField field2, SqlField field3, SqlField field4) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3)
@@ -398,7 +396,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     }
 
     @Override
-    public final SR comma(SQLField field1, SQLField field2, SQLField field3) {
+    public final SR comma(SqlField field1, SqlField field2, SqlField field3) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3);
@@ -406,7 +404,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
     }
 
     @Override
-    public final SR comma(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+    public final SR comma(SqlField field1, SqlField field2, SqlField field3, SqlField field4) {
         this.context.onAddSelectItem(field1)
                 .onAddSelectItem(field2)
                 .onAddSelectItem(field3)
@@ -1749,12 +1747,12 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
         @Override
-        public final SR select(SQLField field1, SQLField field2, SQLField field3) {
+        public final SR select(SqlField field1, SqlField field2, SqlField field3) {
             return this.createSelectClause().select(field1, field2, field3);
         }
 
         @Override
-        public final SR select(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+        public final SR select(SqlField field1, SqlField field2, SqlField field3, SqlField field4) {
             return this.createSelectClause().select(field1, field2, field3, field4);
         }
 
@@ -2150,7 +2148,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
         @Override
-        public _DeferSelectCommaSpace space(SQLField field1, SQLField field2, SQLField field3) {
+        public _DeferSelectCommaSpace space(SqlField field1, SqlField field2, SqlField field3) {
             if (this.spaceFirst) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -2162,7 +2160,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
         @Override
-        public _DeferSelectCommaSpace space(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+        public _DeferSelectCommaSpace space(SqlField field1, SqlField field2, SqlField field3, SqlField field4) {
             if (this.spaceFirst) {
                 throw CriteriaUtils.spaceMethodNotFirst();
             }
@@ -2252,7 +2250,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
         @Override
-        public _DeferSelectCommaSpace comma(SQLField field1, SQLField field2, SQLField field3) {
+        public _DeferSelectCommaSpace comma(SqlField field1, SqlField field2, SqlField field3) {
             this.context.onAddSelectItem(field1)
                     .onAddSelectItem(field2)
                     .onAddSelectItem(field3);
@@ -2260,7 +2258,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
         @Override
-        public _DeferSelectCommaSpace comma(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+        public _DeferSelectCommaSpace comma(SqlField field1, SqlField field2, SqlField field3, SqlField field4) {
             this.context.onAddSelectItem(field1)
                     .onAddSelectItem(field2)
                     .onAddSelectItem(field3)
@@ -2333,7 +2331,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
         @Override
-        public SelectionConsumer selection(SQLField field1, SQLField field2, SQLField field3) {
+        public SelectionConsumer selection(SqlField field1, SqlField field2, SqlField field3) {
             this.context.onAddSelectItem(field1)
                     .onAddSelectItem(field2)
                     .onAddSelectItem(field3);
@@ -2341,7 +2339,7 @@ abstract class SimpleQueries<Q extends Item, B extends CteBuilderSpec, WE extend
         }
 
         @Override
-        public SelectionConsumer selection(SQLField field1, SQLField field2, SQLField field3, SQLField field4) {
+        public SelectionConsumer selection(SqlField field1, SqlField field2, SqlField field3, SqlField field4) {
             this.context.onAddSelectItem(field1)
                     .onAddSelectItem(field2)
                     .onAddSelectItem(field3)

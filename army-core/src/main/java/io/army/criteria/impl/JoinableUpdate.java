@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  * @since 1.0
  */
 @SuppressWarnings("unchecked")
-abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE extends Item, F extends SQLField, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
+abstract class JoinableUpdate<I extends Item, B extends CteBuilderSpec, WE extends Item, F extends SqlField, SR, FT, FS, FC, FF, JT, JS, JC, JF, WR, WA>
         extends JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, Object, Object, Object, Object, Object>
         implements _Update,
         DialectStatement._DynamicWithClause<B, WE>,

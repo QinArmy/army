@@ -1,6 +1,6 @@
 package io.army.criteria;
 
-public interface DerivedField extends SQLField {
+public interface DerivedField extends SqlField {
 
 
     String tableAlias();

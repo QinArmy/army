@@ -5,13 +5,11 @@ import io.army.criteria.dialect.Hint;
 import io.army.criteria.impl.SQLs;
 import io.army.function.DialectBooleanOperator;
 import io.army.function.ExpressionOperator;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ComplexTableMeta;
 import io.army.meta.ParentTableMeta;
 import io.army.meta.TableMeta;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.*;
 
@@ -76,9 +74,9 @@ public interface Query extends RowSet {
 
         SR select(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2);
 
-        SR select(SQLField field1, SQLField field2, SQLField field3);
+        SR select(SqlField field1, SqlField field2, SqlField field3);
 
-        SR select(SQLField field1, SQLField field2, SQLField field3, SQLField field4);
+        SR select(SqlField field1, SqlField field2, SqlField field3, SqlField field4);
 
         SR select(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
@@ -103,9 +101,9 @@ public interface Query extends RowSet {
 
         SR space(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2);
 
-        SR space(SQLField field1, SQLField field2, SQLField field3);
+        SR space(SqlField field1, SqlField field2, SqlField field3);
 
-        SR space(SQLField field1, SQLField field2, SQLField field3, SQLField field4);
+        SR space(SqlField field1, SqlField field2, SqlField field3, SqlField field4);
 
         SR space(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 
@@ -186,9 +184,9 @@ public interface Query extends RowSet {
 
         SR comma(Function<String, Selection> function1, String alias1, Function<String, Selection> function2, String alias2);
 
-        SR comma(SQLField field1, SQLField field2, SQLField field3);
+        SR comma(SqlField field1, SqlField field2, SqlField field3);
 
-        SR comma(SQLField field1, SQLField field2, SQLField field3, SQLField field4);
+        SR comma(SqlField field1, SqlField field2, SqlField field3, SqlField field4);
 
         SR comma(String tableAlias, SQLs.SymbolPeriod period, TableMeta<?> table);
 

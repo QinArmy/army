@@ -1,15 +1,13 @@
 package io.army.criteria.impl;
 
 import io.army.criteria.*;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.NoCastIntegerType;
 import io.army.mapping.NoCastTextType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TableMeta;
 import io.army.meta.TypeMeta;
 
+import javax.annotation.Nullable;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Map;
@@ -735,11 +733,11 @@ abstract class SQLsSyntax extends Functions {
         return Expressions.existsPredicate(true, subQuery);
     }
 
-    public static ItemPair plusEqual(final SQLField field, final Expression value) {
+    public static ItemPair plusEqual(final SqlField field, final Expression value) {
         return SQLs._itemPair(field, AssignOperator.PLUS_EQUAL, value);
     }
 
-    public static ItemPair minusEqual(final SQLField field, final Expression value) {
+    public static ItemPair minusEqual(final SqlField field, final Expression value) {
         return SQLs._itemPair(field, AssignOperator.MINUS_EQUAL, value);
     }
 

@@ -5,13 +5,12 @@ import io.army.criteria.impl.inner._Selection;
 import io.army.criteria.impl.inner._SelfDescribed;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingType;
 import io.army.meta.FieldMeta;
 import io.army.meta.TypeMeta;
 import io.army.util._StringUtils;
+
+import javax.annotation.Nullable;
 
 abstract class ArmySelections implements _Selection {
 
@@ -23,7 +22,7 @@ abstract class ArmySelections implements _Selection {
             } else {
                 selection = new FieldSelectionImpl((FieldSelection) exp, alias);
             }
-        } else if (exp instanceof SQLField && ((SQLField) exp).fieldName().equals(alias)) {
+        } else if (exp instanceof SqlField && ((SqlField) exp).fieldName().equals(alias)) {
             selection = (_Selection) exp;
         } else {
             selection = new ExpressionSelection((ArmyExpression) exp, alias);

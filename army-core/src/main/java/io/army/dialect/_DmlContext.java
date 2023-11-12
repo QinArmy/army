@@ -1,12 +1,10 @@
 package io.army.dialect;
 
-import io.army.criteria.SQLField;
-
-import javax.annotation.Nullable;
-
+import io.army.criteria.SqlField;
 import io.army.meta.FieldMeta;
 import io.army.stmt.BatchStmt;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -42,7 +40,7 @@ public  interface _DmlContext extends _PrimaryContext {
 
     interface _SetClauseContextSpec {
 
-        void appendSetLeftItem(SQLField dataField);
+        void appendSetLeftItem(SqlField dataField);
 
 
     }

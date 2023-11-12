@@ -431,7 +431,7 @@ abstract class InsertContext extends StatementContext
     }
 
     @Override
-    public void appendSetLeftItem(final SQLField dataField) {
+    public void appendSetLeftItem(final SqlField dataField) {
         final FieldMeta<?> field;
         final String fieldName = dataField.fieldName();
         final UpdateMode mode;

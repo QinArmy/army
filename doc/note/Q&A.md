@@ -118,9 +118,9 @@
     * 因为 jvm 不能推先推断出 TeNamedOperator 和 BiFunction&lt;Expression, T, Expression> valueOperator 的差别.
       method equal in interface io.army.criteria.Expression cannot be applied to given types
       required: java.util.function.BiFunction&lt;io.army.criteria.Expression,T,io.army.criteria.Expression>,T
-      found: io.army.function.TeNamedOperator&lt;io.army.criteria.SQLField>,java.lang.Integer
+      found: io.army.function.TeNamedOperator&lt;io.army.criteria.SqlField>,java.lang.Integer
       reason: cannot infer type-variable(s) T
-      (argument mismatch; io.army.function.TeNamedOperator&lt;io.army.criteria.SQLField> cannot be converted to
+      (argument mismatch; io.army.function.TeNamedOperator&lt;io.army.criteria.SqlField> cannot be converted to
       java.util.function.BiFunction&lt;io.army.criteria.Expression,T,io.army.criteria.Expression>)
 
 25. 为什么 INSERT 语句中的 defaultValue 子句保留 T value 相关方法而删除 Supplier getter 相关方法 ? 这与其它语句的取舍不同.

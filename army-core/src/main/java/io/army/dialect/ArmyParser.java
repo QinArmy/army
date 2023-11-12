@@ -1362,7 +1362,7 @@ abstract class ArmyParser implements DialectParser {
         sqlBuilder.append(_Constant.SPACE_SET);
         //2. append item pairs in SET clause
         _ItemPair pair;
-        SQLField dataField;
+        SqlField dataField;
         for (int i = 0; i < itemPairSize; i++) {
             if (i > 0) {
                 sqlBuilder.append(_Constant.SPACE_COMMA);
@@ -1375,7 +1375,7 @@ abstract class ArmyParser implements DialectParser {
                 aliasMap.putIfAbsent(context.singleTableAliasOf(dataField), Boolean.TRUE);
             } else {
                 assert pair instanceof _ItemPair._RowItemPair;
-                for (SQLField field : ((_ItemPair._RowItemPair) pair).rowFieldList()) {
+                for (SqlField field : ((_ItemPair._RowItemPair) pair).rowFieldList()) {
                     aliasMap.putIfAbsent(context.singleTableAliasOf(field), Boolean.TRUE);
                 }
             }

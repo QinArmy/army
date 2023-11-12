@@ -3,15 +3,13 @@ package io.army.criteria.impl;
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Dialect;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -1007,14 +1005,14 @@ abstract class JoinableClause<FT, FS, FC, FF, JT, JS, JC, JF, WR, WA, OR, OD, LR
         }
 
         @Override
-        public final OR on(Function<Expression, IPredicate> operator, SQLField operandField) {
+        public final OR on(Function<Expression, IPredicate> operator, SqlField operandField) {
             this.onPredicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
             return (OR) this;
         }
 
         @Override
-        public final OR on(Function<Expression, IPredicate> operator1, SQLField operandField1
-                , Function<Expression, IPredicate> operator2, SQLField operandField2) {
+        public final OR on(Function<Expression, IPredicate> operator1, SqlField operandField1
+                , Function<Expression, IPredicate> operator2, SqlField operandField2) {
             this.onPredicateList = ArrayUtils.of(
                     (OperationPredicate) operator1.apply(operandField1),
                     (OperationPredicate) operator2.apply(operandField2)

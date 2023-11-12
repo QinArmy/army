@@ -2,18 +2,17 @@ package io.army.dialect;
 
 import io.army.annotation.UpdateMode;
 import io.army.criteria.QualifiedField;
-import io.army.criteria.SQLField;
+import io.army.criteria.SqlField;
 import io.army.criteria.TableField;
 import io.army.criteria.Visible;
 import io.army.criteria.impl.inner.*;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ChildTableMeta;
 import io.army.meta.SingleTableMeta;
 import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Exceptions;
+
+import javax.annotation.Nullable;
 
 /**
  * <p>
@@ -120,7 +119,7 @@ abstract class SingleTableDmlContext extends NarrowDmlStmtContext implements _Si
     }
 
     @Override
-    public final void appendSetLeftItem(final SQLField dataField) {
+    public final void appendSetLeftItem(final SqlField dataField) {
         assert this instanceof _UpdateContext;
         if (!(dataField instanceof TableField)) {
             throw _Exceptions.immutableField(dataField);

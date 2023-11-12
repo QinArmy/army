@@ -1,8 +1,7 @@
 package io.army.criteria.impl;
 
-import io.army.criteria.SQLField;
+import io.army.criteria.SqlField;
 import io.army.criteria.impl.inner._SelfDescribed;
-import io.army.dialect.Dialect;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.util._Exceptions;
@@ -19,7 +18,7 @@ enum AssignOperator {
     }
 
 
-    final void appendOperator(final SQLField field, final StringBuilder sqlBuilder, final _SqlContext context) {
+    final void appendOperator(final SqlField field, final StringBuilder sqlBuilder, final _SqlContext context) {
         switch (context.database()) {
             case MySQL:
             case PostgreSQL:
@@ -32,7 +31,7 @@ enum AssignOperator {
     }
 
 
-    private void simpleOperator(final SQLField field, final StringBuilder sqlBuilder, final _SqlContext context) {
+    private void simpleOperator(final SqlField field, final StringBuilder sqlBuilder, final _SqlContext context) {
         sqlBuilder.append(_Constant.SPACE_EQUAL);
         ((_SelfDescribed) field).appendSql(sqlBuilder, context);
         switch (this) {

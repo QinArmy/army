@@ -2,14 +2,12 @@ package io.army.criteria.impl;
 
 import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.TableMeta;
 import io.army.util.ArrayUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -309,14 +307,14 @@ abstract class TabularBlocks {
         }
 
         @Override
-        public final R on(Function<Expression, IPredicate> operator, SQLField operandField) {
+        public final R on(Function<Expression, IPredicate> operator, SqlField operandField) {
             this.predicateList = Collections.singletonList((OperationPredicate) operator.apply(operandField));
             return this.clause;
         }
 
         @Override
-        public final R on(Function<Expression, IPredicate> operator1, SQLField operandField1,
-                          Function<Expression, IPredicate> operator2, SQLField operandField2) {
+        public final R on(Function<Expression, IPredicate> operator1, SqlField operandField1,
+                          Function<Expression, IPredicate> operator2, SqlField operandField2) {
             this.predicateList = ArrayUtils.of(
                     (OperationPredicate) operator1.apply(operandField1),
                     (OperationPredicate) operator2.apply(operandField2)

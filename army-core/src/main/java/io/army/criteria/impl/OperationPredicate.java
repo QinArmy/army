@@ -5,9 +5,6 @@ import io.army.criteria.impl.inner._Predicate;
 import io.army.dialect._Constant;
 import io.army.dialect._SqlContext;
 import io.army.function.*;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ChildTableMeta;
 import io.army.meta.FieldMeta;
 import io.army.meta.PrimaryFieldMeta;
@@ -15,6 +12,7 @@ import io.army.meta.TableMeta;
 import io.army.modelgen._MetaBridge;
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.*;
 
@@ -80,8 +78,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
 
     @Override
-    public final SimplePredicate or(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
-                                    TeNamedOperator<SQLField> namedOperator, int size) {
+    public final SimplePredicate or(BiFunction<TeNamedOperator<SqlField>, Integer, IPredicate> expOperator,
+                                    TeNamedOperator<SqlField> namedOperator, int size) {
         return this.or(expOperator.apply(namedOperator, size));
     }
 
@@ -155,8 +153,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
-    public final IPredicate ifOr(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
-                                 TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier) {
+    public final IPredicate ifOr(BiFunction<TeNamedOperator<SqlField>, Integer, IPredicate> expOperator,
+                                 TeNamedOperator<SqlField> namedOperator, Supplier<Integer> supplier) {
         final IPredicate predicate;
         final Integer size;
         if ((size = supplier.get()) == null) {
@@ -307,8 +305,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
-    public final IPredicate and(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
-                                TeNamedOperator<SQLField> namedOperator, int size) {
+    public final IPredicate and(BiFunction<TeNamedOperator<SqlField>, Integer, IPredicate> expOperator,
+                                TeNamedOperator<SqlField> namedOperator, int size) {
         return this.and(expOperator.apply(namedOperator, size));
     }
 
@@ -326,8 +324,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
     }
 
     @Override
-    public final IPredicate and(Function<BiFunction<SQLField, String, Expression>, IPredicate> fieldOperator,
-                                BiFunction<SQLField, String, Expression> namedOperator) {
+    public final IPredicate and(Function<BiFunction<SqlField, String, Expression>, IPredicate> fieldOperator,
+                                BiFunction<SqlField, String, Expression> namedOperator) {
         return this.and(fieldOperator.apply(namedOperator));
     }
 
@@ -500,8 +498,8 @@ abstract class OperationPredicate extends OperationExpression.PredicateExpressio
 
 
     @Override
-    public final IPredicate ifAnd(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
-                                  TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier) {
+    public final IPredicate ifAnd(BiFunction<TeNamedOperator<SqlField>, Integer, IPredicate> expOperator,
+                                  TeNamedOperator<SqlField> namedOperator, Supplier<Integer> supplier) {
         final IPredicate predicate;
         final Integer size;
         if ((size = supplier.get()) == null) {

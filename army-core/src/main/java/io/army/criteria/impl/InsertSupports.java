@@ -5,9 +5,6 @@ import io.army.criteria.*;
 import io.army.criteria.impl.inner.*;
 import io.army.dialect.Database;
 import io.army.dialect._DialectUtils;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.CodeEnumType;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
@@ -17,6 +14,7 @@ import io.army.util._Assert;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.*;
 
@@ -1704,7 +1702,7 @@ abstract class InsertSupports {
         @Override
         public final InsertStatement._StaticColumnValueClause<T> comma(final FieldMeta<T> field,
                                                                        final @Nullable Expression value) {
-            if (value instanceof SQLField) {
+            if (value instanceof SqlField) {
                 throw ContextStack.criteriaError(this.context, "column value must be non-field.");
             } else if (!(value instanceof ArmyExpression)) {
                 throw ContextStack.nonArmyExp(this.context);

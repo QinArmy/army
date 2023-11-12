@@ -2,11 +2,9 @@ package io.army.criteria;
 
 import io.army.criteria.impl.SQLs;
 import io.army.function.*;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.BooleanType;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -53,8 +51,8 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
     SimplePredicate or(InOperator inOperator, SQLs.SymbolSpace space,
                        BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Collection<?> value);
 
-    SimplePredicate or(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
-                       TeNamedOperator<SQLField> namedOperator, int size);
+    SimplePredicate or(BiFunction<TeNamedOperator<SqlField>, Integer, IPredicate> expOperator,
+                       TeNamedOperator<SqlField> namedOperator, int size);
 
     <T> SimplePredicate or(BetweenValueOperator<T> expOperator, BiFunction<SimpleExpression, T, Expression> operator,
                            T firstValue, SQLs.WordAnd and, T secondValue);
@@ -81,8 +79,8 @@ public interface IPredicate extends Expression, Statement._WhereAndClause<IPredi
     <K, V> IPredicate ifOr(InOperator inOperator, SQLs.SymbolSpace space,
                            BiFunction<SimpleExpression, Collection<?>, RowExpression> funcRef, Function<K, V> function, K key);
 
-    IPredicate ifOr(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
-                    TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier);
+    IPredicate ifOr(BiFunction<TeNamedOperator<SqlField>, Integer, IPredicate> expOperator,
+                    TeNamedOperator<SqlField> namedOperator, Supplier<Integer> supplier);
 
 
     <K, V> IPredicate ifOr(ExpressionOperator<SimpleExpression, V, IPredicate> expOperator,

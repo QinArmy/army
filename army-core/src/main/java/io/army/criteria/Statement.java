@@ -6,13 +6,11 @@ import io.army.criteria.dialect.SubDelete;
 import io.army.criteria.impl.SQLs;
 import io.army.dialect.Dialect;
 import io.army.function.*;
-
-import javax.annotation.Nullable;
-
 import io.army.mapping.MappingType;
 import io.army.meta.TableMeta;
 import io.army.stmt.Stmt;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.*;
@@ -333,10 +331,10 @@ public interface Statement extends Item {
 
         OR on(IPredicate predicate1, IPredicate predicate2);
 
-        OR on(Function<Expression, IPredicate> operator, SQLField operandField);
+        OR on(Function<Expression, IPredicate> operator, SqlField operandField);
 
-        OR on(Function<Expression, IPredicate> operator1, SQLField operandField1
-                , Function<Expression, IPredicate> operator2, SQLField operandField2);
+        OR on(Function<Expression, IPredicate> operator1, SqlField operandField1
+                , Function<Expression, IPredicate> operator2, SqlField operandField2);
 
         OR on(Consumer<Consumer<IPredicate>> consumer);
 
@@ -855,8 +853,8 @@ public interface Statement extends Item {
         <T> WA where(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 
 
-        WA where(Function<BiFunction<SQLField, String, Expression>, IPredicate> fieldOperator,
-                 BiFunction<SQLField, String, Expression> operator);
+        WA where(Function<BiFunction<SqlField, String, Expression>, IPredicate> fieldOperator,
+                 BiFunction<SqlField, String, Expression> operator);
 
         //below ordinary operator
         <T> WA where(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
@@ -878,8 +876,8 @@ public interface Statement extends Item {
                         BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
 
         // below in operator
-        WA where(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
-                 TeNamedOperator<SQLField> namedOperator, int size);
+        WA where(BiFunction<TeNamedOperator<SqlField>, Integer, IPredicate> expOperator,
+                 TeNamedOperator<SqlField> namedOperator, int size);
 
 
         WA where(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName, int size);
@@ -906,8 +904,8 @@ public interface Statement extends Item {
         <T> WA whereIf(DialectBooleanOperator<T> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
                        BiFunction<SimpleExpression, T, Expression> func, Supplier<T> getter);
 
-        WA whereIf(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
-                   TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier);
+        WA whereIf(BiFunction<TeNamedOperator<SqlField>, Integer, IPredicate> expOperator,
+                   TeNamedOperator<SqlField> namedOperator, Supplier<Integer> supplier);
 
         //below four argument method
 
@@ -991,8 +989,8 @@ public interface Statement extends Item {
         <T> WA and(Function<T, IPredicate> expOperator, Supplier<T> supplier);
 
 
-        WA and(Function<BiFunction<SQLField, String, Expression>, IPredicate> fieldOperator,
-               BiFunction<SQLField, String, Expression> operator);
+        WA and(Function<BiFunction<SqlField, String, Expression>, IPredicate> fieldOperator,
+               BiFunction<SqlField, String, Expression> operator);
 
         //below ordinary operator
         <T> WA and(ExpressionOperator<SimpleExpression, T, IPredicate> expOperator,
@@ -1015,8 +1013,8 @@ public interface Statement extends Item {
 
 
         // below in operator
-        WA and(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
-               TeNamedOperator<SQLField> namedOperator, int size);
+        WA and(BiFunction<TeNamedOperator<SqlField>, Integer, IPredicate> expOperator,
+               TeNamedOperator<SqlField> namedOperator, int size);
 
 
         WA and(InNamedOperator expOperator, TeNamedOperator<SimpleExpression> namedOperator, String paramName, int size);
@@ -1052,8 +1050,8 @@ public interface Statement extends Item {
         <K, V> WA ifAnd(DialectBooleanOperator<V> fieldOperator, BiFunction<SimpleExpression, Expression, CompoundPredicate> operator,
                         BiFunction<SimpleExpression, V, Expression> func, Function<K, V> function, K key);
 
-        WA ifAnd(BiFunction<TeNamedOperator<SQLField>, Integer, IPredicate> expOperator,
-                 TeNamedOperator<SQLField> namedOperator, Supplier<Integer> supplier);
+        WA ifAnd(BiFunction<TeNamedOperator<SqlField>, Integer, IPredicate> expOperator,
+                 TeNamedOperator<SqlField> namedOperator, Supplier<Integer> supplier);
 
         //below four argument method
 
