@@ -27,18 +27,6 @@ abstract class SimpleTransactionOption implements TransactionOption {
         return option;
     }
 
-    static TransactionInfo info(boolean inTransaction, Isolation isolation, boolean readOnly) {
-        return new ArmyTransactionInfo(inTransaction, isolation, readOnly);
-    }
-
-    static TransactionInfo infoFrom(Function<Option<?>, ?> optionFunc) {
-        if (!(optionFunc.apply(Option.ISOLATION) instanceof Isolation
-                && optionFunc.apply(Option.IN_TRANSACTION) instanceof Boolean
-                && optionFunc.apply(Option.READ_ONLY) instanceof Boolean)) {
-            throw new IllegalArgumentException("error optionFunc");
-        }
-        return new DialectTransactionInfo(optionFunc);
-    }
 
     static Builder builder() {
         return new TransactionOptionBuilder();
@@ -91,7 +79,7 @@ abstract class SimpleTransactionOption implements TransactionOption {
      *
      * @since 1.0
      */
-    static final class ArmyTransactionOption extends SimpleTransactionOption implements TransactionInfo {
+    static final class ArmyTransactionOption extends SimpleTransactionOption implements TransactionOption {
 
 
         private static final ArmyTransactionOption READ_COMMITTED_READ = new ArmyTransactionOption(Isolation.READ_COMMITTED, true);
@@ -108,12 +96,6 @@ abstract class SimpleTransactionOption implements TransactionOption {
             super(isolation, readOnly);
         }
 
-
-        @Override
-        public boolean inTransaction() {
-            // always false
-            return false;
-        }
 
         @Override
         public String toString() {
@@ -265,7 +247,7 @@ abstract class SimpleTransactionOption implements TransactionOption {
 
     }// DialectTransactionOption
 
-    private static final class ArmyTransactionInfo extends SimpleTransactionOption implements TransactionInfo {
+    private static final class ArmyTransactionInfo extends SimpleTransactionOption implements TransactionOption {
 
         private final boolean inTransaction;
 
@@ -275,10 +257,6 @@ abstract class SimpleTransactionOption implements TransactionOption {
             this.inTransaction = inTransaction;
         }
 
-        @Override
-        public boolean inTransaction() {
-            return this.inTransaction;
-        }
 
         @Override
         public String toString() {
@@ -297,7 +275,7 @@ abstract class SimpleTransactionOption implements TransactionOption {
 
     }// ArmyTransactionInfo
 
-    private static final class DialectTransactionInfo implements TransactionInfo {
+    private static final class DialectTransactionInfo implements TransactionOption {
 
         private final Function<Option<?>, ?> optionFunc;
 
@@ -318,11 +296,6 @@ abstract class SimpleTransactionOption implements TransactionOption {
         }
 
         @Override
-        public boolean inTransaction() {
-            return nonNullOf(Option.IN_TRANSACTION);
-        }
-
-        @Override
         public boolean isReadOnly() {
             return nonNullOf(Option.READ_ONLY);
         }
@@ -331,9 +304,7 @@ abstract class SimpleTransactionOption implements TransactionOption {
         public String toString() {
             return _StringUtils.builder(30)
                     .append(getClass().getName())
-                    .append("[inTransaction:")
-                    .append(this.inTransaction())
-                    .append(",isolation")
+                    .append("[isolation:")
                     .append(this.isolation().name())
                     .append(",readOnly:")
                     .append(this.isReadOnly())

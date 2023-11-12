@@ -34,6 +34,15 @@ public interface TransactionInfo extends TransactionOption {
     boolean inTransaction();
 
     /**
+     * @return true when
+     * <ol>
+     *     <li>{@link #inTransaction()} is true</li>
+     *     <li>database server demand client rollback(eg: PostgreSQL) or {@link Session#isRollbackOnly()}</li>
+     * </ol>
+     */
+    boolean isRollbackOnly();
+
+    /**
      * <p>
      * Application developer can get
      *     <ul>

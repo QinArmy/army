@@ -132,6 +132,8 @@ public final class Option<T> {
      */
     public static final Option<Boolean> IN_TRANSACTION = Option.from("IN TRANSACTION", Boolean.class);
 
+    public static final Option<Boolean> ROLLBACK_ONLY = Option.from("ROLLBACK ONLY", Boolean.class);
+
     /**
      * <p>
      * When this option is supported by {@link Session#valueOf(Option)} , this option representing the session is auto commit<br/>

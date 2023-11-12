@@ -60,6 +60,11 @@ final class ArmyTransactionInfo implements TransactionInfo {
         return this.inTransaction;
     }
 
+    @Override
+    public boolean isRollbackOnly() {
+        return this.inTransaction && Boolean.TRUE.equals(valueOf(Option.ROLLBACK_ONLY));
+    }
+
     @Nonnull
     @Override
     public Isolation isolation() {

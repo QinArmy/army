@@ -9,7 +9,9 @@ import io.army.sync.StreamOption;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
 import io.army.sync.executor.SyncStmtExecutor;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
+import io.army.util._StringUtils;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,7 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.time.*;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -1172,14 +1175,63 @@ abstract class PostgreExecutor extends JdbcExecutor {
             super(factory, conn, sessionName);
         }
 
-
+        /**
+         * @see <a href="https://www.postgresql.org/docs/current/sql-start-transaction.html">START TRANSACTION Statement</a>
+         * @see <a href="https://www.postgresql.org/docs/current/runtime-config-client.html#GUC-DEFAULT-TRANSACTION-ISOLATION">default_transaction_isolation</a>
+         */
         @Override
-        public final TransactionInfo start(Xid xid, int flags, TransactionOption option) throws RmSessionException {
-            return null;
+        public final TransactionInfo start(final Xid xid, final int flags, TransactionOption option)
+                throws RmSessionException {
+
+            final TransactionInfo info = this.transactionInfo;
+            final XaStates states;
+            final Xid infoXid;
+            if (info == null) {
+                states = null;
+                infoXid = null;
+            } else if ((states = info.valueOf(Option.XA_STATES)) == XaStates.ACTIVE) {
+                throw _Exceptions.xaBusyOnOtherTransaction();
+            } else {
+                infoXid = info.valueOf(Option.XID);
+            }
+
+            if (!_StringUtils.hasText(xid.getGtrid())) {
+                throw _Exceptions.xaGtridNoText();
+            } else if (((~startSupportFlags()) & flags) != 0) {
+                throw _Exceptions.xaInvalidFlag(flags, "start");
+            } else if ((flags & RmSession.TM_SUSPEND) != 0) {
+                throw new RmSessionException("suspend/resume not implemented", RmSessionException.XAER_RMERR);
+            }
+
+
+            final TransactionInfo newInfo;
+            if ((flags & RmSession.TM_JOIN) == 0) {
+                newInfo = startLocalTransaction(xid, flags, option);  // postgre use local transaction
+            } else if (states == XaStates.IDLE && infoXid != null && infoXid.equals(xid)) { // It's ok to join an ended transaction. WebLogic does that.
+
+                final Map<Option<?>, Object> map = _Collections.hashMap(7);
+
+                map.put(Option.XID, infoXid);
+                map.put(Option.XA_FLAGS, info.nonNullOf(Option.XA_FLAGS));
+                map.put(Option.XA_STATES, XaStates.ACTIVE);  // modify states to active
+                final Boolean deferrable = info.valueOf(DEFERRABLE);
+                if (deferrable != null) {
+                    map.put(DEFERRABLE, deferrable);
+                }
+                newInfo = TransactionInfo.info(true, info.isolation(), info.isReadOnly(), map::get);
+            } else {
+                String m = String.format("Invalid protocol state requested. Attempted transaction interleaving is not supported. xid=%s, currentXid=%s, state=%s, flags=%s",
+                        xid, infoXid, states, flags);
+                throw new RmSessionException(m, RmSessionException.XAER_RMERR);
+            }
+
+            this.transactionInfo = newInfo;
+            return newInfo;
         }
 
         @Override
-        public final TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc) throws RmSessionException {
+        public final TransactionInfo end(Xid xid, int flags, Function<Option<?>, ?> optionFunc)
+                throws RmSessionException {
             return null;
         }
 
@@ -1216,7 +1268,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
         @Override
         public final int startSupportFlags() {
-            return 0;
+            return RmSession.TM_JOIN;
         }
 
         @Override
@@ -1243,6 +1295,51 @@ abstract class PostgreExecutor extends JdbcExecutor {
         @Override
         final TransactionInfo obtainTransaction() {
             return this.transactionInfo;
+        }
+
+
+        private TransactionInfo startLocalTransaction(final Xid xid, final int flags, TransactionOption option) {
+
+            final StringBuilder builder = new StringBuilder(140);
+
+            final Isolation isolation;
+            isolation = option.isolation();
+            int stmtCount = 0;
+            if (isolation == null) {
+                builder.append("SHOW default_transaction_isolation ; ");
+                stmtCount++;
+            }
+
+            builder.append("START TRANSACTION ");
+            final boolean readOnly = option.isReadOnly();
+            if (readOnly) {
+                builder.append(READ_ONLY);
+            } else {
+                builder.append(READ_WRITE);
+            }
+
+            if (isolation != null) {
+                builder.append(_Constant.SPACE_COMMA_SPACE);
+                standardIsolation(isolation, builder);
+            }
+
+            final Boolean deferrable;
+            deferrable = appendDeferrable(option, builder);
+            stmtCount++;
+
+            // execute start transaction statements
+            final Isolation finalIsolation;
+            finalIsolation = executeStartTransaction(stmtCount, isolation, builder);
+
+            final Map<Option<?>, Object> map = _Collections.hashMap(7);
+
+            map.put(Option.XID, xid);
+            map.put(Option.XA_FLAGS, flags);
+            map.put(Option.XA_STATES, XaStates.ACTIVE);
+            if (deferrable != null) {
+                map.put(DEFERRABLE, deferrable);
+            }
+            return TransactionInfo.info(true, finalIsolation, readOnly, map::get);
         }
 
 
