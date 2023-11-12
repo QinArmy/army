@@ -744,6 +744,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         return this.factory.handleException(cause);
     }
 
+    final ArmyException handleRmException(final Exception cause) {
+        if (cause instanceof RmSessionException) {
+            return (ArmyException) cause;
+        }
+        // TODO
+        return new RmSessionException(cause.getMessage(), cause, RmSessionException.XAER_RMERR);
+    }
+
     /*################################## blow private method ##################################*/
 
 

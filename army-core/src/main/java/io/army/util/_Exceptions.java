@@ -812,6 +812,10 @@ public abstract class _Exceptions {
         return new RmSessionException("gtrid of xid must have text.", RmSessionException.XAER_NOTA);
     }
 
+    public static RmSessionException xaBqualNonNullAndNoText() {
+        return new RmSessionException("bqual of xid non-null and no text.", RmSessionException.XAER_NOTA);
+    }
+
     public static RmSessionException xaGtridBeyond64Bytes() {
         return new RmSessionException("bytes length of gtrid beyond 64 bytes.", RmSessionException.XAER_NOTA);
     }

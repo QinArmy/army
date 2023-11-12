@@ -62,7 +62,21 @@ final class ArmyTransactionInfo implements TransactionInfo {
 
     @Override
     public boolean isRollbackOnly() {
-        return this.inTransaction && Boolean.TRUE.equals(valueOf(Option.ROLLBACK_ONLY));
+        final Function<Option<?>, ?> optionFunc;
+
+        final boolean rollbackOnly;
+        if (!this.inTransaction) {
+            rollbackOnly = false;
+        } else if ((optionFunc = this.optionFunc) == Option.EMPTY_OPTION_FUNC) {
+            rollbackOnly = false;
+        } else if (Boolean.TRUE.equals(optionFunc.apply(Option.ROLLBACK_ONLY))) {
+            rollbackOnly = true;
+        } else {
+            final Object flags;
+            rollbackOnly = (flags = optionFunc.apply(Option.XA_FLAGS)) instanceof Integer
+                    && ((Integer) flags & RmSession.TM_FAIL) != 0;
+        }
+        return rollbackOnly;
     }
 
     @Nonnull
@@ -88,6 +102,8 @@ final class ArmyTransactionInfo implements TransactionInfo {
             value = this.isolation;
         } else if (option == Option.READ_ONLY) {
             value = this.readOnly;
+        } else if (this.optionFunc == Option.EMPTY_OPTION_FUNC) {
+            value = null;
         } else {
             value = this.optionFunc.apply(option);
         }
