@@ -85,7 +85,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
     @Override
     public final void setTransactionCharacteristics(final TransactionOption option) throws DataAccessException {
         final StringBuilder builder = new StringBuilder(35);
-        builder.append("SET SESSION TRANSACTION ");
+        builder.append("SET SESSION CHARACTERISTICS AS TRANSACTION ");
 
         if (option.isReadOnly()) {
             builder.append(READ_ONLY);

@@ -153,13 +153,13 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
          * @return flags :
          * <ul>
          *     <li>{@link RmSession#XA_OK} :  prepared</li>
-         *     <li>{@link RmSession#XA_RDONLY} : current transaction is readonly and have committed with one phase</li>
+         *     <li>{@link RmSession#XA_RDONLY} : appropriate transaction is readonly and have committed with one phase</li>
          * </ul>
          * @throws RmSessionException throw when
          *                            <ol>
-         *                                <li>xid and current transaction not match</li>
-         *                                <li>current transaction {@link XaStates} isn't {@link XaStates#IDLE}</li>
-         *                                <li>current transaction is rollback only ,for example : current transaction's {@link RmSession#TM_FAIL} is set </li>
+         *                                <li>xid and appropriate transaction not match</li>
+         *                                <li>appropriate transaction {@link XaStates} isn't {@link XaStates#IDLE}</li>
+         *                                <li>appropriate transaction is rollback only ,for example : current transaction's {@link RmSession#TM_FAIL} is set </li>
          *                                <li>database server response error message</li>
          *                            </ol>
          */

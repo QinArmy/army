@@ -4,7 +4,7 @@ package io.army.session;
  * @see RmSession
  * @since 1.0
  */
-public class RmSessionException extends SessionException {
+public class RmSessionException extends DataAccessException {
 
 
     /**

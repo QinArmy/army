@@ -12,6 +12,14 @@ public interface StreamOption {
 
     int splitSize();
 
+    /**
+     * <p>Currently,known MySQL connector / J support client stream.
+     *
+     * @return <ul>
+     * <li>true (default) : driver read one row and immediately drain to {@link java.util.stream.Stream}</li>
+     * <li>false : driver read all rows and drain to {@link java.util.stream.Stream}</li>
+     * </ul>
+     */
     boolean isPreferClientStream();
 
     int fetchSize();

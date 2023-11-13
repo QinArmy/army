@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
- * <p>This interface encapsulate blocking {@link Session}.
+ * <p>This interface representing blocking {@link Session}.
  *
  * <p>This interface is base interface of below interface:
  * <ul>
@@ -56,9 +56,21 @@ public interface SyncSession extends Session, AutoCloseable {
      *     <li>This method is permitted within transactions ,but does not affect the current ongoing transaction.</li>
      *     <li>If you don't use appropriate default value,then appropriate characteristic does not affect new transaction,for example : {@link TransactionOption#isolation()} not null.</li>
      * </ul>
+     * <pre>For example MySQL database will execute following sql :
+     *     <code><br/>
+     *              SET SESSION TRANSACTION READ WRITE , ISOLATION LEVEL REPEATABLE READ
+     *     </code>
+     * </pre>
+     * <pre>For example PostgreSQL database will execute following sql :
+     *     <code><br/>
+     *              SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE, ISOLATION LEVEL REPEATABLE READ
+     *     </code>
+     * </pre>
      *
      * @see SyncLocalSession#startTransaction(TransactionOption, HandleMode)
      * @see SyncRmSession#start(Xid, int, TransactionOption)
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/set-transaction.html">MySQL SET TRANSACTION Statement</a>
+     * @see <a href="https://www.postgresql.org/docs/current/sql-set-transaction.html">PostgreSQL SET TRANSACTION Statement</a>
      */
     void setTransactionCharacteristics(TransactionOption option);
 

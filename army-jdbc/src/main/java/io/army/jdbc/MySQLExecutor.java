@@ -66,8 +66,6 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySQLExecutor.class);
 
-    private static final String SEMICOLON = ";";
-
 
     /**
      * private constructor
