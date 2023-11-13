@@ -8,15 +8,16 @@ import io.army.criteria.impl.inner._SingleDml;
 import io.army.criteria.impl.inner._Statement;
 import io.army.env.ArmyKey;
 import io.army.env.SqlLogMode;
-
-import javax.annotation.Nullable;
-
 import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
+import io.army.session.record.ResultStates;
 import io.army.stmt.Stmt;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.function.Consumer;
 
 /**
  * <p>This class is all implementation of {@link Session}.
@@ -302,6 +303,73 @@ public abstract class _ArmySession implements Session {
         }
         return use;
     }
+
+    protected static abstract class WrapStmtOption implements StmtOption {
+
+        protected final StmtOption option;
+
+        private final Consumer<ResultStates> statesConsumer;
+
+        protected WrapStmtOption(StmtOption option, Consumer<ResultStates> statesConsumer) {
+            this.option = option;
+            final Consumer<ResultStates> source;
+            source = option.stateConsumer();
+
+            if (source == ResultStates.IGNORE_STATES) {
+                this.statesConsumer = statesConsumer;
+            } else {
+                this.statesConsumer = statesConsumer.andThen(source);
+            }
+
+        }
+
+        @Override
+        public final boolean isPreferServerPrepare() {
+            return this.option.isPreferServerPrepare();
+        }
+
+        @Override
+        public final boolean isSupportTimeout() {
+            return this.option.isSupportTimeout();
+        }
+
+        @Override
+        public final boolean isParseBatchAsMultiStmt() {
+            return this.option.isParseBatchAsMultiStmt();
+        }
+
+        @Override
+        public final int timeoutMillSeconds() {
+            return this.option.timeoutMillSeconds();
+        }
+
+        @Override
+        public final int restSeconds() throws TimeoutException {
+            return this.option.restSeconds();
+        }
+
+        @Override
+        public final int restMillSeconds() throws TimeoutException {
+            return this.option.restMillSeconds();
+        }
+
+        @Override
+        public final int fetchSize() {
+            return this.option.fetchSize();
+        }
+
+        @Override
+        public final MultiStmtMode multiStmtMode() {
+            return this.option.multiStmtMode();
+        }
+
+        @Override
+        public final Consumer<ResultStates> stateConsumer() {
+            return this.statesConsumer;
+        }
+
+
+    } // WrapStmtOption
 
 
 }

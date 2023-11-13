@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -290,29 +291,27 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     }
 
     @Override
-    public final List<Xid> recover(int flags) {
-        return this.recover(flags, Option.EMPTY_OPTION_FUNC);
+    public final List<Xid> recoverList(int flags) {
+        return this.recoverList(flags, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public final List<Xid> recover(int flags, Function<Option<?>, ?> optionFunc) {
+    public final List<Xid> recoverList(int flags, Function<Option<?>, ?> optionFunc) {
+        return recover(flags, optionFunc, StreamOption.defaultOption())
+                .collect(Collectors.toCollection(_Collections::arrayList));
+    }
+
+    @Override
+    public final Stream<Xid> recover(int flags) {
+        return this.recover(flags, Option.EMPTY_OPTION_FUNC, StreamOption.defaultOption());
+    }
+
+    @Override
+    public final Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
-        return ((SyncRmStmtExecutor) this.stmtExecutor).recover(flags, optionFunc);
-    }
-
-    @Override
-    public final Stream<Xid> recoverStream(int flags) {
-        return this.recoverStream(flags, Option.EMPTY_OPTION_FUNC);
-    }
-
-    @Override
-    public final Stream<Xid> recoverStream(int flags, Function<Option<?>, ?> optionFunc) {
-        if (isClosed()) {
-            throw _Exceptions.sessionClosed(this);
-        }
-        return ((SyncRmStmtExecutor) this.stmtExecutor).recover(flags, optionFunc);
+        return ((SyncRmStmtExecutor) this.stmtExecutor).recover(flags, optionFunc, option);
     }
 
     @Override
@@ -328,6 +327,11 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     @Override
     public final int endSupportFlags() {
         return ((SyncRmStmtExecutor) this.stmtExecutor).endSupportFlags();
+    }
+
+    @Override
+    public final int commitSupportFlags() {
+        return ((SyncRmStmtExecutor) this.stmtExecutor).commitSupportFlags();
     }
 
     @Override

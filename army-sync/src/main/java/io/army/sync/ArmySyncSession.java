@@ -17,9 +17,7 @@ import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -206,8 +204,8 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     @Override
-    public final <R> Stream<R> query(DqlStatement statement, Class<R> resultClass, SyncStmtOption option) {
-        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryStream(s, resultClass, option));
+    public final <R> Stream<R> query(DqlStatement statement, final Class<R> resultClass, SyncStmtOption option) {
+        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.query(s, resultClass, o));
     }
 
     @Override
@@ -216,8 +214,8 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     @Override
-    public final <R> Stream<R> queryObject(DqlStatement statement, Supplier<R> constructor, SyncStmtOption option) {
-        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryObjectStream(s, constructor, option));
+    public final <R> Stream<R> queryObject(DqlStatement statement, final Supplier<R> constructor, SyncStmtOption option) {
+        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryObject(s, constructor, o));
     }
 
     @Override
@@ -226,18 +224,23 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     @Override
-    public final <R> Stream<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, SyncStmtOption option) {
-        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryRecordStream(s, function, option));
+    public final <R> Stream<R> queryRecord(DqlStatement statement, final Function<CurrentRecord, R> function, SyncStmtOption option) {
+        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryRecord(s, function, o));
     }
 
     @Override
-    public final <T> long save(T domain) {
-        return this.update(ArmyCriteria.insertStmt(this, domain), defaultOption());
+    public final <T> int save(T domain) {
+        return save(domain, defaultOption());
     }
 
     @Override
-    public final <T> long save(T domain, SyncStmtOption option) {
-        return this.update(ArmyCriteria.insertStmt(this, domain), option);
+    public final <T> int save(T domain, SyncStmtOption option) {
+        final long rowCount;
+        rowCount = update(ArmyCriteria.insertStmt(this, domain), option);
+        if (rowCount > 1) {
+            throw new DataAccessException(String.format("insert row count[%s] great than one ", rowCount));
+        }
+        return (int) rowCount;
     }
 
     @Override
@@ -311,7 +314,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
             final List<Long> resultList;
             if (stmt instanceof BatchStmt) {
-                resultList = this.stmtExecutor.batchUpdateList((BatchStmt) stmt, listConstructor, option, domainTable, null);
+                resultList = this.stmtExecutor.batchUpdateList((BatchStmt) stmt, listConstructor, option, Long.class, domainTable, null);
             } else if (!(stmt instanceof PairBatchStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (!this.inTransaction()) {
@@ -321,14 +324,12 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
                 final PairBatchStmt pairStmt = (PairBatchStmt) stmt;
 
                 final List<Long> childList;
-                childList = this.stmtExecutor.batchUpdateList(pairStmt.firstStmt(), listConstructor, option, domainTable, null);
-                resultList = this.stmtExecutor.batchUpdateList(pairStmt.secondStmt(), listConstructor, option, domainTable, childList);
+                childList = this.stmtExecutor.batchUpdateList(pairStmt.firstStmt(), listConstructor, option, Long.class, domainTable, null);
+                resultList = this.stmtExecutor.batchUpdateList(pairStmt.secondStmt(), listConstructor, option, Long.class, domainTable, childList);
             }
             return resultList;
         } catch (ChildUpdateException e) {
-            if (hasTransactionInfo()) {
-                rollbackOnlyOnError(e);
-            }
+            rollbackOnlyOnError(e);
             throw e;
         } catch (Exception e) {
             throw wrapSessionError(e);
@@ -341,8 +342,58 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     @Override
+    public final Stream<ResultStates> batchUpdateAsStates(BatchDmlStatement statement) {
+        return batchUpdateAsStates(statement, defaultOption());
+    }
+
+    @Override
+    public final Stream<ResultStates> batchUpdateAsStates(BatchDmlStatement statement, SyncStmtOption option) {
+        try {
+            if (!(statement instanceof _BatchStatement)) {
+                throw _Exceptions.unexpectedStatement(statement);
+            }
+
+            assertSession(statement);
+
+            final Stmt stmt;
+            stmt = this.parseDmlStatement(statement, option);
+
+            final TableMeta<?> domainTable;
+            domainTable = getBatchUpdateDomainTable(statement);
+
+            final Stream<ResultStates> stream;
+            if (stmt instanceof BatchStmt) {
+                stream = this.stmtExecutor.batchUpdate((BatchStmt) stmt, option, ResultStates.class, domainTable, null);
+            } else if (!(stmt instanceof PairBatchStmt)) {
+                throw _Exceptions.unexpectedStmt(stmt);
+            } else if (!this.inTransaction()) {
+                throw updateChildNoTransaction();
+            } else {
+                assert domainTable instanceof ChildTableMeta; // fail, bug.
+                final PairBatchStmt pairStmt = (PairBatchStmt) stmt;
+
+                final List<ResultStates> childList;
+                childList = this.stmtExecutor.batchUpdate(pairStmt.firstStmt(), option, ResultStates.class, domainTable, null)
+                        .collect(Collectors.toCollection(_Collections::arrayList));
+
+                stream = this.stmtExecutor.batchUpdate(pairStmt.secondStmt(), option, ResultStates.class, domainTable, childList);
+            }
+            return stream;
+        } catch (ChildUpdateException e) {
+            rollbackOnlyOnError(e);
+            throw e;
+        } catch (Exception e) {
+            throw wrapSessionError(e);
+        } finally {
+            if (statement instanceof _Statement) {
+                ((_Statement) statement).close();
+            }
+        }
+    }
+
+    @Override
     public final <T> T valueOf(Option<T> option) {
-        return null;
+        return this.stmtExecutor.valueOf(option);
     }
 
     @Override
@@ -370,7 +421,7 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
 
     private <R> Stream<R> executeQuery(final DqlStatement statement, final SyncStmtOption option,
-                                       final Function<SimpleStmt, Stream<R>> exeFunc) {
+                                       final BiFunction<SimpleStmt, SyncStmtOption, Stream<R>> exeFunc) {
         try {
             assertSession(statement);
 
@@ -379,9 +430,11 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
 
             final Stream<R> stream;
             if (stmt instanceof SimpleStmt) {
-                stream = exeFunc.apply((SimpleStmt) stmt);
+                stream = exeFunc.apply((SimpleStmt) stmt, option);
             } else if (!(stmt instanceof PairStmt)) {
                 throw _Exceptions.unexpectedStmt(stmt);
+            } else if (!this.inTransaction()) {
+                throw updateChildNoTransaction();
             } else if (statement instanceof InsertStatement) {
                 stream = executePairInsertQuery((InsertStatement) statement, option, (PairStmt) stmt, exeFunc);
             } else {
@@ -403,18 +456,18 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
     }
 
     /**
-     * @see #executeQuery(DqlStatement, SyncStmtOption, Function)
+     * @see #executeQuery(DqlStatement, SyncStmtOption, BiFunction)
      */
     private <R> Stream<R> executePairInsertQuery(InsertStatement statement,
                                                  SyncStmtOption option, PairStmt stmt,
-                                                 Function<SimpleStmt, Stream<R>> exeFunc) {
+                                                 BiFunction<SimpleStmt, SyncStmtOption, Stream<R>> exeFunc) {
         final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
         final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
 
         long rows = 0;
         List<R> resultList = null;
         if (firstStmtIsQuery) {
-            resultList = exeFunc.apply(stmt.firstStmt())
+            resultList = exeFunc.apply(stmt.firstStmt(), option)
                     .collect(Collectors.toCollection(_Collections::arrayList));
             if (resultList.size() == 0) {
                 // exists conflict clause
@@ -432,34 +485,26 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         childTable = (ChildTableMeta<?>) childInsert.table();
 
         try {
+
+            final Stream<R> stream;
             if (firstStmtIsQuery) {
-                rows = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), option, stream);
+                stream = this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), option, resultList);
             } else {
-                stream = exeFunc.apply(stmt.secondStmt());
+                final long parentRows = rows;
+                final Consumer<ResultStates> statesConsumer;
+                statesConsumer = states -> {
+                    if (states.rowCount() != parentRows) {
+                        throw _Exceptions.parentChildRowsNotMatch(this, childTable, parentRows, states.rowCount());
+                    }
+                };
+                stream = exeFunc.apply(stmt.secondStmt(), new WrapSyncStmtOption(option, statesConsumer));
             }
+            return stream;
         } catch (Throwable e) {
             throw _Exceptions.childInsertError(this, childTable, e);
         }
-
-        if (rows != stream.size()) {
-            if (firstStmtIsQuery) {
-                throw _Exceptions.parentChildRowsNotMatch(this, childTable, stream.size(), rows);
-            } else {
-                throw _Exceptions.parentChildRowsNotMatch(this, childTable, rows, stream.size());
-            }
-        }
-
-        if (firstStmtIsQuery && _Collections.isSecondQueryList(stream)) {
-            final List<R> tempList = listConstructor.get();
-            if (tempList == null) {
-                throw _Exceptions.listConstructorError();
-            }
-            tempList.addAll(stream);
-            stream = tempList;
-        }
-
-        return stream;
     }
+
 
     /**
      * @param <R> the class of {@link Long} or {@link ResultStates}
@@ -611,5 +656,30 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         return ((ResultStates) result).affectedRows();
     }
 
+
+    private static final class WrapSyncStmtOption extends WrapStmtOption implements SyncStmtOption {
+
+        private WrapSyncStmtOption(SyncStmtOption option, Consumer<ResultStates> statesConsumer) {
+            super(option, statesConsumer);
+        }
+
+        @Nullable
+        @Override
+        public Consumer<StreamCommander> streamCommanderConsumer() {
+            return ((SyncStmtOption) this.option).streamCommanderConsumer();
+        }
+
+        @Override
+        public int splitSize() {
+            return ((SyncStmtOption) this.option).splitSize();
+        }
+
+        @Override
+        public boolean isPreferClientStream() {
+            return ((SyncStmtOption) this.option).isPreferClientStream();
+        }
+
+
+    } // WrapSyncStmtOption
 
 }

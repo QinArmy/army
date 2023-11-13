@@ -1162,6 +1162,12 @@ public abstract class _Exceptions {
         return new ChildUpdateException(m);
     }
 
+    public static ChildUpdateException parentChildRowsNotMatch(String sessionName, long parentRows, long childRows) {
+        String m = String.format("session[%s]\n  parent insert/update rows[%s] and child insert/update rows[%s] not match.",
+                sessionName, parentRows, childRows);
+        return new ChildUpdateException(m);
+    }
+
     public static ChildUpdateException childInsertError(Session session, ChildTableMeta<?> domainTable, Throwable clause) {
         String m = String.format("%s\n parent of %s  insert completion,but child insert occur error.",
                 session.name(), domainTable);

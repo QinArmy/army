@@ -26,4 +26,8 @@ public interface StreamOption {
 
     Consumer<ResultStates> stateConsumer();
 
+    static StreamOption defaultOption() {
+        throw new UnsupportedOperationException();
+    }
+
 }

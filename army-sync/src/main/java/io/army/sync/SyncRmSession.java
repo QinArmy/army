@@ -24,8 +24,8 @@ import java.util.stream.Stream;
  *     <li>{@link #commit(Xid, int, Function)}</li>
  *     <li>{@link #rollback(Xid, Function)}</li>
  *     <li>{@link #forget(Xid, Function)}</li>
+ *     <li>{@link #recoverList(int, Function)}</li>
  *     <li>{@link #recover(int, Function)}</li>
- *     <li>{@link #recoverStream(int, Function)}</li>
  *     <li>{@link #isSupportForget()}</li>
  * </ol>
  * and following methods :
@@ -86,13 +86,13 @@ public interface SyncRmSession extends SyncSession, RmSession {
      */
     void forget(Xid xid, Function<Option<?>, ?> optionFunc);
 
-    List<Xid> recover(int flags);
+    List<Xid> recoverList(int flags);
 
-    List<Xid> recover(int flags, Function<Option<?>, ?> optionFunc);
+    List<Xid> recoverList(int flags, Function<Option<?>, ?> optionFunc);
 
-    Stream<Xid> recoverStream(int flags);
+    Stream<Xid> recover(int flags);
 
-    Stream<Xid> recoverStream(int flags, Function<Option<?>, ?> optionFunc);
+    Stream<Xid> recover(int flags, Function<Option<?>, ?> optionFunc, StreamOption option);
 
 
 }

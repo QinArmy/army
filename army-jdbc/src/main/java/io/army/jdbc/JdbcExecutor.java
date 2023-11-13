@@ -2631,9 +2631,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         private int rowIndex = 0;
 
 
-        private int totalRowCount = 0;
-
-
         private SimpleSecondSpliterator(Statement statement, ResultSet resultSet, SecondRowReader<R> rowReader,
                                         TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList) {
             super(statement, resultSet, rowReader, stmt, option);
@@ -2720,14 +2717,14 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             }
 
             this.rowIndex = rowIndex;
-            if (readRowCount > 0) {
-                this.totalRowCount += readRowCount;
-            }
 
             if (this.canceled) {
                 close();
             } else if (!interrupt) {
-                emitSingleResultStates(rowReader, this.totalRowCount);
+                if (rowIndex != firstList.size()) {
+                    throw _Exceptions.parentChildRowsNotMatch(executor.sessionName, rowIndex, firstList.size());
+                }
+                emitSingleResultStates(rowReader, rowIndex);
                 close();
             }
             return readRowCount > 0;
