@@ -25,7 +25,7 @@ import java.util.stream.Stream;
  *     <li>{@link #rollback(Xid, Function)}</li>
  *     <li>{@link #forget(Xid, Function)}</li>
  *     <li>{@link #recoverList(int, Function)}</li>
- *     <li>{@link #recover(int, Function)}</li>
+ *     <li>{@link #recover(int, Function, StreamOption)}</li>
  *     <li>{@link #isSupportForget()}</li>
  * </ol>
  * and following methods :

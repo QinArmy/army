@@ -1,7 +1,9 @@
 package io.army.reactive.executor;
 
 
-import io.army.reactive.QueryResults;
+import io.army.meta.ChildTableMeta;
+import io.army.meta.TableMeta;
+import io.army.reactive.ReactiveCloseable;
 import io.army.reactive.ReactiveStmtOption;
 import io.army.session.Option;
 import io.army.session.TransactionInfo;
@@ -9,12 +11,15 @@ import io.army.session.TransactionOption;
 import io.army.session.Xid;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
-import io.army.session.record.ResultItem;
 import io.army.session.record.ResultStates;
-import io.army.stmt.*;
+import io.army.stmt.BatchStmt;
+import io.army.stmt.PairBatchStmt;
+import io.army.stmt.SimpleStmt;
+import io.army.stmt.TwoStmtQueryStmt;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -35,7 +40,7 @@ import java.util.function.Supplier;
  * @see ReactiveStmtExecutorFactory
  * @since 1.0
  */
-public interface ReactiveStmtExecutor extends StmtExecutor {
+public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
     Mono<TransactionInfo> transactionInfo();
 
@@ -49,9 +54,10 @@ public interface ReactiveStmtExecutor extends StmtExecutor {
 
     Mono<ResultStates> insert(SimpleStmt stmt, ReactiveStmtOption option);
 
-    Mono<ResultStates> update(SimpleStmt stmt, ReactiveStmtOption option);
+    Mono<ResultStates> update(SimpleStmt stmt, ReactiveStmtOption option, Function<Option<?>, ?> optionFunc);
 
-    Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option);
+    Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option, @Nullable TableMeta<?> domainTable,
+                                   @Nullable List<ResultStates> rowsList);
 
     <R> Flux<R> query(SimpleStmt stmt, Class<R> resultClass, ReactiveStmtOption option);
 
@@ -61,26 +67,17 @@ public interface ReactiveStmtExecutor extends StmtExecutor {
 
     <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option);
 
-    <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, ReactiveStmtOption option);
+    <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList);
 
-    <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option);
+    <R> Flux<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option, boolean firstIsQuery,
+                               ChildTableMeta<?> childTable);
 
-    <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, ReactiveStmtOption option);
+    <R> Flux<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor, ReactiveStmtOption option,
+                                     boolean firstIsQuery, ChildTableMeta<?> childTable);
 
-    <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option);
+    <R> Flux<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option,
+                                     boolean firstIsQuery, ChildTableMeta<?> childTable);
 
-    <R> Flux<R> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveStmtOption option);
-
-    QueryResults batchQueryResults(BatchStmt stmt, ReactiveStmtOption option);
-
-
-    Flux<ResultItem> execute(SingleSqlStmt stmt, ReactiveStmtOption option);
-
-
-    Flux<ResultItem> executeMultiStmt(List<SingleSqlStmt> stmtList, ReactiveStmtOption option);
-
-
-    <T> Mono<T> close();
 
     /**
      * <p><strong>NOTE</strong> : this interface never extends any interface.

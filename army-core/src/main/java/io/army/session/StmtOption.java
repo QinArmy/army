@@ -42,6 +42,20 @@ public interface StmtOption {
 
     int fetchSize();
 
+    /**
+     * <p>Get frequency to help driver caching server-prepared statement.
+     * <p>Default : -1  in the implementation of jdbd-spi,so if you don't invoke this method,driver will ignore this option.
+     * <p><Strong>NOTE</Strong>: JDBC don't support this option
+     *
+     * @return <ul>
+     * <li>negative : no action</li>
+     * <li>0 : never cache server-prepared statement,if have cached ,close server-prepared statement and delete cache</li>
+     * <li>positive : representing frequency</li>
+     * <li>{@link Integer#MAX_VALUE} : always cache server-prepared statement</li>
+     * </ul>
+     */
+    int frequency();
+
     MultiStmtMode multiStmtMode();
 
 

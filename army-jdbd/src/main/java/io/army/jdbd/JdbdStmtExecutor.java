@@ -7,11 +7,7 @@ import io.army.criteria.SQLParam;
 import io.army.criteria.Selection;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.meta.FieldMeta;
-import io.army.meta.PrimaryFieldMeta;
-import io.army.meta.ServerMeta;
-import io.army.meta.TypeMeta;
-import io.army.reactive.QueryResults;
+import io.army.meta.*;
 import io.army.reactive.ReactiveStmtOption;
 import io.army.reactive.executor.ReactiveExecutorSupport;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
@@ -23,6 +19,7 @@ import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultItem;
 import io.army.session.record.ResultStates;
+import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
 import io.army.type.ImmutableSpec;
@@ -176,7 +173,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         if (returningId) {
             final GeneratedKeyStmt keyStmt = (GeneratedKeyStmt) stmt;
             final MappingType type = keyStmt.idField().mappingType();
-            final SqlType sqlType = type.map(this.factory.serverMeta);
+            final SqlType dataType = type.map(this.factory.serverMeta);
             jdbdStatesHolder = new AtomicReference<>(null);
 
             final int rowSize = keyStmt.rowSize();
@@ -184,12 +181,12 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
             extractIdFunc = row -> {
                 Object idValue;
-                idValue = get(row, 0, sqlType);
+                idValue = get(row, 0, dataType);
                 final int rowIndex = rowIndexHolder[0]++;
                 if (idValue == null) {
                     throw _Exceptions.idValueIsNull(rowIndex, keyStmt.idField());
                 }
-                idValue = type.afterGet(sqlType, this.factory.mappingEnv, idValue);
+                idValue = type.afterGet(dataType, this.factory.mappingEnv, idValue);
                 keyStmt.setGeneratedIdValue(rowIndex, idValue);
                 if (row.rowNumber() != rowIndexHolder[0]) {
                     String m = String.format("jdbd row index error,expected %s but %s", rowIndexHolder[0], row.rowNumber());
@@ -235,7 +232,8 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
 
     @Override
-    public final Mono<ResultStates> update(final SimpleStmt stmt, final ReactiveStmtOption option) {
+    public final Mono<ResultStates> update(final SimpleStmt stmt, final ReactiveStmtOption option,
+                                           Function<Option<?>, ?> optionFunc) {
         Mono<ResultStates> mono;
         try {
             final BindStatement statement;
@@ -251,7 +249,9 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final Flux<ResultStates> batchUpdate(final BatchStmt stmt, final ReactiveStmtOption option) {
+    public final Flux<ResultStates> batchUpdate(final BatchStmt stmt, final ReactiveStmtOption option,
+                                                @Nullable TableMeta<?> domainTable,
+                                                @Nullable List<ResultStates> rowsList) {
         Flux<ResultStates> flux;
         try {
             final BindStatement statement;
@@ -326,7 +326,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, List<R> resultList, ReactiveStmtOption option) {
+    public final <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList) {
         Flux<R> flux;
         try {
             final SecondRowReader<R> rowReader;
@@ -340,86 +340,19 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final <R> Flux<R> batchQuery(BatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option) {
-        Flux<R> flux;
-        try {
-            final List<? extends Selection> selectionList = stmt.selectionList();
-            final RowReader<R> rowReader;
-            if (selectionList.size() > 1) {
-                // TODO fix me for firebird
-                rowReader = new BeanReader<>(this, selectionList, resultClass);
-            } else {
-                rowReader = new SingleColumnRowReader<>(this, selectionList, resultClass);
-            }
-            // NOTE : batchQuery method can use same RowReader instance
-            flux = executeBatchQuery(stmt, rowReader::readOneRow, option);
-        } catch (Throwable e) {
-            flux = Flux.error(wrapErrorIfNeed(e));
-        }
-        return flux;
+    public final <R> Flux<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option, boolean firstIsQuery, ChildTableMeta<?> childTable) {
+        return null;
     }
 
     @Override
-    public final <R> Flux<R> batchQueryObject(BatchStmt stmt, Supplier<R> constructor, ReactiveStmtOption option) {
-        Flux<R> flux;
-        try {
-            final RowReader<R> rowReader;
-            rowReader = new ObjectRowReader<>(this, stmt.selectionList(), constructor, stmt instanceof TwoStmtModeQuerySpec);
-            flux = executeBatchQuery(stmt, rowReader::readOneRow, option);
-        } catch (Throwable e) {
-            flux = Flux.error(wrapErrorIfNeed(e));
-        }
-        return flux;
+    public final <R> Flux<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor, ReactiveStmtOption option, boolean firstIsQuery, ChildTableMeta<?> childTable) {
+        return null;
     }
 
     @Override
-    public final <R> Flux<R> batchQueryRecord(BatchStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
-        Flux<R> flux;
-        try {
-            final RowReader<R> rowReader;
-            rowReader = new CurrentRecordRowReader<>(this, stmt.selectionList(), function);
-            flux = executeBatchQuery(stmt, rowReader::readOneRow, option);
-        } catch (Throwable e) {
-            flux = Flux.error(wrapErrorIfNeed(e));
-        }
-        return flux;
+    public final <R> Flux<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option, boolean firstIsQuery, ChildTableMeta<?> childTable) {
+        return null;
     }
-
-    @Override
-    public final <R> Flux<R> secondBatchQuery(TwoStmtBatchQueryStmt stmt, List<R> resultList, ReactiveStmtOption option) {
-        // TODO for firebird
-        return Flux.error(new DataAccessException("currently,don't support"));
-    }
-
-    @Override
-    public final QueryResults batchQueryResults(BatchStmt stmt, ReactiveStmtOption option) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public final Flux<ResultItem> execute(final SingleSqlStmt stmt, final ReactiveStmtOption option) {
-//        Flux<ResultItem> flux;
-//        try {
-//            final BindStatement statement;
-//            statement = bindStatement(stmt, option);
-//            if (stmt instanceof BatchStmt) {
-//                flux = Flux.from(statement.executeBatchAsFlux());
-//            } else {
-//                 flux = Flux.from(statement.executeAsFlux());
-//            }
-//        } catch (Throwable e) {
-//            flux = Flux.error(wrapError(e));
-//        }
-//        return flux;
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public final Flux<ResultItem> executeMultiStmt(List<SingleSqlStmt> stmtList, ReactiveStmtOption option) {
-        // TODO
-        throw new UnsupportedOperationException();
-    }
-
 
 
     /*-------------------below local transaction methods -------------------*/
@@ -463,8 +396,6 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                 .map(this::mapToArmyOptionalTransactionInfo)
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
     }
-
-
 
 
     /*-------------------below XA transaction methods -------------------*/
@@ -603,6 +534,14 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
+    public final int commitSupportFlags() {
+        if (!(this instanceof ReactiveRmStmtExecutor)) {
+            throw new UnsupportedOperationException();
+        }
+        return ((RmDatabaseSession) this.session).commitSupportFlags();
+    }
+
+    @Override
     public final int recoverSupportFlags() {
         if (!(this instanceof ReactiveRmStmtExecutor)) {
             throw new UnsupportedOperationException();
@@ -669,7 +608,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     abstract SqlType getColumnMeta(DataRow row, int indexBasedZero);
 
     @Nullable
-    abstract Object get(DataRow row, int indexBasedZero, SqlType sqlType);
+    abstract Object get(DataRow row, int indexBasedZero, SqlType dataType);
 
     @Nullable
     abstract io.jdbd.session.Option<?> mapToJdbdDialectOption(Option<?> option);
@@ -1095,14 +1034,6 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
             throws TimeoutException, JdbdException {
         final BindStatement statement;
         statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
-        if (option.isSupportTimeout()) {
-            statement.setTimeout(option.restMillSeconds());
-        }
-
-        final int fetchSize = option.fetchSize();
-        if (fetchSize > 0) {
-            statement.setFetchSize(fetchSize);
-        }
 
         if (stmt instanceof BatchStmt) {
             final List<List<SQLParam>> groupList = ((BatchStmt) stmt).groupList();
@@ -1116,6 +1047,23 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         } else {
             throw _Exceptions.unexpectedStmt(stmt);
         }
+
+        if (option.isSupportTimeout()) {
+            statement.setTimeout(option.restMillSeconds());
+        }
+
+        final int fetchSize, frequency;
+        fetchSize = option.fetchSize();
+        if (fetchSize > 0) {
+            statement.setFetchSize(fetchSize);
+        }
+
+        frequency = option.frequency();
+        if (frequency > -1) {
+            statement.setFrequency(frequency);
+        }
+
+
         return statement;
     }
 
