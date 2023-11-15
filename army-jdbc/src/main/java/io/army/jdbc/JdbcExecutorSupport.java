@@ -212,15 +212,6 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             return null;
         }
 
-        @Override
-        public final <T> T getNonNullOf(int indexBasedZero, Option<T> option) throws DataAccessException {
-            final T value;
-            value = getOf(indexBasedZero, option);
-            if (value == null) {
-                throw new NullPointerException();
-            }
-            return value;
-        }
 
         @Nullable
         @Override

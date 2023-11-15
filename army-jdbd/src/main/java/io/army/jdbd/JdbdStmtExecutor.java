@@ -9,7 +9,6 @@ import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
 import io.army.meta.*;
 import io.army.reactive.ReactiveStmtOption;
-import io.army.reactive.executor.ReactiveExecutorSupport;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.reactive.executor.ReactiveStmtExecutor;
@@ -65,7 +64,7 @@ import java.util.function.Supplier;
  * @see JdbdStmtExecutorFactory
  * @see <a href="https://github.com/QinArmy/jdbd">jdbd-spi</a>
  */
-abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
+abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         implements ReactiveStmtExecutor,
         ReactiveStmtExecutor.LocalTransactionSpec,
         ReactiveStmtExecutor.XaTransactionSpec,
@@ -130,7 +129,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
     @Override
     public final Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc) {
-        return Mono.from(this.session.setSavePoint(mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(this.session.setSavePoint(this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
     }
 
@@ -139,7 +138,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         if (!(savepoint instanceof SavePoint)) {
             return Mono.error(_Exceptions.unknownSavePoint(savepoint));
         }
-        return Mono.from(this.session.releaseSavePoint((SavePoint) savepoint, mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(this.session.releaseSavePoint((SavePoint) savepoint, this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
                 .then();
     }
@@ -150,7 +149,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         if (!(savepoint instanceof SavePoint)) {
             return Mono.error(_Exceptions.unknownSavePoint(savepoint));
         }
-        return Mono.from(this.session.rollbackToSavePoint((SavePoint) savepoint, mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(this.session.rollbackToSavePoint((SavePoint) savepoint, this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
                 .then();
     }
@@ -170,7 +169,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         if (returningId) {
             final GeneratedKeyStmt keyStmt = (GeneratedKeyStmt) stmt;
             final MappingType type = keyStmt.idField().mappingType();
-            final SqlType dataType = type.map(this.factory.serverMeta);
+            final DataType dataType = type.map(this.factory.serverMeta);
             jdbdStatesHolder = new AtomicReference<>(null);
 
             final int rowSize = keyStmt.rowSize();
@@ -381,7 +380,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         if (!(this instanceof ReactiveLocalStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
-        return Mono.from(((LocalDatabaseSession) this.session).commit(mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(((LocalDatabaseSession) this.session).commit(this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToArmyOptionalTransactionInfo)
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
     }
@@ -392,7 +391,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         if (!(this instanceof ReactiveLocalStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
-        return Mono.from(((LocalDatabaseSession) this.session).rollback(mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(((LocalDatabaseSession) this.session).rollback(this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToArmyOptionalTransactionInfo)
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
     }
@@ -431,7 +430,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         } catch (Throwable e) {
             return Mono.error(wrapErrorIfNeed(e));
         }
-        return Mono.from(((RmDatabaseSession) this.session).end(jdbdXid, flags, mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(((RmDatabaseSession) this.session).end(jdbdXid, flags, this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToArmyTransactionInfo)
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
     }
@@ -447,7 +446,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         } catch (Throwable e) {
             return Mono.error(wrapErrorIfNeed(e));
         }
-        return Mono.from(((RmDatabaseSession) this.session).prepare(jdbdXid, mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(((RmDatabaseSession) this.session).prepare(jdbdXid, this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
     }
 
@@ -462,7 +461,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         } catch (Throwable e) {
             return Mono.error(wrapErrorIfNeed(e));
         }
-        return Mono.from(((RmDatabaseSession) this.session).commit(jdbdXid, flags, mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(((RmDatabaseSession) this.session).commit(jdbdXid, flags, this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
                 .then();
     }
@@ -478,7 +477,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         } catch (Throwable e) {
             return Mono.error(wrapErrorIfNeed(e));
         }
-        return Mono.from(((RmDatabaseSession) this.session).rollback(jdbdXid, mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(((RmDatabaseSession) this.session).rollback(jdbdXid, this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
                 .then();
     }
@@ -494,7 +493,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         } catch (Throwable e) {
             return Mono.error(wrapErrorIfNeed(e));
         }
-        return Mono.from(((RmDatabaseSession) this.session).forget(jdbdXid, mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(((RmDatabaseSession) this.session).forget(jdbdXid, this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
                 .then();
     }
@@ -504,7 +503,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         if (!(this instanceof ReactiveRmStmtExecutor)) {
             return Mono.error(new UnsupportedOperationException());
         }
-        return Mono.from(((RmDatabaseSession) this.session).recover(flags, mapToJdbdOptionFunc(optionFunc)))
+        return Mono.from(((RmDatabaseSession) this.session).recover(flags, this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToOptionalArmyXid)
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
     }
@@ -573,7 +572,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         final io.jdbd.session.Option<?> jdbdOption;
         if (option == null) {
             value = null;
-        } else if ((jdbdOption = mapToJdbdOption(option)) == null) {
+        } else if ((jdbdOption = this.factory.mapToJdbdOption(option)) == null) {
             value = null;
         } else if (option.javaType().isInstance(v = this.session.valueOf(jdbdOption))) {
             value = (T) v;
@@ -603,18 +602,13 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
     /*-------------------below package instance methods-------------------*/
 
-    abstract SqlType getColumnMeta(DataRow row, int indexBasedZero);
+    abstract DataType getDataType(DataRow row, int indexBasedZero);
 
     @Nullable
     abstract Object get(DataRow row, int indexBasedZero, DataType dataType);
 
     abstract void bind(ParametrizedStatement statement, int indexBasedZero, DataType dataType, @Nullable Object value);
 
-    @Nullable
-    abstract io.jdbd.session.Option<?> mapToJdbdDialectOption(Option<?> option);
-
-    @Nullable
-    abstract Option<?> mapToArmyDialectOption(io.jdbd.session.Option<?> option);
 
     Isolation mapToArmyDialectIsolation(io.jdbd.session.Isolation jdbdIsolation) {
         throw unknownJdbdIsolation(jdbdIsolation);
@@ -635,7 +629,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     private Xid mapToArmyXid(io.jdbd.session.Xid xid) {
-        return Xid.from(xid.getGtrid(), xid.getBqual(), xid.getFormatId(), mapToArmyOptionFunc(xid::valueOf));
+        return Xid.from(xid.getGtrid(), xid.getBqual(), xid.getFormatId(), this.factory.mapToArmyOptionFunc(xid::valueOf));
     }
 
 
@@ -645,7 +639,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     private TransactionInfo mapToArmyTransactionInfo(io.jdbd.session.TransactionInfo info) {
         return TransactionInfo.info(
                 info.inTransaction(), mapToArmyIsolation(info.isolation()), info.isReadOnly(),
-                mapToArmyOptionFunc(info::valueOf)
+                this.factory.mapToArmyOptionFunc(info::valueOf)
         );
     }
 
@@ -659,7 +653,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     private io.jdbd.session.TransactionOption mapToJdbdTransactionOption(final TransactionOption option)
             throws ArmyException {
         return io.jdbd.session.TransactionOption.option(
-                mapToJdbdIsolation(option.isolation()), option.isReadOnly(), mapToJdbdOptionFunc(option::valueOf)
+                mapToJdbdIsolation(option.isolation()), option.isReadOnly(), this.factory.mapToJdbdOptionFunc(option::valueOf)
         );
 
     }
@@ -715,114 +709,6 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
 
-    @Nullable
-    private io.jdbd.session.Option<?> mapToJdbdOption(final @Nullable Option<?> option) {
-        final io.jdbd.session.Option<?> jdbdOption;
-        if (option == null) {
-            jdbdOption = null;
-        } else if (option == Option.IN_TRANSACTION) {
-            jdbdOption = io.jdbd.session.Option.IN_TRANSACTION;
-        } else if (option == Option.ISOLATION) {
-            jdbdOption = io.jdbd.session.Option.ISOLATION;
-        } else if (option == Option.READ_ONLY) {
-            jdbdOption = io.jdbd.session.Option.READ_ONLY;
-        } else if (option == Option.XID) {
-            jdbdOption = io.jdbd.session.Option.XID;
-        } else if (option == Option.XA_STATES) {
-            jdbdOption = io.jdbd.session.Option.XA_STATES;
-        } else if (option == Option.XA_FLAGS) {
-            jdbdOption = io.jdbd.session.Option.XA_FLAGS;
-        } else if (option == Option.NAME) {
-            jdbdOption = io.jdbd.session.Option.NAME;
-        } else if (option == Option.CHAIN) {
-            jdbdOption = io.jdbd.session.Option.CHAIN;
-        } else if (option == Option.RELEASE) {
-            jdbdOption = io.jdbd.session.Option.RELEASE;
-        } else if (option == Option.AUTO_COMMIT) {
-            jdbdOption = io.jdbd.session.Option.AUTO_COMMIT;
-        } else if (option == Option.WAIT) {
-            jdbdOption = io.jdbd.session.Option.WAIT;
-        } else if (option == Option.LOCK_TIMEOUT) {
-            jdbdOption = io.jdbd.session.Option.LOCK_TIMEOUT;
-        } else if (option == Option.READ_ONLY_SESSION) {
-            jdbdOption = io.jdbd.session.Option.READ_ONLY_SESSION;
-        } else {
-            jdbdOption = mapToJdbdDialectOption(option);
-        }
-        return jdbdOption;
-    }
-
-    @Nullable
-    private Option<?> mapToArmyOption(final @Nullable io.jdbd.session.Option<?> option) {
-        final Option<?> armyOption;
-        if (option == null) {
-            armyOption = null;
-        } else if (option == io.jdbd.session.Option.IN_TRANSACTION) {
-            armyOption = Option.IN_TRANSACTION;
-        } else if (option == io.jdbd.session.Option.ISOLATION) {
-            armyOption = Option.ISOLATION;
-        } else if (option == io.jdbd.session.Option.READ_ONLY) {
-            armyOption = Option.READ_ONLY;
-        } else if (option == io.jdbd.session.Option.XID) {
-            armyOption = Option.XID;
-        } else if (option == io.jdbd.session.Option.XA_STATES) {
-            armyOption = Option.XA_STATES;
-        } else if (option == io.jdbd.session.Option.XA_FLAGS) {
-            armyOption = Option.XA_FLAGS;
-        } else if (option == io.jdbd.session.Option.NAME) {
-            armyOption = Option.NAME;
-        } else if (option == io.jdbd.session.Option.CHAIN) {
-            armyOption = Option.CHAIN;
-        } else if (option == io.jdbd.session.Option.RELEASE) {
-            armyOption = Option.RELEASE;
-        } else if (option == io.jdbd.session.Option.AUTO_COMMIT) {
-            armyOption = Option.AUTO_COMMIT;
-        } else if (option == io.jdbd.session.Option.WAIT) {
-            armyOption = Option.WAIT;
-        } else if (option == io.jdbd.session.Option.LOCK_TIMEOUT) {
-            armyOption = Option.LOCK_TIMEOUT;
-        } else if (option == io.jdbd.session.Option.READ_ONLY_SESSION) {
-            armyOption = Option.READ_ONLY_SESSION;
-        } else {
-            armyOption = mapToArmyDialectOption(option);
-        }
-        return armyOption;
-    }
-
-    /**
-     * @see #startTransaction(TransactionOption)
-     */
-    private Function<io.jdbd.session.Option<?>, ?> mapToJdbdOptionFunc(final @Nullable Function<Option<?>, ?> optionFunc) {
-        if (optionFunc == Option.EMPTY_OPTION_FUNC || optionFunc == null) {
-            return io.jdbd.session.Option.EMPTY_OPTION_FUNC;
-        }
-        return jdbdOption -> {
-            final Option<?> armyOption;
-            armyOption = mapToArmyOption(jdbdOption);
-            if (armyOption == null) {
-                return null;
-            }
-            return optionFunc.apply(armyOption);
-        };
-    }
-
-    /**
-     * @see #mapToArmyTransactionInfo(io.jdbd.session.TransactionInfo)
-     */
-    private Function<Option<?>, ?> mapToArmyOptionFunc(final @Nullable Function<io.jdbd.session.Option<?>, ?> optionFunc) {
-        if (optionFunc == io.jdbd.session.Option.EMPTY_OPTION_FUNC || optionFunc == null) {
-            return Option.EMPTY_OPTION_FUNC;
-        }
-        return armyOption -> {
-            final io.jdbd.session.Option<?> jdbdOption;
-            jdbdOption = mapToJdbdOption(armyOption);
-            if (jdbdOption == null) {
-                return null;
-            }
-            return optionFunc.apply(jdbdOption);
-        };
-    }
-
     /**
      * @see #commit(Function)
      * @see #rollback(Function)
@@ -837,7 +723,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
 
     private ResultStates mapToArmyResultStates(io.jdbd.result.ResultStates jdbdStates) {
-        return new ArmyResultStates(jdbdStates, this::mapToJdbdOption);
+        return new ArmyResultStates(jdbdStates, this.factory::mapToJdbdOption);
     }
 
 
@@ -863,12 +749,11 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         selectionList = stmt.selectionList();
 
         final RowReader<R> rowReader;
-        if (selectionList.size() > 1
-                || !(stmt instanceof TwoStmtModeQuerySpec)
-                || ((TwoStmtModeQuerySpec) stmt).maxColumnSize() > 1) {
-            rowReader = new BeanReader<>(this, selectionList, resultClass);
-        } else {
+        if ((stmt instanceof TwoStmtQueryStmt && ((TwoStmtQueryStmt) stmt).maxColumnSize() == 1)
+                || selectionList.size() == 1) {
             rowReader = new SingleColumnRowReader<>(this, selectionList, resultClass);
+        } else {
+            rowReader = new BeanReader<>(this, selectionList, resultClass);
         }
 
         final Function<CurrentRow, R> function;
@@ -951,7 +836,8 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
         final int indexBasedZero = keyStmt.idSelectionIndex();
         final MappingType type = keyStmt.idField().mappingType();
-        final SqlType sqlType = type.map(this.factory.serverMeta);
+        final DataType dataType = type.map(this.factory.serverMeta);
+        final MappingEnv env = this.factory.mappingEnv;
 
         final int[] rowIndexHolder = new int[]{0};
         return dataRow -> {
@@ -960,12 +846,12 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                 throw jdbdRowNumberNotMatch(rowIndex, dataRow.rowNumber());
             }
             Object idValue;
-            idValue = get(dataRow, indexBasedZero, sqlType);
+            idValue = get(dataRow, indexBasedZero, dataType);
 
             if (idValue == null) {
                 throw _Exceptions.idValueIsNull(rowIndex, keyStmt.idField());
             }
-            idValue = type.afterGet(sqlType, this.factory.mappingEnv, idValue);
+            idValue = type.afterGet(dataType, env, idValue);
             keyStmt.setGeneratedIdValue(rowIndex, idValue);
 
             return rowReader.readOneRow(dataRow);
@@ -989,7 +875,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
         final PrimaryFieldMeta<?> idField = stmt.idField();
         final MappingType type = idField.mappingType();
-        final SqlType sqlType = type.map(this.factory.serverMeta);
+        final DataType dataType = type.map(this.factory.serverMeta);
         final MappingEnv env = this.factory.mappingEnv;
 
         final int lastRowIndex = rowSize - 1;
@@ -1011,7 +897,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                 }
             }
 
-            idValue = type.afterGet(sqlType, env, idValue);
+            idValue = type.afterGet(dataType, env, idValue);
             stmt.setGeneratedIdValue(i, idValue);
         }
 
@@ -1058,7 +944,6 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
 
-    @Nullable
     private void bindParameter(final ParametrizedStatement statement, final List<SQLParam> paramList) {
 
         final ServerMeta serverMeta = this.factory.serverMeta;
@@ -1109,8 +994,10 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                     bind(statement, paramIndex++, dataType, null);
                     continue;
                 }
-                //TODO field codec
+
                 value = mappingType.beforeBind(dataType, mappingEnv, value);
+
+                //TODO field codec
                 if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
                     value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
                 }
@@ -1141,16 +1028,8 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         return e;
     }
 
-    static ArmyException wrapExecuteError(final Exception cause) {
-        final ArmyException e;
-        if (cause instanceof JdbdException) {
-            e = new DataAccessException(cause);
-        } else if (cause instanceof ArmyException) {
-            e = (ArmyException) cause;
-        } else {
-            e = _Exceptions.unknownError(cause.getMessage(), cause);
-        }
-        return e;
+    final ArmyException wrapExecuteError(final Exception cause) {
+        return this.factory.wrapExecuteError(cause);
     }
 
 
@@ -1169,13 +1048,13 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     /*-------------------below static class -------------------*/
 
 
-    private static abstract class RowReader<R> {
+    private static abstract class RowReader<R> extends ArmyStmtCurrentRecord {
 
         final JdbdStmtExecutor executor;
 
         final List<? extends Selection> selectionList;
 
-        private final SqlType[] sqlTypeArray;
+        private final DataType[] dataTypeArray;
 
         private final MappingType[] compatibleTypeArray;
 
@@ -1185,53 +1064,74 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                           @Nullable Class<?> resultClass) {
             this.executor = executor;
             this.selectionList = selectionList;
-            this.sqlTypeArray = new SqlType[selectionList.size()];
-            this.compatibleTypeArray = new MappingType[this.sqlTypeArray.length];
+            this.dataTypeArray = new SqlType[selectionList.size()];
+            this.compatibleTypeArray = new MappingType[this.dataTypeArray.length];
 
             this.resultClass = resultClass;
         }
 
+        @Override
+        public ArmyResultRecordMeta getRecordMeta() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        protected Object[] copyValueArray() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public long rowNumber() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Nullable
+        @Override
+        public Object get(int indexBasedZero) {
+            throw new UnsupportedOperationException();
+        }
 
         @Nullable
         final R readOneRow(final DataRow dataRow) {
 
             final JdbdStmtExecutor executor = this.executor;
             final MappingEnv env = executor.factory.mappingEnv;
-            final SqlType[] sqlTypeArray = this.sqlTypeArray;
+            final DataType[] dataTypeArray = this.dataTypeArray;
             final List<? extends Selection> selectionList = this.selectionList;
 
             final MappingType[] compatibleTypeArray = this.compatibleTypeArray;
 
             final int columnCount;
-            if (sqlTypeArray[0] == null
+            if (dataTypeArray[0] == null
                     || (this instanceof CurrentRecordRowReader
                     && ((CurrentRecordRowReader<?>) this).resultNo < dataRow.getResultNo())) {
                 columnCount = dataRow.getColumnCount();
-                if (columnCount != sqlTypeArray.length) {
-                    throw _Exceptions.columnCountAndSelectionCountNotMatch(columnCount, sqlTypeArray.length);
+                if (columnCount != dataTypeArray.length) {
+                    throw _Exceptions.columnCountAndSelectionCountNotMatch(columnCount, dataTypeArray.length);
                 }
                 for (int i = 0; i < columnCount; i++) {
-                    sqlTypeArray[i] = executor.getColumnMeta(dataRow, i);
+                    dataTypeArray[i] = executor.getDataType(dataRow, i);
                 }
                 if (this instanceof CurrentRecordRowReader) {
-                    ((CurrentRecordRowReader<?>) this).acceptRowMeta(dataRow.getRowMeta(), this::getSqlType);
+                    ((CurrentRecordRowReader<?>) this).acceptRowMeta(dataRow.getRowMeta(), this::getDataType);
                 }
             } else {
-                columnCount = sqlTypeArray.length;
+                columnCount = dataTypeArray.length;
             }
 
             final ObjectAccessor accessor;
             accessor = createRow();
 
+            TypeMeta typeMeta;
             MappingType type;
             Selection selection;
             Object columnValue;
-            SqlType sqlType;
+            DataType dataType;
             String fieldName;
 
             for (int i = 0; i < columnCount; i++) {
-                sqlType = sqlTypeArray[i];
-                columnValue = executor.get(dataRow, i, sqlType);
+                dataType = dataTypeArray[i];
+                columnValue = executor.get(dataRow, i, dataType);
 
                 selection = selectionList.get(i);
                 fieldName = selection.label();
@@ -1242,11 +1142,18 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                 }
 
                 if ((type = compatibleTypeArray[i]) == null) {
-                    type = compatibleTypeFrom(selection, this.resultClass, accessor, fieldName);
+                    if (!(this instanceof CurrentRecordRowReader)) {
+                        type = compatibleTypeFrom(selection, this.resultClass, accessor, fieldName);
+                    } else if ((typeMeta = selection.typeMeta()) instanceof MappingType) {
+                        type = (MappingType) typeMeta;
+                    } else {
+                        type = typeMeta.mappingType();
+                    }
                     compatibleTypeArray[i] = type;
                 }
 
-                columnValue = type.afterGet(sqlType, env, columnValue);
+
+                columnValue = type.afterGet(dataType, env, columnValue);
                 //TODO field codec
                 acceptColumn(i, fieldName, columnValue);
 
@@ -1264,8 +1171,8 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         abstract R endOneRow();
 
 
-        private SqlType getSqlType(int index) {
-            return this.sqlTypeArray[index];
+        private DataType getDataType(int index) {
+            return this.dataTypeArray[index];
         }
 
 
@@ -1339,7 +1246,6 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         private final ObjectAccessor accessor;
         private final Constructor<R> constructor;
 
-
         private R row;
 
         private BeanReader(JdbdStmtExecutor executor, List<? extends Selection> selectionList,
@@ -1378,6 +1284,8 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
         private R row;
 
+        private Class<?> rowJavaClass;
+
         private ObjectAccessor accessor;
 
         private ObjectRowReader(JdbdStmtExecutor executor, List<? extends Selection> selectionList,
@@ -1389,17 +1297,23 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
         @Override
         ObjectAccessor createRow() {
+            assert this.row == null;
+
             final R row;
-            row = this.constructor.get();
+            this.row = row = this.constructor.get();
             if (row == null) {
                 throw _Exceptions.objectConstructorError();
             }
 
+            Class<?> rowJavaClass = this.rowJavaClass;
             final ObjectAccessor accessor;
-            accessor = ObjectAccessorFactory.fromInstance(row);
-
-            this.row = row;
-            this.accessor = accessor;
+            if (rowJavaClass == null || rowJavaClass != row.getClass()) {
+                this.rowJavaClass = row.getClass();
+                this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
+            } else {
+                accessor = this.accessor;
+                assert accessor != null;
+            }
             return accessor;
         }
 
@@ -1412,11 +1326,12 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         @Override
         R endOneRow() {
             R row = this.row;
+            assert row != null;
+            this.row = null;
 
-            if (!this.twoStmtMode && row instanceof Map && row instanceof ImmutableSpec) {
+            if (row instanceof Map && row instanceof ImmutableSpec && !this.twoStmtMode) {
                 row = (R) _Collections.unmodifiableMapForDeveloper((Map<?, ?>) row);
             }
-            this.row = null;
             return row;
         }
 
@@ -1435,6 +1350,8 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
         private R row;
 
+        private Class<?> rowJavaClass;
+
         /**
          * from -1 not 0
          */
@@ -1445,7 +1362,13 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
             super(executor, stmt.selectionList(), rowResultClass(rowList.get(0)));
             this.rowList = rowList;
             this.rowSize = rowList.size();
-            this.singleColumn = stmt.maxColumnSize() == 1;
+            if (stmt.maxColumnSize() == 1) {
+                this.singleColumn = true;
+                this.accessor = ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
+            } else {
+                this.singleColumn = false;
+            }
+
         }
 
         @Override
@@ -1458,13 +1381,18 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
             final R row;
             this.row = row = this.rowList.get(rowIndex);
 
+
             final ObjectAccessor accessor;
             if (this.singleColumn) {
-                accessor = ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
+                accessor = this.accessor;
+                assert accessor != null;
+            } else if (this.rowJavaClass != row.getClass()) {
+                this.rowJavaClass = row.getClass();
+                this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
             } else {
-                accessor = ObjectAccessorFactory.fromInstance(row);
+                accessor = this.accessor;
+                assert accessor != null;
             }
-            this.accessor = accessor;
             return accessor;
         }
 
@@ -1500,9 +1428,10 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
         private final Function<CurrentRecord, R> function;
 
-        private JdbdCurrentRecord currentRecord;
 
-        private int currentIndex;
+        private final Object[] valueArray;
+
+        private int columnIndex;
 
         private int resultNo = 0;
 
@@ -1510,41 +1439,59 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                                        Function<CurrentRecord, R> function) {
             super(executor, selectionList, null);
             this.function = function;
+            this.valueArray = new Object[selectionList.size()];
+        }
+
+        @Override
+        public ArmyResultRecordMeta getRecordMeta() {
+            return super.getRecordMeta();
+        }
+
+        @Override
+        protected Object[] copyValueArray() {
+            final Object[] array = new Object[this.valueArray.length];
+            System.arraycopy(this.valueArray, 0, array, 0, array.length);
+            return array;
+        }
+
+        @Override
+        public long rowNumber() {
+            return 0;
+        }
+
+        @Nullable
+        @Override
+        public Object get(int indexBasedZero) {
+            return this.valueArray[];
         }
 
         @Override
         ObjectAccessor createRow() {
-            this.currentIndex = 0;
-            final JdbdCurrentRecord record = this.currentRecord;
-            assert record != null;
-            record.rowCount++;
+            this.columnIndex = 0;
+            assert this.resultNo > 0;
             return ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
         }
 
         @Override
         void acceptColumn(final int indexBasedZero, String fieldName, @Nullable Object value) {
-            final int currentIndex = this.currentIndex++;
+            final int currentIndex = this.columnIndex++;
             assert indexBasedZero == currentIndex;
-            final JdbdCurrentRecord record = this.currentRecord;
-            assert record != null;
-            record.valueArray[indexBasedZero] = value;
+            this.valueArray[indexBasedZero] = value;
         }
 
         @Override
         R endOneRow() {
-            final JdbdCurrentRecord record = this.currentRecord;
-            assert record != null;
-            assert this.currentIndex == record.valueArray.length;
+            assert this.columnIndex == this.valueArray.length;
 
             final R row;
-            row = this.function.apply(record);
+            row = this.function.apply(this);
             if (row instanceof CurrentRecord) {
                 throw _Exceptions.recordMapFuncReturnError(this.function);
             }
             return row;
         }
 
-        private void acceptRowMeta(final ResultRowMeta rowMeta, final IntFunction<SqlType> sqlTypeFunc) {
+        private void acceptRowMeta(final ResultRowMeta rowMeta, final IntFunction<DataType> sqlTypeFunc) {
 //            final IntBiFunction<Option<?>, ?> optionFunc;
 //            optionFunc = this.executor.readJdbdRowMetaOptions(rowMeta);
 //
@@ -1559,36 +1506,6 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
     }//CurrentRecordRowReader
 
-    private static final class JdbdCurrentRecord extends ArmyStmtCurrentRecord {
-
-        private final Object[] valueArray;
-
-        private long rowCount = 0;
-
-        private JdbdCurrentRecord(ArmyStmtRecordMeta meta) {
-            super(meta);
-            this.valueArray = new Object[meta.getColumnCount()];
-        }
-
-        @Override
-        public Object get(int indexBasedZero) {
-            return this.valueArray[this.meta.checkIndex(indexBasedZero)];
-        }
-
-        @Override
-        public long rowNumber() {
-            return this.rowCount;
-        }
-
-        @Override
-        protected Object[] copyValueArray() {
-            final Object[] copy = new Object[this.valueArray.length];
-            System.arraycopy(this.valueArray, 0, copy, 0, copy.length);
-            return copy;
-        }
-
-
-    }// JdbdCurrentRecord
 
     private static abstract class JdbdBatchQueryResults extends ArmyReactiveMultiResultSpec {
 

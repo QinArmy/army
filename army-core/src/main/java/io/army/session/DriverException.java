@@ -16,13 +16,13 @@ public class DriverException extends DataAccessException {
 
     private final int vendorCode;
 
-    public DriverException(String message, Throwable cause, String sqlState, int vendorCode) {
+    public DriverException(String message, Throwable cause, @Nullable String sqlState, int vendorCode) {
         super(message, cause);
         this.sqlState = sqlState;
         this.vendorCode = vendorCode;
     }
 
-    public DriverException(Throwable cause, String sqlState, int vendorCode) {
+    public DriverException(Throwable cause, @Nullable String sqlState, int vendorCode) {
         super(cause);
         this.sqlState = sqlState;
         this.vendorCode = vendorCode;

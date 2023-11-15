@@ -11,6 +11,8 @@ import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.LocalDatabaseSession;
 import io.jdbd.session.RmDatabaseSession;
 
+import javax.annotation.Nullable;
+
 /**
  * <p>This class is MySQL {@link JdbdStmtExecutor}.
  *
@@ -24,6 +26,16 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
 
     static ReactiveRmStmtExecutor rmExecutor(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name) {
         return new RmExecutor(factory, session, name);
+    }
+
+    @Nullable
+    static io.jdbd.session.Option<?> mapToJdbdDialectOption(Option<?> option) {
+        return null;
+    }
+
+    @Nullable
+    static Option<?> mapToArmyDialectOption(io.jdbd.session.Option<?> option) {
+        return null;
     }
 
     private static final Option<Boolean> WITH_CONSISTENT_SNAPSHOT = Option.from("WITH CONSISTENT SNAPSHOT", Boolean.class);
@@ -42,7 +54,7 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
     }
 
     @Override
-    final SqlType getColumnMeta(DataRow row, int indexBasedZero) {
+    final SqlType getDataType(DataRow row, int indexBasedZero) {
         return null;
     }
 
@@ -51,15 +63,7 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
         return null;
     }
 
-    @Override
-    final io.jdbd.session.Option<?> mapToJdbdDialectOption(Option<?> option) {
-        return null;
-    }
 
-    @Override
-    final Option<?> mapToArmyDialectOption(io.jdbd.session.Option<?> option) {
-        return null;
-    }
 
 
     private static final class LocalExecutor extends MySQLStmtExecutor implements ReactiveLocalStmtExecutor {

@@ -14,6 +14,7 @@ import io.jdbd.session.LocalDatabaseSession;
 import io.jdbd.session.RmDatabaseSession;
 import io.jdbd.session.TransactionOption;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtExecutor<S> {
@@ -24,6 +25,16 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
 
     static ReactiveRmStmtExecutor rmExecutor(JdbdStmtExecutorFactory factory, RmDatabaseSession session, String name) {
         throw new UnsupportedOperationException();
+    }
+
+    @Nullable
+    static io.jdbd.session.Option<?> mapToJdbdDialectOption(Option<?> option) {
+        return null;
+    }
+
+    @Nullable
+    static Option<?> mapToArmyDialectOption(io.jdbd.session.Option<?> option) {
+        return null;
     }
 
 
@@ -67,7 +78,7 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
     }
 
     @Override
-    SqlType getColumnMeta(DataRow row, int indexBasedZero) {
+    SqlType getDataType(DataRow row, int indexBasedZero) {
         return null;
     }
 

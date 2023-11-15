@@ -1935,9 +1935,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 throw _Exceptions.objectConstructorError();
             }
 
-            Class<?> rowJavaClass = this.rowJavaClass;
             final ObjectAccessor accessor;
-            if (rowJavaClass == null || rowJavaClass != row.getClass()) {
+            if (this.rowJavaClass != row.getClass()) {
                 this.rowJavaClass = row.getClass();
                 this.accessor = accessor = ObjectAccessorFactory.fromInstance(row);
             } else {

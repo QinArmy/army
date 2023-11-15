@@ -1,5 +1,6 @@
 package io.army.session;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 
@@ -13,13 +14,8 @@ public final class ServerException extends DriverException implements OptionSpec
 
     private final Function<Option<?>, ?> optionFunc;
 
-    public ServerException(String message, Throwable cause, String sqlState, int vendorCode,
-                           Function<Option<?>, ?> optionFunc) {
-        super(message, cause, sqlState, vendorCode);
-        this.optionFunc = optionFunc;
-    }
 
-    public ServerException(Throwable cause, String sqlState, int vendorCode,
+    public ServerException(Throwable cause, @Nullable String sqlState, int vendorCode,
                            Function<Option<?>, ?> optionFunc) {
         super(cause, sqlState, vendorCode);
         this.optionFunc = optionFunc;

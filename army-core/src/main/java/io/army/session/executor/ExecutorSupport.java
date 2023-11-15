@@ -252,6 +252,16 @@ public abstract class ExecutorSupport {
         }
 
         @Override
+        public final <T> T getNonNullOf(int indexBasedZero, Option<T> option) throws DataAccessException {
+            final T value;
+            value = getOf(indexBasedZero, option);
+            if (value == null) {
+                throw new NullPointerException();
+            }
+            return value;
+        }
+
+        @Override
         public final ArmyType getArmyType(final int indexBasedZero) throws DataAccessException {
             final DataType dataType;
             dataType = this.dataTypeArray[checkIndex(indexBasedZero)];
