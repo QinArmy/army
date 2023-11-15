@@ -391,7 +391,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
     @Override
     public final <R> Stream<R> pairBatchQuery(PairBatchStmt stmt, final @Nullable Class<R> resultClass,
-                                              SyncStmtOption option, boolean firstIsQuery, ChildTableMeta<?> childTable)
+                                              SyncStmtOption option, ChildTableMeta<?> childTable)
             throws DataAccessException {
         if (resultClass == null) {
             throw new NullPointerException();
@@ -404,12 +404,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 throw handleException(e);
             }
         };
-        return executePairBatchQuery(stmt, option, firstIsQuery, childTable, readerFunc);
+        return executePairBatchQuery(stmt, option, childTable, readerFunc);
     }
 
     @Override
     public final <R> Stream<R> pairBatchQueryObject(PairBatchStmt stmt, final @Nullable Supplier<R> constructor,
-                                                    SyncStmtOption option, boolean firstIsQuery, ChildTableMeta<?> childTable)
+                                                    SyncStmtOption option, ChildTableMeta<?> childTable)
             throws DataAccessException {
         if (constructor == null) {
             throw new NullPointerException();
@@ -424,12 +424,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 throw handleException(e);
             }
         };
-        return executePairBatchQuery(stmt, option, firstIsQuery, childTable, readerFunc);
+        return executePairBatchQuery(stmt, option, childTable, readerFunc);
     }
 
     @Override
     public final <R> Stream<R> pairBatchQueryRecord(PairBatchStmt stmt, final @Nullable Function<CurrentRecord, R> function,
-                                                    SyncStmtOption option, boolean firstIsQuery,
+                                                    SyncStmtOption option,
                                                     ChildTableMeta<?> childTable)
             throws DataAccessException {
 
@@ -444,7 +444,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 throw handleException(e);
             }
         };
-        return executePairBatchQuery(stmt, option, firstIsQuery, childTable, readerFunc);
+        return executePairBatchQuery(stmt, option, childTable, readerFunc);
     }
 
     @Nullable
@@ -1590,19 +1590,19 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
 
     /**
-     * @see #pairBatchQuery(PairBatchStmt, Class, SyncStmtOption, boolean, ChildTableMeta)
-     * @see #pairBatchQueryObject(PairBatchStmt, Supplier, SyncStmtOption, boolean, ChildTableMeta)
-     * @see #pairBatchQueryRecord(PairBatchStmt, Function, SyncStmtOption, boolean, ChildTableMeta)
+     * @see #pairBatchQuery(PairBatchStmt, Class, SyncStmtOption, ChildTableMeta)
+     * @see #pairBatchQueryObject(PairBatchStmt, Supplier, SyncStmtOption, ChildTableMeta)
+     * @see #pairBatchQueryRecord(PairBatchStmt, Function, SyncStmtOption, ChildTableMeta)
      */
-    private <R> Stream<R> executePairBatchQuery(Stmt.PairStmtSpec stmt, SyncStmtOption option, boolean firstIsQuery,
+    private <R> Stream<R> executePairBatchQuery(Stmt.PairStmtSpec stmt, SyncStmtOption option,
                                                 ChildTableMeta<?> childTable,
                                                 BiFunction<BatchStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
         try {
             final Stream<R> stream;
             if (stmt.stmtType() == StmtType.INSERT) {
-                stream = executeBatchInsertQuery((PairBatchStmt) stmt, option, firstIsQuery, childTable, readerFunc);
+                stream = executeBatchInsertQuery((PairBatchStmt) stmt, option, childTable, readerFunc);
             } else {
-                stream = executeBatchUpdateQuery((PairBatchStmt) stmt, option, firstIsQuery, childTable, readerFunc);
+                stream = executeBatchUpdateQuery((PairBatchStmt) stmt, option, childTable, readerFunc);
             }
             return stream;
         } catch (Exception e) {
@@ -1612,10 +1612,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
 
     /**
-     * @see #executePairBatchQuery(Stmt.PairStmtSpec, SyncStmtOption, boolean, ChildTableMeta, BiFunction)
+     * @see #executePairBatchQuery(Stmt.PairStmtSpec, SyncStmtOption, ChildTableMeta, BiFunction)
      */
     @SuppressWarnings("unused")
-    private <R> Stream<R> executeBatchInsertQuery(PairBatchStmt stmt, SyncStmtOption option, boolean firstIsQuery,
+    private <R> Stream<R> executeBatchInsertQuery(PairBatchStmt stmt, SyncStmtOption option,
                                                   ChildTableMeta<?> childTable,
                                                   BiFunction<BatchStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
         // TODO add for firebird
@@ -1623,10 +1623,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     }
 
     /**
-     * @see #executePairBatchQuery(Stmt.PairStmtSpec, SyncStmtOption, boolean, ChildTableMeta, BiFunction)
+     * @see #executePairBatchQuery(Stmt.PairStmtSpec, SyncStmtOption, ChildTableMeta, BiFunction)
      */
     @SuppressWarnings("unused")
-    private <R> Stream<R> executeBatchUpdateQuery(PairBatchStmt stmt, SyncStmtOption option, boolean firstIsQuery,
+    private <R> Stream<R> executeBatchUpdateQuery(PairBatchStmt stmt, SyncStmtOption option,
                                                   ChildTableMeta<?> childTable,
                                                   BiFunction<BatchStmt, ResultSetMetaData, RowReader<R>> readerFunc) {
         // TODO add for firebird

@@ -10,6 +10,7 @@ import io.army.meta.ServerMeta;
 import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
 import io.army.session.ParamException;
+import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._ClassUtils;
@@ -54,7 +55,7 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
     public abstract Class<?> javaType();
 
 
-    public abstract SqlType map(ServerMeta meta) throws NotSupportDialectException;
+    public abstract DataType map(ServerMeta meta) throws NotSupportDialectException;
 
     /**
      * @throws CriteriaException when this instance don't support array type.
@@ -81,11 +82,19 @@ public abstract class MappingType extends MappingSupport implements TypeMeta, Ty
      */
     public abstract Object beforeBind(SqlType type, MappingEnv env, Object nonNull) throws CriteriaException;
 
+    public Object beforeBind(DataType type, MappingEnv env, Object nonNull) throws CriteriaException {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * @param type from {@code io.army.sync.executor.StmtExecutor} or {@code io.army.reactive.executor.StmtExecutor}
      * @return non-null, the instance of {@link #javaType()}.
      */
     public abstract Object afterGet(SqlType type, MappingEnv env, Object nonNull) throws DataAccessException;
+
+    public Object afterGet(DataType type, MappingEnv env, Object nonNull) throws DataAccessException {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public final int hashCode() {

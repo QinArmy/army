@@ -339,11 +339,6 @@ public abstract class _ArmySession implements Session {
         }
 
         @Override
-        public final int timeoutMillSeconds() {
-            return this.option.timeoutMillSeconds();
-        }
-
-        @Override
         public final int restSeconds() throws TimeoutException {
             return this.option.restSeconds();
         }

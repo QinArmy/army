@@ -107,14 +107,14 @@ public interface SyncStmtExecutor extends StmtExecutor, AutoCloseable {
 
     <R> Stream<R> secondQuery(TwoStmtQueryStmt stmt, SyncStmtOption option, List<R> firstList) throws DataAccessException;
 
-    <R> Stream<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, SyncStmtOption option, boolean firstIsQuery,
+    <R> Stream<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, SyncStmtOption option,
                                  ChildTableMeta<?> childTable) throws DataAccessException;
 
     <R> Stream<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor, SyncStmtOption option,
-                                       boolean firstIsQuery, ChildTableMeta<?> childTable) throws DataAccessException;
+                                       ChildTableMeta<?> childTable) throws DataAccessException;
 
     <R> Stream<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function, SyncStmtOption option,
-                                       boolean firstIsQuery, ChildTableMeta<?> childTable) throws DataAccessException;
+                                       ChildTableMeta<?> childTable) throws DataAccessException;
 
     @Override
     void close() throws DataAccessException;

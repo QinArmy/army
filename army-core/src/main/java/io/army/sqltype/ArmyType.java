@@ -12,7 +12,7 @@ import io.army.session.record.ResultStates;
  * @see ResultRecordMeta#getArmyType(int)
  * @since 1.0
  */
-public enum ArmyType implements DataType {
+public enum ArmyType {
 
     /**
      * Identifies the generic SQL type {@code BOOLEAN}.
@@ -282,18 +282,12 @@ public enum ArmyType implements DataType {
      */
     DIALECT_TYPE;
 
-    @Override
-    public final String typeName() {
-        return name();
-    }
 
 
-    @Override
     public final boolean isUnknown() {
         return this == UNKNOWN;
     }
 
-    @Override
     public final boolean isArray() {
         return this == ARRAY;
     }

@@ -12,10 +12,7 @@ import io.army.session.Xid;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
-import io.army.stmt.BatchStmt;
-import io.army.stmt.PairBatchStmt;
-import io.army.stmt.SimpleStmt;
-import io.army.stmt.TwoStmtQueryStmt;
+import io.army.stmt.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -59,24 +56,24 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
     Flux<ResultStates> batchUpdate(BatchStmt stmt, ReactiveStmtOption option, @Nullable TableMeta<?> domainTable,
                                    @Nullable List<ResultStates> rowsList);
 
-    <R> Flux<R> query(SimpleStmt stmt, Class<R> resultClass, ReactiveStmtOption option);
+    <R> Flux<R> query(SingleSqlStmt stmt, Class<R> resultClass, ReactiveStmtOption option);
 
-    <R> Flux<Optional<R>> queryOptional(SimpleStmt stmt, Class<R> resultClass, ReactiveStmtOption option);
+    <R> Flux<Optional<R>> queryOptional(SingleSqlStmt stmt, Class<R> resultClass, ReactiveStmtOption option);
 
-    <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, ReactiveStmtOption option);
+    <R> Flux<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, ReactiveStmtOption option);
 
-    <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option);
+    <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option);
 
     <R> Flux<R> secondQuery(TwoStmtQueryStmt stmt, ReactiveStmtOption option, List<R> resultList);
 
-    <R> Flux<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option, boolean firstIsQuery,
+    <R> Flux<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option,
                                ChildTableMeta<?> childTable);
 
     <R> Flux<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor, ReactiveStmtOption option,
-                                     boolean firstIsQuery, ChildTableMeta<?> childTable);
+                                     ChildTableMeta<?> childTable);
 
     <R> Flux<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option,
-                                     boolean firstIsQuery, ChildTableMeta<?> childTable);
+                                     ChildTableMeta<?> childTable);
 
 
     /**

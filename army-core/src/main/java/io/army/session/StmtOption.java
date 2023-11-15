@@ -20,8 +20,6 @@ public interface StmtOption {
     boolean isParseBatchAsMultiStmt();
 
 
-    int timeoutMillSeconds();
-
     /**
      * <p>Get reset timeout seconds.
      *

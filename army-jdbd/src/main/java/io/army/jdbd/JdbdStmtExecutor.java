@@ -44,10 +44,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.math.BigInteger;
 import java.time.temporal.Temporal;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -267,7 +264,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final <R> Flux<R> query(final SimpleStmt stmt, final Class<R> resultClass, final ReactiveStmtOption option) {
+    public final <R> Flux<R> query(final SingleSqlStmt stmt, final Class<R> resultClass, final ReactiveStmtOption option) {
         Flux<R> flux;
         try {
             flux = executeQuery(stmt, mapBeanFunc(stmt, resultClass), option);
@@ -278,7 +275,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final <R> Flux<Optional<R>> queryOptional(SimpleStmt stmt, final Class<R> resultClass, ReactiveStmtOption option) {
+    public final <R> Flux<Optional<R>> queryOptional(SingleSqlStmt stmt, final Class<R> resultClass, ReactiveStmtOption option) {
         Flux<Optional<R>> flux;
         try {
             final List<? extends Selection> selectionList;
@@ -304,7 +301,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final <R> Flux<R> queryObject(SimpleStmt stmt, Supplier<R> constructor, ReactiveStmtOption option) {
+    public final <R> Flux<R> queryObject(SingleSqlStmt stmt, Supplier<R> constructor, ReactiveStmtOption option) {
         Flux<R> flux;
         try {
             flux = executeQuery(stmt, mapObjectFunc(stmt, constructor), option);
@@ -315,7 +312,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final <R> Flux<R> queryRecord(SimpleStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
+    public final <R> Flux<R> queryRecord(SingleSqlStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
         Flux<R> flux;
         try {
             flux = executeQuery(stmt, mapRecordFunc(stmt, function), option);
@@ -340,17 +337,20 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     @Override
-    public final <R> Flux<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option, boolean firstIsQuery, ChildTableMeta<?> childTable) {
+    public final <R> Flux<R> pairBatchQuery(PairBatchStmt stmt, Class<R> resultClass, ReactiveStmtOption option,
+                                            ChildTableMeta<?> childTable) {
         return null;
     }
 
     @Override
-    public final <R> Flux<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor, ReactiveStmtOption option, boolean firstIsQuery, ChildTableMeta<?> childTable) {
+    public final <R> Flux<R> pairBatchQueryObject(PairBatchStmt stmt, Supplier<R> constructor,
+                                                  ReactiveStmtOption option, ChildTableMeta<?> childTable) {
         return null;
     }
 
     @Override
-    public final <R> Flux<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function, ReactiveStmtOption option, boolean firstIsQuery, ChildTableMeta<?> childTable) {
+    public final <R> Flux<R> pairBatchQueryRecord(PairBatchStmt stmt, Function<CurrentRecord, R> function,
+                                                  ReactiveStmtOption option, ChildTableMeta<?> childTable) {
         return null;
     }
 
@@ -603,12 +603,12 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
     /*-------------------below package instance methods-------------------*/
 
-    abstract io.jdbd.meta.DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType);
-
     abstract SqlType getColumnMeta(DataRow row, int indexBasedZero);
 
     @Nullable
-    abstract Object get(DataRow row, int indexBasedZero, SqlType dataType);
+    abstract Object get(DataRow row, int indexBasedZero, DataType dataType);
+
+    abstract void bind(ParametrizedStatement statement, int indexBasedZero, DataType dataType, @Nullable Object value);
 
     @Nullable
     abstract io.jdbd.session.Option<?> mapToJdbdDialectOption(Option<?> option);
@@ -842,34 +842,23 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
 
     /**
-     * @see #query(SimpleStmt, Class, ReactiveStmtOption)
-     * @see #queryObject(SimpleStmt, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SimpleStmt, Function, ReactiveStmtOption)
+     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption)
+     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption)
      */
-    private <R> Flux<R> executeQuery(final SimpleStmt stmt, final Function<CurrentRow, R> func,
+    private <R> Flux<R> executeQuery(final SingleSqlStmt stmt, final Function<CurrentRow, R> func,
                                      final ReactiveStmtOption option) throws JdbdException, TimeoutException {
         return Flux.from(bindStatement(stmt, option).executeQuery(func, createStatesConsumer(option)))
                 .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
     }
 
-    /**
-     * @see #batchQuery(BatchStmt, Class, ReactiveStmtOption)
-     * @see #batchQueryObject(BatchStmt, Supplier, ReactiveStmtOption)
-     * @see #batchQueryRecord(BatchStmt, Function, ReactiveStmtOption)
-     */
-    private <R> Flux<R> executeBatchQuery(final BatchStmt stmt, final Function<CurrentRow, R> func,
-                                          final ReactiveStmtOption option) throws JdbdException, TimeoutException {
-        return Flux.from(bindStatement(stmt, option).executeBatchQueryAsFlux(func, createStatesConsumer(option)))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
-    }
-
 
     /**
-     * @see #query(SimpleStmt, Class, ReactiveStmtOption)
-     * @see #queryObject(SimpleStmt, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SimpleStmt, Function, ReactiveStmtOption)
+     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption)
+     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption)
      */
-    private <R> Function<CurrentRow, R> mapBeanFunc(final SimpleStmt stmt, final Class<R> resultClass) {
+    private <R> Function<CurrentRow, R> mapBeanFunc(final SingleSqlStmt stmt, final Class<R> resultClass) {
         final List<? extends Selection> selectionList;
         selectionList = stmt.selectionList();
 
@@ -892,11 +881,11 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     /**
-     * @see #query(SimpleStmt, Class, ReactiveStmtOption)
-     * @see #queryObject(SimpleStmt, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SimpleStmt, Function, ReactiveStmtOption)
+     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption)
+     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption)
      */
-    private <R> Function<CurrentRow, R> mapObjectFunc(final SimpleStmt stmt, final Supplier<R> constructor) {
+    private <R> Function<CurrentRow, R> mapObjectFunc(final SingleSqlStmt stmt, final Supplier<R> constructor) {
 
         final RowReader<R> rowReader;
         rowReader = new ObjectRowReader<>(this, stmt.selectionList(), constructor, stmt instanceof TwoStmtModeQuerySpec);
@@ -911,11 +900,11 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     /**
-     * @see #query(SimpleStmt, Class, ReactiveStmtOption)
-     * @see #queryObject(SimpleStmt, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SimpleStmt, Function, ReactiveStmtOption)
+     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption)
+     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption)
      */
-    private <R> Function<CurrentRow, R> mapRecordFunc(final SimpleStmt stmt, final Function<CurrentRecord, R> recordFunc) {
+    private <R> Function<CurrentRow, R> mapRecordFunc(final SingleSqlStmt stmt, final Function<CurrentRecord, R> recordFunc) {
         final RowReader<R> rowReader;
         rowReader = new CurrentRecordRowReader<>(this, stmt.selectionList(), recordFunc);
 
@@ -930,9 +919,9 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
 
     /**
-     * @see #query(SimpleStmt, Class, ReactiveStmtOption)
-     * @see #queryObject(SimpleStmt, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SimpleStmt, Function, ReactiveStmtOption)
+     * @see #query(SingleSqlStmt, Class, ReactiveStmtOption)
+     * @see #queryObject(SingleSqlStmt, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(SingleSqlStmt, Function, ReactiveStmtOption)
      */
     private Consumer<io.jdbd.result.ResultStates> createStatesConsumer(final ReactiveStmtOption option) {
         final Consumer<ResultStates> armyConsumer;
@@ -954,7 +943,7 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     /**
-     * @see #mapBeanFunc(SimpleStmt, Class)
+     * @see #mapBeanFunc(SingleSqlStmt, Class)
      */
     private <R> Function<CurrentRow, R> returnIdQueryRowFunc(final GeneratedKeyStmt keyStmt,
                                                              final RowReader<R> rowReader) {
@@ -1032,18 +1021,19 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
 
     private BindStatement bindStatement(final SingleSqlStmt stmt, final ReactiveStmtOption option)
             throws TimeoutException, JdbdException {
+
         final BindStatement statement;
         statement = this.session.bindStatement(stmt.sqlText(), option.isPreferServerPrepare());
 
-        if (stmt instanceof BatchStmt) {
+        if (stmt instanceof SimpleStmt) {
+            bindParameter(statement, ((SimpleStmt) stmt).paramGroup());
+        } else if (stmt instanceof BatchStmt) {
             final List<List<SQLParam>> groupList = ((BatchStmt) stmt).groupList();
             final int groupSize = groupList.size();
             for (int i = 0; i < groupSize; i++) {
                 bindParameter(statement, groupList.get(i));
                 statement.addBatch();
             }
-        } else if (stmt instanceof SimpleStmt) {
-            bindParameter(statement, ((SimpleStmt) stmt).paramGroup());
         } else {
             throw _Exceptions.unexpectedStmt(stmt);
         }
@@ -1081,8 +1071,9 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
         Object value;
         MappingType mappingType;
         TypeMeta typeMeta;
-        SqlType sqlType;
         DataType dataType;
+        Iterator<?> iterator;
+        boolean hasMore;
         for (int i = 0, paramIndex = 0; i < paramSize; i++) {
             sqlParam = paramList.get(i);
             typeMeta = sqlParam.typeMeta();
@@ -1093,40 +1084,40 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
                 mappingType = typeMeta.mappingType();
             }
 
-            sqlType = mappingType.map(serverMeta);
-            dataType = mapToJdbdDataType(mappingType, sqlType);
+            dataType = mappingType.map(serverMeta);
 
             if (sqlParam instanceof SingleParam) {
-                value = ((SingleParam) sqlParam).value();
-                if (value != null) {
-                    //TODO field codec
-                    value = mappingType.beforeBind(sqlType, mappingEnv, value);
+                iterator = null;
+            } else {
+                iterator = ((MultiParam) sqlParam).valueList().iterator();
+
+            }
+
+            hasMore = true;
+            while (hasMore) {
+
+                if (iterator == null) {
+                    value = ((SingleParam) sqlParam).value();
+                    hasMore = false;
+                } else if (iterator.hasNext()) {
+                    value = iterator.next();
+                } else {
+                    break;
                 }
+
+                if (value == null) { // jdbd client-prepared support dialect type null ,for example postgre : null::text
+                    bind(statement, paramIndex++, dataType, null);
+                    continue;
+                }
+                //TODO field codec
+                value = mappingType.beforeBind(dataType, mappingEnv, value);
                 if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
                     value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
                 }
-                statement.bind(paramIndex++, dataType, value);
-                continue;
-            }
 
-            if (!(sqlParam instanceof MultiParam)) {
-                throw _Exceptions.unexpectedSqlParam(sqlParam);
-            }
+                bind(statement, paramIndex++, dataType, value);
 
-            for (final Object element : ((MultiParam) sqlParam).valueList()) {
-                value = element;
-                if (value != null) {
-                    //TODO field codec
-                    value = mappingType.beforeBind(sqlType, mappingEnv, element);
-                }
-
-                if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
-                    value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
-                }
-
-                statement.bind(paramIndex++, dataType, value);
-
-            }// inner for loop
+            } // while loop
 
 
         }// for loop
@@ -1176,7 +1167,6 @@ abstract class JdbdStmtExecutor extends ReactiveExecutorSupport
     }
 
     /*-------------------below static class -------------------*/
-
 
 
     private static abstract class RowReader<R> {
