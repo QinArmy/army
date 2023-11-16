@@ -9,6 +9,7 @@ import io.army.criteria.Selection;
 import io.army.criteria.TypeInfer;
 import io.army.mapping.MappingType;
 import io.army.mapping.NoMatchMappingException;
+import io.army.meta.MetaException;
 import io.army.meta.TypeMeta;
 import io.army.session.DataAccessException;
 import io.army.session.Isolation;
@@ -17,6 +18,7 @@ import io.army.session.record.*;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
+import io.army.util._ClassUtils;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 
@@ -215,6 +217,19 @@ public abstract class ExecutorSupport {
     protected static DataAccessException unknownIsolation(String isolation) {
         String m = String.format("unknown isolation %s", isolation);
         return new DataAccessException(m);
+    }
+
+    protected static MetaException mapMethodError(MappingType type, DataType dataType) {
+        String m = String.format("%s map(ServerMeta) method error,return %s ", type.getClass(), dataType);
+        return new MetaException(m);
+    }
+
+
+    public static MetaException beforeBindMethodError(MappingType mappingType, DataType dataType,
+                                                      @Nullable Object returnValue) {
+        String m = String.format("%s beforeBind() method return type %s and %s type not match.",
+                mappingType.getClass().getName(), _ClassUtils.safeClassName(returnValue), dataType);
+        return new MetaException(m);
     }
 
 

@@ -246,8 +246,13 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
 
     static final class JdbdStmtRowMeta extends JdbdRecordMeta {
 
-        JdbdStmtRowMeta(int resultNo, DataType[] dataTypeArray, JdbdStmtExecutor executor, ResultRowMeta meta) {
+        final List<? extends Selection> selectionList;
+
+        JdbdStmtRowMeta(int resultNo, DataType[] dataTypeArray, List<? extends Selection> selectionList,
+                        JdbdStmtExecutor executor, ResultRowMeta meta) {
             super(resultNo, dataTypeArray, executor, meta);
+            this.selectionList = selectionList;
+            assert selectionList.size() == dataTypeArray.length;
         }
 
         @Override

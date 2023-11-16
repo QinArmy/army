@@ -19,6 +19,7 @@ import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
 import io.army.session.*;
 import io.army.session.record.CurrentRecord;
+import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.MultiStmt;
 import io.army.stmt.Stmt;
@@ -83,17 +84,13 @@ public abstract class _Exceptions {
     }
 
 
-    public static MetaException beforeBindMethod(SqlType sqlType, MappingType mappingType,
+    public static MetaException beforeBindMethod(DataType sqlType, MappingType mappingType,
                                                  @Nullable Object returnValue) {
         String m = String.format("%s beforeBind() method return type %s and %s type not match."
                 , mappingType, _ClassUtils.safeClassName(returnValue), sqlType);
         return new MetaException(m);
     }
 
-    public static MetaException beforeBindMethod(SqlType sqlType, Object nonNull) {
-        String m = String.format("%s and %s not match.", sqlType, _ClassUtils.safeClassName(nonNull));
-        return new MetaException(m);
-    }
 
     public static TransactionTimeOutException timeout(int timeout, long restMills) {
         String m;

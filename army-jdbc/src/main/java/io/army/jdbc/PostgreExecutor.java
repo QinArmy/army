@@ -5,6 +5,7 @@ import io.army.dialect._Constant;
 import io.army.mapping.MappingType;
 import io.army.session.*;
 import io.army.session.record.DataRecord;
+import io.army.sqltype.DataType;
 import io.army.sqltype.PostgreSqlType;
 import io.army.sqltype.SqlType;
 import io.army.sync.StreamOption;
@@ -119,7 +120,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
 
     @Override
     final Object bind(final PreparedStatement stmt, final int indexBasedOne, final @Nullable Object attr,
-                      final MappingType type, final SqlType sqlType, final Object nonNull)
+                      final MappingType type, final DataType dataType, final Object nonNull)
             throws SQLException {
         PGobject pgObject;
         if (attr == null) {
@@ -127,7 +128,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
         } else {
             pgObject = (PGobject) attr;
         }
-        switch ((PostgreSqlType) sqlType) {
+        switch ((PostgreSqlType) dataType) {
             case BOOLEAN:
                 stmt.setBoolean(indexBasedOne, (Boolean) nonNull);
                 break;
@@ -159,7 +160,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 } else if (nonNull instanceof Reader) {
                     stmt.setCharacterStream(indexBasedOne, (Reader) nonNull);
                 } else {
-                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 }
             }
             break;
@@ -169,41 +170,41 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 } else if (nonNull instanceof InputStream) {
                     stmt.setBinaryStream(indexBasedOne, (InputStream) nonNull);
                 } else {
-                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 }
             }
             break;
             case TIME: {
                 if (!(nonNull instanceof LocalTime)) {
-                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 }
                 stmt.setObject(indexBasedOne, nonNull, Types.TIME);
             }
             break;
             case DATE: {
                 if (!(nonNull instanceof LocalDate)) {
-                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 }
                 stmt.setObject(indexBasedOne, nonNull, Types.DATE);
             }
             break;
             case TIMETZ: {
                 if (!(nonNull instanceof OffsetTime)) {
-                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 }
                 stmt.setObject(indexBasedOne, nonNull); // postgre jdbc stupid, ignore  Types.TIME_WITH_TIMEZONE ,use  Types.TIME. postgre jdbc 42.6.0.
             }
             break;
             case TIMESTAMP: {
                 if (!(nonNull instanceof LocalDateTime)) {
-                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 }
                 stmt.setObject(indexBasedOne, nonNull, Types.TIMESTAMP);
             }
             break;
             case TIMESTAMPTZ: {
                 if (!(nonNull instanceof OffsetDateTime)) {
-                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 }
                 stmt.setObject(indexBasedOne, nonNull, Types.TIMESTAMP_WITH_TIMEZONE);
             }
@@ -255,14 +256,14 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 if (pgObject == null) {
                     pgObject = new PGobject();
                 }
-                pgObject.setType(sqlType.name().toLowerCase(Locale.ROOT));
+                pgObject.setType(dataType.name().toLowerCase(Locale.ROOT));
                 pgObject.setValue((String) nonNull);
                 stmt.setObject(indexBasedOne, pgObject, Types.OTHER);
             }
             break;
             case XML: {
                 if (!(nonNull instanceof String)) {
-                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 }
                 stmt.setObject(indexBasedOne, nonNull, Types.SQLXML);
             }
@@ -332,10 +333,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case PG_LSN_ARRAY:
             case PG_SNAPSHOT_ARRAY: {
                 if (!(nonNull instanceof String)) {
-                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 }
                 final String name, typeName;
-                name = sqlType.name();
+                name = dataType.name();
                 typeName = name.substring(0, name.lastIndexOf(_Constant.UNDERSCORE_ARRAY))
                         .toLowerCase(Locale.ROOT);
                 if (pgObject == null) {
@@ -349,7 +350,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case USER_DEFINED:
             case USER_DEFINED_ARRAY: {
                 if (!(nonNull instanceof String)) {
-                    throw _Exceptions.beforeBindMethod(sqlType, type, nonNull);
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 } else if (!(type instanceof MappingType.SqlUserDefinedType)) {
                     throw _Exceptions.mapMethodError(type, PostgreSqlType.class);
                 }

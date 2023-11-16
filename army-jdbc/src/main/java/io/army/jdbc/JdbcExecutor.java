@@ -504,8 +504,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     abstract Logger getLogger();
 
     @Nullable
-    abstract Object bind(PreparedStatement stmt, int indexBasedOne, @Nullable Object attr, MappingType type,
-                         SqlType sqlType, Object nonNull)
+    abstract Object bind(PreparedStatement stmt, int indexBasedOne, @Nullable Object attr, MappingType type, DataType dataType, Object nonNull)
             throws SQLException;
 
     abstract SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne) throws SQLException;
@@ -1019,7 +1018,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         Object value;
         MappingType mappingType;
         TypeMeta typeMeta;
-        SqlType sqlType;
+        DataType dataType;
         Object attr = null;
 
         final int paramSize = paramGroup.size();
@@ -1032,7 +1031,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             } else {
                 mappingType = typeMeta.mappingType();
             }
-            sqlType = mappingType.map(serverMeta);
+            dataType = mappingType.map(serverMeta);
 
             if (sqlParam instanceof SingleParam) {
                 value = ((SingleParam) sqlParam).value();
@@ -1041,12 +1040,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                     statement.setNull(paramIndex++, Types.NULL);
                     continue;
                 }
-                value = mappingType.beforeBind(sqlType, mappingEnv, value);
+                value = mappingType.beforeBind(dataType, mappingEnv, value);
                 if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
                     value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
                 }
                 //TODO field codec
-                attr = bind(statement, paramIndex++, attr, mappingType, sqlType, value);
+                attr = bind(statement, paramIndex++, attr, dataType, value);
                 continue;
             }
 
@@ -1060,13 +1059,13 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                     statement.setNull(paramIndex++, Types.NULL);
                     continue;
                 }
-                value = mappingType.beforeBind(sqlType, mappingEnv, element);
+                value = mappingType.beforeBind(dataType, mappingEnv, element);
 
                 if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
                     value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
                 }
                 //TODO field codec
-                attr = bind(statement, paramIndex++, attr, mappingType, sqlType, value);
+                attr = bind(statement, paramIndex++, attr, dataType, value);
 
             }// inner for
 
@@ -1657,12 +1656,6 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
     /*################################## blow static method ##################################*/
 
-
-    static IllegalArgumentException beforeBindReturnError(SqlType sqlType, Object nonNull) {
-        String m = String.format("%s beforeBind method return error type[%s] for %s.%s."
-                , MappingType.class.getName(), nonNull.getClass().getName(), sqlType.database(), sqlType);
-        return new IllegalArgumentException(m);
-    }
 
     static ArmyException wrapError(final Throwable error) {
         final ArmyException e;

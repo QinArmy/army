@@ -3,10 +3,10 @@ package io.army.jdbc;
 import com.mysql.cj.MysqlType;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
-import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.session.*;
 import io.army.session.record.DataRecord;
+import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.SqlType;
 import io.army.sync.StreamOption;
@@ -111,9 +111,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
     @Override
     final Object bind(final PreparedStatement stmt, final int indexBasedOne, final @Nullable Object attr,
-                      final MappingType type, final SqlType sqlType, final Object nonNull)
-            throws SQLException {
-        switch ((MySQLType) sqlType) {
+                      final DataType dataType, final Object nonNull) throws SQLException {
+
+        if (!(dataType instanceof MySQLType)) {
+            throw mapMethodError(Database.MySQL, dataType);
+        }
+        switch ((MySQLType) dataType) {
             case BOOLEAN:
                 stmt.setBoolean(indexBasedOne, (Boolean) nonNull);
                 break;
@@ -138,7 +141,7 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 break;
             case BIGINT_UNSIGNED: {
                 if (!(nonNull instanceof BigInteger || nonNull instanceof BigDecimal)) {
-                    throw beforeBindReturnError(sqlType, nonNull);
+                    throw beforeBindError(dataType, nonNull);
                 }
                 stmt.setObject(indexBasedOne, nonNull, MysqlType.BIGINT_UNSIGNED);
             }
@@ -385,8 +388,6 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
 
     /*-------------------below private static  -------------------*/
-
-
 
 
     private static final class LocalExecutor extends MySQLExecutor implements SyncLocalStmtExecutor {
