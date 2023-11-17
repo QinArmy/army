@@ -1,8 +1,8 @@
 package io.army.jdbc;
 
-import com.mysql.cj.MysqlType;
 import io.army.dialect.Database;
 import io.army.dialect._Constant;
+import io.army.mapping.MappingType;
 import io.army.meta.ServerMeta;
 import io.army.session.*;
 import io.army.session.record.DataRecord;
@@ -18,19 +18,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.sql.XAConnection;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
@@ -110,134 +102,46 @@ abstract class MySQLExecutor extends JdbcExecutor {
     }
 
     @Override
-    final Object bind(final PreparedStatement stmt, final int indexBasedOne, final @Nullable Object attr,
-                      final DataType dataType, final Object nonNull) throws SQLException {
+    final void bind(final PreparedStatement stmt, final int indexBasedOne,
+                    final MappingType type, final DataType dataType, final Object nonNull) throws SQLException {
 
         if (!(dataType instanceof MySQLType)) {
-            throw mapMethodError(Database.MySQL, dataType);
+            throw mapMethodError(type, dataType);
         }
         switch ((MySQLType) dataType) {
-            case BOOLEAN:
-                stmt.setBoolean(indexBasedOne, (Boolean) nonNull);
-                break;
-            case TINYINT:
-                stmt.setByte(indexBasedOne, (Byte) nonNull);
-                break;
-            case TINYINT_UNSIGNED:
-            case SMALLINT:
-                stmt.setShort(indexBasedOne, (Short) nonNull);
-                break;
             case SMALLINT_UNSIGNED:
             case MEDIUMINT:
             case MEDIUMINT_UNSIGNED:
             case INT:
-            case YEAR:
+            case YEAR: {
+                if (!(nonNull instanceof Integer)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
                 stmt.setInt(indexBasedOne, (Integer) nonNull);
-                break;
+            }
+            break;
             case INT_UNSIGNED:
             case BIGINT:
-            case BIT:
+            case BIT: {
+                if (!(nonNull instanceof Long)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
                 stmt.setLong(indexBasedOne, (Long) nonNull);
-                break;
-            case BIGINT_UNSIGNED: {
-                if (!(nonNull instanceof BigInteger || nonNull instanceof BigDecimal)) {
-                    throw beforeBindError(dataType, nonNull);
-                }
-                stmt.setObject(indexBasedOne, nonNull, MysqlType.BIGINT_UNSIGNED);
             }
             break;
-            case DECIMAL:
-            case DECIMAL_UNSIGNED:
-                stmt.setBigDecimal(indexBasedOne, (BigDecimal) nonNull);
-                break;
-            case FLOAT:
-                stmt.setFloat(indexBasedOne, (Float) nonNull);
-                break;
-            case DOUBLE:
-                stmt.setDouble(indexBasedOne, (Double) nonNull);
-                break;
             case TIME: {
-                final LocalTime value = (LocalTime) nonNull;
-                if (this.factory.useSetObjectMethod) {
-                    stmt.setObject(indexBasedOne, value, com.mysql.cj.MysqlType.TIME);
+                if (nonNull instanceof LocalTime || nonNull instanceof Duration || nonNull instanceof OffsetTime) {
+                    stmt.setObject(indexBasedOne, nonNull);
                 } else {
-                    stmt.setTime(indexBasedOne, Time.valueOf(value));
+                    throw beforeBindMethodError(type, dataType, nonNull);
                 }
             }
             break;
-            case DATE: {
-                final LocalDate value = (LocalDate) nonNull;
-                if (this.factory.useSetObjectMethod) {
-                    stmt.setObject(indexBasedOne, value, com.mysql.cj.MysqlType.DATE);
-                } else {
-                    stmt.setDate(indexBasedOne, Date.valueOf(value));
-                }
-            }
-            break;
-            case DATETIME: {
-                final LocalDateTime value = (LocalDateTime) nonNull;
-                if (this.factory.useSetObjectMethod) {
-                    stmt.setObject(indexBasedOne, value, com.mysql.cj.MysqlType.DATETIME);
-                } else {
-                    stmt.setTimestamp(indexBasedOne, Timestamp.valueOf(value));
-                }
-            }
-            break;
-            case CHAR:
-            case VARCHAR:
-            case ENUM:
-            case SET:
-            case TINYTEXT:
-            case TEXT:
-            case MEDIUMTEXT:
-                stmt.setString(indexBasedOne, (String) nonNull);
-                break;
-            case JSON:
-            case LONGTEXT: {
-                setLongText(stmt, indexBasedOne, nonNull);
-            }
-            break;
-            case BINARY:
-            case VARBINARY:
-            case TINYBLOB:
-            case BLOB:
-            case MEDIUMBLOB:
-                stmt.setBytes(indexBasedOne, (byte[]) nonNull);
-                break;
-            case LONGBLOB: {
-                setLongBinary(stmt, indexBasedOne, nonNull);
-            }
-            break;
-            case POINT:
-            case LINESTRING:
-            case POLYGON:
-            case MULTIPOINT:
-            case MULTILINESTRING:
-            case MULTIPOLYGON:
-            case GEOMETRYCOLLECTION: {
-                if (nonNull instanceof String) {
-                    stmt.setString(indexBasedOne, (String) nonNull);
-                } else if (nonNull instanceof Reader) {
-                    stmt.setCharacterStream(indexBasedOne, (Reader) nonNull);
-                } else if (nonNull instanceof byte[]) {
-                    stmt.setBytes(indexBasedOne, (byte[]) nonNull);
-                } else if (nonNull instanceof InputStream) {
-                    stmt.setBinaryStream(indexBasedOne, (InputStream) nonNull);
-                } else if (nonNull instanceof Path) {
-                    try (InputStream inputStream = Files.newInputStream((Path) nonNull, StandardOpenOption.READ)) {
-                        stmt.setBinaryStream(indexBasedOne, inputStream);
-                    } catch (IOException e) {
-                        String m = String.format("Parameter[%s] %s[%s] read occur error."
-                                , indexBasedOne, Path.class.getName(), nonNull);
-                        throw new SQLException(m, e);
-                    }
-                }
-            }
             default:
-                throw _Exceptions.unexpectedEnum((MySQLType) sqlType);
-
+                bindArmyType(stmt, indexBasedOne, type, dataType, ((MySQLType) dataType).armyType(), nonNull);
         }
-        return attr;
+
+
     }
 
 

@@ -3,7 +3,6 @@ package io.army.sqltype;
 import io.army.dialect.Database;
 import io.army.mapping.MappingEnv;
 import io.army.mapping.MappingType;
-import io.army.session.Cursor;
 import io.army.util._StringUtils;
 
 import javax.annotation.Nullable;
@@ -14,14 +13,14 @@ import java.util.BitSet;
 /**
  * @see <a href="https://www.postgresql.org/docs/11/datatype.html">Postgre Data Types</a>
  */
-public enum PostgreSqlType implements SqlType {
+public enum PostgreType implements SqlType {
 
 
     /**
      * <p>
      *     <ul>
-     *         <li>{@link MappingType#beforeBind(SqlType, MappingEnv, Object)} must return {@link Boolean}</li>
-     *         <li>{@link MappingType#afterGet(SqlType, MappingEnv, Object)} nonNull parameter must be {@link Boolean}</li>
+     *         <li>{@link MappingType#beforeBind(DataType, MappingEnv, Object)} must return {@link Boolean}</li>
+     *         <li>{@link MappingType#afterGet(DataType, MappingEnv, Object)} nonNull parameter must be {@link Boolean}</li>
      *     </ul>
      * </p>
      */
@@ -52,7 +51,7 @@ public enum PostgreSqlType implements SqlType {
     VARCHAR("VARCHAR", ArmyType.VARCHAR, String.class),
     MONEY("MONEY", ArmyType.DIALECT_TYPE, String.class),
 
-    TEXT("TEXT", ArmyType.TEXT, String.class),
+    TEXT("TEXT", ArmyType.MEDIUMTEXT, String.class),
     PG_LSN("PG_LSN", ArmyType.DIALECT_TYPE, String.class),
     PG_SNAPSHOT("PG_SNAPSHOT", ArmyType.DIALECT_TYPE, String.class),
 
@@ -99,7 +98,7 @@ public enum PostgreSqlType implements SqlType {
     TSMULTIRANGE("TSMULTIRANGE", ArmyType.DIALECT_TYPE, String.class),
     TSTZMULTIRANGE("TSTZMULTIRANGE", ArmyType.DIALECT_TYPE, String.class),
 
-    REF_CURSOR("REF_CURSOR", ArmyType.REF_CURSOR, Cursor.class),
+    REF_CURSOR("REF_CURSOR", ArmyType.REF_CURSOR, String.class),
 
     ACLITEM("ACLITEM", ArmyType.DIALECT_TYPE, String.class),
 
@@ -184,9 +183,9 @@ public enum PostgreSqlType implements SqlType {
 
     private final Class<?> javaType;
 
-    private final PostgreSqlType elementType;
+    private final PostgreType elementType;
 
-    PostgreSqlType(String typeName, ArmyType armyType, Class<?> javaType) {
+    PostgreType(String typeName, ArmyType armyType, Class<?> javaType) {
         assert armyType != ArmyType.ARRAY;
 
         this.typeName = typeName;
@@ -195,10 +194,10 @@ public enum PostgreSqlType implements SqlType {
         this.elementType = null;
     }
 
-    PostgreSqlType(PostgreSqlType elementType) {
+    PostgreType(PostgreType elementType) {
         this.typeName = elementType.typeName + "[]";
         this.armyType = ArmyType.ARRAY;
-        this.javaType = String.class; // postgre array always output array.
+        this.javaType = Object.class;
         this.elementType = elementType;
     }
 
@@ -226,8 +225,8 @@ public enum PostgreSqlType implements SqlType {
     @Nullable
     @Override
     public final Class<?> secondJavaType() {
-        //TODO
-        throw new UnsupportedOperationException();
+        // postgre client packet size always less than 2G
+        return null;
     }
 
     @Nullable

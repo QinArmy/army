@@ -5,7 +5,7 @@ import io.army.criteria.Select;
 import io.army.criteria.impl.Postgres;
 import io.army.criteria.impl.SQLs;
 import io.army.mapping.postgre.PostgreSingleRangeType;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
@@ -26,7 +26,7 @@ public class PostgreTypeUnitTests extends PostgreUnitTests {
     @Test
     public void rangeSubtypeForLowerAndUpperFunc() {
         final PostgreSingleRangeType int4RangeType;
-        int4RangeType = PostgreSingleRangeType.from(String.class, PostgreSqlType.INT4RANGE);
+        int4RangeType = PostgreSingleRangeType.from(String.class, PostgreType.INT4RANGE);
         final Select stmt;
         stmt = Postgres.query()
                 .select(lower(SQLs.literal(int4RangeType, "[1,4]")).as("lower subtype"))

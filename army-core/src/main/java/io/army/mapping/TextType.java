@@ -6,7 +6,7 @@ import io.army.mapping.array.TextArrayType;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
@@ -108,7 +108,7 @@ public final class TextType extends _ArmyBuildInMapping implements MappingType.S
                 sqlType = MySQLType.TEXT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreSqlType.TEXT;
+                sqlType = PostgreType.TEXT;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);

@@ -225,10 +225,10 @@ public abstract class ExecutorSupport {
     }
 
 
-    public static MetaException beforeBindMethodError(MappingType mappingType, DataType dataType,
+    public static MetaException beforeBindMethodError(MappingType type, DataType dataType,
                                                       @Nullable Object returnValue) {
         String m = String.format("%s beforeBind() method return type %s and %s type not match.",
-                mappingType.getClass().getName(), _ClassUtils.safeClassName(returnValue), dataType);
+                type.getClass().getName(), _ClassUtils.safeClassName(returnValue), dataType);
         return new MetaException(m);
     }
 

@@ -5,7 +5,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
@@ -104,7 +104,7 @@ public final class IntegerArrayType extends _ArmyNoInjectionMapping
         final SqlType type;
         switch (meta.dialectDatabase()) {
             case PostgreSQL:
-                type = PostgreSqlType.INTEGER_ARRAY;
+                type = PostgreType.INTEGER_ARRAY;
                 break;
             case Oracle:
             case H2:

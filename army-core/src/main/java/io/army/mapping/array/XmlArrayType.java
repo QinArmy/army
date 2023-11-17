@@ -9,7 +9,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping._ArmyBuildInMapping;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
@@ -61,7 +61,7 @@ public final class XmlArrayType extends _ArmyBuildInMapping {
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreSqlType.VARCHAR_ARRAY;
+        return PostgreType.VARCHAR_ARRAY;
     }
 
     @Override

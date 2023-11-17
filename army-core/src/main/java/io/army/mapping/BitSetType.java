@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util._MappingUtils;
 
@@ -59,7 +59,7 @@ public final class BitSetType extends _ArmyNoInjectionMapping implements Mapping
                 type = MySQLType.BIT;
                 break;
             case PostgreSQL:
-                type = PostgreSqlType.VARBIT;
+                type = PostgreType.VARBIT;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

@@ -12,7 +12,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.optional.CompositeTypeField;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
@@ -48,7 +48,7 @@ public final class TwoIntType extends MappingType
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreSqlType.USER_DEFINED;
+        return PostgreType.USER_DEFINED;
     }
 
     @Override

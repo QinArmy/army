@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.util.function.BiFunction;
@@ -54,7 +54,7 @@ public final class DoubleType extends _NumericType._FloatNumericType {
                 type = MySQLType.DOUBLE;
                 break;
             case PostgreSQL:
-                type = PostgreSqlType.FLOAT8;
+                type = PostgreType.FLOAT8;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(this, meta);

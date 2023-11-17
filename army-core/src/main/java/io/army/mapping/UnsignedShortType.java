@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 /**
@@ -58,7 +58,7 @@ public final class UnsignedShortType extends _NumericType._UnsignedIntegerType {
                 type = MySQLType.SMALLINT_UNSIGNED;
                 break;
             case PostgreSQL:
-                type = PostgreSqlType.INTEGER;
+                type = PostgreType.INTEGER;
                 break;
             case Oracle:
             case H2:

@@ -3,7 +3,7 @@ package io.army.mapping;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -79,7 +79,7 @@ public final class UnsignedBigDecimalType extends _NumericType._UnsignedNumericT
                 sqlType = MySQLType.DECIMAL_UNSIGNED;
                 break;
             case PostgreSQL:
-                sqlType = PostgreSqlType.DECIMAL;
+                sqlType = PostgreType.DECIMAL;
                 break;
             case Oracle:
             case H2:

@@ -9,7 +9,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.IndexMeta;
 import io.army.meta.TableMeta;
 import io.army.schema._FieldResult;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
@@ -98,7 +98,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     @Override
     protected void dataType(final FieldMeta<?> field, final SqlType type, final StringBuilder builder) {
-        switch ((PostgreSqlType) type) {
+        switch ((PostgreType) type) {
             case UNKNOWN:
                 throw _Exceptions.unexpectedEnum((Enum<?>) type);
             case DECIMAL:
@@ -126,7 +126,7 @@ final class PostgreDdlParser extends _DdlParser<PostgreParser> {
 
     @Override
     protected void postDataType(FieldMeta<?> field, SqlType type, StringBuilder builder) {
-        switch ((PostgreSqlType) type) {
+        switch ((PostgreType) type) {
             case SMALLINT:
                 builder.append("SMALLSERIAL");
                 break;

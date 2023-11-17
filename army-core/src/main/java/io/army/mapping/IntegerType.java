@@ -5,7 +5,7 @@ import io.army.criteria.CriteriaException;
 import io.army.mapping.array.IntegerArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -141,7 +141,7 @@ public final class IntegerType extends _NumericType._IntegerType {
                 sqlType = MySQLType.INT;
                 break;
             case PostgreSQL:
-                sqlType = PostgreSqlType.INTEGER;
+                sqlType = PostgreType.INTEGER;
                 break;
             default:
                 throw MAP_ERROR_HANDLER.apply(type, meta);

@@ -6,7 +6,7 @@ import io.army.dialect.NotSupportDialectException;
 import io.army.mapping.*;
 import io.army.meta.ServerMeta;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 
@@ -118,7 +118,7 @@ public final class TextArrayType extends _ArmyBuildInMapping implements MappingT
         if (meta.dialectDatabase() != Database.PostgreSQL) {
             throw MAP_ERROR_HANDLER.apply(this, meta);
         }
-        return PostgreSqlType.TEXT_ARRAY;
+        return PostgreType.TEXT_ARRAY;
     }
 
     @Override

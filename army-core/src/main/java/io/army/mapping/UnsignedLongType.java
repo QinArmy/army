@@ -4,7 +4,7 @@ import io.army.ArmyException;
 import io.army.criteria.CriteriaException;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 
 import java.math.BigDecimal;
@@ -53,7 +53,7 @@ public final class UnsignedLongType extends _NumericType._UnsignedIntegerType {
                 type = MySQLType.BIGINT_UNSIGNED;
                 break;
             case PostgreSQL:
-                type = PostgreSqlType.DECIMAL;
+                type = PostgreType.DECIMAL;
                 break;
             case Oracle:
             case H2:

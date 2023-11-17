@@ -16,6 +16,7 @@ import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.DataRecord;
 import io.army.session.record.ResultStates;
+import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
@@ -37,12 +38,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.*;
+import java.time.*;
 import java.time.temporal.Temporal;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
@@ -503,8 +508,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     @SuppressWarnings("unused")
     abstract Logger getLogger();
 
-    @Nullable
-    abstract Object bind(PreparedStatement stmt, int indexBasedOne, @Nullable Object attr, MappingType type, DataType dataType, Object nonNull)
+    abstract void bind(PreparedStatement stmt, int indexBasedOne, MappingType type,
+                       DataType dataType, Object nonNull)
             throws SQLException;
 
     abstract SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne) throws SQLException;
@@ -707,7 +712,179 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     }
 
 
-    final void setLongText(PreparedStatement stmt, int index, Object nonNull) throws SQLException {
+    /**
+     * @see #bindParameter(PreparedStatement, List)
+     */
+    final void bindArmyType(PreparedStatement stmt, final int indexBasedOne, final MappingType type,
+                            final DataType dataType, final ArmyType armyType, Object nonNull) throws SQLException {
+        switch (armyType) {
+            case BOOLEAN: {
+                if (!(nonNull instanceof Boolean)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setBoolean(indexBasedOne, (Boolean) nonNull);
+            }
+            break;
+            case TINYINT: {
+                if (!(nonNull instanceof Byte)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setByte(indexBasedOne, (Byte) nonNull);
+            }
+            break;
+            case TINYINT_UNSIGNED:
+            case SMALLINT: {
+                if (!(nonNull instanceof Short)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setShort(indexBasedOne, (Short) nonNull);
+            }
+            break;
+            case SMALLINT_UNSIGNED:
+            case MEDIUMINT:
+            case MEDIUMINT_UNSIGNED:
+            case INTEGER: {
+                if (!(nonNull instanceof Integer)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setInt(indexBasedOne, (Integer) nonNull);
+            }
+            break;
+            case INTEGER_UNSIGNED:
+            case BIGINT: {
+                if (!(nonNull instanceof Long)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setLong(indexBasedOne, (Long) nonNull);
+            }
+            break;
+            case BIGINT_UNSIGNED: {
+                if (!(nonNull instanceof BigInteger || nonNull instanceof BigDecimal)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setObject(indexBasedOne, nonNull);
+            }
+            break;
+            case DECIMAL:
+            case DECIMAL_UNSIGNED: {
+                if (!(nonNull instanceof BigDecimal)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setBigDecimal(indexBasedOne, (BigDecimal) nonNull);
+            }
+            break;
+            case FLOAT: {
+                if (!(nonNull instanceof Float)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setFloat(indexBasedOne, (Float) nonNull);
+            }
+            break;
+            case DOUBLE: {
+                if (!(nonNull instanceof Double)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setDouble(indexBasedOne, (Double) nonNull);
+            }
+            break;
+            case TIME: {
+                if (!(nonNull instanceof LocalTime)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setObject(indexBasedOne, nonNull);
+            }
+            break;
+            case YEAR_MONTH:
+            case MONTH_DAY:
+            case DATE: {
+                if (!(nonNull instanceof LocalDate)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setObject(indexBasedOne, nonNull);
+            }
+            break;
+            case TIMESTAMP: {
+                if (!(nonNull instanceof LocalDateTime)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setObject(indexBasedOne, nonNull);
+            }
+            break;
+            case TIME_WITH_TIMEZONE: {
+                if (!(nonNull instanceof OffsetTime)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setObject(indexBasedOne, nonNull);
+            }
+            break;
+            case TIMESTAMP_WITH_TIMEZONE: {
+                if (!(nonNull instanceof OffsetDateTime)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setObject(indexBasedOne, nonNull);
+            }
+            break;
+            case CHAR:
+            case VARCHAR:
+            case ENUM:
+            case TINYTEXT:
+            case TEXT:
+            case MEDIUMTEXT: {
+                if (!(nonNull instanceof String)) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setString(indexBasedOne, (String) nonNull);
+            }
+            break;
+            case JSON:
+            case JSONB:
+            case LONGTEXT:
+                setLongText(stmt, indexBasedOne, type, dataType, nonNull);
+                break;
+            case BINARY:
+            case VARBINARY:
+            case TINYBLOB:
+            case BLOB:
+            case MEDIUMBLOB: {
+                if (!(nonNull instanceof byte[])) {
+                    throw beforeBindMethodError(type, dataType, nonNull);
+                }
+                stmt.setBytes(indexBasedOne, (byte[]) nonNull);
+            }
+            break;
+            case LONGBLOB:
+                setLongBinary(stmt, indexBasedOne, type, dataType, nonNull);
+                break;
+            case GEOMETRY: {
+                if (nonNull instanceof String) {
+                    stmt.setString(indexBasedOne, (String) nonNull);
+                } else if (nonNull instanceof Reader) {
+                    stmt.setCharacterStream(indexBasedOne, (Reader) nonNull);
+                } else if (nonNull instanceof byte[]) {
+                    stmt.setBytes(indexBasedOne, (byte[]) nonNull);
+                } else if (nonNull instanceof InputStream) {
+                    stmt.setBinaryStream(indexBasedOne, (InputStream) nonNull);
+                } else if (nonNull instanceof Path) {
+                    try (InputStream inputStream = Files.newInputStream((Path) nonNull, StandardOpenOption.READ)) {
+                        stmt.setBinaryStream(indexBasedOne, inputStream);
+                    } catch (IOException e) {
+                        String m = String.format("Parameter[%s] %s[%s] read occur error."
+                                , indexBasedOne, Path.class.getName(), nonNull);
+                        throw new SQLException(m, e);
+                    }
+                }
+            }
+            break;
+            default:
+                throw mapMethodError(type, dataType);
+
+        }
+
+
+    }
+
+    final void setLongText(PreparedStatement stmt, final int index, final MappingType type, final DataType dataType,
+                           final Object nonNull) throws SQLException {
         if (nonNull instanceof String) {
             stmt.setString(index, (String) nonNull);
         } else if (nonNull instanceof Reader) {
@@ -716,14 +893,16 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             try (Reader reader = Files.newBufferedReader((Path) nonNull, StandardCharsets.UTF_8)) {
                 stmt.setCharacterStream(index, reader);
             } catch (IOException e) {
-                String m = String.format("Parameter[%s] %s[%s] read occur error."
-                        , index, Path.class.getName(), nonNull);
+                String m = String.format("Parameter[%s] %s[%s] read occur error.", index, Path.class.getName(), nonNull);
                 throw new SQLException(m, e);
             }
+        } else {
+            throw beforeBindMethodError(type, dataType, nonNull);
         }
     }
 
-    final void setLongBinary(PreparedStatement stmt, int index, Object nonNull) throws SQLException {
+    final void setLongBinary(PreparedStatement stmt, final int index, final MappingType type, final DataType dataType,
+                             final Object nonNull) throws SQLException {
         if (nonNull instanceof byte[]) {
             stmt.setBytes(index, (byte[]) nonNull);
         } else if (nonNull instanceof InputStream) {
@@ -736,6 +915,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                         , index, Path.class.getName(), nonNull);
                 throw new SQLException(m, e);
             }
+        } else {
+            throw beforeBindMethodError(type, dataType, nonNull);
         }
     }
 
@@ -1016,58 +1197,59 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         SQLParam sqlParam;
         Object value;
-        MappingType mappingType;
+        MappingType type;
         TypeMeta typeMeta;
         DataType dataType;
-        Object attr = null;
-
+        Iterator<?> iterator;
+        boolean hasMore;
         final int paramSize = paramGroup.size();
         for (int i = 0, paramIndex = 1; i < paramSize; i++) {
             sqlParam = paramGroup.get(i);
 
             typeMeta = sqlParam.typeMeta();
             if (typeMeta instanceof MappingType) {
-                mappingType = (MappingType) typeMeta;
+                type = (MappingType) typeMeta;
             } else {
-                mappingType = typeMeta.mappingType();
+                type = typeMeta.mappingType();
             }
-            dataType = mappingType.map(serverMeta);
+            dataType = type.map(serverMeta);
 
             if (sqlParam instanceof SingleParam) {
-                value = ((SingleParam) sqlParam).value();
-                if (value == null) {
-                    // bind null
+                iterator = null;
+            } else {
+                iterator = ((MultiParam) sqlParam).valueList().iterator();
+
+            }
+
+            hasMore = true;
+            while (hasMore) {
+
+                if (iterator == null) {
+                    value = ((SingleParam) sqlParam).value();
+                    hasMore = false;
+                } else if (iterator.hasNext()) {
+                    value = iterator.next();
+                } else {
+                    break;
+                }
+
+                if (value == null) { // jdbd client-prepared support dialect type null ,for example postgre : null::text
                     statement.setNull(paramIndex++, Types.NULL);
                     continue;
                 }
-                value = mappingType.beforeBind(dataType, mappingEnv, value);
-                if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
-                    value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
-                }
-                //TODO field codec
-                attr = bind(statement, paramIndex++, attr, dataType, value);
-                continue;
-            }
 
-            if (!(sqlParam instanceof MultiParam)) {
-                throw _Exceptions.unexpectedSqlParam(sqlParam);
-            }
-
-            for (final Object element : ((MultiParam) sqlParam).valueList()) {
-                if (element == null) {
-                    // bind null
-                    statement.setNull(paramIndex++, Types.NULL);
-                    continue;
-                }
-                value = mappingType.beforeBind(dataType, mappingEnv, element);
+                value = type.beforeBind(dataType, mappingEnv, value);
 
                 if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
                     value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
                 }
-                //TODO field codec
-                attr = bind(statement, paramIndex++, attr, dataType, value);
 
-            }// inner for
+                //TODO field codec
+
+                attr = bind(statement, paramIndex++, ttr, type, dataType, value);
+
+
+            } // inner while loop
 
 
         }//outer for

@@ -12,7 +12,7 @@ import io.army.mapping.array.PostgreArrays;
 import io.army.mapping.postgre.array.PostgreMultiRangeArrayType;
 import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
@@ -39,20 +39,20 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
      * @param javaType one dimension array class. If javaType isn't String array,then must declare static 'create' factory method.
      *                 see {@link ArmyPostgreRange}
      * @param param    from {@link Mapping#params()} ,it's the name of <ul>
-     *                 <li>{@link PostgreSqlType#INT4MULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#INT8MULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#NUMMULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#DATEMULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSMULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSTZMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#INT4MULTIRANGE}</li>
+     *                 <li>{@link PostgreType#INT8MULTIRANGE}</li>
+     *                 <li>{@link PostgreType#NUMMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#DATEMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#TSMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#TSTZMULTIRANGE}</li>
      *                 </ul>
      * @throws IllegalArgumentException throw when javaType error
      * @throws MetaException            throw when param error.
      */
     public static PostgreMultiRangeType from(final Class<?> javaType, final String param) throws MetaException {
-        final PostgreSqlType sqlType;
+        final PostgreType sqlType;
         try {
-            sqlType = PostgreSqlType.valueOf(param);
+            sqlType = PostgreType.valueOf(param);
         } catch (IllegalArgumentException e) {
             throw new MetaException(e.getMessage(), e);
         }
@@ -67,15 +67,15 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
      * @param javaType one dimension array class. If javaType isn't String array,then must declare static 'create' factory method.
      *                 see {@link ArmyPostgreRange}
      * @param sqlType  from {@link Mapping#params()} ,valid instance: <ul>
-     *                 <li>{@link PostgreSqlType#INT4MULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#INT8MULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#NUMMULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#DATEMULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSMULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSTZMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#INT4MULTIRANGE}</li>
+     *                 <li>{@link PostgreType#INT8MULTIRANGE}</li>
+     *                 <li>{@link PostgreType#NUMMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#DATEMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#TSMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#TSTZMULTIRANGE}</li>
      *                 </ul>
      */
-    public static PostgreMultiRangeType from(final Class<?> javaType, final PostgreSqlType sqlType)
+    public static PostgreMultiRangeType from(final Class<?> javaType, final PostgreType sqlType)
             throws IllegalArgumentException {
 
         final RangeFunction<?, ?> rangeFunc;
@@ -103,16 +103,16 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
      * @param javaType one dimension non-string array class
      *                 see {@link ArmyPostgreRange}
      * @param sqlType  from {@link Mapping#params()} ,valid instance: <ul>
-     *                 <li>{@link PostgreSqlType#INT4MULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#INT8MULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#NUMMULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#DATEMULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSMULTIRANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSTZMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#INT4MULTIRANGE}</li>
+     *                 <li>{@link PostgreType#INT8MULTIRANGE}</li>
+     *                 <li>{@link PostgreType#NUMMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#DATEMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#TSMULTIRANGE}</li>
+     *                 <li>{@link PostgreType#TSTZMULTIRANGE}</li>
      *                 </ul>
      * @throws IllegalArgumentException throw when javaType or sqlType error
      */
-    public static PostgreMultiRangeType fromFunc(final Class<?> javaType, final PostgreSqlType sqlType,
+    public static PostgreMultiRangeType fromFunc(final Class<?> javaType, final PostgreType sqlType,
                                                  final RangeFunction<?, ?> rangeFunc)
             throws IllegalArgumentException {
         Objects.requireNonNull(rangeFunc);
@@ -131,12 +131,12 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
      * @param javaType   one dimension non-string array class
      *                   see {@link ArmyPostgreRange}
      * @param param      from {@link Mapping#params()} ,it's the name of <ul>
-     *                   <li>{@link PostgreSqlType#INT4MULTIRANGE}</li>
-     *                   <li>{@link PostgreSqlType#INT8MULTIRANGE}</li>
-     *                   <li>{@link PostgreSqlType#NUMMULTIRANGE}</li>
-     *                   <li>{@link PostgreSqlType#DATEMULTIRANGE}</li>
-     *                   <li>{@link PostgreSqlType#TSMULTIRANGE}</li>
-     *                   <li>{@link PostgreSqlType#TSTZMULTIRANGE}</li>
+     *                   <li>{@link PostgreType#INT4MULTIRANGE}</li>
+     *                   <li>{@link PostgreType#INT8MULTIRANGE}</li>
+     *                   <li>{@link PostgreType#NUMMULTIRANGE}</li>
+     *                   <li>{@link PostgreType#DATEMULTIRANGE}</li>
+     *                   <li>{@link PostgreType#TSMULTIRANGE}</li>
+     *                   <li>{@link PostgreType#TSTZMULTIRANGE}</li>
      *                   </ul>
      * @param methodName from {@link Mapping#func()}
      * @throws IllegalArgumentException throw when javaType error
@@ -145,9 +145,9 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     public static PostgreMultiRangeType fromMethod(final Class<?> javaType, final String param,
                                                    final String methodName) throws MetaException {
 
-        final PostgreSqlType sqlType;
+        final PostgreType sqlType;
         try {
-            sqlType = PostgreSqlType.valueOf(param);
+            sqlType = PostgreType.valueOf(param);
         } catch (IllegalArgumentException e) {
             throw new MetaException(e.getMessage(), e);
         }
@@ -167,41 +167,41 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
 
-    public static final PostgreMultiRangeType INT4_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreSqlType.INT4MULTIRANGE, String[].class, null);
+    public static final PostgreMultiRangeType INT4_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreType.INT4MULTIRANGE, String[].class, null);
 
-    public static final PostgreMultiRangeType INT8_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreSqlType.INT8MULTIRANGE, String[].class, null);
+    public static final PostgreMultiRangeType INT8_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreType.INT8MULTIRANGE, String[].class, null);
 
-    public static final PostgreMultiRangeType NUM_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreSqlType.NUMMULTIRANGE, String[].class, null);
+    public static final PostgreMultiRangeType NUM_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreType.NUMMULTIRANGE, String[].class, null);
 
-    public static final PostgreMultiRangeType DATE_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreSqlType.DATEMULTIRANGE, String[].class, null);
+    public static final PostgreMultiRangeType DATE_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreType.DATEMULTIRANGE, String[].class, null);
 
-    public static final PostgreMultiRangeType TS_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreSqlType.TSMULTIRANGE, String[].class, null);
+    public static final PostgreMultiRangeType TS_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreType.TSMULTIRANGE, String[].class, null);
 
-    public static final PostgreMultiRangeType TS_TZ_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreSqlType.TSTZMULTIRANGE, String[].class, null);
+    public static final PostgreMultiRangeType TS_TZ_MULTI_RANGE_TEXT = new PostgreMultiRangeType(PostgreType.TSTZMULTIRANGE, String[].class, null);
 
     /**
      * package method
      */
     static PostgreMultiRangeType fromSingleType(final PostgreSingleRangeType type) {
-        final PostgreSqlType sqlType;
+        final PostgreType sqlType;
         switch (type.sqlType) {
             case INT4RANGE:
-                sqlType = PostgreSqlType.INT4MULTIRANGE;
+                sqlType = PostgreType.INT4MULTIRANGE;
                 break;
             case INT8RANGE:
-                sqlType = PostgreSqlType.INT8MULTIRANGE;
+                sqlType = PostgreType.INT8MULTIRANGE;
                 break;
             case NUMRANGE:
-                sqlType = PostgreSqlType.NUMMULTIRANGE;
+                sqlType = PostgreType.NUMMULTIRANGE;
                 break;
             case DATERANGE:
-                sqlType = PostgreSqlType.DATEMULTIRANGE;
+                sqlType = PostgreType.DATEMULTIRANGE;
                 break;
             case TSRANGE:
-                sqlType = PostgreSqlType.TSMULTIRANGE;
+                sqlType = PostgreType.TSMULTIRANGE;
                 break;
             case TSTZRANGE:
-                sqlType = PostgreSqlType.TSTZMULTIRANGE;
+                sqlType = PostgreType.TSTZMULTIRANGE;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(type.sqlType);
@@ -223,7 +223,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
      * package constructor
      * </p>
      */
-    private PostgreMultiRangeType(PostgreSqlType sqlType, Class<?> javaType, @Nullable RangeFunction<?, ?> rangeFunc) {
+    private PostgreMultiRangeType(PostgreType sqlType, Class<?> javaType, @Nullable RangeFunction<?, ?> rangeFunc) {
         super(sqlType, javaType, rangeFunc);
     }
 
@@ -307,25 +307,25 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
 
     @Override
     public PostgreMultiRangeType _fromMultiArray(final PostgreMultiRangeArrayType type) {
-        final PostgreSqlType sqlType;
+        final PostgreType sqlType;
         switch (type.sqlType) {
             case INT4MULTIRANGE_ARRAY:
-                sqlType = PostgreSqlType.INT4MULTIRANGE;
+                sqlType = PostgreType.INT4MULTIRANGE;
                 break;
             case INT8MULTIRANGE_ARRAY:
-                sqlType = PostgreSqlType.INT8MULTIRANGE;
+                sqlType = PostgreType.INT8MULTIRANGE;
                 break;
             case NUMMULTIRANGE_ARRAY:
-                sqlType = PostgreSqlType.NUMMULTIRANGE;
+                sqlType = PostgreType.NUMMULTIRANGE;
                 break;
             case DATEMULTIRANGE_ARRAY:
-                sqlType = PostgreSqlType.DATEMULTIRANGE;
+                sqlType = PostgreType.DATEMULTIRANGE;
                 break;
             case TSMULTIRANGE_ARRAY:
-                sqlType = PostgreSqlType.TSMULTIRANGE;
+                sqlType = PostgreType.TSMULTIRANGE;
                 break;
             case TSTZMULTIRANGE_ARRAY:
-                sqlType = PostgreSqlType.TSTZMULTIRANGE;
+                sqlType = PostgreType.TSTZMULTIRANGE;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(type.sqlType);
@@ -431,7 +431,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
     }
 
 
-    private static boolean isNotMultiRange(final PostgreSqlType sqlType) {
+    private static boolean isNotMultiRange(final PostgreType sqlType) {
         final boolean match;
         switch (sqlType) {
             case INT4MULTIRANGE:
@@ -449,7 +449,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
         return match;
     }
 
-    private static PostgreMultiRangeType textInstance(final PostgreSqlType sqlType) {
+    private static PostgreMultiRangeType textInstance(final PostgreType sqlType) {
         final PostgreMultiRangeType instance;
         switch (sqlType) {
             case INT4MULTIRANGE:
@@ -477,7 +477,7 @@ public final class PostgreMultiRangeType extends PostgreRangeType implements Pos
         return instance;
     }
 
-    private static String sqlTypeErrorMessage(PostgreSqlType sqlType) {
+    private static String sqlTypeErrorMessage(PostgreType sqlType) {
         return String.format("%s isn't postgre multi-range type", sqlType);
     }
 

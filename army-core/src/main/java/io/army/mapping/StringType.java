@@ -7,7 +7,7 @@ import io.army.mapping.array.StringArrayType;
 import io.army.meta.ServerMeta;
 import io.army.sqltype.MySQLType;
 import io.army.sqltype.OracleDataType;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.struct.CodeEnum;
 import io.army.struct.TextEnum;
@@ -118,7 +118,7 @@ public final class StringType extends _ArmyBuildInMapping implements MappingType
                 sqlType = MySQLType.VARCHAR;
                 break;
             case PostgreSQL:
-                sqlType = PostgreSqlType.VARCHAR;
+                sqlType = PostgreType.VARCHAR;
                 break;
             case Oracle:
                 sqlType = OracleDataType.VARCHAR2;

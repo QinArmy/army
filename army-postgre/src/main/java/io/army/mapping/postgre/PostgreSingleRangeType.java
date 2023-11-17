@@ -9,7 +9,7 @@ import io.army.mapping.NoMatchMappingException;
 import io.army.mapping.postgre.array.PostgreSingleRangeArrayType;
 import io.army.meta.MetaException;
 import io.army.session.DataAccessException;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util.ArrayUtils;
 import io.army.util._Exceptions;
@@ -34,20 +34,20 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
      * @param javaType non-array class. If javaType isn't String array,then must declare static 'create' factory method.
      *                 see {@link ArmyPostgreRange}
      * @param param    from {@link Mapping#params()} ,it's the name of <ul>
-     *                 <li>{@link PostgreSqlType#INT4RANGE}</li>
-     *                 <li>{@link PostgreSqlType#INT8RANGE}</li>
-     *                 <li>{@link PostgreSqlType#NUMRANGE}</li>
-     *                 <li>{@link PostgreSqlType#DATERANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSRANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSTZRANGE}</li>
+     *                 <li>{@link PostgreType#INT4RANGE}</li>
+     *                 <li>{@link PostgreType#INT8RANGE}</li>
+     *                 <li>{@link PostgreType#NUMRANGE}</li>
+     *                 <li>{@link PostgreType#DATERANGE}</li>
+     *                 <li>{@link PostgreType#TSRANGE}</li>
+     *                 <li>{@link PostgreType#TSTZRANGE}</li>
      *                 </ul>
      * @throws IllegalArgumentException throw when javaType error
      * @throws MetaException            throw when param error.
      */
     public static PostgreSingleRangeType from(final Class<?> javaType, final String param) throws MetaException {
-        final PostgreSqlType sqlType;
+        final PostgreType sqlType;
         try {
-            sqlType = PostgreSqlType.valueOf(param);
+            sqlType = PostgreType.valueOf(param);
         } catch (IllegalArgumentException e) {
             throw new MetaException(e.getMessage(), e);
         }
@@ -62,15 +62,15 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
      * @param javaType non-array class. If javaType isn't String array,then must declare static 'create' factory method.
      *                 see {@link ArmyPostgreRange}
      * @param sqlType  valid instance:<ul>
-     *                 <li>{@link PostgreSqlType#INT4RANGE}</li>
-     *                 <li>{@link PostgreSqlType#INT8RANGE}</li>
-     *                 <li>{@link PostgreSqlType#NUMRANGE}</li>
-     *                 <li>{@link PostgreSqlType#DATERANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSRANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSTZRANGE}</li>
+     *                 <li>{@link PostgreType#INT4RANGE}</li>
+     *                 <li>{@link PostgreType#INT8RANGE}</li>
+     *                 <li>{@link PostgreType#NUMRANGE}</li>
+     *                 <li>{@link PostgreType#DATERANGE}</li>
+     *                 <li>{@link PostgreType#TSRANGE}</li>
+     *                 <li>{@link PostgreType#TSTZRANGE}</li>
      *                 </ul>
      */
-    public static PostgreSingleRangeType from(final Class<?> javaType, final PostgreSqlType sqlType)
+    public static PostgreSingleRangeType from(final Class<?> javaType, final PostgreType sqlType)
             throws IllegalArgumentException {
 
         final RangeFunction<?, ?> rangeFunc;
@@ -95,16 +95,16 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
      * @param javaType non-array and non-string class.
      *                 see {@link ArmyPostgreRange}
      * @param sqlType  valid instance: <ul>
-     *                 <li>{@link PostgreSqlType#INT4RANGE}</li>
-     *                 <li>{@link PostgreSqlType#INT8RANGE}</li>
-     *                 <li>{@link PostgreSqlType#NUMRANGE}</li>
-     *                 <li>{@link PostgreSqlType#DATERANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSRANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSTZRANGE}</li>
+     *                 <li>{@link PostgreType#INT4RANGE}</li>
+     *                 <li>{@link PostgreType#INT8RANGE}</li>
+     *                 <li>{@link PostgreType#NUMRANGE}</li>
+     *                 <li>{@link PostgreType#DATERANGE}</li>
+     *                 <li>{@link PostgreType#TSRANGE}</li>
+     *                 <li>{@link PostgreType#TSTZRANGE}</li>
      *                 </ul>
      * @throws IllegalArgumentException throw when javaType or sqlType error
      */
-    public static <T, R> PostgreSingleRangeType fromFunc(final Class<? extends R> javaType, final PostgreSqlType sqlType,
+    public static <T, R> PostgreSingleRangeType fromFunc(final Class<? extends R> javaType, final PostgreType sqlType,
                                                          final RangeFunction<T, R> rangeFunc)
             throws IllegalArgumentException {
         Objects.requireNonNull(rangeFunc);
@@ -121,12 +121,12 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
      * @param javaType non-array and non-string class.
      *                 see {@link ArmyPostgreRange}
      * @param param    from {@link Mapping#params()} ,it's the name of <ul>
-     *                 <li>{@link PostgreSqlType#INT4RANGE}</li>
-     *                 <li>{@link PostgreSqlType#INT8RANGE}</li>
-     *                 <li>{@link PostgreSqlType#NUMRANGE}</li>
-     *                 <li>{@link PostgreSqlType#DATERANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSRANGE}</li>
-     *                 <li>{@link PostgreSqlType#TSTZRANGE}</li>
+     *                 <li>{@link PostgreType#INT4RANGE}</li>
+     *                 <li>{@link PostgreType#INT8RANGE}</li>
+     *                 <li>{@link PostgreType#NUMRANGE}</li>
+     *                 <li>{@link PostgreType#DATERANGE}</li>
+     *                 <li>{@link PostgreType#TSRANGE}</li>
+     *                 <li>{@link PostgreType#TSTZRANGE}</li>
      *                 </ul>
      * @throws IllegalArgumentException throw when javaType error
      * @throws MetaException            throw when param or methodName error.
@@ -134,9 +134,9 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
     public static PostgreSingleRangeType fromMethod(final Class<?> javaType, final String param,
                                                     final String methodName) throws MetaException {
 
-        final PostgreSqlType sqlType;
+        final PostgreType sqlType;
         try {
-            sqlType = PostgreSqlType.valueOf(param);
+            sqlType = PostgreType.valueOf(param);
         } catch (IllegalArgumentException e) {
             throw new MetaException(e.getMessage(), e);
         }
@@ -152,42 +152,42 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
     }
 
 
-    public static final PostgreSingleRangeType INT4_RANGE_TEXT = new PostgreSingleRangeType(PostgreSqlType.INT4RANGE, String.class, null);
+    public static final PostgreSingleRangeType INT4_RANGE_TEXT = new PostgreSingleRangeType(PostgreType.INT4RANGE, String.class, null);
 
-    public static final PostgreSingleRangeType INT8_RANGE_TEXT = new PostgreSingleRangeType(PostgreSqlType.INT8RANGE, String.class, null);
+    public static final PostgreSingleRangeType INT8_RANGE_TEXT = new PostgreSingleRangeType(PostgreType.INT8RANGE, String.class, null);
 
-    public static final PostgreSingleRangeType NUM_RANGE_TEXT = new PostgreSingleRangeType(PostgreSqlType.NUMRANGE, String.class, null);
+    public static final PostgreSingleRangeType NUM_RANGE_TEXT = new PostgreSingleRangeType(PostgreType.NUMRANGE, String.class, null);
 
-    public static final PostgreSingleRangeType DATE_RANGE_TEXT = new PostgreSingleRangeType(PostgreSqlType.DATERANGE, String.class, null);
+    public static final PostgreSingleRangeType DATE_RANGE_TEXT = new PostgreSingleRangeType(PostgreType.DATERANGE, String.class, null);
 
-    public static final PostgreSingleRangeType TS_RANGE_TEXT = new PostgreSingleRangeType(PostgreSqlType.TSRANGE, String.class, null);
+    public static final PostgreSingleRangeType TS_RANGE_TEXT = new PostgreSingleRangeType(PostgreType.TSRANGE, String.class, null);
 
-    public static final PostgreSingleRangeType TS_TZ_RANGE_TEXT = new PostgreSingleRangeType(PostgreSqlType.TSTZRANGE, String.class, null);
+    public static final PostgreSingleRangeType TS_TZ_RANGE_TEXT = new PostgreSingleRangeType(PostgreType.TSTZRANGE, String.class, null);
 
 
     /**
      * package method
      */
     static PostgreSingleRangeType fromMultiType(final PostgreMultiRangeType type) {
-        final PostgreSqlType sqlType;
+        final PostgreType sqlType;
         switch (type.sqlType) {
             case INT4MULTIRANGE:
-                sqlType = PostgreSqlType.INT4RANGE;
+                sqlType = PostgreType.INT4RANGE;
                 break;
             case INT8MULTIRANGE:
-                sqlType = PostgreSqlType.INT8RANGE;
+                sqlType = PostgreType.INT8RANGE;
                 break;
             case NUMMULTIRANGE:
-                sqlType = PostgreSqlType.NUMRANGE;
+                sqlType = PostgreType.NUMRANGE;
                 break;
             case DATEMULTIRANGE:
-                sqlType = PostgreSqlType.DATERANGE;
+                sqlType = PostgreType.DATERANGE;
                 break;
             case TSMULTIRANGE:
-                sqlType = PostgreSqlType.TSRANGE;
+                sqlType = PostgreType.TSRANGE;
                 break;
             case TSTZMULTIRANGE:
-                sqlType = PostgreSqlType.TSTZRANGE;
+                sqlType = PostgreType.TSTZRANGE;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(type.sqlType);
@@ -211,7 +211,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
      * package constructor
      * </p>
      */
-    private PostgreSingleRangeType(PostgreSqlType sqlType, Class<?> javaType, @Nullable RangeFunction<?, ?> rangeFunc) {
+    private PostgreSingleRangeType(PostgreType sqlType, Class<?> javaType, @Nullable RangeFunction<?, ?> rangeFunc) {
         super(sqlType, javaType, rangeFunc);
     }
 
@@ -290,25 +290,25 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
 
     @Override
     public PostgreSingleRangeType _fromSingleArray(final PostgreSingleRangeArrayType type) {
-        final PostgreSqlType sqlType;
+        final PostgreType sqlType;
         switch (type.sqlType) {
             case INT4RANGE_ARRAY:
-                sqlType = PostgreSqlType.INT4RANGE;
+                sqlType = PostgreType.INT4RANGE;
                 break;
             case INT8RANGE_ARRAY:
-                sqlType = PostgreSqlType.INT8RANGE;
+                sqlType = PostgreType.INT8RANGE;
                 break;
             case NUMRANGE_ARRAY:
-                sqlType = PostgreSqlType.NUMRANGE;
+                sqlType = PostgreType.NUMRANGE;
                 break;
             case DATERANGE_ARRAY:
-                sqlType = PostgreSqlType.DATERANGE;
+                sqlType = PostgreType.DATERANGE;
                 break;
             case TSRANGE_ARRAY:
-                sqlType = PostgreSqlType.TSRANGE;
+                sqlType = PostgreType.TSRANGE;
                 break;
             case TSTZRANGE_ARRAY:
-                sqlType = PostgreSqlType.TSTZRANGE;
+                sqlType = PostgreType.TSTZRANGE;
                 break;
             default:
                 throw _Exceptions.unexpectedEnum(type.sqlType);
@@ -401,7 +401,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
     /*-------------------below private method -------------------*/
 
 
-    private static boolean isNotSingleRangeType(final PostgreSqlType sqlType) {
+    private static boolean isNotSingleRangeType(final PostgreType sqlType) {
         final boolean match;
         switch (sqlType) {
             case INT4RANGE:
@@ -419,7 +419,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
         return match;
     }
 
-    private static PostgreSingleRangeType textInstance(final PostgreSqlType sqlType) {
+    private static PostgreSingleRangeType textInstance(final PostgreType sqlType) {
         final PostgreSingleRangeType instance;
         switch (sqlType) {
             case INT4RANGE:
@@ -447,7 +447,7 @@ public final class PostgreSingleRangeType extends PostgreRangeType implements Po
         return instance;
     }
 
-    private static String sqlTypeErrorMessage(PostgreSqlType sqlType) {
+    private static String sqlTypeErrorMessage(PostgreType sqlType) {
         return String.format("%s isn't postgre single-range type", sqlType);
     }
 

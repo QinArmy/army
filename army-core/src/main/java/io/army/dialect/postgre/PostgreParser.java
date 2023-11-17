@@ -13,7 +13,7 @@ import io.army.mapping._ArmyBuildInMapping;
 import io.army.mapping._ArmyNoInjectionMapping;
 import io.army.meta.*;
 import io.army.modelgen._MetaBridge;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.tx.Isolation;
 import io.army.util.ArrayUtils;
@@ -82,7 +82,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     protected final void buildInTypeName(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
-        switch ((PostgreSqlType) sqlType) {
+        switch ((PostgreType) sqlType) {
             case BOOLEAN:
             case SMALLINT:
             case INTEGER:
@@ -130,10 +130,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
                 sqlBuilder.append(sqlType.name());
                 break;
             case NO_CAST_INTEGER:
-                sqlBuilder.append(PostgreSqlType.INTEGER.name());
+                sqlBuilder.append(PostgreType.INTEGER.name());
                 break;
             case NO_CAST_TEXT:
-                sqlBuilder.append(PostgreSqlType.TEXT.name());
+                sqlBuilder.append(PostgreType.TEXT.name());
                 break;
             case BOX_ARRAY:
             case BIT_ARRAY:
@@ -186,10 +186,10 @@ abstract class PostgreParser extends _ArmyDialectParser {
             }
             break;
             case UNKNOWN:
-                throw _Exceptions.mapMethodError(type, PostgreSqlType.class);
+                throw _Exceptions.mapMethodError(type, PostgreType.class);
             default:
                 // no bug,never here
-                throw _Exceptions.unexpectedEnum((PostgreSqlType) sqlType);
+                throw _Exceptions.unexpectedEnum((PostgreType) sqlType);
         }
 
     }
@@ -207,9 +207,9 @@ abstract class PostgreParser extends _ArmyDialectParser {
 
     @Override
     protected final void bindLiteralNull(final SqlType sqlType, final MappingType type, final StringBuilder sqlBuilder) {
-        switch ((PostgreSqlType) sqlType) {
+        switch ((PostgreType) sqlType) {
             case UNKNOWN:
-                throw _Exceptions.mapMethodError(type, PostgreSqlType.class);
+                throw _Exceptions.mapMethodError(type, PostgreType.class);
             case NO_CAST_TEXT:
                 sqlBuilder.append(_Constant.NULL);
                 break;
@@ -226,7 +226,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
     @Override
     protected final void bindLiteral(final TypeMeta typeMeta, final SqlType type, final Object value,
                                      final StringBuilder sqlBuilder) {
-        switch ((PostgreSqlType) type) {
+        switch ((PostgreType) type) {
             case BOOLEAN: {
                 if (!(value instanceof Boolean)) {
                     throw _Exceptions.beforeBindMethod(type, typeMeta.mappingType(), value);
@@ -462,7 +462,7 @@ abstract class PostgreParser extends _ArmyDialectParser {
             case UNKNOWN:
                 throw _Exceptions.literalDontSupport(type);
             default:
-                throw _Exceptions.unexpectedEnum((PostgreSqlType) type);
+                throw _Exceptions.unexpectedEnum((PostgreType) type);
 
         }// switch
 

@@ -6,7 +6,7 @@ import io.army.meta.FieldMeta;
 import io.army.meta.SchemaMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
-import io.army.sqltype.PostgreSqlType;
+import io.army.sqltype.PostgreType;
 import io.army.sqltype.SqlType;
 import io.army.util._Exceptions;
 
@@ -39,7 +39,7 @@ final class PostgreComparer extends ArmySchemaComparer {
         final String typeName;
         typeName = columnInfo.typeName().toLowerCase(Locale.ROOT);
         final boolean notMatch;
-        switch ((PostgreSqlType) sqlType) {
+        switch ((PostgreType) sqlType) {
             case BOOLEAN:
                 switch (typeName) {
                     case "boolean":
