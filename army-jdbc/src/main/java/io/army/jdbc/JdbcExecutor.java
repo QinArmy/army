@@ -512,10 +512,10 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                        DataType dataType, Object nonNull)
             throws SQLException;
 
-    abstract SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne) throws SQLException;
+    abstract DataType getDataType(ResultSetMetaData meta, int indexBasedOne) throws SQLException;
 
     @Nullable
-    abstract Object get(ResultSet resultSet, int indexBasedOne, SqlType sqlType) throws SQLException;
+    abstract Object get(ResultSet resultSet, int indexBasedOne, DataType sqlType) throws SQLException;
 
     /**
      * @return current transaction cache instance
@@ -1025,12 +1025,12 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     }
 
 
-    private SqlType[] createSqlTypArray(final ResultSetMetaData metaData) throws SQLException {
-        final SqlType[] sqlTypeArray = new SqlType[metaData.getColumnCount()];
-        for (int i = 0; i < sqlTypeArray.length; i++) {
-            sqlTypeArray[i] = this.getSqlType(metaData, i + 1);
+    private DataType[] createSqlTypArray(final ResultSetMetaData metaData) throws SQLException {
+        final DataType[] dataTypeArray = new SqlType[metaData.getColumnCount()];
+        for (int i = 0; i < dataTypeArray.length; i++) {
+            dataTypeArray[i] = this.getDataType(metaData, i + 1);
         }
-        return sqlTypeArray;
+        return dataTypeArray;
     }
 
 
@@ -1154,7 +1154,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         return metaData -> {
             try {
                 return new ObjectReader<>(this, stmt.selectionList(), stmt instanceof TwoStmtModeQuerySpec,
-                        this.createSqlTypArray(metaData), constructor
+                        createSqlTypArray(metaData), constructor
                 );
             } catch (Exception e) {
                 throw handleException(e);
@@ -1246,7 +1246,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
                 //TODO field codec
 
-                attr = bind(statement, paramIndex++, ttr, type, dataType, value);
+                bind(statement, paramIndex++, type, dataType, value);
 
 
             } // inner while loop
@@ -1327,7 +1327,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         final MappingEnv env = this.factory.mappingEnv;
         final int idSelectionIndex = stmt.idSelectionIndex();
 
-        final SqlType idSqlType = rowReader.sqlTypeArray[idSelectionIndex];
+        final DataType idSqlType = rowReader.dataTypeArray[idSelectionIndex];
 
         Object idValue;
         // below read id value
@@ -1743,8 +1743,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             final int idSelectionIndex = stmt.idSelectionIndex();
             final int idColumnIndexBaseOne = idSelectionIndex + 1;
 
-            final SqlType sqlType;
-            sqlType = getSqlType(idResultSet.getMetaData(), idColumnIndexBaseOne);
+            final DataType sqlType;
+            sqlType = getDataType(idResultSet.getMetaData(), idColumnIndexBaseOne);
 
             final MappingEnv env = this.factory.mappingEnv;
 
@@ -1820,15 +1820,15 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
      */
     private <T> RowReader<T> createBeanRowReader(final ResultSetMetaData metaData, final Class<T> resultClass,
                                                  final SingleSqlStmt stmt) throws SQLException {
-        final SqlType[] sqlTypeArray;
-        sqlTypeArray = this.createSqlTypArray(metaData);
+        final DataType[] dataTypeArray;
+        dataTypeArray = this.createSqlTypArray(metaData);
         final List<? extends Selection> selectionList = stmt.selectionList();
         final RowReader<T> rowReader;
         if ((stmt instanceof TwoStmtQueryStmt && ((TwoStmtQueryStmt) stmt).maxColumnSize() == 1)
                 || selectionList.size() == 1) {
-            rowReader = new SingleColumnRowReader<>(this, selectionList, sqlTypeArray, resultClass);
+            rowReader = new SingleColumnRowReader<>(this, selectionList, dataTypeArray, resultClass);
         } else {
-            rowReader = new BeanRowReader<>(this, selectionList, resultClass, sqlTypeArray);
+            rowReader = new BeanRowReader<>(this, selectionList, resultClass, dataTypeArray);
         }
         return rowReader;
     }
@@ -1898,7 +1898,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         final List<? extends Selection> selectionList;
 
-        final SqlType[] sqlTypeArray;
+        final DataType[] dataTypeArray;
 
         private final Class<?> resultClass;
 
@@ -1906,15 +1906,15 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
 
         private RowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                          SqlType[] sqlTypeArray, @Nullable Class<?> resultClass) {
-            if (selectionList.size() != sqlTypeArray.length) {
-                throw _Exceptions.columnCountAndSelectionCountNotMatch(sqlTypeArray.length, selectionList.size());
+                          DataType[] dataTypeArray, @Nullable Class<?> resultClass) {
+            if (selectionList.size() != dataTypeArray.length) {
+                throw _Exceptions.columnCountAndSelectionCountNotMatch(dataTypeArray.length, selectionList.size());
             }
             this.executor = executor;
             this.selectionList = selectionList;
-            this.sqlTypeArray = sqlTypeArray;
+            this.dataTypeArray = dataTypeArray;
             this.resultClass = resultClass;
-            this.compatibleTypeArray = new MappingType[sqlTypeArray.length];
+            this.compatibleTypeArray = new MappingType[dataTypeArray.length];
         }
 
         @Override
@@ -1943,7 +1943,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
             final JdbcExecutor executor = this.executor;
             final MappingEnv env = executor.factory.mappingEnv;
-            final SqlType[] sqlTypeArray = this.sqlTypeArray;
+            final DataType[] dataTypeArray = this.dataTypeArray;
             final MappingType[] compatibleTypeArray = this.compatibleTypeArray;
 
             final List<? extends Selection> selectionList = this.selectionList;
@@ -1955,15 +1955,15 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             MappingType type;
             Selection selection;
             Object columnValue;
-            SqlType sqlType;
+            DataType dataType;
             String fieldName;
 
-            final int columnCount = sqlTypeArray.length;
+            final int columnCount = dataTypeArray.length;
             for (int i = 0; i < columnCount; i++) {
-                sqlType = sqlTypeArray[i];
+                dataType = dataTypeArray[i];
 
                 // dialect executor read one column
-                columnValue = executor.get(resultSet, i + 1, sqlType);
+                columnValue = executor.get(resultSet, i + 1, dataType);
 
                 selection = selectionList.get(i);
                 fieldName = selection.label();
@@ -1983,7 +1983,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 }
 
                 // MappingType convert one column
-                columnValue = type.afterGet(sqlType, env, columnValue);
+                columnValue = type.afterGet(dataType, env, columnValue);
 
                 //TODO field codec
 
@@ -2014,8 +2014,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         private R row;
 
         private BeanRowReader(JdbcExecutor executor, List<? extends Selection> selectionList, Class<R> resultClass,
-                              SqlType[] sqlTypeArray) {
-            super(executor, selectionList, sqlTypeArray, resultClass);
+                              DataType[] dataTypeArray) {
+            super(executor, selectionList, dataTypeArray, resultClass);
             this.constructor = ObjectAccessorFactory.getConstructor(resultClass);
             this.accessor = ObjectAccessorFactory.forBean(resultClass);
 
@@ -2050,8 +2050,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         private R row;
 
         private SingleColumnRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                                      SqlType[] sqlTypeArray, Class<R> resultClass) {
-            super(executor, selectionList, sqlTypeArray, resultClass);
+                                      DataType[] dataTypeArray, Class<R> resultClass) {
+            super(executor, selectionList, dataTypeArray, resultClass);
         }
 
         @Override
@@ -2093,9 +2093,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
         private ObjectAccessor accessor;
 
         private ObjectReader(JdbcExecutor executor, List<? extends Selection> selectionList, boolean twoStmtMode,
-                             SqlType[] sqlTypeArray,
+                             DataType[] dataTypeArray,
                              Supplier<R> constructor) {
-            super(executor, selectionList, sqlTypeArray, Object.class);
+            super(executor, selectionList, dataTypeArray, Object.class);
             this.constructor = constructor;
             this.twoStmtMode = twoStmtMode;
         }
@@ -2158,18 +2158,18 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
          * @see JdbcExecutor#recordReaderFunc(List, Function)
          */
         private RecordRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                                SqlType[] sqlTypeArray, Function<CurrentRecord, R> function, ResultSetMetaData meta) {
-            super(executor, selectionList, sqlTypeArray, Object.class);
+                                DataType[] dataTypeArray, Function<CurrentRecord, R> function, ResultSetMetaData meta) {
+            super(executor, selectionList, dataTypeArray, Object.class);
             this.function = function;
-            this.valueArray = new Object[sqlTypeArray.length];
-            this.meta = new JdbcStmtRecordMeta(1, executor, sqlTypeArray, selectionList, meta);
+            this.valueArray = new Object[dataTypeArray.length];
+            this.meta = new JdbcStmtRecordMeta(1, executor, dataTypeArray, selectionList, meta);
         }
 
         private RecordRowReader(RecordRowReader<R> r, ResultSetMetaData meta) {
-            super(r.executor, r.selectionList, r.sqlTypeArray, Object.class);
+            super(r.executor, r.selectionList, r.dataTypeArray, Object.class);
             this.function = r.function;
-            this.valueArray = new Object[r.sqlTypeArray.length];
-            this.meta = new JdbcStmtRecordMeta(r.meta.getResultNo() + 1, r.executor, r.sqlTypeArray, r.selectionList, meta);
+            this.valueArray = new Object[r.dataTypeArray.length];
+            this.meta = new JdbcStmtRecordMeta(r.meta.getResultNo() + 1, r.executor, r.dataTypeArray, r.selectionList, meta);
         }
 
 
@@ -2243,8 +2243,8 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
          * @see JdbcExecutor#secondQuery(TwoStmtQueryStmt, SyncStmtOption, List)
          */
         private SecondRowReader(JdbcExecutor executor, List<? extends Selection> selectionList,
-                                SqlType[] sqlTypeArray) {
-            super(executor, selectionList, sqlTypeArray, Object.class);
+                                DataType[] dataTypeArray) {
+            super(executor, selectionList, dataTypeArray, Object.class);
         }
 
         /**
@@ -2733,7 +2733,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             final MappingEnv env = executor.factory.mappingEnv;
             final int idSelectionIndex = stmt.idSelectionIndex();
 
-            final SqlType idSqlType = rowReader.sqlTypeArray[idSelectionIndex];
+            final DataType idSqlType = rowReader.dataTypeArray[idSelectionIndex];
 
             final int rowSize = stmt.rowSize(), idColumnIndexBaseOne = idSelectionIndex + 1;
 
@@ -2838,7 +2838,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             final int idSelectionIndex = stmt.idSelectionIndex();
 
             final Selection idSelection = rowReader.selectionList.get(idSelectionIndex);
-            final SqlType idSqlType = rowReader.sqlTypeArray[idSelectionIndex];
+            final DataType idSqlType = rowReader.dataTypeArray[idSelectionIndex];
             final String idLabel = idSelection.label();
             final MappingType type = compatibleTypeFrom(idSelection, this.resultClass, accessor, idLabel);
 

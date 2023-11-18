@@ -146,12 +146,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
 
     @Override
-    SqlType getSqlType(ResultSetMetaData metaData, int indexBasedOne) {
+    SqlType getDataType(ResultSetMetaData meta, int indexBasedOne) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    Object get(final ResultSet resultSet, int indexBasedOne, final SqlType sqlType) throws SQLException {
+    Object get(final ResultSet resultSet, int indexBasedOne, final DataType sqlType) throws SQLException {
         final Object value;
         switch ((MySQLType) sqlType) {
             case TINYINT:

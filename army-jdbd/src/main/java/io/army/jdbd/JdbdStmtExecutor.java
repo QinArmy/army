@@ -607,7 +607,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     @Nullable
     abstract Object get(DataRow row, int indexBasedZero, DataType dataType);
 
-    abstract void bind(ParametrizedStatement statement, int indexBasedZero, DataType dataType, @Nullable Object value);
+    abstract void bind(ParametrizedStatement statement, int indexBasedZero, MappingType type, DataType dataType, @Nullable Object value);
 
 
     Isolation mapToArmyDialectIsolation(io.jdbd.session.Isolation jdbdIsolation) {
@@ -954,36 +954,47 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         SQLParam sqlParam;
         Object value;
-        MappingType mappingType;
+        MappingType type;
         TypeMeta typeMeta;
         DataType dataType;
         Iterator<?> iterator;
+        List<?> list;
         boolean hasMore;
-        for (int i = 0, paramIndex = 0; i < paramSize; i++) {
-            sqlParam = paramList.get(i);
+        for (int itemIndex = 0, paramIndex = 0, columnItemSize = 0; itemIndex < paramSize; itemIndex++) {
+            sqlParam = paramList.get(itemIndex);
             typeMeta = sqlParam.typeMeta();
 
             if (typeMeta instanceof MappingType) {
-                mappingType = (MappingType) typeMeta;
+                type = (MappingType) typeMeta;
             } else {
-                mappingType = typeMeta.mappingType();
+                type = typeMeta.mappingType();
             }
 
-            dataType = mappingType.map(serverMeta);
+            dataType = type.map(serverMeta);
 
             if (sqlParam instanceof SingleParam) {
+                list = null;
+                iterator = null;
+            } else if ((list = ((MultiParam) sqlParam).valueList()) instanceof ArrayList) {
+                columnItemSize = list.size();
                 iterator = null;
             } else {
-                iterator = ((MultiParam) sqlParam).valueList().iterator();
+                iterator = list.iterator();
 
             }
 
             hasMore = true;
-            while (hasMore) {
+            for (int columnItemIndex = 0; hasMore; columnItemIndex++) {
 
-                if (iterator == null) {
+                if (list == null) {
                     value = ((SingleParam) sqlParam).value();
                     hasMore = false;
+                } else if (iterator == null) {
+                    if (columnItemIndex < columnItemSize) {
+                        value = list.get(columnItemIndex);
+                    } else {
+                        break;
+                    }
                 } else if (iterator.hasNext()) {
                     value = iterator.next();
                 } else {
@@ -991,18 +1002,18 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                 }
 
                 if (value == null) { // jdbd client-prepared support dialect type null ,for example postgre : null::text
-                    bind(statement, paramIndex++, dataType, null);
+                    bind(statement, paramIndex++, type, dataType, null);
                     continue;
                 }
 
-                value = mappingType.beforeBind(dataType, mappingEnv, value);
+                value = type.beforeBind(dataType, mappingEnv, value);
 
                 //TODO field codec
                 if (truncatedTimeType && value instanceof Temporal && typeMeta instanceof FieldMeta) {
                     value = _TimeUtils.truncatedIfNeed(((FieldMeta<?>) typeMeta).scale(), (Temporal) value);
                 }
 
-                bind(statement, paramIndex++, dataType, value);
+                bind(statement, paramIndex++, type, dataType, value);
 
             } // while loop
 
@@ -1462,7 +1473,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         @Nullable
         @Override
         public Object get(int indexBasedZero) {
-            return this.valueArray[];
+            return this.valueArray[this.];
         }
 
         @Override

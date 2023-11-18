@@ -221,10 +221,12 @@ abstract class PostgreExecutor extends JdbcExecutor {
     }
 
     @Override
-    final SqlType getSqlType(final ResultSetMetaData metaData, final int indexBasedOne) throws SQLException {
+    final DataType getDataType(final ResultSetMetaData meta, final int indexBasedOne) throws SQLException {
 
-        final PostgreType type;
-        switch (metaData.getColumnTypeName(indexBasedOne).toLowerCase(Locale.ROOT)) {
+        final DataType type;
+        final String pgTypeName;
+        pgTypeName = meta.getColumnTypeName(indexBasedOne);
+        switch (pgTypeName.toLowerCase(Locale.ROOT)) {
             case "boolean":
             case "bool":
                 type = PostgreType.BOOLEAN;
@@ -609,7 +611,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
                 type = PostgreType.ACLITEM_ARRAY;
                 break;
             default:
-                type = PostgreType.UNKNOWN;
+                type = DataType.from(pgTypeName);
 
 
         }
@@ -617,10 +619,10 @@ abstract class PostgreExecutor extends JdbcExecutor {
     }
 
     @Override
-    final Object get(final ResultSet resultSet, final int indexBasedOne, final SqlType sqlType) throws SQLException {
+    final Object get(final ResultSet resultSet, final int indexBasedOne, final DataType dataType) throws SQLException {
         final Object value;
 
-        switch ((PostgreType) sqlType) {
+        switch ((PostgreType) dataType) {
             case BOOLEAN:
                 value = resultSet.getObject(indexBasedOne, Boolean.class);
                 break;
@@ -780,8 +782,6 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case PG_LSN_ARRAY:
             case PG_SNAPSHOT_ARRAY:
 
-            case USER_DEFINED:
-            case USER_DEFINED_ARRAY:
                 value = resultSet.getString(indexBasedOne);
                 break;
             case PG_LSN: {
@@ -797,7 +797,7 @@ abstract class PostgreExecutor extends JdbcExecutor {
             case UNKNOWN:
             case REF_CURSOR:
             default:
-                throw _Exceptions.unexpectedEnum((PostgreType) sqlType);
+                throw _Exceptions.unexpectedEnum((PostgreType) dataType);
 
         }
 
