@@ -10,12 +10,14 @@ import io.army.session.record.FieldType;
 import io.army.session.record.KeyType;
 import io.army.session.record.ResultStates;
 import io.army.sqltype.DataType;
+import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.jdbd.result.ResultRowMeta;
 import reactor.core.publisher.Flux;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -248,6 +250,10 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
 
         final List<? extends Selection> selectionList;
 
+        private Map<String, Integer> aliasToIndexMap;
+
+        private List<String> columnLabelList;
+
         JdbdStmtRowMeta(int resultNo, DataType[] dataTypeArray, List<? extends Selection> selectionList,
                         JdbdStmtExecutor executor, ResultRowMeta meta) {
             super(resultNo, dataTypeArray, executor, meta);
@@ -256,28 +262,64 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
         }
 
         @Override
-        public String getColumnLabel(int indexBasedZero) throws DataAccessException {
-            return null;
+        public String getColumnLabel(final int indexBasedZero) throws DataAccessException {
+            return this.selectionList.get(checkIndex(indexBasedZero)).label();
         }
 
         @Override
-        public int getColumnIndex(String columnLabel) throws DataAccessException {
-            return 0;
+        public int getColumnIndex(final @Nullable String columnLabel) throws DataAccessException {
+            if (columnLabel == null) {
+                throw new NullPointerException("columnLabel is null");
+            }
+            final List<? extends Selection> selectionList = this.selectionList;
+
+            Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
+            if (aliasToIndexMap == null && selectionList.size() > 5) {
+                this.aliasToIndexMap = aliasToIndexMap = createAliasToIndexMap(selectionList);
+            }
+
+            int index = -1;
+            if (aliasToIndexMap == null) {
+
+                final int columnSize = selectionList.size();
+                for (int i = columnSize - 1; i > -1; i--) {  // If alias duplication,then override.
+                    if (columnLabel.equals(selectionList.get(i).label())) {
+                        index = i;
+                        break;
+                    }
+                }
+            } else {
+                index = aliasToIndexMap.getOrDefault(columnLabel, -1);
+            }
+            if (index < 0) {
+                throw _Exceptions.unknownSelectionAlias(columnLabel);
+            }
+            return index;
         }
 
         @Override
         public List<String> columnLabelList() {
-            return null;
+            List<String> list = this.columnLabelList;
+            if (list != null) {
+                return list;
+            }
+            final List<? extends Selection> selectionList = this.selectionList;
+            list = _Collections.arrayList(selectionList.size());
+            for (Selection selection : selectionList) {
+                list.add(selection.label());
+            }
+            this.columnLabelList = list = _Collections.unmodifiableList(list);
+            return list;
         }
 
         @Override
         public List<? extends Selection> selectionList() throws DataAccessException {
-            return null;
+            return this.selectionList;
         }
 
         @Override
         public Selection getSelection(int indexBasedZero) throws DataAccessException {
-            return null;
+            return this.selectionList.get(checkIndex(indexBasedZero));
         }
 
 

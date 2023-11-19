@@ -380,7 +380,7 @@ public abstract class _ArmySessionFactory implements SessionFactory {
         }
 
 
-        protected abstract R createSession(String sessionName);
+        protected abstract R createSession(String sessionName, boolean readonly);
 
         protected abstract R handleError(SessionException cause);
 

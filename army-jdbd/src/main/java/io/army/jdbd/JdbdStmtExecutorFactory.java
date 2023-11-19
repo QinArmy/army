@@ -1,6 +1,7 @@
 package io.army.jdbd;
 
 import io.army.ArmyException;
+import io.army.datasource.RoutingDataSource;
 import io.army.dialect.Database;
 import io.army.env.ArmyEnvironment;
 import io.army.env.ArmyKey;
@@ -43,7 +44,7 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     private static final AtomicIntegerFieldUpdater<JdbdStmtExecutorFactory> FACTORY_CLOSED =
             AtomicIntegerFieldUpdater.newUpdater(JdbdStmtExecutorFactory.class, "factoryClosed");
 
-    final String name;
+    final String sessionFactoryName;
 
     final ExecutorEnv executorEnv;
 
@@ -70,7 +71,7 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
      */
     @SuppressWarnings("unchecked")
     private JdbdStmtExecutorFactory(JdbdStmtExecutorFactoryProvider provider, ExecutorEnv executorEnv) {
-        this.name = provider.factoryName;
+        this.sessionFactoryName = provider.factoryName;
         this.sessionFactory = provider.sessionFactory;
         this.executorEnv = executorEnv;
         this.mappingEnv = executorEnv.mappingEnv();
@@ -91,11 +92,6 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     }
 
     @Override
-    public String name() {
-        return this.name;
-    }
-
-    @Override
     public boolean supportSavePoints() {
         // true,jdbd provider save point spi
         return true;
@@ -113,47 +109,52 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
     }
 
     @Override
-    public Mono<ReactiveMetaExecutor> metaExecutor(final @Nullable String sessionFactoryName) {
-        final Mono<ReactiveMetaExecutor> mono;
+    public Mono<ReactiveMetaExecutor> metaExecutor() {
         if (isClosed()) {
-            mono = Mono.error(ExecutorSupport.executorFactoryClosed(this));
-        } else if (sessionFactoryName == null) {
-            mono = Mono.error(new NullPointerException());
-        } else {
-            mono = Mono.from(this.sessionFactory.localSession())
-                    .map(session -> JdbdMetaExecutor.create(sessionFactoryName, this, session))
-                    .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+            return Mono.error(ExecutorSupport.executorFactoryClosed(this));
         }
-        return mono;
+        return Mono.from(this.sessionFactory.localSession())
+                .map(session -> JdbdMetaExecutor.create(this.sessionFactoryName, this, session))
+                .onErrorMap(this::wrapExecuteErrorIfNeed);
     }
 
 
     @Override
-    public Mono<ReactiveLocalStmtExecutor> localExecutor(final @Nullable String sessionName) {
+    public Mono<ReactiveLocalStmtExecutor> localExecutor(final @Nullable String sessionName, final boolean readOnly) {
         final Mono<ReactiveLocalStmtExecutor> mono;
         if (isClosed()) {
             mono = Mono.error(ExecutorSupport.executorFactoryClosed(this));
         } else if (sessionName == null) {
+            // no bug,never here
             mono = Mono.error(new NullPointerException());
         } else {
-            mono = Mono.from(this.sessionFactory.localSession())
+            DatabaseSessionFactory factory = this.sessionFactory;
+            if (readOnly && factory instanceof RoutingDataSource) {
+                factory = (DatabaseSessionFactory) ((RoutingDataSource<?>) factory).readOnlyDataSource();
+            }
+            mono = Mono.from(factory.localSession())
                     .map(session -> this.localFunc.apply(this, session, sessionName))
-                    .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                    .onErrorMap(this::wrapExecuteErrorIfNeed);
         }
         return mono;
     }
 
     @Override
-    public Mono<ReactiveRmStmtExecutor> rmExecutor(final @Nullable String sessionName) {
+    public Mono<ReactiveRmStmtExecutor> rmExecutor(final @Nullable String sessionName, final boolean readOnly) {
         final Mono<ReactiveRmStmtExecutor> mono;
         if (isClosed()) {
             mono = Mono.error(ExecutorSupport.executorFactoryClosed(this));
         } else if (sessionName == null) {
+            // no bug,never here
             mono = Mono.error(new NullPointerException());
         } else {
-            mono = Mono.from(this.sessionFactory.rmSession())
+            DatabaseSessionFactory factory = this.sessionFactory;
+            if (readOnly && factory instanceof RoutingDataSource) {
+                factory = (DatabaseSessionFactory) ((RoutingDataSource<?>) factory).readOnlyDataSource();
+            }
+            mono = Mono.from(factory.rmSession())
                     .map(session -> this.rmFunc.apply(this, session, sessionName))
-                    .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                    .onErrorMap(this::wrapExecuteErrorIfNeed);
         }
         return mono;
     }
@@ -178,7 +179,7 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
         return _StringUtils.builder(48)
                 .append(getClass().getName())
                 .append("[ name : ")
-                .append(this.name)
+                .append(this.sessionFactoryName)
                 .append(" , hash : ")
                 .append(System.identityHashCode(this))
                 .append(" ]")
@@ -199,6 +200,13 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
             e = new DriverException(cause, je.getSqlState(), je.getVendorCode());
         }
         return e;
+    }
+
+    Throwable wrapExecuteErrorIfNeed(final Throwable cause) {
+        if (!(cause instanceof Exception)) {
+            return cause;
+        }
+        return wrapExecuteError((Exception) cause);
     }
 
 

@@ -224,6 +224,11 @@ public abstract class ExecutorSupport {
         return new MetaException(m);
     }
 
+    protected static DataAccessException driverError() {
+        // driver no bug,never here
+        return new DataAccessException("driver error");
+    }
+
 
     public static MetaException beforeBindMethodError(MappingType type, DataType dataType,
                                                       @Nullable Object returnValue) {

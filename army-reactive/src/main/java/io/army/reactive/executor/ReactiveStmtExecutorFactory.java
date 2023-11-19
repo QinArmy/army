@@ -9,9 +9,9 @@ import reactor.core.publisher.Mono;
  * <p>This interface representing {@link ReactiveStmtExecutor} factory.
  * <p>This interface extends {@link StmtExecutorFactorySpec} and have overridden following methods:
  * <ul>
- *     <li>{@link #metaExecutor(String)}</li>
- *     <li>{@link #localExecutor(String)}</li>
- *     <li>{@link #rmExecutor(String)}</li>
+ *     <li>{@link #metaExecutor()}</li>
+ *     <li>{@link #localExecutor(String, boolean)}</li>
+ *     <li>{@link #rmExecutor(String, boolean)}</li>
  * </ul>
  *
  * @since 1.0
@@ -23,9 +23,9 @@ public interface ReactiveStmtExecutorFactory extends StmtExecutorFactorySpec, Re
     Mono<ReactiveMetaExecutor> metaExecutor();
 
     @Override
-    Mono<ReactiveLocalStmtExecutor> localExecutor(String sessionName);
+    Mono<ReactiveLocalStmtExecutor> localExecutor(String sessionName, boolean readOnly);
 
     @Override
-    Mono<ReactiveRmStmtExecutor> rmExecutor(String sessionName);
+    Mono<ReactiveRmStmtExecutor> rmExecutor(String sessionName, boolean readOnly);
 
 }

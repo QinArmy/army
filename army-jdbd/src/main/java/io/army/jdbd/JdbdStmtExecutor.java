@@ -47,7 +47,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 
@@ -111,7 +110,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     public final Mono<TransactionInfo> transactionInfo() {
         return Mono.from(this.session.transactionInfo())
                 .map(this::mapToArmyTransactionInfo)
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                .onErrorMap(this::wrapExecuteIfNeed);
     }
 
     @Override
@@ -120,17 +119,17 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             jdbdOption = mapToJdbdTransactionOption(option);
         } catch (Throwable e) {
-            return Mono.error(wrapErrorIfNeed(e));
+            return Mono.error(wrapExecuteIfNeed(e));
         }
         return Mono.from(this.session.setTransactionCharacteristics(jdbdOption))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
+                .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
 
     @Override
     public final Mono<?> setSavePoint(Function<Option<?>, ?> optionFunc) {
         return Mono.from(this.session.setSavePoint(this.factory.mapToJdbdOptionFunc(optionFunc)))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                .onErrorMap(this::wrapExecuteIfNeed);
     }
 
     @Override
@@ -139,7 +138,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             return Mono.error(_Exceptions.unknownSavePoint(savepoint));
         }
         return Mono.from(this.session.releaseSavePoint((SavePoint) savepoint, this.factory.mapToJdbdOptionFunc(optionFunc)))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
+                .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
 
@@ -150,7 +149,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             return Mono.error(_Exceptions.unknownSavePoint(savepoint));
         }
         return Mono.from(this.session.rollbackToSavePoint((SavePoint) savepoint, this.factory.mapToJdbdOptionFunc(optionFunc)))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
+                .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
 
@@ -208,7 +207,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             statement = bindStatement(stmt, option);
         } catch (Throwable e) {
-            return Mono.error(wrapErrorIfNeed(e));
+            return Mono.error(wrapExecuteIfNeed(e));
         }
 
         final Mono<ResultStates> mono;
@@ -222,7 +221,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             mono = Mono.from(statement.executeUpdate())
                     .map(this::mapToArmyResultStates);
         }
-        return mono.onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+        return mono.onErrorMap(this::wrapExecuteIfNeed);
 
     }
 
@@ -237,9 +236,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
             mono = Mono.from(statement.executeUpdate())
                     .map(this::mapToArmyResultStates)
-                    .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                    .onErrorMap(this::wrapExecuteIfNeed);
         } catch (Throwable e) {
-            mono = Mono.error(wrapErrorIfNeed(e));
+            mono = Mono.error(wrapExecuteIfNeed(e));
         }
         return mono;
     }
@@ -255,9 +254,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
             flux = Flux.from(statement.executeBatchUpdate())
                     .map(this::mapToArmyResultStates)
-                    .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                    .onErrorMap(this::wrapExecuteIfNeed);
         } catch (Throwable e) {
-            flux = Flux.error(wrapErrorIfNeed(e));
+            flux = Flux.error(wrapExecuteIfNeed(e));
         }
         return flux;
     }
@@ -268,7 +267,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             flux = executeQuery(stmt, mapBeanFunc(stmt, resultClass), option);
         } catch (Throwable e) {
-            flux = Flux.error(wrapErrorIfNeed(e));
+            flux = Flux.error(wrapExecuteIfNeed(e));
         }
         return flux;
     }
@@ -294,7 +293,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             }
             flux = executeQuery(stmt, function, option);
         } catch (Throwable e) {
-            flux = Flux.error(wrapErrorIfNeed(e));
+            flux = Flux.error(wrapExecuteIfNeed(e));
         }
         return flux;
     }
@@ -305,7 +304,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             flux = executeQuery(stmt, mapObjectFunc(stmt, constructor), option);
         } catch (Throwable e) {
-            flux = Flux.error(wrapErrorIfNeed(e));
+            flux = Flux.error(wrapExecuteIfNeed(e));
         }
         return flux;
     }
@@ -316,7 +315,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             flux = executeQuery(stmt, mapRecordFunc(stmt, function), option);
         } catch (Throwable e) {
-            flux = Flux.error(wrapErrorIfNeed(e));
+            flux = Flux.error(wrapExecuteIfNeed(e));
         }
         return flux;
     }
@@ -330,7 +329,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
             flux = executeQuery(stmt, rowReader::readOneRow, option);
         } catch (Throwable e) {
-            flux = Flux.error(wrapErrorIfNeed(e));
+            flux = Flux.error(wrapExecuteIfNeed(e));
         }
         return flux;
     }
@@ -367,12 +366,12 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             jdbdOption = mapToJdbdTransactionOption(option);
         } catch (Throwable e) {
-            return Mono.error(wrapErrorIfNeed(e));
+            return Mono.error(wrapExecuteIfNeed(e));
         }
 
         return Mono.from(((LocalDatabaseSession) this.session).startTransaction(jdbdOption))
                 .map(this::mapToArmyTransactionInfo)
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                .onErrorMap(this::wrapExecuteIfNeed);
     }
 
     @Override
@@ -382,7 +381,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         }
         return Mono.from(((LocalDatabaseSession) this.session).commit(this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToArmyOptionalTransactionInfo)
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                .onErrorMap(this::wrapExecuteIfNeed);
     }
 
 
@@ -393,7 +392,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         }
         return Mono.from(((LocalDatabaseSession) this.session).rollback(this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToArmyOptionalTransactionInfo)
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                .onErrorMap(this::wrapExecuteIfNeed);
     }
 
 
@@ -412,11 +411,11 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             jdbdXid = mapToJdbdXid(xid);
             jdbdOption = mapToJdbdTransactionOption(option);
         } catch (Throwable e) {
-            return Mono.error(wrapErrorIfNeed(e));
+            return Mono.error(wrapExecuteIfNeed(e));
         }
         return Mono.from(((RmDatabaseSession) this.session).start(jdbdXid, flags, jdbdOption))
                 .map(this::mapToArmyTransactionInfo)
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                .onErrorMap(this::wrapExecuteIfNeed);
     }
 
     @Override
@@ -428,11 +427,11 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             jdbdXid = mapToJdbdXid(xid);
         } catch (Throwable e) {
-            return Mono.error(wrapErrorIfNeed(e));
+            return Mono.error(wrapExecuteIfNeed(e));
         }
         return Mono.from(((RmDatabaseSession) this.session).end(jdbdXid, flags, this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToArmyTransactionInfo)
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                .onErrorMap(this::wrapExecuteIfNeed);
     }
 
     @Override
@@ -444,10 +443,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             jdbdXid = mapToJdbdXid(xid);
         } catch (Throwable e) {
-            return Mono.error(wrapErrorIfNeed(e));
+            return Mono.error(wrapExecuteIfNeed(e));
         }
         return Mono.from(((RmDatabaseSession) this.session).prepare(jdbdXid, this.factory.mapToJdbdOptionFunc(optionFunc)))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                .onErrorMap(this::wrapExecuteIfNeed);
     }
 
     @Override
@@ -459,10 +458,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             jdbdXid = mapToJdbdXid(xid);
         } catch (Throwable e) {
-            return Mono.error(wrapErrorIfNeed(e));
+            return Mono.error(wrapExecuteIfNeed(e));
         }
         return Mono.from(((RmDatabaseSession) this.session).commit(jdbdXid, flags, this.factory.mapToJdbdOptionFunc(optionFunc)))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
+                .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
 
@@ -475,10 +474,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             jdbdXid = mapToJdbdXid(xid);
         } catch (Throwable e) {
-            return Mono.error(wrapErrorIfNeed(e));
+            return Mono.error(wrapExecuteIfNeed(e));
         }
         return Mono.from(((RmDatabaseSession) this.session).rollback(jdbdXid, this.factory.mapToJdbdOptionFunc(optionFunc)))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
+                .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
 
@@ -491,10 +490,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             jdbdXid = mapToJdbdXid(xid);
         } catch (Throwable e) {
-            return Mono.error(wrapErrorIfNeed(e));
+            return Mono.error(wrapExecuteIfNeed(e));
         }
         return Mono.from(((RmDatabaseSession) this.session).forget(jdbdXid, this.factory.mapToJdbdOptionFunc(optionFunc)))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed)
+                .onErrorMap(this::wrapExecuteIfNeed)
                 .then();
     }
 
@@ -505,7 +504,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         }
         return Mono.from(((RmDatabaseSession) this.session).recover(flags, this.factory.mapToJdbdOptionFunc(optionFunc)))
                 .map(this::mapToOptionalArmyXid)
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                .onErrorMap(this::wrapExecuteIfNeed);
     }
 
     @Override
@@ -618,6 +617,16 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         throw unsupportedIsolation(isolation);
     }
 
+    final ArmyException wrapExecuteError(final Exception cause) {
+        return this.factory.wrapExecuteError(cause);
+    }
+
+    final Throwable wrapExecuteIfNeed(final Throwable cause) {
+        if (!(cause instanceof Exception)) {
+            return cause;
+        }
+        return wrapExecuteError((Exception) cause);
+    }
 
     /*-------------------below private instance methods-------------------*/
 
@@ -735,7 +744,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     private <R> Flux<R> executeQuery(final SingleSqlStmt stmt, final Function<CurrentRow, R> func,
                                      final ReactiveStmtOption option) throws JdbdException, TimeoutException {
         return Flux.from(bindStatement(stmt, option).executeQuery(func, createStatesConsumer(option)))
-                .onErrorMap(JdbdStmtExecutor::wrapErrorIfNeed);
+                .onErrorMap(this::wrapExecuteIfNeed);
     }
 
 
@@ -1025,22 +1034,20 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     /*-------------------below package static methods -------------------*/
 
 
-    static Throwable wrapErrorIfNeed(final Throwable cause) {
-        final Throwable e;
-        if (!(cause instanceof Exception)) {
-            e = cause;
-        } else if (cause instanceof JdbdException) {
-            e = new DataAccessException(cause);
-        } else if (cause instanceof ArmyException) {
-            e = cause;
+    /**
+     * @param cause not {@link io.jdbd.result.ServerException}
+     */
+    static ArmyException wrapException(final Exception cause) {
+        final ArmyException e;
+        if (cause instanceof ArmyException) {
+            e = (ArmyException) cause;
+        } else if (!(cause instanceof JdbdException)) {
+            e = _Exceptions.unknownError(cause);
         } else {
-            e = _Exceptions.unknownError(cause.getMessage(), cause);
+            final JdbdException je = (JdbdException) cause;
+            e = new DriverException(cause, je.getSqlState(), je.getVendorCode());
         }
         return e;
-    }
-
-    final ArmyException wrapExecuteError(final Exception cause) {
-        return this.factory.wrapExecuteError(cause);
     }
 
 
@@ -1065,7 +1072,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         final List<? extends Selection> selectionList;
 
-        private final DataType[] dataTypeArray;
+        final DataType[] dataTypeArray;
 
         private final MappingType[] compatibleTypeArray;
 
@@ -1115,7 +1122,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             final int columnCount;
             if (dataTypeArray[0] == null
                     || (this instanceof CurrentRecordRowReader
-                    && ((CurrentRecordRowReader<?>) this).resultNo < dataRow.getResultNo())) {
+                    && getResultNo() < dataRow.getResultNo())) {
                 columnCount = dataRow.getColumnCount();
                 if (columnCount != dataTypeArray.length) {
                     throw _Exceptions.columnCountAndSelectionCountNotMatch(columnCount, dataTypeArray.length);
@@ -1124,7 +1131,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                     dataTypeArray[i] = executor.getDataType(dataRow, i);
                 }
                 if (this instanceof CurrentRecordRowReader) {
-                    ((CurrentRecordRowReader<?>) this).acceptRowMeta(dataRow.getRowMeta(), this::getDataType);
+                    ((CurrentRecordRowReader<?>) this).acceptRowMeta(dataRow.getRowMeta(), dataTypeArray);
                 }
             } else {
                 columnCount = dataTypeArray.length;
@@ -1439,12 +1446,13 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         private final Function<CurrentRecord, R> function;
 
-
         private final Object[] valueArray;
+
+        private JdbdStmtRowMeta meta;
 
         private int columnIndex;
 
-        private int resultNo = 0;
+        private long rowCount;
 
         private CurrentRecordRowReader(JdbdStmtExecutor executor, List<? extends Selection> selectionList,
                                        Function<CurrentRecord, R> function) {
@@ -1455,7 +1463,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         @Override
         public ArmyResultRecordMeta getRecordMeta() {
-            return super.getRecordMeta();
+            final JdbdStmtRowMeta meta = this.meta;
+            assert meta != null;
+            return meta;
         }
 
         @Override
@@ -1467,19 +1477,21 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         @Override
         public long rowNumber() {
-            return 0;
+            return this.rowCount;
         }
 
         @Nullable
         @Override
         public Object get(int indexBasedZero) {
-            return this.valueArray[this.];
+            final JdbdStmtRowMeta meta = this.meta;
+            assert meta != null;
+            return this.valueArray[meta.checkIndex(indexBasedZero)];
         }
 
         @Override
         ObjectAccessor createRow() {
+            assert this.columnIndex == this.valueArray.length;
             this.columnIndex = 0;
-            assert this.resultNo > 0;
             return ExecutorSupport.SINGLE_COLUMN_PSEUDO_ACCESSOR;
         }
 
@@ -1493,25 +1505,31 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         @Override
         R endOneRow() {
             assert this.columnIndex == this.valueArray.length;
+            this.rowCount++;  // firstly ,++
 
             final R row;
-            row = this.function.apply(this);
+            row = this.function.apply(this); // secondly , invoke user function
             if (row instanceof CurrentRecord) {
                 throw _Exceptions.recordMapFuncReturnError(this.function);
             }
             return row;
         }
 
-        private void acceptRowMeta(final ResultRowMeta rowMeta, final IntFunction<DataType> sqlTypeFunc) {
-//            final IntBiFunction<Option<?>, ?> optionFunc;
-//            optionFunc = this.executor.readJdbdRowMetaOptions(rowMeta);
-//
-//            final ArmyResultRecordMeta recordMeta;
-//            recordMeta = new ArmyResultRecordMeta(rowMeta.getResultNo(), this.selectionList, sqlTypeFunc, optionFunc);
-//
-//            this.resultNo = rowMeta.getResultNo();
-//            this.currentRecord = new JdbdCurrentRecord(recordMeta);
+        private void acceptRowMeta(final ResultRowMeta rowMeta, final DataType[] dataTypeArray) {
+            final JdbdStmtRowMeta meta = this.meta;
+            final int resultNo;
+            if (meta == null) {
+                resultNo = 1;
+            } else {
+                resultNo = meta.getResultNo() + 1;
+            }
 
+            if (resultNo != rowMeta.getResultNo()) {
+                throw driverError();
+            }
+
+            this.meta = new JdbdStmtRowMeta(resultNo, dataTypeArray, this.selectionList, this.executor, rowMeta);
+            this.rowCount = 0L; // reset
         }
 
 
@@ -1615,7 +1633,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             try {
                 return this.jdbdStates.inTransaction();
             } catch (Exception e) {
-                throw wrapExecuteError(e);
+                throw wrapException(e);
             }
         }
 

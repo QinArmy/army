@@ -177,10 +177,6 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
         return new CriteriaException(m);
     }
 
-    static DataAccessException driverError() {
-        // driver no bug,never here
-        return new DataAccessException("driver error");
-    }
 
     /*-------------------below private static methods  -------------------*/
 
@@ -577,7 +573,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
 
         private final List<? extends Selection> selectionList;
 
-        private final Map<String, Integer> aliasToIndexMap;
+        private Map<String, Integer> aliasToIndexMap;
 
         private List<String> columnLabelList;
 
@@ -585,11 +581,7 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                            List<? extends Selection> selectionList, ResultSetMetaData meta) {
             super(resultNo, executor, dataTypeArray, meta);
             this.selectionList = selectionList;
-            if (selectionList.size() < 6) {
-                this.aliasToIndexMap = null;
-            } else {
-                this.aliasToIndexMap = createAliasToIndexMap(selectionList);
-            }
+
         }
 
         @Override
@@ -602,11 +594,16 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
             if (columnLabel == null) {
                 throw new NullPointerException("columnLabel is null");
             }
+            final List<? extends Selection> selectionList = this.selectionList;
+
+            Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
+            if (aliasToIndexMap == null && selectionList.size() > 5) {
+                this.aliasToIndexMap = aliasToIndexMap = createAliasToIndexMap(selectionList);
+            }
             int index = -1;
-            final Map<String, Integer> aliasToIndexMap = this.aliasToIndexMap;
             if (aliasToIndexMap == null) {
-                final List<? extends Selection> selectionList = this.selectionList;
-                final int columnSize = getColumnCount();
+
+                final int columnSize = selectionList.size();
                 for (int i = columnSize - 1; i > -1; i--) {  // If alias duplication,then override.
                     if (columnLabel.equals(selectionList.get(i).label())) {
                         index = i;
