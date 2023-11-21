@@ -113,7 +113,11 @@ final class JdbdStmtExecutorFactory implements ReactiveStmtExecutorFactory {
         if (isClosed()) {
             return Mono.error(ExecutorSupport.executorFactoryClosed(this));
         }
-        return Mono.from(this.sessionFactory.localSession())
+        DatabaseSessionFactory factory = this.sessionFactory;
+        if (factory instanceof RoutingDataSource) {
+            factory = (DatabaseSessionFactory) ((RoutingDataSource<?>) factory).writableDataSource();
+        }
+        return Mono.from(factory.localSession())
                 .map(session -> JdbdMetaExecutor.create(this.sessionFactoryName, this, session))
                 .onErrorMap(this::wrapExecuteErrorIfNeed);
     }

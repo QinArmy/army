@@ -54,7 +54,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
 
                 return this.meta.getOf(indexBasedZero, jdbdOption);
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -64,7 +64,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
             try {
                 return this.meta.getCatalogName(indexBasedZero);
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -74,7 +74,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
             try {
                 return this.meta.getSchemaName(indexBasedZero);
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -84,7 +84,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
             try {
                 return this.meta.getTableName(indexBasedZero);
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -94,7 +94,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
             try {
                 return this.meta.getColumnName(indexBasedZero);
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -103,7 +103,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
             try {
                 return this.meta.getPrecision(indexBasedZero);
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -112,7 +112,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
             try {
                 return this.meta.getScale(indexBasedZero);
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -136,7 +136,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
                 }
                 return type;
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -160,7 +160,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
                 }
                 return mode;
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -195,7 +195,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
                 }
                 return type;
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -219,7 +219,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
                 }
                 return mode;
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -228,7 +228,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
             try {
                 return this.meta.getFirstJavaType(indexBasedZero);
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 
@@ -238,7 +238,7 @@ abstract class JdbdExecutorSupport extends ReactiveExecutorSupport {
             try {
                 return this.meta.getSecondJavaType(indexBasedZero);
             } catch (Exception e) {
-                throw this.executor.wrapExecuteError(e);
+                throw this.executor.wrapExecutingError(e);
             }
         }
 

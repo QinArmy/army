@@ -18,6 +18,7 @@ import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultItem;
 import io.army.session.record.ResultStates;
+import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
@@ -27,6 +28,7 @@ import io.army.util._Exceptions;
 import io.army.util._StringUtils;
 import io.army.util._TimeUtils;
 import io.jdbd.JdbdException;
+import io.jdbd.meta.JdbdType;
 import io.jdbd.result.CurrentRow;
 import io.jdbd.result.DataRow;
 import io.jdbd.result.ResultRowMeta;
@@ -41,7 +43,9 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -88,7 +92,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             return this.session.sessionIdentifier();
         } catch (Exception e) {
-            throw wrapExecuteError(e);
+            throw wrapExecutingError(e);
         }
     }
 
@@ -97,13 +101,23 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         try {
             return this.session.inTransaction();
         } catch (JdbdException e) {
-            throw wrapExecuteError(e);
+            throw wrapExecutingError(e);
         }
     }
 
     @Override
     public final boolean isSameFactory(StmtExecutor s) {
         return s instanceof JdbdStmtExecutor && ((JdbdStmtExecutor) s).factory == this.factory;
+    }
+
+    @Override
+    public final boolean isDriverAssignableTo(Class<?> spiClass) {
+        return spiClass.isAssignableFrom(this.session.getClass());
+    }
+
+    @Override
+    public final <T> T getDriverSpi(Class<T> spiClass) {
+        return spiClass.cast(this.session);
     }
 
     @Override
@@ -353,6 +367,8 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     }
 
 
+
+
     /*-------------------below local transaction methods -------------------*/
 
 
@@ -581,6 +597,10 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         return value;
     }
 
+    @Override
+    public final boolean isClosed() {
+        return this.session.isClosed();
+    }
 
     @Override
     public final <T> Mono<T> close() {
@@ -617,7 +637,219 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         throw unsupportedIsolation(isolation);
     }
 
-    final ArmyException wrapExecuteError(final Exception cause) {
+
+    /**
+     * @see #bindParameter(ParametrizedStatement, List)
+     */
+    final void bindArmyType(ParametrizedStatement stmt, final int indexBasedZero, final MappingType type,
+                            final DataType dataType, final ArmyType armyType, final @Nullable Object nullable) {
+
+        final JdbdType jdbdType;
+
+        try {
+            jdbdType = JdbdType.valueOf(armyType.name());
+        } catch (IllegalArgumentException e) {
+            throw mapMethodError(type, dataType);
+        }
+
+        final Object value;
+        if (nullable == null) {
+            value = null;
+        } else switch (armyType) {
+            case BOOLEAN: {
+                if (!(nullable instanceof Boolean)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case TINYINT: {
+                if (!(nullable instanceof Byte)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case TINYINT_UNSIGNED:
+            case SMALLINT: {
+                if (!(nullable instanceof Short)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case SMALLINT_UNSIGNED:
+            case MEDIUMINT:
+            case MEDIUMINT_UNSIGNED:
+            case INTEGER: {
+                if (!(nullable instanceof Integer)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case INTEGER_UNSIGNED:
+            case BIGINT: {
+                if (!(nullable instanceof Long)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case BIGINT_UNSIGNED: {
+                if (!(nullable instanceof BigInteger || nullable instanceof BigDecimal)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case DECIMAL:
+            case DECIMAL_UNSIGNED: {
+                if (!(nullable instanceof BigDecimal)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case FLOAT: {
+                if (!(nullable instanceof Float)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case DOUBLE: {
+                if (!(nullable instanceof Double)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case TIME: {
+                if (!(nullable instanceof LocalTime)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case YEAR_MONTH: {
+                if (!(nullable instanceof LocalDate || nullable instanceof YearMonth)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case MONTH_DAY: {
+                if (!(nullable instanceof LocalDate || nullable instanceof MonthDay)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case DATE: {
+                if (!(nullable instanceof LocalDate)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case TIMESTAMP: {
+                if (!(nullable instanceof LocalDateTime)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case TIME_WITH_TIMEZONE: {
+                if (!(nullable instanceof OffsetTime)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case TIMESTAMP_WITH_TIMEZONE: {
+                if (!(nullable instanceof OffsetDateTime)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case CHAR:
+            case VARCHAR:
+            case ENUM:
+            case TINYTEXT:
+            case TEXT:
+            case MEDIUMTEXT: {
+                if (!(nullable instanceof String)) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+                value = nullable;
+            }
+            break;
+            case JSON:
+            case JSONB:
+            case LONGTEXT: {
+                if (nullable instanceof String) {
+                    value = nullable;
+                } else if (nullable instanceof io.army.type.TextPath) {
+
+                } else if (nullable instanceof io.army.reactive.type.Clob) {
+
+                } else {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+            }
+            break;
+            case BINARY:
+            case VARBINARY:
+            case TINYBLOB:
+            case BLOB:
+            case MEDIUMBLOB: {
+                if (!(nullable instanceof byte[])) {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+            }
+            break;
+            case LONGBLOB: {
+                if (nullable instanceof byte[]) {
+                    value = nullable;
+                } else if (nullable instanceof io.army.type.BlobPath) {
+
+                } else if (nullable instanceof io.army.reactive.type.Blob) {
+
+                } else {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+            }
+            break;
+            case GEOMETRY: {
+                if (nullable instanceof byte[] || nullable instanceof String) {
+                    value = nullable;
+                } else if (nullable instanceof io.army.type.BlobPath) {
+
+                } else if (nullable instanceof io.army.reactive.type.Blob) {
+
+                } else if (nullable instanceof io.army.type.TextPath) {
+
+                } else if (nullable instanceof io.army.reactive.type.Clob) {
+
+                } else {
+                    throw beforeBindMethodError(type, dataType, nullable);
+                }
+
+            }
+            break;
+            default:
+                throw mapMethodError(type, dataType);
+
+        }
+
+
+        stmt.bind(indexBasedZero, jdbdType, value);
+
+    }
+
+    final ArmyException wrapExecutingError(final Exception cause) {
         return this.factory.wrapExecuteError(cause);
     }
 
@@ -625,7 +857,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
         if (!(cause instanceof Exception)) {
             return cause;
         }
-        return wrapExecuteError((Exception) cause);
+        return wrapExecutingError((Exception) cause);
     }
 
     /*-------------------below private instance methods-------------------*/

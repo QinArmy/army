@@ -5,6 +5,8 @@ import io.army.session.DataAccessException;
 import io.army.session.Option;
 import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
+import io.army.type.BlobPath;
+import io.army.type.TextPath;
 
 import javax.annotation.Nullable;
 import java.util.List;

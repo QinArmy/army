@@ -1,4 +1,4 @@
-package io.army.session.record;
+package io.army.type;
 
 public interface BlobPath {
 

@@ -4,12 +4,12 @@ import io.army.mapping.MappingType;
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.session.Option;
-import io.army.sqltype.SqlType;
-import io.jdbd.meta.DataType;
+import io.army.sqltype.DataType;
 import io.jdbd.result.DataRow;
 import io.jdbd.session.DatabaseSession;
 import io.jdbd.session.LocalDatabaseSession;
 import io.jdbd.session.RmDatabaseSession;
+import io.jdbd.statement.ParametrizedStatement;
 
 import javax.annotation.Nullable;
 
@@ -49,22 +49,21 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
 
 
     @Override
-    final DataType mapToJdbdDataType(MappingType mappingType, SqlType sqlType) {
+    final DataType getDataType(DataRow row, int indexBasedZero) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    final Object get(DataRow row, int indexBasedZero, DataType dataType) {
         return null;
     }
 
     @Override
-    final SqlType getDataType(DataRow row, int indexBasedZero) {
-        return null;
+    final void bind(ParametrizedStatement statement, final int indexBasedZero, final MappingType type,
+                    final DataType dataType, final @Nullable Object value) {
+
     }
-
-    @Override
-    final Object get(DataRow row, int indexBasedZero, SqlType sqlType) {
-        return null;
-    }
-
-
-
 
     private static final class LocalExecutor extends MySQLStmtExecutor implements ReactiveLocalStmtExecutor {
 

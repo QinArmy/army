@@ -15,6 +15,8 @@ import io.army.stmt.SimpleStmt;
 import io.army.sync.SyncProcCursor;
 import io.army.sync.SyncStmtCursor;
 import io.army.sync.SyncStmtOption;
+import io.army.type.BlobPath;
+import io.army.type.TextPath;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -554,10 +556,10 @@ abstract class JdbcExecutorSupport extends ExecutorSupport {
                     }
                     break;
                 case LONGBLOB:
-                    javaType = io.army.session.record.BlobPath.class;
+                    javaType = BlobPath.class;
                     break;
                 case LONGTEXT:
-                    javaType = io.army.session.record.TextPath.class;
+                    javaType = TextPath.class;
                     break;
                 default:
                     throw _Exceptions.unexpectedEnum(armyType);
