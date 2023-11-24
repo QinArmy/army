@@ -4,7 +4,7 @@ import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.util.List;
-
+@Deprecated
 public final class Interval implements TemporalAmount {
 
     @Override

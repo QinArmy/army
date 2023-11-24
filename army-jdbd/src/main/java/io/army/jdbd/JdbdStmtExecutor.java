@@ -621,7 +621,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
     /*-------------------below package instance methods-------------------*/
 
-    abstract DataType getDataType(DataRow row, int indexBasedZero);
+    abstract DataType getDataType(ResultRowMeta meta, int indexBasedZero);
 
     @Nullable
     abstract Object get(DataRow row, int indexBasedZero, DataType dataType);
@@ -792,9 +792,11 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                 if (nullable instanceof String) {
                     value = nullable;
                 } else if (nullable instanceof io.army.type.TextPath) {
-
+                    final io.army.type.TextPath armyPath = (io.army.type.TextPath) nullable;
+                    value = io.jdbd.type.TextPath.from(armyPath.isDeleteOnClose(), armyPath.charset(), armyPath.value());
                 } else if (nullable instanceof io.army.reactive.type.Clob) {
-
+                    final io.army.reactive.type.Clob clob = (io.army.reactive.type.Clob) nullable;
+                    value = io.jdbd.type.Clob.from(clob.value());
                 } else {
                     throw beforeBindMethodError(type, dataType, nullable);
                 }
@@ -808,15 +810,18 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                 if (!(nullable instanceof byte[])) {
                     throw beforeBindMethodError(type, dataType, nullable);
                 }
+                value = nullable;
             }
             break;
             case LONGBLOB: {
                 if (nullable instanceof byte[]) {
                     value = nullable;
                 } else if (nullable instanceof io.army.type.BlobPath) {
-
+                    final io.army.type.BlobPath path = (io.army.type.BlobPath) nullable;
+                    value = io.jdbd.type.BlobPath.from(path.isDeleteOnClose(), path.value());
                 } else if (nullable instanceof io.army.reactive.type.Blob) {
-
+                    final io.army.reactive.type.Blob blob = (io.army.reactive.type.Blob) nullable;
+                    value = io.jdbd.type.Blob.from(blob.value());
                 } else {
                     throw beforeBindMethodError(type, dataType, nullable);
                 }
@@ -825,14 +830,18 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             case GEOMETRY: {
                 if (nullable instanceof byte[] || nullable instanceof String) {
                     value = nullable;
-                } else if (nullable instanceof io.army.type.BlobPath) {
-
                 } else if (nullable instanceof io.army.reactive.type.Blob) {
-
-                } else if (nullable instanceof io.army.type.TextPath) {
-
+                    final io.army.reactive.type.Blob blob = (io.army.reactive.type.Blob) nullable;
+                    value = io.jdbd.type.Blob.from(blob.value());
                 } else if (nullable instanceof io.army.reactive.type.Clob) {
-
+                    final io.army.reactive.type.Clob clob = (io.army.reactive.type.Clob) nullable;
+                    value = io.jdbd.type.Clob.from(clob.value());
+                } else if (nullable instanceof io.army.type.BlobPath) {
+                    final io.army.type.BlobPath path = (io.army.type.BlobPath) nullable;
+                    value = io.jdbd.type.BlobPath.from(path.isDeleteOnClose(), path.value());
+                } else if (nullable instanceof io.army.type.TextPath) {
+                    final io.army.type.TextPath armyPath = (io.army.type.TextPath) nullable;
+                    value = io.jdbd.type.TextPath.from(armyPath.isDeleteOnClose(), armyPath.charset(), armyPath.value());
                 } else {
                     throw beforeBindMethodError(type, dataType, nullable);
                 }
@@ -1359,8 +1368,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                 if (columnCount != dataTypeArray.length) {
                     throw _Exceptions.columnCountAndSelectionCountNotMatch(columnCount, dataTypeArray.length);
                 }
+                final ResultRowMeta meta = dataRow.getRowMeta();
                 for (int i = 0; i < columnCount; i++) {
-                    dataTypeArray[i] = executor.getDataType(dataRow, i);
+                    dataTypeArray[i] = executor.getDataType(meta, i);
                 }
                 if (this instanceof CurrentRecordRowReader) {
                     ((CurrentRecordRowReader<?>) this).acceptRowMeta(dataRow.getRowMeta(), dataTypeArray);

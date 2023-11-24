@@ -53,14 +53,9 @@ public enum MySQLType implements SqlType, SQLWords {
     SET,
     JSON,
 
-    POINT,
-    LINESTRING,
-    POLYGON,
-    MULTIPOINT,
-    MULTILINESTRING,
-    MULTIPOLYGON,
     GEOMETRY,
-    GEOMETRYCOLLECTION;
+
+    UNKNOWN;
 
 
     @Override
@@ -68,15 +63,21 @@ public enum MySQLType implements SqlType, SQLWords {
         return Database.MySQL;
     }
 
+
     @Override
-    public final boolean isUserDefined() {
-        // false, MySQL don't user defined data type
-        return false;
+    public final String typeName() {
+        return null;
     }
 
     @Override
-    public boolean isUnknown() {
-        throw new UnsupportedOperationException();
+    public final boolean isUnknown() {
+        return this == UNKNOWN;
+    }
+
+    @Override
+    public final boolean isArray() {
+        // false ,MySQL don't support array
+        return false;
     }
 
 
