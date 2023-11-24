@@ -5,7 +5,6 @@ import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.reactive.executor.ReactiveRmStmtExecutor;
 import io.army.session.Option;
 import io.army.sqltype.DataType;
-import io.army.sqltype.MySQLType;
 import io.jdbd.result.DataRow;
 import io.jdbd.result.ResultRowMeta;
 import io.jdbd.session.DatabaseSession;
@@ -14,7 +13,6 @@ import io.jdbd.session.RmDatabaseSession;
 import io.jdbd.statement.ParametrizedStatement;
 
 import javax.annotation.Nullable;
-import java.util.Locale;
 
 /**
  * <p>This class is MySQL {@link JdbdStmtExecutor}.
@@ -51,73 +49,18 @@ abstract class MySQLStmtExecutor extends JdbdStmtExecutor {
     }
 
 
+    /**
+     * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/data-types.html">MySQL Data Types</a>
+     */
     @Override
     final DataType getDataType(final ResultRowMeta meta, final int indexBasedZero) {
-
-        final String typeName;
-        typeName = meta.getDataType(indexBasedZero).typeName();
-
-        final MySQLType type;
-        switch (typeName.toUpperCase(Locale.ROOT)) {
-            case "BOOLEAN":
-            case "TINYINT":
-            case "TINYINT UNSIGNED":
-            case "SMALLINT":
-
-            case "SMALLINT UNSIGNED":
-            case "MEDIUMINT":
-            case "MEDIUMINT UNSIGNED":
-            case "INT":
-
-            case "INT_UNSIGNED":
-            case "BIGINT":
-            case "BIGINT UNSIGNED":
-            case "DECIMAL":
-
-            case "DECIMAL UNSIGNED":
-            case "FLOAT":
-            case "FLOAT UNSIGNED":
-            case "DOUBLE":
-
-            case "DOUBLE UNSIGNED":
-            case "TIME":
-            case "DATE":
-            case "YEAR":
-
-            case "DATETIME":
-            case "TIMESTAMP":
-            case "CHAR":
-            case "VARCHAR":
-
-            case "BIT":
-            case "ENUM":
-            case "SET":
-            case "JSON":
-
-            case "TINYTEXT":
-            case "MEDIUMTEXT":
-            case "TEXT":
-            case "LONGTEXT":
-
-            case "BINARY":
-            case "VARBINARY":
-            case "TINYBLOB":
-            case "MEDIUMBLOB":
-
-            case "BLOB":
-            case "LONGBLOB":
-            case "GEOMETRY":
-            case "UNKNOWN":
-            default:
-                type = MySQLType.UNKNOWN;
-
-        }
-        return null;
+        return getMySqlType(meta.getDataType(indexBasedZero).typeName());
     }
 
     @Nullable
     @Override
-    final Object get(DataRow row, int indexBasedZero, DataType dataType) {
+    final Object get(final DataRow row, final int indexBasedZero, final DataType dataType) {
+
         return null;
     }
 

@@ -5,6 +5,9 @@ import io.army.dialect.Database;
 import io.army.dialect._Constant;
 import io.army.util._StringUtils;
 
+/**
+ * @see <a href="https://dev.mysql.com/doc/refman/8.0/en/data-types.html">MySQL Data Types</a>
+ */
 public enum MySQLType implements SqlType, SQLWords {
 
     NULL,
@@ -175,8 +178,6 @@ public enum MySQLType implements SqlType, SQLWords {
         }
         return words;
     }
-
-
 
 
     @Override

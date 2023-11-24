@@ -788,20 +788,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             break;
             case JSON:
             case JSONB:
-            case LONGTEXT: {
-                if (nullable instanceof String) {
-                    value = nullable;
-                } else if (nullable instanceof io.army.type.TextPath) {
-                    final io.army.type.TextPath armyPath = (io.army.type.TextPath) nullable;
-                    value = io.jdbd.type.TextPath.from(armyPath.isDeleteOnClose(), armyPath.charset(), armyPath.value());
-                } else if (nullable instanceof io.army.reactive.type.Clob) {
-                    final io.army.reactive.type.Clob clob = (io.army.reactive.type.Clob) nullable;
-                    value = io.jdbd.type.Clob.from(clob.value());
-                } else {
-                    throw beforeBindMethodError(type, dataType, nullable);
-                }
-            }
-            break;
+            case LONGTEXT:
+                value = toJdbdLongTextValue(type, dataType, nullable);
+                break;
             case BINARY:
             case VARBINARY:
             case TINYBLOB:
@@ -813,20 +802,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                 value = nullable;
             }
             break;
-            case LONGBLOB: {
-                if (nullable instanceof byte[]) {
-                    value = nullable;
-                } else if (nullable instanceof io.army.type.BlobPath) {
-                    final io.army.type.BlobPath path = (io.army.type.BlobPath) nullable;
-                    value = io.jdbd.type.BlobPath.from(path.isDeleteOnClose(), path.value());
-                } else if (nullable instanceof io.army.reactive.type.Blob) {
-                    final io.army.reactive.type.Blob blob = (io.army.reactive.type.Blob) nullable;
-                    value = io.jdbd.type.Blob.from(blob.value());
-                } else {
-                    throw beforeBindMethodError(type, dataType, nullable);
-                }
-            }
-            break;
+            case LONGBLOB:
+                value = toJdbdLongBinaryValue(type, dataType, nullable);
+                break;
             case GEOMETRY: {
                 if (nullable instanceof byte[] || nullable instanceof String) {
                     value = nullable;
@@ -856,6 +834,40 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         stmt.bind(indexBasedZero, jdbdType, value);
 
+    }
+
+    @Nullable
+    final Object toJdbdLongTextValue(final MappingType type, final DataType dataType, final @Nullable Object nullable) {
+        final Object value;
+        if (nullable == null || nullable instanceof String) {
+            value = nullable;
+        } else if (nullable instanceof io.army.type.TextPath) {
+            final io.army.type.TextPath armyPath = (io.army.type.TextPath) nullable;
+            value = io.jdbd.type.TextPath.from(armyPath.isDeleteOnClose(), armyPath.charset(), armyPath.value());
+        } else if (nullable instanceof io.army.reactive.type.Clob) {
+            final io.army.reactive.type.Clob clob = (io.army.reactive.type.Clob) nullable;
+            value = io.jdbd.type.Clob.from(clob.value());
+        } else {
+            throw beforeBindMethodError(type, dataType, nullable);
+        }
+        return value;
+    }
+
+    @Nullable
+    final Object toJdbdLongBinaryValue(final MappingType type, final DataType dataType, final @Nullable Object nullable) {
+        final Object value;
+        if (nullable == null || nullable instanceof byte[]) {
+            value = nullable;
+        } else if (nullable instanceof io.army.type.BlobPath) {
+            final io.army.type.BlobPath path = (io.army.type.BlobPath) nullable;
+            value = io.jdbd.type.BlobPath.from(path.isDeleteOnClose(), path.value());
+        } else if (nullable instanceof io.army.reactive.type.Blob) {
+            final io.army.reactive.type.Blob blob = (io.army.reactive.type.Blob) nullable;
+            value = io.jdbd.type.Blob.from(blob.value());
+        } else {
+            throw beforeBindMethodError(type, dataType, nullable);
+        }
+        return value;
     }
 
     final ArmyException wrapExecutingError(final Exception cause) {

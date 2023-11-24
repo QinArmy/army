@@ -15,15 +15,13 @@ import io.army.session.DataAccessException;
 import io.army.session.Isolation;
 import io.army.session.Option;
 import io.army.session.record.*;
-import io.army.sqltype.ArmyType;
-import io.army.sqltype.DataType;
-import io.army.sqltype.SqlType;
+import io.army.sqltype.*;
 import io.army.util._ClassUtils;
 import io.army.util._Collections;
-import io.army.util._Exceptions;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -51,28 +49,6 @@ public abstract class ExecutorSupport {
 
     protected final ArmyException unsupportedIsolation(Isolation isolation) {
         return new ArmyException(String.format("%s don't support %s", this, isolation));
-    }
-
-
-    protected static int restSeconds(final int timeout, final long startTime) {
-        if (timeout == 0) {
-            return 0;
-        }
-        if (timeout < 0) {
-            //no bug,never here
-            throw new IllegalArgumentException();
-        }
-        int restSec;
-        final long restMills;
-        restMills = (timeout * 1000L) - (System.currentTimeMillis() - startTime);
-        if (restMills < 1) {
-            throw _Exceptions.timeout(timeout, restMills);
-        }
-        restSec = (int) (restMills / 1000L);
-        if (restMills % 1000L != 0) {
-            restSec++;
-        }
-        return restSec;
     }
 
 
@@ -182,6 +158,532 @@ public abstract class ExecutorSupport {
         throw new UnsupportedOperationException();
     }
 
+
+    protected static MySQLType getMySqlType(final String typeName) {
+        final MySQLType type;
+
+        switch (typeName.toUpperCase(Locale.ROOT)) {
+            case "BOOL":
+            case "BOOLEAN":
+                type = MySQLType.BOOLEAN;
+                break;
+            case "TINYINT":
+                type = MySQLType.TINYINT;
+                break;
+            case "TINYINT UNSIGNED":
+                type = MySQLType.TINYINT_UNSIGNED;
+                break;
+            case "SMALLINT":
+                type = MySQLType.SMALLINT;
+                break;
+            case "SMALLINT UNSIGNED":
+                type = MySQLType.SMALLINT_UNSIGNED;
+                break;
+            case "MEDIUMINT":
+                type = MySQLType.MEDIUMINT;
+                break;
+            case "MEDIUMINT UNSIGNED":
+                type = MySQLType.MEDIUMINT_UNSIGNED;
+                break;
+            case "INT":
+            case "INTEGER":
+                type = MySQLType.INT;
+                break;
+            case "INT UNSIGNED":
+            case "INTEGER UNSIGNED":
+                type = MySQLType.INT_UNSIGNED;
+                break;
+            case "BIGINT":
+                type = MySQLType.BIGINT;
+                break;
+            case "BIGINT UNSIGNED":
+                type = MySQLType.BIGINT_UNSIGNED;
+                break;
+            case "DECIMAL":
+            case "DEC":
+            case "NUMERIC":
+                type = MySQLType.DECIMAL;
+                break;
+            case "DECIMAL UNSIGNED":
+            case "DEC UNSIGNED":
+            case "NUMERIC UNSIGNED":
+                type = MySQLType.DECIMAL_UNSIGNED;
+                break;
+            case "FLOAT":
+            case "FLOAT UNSIGNED":
+                type = MySQLType.FLOAT;
+                break;
+            case "DOUBLE":
+            case "DOUBLE UNSIGNED":
+                type = MySQLType.DOUBLE;
+                break;
+            case "TIME":
+                type = MySQLType.TIME;
+                break;
+            case "DATE":
+                type = MySQLType.DATE;
+                break;
+            case "YEAR":
+                type = MySQLType.YEAR;
+                break;
+            case "TIMESTAMP":
+            case "DATETIME":
+                type = MySQLType.DATETIME;
+                break;
+            case "CHAR":
+                type = MySQLType.CHAR;
+                break;
+            case "VARCHAR":
+                type = MySQLType.VARCHAR;
+                break;
+            case "BIT":
+                type = MySQLType.BIT;
+                break;
+            case "ENUM":
+                type = MySQLType.ENUM;
+                break;
+            case "SET":
+                type = MySQLType.SET;
+                break;
+            case "JSON":
+                type = MySQLType.JSON;
+                break;
+            case "TINYTEXT":
+                type = MySQLType.TINYTEXT;
+                break;
+            case "MEDIUMTEXT":
+                type = MySQLType.MEDIUMTEXT;
+                break;
+            case "TEXT":
+                type = MySQLType.TEXT;
+                break;
+            case "LONGTEXT":
+                type = MySQLType.LONGTEXT;
+                break;
+            case "BINARY":
+                type = MySQLType.BINARY;
+                break;
+            case "VARBINARY":
+                type = MySQLType.VARBINARY;
+                break;
+            case "TINYBLOB":
+                type = MySQLType.TINYBLOB;
+                break;
+            case "MEDIUMBLOB":
+                type = MySQLType.MEDIUMBLOB;
+                break;
+            case "BLOB":
+                type = MySQLType.BLOB;
+                break;
+            case "LONGBLOB":
+                type = MySQLType.LONGBLOB;
+                break;
+            case "GEOMETRY":
+                type = MySQLType.GEOMETRY;
+                break;
+            case "NULL":
+                type = MySQLType.NULL;
+                break;
+            case "UNKNOWN":
+            default:
+                type = MySQLType.UNKNOWN;
+        }
+
+        return type;
+    }
+
+
+    protected static DataType getPostgreType(final String typeName) {
+        final DataType type;
+        switch (typeName.toLowerCase(Locale.ROOT)) {
+            case "boolean":
+            case "bool":
+                type = PostgreType.BOOLEAN;
+                break;
+            case "int2":
+            case "smallint":
+            case "smallserial":
+                type = PostgreType.SMALLINT;
+                break;
+            case "int":
+            case "int4":
+            case "serial":
+            case "integer":
+            case "xid":  // https://www.postgresql.org/docs/current/datatype-oid.html
+            case "cid":  // https://www.postgresql.org/docs/current/datatype-oid.html
+                type = PostgreType.INTEGER;
+                break;
+            case "int8":
+            case "bigint":
+            case "bigserial":
+            case "serial8":
+            case "xid8":  // https://www.postgresql.org/docs/current/datatype-oid.html  TODO what's tid ?
+                type = PostgreType.BIGINT;
+                break;
+            case "numeric":
+            case "decimal":
+                type = PostgreType.DECIMAL;
+                break;
+            case "float8":
+            case "double precision":
+            case "float":
+                type = PostgreType.FLOAT8;
+                break;
+            case "float4":
+            case "real":
+                type = PostgreType.REAL;
+                break;
+            case "char":
+            case "character":
+                type = PostgreType.CHAR;
+                break;
+            case "varchar":
+            case "character varying":
+                type = PostgreType.VARCHAR;
+                break;
+            case "text":
+            case "txid_snapshot":  // TODO txid_snapshot is text?
+                type = PostgreType.TEXT;
+                break;
+            case "bytea":
+                type = PostgreType.BYTEA;
+                break;
+            case "date":
+                type = PostgreType.DATE;
+                break;
+            case "time":
+            case "time without time zone":
+                type = PostgreType.TIME;
+                break;
+            case "timetz":
+            case "time with time zone":
+                type = PostgreType.TIMETZ;
+                break;
+            case "timestamp":
+            case "timestamp without time zone":
+                type = PostgreType.TIMESTAMP;
+                break;
+            case "timestamptz":
+            case "timestamp with time zone":
+                type = PostgreType.TIMESTAMPTZ;
+                break;
+            case "interval":
+                type = PostgreType.INTERVAL;
+                break;
+
+            case "json":
+                type = PostgreType.JSON;
+                break;
+            case "jsonb":
+                type = PostgreType.JSONB;
+                break;
+            case "jsonpath":
+                type = PostgreType.JSONPATH;
+                break;
+            case "xml":
+                type = PostgreType.XML;
+                break;
+
+            case "bit":
+                type = PostgreType.BIT;
+                break;
+            case "bit varying":
+            case "varbit":
+                type = PostgreType.VARBIT;
+                break;
+
+            case "cidr":
+                type = PostgreType.CIDR;
+                break;
+            case "inet":
+                type = PostgreType.INET;
+                break;
+            case "macaddr8":
+                type = PostgreType.MACADDR8;
+                break;
+            case "macaddr":
+                type = PostgreType.MACADDR;
+                break;
+
+            case "box":
+                type = PostgreType.BOX;
+                break;
+            case "lseg":
+                type = PostgreType.LSEG;
+                break;
+            case "line":
+                type = PostgreType.LINE;
+                break;
+            case "path":
+                type = PostgreType.PATH;
+                break;
+            case "point":
+                type = PostgreType.POINT;
+                break;
+            case "circle":
+                type = PostgreType.CIRCLE;
+                break;
+            case "polygon":
+                type = PostgreType.POLYGON;
+                break;
+
+            case "tsvector":
+                type = PostgreType.TSVECTOR;
+                break;
+            case "tsquery":
+                type = PostgreType.TSQUERY;
+                break;
+
+            case "int4range":
+                type = PostgreType.INT4RANGE;
+                break;
+            case "int8range":
+                type = PostgreType.INT8RANGE;
+                break;
+            case "numrange":
+                type = PostgreType.NUMRANGE;
+                break;
+            case "tsrange":
+                type = PostgreType.TSRANGE;
+                break;
+            case "daterange":
+                type = PostgreType.DATERANGE;
+                break;
+            case "tstzrange":
+                type = PostgreType.TSTZRANGE;
+                break;
+
+            case "int4multirange":
+                type = PostgreType.INT4MULTIRANGE;
+                break;
+            case "int8multirange":
+                type = PostgreType.INT8MULTIRANGE;
+                break;
+            case "nummultirange":
+                type = PostgreType.NUMMULTIRANGE;
+                break;
+            case "datemultirange":
+                type = PostgreType.DATEMULTIRANGE;
+                break;
+            case "tsmultirange":
+                type = PostgreType.TSMULTIRANGE;
+                break;
+            case "tstzmultirange":
+                type = PostgreType.TSTZMULTIRANGE;
+                break;
+
+            case "uuid":
+                type = PostgreType.UUID;
+                break;
+            case "money":
+                type = PostgreType.MONEY;
+                break;
+            case "aclitem":
+                type = PostgreType.ACLITEM;
+                break;
+            case "pg_lsn":
+                type = PostgreType.PG_LSN;
+                break;
+            case "pg_snapshot":
+                type = PostgreType.PG_SNAPSHOT;
+                break;
+
+            case "boolean[]":
+            case "bool[]":
+                type = PostgreType.BOOLEAN_ARRAY;
+                break;
+            case "int2[]":
+            case "smallint[]":
+            case "smallserial[]":
+                type = PostgreType.SMALLINT_ARRAY;
+                break;
+            case "int[]":
+            case "int4[]":
+            case "integer[]":
+            case "serial[]":
+                type = PostgreType.INTEGER_ARRAY;
+                break;
+            case "int8[]":
+            case "bigint[]":
+            case "serial8[]":
+            case "bigserial[]":
+                type = PostgreType.BIGINT_ARRAY;
+                break;
+            case "numeric[]":
+            case "decimal[]":
+                type = PostgreType.DECIMAL_ARRAY;
+                break;
+            case "float8[]":
+            case "float[]":
+            case "double precision[]":
+                type = PostgreType.FLOAT8_ARRAY;
+                break;
+            case "float4[]":
+            case "real[]":
+                type = PostgreType.REAL_ARRAY;
+                break;
+
+            case "char[]":
+            case "character[]":
+                type = PostgreType.CHAR_ARRAY;
+                break;
+            case "varchar[]":
+            case "character varying[]":
+                type = PostgreType.VARCHAR_ARRAY;
+                break;
+            case "text[]":
+            case "txid_snapshot[]":
+                type = PostgreType.TEXT_ARRAY;
+                break;
+            case "bytea[]":
+                type = PostgreType.BYTEA_ARRAY;
+                break;
+
+            case "date[]":
+                type = PostgreType.DATE_ARRAY;
+                break;
+            case "time[]":
+            case "time without time zone[]":
+                type = PostgreType.TIME_ARRAY;
+                break;
+            case "timetz[]":
+            case "time with time zone[]":
+                type = PostgreType.TIMETZ_ARRAY;
+                break;
+            case "timestamp[]":
+            case "timestamp without time zone[]":
+                type = PostgreType.TIMESTAMP_ARRAY;
+                break;
+            case "timestamptz[]":
+            case "timestamp with time zone[]":
+                type = PostgreType.TIMESTAMPTZ_ARRAY;
+                break;
+            case "interval[]":
+                type = PostgreType.INTERVAL_ARRAY;
+                break;
+
+            case "json[]":
+                type = PostgreType.JSON_ARRAY;
+                break;
+            case "jsonb[]":
+                type = PostgreType.JSONB_ARRAY;
+                break;
+            case "jsonpath[]":
+                type = PostgreType.JSONPATH_ARRAY;
+                break;
+            case "xml[]":
+                type = PostgreType.XML_ARRAY;
+                break;
+
+            case "varbit[]":
+            case "bit varying[]":
+                type = PostgreType.VARBIT_ARRAY;
+                break;
+            case "bit[]":
+                type = PostgreType.BIT_ARRAY;
+                break;
+
+            case "uuid[]":
+                type = PostgreType.UUID_ARRAY;
+                break;
+
+            case "cidr[]":
+                type = PostgreType.CIDR_ARRAY;
+                break;
+            case "inet[]":
+                type = PostgreType.INET_ARRAY;
+                break;
+            case "macaddr[]":
+                type = PostgreType.MACADDR_ARRAY;
+                break;
+            case "macaddr8[]":
+                type = PostgreType.MACADDR8_ARRAY;
+                break;
+
+            case "box[]":
+                type = PostgreType.BOX_ARRAY;
+                break;
+            case "lseg[]":
+                type = PostgreType.LSEG_ARRAY;
+                break;
+            case "line[]":
+                type = PostgreType.LINE_ARRAY;
+                break;
+            case "path[]":
+                type = PostgreType.PATH_ARRAY;
+                break;
+            case "point[]":
+                type = PostgreType.POINT_ARRAY;
+                break;
+            case "circle[]":
+                type = PostgreType.CIRCLE_ARRAY;
+                break;
+            case "polygon[]":
+                type = PostgreType.POLYGON_ARRAY;
+                break;
+
+            case "tsquery[]":
+                type = PostgreType.TSQUERY_ARRAY;
+                break;
+            case "tsvector[]":
+                type = PostgreType.TSVECTOR_ARRAY;
+                break;
+
+            case "int4range[]":
+                type = PostgreType.INT4RANGE_ARRAY;
+                break;
+            case "int8range[]":
+                type = PostgreType.INT8RANGE_ARRAY;
+                break;
+            case "numrange[]":
+                type = PostgreType.NUMRANGE_ARRAY;
+                break;
+            case "daterange[]":
+                type = PostgreType.DATERANGE_ARRAY;
+                break;
+            case "tsrange[]":
+                type = PostgreType.TSRANGE_ARRAY;
+                break;
+            case "tstzrange[]":
+                type = PostgreType.TSTZRANGE_ARRAY;
+                break;
+
+            case "int4multirange[]":
+                type = PostgreType.INT4MULTIRANGE_ARRAY;
+                break;
+            case "int8multirange[]":
+                type = PostgreType.INT8MULTIRANGE_ARRAY;
+                break;
+            case "nummultirange[]":
+                type = PostgreType.NUMMULTIRANGE_ARRAY;
+                break;
+            case "datemultirange[]":
+                type = PostgreType.DATEMULTIRANGE_ARRAY;
+                break;
+            case "tsmultirange[]":
+                type = PostgreType.TSMULTIRANGE_ARRAY;
+                break;
+            case "tstzmultirange[]":
+                type = PostgreType.TSTZMULTIRANGE_ARRAY;
+                break;
+
+            case "money[]":
+                type = PostgreType.MONEY_ARRAY;
+                break;
+            case "pg_lsn[]":
+                type = PostgreType.PG_LSN_ARRAY;
+                break;
+            case "pg_snapshot[]":
+                type = PostgreType.PG_SNAPSHOT_ARRAY;
+                break;
+            case "aclitem[]":
+                type = PostgreType.ACLITEM_ARRAY;
+                break;
+            default:
+                type = DataType.from(typeName);
+        }
+        return type;
+    }
 
 
     /*-------------------below Exception  -------------------*/

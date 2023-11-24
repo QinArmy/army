@@ -45,7 +45,7 @@ public enum PostgreType implements SqlType {
     TIMETZ("TIMETZ", ArmyType.TIME_WITH_TIMEZONE, OffsetTime.class),
     TIMESTAMPTZ("TIMESTAMPTZ", ArmyType.TIMESTAMP_WITH_TIMEZONE, OffsetDateTime.class),
 
-    BYTEA("BYTEA", ArmyType.BLOB, byte[].class),
+    BYTEA("BYTEA", ArmyType.MEDIUMBLOB, byte[].class),
 
     CHAR("CHAR", ArmyType.CHAR, String.class),
     VARCHAR("VARCHAR", ArmyType.VARCHAR, String.class),

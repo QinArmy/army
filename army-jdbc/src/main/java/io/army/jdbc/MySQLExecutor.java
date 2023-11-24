@@ -212,15 +212,11 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case MEDIUMBLOB:
             case LONGBLOB:
                 //
-            case POINT:
-            case LINESTRING:
-            case POLYGON:
-            case MULTIPOINT:
-            case MULTIPOLYGON:
-            case MULTILINESTRING:
-            case GEOMETRYCOLLECTION:
+            case GEOMETRY:
                 value = resultSet.getObject(indexBasedOne, byte[].class);
                 break;
+            case NULL:
+            case UNKNOWN:
             default:
                 throw _Exceptions.unexpectedEnum((MySQLType) sqlType);
         }
