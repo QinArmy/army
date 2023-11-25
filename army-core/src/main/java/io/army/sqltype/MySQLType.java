@@ -37,7 +37,6 @@ public enum MySQLType implements SqlType, SQLWords {
     DATETIME,
 
     CHAR,
-    NCHAR,
     VARCHAR,
     TINYTEXT,
     TEXT,

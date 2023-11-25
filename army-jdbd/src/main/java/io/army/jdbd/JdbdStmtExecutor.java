@@ -22,7 +22,9 @@ import io.army.sqltype.ArmyType;
 import io.army.sqltype.DataType;
 import io.army.sqltype.SqlType;
 import io.army.stmt.*;
+import io.army.type.BlobPath;
 import io.army.type.ImmutableSpec;
+import io.army.type.TextPath;
 import io.army.util._Collections;
 import io.army.util._Exceptions;
 import io.army.util._StringUtils;
@@ -190,7 +192,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
             extractIdFunc = row -> {
                 Object idValue;
-                idValue = get(row, 0, dataType);
+                idValue = get(row, 0, type, dataType);
                 final int rowIndex = rowIndexHolder[0]++;
                 if (idValue == null) {
                     throw _Exceptions.idValueIsNull(rowIndex, keyStmt.idField());
@@ -624,7 +626,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
     abstract DataType getDataType(ResultRowMeta meta, int indexBasedZero);
 
     @Nullable
-    abstract Object get(DataRow row, int indexBasedZero, DataType dataType);
+    abstract Object get(DataRow row, int indexBasedZero, MappingType type, DataType dataType);
 
     abstract void bind(ParametrizedStatement statement, int indexBasedZero, MappingType type, DataType dataType, @Nullable Object value);
 
@@ -805,27 +807,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             case LONGBLOB:
                 value = toJdbdLongBinaryValue(type, dataType, nullable);
                 break;
-            case GEOMETRY: {
-                if (nullable instanceof byte[] || nullable instanceof String) {
-                    value = nullable;
-                } else if (nullable instanceof io.army.reactive.type.Blob) {
-                    final io.army.reactive.type.Blob blob = (io.army.reactive.type.Blob) nullable;
-                    value = io.jdbd.type.Blob.from(blob.value());
-                } else if (nullable instanceof io.army.reactive.type.Clob) {
-                    final io.army.reactive.type.Clob clob = (io.army.reactive.type.Clob) nullable;
-                    value = io.jdbd.type.Clob.from(clob.value());
-                } else if (nullable instanceof io.army.type.BlobPath) {
-                    final io.army.type.BlobPath path = (io.army.type.BlobPath) nullable;
-                    value = io.jdbd.type.BlobPath.from(path.isDeleteOnClose(), path.value());
-                } else if (nullable instanceof io.army.type.TextPath) {
-                    final io.army.type.TextPath armyPath = (io.army.type.TextPath) nullable;
-                    value = io.jdbd.type.TextPath.from(armyPath.isDeleteOnClose(), armyPath.charset(), armyPath.value());
-                } else {
-                    throw beforeBindMethodError(type, dataType, nullable);
-                }
-
-            }
-            break;
+            case GEOMETRY:
+                value = toJdbdGeometry(type, dataType, nullable);
+                break;
             default:
                 throw mapMethodError(type, dataType);
 
@@ -834,6 +818,29 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
 
         stmt.bind(indexBasedZero, jdbdType, value);
 
+    }
+
+    @Nullable
+    final Object toJdbdGeometry(final MappingType type, final DataType dataType, final @Nullable Object nullable) {
+        final Object value;
+        if (nullable == null || nullable instanceof byte[] || nullable instanceof String) {
+            value = nullable;
+        } else if (nullable instanceof io.army.reactive.type.Blob) {
+            final io.army.reactive.type.Blob blob = (io.army.reactive.type.Blob) nullable;
+            value = io.jdbd.type.Blob.from(blob.value());
+        } else if (nullable instanceof io.army.reactive.type.Clob) {
+            final io.army.reactive.type.Clob clob = (io.army.reactive.type.Clob) nullable;
+            value = io.jdbd.type.Clob.from(clob.value());
+        } else if (nullable instanceof io.army.type.BlobPath) {
+            final io.army.type.BlobPath path = (io.army.type.BlobPath) nullable;
+            value = io.jdbd.type.BlobPath.from(path.isDeleteOnClose(), path.value());
+        } else if (nullable instanceof io.army.type.TextPath) {
+            final io.army.type.TextPath armyPath = (io.army.type.TextPath) nullable;
+            value = io.jdbd.type.TextPath.from(armyPath.isDeleteOnClose(), armyPath.charset(), armyPath.value());
+        } else {
+            throw beforeBindMethodError(type, dataType, nullable);
+        }
+        return value;
     }
 
     @Nullable
@@ -866,6 +873,34 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             value = io.jdbd.type.Blob.from(blob.value());
         } else {
             throw beforeBindMethodError(type, dataType, nullable);
+        }
+        return value;
+    }
+
+    @Nullable
+    final Object getLongText(final DataRow row, final int indexBasedZero) {
+        final Object value;
+        if (row.isNull(indexBasedZero)) {
+            value = null;
+        } else if (row.isBigColumn(indexBasedZero)) {
+            final io.jdbd.type.TextPath path = row.getNonNull(indexBasedZero, io.jdbd.type.TextPath.class);
+            value = TextPath.from(path.isDeleteOnClose(), path.charset(), path.value());
+        } else {
+            value = row.get(indexBasedZero, String.class);
+        }
+        return value;
+    }
+
+    @Nullable
+    final Object getLongBinary(final DataRow row, final int indexBasedZero) {
+        final Object value;
+        if (row.isNull(indexBasedZero)) {
+            value = null;
+        } else if (row.isBigColumn(indexBasedZero)) {
+            final io.jdbd.type.BlobPath path = row.getNonNull(indexBasedZero, io.jdbd.type.BlobPath.class);
+            value = BlobPath.from(path.isDeleteOnClose(), path.value());
+        } else {
+            value = row.get(indexBasedZero, byte[].class);
         }
         return value;
     }
@@ -1108,7 +1143,7 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                 throw jdbdRowNumberNotMatch(rowIndex, dataRow.rowNumber());
             }
             Object idValue;
-            idValue = get(dataRow, indexBasedZero, dataType);
+            idValue = get(dataRow, indexBasedZero, type, dataType);
 
             if (idValue == null) {
                 throw _Exceptions.idValueIsNull(rowIndex, keyStmt.idField());
@@ -1402,16 +1437,9 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
             String fieldName;
 
             for (int i = 0; i < columnCount; i++) {
-                dataType = dataTypeArray[i];
-                columnValue = executor.get(dataRow, i, dataType);
 
                 selection = selectionList.get(i);
                 fieldName = selection.label();
-
-                if (columnValue == null) {
-                    acceptColumn(i, fieldName, null);
-                    continue;
-                }
 
                 if ((type = compatibleTypeArray[i]) == null) {
                     if (!(this instanceof CurrentRecordRowReader)) {
@@ -1424,6 +1452,13 @@ abstract class JdbdStmtExecutor extends JdbdExecutorSupport
                     compatibleTypeArray[i] = type;
                 }
 
+                dataType = dataTypeArray[i];
+                columnValue = executor.get(dataRow, i, type, dataType);
+
+                if (columnValue == null) {
+                    acceptColumn(i, fieldName, null);
+                    continue;
+                }
 
                 columnValue = type.afterGet(dataType, env, columnValue);
                 //TODO field codec

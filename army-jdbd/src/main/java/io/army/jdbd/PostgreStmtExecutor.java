@@ -191,7 +191,7 @@ abstract class PostgreStmtExecutor<S extends DatabaseSession> extends JdbdStmtEx
 
     @Nullable
     @Override
-    final Object get(final DataRow row, final int indexBasedZero, final DataType dataType) {
+    final Object get(final DataRow row, final int indexBasedZero, final MappingType type, final DataType dataType) {
         final Object value;
         if (!(dataType instanceof PostgreType)) {
             if ("hstore" .equalsIgnoreCase(dataType.typeName())) {
