@@ -8,7 +8,6 @@ import io.army.session.*;
 import io.army.session.record.DataRecord;
 import io.army.sqltype.DataType;
 import io.army.sqltype.MySQLType;
-import io.army.sqltype.SqlType;
 import io.army.sync.StreamOption;
 import io.army.sync.executor.SyncLocalStmtExecutor;
 import io.army.sync.executor.SyncRmStmtExecutor;
@@ -101,6 +100,12 @@ abstract class MySQLExecutor extends JdbcExecutor {
         return LOG;
     }
 
+
+    @Override
+    final DataType getDataType(ResultSetMetaData meta, int indexBasedOne) throws SQLException {
+        return getMySqlType(meta.getColumnTypeName(indexBasedOne));
+    }
+
     @Override
     final void bind(final PreparedStatement stmt, final int indexBasedOne,
                     final MappingType type, final DataType dataType, final Object nonNull) throws SQLException {
@@ -146,14 +151,10 @@ abstract class MySQLExecutor extends JdbcExecutor {
 
 
     @Override
-    SqlType getDataType(ResultSetMetaData meta, int indexBasedOne) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    Object get(final ResultSet resultSet, int indexBasedOne, final DataType sqlType) throws SQLException {
+    final Object get(final ResultSet resultSet, int indexBasedOne, final MappingType type, final DataType dataType)
+            throws SQLException {
         final Object value;
-        switch ((MySQLType) sqlType) {
+        switch ((MySQLType) dataType) {
             case TINYINT:
             case TINYINT_UNSIGNED:
             case SMALLINT:
@@ -176,15 +177,35 @@ abstract class MySQLExecutor extends JdbcExecutor {
             case BOOLEAN:
                 value = resultSet.getObject(indexBasedOne, Boolean.class);
                 break;
-            case DATETIME:
-                value = resultSet.getObject(indexBasedOne, LocalDateTime.class);
-                break;
+            case DATETIME: {
+                if (type instanceof MappingType.SqlOffsetDateTimeType) {
+                    value = resultSet.getObject(indexBasedOne, OffsetDateTime.class);
+                } else {
+                    value = resultSet.getObject(indexBasedOne, LocalDateTime.class);
+                }
+            }
+            break;
             case DATE:
                 value = resultSet.getObject(indexBasedOne, LocalDate.class);
                 break;
-            case TIME:
-                value = resultSet.getObject(indexBasedOne, LocalTime.class);
-                break;
+            case TIME: {
+                if (type instanceof MappingType.SqlLocalTimeType) {
+                    value = resultSet.getObject(indexBasedOne, LocalTime.class);
+                } else if (type instanceof MappingType.SqlOffsetTimeType) {
+                    value = resultSet.getObject(indexBasedOne, OffsetTime.class);
+                } else if (type instanceof MappingType.SqlDurationType) {
+                    value = resultSet.getObject(indexBasedOne, Duration.class);
+                } else {
+                    Object v;
+                    try {
+                        v = resultSet.getObject(indexBasedOne, LocalTime.class);
+                    } catch (SQLException e) {
+                        v = resultSet.getObject(indexBasedOne, Duration.class);
+                    }
+                    value = v;
+                }
+            }
+            break;
             case CHAR:
             case VARCHAR:
             case ENUM:
@@ -217,8 +238,10 @@ abstract class MySQLExecutor extends JdbcExecutor {
                 break;
             case NULL:
             case UNKNOWN:
+                value = resultSet.getObject(indexBasedOne);
+                break;
             default:
-                throw _Exceptions.unexpectedEnum((MySQLType) sqlType);
+                throw _Exceptions.unexpectedEnum((MySQLType) dataType);
         }
         return value;
     }

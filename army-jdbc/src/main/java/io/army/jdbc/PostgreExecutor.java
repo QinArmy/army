@@ -226,7 +226,8 @@ abstract class PostgreExecutor extends JdbcExecutor {
     }
 
     @Override
-    final Object get(final ResultSet resultSet, final int indexBasedOne, final DataType dataType) throws SQLException {
+    final Object get(final ResultSet resultSet, final int indexBasedOne, final MappingType type, final DataType dataType)
+            throws SQLException {
         final Object value;
 
         switch ((PostgreType) dataType) {

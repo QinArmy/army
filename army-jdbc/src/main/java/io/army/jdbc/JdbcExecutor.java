@@ -515,7 +515,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
     abstract DataType getDataType(ResultSetMetaData meta, int indexBasedOne) throws SQLException;
 
     @Nullable
-    abstract Object get(ResultSet resultSet, int indexBasedOne, DataType sqlType) throws SQLException;
+    abstract Object get(ResultSet resultSet, int indexBasedOne, MappingType type, DataType dataType) throws SQLException;
 
     /**
      * @return current transaction cache instance
@@ -1331,7 +1331,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
         Object idValue;
         // below read id value
-        idValue = get(resultSet, idSelectionIndex + 1, idSqlType); // read id column
+        idValue = get(resultSet, idSelectionIndex + 1, type, idSqlType); // read id column
         if (idValue == null) {
             throw _Exceptions.idValueIsNull(0, idField);
         }
@@ -1755,7 +1755,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 if (rowIndex == rowSize) {
                     throw insertedRowsAndGenerateIdNotMatch(rowSize, rowIndex);
                 }
-                idValue = get(resultSet, idColumnIndexBaseOne, sqlType);
+                idValue = get(resultSet, idColumnIndexBaseOne, type, sqlType);
                 if (idValue == null) {
                     throw _Exceptions.idValueIsNull(rowIndex, idField);
                 }
@@ -1960,18 +1960,9 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
 
             final int columnCount = dataTypeArray.length;
             for (int i = 0; i < columnCount; i++) {
-                dataType = dataTypeArray[i];
-
-                // dialect executor read one column
-                columnValue = executor.get(resultSet, i + 1, dataType);
 
                 selection = selectionList.get(i);
                 fieldName = selection.label();
-
-                if (columnValue == null) {
-                    acceptColumn(i, fieldName, null);
-                    continue;
-                }
 
                 if ((type = compatibleTypeArray[i]) == null) {
                     if (this instanceof RecordRowReader) {
@@ -1980,6 +1971,17 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                         type = compatibleTypeFrom(selection, this.resultClass, accessor, fieldName);
                     }
                     compatibleTypeArray[i] = type;
+                }
+
+                dataType = dataTypeArray[i];
+
+                // dialect executor read one column
+                columnValue = executor.get(resultSet, i + 1, type, dataType);
+
+
+                if (columnValue == null) {
+                    acceptColumn(i, fieldName, null);
+                    continue;
                 }
 
                 // MappingType convert one column
@@ -2747,7 +2749,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
                 }
 
                 // below read id value
-                idValue = executor.get(resultSet, idColumnIndexBaseOne, idSqlType); // read id column
+                idValue = executor.get(resultSet, idColumnIndexBaseOne, type, idSqlType); // read id column
                 if (idValue == null) {
                     throw _Exceptions.idValueIsNull(rowIndex, idField);
                 }
@@ -2851,7 +2853,7 @@ abstract class JdbcExecutor extends JdbcExecutorSupport implements SyncStmtExecu
             boolean interrupt = false;
             while (resultSet.next()) {
 
-                idValue = executor.get(resultSet, idColumnIndexBasedOne, idSqlType);
+                idValue = executor.get(resultSet, idColumnIndexBasedOne, type, idSqlType);
                 if (idValue == null) {
                     throw _Exceptions.secondStmtIdIsNull(idSelection);
                 }
