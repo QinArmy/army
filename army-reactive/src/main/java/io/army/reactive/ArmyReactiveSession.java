@@ -52,6 +52,10 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
         assert this.stmtExecutor != null;
     }
 
+    @Override
+    public final ReactiveSessionFactory sessionFactory() {
+        return (ReactiveSessionFactory) this.factory;
+    }
 
     @Override
     public final boolean isReactiveSession() {

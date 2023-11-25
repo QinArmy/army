@@ -9,13 +9,11 @@ import java.util.function.Function;
 /**
  * <p>This interface representing reactive local session that support database local transaction.
  *
- * @see ReactiveLocalSessionFactory
+ * @see ReactiveSessionFactory
  * @since 1.0
  */
 public interface ReactiveLocalSession extends ReactiveSession, LocalSession {
 
-    @Override
-    ReactiveLocalSessionFactory sessionFactory();
 
     Mono<TransactionInfo> startTransaction();
 

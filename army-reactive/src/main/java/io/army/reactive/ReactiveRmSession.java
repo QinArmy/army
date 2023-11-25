@@ -20,8 +20,6 @@ import java.util.function.Function;
  */
 public interface ReactiveRmSession extends ReactiveSession, RmSession {
 
-    @Override
-    ReactiveRmSessionFactory sessionFactory();
 
     Mono<TransactionInfo> start(Xid xid);
 

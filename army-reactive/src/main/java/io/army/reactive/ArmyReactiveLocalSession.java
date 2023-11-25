@@ -17,14 +17,14 @@ import java.util.function.Function;
 /**
  * This class is a implementation of {@link ReactiveLocalSession}.
  *
- * @see ArmyReactiveLocalSessionFactory
+ * @see ArmyReactiveSessionFactory
  */
 class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLocalSession {
 
     /**
-     * @see ArmyReactiveLocalSessionFactory.LocalSessionBuilder#createSession(String, boolean)
+     * @see ArmyReactiveSessionFactory.ArmyLocalBuilder#createSession(String, boolean)
      */
-    static ArmyReactiveLocalSession create(ArmyReactiveLocalSessionFactory.LocalSessionBuilder builder) {
+    static ArmyReactiveLocalSession create(ArmyReactiveSessionFactory.ArmyLocalBuilder builder) {
         final ArmyReactiveLocalSession session;
         if (builder.inOpenDriverSpi()) {
             session = new OpenDriverSpiSession(builder);
@@ -49,17 +49,12 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     /**
      * private constructor
      *
-     * @see ArmyReactiveLocalSession#create(ArmyReactiveLocalSessionFactory.LocalSessionBuilder)
+     * @see ArmyReactiveLocalSession#create(ArmyReactiveLocalSessionFactory.ArmyLocalBuilder)
      */
-    private ArmyReactiveLocalSession(ArmyReactiveLocalSessionFactory.LocalSessionBuilder builder) {
+    private ArmyReactiveLocalSession(ArmyReactiveSessionFactory.ArmyLocalBuilder builder) {
         super(builder);
     }
 
-
-    @Override
-    public final ReactiveLocalSessionFactory sessionFactory() {
-        return (ReactiveLocalSessionFactory) this.factory;
-    }
 
     @Override
     public final boolean isRollbackOnly() {
@@ -236,9 +231,9 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     private static final class OpenDriverSpiSession extends ArmyReactiveLocalSession implements DriverSpiHolder {
 
         /**
-         * @see ArmyReactiveLocalSession#create(ArmyReactiveLocalSessionFactory.LocalSessionBuilder)
+         * @see ArmyReactiveLocalSession#create(ArmyReactiveLocalSessionFactory.ArmyLocalBuilder)
          */
-        private OpenDriverSpiSession(ArmyReactiveLocalSessionFactory.LocalSessionBuilder builder) {
+        private OpenDriverSpiSession(ArmyReactiveSessionFactory.ArmyLocalBuilder builder) {
             super(builder);
         }
 

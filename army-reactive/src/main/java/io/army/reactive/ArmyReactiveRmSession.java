@@ -19,14 +19,14 @@ import java.util.function.Function;
 /**
  * This class is a implementation of {@link ReactiveRmSession}.
  *
- * @see ArmyReactiveRmSessionFactory
+ * @see ArmyReactiveSessionFactory
  */
 class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSession {
 
     /**
-     * @see ArmyReactiveRmSessionFactory.RmSessionBuilder#createSession(String, boolean)
+     * @see ArmyReactiveSessionFactory.ArmyRmBuilder#createSession(String, boolean)
      */
-    static ArmyReactiveRmSession create(ArmyReactiveRmSessionFactory.RmSessionBuilder builder) {
+    static ArmyReactiveRmSession create(ArmyReactiveSessionFactory.ArmyRmBuilder builder) {
         final ArmyReactiveRmSession session;
         if (builder.inOpenDriverSpi()) {
             session = new OpenDriverSpiSession(builder);
@@ -52,14 +52,10 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
     /**
      * private constructor
      */
-    private ArmyReactiveRmSession(ArmyReactiveRmSessionFactory.RmSessionBuilder builder) {
+    private ArmyReactiveRmSession(ArmyReactiveSessionFactory.ArmyRmBuilder builder) {
         super(builder);
     }
 
-    @Override
-    public final ReactiveRmSessionFactory sessionFactory() {
-        return (ReactiveRmSessionFactory) this.factory;
-    }
 
     @Override
     public final boolean isRollbackOnly() {
@@ -397,7 +393,7 @@ class ArmyReactiveRmSession extends ArmyReactiveSession implements ReactiveRmSes
 
     private static final class OpenDriverSpiSession extends ArmyReactiveRmSession implements DriverSpiHolder {
 
-        private OpenDriverSpiSession(ArmyReactiveRmSessionFactory.RmSessionBuilder builder) {
+        private OpenDriverSpiSession(ArmyReactiveSessionFactory.ArmyRmBuilder builder) {
             super(builder);
         }
 

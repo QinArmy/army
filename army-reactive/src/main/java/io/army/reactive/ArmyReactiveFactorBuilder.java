@@ -19,6 +19,7 @@ import io.army.session.SessionFactoryException;
 import io.army.session._ArmyFactoryBuilder;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
@@ -26,24 +27,32 @@ import java.util.List;
 
 
 /**
- * <p>This class is base class of following :
- * <ul>
- *     <li>{@link ArmyLocalSessionFactoryBuilder}</li>
- *     <li>{@link ArmyRmSessionFactoryBuilder}</li>
- * </ul>
+ * <p>This class is a implementation of {@link ReactiveFactoryBuilder}.
  *
- * @param <B> builder interface java type
- * @param <S> the {@link Mono} of  {@link ReactiveSessionFactory}'s sub interface
+ * @see ReactiveFactoryBuilder#builder()
+ * @see ArmyReactiveSessionFactory#create(ArmyReactiveFactorBuilder)
  * @since 1.0
  */
-abstract class ArmyReactiveFactorBuilder<B, S extends ReactiveSessionFactory> extends _ArmyFactoryBuilder<B, Mono<S>> {
+final class ArmyReactiveFactorBuilder extends _ArmyFactoryBuilder<ReactiveFactoryBuilder, Mono<ReactiveSessionFactory>>
+        implements ReactiveFactoryBuilder {
 
+    static ArmyReactiveFactorBuilder create() {
+        return new ArmyReactiveFactorBuilder();
+    }
+
+    private static final Logger LOG = LoggerFactory.getLogger(ArmyReactiveFactorBuilder.class);
 
     ReactiveStmtExecutorFactory stmtExecutorFactory;
 
+    /**
+     * private constructor
+     */
+    private ArmyReactiveFactorBuilder() {
+    }
 
     @Override
-    protected final Mono<S> buildAfterScanTableMeta(String name, Object dataSource, ArmyEnvironment env) {
+    protected Mono<ReactiveSessionFactory> buildAfterScanTableMeta(final String name, final Object dataSource,
+                                                                   final ArmyEnvironment env) {
 
         final ReactiveStmtExecutorFactoryProvider executorProvider;
         try {
@@ -54,8 +63,6 @@ abstract class ArmyReactiveFactorBuilder<B, S extends ReactiveSessionFactory> ex
         } catch (Throwable e) {
             return Mono.error(e);
         }
-
-        final Logger log = getLogger();
 
         final Dialect useDialect = env.getRequired(ArmyKey.DIALECT);
 
@@ -89,23 +96,21 @@ abstract class ArmyReactiveFactorBuilder<B, S extends ReactiveSessionFactory> ex
                                 this.stmtExecutorFactory = executorFactory;
 
                                 // 7. create SessionFactoryImpl instance
-                                final S sessionFactory;
-                                sessionFactory = createSessionFactory();
-
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Created {}", sessionFactory);
+                                final ArmyReactiveSessionFactory sessionFactory;
+                                sessionFactory = ArmyReactiveSessionFactory.create(this);
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("Created {}", sessionFactory);
                                 }
-                                final ArmyReactiveSessionFactory factory = (ArmyReactiveSessionFactory) sessionFactory;
-                                assert name.equals(factory.name());
-                                assert factory.stmtExecutorFactory == executorFactory;
+                                assert name.equals(sessionFactory.name());
+                                assert sessionFactory.stmtExecutorFactory == executorFactory;
 
                                 // 8. invoke beforeInitialize
                                 if (factoryAdvice != null) {
-                                    factoryAdvice.beforeInitialize(factory);
+                                    factoryAdvice.beforeInitialize(sessionFactory);
                                 }
                                 // 9. initializing session factory
                                 return initializingFactory(sessionFactory)
-                                        .thenReturn(sessionFactory);
+                                        .thenReturn((ReactiveSessionFactory) sessionFactory);
                             });
 
                 }).doOnSuccess(factory -> {
@@ -119,13 +124,14 @@ abstract class ArmyReactiveFactorBuilder<B, S extends ReactiveSessionFactory> ex
     }
 
     @Override
-    protected final Mono<S> handleError(SessionFactoryException cause) {
+    protected Mono<ReactiveSessionFactory> handleError(SessionFactoryException cause) {
         return Mono.error(cause);
     }
 
-
-    abstract S createSessionFactory();
-
+    @Override
+    protected Logger getLogger() {
+        return LOG;
+    }
     /*-------------------below private instance methods -------------------*/
 
     private Mono<Void> initializingFactory(final ReactiveSessionFactory factory) {
@@ -157,14 +163,13 @@ abstract class ArmyReactiveFactorBuilder<B, S extends ReactiveSessionFactory> ex
 
 
     private Mono<Void> initializingSchema(final ArmyReactiveSessionFactory sessionFactory, final DdlMode ddlMode) {
-        final Logger log = getLogger();
 
         final String msgPrefix;
         msgPrefix = String.format("Initializing database of %s[%s],%s[%s]",
                 ReactiveSessionFactory.class.getName(), sessionFactory.name(),
                 DdlMode.class.getName(), ddlMode);
 
-        log.info(msgPrefix);
+        LOG.info(msgPrefix);
 
         final long startTime;
         startTime = System.currentTimeMillis();
@@ -176,7 +181,7 @@ abstract class ArmyReactiveFactorBuilder<B, S extends ReactiveSessionFactory> ex
                         .onErrorResume(error -> executor.close()
                                 .then(Mono.error(error)))    //  on error close executor
                 )
-                .doOnSuccess(v -> log.info("{},cost {} ms.", msgPrefix, System.currentTimeMillis() - startTime))
+                .doOnSuccess(v -> LOG.info("{},cost {} ms.", msgPrefix, System.currentTimeMillis() - startTime))
                 .then();
 
     }

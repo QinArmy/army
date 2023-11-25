@@ -2,7 +2,6 @@ package io.army.tx.reactive;
 
 
 import io.army.reactive.ReactiveLocalSession;
-import io.army.reactive.ReactiveLocalSessionFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.TransactionDefinition;

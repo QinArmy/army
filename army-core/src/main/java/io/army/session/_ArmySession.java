@@ -285,7 +285,7 @@ public abstract class _ArmySession implements Session {
         return new SessionException("unknown session error," + cause.getMessage(), cause);
     }
 
-    protected static Throwable wrapIfNeed(final Throwable cause) {
+    public static Throwable wrapIfNeed(final Throwable cause) {
         return _Exceptions.wrapIfNeed(cause);
     }
 
