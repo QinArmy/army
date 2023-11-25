@@ -109,7 +109,7 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
 
         Mono<Void> forget(Xid xid, Function<Option<?>, ?> optionFunc);
 
-        Mono<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc);
+        Flux<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc);
 
 
     }

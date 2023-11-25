@@ -1,6 +1,7 @@
 package io.army.reactive;
 
 import io.army.session.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
@@ -54,9 +55,9 @@ public interface ReactiveRmSession extends ReactiveSession, RmSession {
 
     Mono<ReactiveRmSession> forget(Xid xid, Function<Option<?>, ?> optionFunc);
 
-    Mono<Optional<Xid>> recover(int flags);
+    Flux<Optional<Xid>> recover(int flags);
 
-    Mono<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc);
+    Flux<Optional<Xid>> recover(int flags, Function<Option<?>, ?> optionFunc);
 
 
 }
