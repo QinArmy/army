@@ -1,10 +1,9 @@
 package io.army.schema;
 
 import javax.annotation.Nullable;
-
 import java.util.List;
 
-public interface _IndexInfo {
+public interface IndexInfo {
 
     String indexName();
 
@@ -34,7 +33,7 @@ public interface _IndexInfo {
 
         Builder appendColumn(String columnName, @Nullable Boolean asc);
 
-        _IndexInfo buildAndClear();
+        IndexInfo buildAndClear();
 
     }
 

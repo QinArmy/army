@@ -5,10 +5,7 @@ import io.army.meta.ChildTableMeta;
 import io.army.meta.TableMeta;
 import io.army.reactive.ReactiveCloseable;
 import io.army.reactive.ReactiveStmtOption;
-import io.army.session.Option;
-import io.army.session.TransactionInfo;
-import io.army.session.TransactionOption;
-import io.army.session.Xid;
+import io.army.session.*;
 import io.army.session.executor.StmtExecutor;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
@@ -83,7 +80,7 @@ public interface ReactiveStmtExecutor extends StmtExecutor, ReactiveCloseable {
      */
     interface LocalTransactionSpec {
 
-        Mono<TransactionInfo> startTransaction(TransactionOption option);
+        Mono<TransactionInfo> startTransaction(TransactionOption option, HandleMode mode);
 
         Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc);
 

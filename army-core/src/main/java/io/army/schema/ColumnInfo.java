@@ -2,7 +2,7 @@ package io.army.schema;
 
 import javax.annotation.Nullable;
 
-public interface _ColumnInfo {
+public interface ColumnInfo {
 
     String columnName();
 
@@ -49,7 +49,7 @@ public interface _ColumnInfo {
 
         Builder autoincrement(boolean autoincrement);
 
-        _ColumnInfo buildAndClear();
+        ColumnInfo buildAndClear();
 
     }
 

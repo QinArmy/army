@@ -8,18 +8,24 @@ import io.army.criteria.impl._TableMetaFactory;
 import io.army.dialect.Database;
 import io.army.dialect.DialectEnv;
 import io.army.env.ArmyEnvironment;
+import io.army.env.ArmyKey;
 import io.army.executor.ExecutorEnv;
 import io.army.generator.FieldGenerator;
 import io.army.generator.FieldGeneratorFactory;
 import io.army.mapping.MappingEnv;
 import io.army.meta.*;
+import io.army.schema._FieldResult;
 import io.army.schema._SchemaResult;
+import io.army.schema._TableResult;
 import io.army.session.executor.StmtExecutorFactoryProviderSpec;
 import io.army.util._Collections;
 import io.army.util._StringUtils;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -288,6 +294,127 @@ public abstract class _ArmyFactoryBuilder<B, R> implements FactoryBuilderSpec<B,
         orderedAdviceList.sort(Comparator.comparingInt(FactoryAdvice::order));
         orderedAdviceList = Collections.unmodifiableList(orderedAdviceList);
         return new SessionFactoryAdviceComposite(orderedAdviceList);
+    }
+
+
+    protected static <T> T createExecutorProvider(final String name, final ArmyEnvironment env, final Object dataSource,
+                                                  final Class<T> providerTypeClass, final ArmyKey<String> providerKey,
+                                                  final ArmyKey<String> providerMd5Key)
+            throws SessionFactoryException {
+
+        final Class<?> providerClass;
+        final String className = env.getOrDefault(providerKey);
+        try {
+            providerClass = Class.forName(className);
+        } catch (Throwable e) {
+            String m = String.format("Load class %s %s occur error.", providerTypeClass.getName(), className);
+            throw new SessionFactoryException(m, e);
+        }
+
+        if (!providerTypeClass.isAssignableFrom(providerClass)) {
+            String m = String.format("%s value[%s] isn' the implementation of %s .", providerKey,
+                    className, providerTypeClass.getName());
+            throw new SessionFactoryException(m);
+        }
+
+        final String methodName = "create";
+        try {
+
+            final Method method;
+            method = providerClass.getMethod(methodName, Object.class, String.class, ArmyEnvironment.class);
+            final int modifiers;
+            modifiers = method.getModifiers();
+            if (!(Modifier.isPublic(modifiers)
+                    && Modifier.isStatic(modifiers)
+                    && providerTypeClass.isAssignableFrom(method.getReturnType()))) {
+                String m;
+                m = String.format("%s not declared %s(Object,String,ArmyEnvironment) method.", providerClass.getName(), method);
+                throw new SessionFactoryException(m);
+
+            }
+            final T provider;
+            provider = providerTypeClass.cast(method.invoke(null, dataSource, name, env));
+            if (provider == null) {
+                String m = String.format("%s %s return null.", methodName, providerClass.getName());
+                throw new NullPointerException(m);
+            }
+            return provider;
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            String m = String.format("%s %s invoke error:%s", providerClass.getName(), methodName, e.getMessage());
+            throw new SessionFactoryException(m, e);
+        }
+
+    }
+
+    /**
+     * @return true : error
+     */
+    @Nullable
+    protected static SessionFactoryException validateSchema(SessionFactory sessionFactory, _SchemaResult schemaResult) {
+
+        final StringBuilder builder = new StringBuilder()
+                .append(sessionFactory)
+                .append(" validate failure.\n");
+
+        int differentCount;
+        final List<TableMeta<?>> newTableList;
+        newTableList = schemaResult.newTableList();
+        differentCount = newTableList.size();
+        if (differentCount > 0) {
+            for (TableMeta<?> table : newTableList) {
+                builder.append('\n')
+                        .append(table.tableName())
+                        .append(" not exists.");
+            }
+            builder.append('\n');
+        }
+
+        final List<_TableResult> tableResultList;
+        tableResultList = schemaResult.changeTableList();
+        if (tableResultList.size() > 0) {
+            for (_TableResult tableResult : tableResultList) {
+                builder.append('\n')
+                        .append(tableResult.table())
+                        .append(" not match:");
+                differentCount += tableResult.newFieldList().size();
+                for (FieldMeta<?> field : tableResult.newFieldList()) {
+                    builder.append("\n\t")
+                            .append(field)
+                            .append(" not exists.");
+                }
+                for (_FieldResult field : tableResult.changeFieldList()) {
+                    if (field.containSqlType() || field.containDefault() || field.containNullable()) {
+                        builder.append("\n\t")
+                                .append(field)
+                                .append(" not match.");
+                        differentCount++;
+                    }
+                }
+                differentCount += tableResult.newIndexList().size();
+                for (String index : tableResult.newIndexList()) {
+                    builder.append("\n\tindex[")
+                            .append(index)
+                            .append("] not exists.");
+                }
+                differentCount += tableResult.changeIndexList().size();
+                for (String index : tableResult.changeIndexList()) {
+                    builder.append("\n\tindex[")
+                            .append(index)
+                            .append("] not match.");
+                }
+
+            }
+            builder.append('\n');
+        }
+
+        final SessionFactoryException error;
+        if (differentCount > 0) {
+            error = new SessionFactoryException(builder.toString());
+        } else {
+            error = null;
+        }
+        return error;
+
     }
 
 

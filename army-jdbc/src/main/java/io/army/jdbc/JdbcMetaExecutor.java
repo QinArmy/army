@@ -66,12 +66,12 @@ class JdbcMetaExecutor implements MetaExecutor {
             catalog = conn.getCatalog();
             schema = conn.getSchema();
 
-            final Map<String, _TableInfo.Builder> tableBuilderMap;
+            final Map<String, TableInfo.Builder> tableBuilderMap;
             tableBuilderMap = getTableBuilder(catalog, schema, metaData);
 
             appendColumn(catalog, schema, metaData, tableBuilderMap);
-            final _IndexInfo.Builder indexBuilder = _IndexInfo.builder();
-            for (_TableInfo.Builder tableBuilder : tableBuilderMap.values()) {
+            final IndexInfo.Builder indexBuilder = IndexInfo.builder();
+            for (TableInfo.Builder tableBuilder : tableBuilderMap.values()) {
                 appendIndex(catalog, schema, metaData, true, tableBuilder, indexBuilder);
                 appendIndex(catalog, schema, metaData, false, tableBuilder, indexBuilder);
             }
@@ -137,17 +137,17 @@ class JdbcMetaExecutor implements MetaExecutor {
     }
 
 
-    private Map<String, _TableInfo.Builder> getTableBuilder(final String catalog, final String schema
+    private Map<String, TableInfo.Builder> getTableBuilder(final String catalog, final String schema
             , final DatabaseMetaData metaData) throws SQLException {
 
         try (ResultSet resultSet = metaData.getTables(catalog, schema, "%", new String[]{"TABLE", "VIEW"})) {
-            final Map<String, _TableInfo.Builder> builderMap = _Collections.hashMap();
+            final Map<String, TableInfo.Builder> builderMap = _Collections.hashMap();
             for (String tableName, type; resultSet.next(); ) {
                 tableName = resultSet.getString("TABLE_NAME");
                 type = resultSet.getString("TABLE_TYPE");
 
-                final _TableInfo.Builder builder;
-                builder = _TableInfo.builder(tableName)
+                final TableInfo.Builder builder;
+                builder = TableInfo.builder(tableName)
                         .comment(resultSet.getString("REMARKS"));
                 switch (type) {
                     case "TABLE":
@@ -170,12 +170,12 @@ class JdbcMetaExecutor implements MetaExecutor {
     }
 
     private void appendColumn(final @Nullable String catalog, final @Nullable String schema
-            , final DatabaseMetaData metaData, final Map<String, _TableInfo.Builder> tableBuilderMap)
+            , final DatabaseMetaData metaData, final Map<String, TableInfo.Builder> tableBuilderMap)
             throws SQLException {
 
         try (ResultSet resultSet = metaData.getColumns(catalog, schema, "%", "%")) {
-            _TableInfo.Builder tableBuilder = null;
-            final _ColumnInfo.Builder builder = _ColumnInfo.builder();
+            TableInfo.Builder tableBuilder = null;
+            final ColumnInfo.Builder builder = ColumnInfo.builder();
             for (String tableName, currentTableName = null, nullable; resultSet.next(); ) {
 
                 tableName = resultSet.getString("TABLE_NAME");
@@ -238,7 +238,7 @@ class JdbcMetaExecutor implements MetaExecutor {
 
     private void appendIndex(final @Nullable String catalog, final @Nullable String schema
             , final DatabaseMetaData metaData, final boolean unique
-            , final _TableInfo.Builder tableBuilder, _IndexInfo.Builder builder) throws SQLException {
+            , final TableInfo.Builder tableBuilder, IndexInfo.Builder builder) throws SQLException {
         final String tableName = tableBuilder.name();
         try (ResultSet resultSet = metaData.getIndexInfo(catalog, schema, tableName, unique, false)) {
             Boolean asc;

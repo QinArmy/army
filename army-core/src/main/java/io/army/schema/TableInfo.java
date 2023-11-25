@@ -1,10 +1,9 @@
 package io.army.schema;
 
 import javax.annotation.Nullable;
-
 import java.util.Map;
 
-public interface _TableInfo {
+public interface TableInfo {
 
     /**
      * @return lower case table name
@@ -16,11 +15,11 @@ public interface _TableInfo {
     String comment();
 
     /**
-     * @return map, key : column name (lower case),value: {@link _ColumnInfo}.
+     * @return map, key : column name (lower case),value: {@link ColumnInfo}.
      */
-    Map<String, _ColumnInfo> columnMap();
+    Map<String, ColumnInfo> columnMap();
 
-    Map<String, _IndexInfo> indexMap();
+    Map<String, IndexInfo> indexMap();
 
 
     static Builder builder(String tableName) {
@@ -36,11 +35,11 @@ public interface _TableInfo {
 
         Builder comment(@Nullable String comment);
 
-        Builder appendColumn(_ColumnInfo column);
+        Builder appendColumn(ColumnInfo column);
 
-        Builder appendIndex(_IndexInfo indexInfo);
+        Builder appendIndex(IndexInfo indexInfo);
 
-        _TableInfo build();
+        TableInfo build();
 
     }
 

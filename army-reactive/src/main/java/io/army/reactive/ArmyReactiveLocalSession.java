@@ -2,11 +2,13 @@ package io.army.reactive;
 
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
 import io.army.session.*;
+import io.army.session.executor.DriverSpiHolder;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -17,7 +19,20 @@ import java.util.function.Function;
  *
  * @see ArmyReactiveLocalSessionFactory
  */
-final class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLocalSession {
+class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLocalSession {
+
+    /**
+     * @see ArmyReactiveLocalSessionFactory.LocalSessionBuilder#createSession(String, boolean)
+     */
+    static ArmyReactiveLocalSession create(ArmyReactiveLocalSessionFactory.LocalSessionBuilder builder) {
+        final ArmyReactiveLocalSession session;
+        if (builder.inOpenDriverSpi()) {
+            session = new OpenDriverSpiSession(builder);
+        } else {
+            session = new ArmyReactiveLocalSession(builder);
+        }
+        return session;
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(ArmyReactiveLocalSession.class);
 
@@ -31,40 +46,28 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
 
     private volatile int rollbackOnly;
 
-    ArmyReactiveLocalSession(ArmyReactiveLocalSessionFactory.LocalSessionBuilder builder) {
+    /**
+     * private constructor
+     *
+     * @see ArmyReactiveLocalSession#create(ArmyReactiveLocalSessionFactory.LocalSessionBuilder)
+     */
+    private ArmyReactiveLocalSession(ArmyReactiveLocalSessionFactory.LocalSessionBuilder builder) {
         super(builder);
     }
 
 
     @Override
-    public ReactiveLocalSessionFactory sessionFactory() {
+    public final ReactiveLocalSessionFactory sessionFactory() {
         return (ReactiveLocalSessionFactory) this.factory;
     }
 
-
     @Override
-    public boolean inTransaction() {
-        boolean in;
-        try {
-            in = this.stmtExecutor.inTransaction();
-        } catch (DataAccessException e) {
-            in = hasTransactionInfo();
-        }
-        return in;
-
+    public final boolean isRollbackOnly() {
+        return ROLLBACK_ONLY.get(this) != 0;
     }
 
     @Override
-    public boolean hasTransactionInfo() {
-        return this.transactionInfo != null;
-    }
-
-
-
-    /*-------------------below local transaction methods -------------------*/
-
-    @Override
-    public Mono<ReactiveLocalSession> setTransactionCharacteristics(TransactionOption option) {
+    public final Mono<ReactiveLocalSession> setTransactionCharacteristics(TransactionOption option) {
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
@@ -74,49 +77,58 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
     }
 
 
+    /*-------------------below local transaction methods -------------------*/
+
+
     @Override
-    public Mono<TransactionInfo> startTransaction() {
-        return this.startTransaction(TransactionOption.option(null, false));
+    public final Mono<TransactionInfo> startTransaction() {
+        return startTransaction(TransactionOption.option(null, false), HandleMode.ERROR_IF_EXISTS);
     }
 
     @Override
-    public Mono<TransactionInfo> startTransaction(final TransactionOption option) {
-        final Mono<TransactionInfo> mono;
+    public final Mono<TransactionInfo> startTransaction(final TransactionOption option) {
+        return startTransaction(option, HandleMode.ERROR_IF_EXISTS);
+    }
+
+    @Override
+    public final Mono<TransactionInfo> startTransaction(TransactionOption option, HandleMode mode) {
         if (isClosed()) {
-            mono = Mono.error(_Exceptions.sessionClosed(this));
-        } else if (inTransaction()) {
-            mono = Mono.error(_Exceptions.existsTransaction(this));
-        } else {
-            mono = ((ReactiveLocalStmtExecutor) this.stmtExecutor).startTransaction(option)
-                    .doOnSuccess(info -> TRANSACTION_INFO.set(this, info))
-                    .onErrorMap(error -> {
-                        TRANSACTION_INFO.set(this, null);
-                        return error;
-                    });
+            return Mono.error(_Exceptions.sessionClosed(this));
         }
-        return mono;
+        return ((ReactiveLocalStmtExecutor) this.stmtExecutor).startTransaction(option, mode)
+                .doOnSuccess(info -> {
+                    assert info.inTransaction();
+                    assert option.isolation() == null || info.isolation().equals(option.isolation());
+                    assert info.isReadOnly() == option.isReadOnly();
+
+                    TRANSACTION_INFO.set(this, info);
+                    ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+                })
+                .onErrorMap(error -> {
+                    TRANSACTION_INFO.set(this, null);
+                    ROLLBACK_ONLY.compareAndSet(this, 1, 0);
+                    return _ArmySession.wrapIfNeed(error);
+                });
     }
 
 
     @Override
-    public ReactiveLocalSession markRollbackOnly() {
+    public final void markRollbackOnly() {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
-        } else if (!hasTransactionInfo()) {
-            throw _Exceptions.noTransaction(this);
         }
         ROLLBACK_ONLY.compareAndSet(this, 0, 1);
-        return this;
     }
 
     @Override
-    public Mono<ReactiveLocalSession> commit() {
-        return this.commit(Option.EMPTY_OPTION_FUNC);
+    public final Mono<ReactiveLocalSession> commit() {
+        return this.commit(Option.EMPTY_OPTION_FUNC)
+                .thenReturn(this);
     }
 
     @Override
-    public Mono<ReactiveLocalSession> commit(Function<Option<?>, ?> optionFunc) {
-        final Mono<ReactiveLocalSession> mono;
+    public final Mono<Optional<TransactionInfo>> commit(Function<Option<?>, ?> optionFunc) {
+        final Mono<Optional<TransactionInfo>> mono;
         if (isClosed()) {
             mono = Mono.error(_Exceptions.sessionClosed(this));
         } else if (ROLLBACK_ONLY.get(this) != 0) {
@@ -124,39 +136,35 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
         } else {
             mono = ((ReactiveLocalStmtExecutor) this.stmtExecutor).commit(optionFunc)
                     .doOnSuccess(this::handleTransactionEndSuccess)
-                    .onErrorMap(_ArmySession::wrapIfNeed)
-                    .thenReturn(this);
+                    .onErrorMap(_ArmySession::wrapIfNeed);
         }
         return mono;
     }
 
     @Override
-    public Mono<ReactiveLocalSession> rollback() {
-        return this.rollback(Option.EMPTY_OPTION_FUNC);
+    public final Mono<ReactiveLocalSession> rollback() {
+        return rollback(Option.EMPTY_OPTION_FUNC)
+                .thenReturn(this);
     }
 
     @Override
-    public Mono<ReactiveLocalSession> rollback(Function<Option<?>, ?> optionFunc) {
-        final Mono<ReactiveLocalSession> mono;
+    public final Mono<Optional<TransactionInfo>> rollback(Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
-            mono = Mono.error(_Exceptions.sessionClosed(this));
-        } else {
-            mono = ((ReactiveLocalStmtExecutor) this.stmtExecutor).rollback(optionFunc)
-                    .doOnSuccess(this::handleTransactionEndSuccess)
-                    .onErrorMap(_ArmySession::wrapIfNeed)
-                    .thenReturn(this);
+            return Mono.error(_Exceptions.sessionClosed(this));
         }
-        return mono;
+        return ((ReactiveLocalStmtExecutor) this.stmtExecutor).rollback(optionFunc)
+                .doOnSuccess(this::handleTransactionEndSuccess)
+                .onErrorMap(_ArmySession::wrapIfNeed);
     }
 
 
     @Override
-    public Mono<ReactiveLocalSession> releaseSavePoint(Object savepoint) {
-        return this.releaseSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+    public final Mono<ReactiveLocalSession> releaseSavePoint(Object savepoint) {
+        return releaseSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public Mono<ReactiveLocalSession> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
+    public final Mono<ReactiveLocalSession> releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
@@ -166,12 +174,12 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
     }
 
     @Override
-    public Mono<ReactiveLocalSession> rollbackToSavePoint(Object savepoint) {
-        return this.rollbackToSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+    public final Mono<ReactiveLocalSession> rollbackToSavePoint(Object savepoint) {
+        return rollbackToSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
     }
 
     @Override
-    public Mono<ReactiveLocalSession> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
+    public final Mono<ReactiveLocalSession> rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
         if (isClosed()) {
             return Mono.error(_Exceptions.sessionClosed(this));
         }
@@ -180,21 +188,31 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
                 .thenReturn(this);
     }
 
+    /*-------------------below protected methods -------------------*/
+
+    @Nullable
+    @Override
+    protected final TransactionInfo obtainTransactionInfo() {
+        return this.transactionInfo;
+    }
+
 
     /*-------------------below package methods -------------------*/
 
+
     @Override
-    ReactiveStmtOption defaultOption() {
-        return null;
+    final ReactiveStmtOption defaultOption() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    protected Logger getLogger() {
+    protected final Logger getLogger() {
         return LOG;
     }
 
+
     @Override
-    void markRollbackOnlyOnError(Throwable cause) {
+    protected final void rollbackOnlyOnError(ChildUpdateException cause) {
         ROLLBACK_ONLY.compareAndSet(this, 0, 1);
     }
 
@@ -211,8 +229,37 @@ final class ArmyReactiveLocalSession extends ArmyReactiveSession implements Reac
         } else {
             TRANSACTION_INFO.set(this, null);
         }
-        ROLLBACK_ONLY.set(this, 0);
+        ROLLBACK_ONLY.compareAndSet(this, 1, 0);
     }
+
+
+    private static final class OpenDriverSpiSession extends ArmyReactiveLocalSession implements DriverSpiHolder {
+
+        /**
+         * @see ArmyReactiveLocalSession#create(ArmyReactiveLocalSessionFactory.LocalSessionBuilder)
+         */
+        private OpenDriverSpiSession(ArmyReactiveLocalSessionFactory.LocalSessionBuilder builder) {
+            super(builder);
+        }
+
+        @Override
+        public boolean isDriverAssignableTo(Class<?> spiClass) {
+            if (isClosed()) {
+                throw _Exceptions.sessionClosed(this);
+            }
+            return this.stmtExecutor.isDriverAssignableTo(spiClass);
+        }
+
+        @Override
+        public <T> T getDriverSpi(Class<T> spiClass) {
+            if (isClosed()) {
+                throw _Exceptions.sessionClosed(this);
+            }
+            return this.stmtExecutor.getDriverSpi(spiClass);
+        }
+
+
+    } // OpenDriverSpiSession
 
 
 }

@@ -1,10 +1,9 @@
 package io.army.schema;
 
 import javax.annotation.Nullable;
-
 import java.util.Locale;
 
-final class ColumnInfoImpl implements _ColumnInfo {
+final class ColumnInfoImpl implements ColumnInfo {
 
     static ColumnInfoBuilder createBuilder() {
         return new ColumnInfoBuilder();
@@ -95,7 +94,7 @@ final class ColumnInfoImpl implements _ColumnInfo {
         return sb.toString();
     }
 
-    private static final class ColumnInfoBuilder implements _ColumnInfo.Builder {
+    private static final class ColumnInfoBuilder implements ColumnInfo.Builder {
 
         private String columnName;
 
@@ -163,8 +162,8 @@ final class ColumnInfoImpl implements _ColumnInfo {
         }
 
         @Override
-        public _ColumnInfo buildAndClear() {
-            final _ColumnInfo columnInfo;
+        public ColumnInfo buildAndClear() {
+            final ColumnInfo columnInfo;
             columnInfo = new ColumnInfoImpl(this);
 
             this.columnName = null;

@@ -29,14 +29,14 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
             throw new IllegalArgumentException(m);
         }
 
-        final Map<String, _TableInfo> tableInfoMap = schemaInfo.tableMap();
+        final Map<String, TableInfo> tableInfoMap = schemaInfo.tableMap();
 
         final _TableResult.Builder builder = _TableResult.builder();
         final List<TableMeta<?>> newTableList = _Collections.arrayList();
         final List<_TableResult> tableResultList = _Collections.arrayList();
         final boolean supportTableComment = this.supportTableComment();
 
-        _TableInfo tableInfo;
+        TableInfo tableInfo;
         for (TableMeta<?> table : tableMetas) {
             tableInfo = tableInfoMap.get(table.tableName());
             if (tableInfo == null) {
@@ -63,12 +63,12 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
     /**
      * @return true : sql type definition is different.
      */
-    abstract boolean compareSqlType(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType);
+    abstract boolean compareSqlType(ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType);
 
     /**
      * @return true : default expression definition is different.
      */
-    abstract boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType);
+    abstract boolean compareDefault(ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType);
 
     /**
      * @return true : support column comment.
@@ -80,14 +80,14 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
     abstract String primaryKeyName(TableMeta<?> table);
 
 
-    private void compareColumns(_TableInfo tableInfo, TableMeta<?> table, _TableResult.Builder tableBuilder) {
+    private void compareColumns(TableInfo tableInfo, TableMeta<?> table, _TableResult.Builder tableBuilder) {
 
-        final Map<String, _ColumnInfo> columnMap = tableInfo.columnMap();
+        final Map<String, ColumnInfo> columnMap = tableInfo.columnMap();
         final _FieldResult.Builder builder = _FieldResult.builder();
         final ServerMeta serverMeta = this.serverMeta;
         final boolean supportColumnComment = this.supportColumnComment();
 
-        _ColumnInfo column;
+        ColumnInfo column;
         SqlType sqlType;
         Boolean nullable;
         for (FieldMeta<?> field : table.fieldList()) {
@@ -117,11 +117,11 @@ abstract class ArmySchemaComparer implements _SchemaComparer {
 
     }
 
-    private <T> void compareIndex(final _TableInfo tableInfo, final TableMeta<T> table,
+    private <T> void compareIndex(final TableInfo tableInfo, final TableMeta<T> table,
                                   final _TableResult.Builder tableBuilder) {
 
-        final Map<String, _IndexInfo> indexMap = tableInfo.indexMap();
-        _IndexInfo indexInfo;
+        final Map<String, IndexInfo> indexMap = tableInfo.indexMap();
+        IndexInfo indexInfo;
         String indexName;
         List<IndexFieldMeta<T>> indexFieldList;
         List<String> columnList;

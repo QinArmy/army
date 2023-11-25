@@ -1,24 +1,30 @@
 package io.army.reactive;
 
 import io.army.reactive.executor.ReactiveLocalStmtExecutor;
+import io.army.session.SessionException;
 import io.army.util._Exceptions;
 import reactor.core.publisher.Mono;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * This class is a implementation of {@link ReactiveLocalSessionFactory}
+ *
+ * @see ArmyReactiveLocalSession
+ * @since 1.0
  */
 final class ArmyReactiveLocalSessionFactory extends ArmyReactiveSessionFactory implements ReactiveLocalSessionFactory {
 
 
-    private final AtomicBoolean factoryClosed = new AtomicBoolean(false);
-
-    ArmyReactiveLocalSessionFactory(LocalSessionFactoryBuilder builder) {
-        super(builder);
+    static ArmyReactiveLocalSessionFactory create(ArmyLocalSessionFactoryBuilder builder) {
+        return new ArmyReactiveLocalSessionFactory(builder);
     }
 
 
+    /**
+     * private constructor
+     */
+    private ArmyReactiveLocalSessionFactory(ArmyLocalSessionFactoryBuilder builder) {
+        super(builder);
+    }
 
 
     /*################################## blow InnerReactiveApiSessionFactory method ##################################*/
@@ -33,29 +39,32 @@ final class ArmyReactiveLocalSessionFactory extends ArmyReactiveSessionFactory i
     static final class LocalSessionBuilder extends ReactiveSessionBuilder<SessionBuilder, Mono<ReactiveLocalSession>>
             implements SessionBuilder {
 
-
+        /**
+         * private constructor
+         */
         private LocalSessionBuilder(ArmyReactiveLocalSessionFactory sessionFactory) {
             super(sessionFactory);
         }
 
         @Override
-        protected Mono<ReactiveLocalSession> createSession(String sessionName, boolean readOnly) {
+        protected Mono<ReactiveLocalSession> createSession(String sessionName, boolean readonly) {
             return ((ArmyReactiveLocalSessionFactory) this.factory).stmtExecutorFactory
-                    .localExecutor(sessionName, readOnly)
+                    .localExecutor(sessionName, readonly)
                     .map(this::createLocalSession);
         }
 
+
         @Override
-        protected Mono<ReactiveLocalSession> handleError(Throwable cause) {
+        protected Mono<ReactiveLocalSession> handleError(SessionException cause) {
             return Mono.error(_Exceptions.wrapIfNeed(cause));
         }
 
         private ReactiveLocalSession createLocalSession(final ReactiveLocalStmtExecutor stmtExecutor) {
             this.stmtExecutor = stmtExecutor;
-            return new ArmyReactiveLocalSession(this);
+            return ArmyReactiveLocalSession.create(this);
         }
 
-    }//SessionBuilder
+    } // LocalSessionBuilder
 
 
 }

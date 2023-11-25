@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
-final class TableInfoImpl implements _TableInfo {
+final class TableInfoImpl implements TableInfo {
 
     static TableInfoBuilder createBuilder(String name) {
         return new TableInfoBuilder(name);
@@ -18,9 +18,9 @@ final class TableInfoImpl implements _TableInfo {
 
     private final String comment;
 
-    private final Map<String, _ColumnInfo> columnMap;
+    private final Map<String, ColumnInfo> columnMap;
 
-    private final Map<String, _IndexInfo> indexMap;
+    private final Map<String, IndexInfo> indexMap;
 
     private TableInfoImpl(TableInfoBuilder builder) {
         this.name = builder.name.toLowerCase(Locale.ROOT);
@@ -28,7 +28,7 @@ final class TableInfoImpl implements _TableInfo {
         this.comment = builder.comment;
         this.columnMap = Collections.unmodifiableMap(builder.columnMap);
 
-        final Map<String, _IndexInfo> indexMap = builder.indexMap;
+        final Map<String, IndexInfo> indexMap = builder.indexMap;
         if (indexMap == null) {
             this.indexMap = Collections.emptyMap();
         } else {
@@ -48,12 +48,12 @@ final class TableInfoImpl implements _TableInfo {
     }
 
     @Override
-    public Map<String, _ColumnInfo> columnMap() {
+    public Map<String, ColumnInfo> columnMap() {
         return this.columnMap;
     }
 
     @Override
-    public Map<String, _IndexInfo> indexMap() {
+    public Map<String, IndexInfo> indexMap() {
         return this.indexMap;
     }
 
@@ -70,7 +70,7 @@ final class TableInfoImpl implements _TableInfo {
         return sb.toString();
     }
 
-    private static final class TableInfoBuilder implements _TableInfo.Builder {
+    private static final class TableInfoBuilder implements TableInfo.Builder {
 
         private final String name;
 
@@ -78,9 +78,9 @@ final class TableInfoImpl implements _TableInfo {
 
         private String comment;
 
-        private Map<String, _ColumnInfo> columnMap = _Collections.hashMap();
+        private Map<String, ColumnInfo> columnMap = _Collections.hashMap();
 
-        private Map<String, _IndexInfo> indexMap;
+        private Map<String, IndexInfo> indexMap;
 
         private TableInfoBuilder(String name) {
             this.name = name;
@@ -104,14 +104,14 @@ final class TableInfoImpl implements _TableInfo {
         }
 
         @Override
-        public Builder appendColumn(_ColumnInfo column) {
+        public Builder appendColumn(ColumnInfo column) {
             this.columnMap.put(column.columnName().toLowerCase(), column);
             return this;
         }
 
         @Override
-        public Builder appendIndex(_IndexInfo indexInfo) {
-            Map<String, _IndexInfo> indexMap = this.indexMap;
+        public Builder appendIndex(IndexInfo indexInfo) {
+            Map<String, IndexInfo> indexMap = this.indexMap;
             if (indexMap == null) {
                 indexMap = _Collections.hashMap();
                 this.indexMap = indexMap;
@@ -121,7 +121,7 @@ final class TableInfoImpl implements _TableInfo {
         }
 
         @Override
-        public _TableInfo build() {
+        public TableInfo build() {
             return new TableInfoImpl(this);
         }
 

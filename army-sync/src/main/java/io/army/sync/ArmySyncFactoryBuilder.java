@@ -8,10 +8,11 @@ import io.army.env.ArmyKey;
 import io.army.env.SyncKey;
 import io.army.executor.ExecutorEnv;
 import io.army.mapping.MappingEnv;
-import io.army.meta.FieldMeta;
 import io.army.meta.ServerMeta;
 import io.army.meta.TableMeta;
-import io.army.schema.*;
+import io.army.schema.SchemaInfo;
+import io.army.schema._SchemaComparer;
+import io.army.schema._SchemaResult;
 import io.army.session.DataAccessException;
 import io.army.session.DdlMode;
 import io.army.session.SessionFactoryException;
@@ -22,9 +23,6 @@ import io.army.sync.executor.SyncStmtExecutorFactoryProvider;
 import io.army.util._Exceptions;
 import org.slf4j.Logger;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 
@@ -54,14 +52,15 @@ abstract class ArmySyncFactoryBuilder<B, R extends SyncSessionFactory> extends _
 
             //2. create ExecutorProvider
             final SyncStmtExecutorFactoryProvider executorProvider;
-            executorProvider = createExecutorProvider(name, env, dataSource);
+            executorProvider = createExecutorProvider(name, env, dataSource, SyncStmtExecutorFactoryProvider.class,
+                    SyncKey.EXECUTOR_PROVIDER, SyncKey.EXECUTOR_PROVIDER_MD5);
 
             final Dialect useDialect = env.getRequired(ArmyKey.DIALECT);
 
             //3. create ServerMeta
             final ServerMeta serverMeta;
             serverMeta = executorProvider.createServerMeta(useDialect, this.nameToDatabaseFunc);
-
+            assert serverMeta.usedDialect() == useDialect;
             //4. create MappingEnv
             final MappingEnv mappingEnv;
             mappingEnv = MappingEnv.create(false, serverMeta, env.get(ArmyKey.ZONE_OFFSET), new MockJsonCodec());
@@ -177,7 +176,7 @@ abstract class ArmySyncFactoryBuilder<B, R extends SyncSessionFactory> extends _
         final SyncStmtExecutorFactory executorFactory;
         executorFactory = sessionFactory.stmtExecutorFactory;
 
-        try (MetaExecutor metaExecutor = executorFactory.createMetaExecutor()) {
+        try (MetaExecutor metaExecutor = executorFactory.metaExecutor()) {
 
             //1.extract schema info.
             final SchemaInfo schemaInfo;
@@ -209,7 +208,10 @@ abstract class ArmySyncFactoryBuilder<B, R extends SyncSessionFactory> extends _
             switch (ddlMode) {
                 case VALIDATE: {
                     if (schemaResult.newTableList().size() > 0 || schemaResult.changeTableList().size() > 0) {
-                        validateSchema(sessionFactory, schemaResult);
+                        final SessionFactoryException error;
+                        if ((error = validateSchema(sessionFactory, schemaResult)) != null) {
+                            throw error;
+                        }
                     }
                 }
                 break;
@@ -234,123 +236,6 @@ abstract class ArmySyncFactoryBuilder<B, R extends SyncSessionFactory> extends _
             throw new SessionFactoryException(m, e);
         }
 
-
-    }
-
-
-    /**
-     * @see #initializingSchema(ArmySyncSessionFactory, DdlMode)
-     */
-    private static void validateSchema(ArmySyncSessionFactory sessionFactory, _SchemaResult schemaResult) {
-
-        final StringBuilder builder = new StringBuilder()
-                .append(SyncLocalSessionFactory.class.getName())
-                .append('[')
-                .append(sessionFactory.name())
-                .append("] validate failure.\n");
-
-        int differentCount;
-        final List<TableMeta<?>> newTableList;
-        newTableList = schemaResult.newTableList();
-        differentCount = newTableList.size();
-        if (differentCount > 0) {
-            for (TableMeta<?> table : newTableList) {
-                builder.append('\n')
-                        .append(table.tableName())
-                        .append(" not exists.");
-            }
-            builder.append('\n');
-        }
-
-        final List<_TableResult> tableResultList;
-        tableResultList = schemaResult.changeTableList();
-        if (tableResultList.size() > 0) {
-            for (_TableResult tableResult : tableResultList) {
-                builder.append('\n')
-                        .append(tableResult.table())
-                        .append(" not match:");
-                differentCount += tableResult.newFieldList().size();
-                for (FieldMeta<?> field : tableResult.newFieldList()) {
-                    builder.append("\n\t")
-                            .append(field)
-                            .append(" not exists.");
-                }
-                for (_FieldResult field : tableResult.changeFieldList()) {
-                    if (field.containSqlType() || field.containDefault() || field.containNullable()) {
-                        builder.append("\n\t")
-                                .append(field)
-                                .append(" not match.");
-                        differentCount++;
-                    }
-                }
-                differentCount += tableResult.newIndexList().size();
-                for (String index : tableResult.newIndexList()) {
-                    builder.append("\n\tindex[")
-                            .append(index)
-                            .append("] not exists.");
-                }
-                differentCount += tableResult.changeIndexList().size();
-                for (String index : tableResult.changeIndexList()) {
-                    builder.append("\n\tindex[")
-                            .append(index)
-                            .append("] not match.");
-                }
-
-            }
-            builder.append('\n');
-        }
-
-        if (differentCount > 0) {
-            throw new SessionFactoryException(builder.toString());
-        }
-
-    }
-
-
-    private static SyncStmtExecutorFactoryProvider createExecutorProvider(final String name, final ArmyEnvironment env,
-                                                                          final Object dataSource) throws SessionFactoryException {
-
-        final Class<?> providerClass;
-        final String className = env.getOrDefault(SyncKey.EXECUTOR_PROVIDER);
-        try {
-            providerClass = Class.forName(className);
-        } catch (Throwable e) {
-            String m = String.format("Load class %s %s occur error.", SyncStmtExecutorFactoryProvider.class.getName(), className);
-            throw new SessionFactoryException(m, e);
-        }
-
-        if (!SyncStmtExecutorFactoryProvider.class.isAssignableFrom(providerClass)) {
-            String m = String.format("%s value[%s] isn' the implementation of %s .", SyncKey.EXECUTOR_PROVIDER,
-                    className, SyncStmtExecutorFactoryProvider.class.getName());
-            throw new SessionFactoryException(m);
-        }
-
-        final String methodName = "create";
-        try {
-
-            final Method method;
-            method = providerClass.getMethod(methodName, Object.class, String.class, ArmyEnvironment.class);
-            final int modifiers;
-            modifiers = method.getModifiers();
-            if (!(Modifier.isPublic(modifiers)
-                    && Modifier.isStatic(modifiers)
-                    && SyncStmtExecutorFactoryProvider.class.isAssignableFrom(method.getReturnType()))) {
-                String m;
-                m = String.format("%s not declared %s(Object,String,ArmyEnvironment) method.", providerClass.getName(), method);
-                throw new SessionFactoryException(m);
-
-            }
-            final SyncStmtExecutorFactoryProvider provider;
-            provider = (SyncStmtExecutorFactoryProvider) method.invoke(null, dataSource, name, env);
-            if (provider == null) {
-                String m = String.format("%s %s return null.", methodName, providerClass.getName());
-                throw new NullPointerException(m);
-            }
-            return provider;
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            String m = String.format("%s %s invoke error:%s", providerClass.getName(), methodName, e.getMessage());
-            throw new SessionFactoryException(m, e);
-        }
 
     }
 

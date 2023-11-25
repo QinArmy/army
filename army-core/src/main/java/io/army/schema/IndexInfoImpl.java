@@ -1,14 +1,13 @@
 package io.army.schema;
 
-import javax.annotation.Nullable;
-
 import io.army.util._Collections;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-final class IndexInfoImpl implements _IndexInfo {
+final class IndexInfoImpl implements IndexInfo {
 
     static IndexInfoBuilder createBuilder() {
         return new IndexInfoBuilder();
@@ -71,7 +70,7 @@ final class IndexInfoImpl implements _IndexInfo {
         return sb.toString();
     }
 
-    private static final class IndexInfoBuilder implements _IndexInfo.Builder {
+    private static final class IndexInfoBuilder implements IndexInfo.Builder {
 
         @Override
         public String name() {
@@ -123,8 +122,8 @@ final class IndexInfoImpl implements _IndexInfo {
         }
 
         @Override
-        public _IndexInfo buildAndClear() {
-            final _IndexInfo indexInfo;
+        public IndexInfo buildAndClear() {
+            final IndexInfo indexInfo;
             indexInfo = new IndexInfoImpl(this);
 
             this.indexName = null;

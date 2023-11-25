@@ -46,10 +46,43 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     final ReactiveStmtExecutor stmtExecutor;
     private final AtomicBoolean sessionClosed = new AtomicBoolean(false);
 
-    protected ArmyReactiveSession(ArmyReactiveSessionFactory.ReactiveSessionBuilder<?, ?> builder) {
+    ArmyReactiveSession(ArmyReactiveSessionFactory.ReactiveSessionBuilder<?, ?> builder) {
         super(builder);
         this.stmtExecutor = builder.stmtExecutor;
         assert this.stmtExecutor != null;
+    }
+
+
+    @Override
+    public final boolean isReactiveSession() {
+        return true;
+    }
+
+    @Override
+    public final boolean isSyncSession() {
+        return false;
+    }
+
+    @Override
+    public final boolean inTransaction() {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        }
+        boolean in;
+        try {
+            in = this.stmtExecutor.inTransaction();
+        } catch (DataAccessException e) {
+            in = hasTransactionInfo();
+        }
+        return in;
+
+    }
+
+    @Override
+    public final boolean hasTransactionInfo() {
+        final TransactionInfo info;
+        info = obtainTransactionInfo();
+        return info != null && info.inTransaction();
     }
 
     @Override
@@ -249,7 +282,6 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     abstract ReactiveStmtOption defaultOption();
 
-    abstract void markRollbackOnlyOnError(Throwable cause);
 
     /*-------------------below private methods -------------------*/
 

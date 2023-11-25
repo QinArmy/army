@@ -24,7 +24,7 @@ public interface ReactiveMetaExecutor extends ReactiveCloseable {
      * @return emit <strong>this</strong>
      * @throws DataAccessException emit(not throw) when access database occur error.
      */
-    Mono<ReactiveMetaExecutor> executeDdl(List<String> ddlList);
+    Mono<Void> executeDdl(List<String> ddlList);
 
 
 }

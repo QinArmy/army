@@ -35,7 +35,7 @@ final class PostgreComparer extends ArmySchemaComparer {
     }
 
     @Override
-    boolean compareSqlType(final _ColumnInfo columnInfo, final FieldMeta<?> field, final SqlType sqlType) {
+    boolean compareSqlType(final ColumnInfo columnInfo, final FieldMeta<?> field, final SqlType sqlType) {
         final String typeName;
         typeName = columnInfo.typeName().toLowerCase(Locale.ROOT);
         final boolean notMatch;
@@ -485,7 +485,7 @@ final class PostgreComparer extends ArmySchemaComparer {
     }
 
     @Override
-    boolean compareDefault(_ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
+    boolean compareDefault(ColumnInfo columnInfo, FieldMeta<?> field, SqlType sqlType) {
         //currently, false
         return false;
     }
