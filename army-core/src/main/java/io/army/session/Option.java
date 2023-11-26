@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
-import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
@@ -23,13 +22,15 @@ public final class Option<T> {
             throw new IllegalArgumentException("no text");
         }
         Objects.requireNonNull(javaType);
+
         final Option<?> option;
-        option = INSTANCE_MAP.computeIfAbsent(name, k -> new Option<>(name, javaType));
+        option = INSTANCE_MAP.computeIfAbsent(name, key -> new Option<>(name, javaType));
 
         if (option.javaType == javaType) {
             return (Option<T>) option;
         }
-        return new Option<>(name, javaType);
+        final String newName = name + "#" + javaType.getName();
+        return (Option<T>) INSTANCE_MAP.computeIfAbsent(newName, cacheKey -> new Option<>(name, javaType)); // here , still use name not cacheKey
     }
 
     public static <T> Function<Option<?>, ?> singleFunc(final Option<T> option, final @Nullable T value) {
@@ -58,6 +59,20 @@ public final class Option<T> {
 
     /**
      * <p>
+     * Representing a name option. For example : transaction label that is print only by {@link TransactionInfo#toString()}
+     * <br/>
+     */
+    public static final Option<String> LABEL = Option.from("LABEL", String.class);
+
+    /**
+     * <p>
+     * Representing transaction TIMEOUT milliseconds ,for example transaction timeout.
+     * <br/>
+     */
+    public static final Option<Integer> TIMEOUT = Option.from("TIMEOUT", Integer.class);
+
+    /**
+     * <p>
      * Representing a wait option. For example : transaction wait option.
      * <br/>
      *
@@ -67,12 +82,13 @@ public final class Option<T> {
 
     /**
      * <p>
-     * Representing transaction LOCK TIMEOUT,for example firebird database.
+     * Representing transaction LOCK TIMEOUT milliseconds ,for example firebird database.
      * <br/>
      *
      * @see <a href="https://firebirdsql.org/file/documentation/html/en/refdocs/fblangref40/firebird-40-language-reference.html#fblangref40-transacs-settransac">firebird : SET TRANSACTION</a>
      */
-    public static final Option<Duration> LOCK_TIMEOUT = Option.from("LOCK TIMEOUT", Duration.class);
+    public static final Option<Integer> LOCK_TIMEOUT = Option.from("LOCK TIMEOUT", Integer.class);
+
 
     /**
      * <p>

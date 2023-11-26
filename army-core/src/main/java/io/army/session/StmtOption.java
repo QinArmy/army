@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 public interface StmtOption {
 
+
     boolean isPreferServerPrepare();
 
 
@@ -58,6 +59,25 @@ public interface StmtOption {
 
 
     Consumer<ResultStates> stateConsumer();
+
+
+    interface BuilderSpec<B> {
+        B fetchSize(int value);
+
+        B frequency(int value);
+
+        B timeoutMillis(int millis);
+
+        B multiStmtMode(MultiStmtMode mode);
+
+        B stateConsumer(Consumer<ResultStates> consumer);
+
+        B parseBatchAsMultiStmt(boolean yes);
+
+        B preferServerPrepare(boolean yes);
+
+
+    }
 
 
 }

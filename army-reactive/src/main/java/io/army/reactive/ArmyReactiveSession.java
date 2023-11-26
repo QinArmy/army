@@ -1,10 +1,9 @@
 package io.army.reactive;
 
 import io.army.criteria.BatchDmlStatement;
+import io.army.criteria.DqlStatement;
 import io.army.criteria.InsertStatement;
 import io.army.criteria.SimpleDmlStatement;
-import io.army.criteria.SimpleDqlStatement;
-import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.criteria.impl.inner.*;
 import io.army.meta.ChildTableMeta;
 import io.army.reactive.executor.ReactiveStmtExecutor;
@@ -28,8 +27,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * <p>This class is base class of following :
@@ -76,7 +77,11 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
         try {
             in = this.stmtExecutor.inTransaction();
         } catch (DataAccessException e) {
-            in = hasTransactionInfo();
+            final TransactionInfo info;
+            info = obtainTransactionInfo();
+            in = info != null && info.inTransaction();
+        } catch (Exception e) {
+            throw wrapSessionError(e);
         }
         return in;
 
@@ -84,80 +89,48 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     @Override
     public final boolean hasTransactionInfo() {
-        final TransactionInfo info;
-        info = obtainTransactionInfo();
-        return info != null && info.inTransaction();
+        return obtainTransactionInfo() != null;
     }
 
     @Override
-    public final <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass) {
+    public final <R> Flux<R> query(DqlStatement statement, Class<R> resultClass) {
         return this.query(statement, resultClass, defaultOption());
     }
 
     @Override
-    public final <R> Flux<R> query(SimpleDqlStatement statement, final Class<R> resultClass, final ReactiveStmtOption option) {
-        return this.executeQuery(statement, option, s -> this.stmtExecutor.query(s, resultClass, option));
+    public final <R> Flux<R> query(DqlStatement statement, final Class<R> resultClass, final ReactiveStmtOption option) {
+        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.query(s, resultClass, o)); // here ,use o not option
     }
 
 
     @Override
-    public final <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass) {
+    public final <R> Flux<Optional<R>> queryOptional(DqlStatement statement, Class<R> resultClass) {
         return this.queryOptional(statement, resultClass, defaultOption());
     }
 
     @Override
-    public <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, ReactiveStmtOption option) {
-        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryOptional(s, resultClass, option));
+    public <R> Flux<Optional<R>> queryOptional(DqlStatement statement, Class<R> resultClass, ReactiveStmtOption option) {
+        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryOptional(s, resultClass, o)); // here ,use o not option
     }
 
     @Override
-    public final <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor) {
+    public final <R> Flux<R> queryObject(DqlStatement statement, Supplier<R> constructor) {
         return this.queryObject(statement, constructor, defaultOption());
     }
 
     @Override
-    public final <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, ReactiveStmtOption option) {
-        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryObject(s, constructor, option));
+    public final <R> Flux<R> queryObject(DqlStatement statement, Supplier<R> constructor, ReactiveStmtOption option) {
+        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryObject(s, constructor, o)); // here ,use o not option
     }
 
     @Override
-    public final <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function) {
+    public final <R> Flux<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function) {
         return this.queryRecord(statement, function, defaultOption());
     }
 
     @Override
-    public final <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
-        return this.executeQuery(statement, option, s -> this.stmtExecutor.queryRecord(s, function, option));
-    }
-
-    @Override
-    public final <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass) {
-        return this.batchQuery(statement, resultClass, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, ReactiveStmtOption option) {
-        return this.executeBatchQuery(statement, option, s -> this.stmtExecutor.batchQuery(s, resultClass, option));
-    }
-
-    @Override
-    public final <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor) {
-        return this.batchQueryObject(statement, constructor, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, ReactiveStmtOption option) {
-        return this.executeBatchQuery(statement, option, s -> this.stmtExecutor.batchQueryObject(s, constructor, option));
-    }
-
-    @Override
-    public final <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function) {
-        return this.batchQueryRecord(statement, function, defaultOption());
-    }
-
-    @Override
-    public final <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
-        return this.executeBatchQuery(statement, option, s -> this.stmtExecutor.batchQueryRecord(s, function, option));
+    public final <R> Flux<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, ReactiveStmtOption option) {
+        return this.executeQuery(statement, option, (s, o) -> this.stmtExecutor.queryRecord(s, function, o)); // here ,use o not option
     }
 
     @Override
@@ -290,66 +263,38 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
     /*-------------------below private methods -------------------*/
 
     /**
-     * @see #query(SimpleDqlStatement, Class, ReactiveStmtOption)
-     * @see #queryObject(SimpleDqlStatement, Supplier, ReactiveStmtOption)
-     * @see #queryRecord(SimpleDqlStatement, Function, ReactiveStmtOption)
+     * @see #query(DqlStatement, Class, ReactiveStmtOption)
+     * @see #queryObject(DqlStatement, Supplier, ReactiveStmtOption)
+     * @see #queryRecord(DqlStatement, Function, ReactiveStmtOption)
      */
-    private <R> Flux<R> executeQuery(final SimpleDqlStatement statement, final ReactiveStmtOption option,
-                                     final Function<SimpleStmt, Flux<R>> exeFunc) {
+    private <R> Flux<R> executeQuery(final DqlStatement statement, final ReactiveStmtOption unsafeOption,
+                                     final BiFunction<SingleSqlStmt, ReactiveStmtOption, Flux<R>> exeFunc) {
 
         Flux<R> flux;
         try {
             assertSession(statement);
 
+            final ReactiveStmtOption option;
+            option = replaceIfNeed(unsafeOption);
+
             final Stmt stmt;
             stmt = parseDqlStatement(statement, option);
-            if (stmt instanceof SimpleStmt) {
-                flux = exeFunc.apply((SimpleStmt) stmt);
+            if (stmt instanceof SingleSqlStmt) {
+                flux = exeFunc.apply((SingleSqlStmt) stmt, option)
+                        .onErrorMap(_ArmySession::wrapIfNeed);
             } else if (!(stmt instanceof PairStmt)) {
                 // no bug,never here
                 throw _Exceptions.unexpectedStmt(stmt);
             } else if (statement instanceof InsertStatement) {
-                flux = returningInsertPairStmt((InsertStatement) statement, (PairStmt) stmt, option, exeFunc);
+                flux = executePairInsertQuery((InsertStatement) statement, (PairStmt) stmt, option, exeFunc)
+                        .onErrorMap(_ArmySession::wrapIfNeed);
             } else {
                 //TODO add DmlStatement code for firebird
                 // no bug,never here
                 throw _Exceptions.unexpectedStatement(statement);
             }
         } catch (Throwable e) {
-            flux = Flux.error(_Exceptions.wrapIfNeed(e));
-        } finally {
-            if (statement instanceof _Statement) {
-                ((_Statement) statement).close();
-            }
-        }
-        return flux;
-    }
-
-    /**
-     * @see #batchQuery(BatchDqlStatement, Class, ReactiveStmtOption)
-     * @see #batchQueryObject(BatchDqlStatement, Supplier)
-     * @see #batchQueryRecord(BatchDqlStatement, Function)
-     */
-    private <R> Flux<R> executeBatchQuery(final BatchDqlStatement statement, final ReactiveStmtOption option,
-                                          final Function<BatchStmt, Flux<R>> exeFunc) {
-        Flux<R> flux;
-        try {
-            assertSession(statement);
-
-            final Stmt stmt;
-            stmt = parseDqlStatement(statement, option);
-            if (stmt instanceof BatchStmt) {
-                flux = exeFunc.apply((BatchStmt) stmt);
-            } else if (!(stmt instanceof PairBatchStmt)) {
-                // no bug,never here
-                throw _Exceptions.unexpectedStmt(stmt);
-            } else {
-                //TODO add DmlStatement code for firebird
-                // no bug,never here
-                throw _Exceptions.unexpectedStatement(statement);
-            }
-        } catch (Throwable e) {
-            flux = Flux.error(_Exceptions.wrapIfNeed(e));
+            flux = Flux.error(_ArmySession.wrapIfNeed(e));
         } finally {
             if (statement instanceof _Statement) {
                 ((_Statement) statement).close();
@@ -360,25 +305,49 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
 
     /**
-     * @see #query(SimpleDqlStatement, Class, ReactiveStmtOption)
+     * @param option the instance is returned by {@link #replaceIfNeed(ReactiveStmtOption)}.
+     * @see #executeQuery(DqlStatement, ReactiveStmtOption, BiFunction)
      */
-    private <R> Flux<R> returningInsertPairStmt(final InsertStatement statement, final PairStmt stmt,
-                                                final ReactiveStmtOption option, final Function<SimpleStmt, Flux<R>> exeFunc) {
+    private <R> Flux<R> executePairInsertQuery(final InsertStatement statement, final PairStmt stmt,
+                                               final ReactiveStmtOption option,
+                                               final BiFunction<SingleSqlStmt, ReactiveStmtOption, Flux<R>> exeFunc) {
 
         final _Insert._ChildInsert childInsert = (_Insert._ChildInsert) statement;
         final boolean firstStmtIsQuery = childInsert.parentStmt() instanceof _ReturningDml;
+        final ChildTableMeta<?> domainTable = (ChildTableMeta<?>) childInsert.table();
+
+        final Function<Throwable, Throwable> errorFunc;
+        errorFunc = error -> _Exceptions.childInsertError(this, domainTable, error);
+
 
         final Flux<R> flux;
         if (firstStmtIsQuery) {
-            flux = exeFunc.apply(stmt.firstStmt())
-                    .collectList()
-                    .flatMapMany(resultList -> this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), resultList, option));
+            flux = exeFunc.apply(stmt.firstStmt(), option)
+                    .collect(Collectors.toCollection(_Collections::arrayList))
+                    .flatMapMany(resultList -> {
+                        final int rowCount = resultList.size();
+                        if (rowCount == 0) {
+                            // exists conflict clause
+                            return Flux.empty();
+                        }
+                        return Flux.create(sink -> this.stmtExecutor.secondQuery((TwoStmtQueryStmt) stmt.secondStmt(), option, resultList)
+                                .onErrorMap(errorFunc)
+                                .subscribe(new ValidateItemCountSubscriber<>(sink, rowCount))
+                        );
+                    });
         } else {
             flux = this.stmtExecutor.insert(stmt.firstStmt(), option)
-                    .flatMapMany(states -> Flux.create(sink -> exeFunc.apply(stmt.secondStmt())
-                                    .subscribe(new ValidateItemCountSubscriber<>(sink, states))
-                            )
-                    );
+                    .flatMapMany(states -> {
+                        final long rowCount = states.affectedRows();
+                        if (rowCount == 0L) {
+                            // exists conflict clause
+                            return Flux.empty();
+                        }
+                        return Flux.create(sink -> exeFunc.apply(stmt.secondStmt(), option)
+                                .onErrorMap(errorFunc)
+                                .subscribe(new ValidateItemCountSubscriber<>(sink, rowCount))
+                        );
+                    });
         }
         return flux;
     }
@@ -473,15 +442,23 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
         return this.stmtExecutor.close();
     }
 
+
+    private ReactiveStmtOption replaceIfNeed(ReactiveStmtOption option) {
+        return option;
+    }
+
     private Throwable handleExecutionError(final Throwable cause) {
         return _Exceptions.wrapIfNeed(cause);
     }
 
+
     private Throwable handlePairStmtError(final Throwable cause) {
-        if (cause instanceof ChildUpdateException && hasTransactionInfo()) {
-            markRollbackOnlyOnError(cause);
+        if (cause instanceof ChildUpdateException) {
+            final ChildUpdateException error = (ChildUpdateException) cause;
+            rollbackOnlyOnError(error);
+            return error;
         }
-        return handleExecutionError(cause);
+        return _ArmySession.wrapIfNeed(cause);
     }
 
 
@@ -513,14 +490,14 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
         private final FluxSink<T> sink;
 
-        private final ResultStates resultStates;
+        private final long expectedCount;
 
         private final AtomicLong count = new AtomicLong(0);
 
 
-        private ValidateItemCountSubscriber(FluxSink<T> sink, ResultStates resultStates) {
+        private ValidateItemCountSubscriber(FluxSink<T> sink, long expectedCount) {
             this.sink = sink.onRequest(this::onRequest);
-            this.resultStates = resultStates;
+            this.expectedCount = expectedCount;
         }
 
 
@@ -543,11 +520,11 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
             if (!DONE.compareAndSet(this, 0, 1)) {
                 return;
             }
-            if (this.count.get() == this.resultStates.affectedRows()) {
+            if (this.count.get() == this.expectedCount) {
                 this.sink.complete();
             } else {
                 String m = String.format("parent insert row[%s] and child insert row[%s] not match.",
-                        this.resultStates.affectedRows(), this.count.get());
+                        this.expectedCount, this.count.get());
                 this.sink.error(new ChildUpdateException(m));
             }
         }

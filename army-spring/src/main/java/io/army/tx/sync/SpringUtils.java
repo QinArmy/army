@@ -1,9 +1,11 @@
 package io.army.tx.sync;
 
+import io.army.session.Isolation;
 import io.army.session.SessionException;
 import io.army.session.TransactionTimeOutException;
-import io.army.tx.Isolation;
 import org.springframework.transaction.*;
+
+import javax.annotation.Nullable;
 
 public abstract class SpringUtils {
 
@@ -40,14 +42,12 @@ public abstract class SpringUtils {
     }
 
 
+    @Nullable
     public static Isolation toArmyIsolation(final int springIsolation) {
         final Isolation isolation;
         switch (springIsolation) {
             case TransactionDefinition.ISOLATION_DEFAULT:
-                isolation = Isolation.DEFAULT;
-                break;
-            case TransactionDefinition.ISOLATION_READ_UNCOMMITTED:
-                isolation = Isolation.READ_UNCOMMITTED;
+                isolation = null;
                 break;
             case TransactionDefinition.ISOLATION_READ_COMMITTED:
                 isolation = Isolation.READ_COMMITTED;
@@ -57,6 +57,9 @@ public abstract class SpringUtils {
                 break;
             case TransactionDefinition.ISOLATION_SERIALIZABLE:
                 isolation = Isolation.SERIALIZABLE;
+                break;
+            case TransactionDefinition.ISOLATION_READ_UNCOMMITTED:
+                isolation = Isolation.READ_UNCOMMITTED;
                 break;
             default:
                 throw new IllegalArgumentException(String.format("unknown springIsolation[%s]", springIsolation));

@@ -1,9 +1,8 @@
 package io.army.reactive;
 
 import io.army.criteria.BatchDmlStatement;
+import io.army.criteria.DqlStatement;
 import io.army.criteria.SimpleDmlStatement;
-import io.army.criteria.SimpleDqlStatement;
-import io.army.criteria.dialect.BatchDqlStatement;
 import io.army.session.*;
 import io.army.session.record.CurrentRecord;
 import io.army.session.record.ResultStates;
@@ -58,30 +57,30 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
     /**
      * @param <R> representing select result Java Type.
      */
-    <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass);
+    <R> Flux<R> query(DqlStatement statement, Class<R> resultClass);
 
-    <R> Flux<R> query(SimpleDqlStatement statement, Class<R> resultClass, ReactiveStmtOption option);
+    <R> Flux<R> query(DqlStatement statement, Class<R> resultClass, ReactiveStmtOption option);
 
 
     /*-------------------below queryOptional methods-------------------*/
 
 
-    <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass);
+    <R> Flux<Optional<R>> queryOptional(DqlStatement statement, Class<R> resultClass);
 
-    <R> Flux<Optional<R>> queryOptional(SimpleDqlStatement statement, Class<R> resultClass, ReactiveStmtOption option);
+    <R> Flux<Optional<R>> queryOptional(DqlStatement statement, Class<R> resultClass, ReactiveStmtOption option);
 
     /*-------------------below queryObject methods-------------------*/
 
-    <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor);
+    <R> Flux<R> queryObject(DqlStatement statement, Supplier<R> constructor);
 
-    <R> Flux<R> queryObject(SimpleDqlStatement statement, Supplier<R> constructor, ReactiveStmtOption option);
+    <R> Flux<R> queryObject(DqlStatement statement, Supplier<R> constructor, ReactiveStmtOption option);
 
 
     /*-------------------below queryRecord methods-------------------*/
 
-    <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function);
+    <R> Flux<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function);
 
-    <R> Flux<R> queryRecord(SimpleDqlStatement statement, Function<CurrentRecord, R> function, ReactiveStmtOption option);
+    <R> Flux<R> queryRecord(DqlStatement statement, Function<CurrentRecord, R> function, ReactiveStmtOption option);
 
 
     /*-------------------below save methods-------------------*/
@@ -113,24 +112,6 @@ public interface ReactiveSession extends Session, ReactiveCloseable {
 //
 //    QueryResults batchQueryResults(BatchDqlStatement statement, ReactiveOption option);
 
-    /*-------------------below batchQueryAsFlux methods-------------------*/
-
-    <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass);
-
-    <R> Flux<R> batchQuery(BatchDqlStatement statement, Class<R> resultClass, ReactiveStmtOption option);
-
-    /*-------------------below batchQueryObject methods-------------------*/
-
-    <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor);
-
-    <R> Flux<R> batchQueryObject(BatchDqlStatement statement, Supplier<R> constructor, ReactiveStmtOption option);
-
-
-    /*-------------------below batchQueryObject methods-------------------*/
-
-    <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function);
-
-    <R> Flux<R> batchQueryRecord(BatchDqlStatement statement, Function<CurrentRecord, R> function, ReactiveStmtOption option);
 
     /*-------------------below multiStmt methods-------------------*/
 

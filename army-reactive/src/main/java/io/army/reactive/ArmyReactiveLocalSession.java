@@ -49,7 +49,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     /**
      * private constructor
      *
-     * @see ArmyReactiveLocalSession#create(ArmyReactiveLocalSessionFactory.ArmyLocalBuilder)
+     * @see ArmyReactiveLocalSession#create(ArmyReactiveSessionFactory.ArmyLocalBuilder)
      */
     private ArmyReactiveLocalSession(ArmyReactiveSessionFactory.ArmyLocalBuilder builder) {
         super(builder);
@@ -231,7 +231,7 @@ class ArmyReactiveLocalSession extends ArmyReactiveSession implements ReactiveLo
     private static final class OpenDriverSpiSession extends ArmyReactiveLocalSession implements DriverSpiHolder {
 
         /**
-         * @see ArmyReactiveLocalSession#create(ArmyReactiveLocalSessionFactory.ArmyLocalBuilder)
+         * @see ArmyReactiveLocalSession#create(ArmyReactiveSessionFactory.ArmyLocalBuilder)
          */
         private OpenDriverSpiSession(ArmyReactiveSessionFactory.ArmyLocalBuilder builder) {
             super(builder);
