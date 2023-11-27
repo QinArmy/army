@@ -95,9 +95,55 @@ abstract class ArmySyncSession extends _ArmySession implements SyncSession {
         if (info != null) {
             return info;
         }
-        return this.stmtExecutor.transactionInfo();
+        try {
+            return this.stmtExecutor.transactionInfo();
+        } catch (Exception e) {
+            throw _ArmySession.wrapSessionError(e);
+        }
     }
 
+
+    @Override
+    public final Object setSavePoint() {
+        return setSavePoint(Option.EMPTY_OPTION_FUNC);
+    }
+
+    @Override
+    public final Object setSavePoint(Function<Option<?>, ?> optionFunc) {
+        try {
+            return this.stmtExecutor.setSavePoint(optionFunc);
+        } catch (Exception e) {
+            throw wrapSessionError(e);
+        }
+    }
+
+    @Override
+    public final void releaseSavePoint(Object savepoint) {
+        releaseSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+    }
+
+    @Override
+    public final void releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
+        try {
+            this.stmtExecutor.releaseSavePoint(savepoint, optionFunc);
+        } catch (Exception e) {
+            throw wrapSessionError(e);
+        }
+    }
+
+    @Override
+    public final void rollbackToSavePoint(Object savepoint) {
+        rollbackToSavePoint(savepoint, Option.EMPTY_OPTION_FUNC);
+    }
+
+    @Override
+    public final void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc) {
+        try {
+            this.stmtExecutor.rollbackToSavePoint(savepoint, optionFunc);
+        } catch (Exception e) {
+            throw wrapSessionError(e);
+        }
+    }
 
     @Override
     public final void setTransactionCharacteristics(TransactionOption option) {

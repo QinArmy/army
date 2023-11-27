@@ -91,10 +91,6 @@ abstract class ArmyReactiveSession extends _ArmySession implements ReactiveSessi
 
     }
 
-    @Override
-    public final boolean hasTransactionInfo() {
-        return obtainTransactionInfo() != null;
-    }
 
     @Override
     public final <R> Flux<R> query(DqlStatement statement, Class<R> resultClass) {

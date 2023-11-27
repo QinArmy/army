@@ -143,6 +143,9 @@ public interface Session extends CloseableSpec, OptionSpec {
     boolean isAllowQueryInsert();
 
 
+    boolean inPseudoTransaction();
+
+
     /**
      * <p><strong>NOTE</strong> : This method don't check whether session closed or not.
      *

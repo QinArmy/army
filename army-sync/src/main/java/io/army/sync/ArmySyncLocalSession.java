@@ -46,10 +46,6 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
         assert this.stmtExecutor instanceof SyncLocalStmtExecutor;
     }
 
-    @Override
-    public final boolean hasTransactionInfo() {
-        return this.transactionInfo != null;
-    }
 
     @Override
     public final boolean isRollbackOnly() {
@@ -60,6 +56,48 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
     public final void markRollbackOnly() {
         this.rollbackOnly = true;
     }
+
+
+    @Override
+    public final TransactionInfo pseudoTransaction(final TransactionOption option, final HandleMode mode) {
+        if (isClosed()) {
+            throw _Exceptions.sessionClosed(this);
+        } else if (!this.readonly) {
+            throw _Exceptions.writeSessionPseudoTransaction(this);
+        }
+        final Isolation isolation;
+        isolation = option.isolation();
+        if (isolation == null) {
+            throw new IllegalArgumentException();
+        }
+
+
+        final TransactionInfo info = this.transactionInfo;
+        if (info != null) {
+            switch (mode) {
+                case ERROR_IF_EXISTS:
+                    throw _Exceptions.existsTransaction(this);
+                case COMMIT_IF_EXISTS:
+                    commit();
+                    break;
+                case ROLLBACK_IF_EXISTS:
+                    rollback();
+                    break;
+                default:
+                    throw _Exceptions.unexpectedEnum(mode);
+            }
+        }
+
+        final TransactionInfo pseudoInfo;
+        pseudoInfo = TransactionInfo.info(false, isolation, option.isReadOnly(), wrapStartMillis(option));
+
+        assert this.transactionInfo == null;
+        this.transactionInfo = pseudoInfo;
+        this.rollbackOnly = false;
+        return pseudoInfo;
+
+    }
+
 
     @Override
     public final TransactionInfo startTransaction() {
@@ -73,31 +111,65 @@ class ArmySyncLocalSession extends ArmySyncSession implements SyncLocalSession {
 
 
     @Override
-    public final TransactionInfo startTransaction(TransactionOption option, HandleMode mode) {
+    public final TransactionInfo startTransaction(final TransactionOption option, final HandleMode mode) {
         if (isClosed()) {
             throw _Exceptions.sessionClosed(this);
         }
         final TransactionInfo existTransaction = this.transactionInfo;
-        if (existTransaction != null) {
-            switch (mode) {
-                case ERROR_IF_EXISTS:
-                    throw _Exceptions.existsTransaction(this);
-                case COMMIT_IF_EXISTS: {
-                    if (isRollbackOnly()) {
-                        throw _Exceptions.rollbackOnlyTransaction(this);
-                    }
+        final boolean pseudoTransaction;
+
+        if (existTransaction == null) {
+            pseudoTransaction = false;
+        } else switch (mode) {
+            case ERROR_IF_EXISTS:
+                throw _Exceptions.existsTransaction(this);
+            case COMMIT_IF_EXISTS: {
+                if (isRollbackOnly()) {
+                    throw _Exceptions.rollbackOnlyTransaction(this);
+                } else if (existTransaction.inTransaction()) {
+                    pseudoTransaction = false;
+                } else {
+                    pseudoTransaction = true;
+                    commit();
                 }
-                break;
-                default:
             }
+            break;
+            case ROLLBACK_IF_EXISTS: {
+                if (existTransaction.inTransaction()) {
+                    pseudoTransaction = false;
+                } else {
+                    pseudoTransaction = true;
+                    rollback();
+                }
+            }
+            break;
+            default:
+                throw _Exceptions.unexpectedEnum(mode);
+
+        } // else switch
+
+        final HandleMode actualMode;
+        if (pseudoTransaction) {
+            assert this.transactionInfo == null;
+            actualMode = HandleMode.ERROR_IF_EXISTS;
+        } else {
+            actualMode = mode;
         }
 
-
         final TransactionInfo info;
-        info = ((SyncLocalStmtExecutor) this.stmtExecutor).startTransaction(option, mode);
+        info = ((SyncLocalStmtExecutor) this.stmtExecutor).startTransaction(option, actualMode);
 
         Objects.requireNonNull(info); // fail,executor bug
+
         assert info.inTransaction(); // fail,executor bug
+        assert info.isReadOnly() == option.isReadOnly();
+        assert info.isolation().equals(option.isolation());
+
+        final Integer timeoutMillis;
+        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+        if (timeoutMillis != null && timeoutMillis > 0) {
+            assert info.valueOf(Option.START_MILLIS) != null;
+        }
 
         this.transactionInfo = info;
         this.rollbackOnly = false;

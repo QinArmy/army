@@ -76,5 +76,16 @@ public interface RmSession extends Session, Session.XaTransactionSupportSpec {
      */
     byte XA_OK = 0;
 
+    /**
+     * @throws IllegalArgumentException throw {@link TransactionOption#isolation()} is null.
+     * @throws SessionException         throw when
+     *                                  <ul>
+     *                                      <li>session have closed</li>
+     *                                      <li>{@link #isReadonlySession()} return false</li>
+     *                                      <li>{@link #inTransaction()} return true</li>
+     *                                  </ul>
+     */
+    TransactionInfo pseudoTransaction(Xid xid, TransactionOption option);
+
 
 }

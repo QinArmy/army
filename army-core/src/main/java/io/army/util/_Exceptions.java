@@ -783,6 +783,12 @@ public abstract class _Exceptions {
         return new ReadOnlySessionException(m);
     }
 
+    public static SessionException writeSessionPseudoTransaction(Session session) {
+        String m;
+        m = String.format("%s isn't read only,don't support pseudo transaction.", session);
+        return new SessionException(m);
+    }
+
 
     public static TransactionException readOnlyTransaction(Session session) {
         String m;
@@ -889,7 +895,6 @@ public abstract class _Exceptions {
                 , session, table);
         return new ChildDmlNoTractionException(m);
     }
-
 
 
     public static QueryInsertException dontSupportSubQueryInsert(Session session) {

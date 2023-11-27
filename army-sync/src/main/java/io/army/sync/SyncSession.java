@@ -49,6 +49,19 @@ public interface SyncSession extends Session, AutoCloseable {
 
     TransactionInfo transactionInfo();
 
+
+    Object setSavePoint();
+
+    Object setSavePoint(Function<Option<?>, ?> optionFunc);
+
+    void releaseSavePoint(Object savepoint);
+
+    void releaseSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
+
+    void rollbackToSavePoint(Object savepoint);
+
+    void rollbackToSavePoint(Object savepoint, Function<Option<?>, ?> optionFunc);
+
     /**
      * <p>Set session level transaction characteristics:
      * <ul>

@@ -51,10 +51,6 @@ class ArmySyncRmSession extends ArmySyncSession implements SyncRmSession {
     }
 
 
-    @Override
-    public final boolean hasTransactionInfo() {
-        return this.transactionInfo != null;
-    }
 
     @Override
     public boolean isRollbackOnly() {

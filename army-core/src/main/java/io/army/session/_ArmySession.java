@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * <p>This class is all implementation of {@link Session}.
@@ -86,6 +87,18 @@ public abstract class _ArmySession implements Session {
     @Override
     public final boolean isAllowQueryInsert() {
         return this.allowQueryInsert;
+    }
+
+    @Override
+    public final boolean hasTransactionInfo() {
+        return obtainTransactionInfo() != null;
+    }
+
+    @Override
+    public final boolean inPseudoTransaction() {
+        final TransactionInfo info;
+        info = obtainTransactionInfo();
+        return info != null && !info.inTransaction();
     }
 
     @Override
@@ -267,6 +280,24 @@ public abstract class _ArmySession implements Session {
             domainTable = ((_SingleDml) statement).table();
         }
         return domainTable;
+    }
+
+    protected static Function<Option<?>, ?> wrapStartMillis(final TransactionOption option) {
+        final Integer timeoutMillis;
+        timeoutMillis = option.valueOf(Option.TIMEOUT_MILLIS);
+
+        if (timeoutMillis == null || timeoutMillis < 1) {
+            return option::valueOf;
+        }
+
+        final long startTime;
+        startTime = System.currentTimeMillis();
+        return o -> {
+            if (o == Option.START_MILLIS) {
+                return startTime;
+            }
+            return option.valueOf(o);
+        };
     }
 
 

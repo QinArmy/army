@@ -68,7 +68,7 @@ abstract class ArmyReactiveStmtOptions extends _ArmyStmtOptions {
 
     static ReactiveStmtOption overrideOptionIfNeed(final ReactiveStmtOption option, final TransactionInfo info) {
         final Integer timeout;
-        timeout = info.valueOf(Option.TIMEOUT);
+        timeout = info.valueOf(Option.TIMEOUT_MILLIS);
         if (timeout == null || option instanceof TransactionOverrideOption) {
             return option;
         }

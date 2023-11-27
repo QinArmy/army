@@ -22,4 +22,18 @@ public interface LocalSession extends Session {
      */
     void markRollbackOnly();
 
+
+    /**
+     * @throws IllegalArgumentException throw {@link TransactionOption#isolation()} is null.
+     * @throws SessionException         throw when
+     *                                  <ul>
+     *                                      <li>session have closed</li>
+     *                                      <li>{@link #isReadonlySession()} return false</li>
+     *                                      <li>{@link #hasTransactionInfo()} return true and mode is {@link HandleMode#ERROR_IF_EXISTS}</li>
+     *                                      <li>{@link #hasTransactionInfo()} return true and mode is {@link HandleMode#COMMIT_IF_EXISTS} and timeout</li>
+     *                                  </ul>
+     */
+    TransactionInfo pseudoTransaction(TransactionOption option, HandleMode mode);
+
+
 }
